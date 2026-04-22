@@ -1,0 +1,98 @@
+name: Alpha interest
+description: Tell us about your team and where Topogram might help.
+title: "alpha interest: "
+labels:
+  - alpha-interest
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in Topogram.
+
+        This alpha is best for teams already using coding agents on real software and feeling pressure around workflow drift, review boundaries, maintained-code change, or proof/verification.
+
+        Please keep this lightweight but concrete.
+
+  - type: input
+    id: team_name
+    attributes:
+      label: Team or company
+      description: Who is evaluating Topogram?
+      placeholder: Example: Acme product engineering
+    validations:
+      required: true
+
+  - type: textarea
+    id: system_shape
+    attributes:
+      label: Codebase or system shape
+      description: What kind of system are you working on?
+      placeholder: |
+        Example:
+        - brownfield SaaS app
+        - workflow-heavy internal platform
+        - API + web frontend + maintained legacy surfaces
+    validations:
+      required: true
+
+  - type: dropdown
+    id: main_need
+    attributes:
+      label: Primary need
+      description: What is the main reason you're interested?
+      options:
+        - Brownfield recovery / reconcile-adopt
+        - Maintained-app evolution
+        - Generated proof / contracts / verification
+        - Agent planning / review boundaries
+        - Still exploring
+    validations:
+      required: true
+
+  - type: textarea
+    id: drift
+    attributes:
+      label: Where are coding agents helping, and where are they drifting?
+      description: Tell us where things are useful today and where trust breaks down.
+      placeholder: |
+        Example:
+        Agents help with implementation drafts, but drift shows up around:
+        - workflow semantics
+        - UI/product decisions
+        - maintained code changes
+        - verification confidence
+    validations:
+      required: true
+
+  - type: textarea
+    id: risky_change
+    attributes:
+      label: One risky or representative change
+      description: What is one contained workflow or subsystem you would use to pressure-test Topogram?
+      placeholder: |
+        Example:
+        A contract-sensitive change across API, UI, and maintained code where review and verification currently drift apart.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: team_roles
+    attributes:
+      label: Who would likely be involved?
+      description: Select all that apply.
+      options:
+        - label: Engineering / development
+        - label: Design / UX
+        - label: Product / product owner
+        - label: Platform / architecture
+        - label: QA / verification
+
+  - type: textarea
+    id: contact
+    attributes:
+      label: Best follow-up path
+      description: How should we follow up if there’s a fit?
+      placeholder: GitHub handle, email, or other preferred path
+    validations:
+      required: false
+

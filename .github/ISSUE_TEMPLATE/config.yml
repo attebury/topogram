@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Evaluator path
+    url: https://github.com/attebury/topogram/blob/main/docs/evaluator-path.md
+    about: Start here if you want the shortest proof-oriented walkthrough of Topogram.
+  - name: Proof points and limits
+    url: https://github.com/attebury/topogram/blob/main/docs/proof-points-and-limits.md
+    about: Read this before filing interest if you want the current public claim boundary.
