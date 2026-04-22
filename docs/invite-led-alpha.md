@@ -19,7 +19,7 @@ For the fuller fit profile, see [design-partner-profile.md](./design-partner-pro
 The current alpha contact path is lightweight:
 
 - open a GitHub issue in this repository
-- use the title prefix `alpha interest:`
+- use the `Alpha interest` issue template
 - include:
   - the codebase or system shape
   - whether the main need is brownfield recovery, maintained-app evolution, or generated proof work

@@ -16,6 +16,7 @@ Current docs:
 - [Alpha Launch Tracker](./alpha-launch-tracker.md)
 - [Alpha Launch And Repository Shaping Plan](./alpha-launch-and-repo-shaping-plan.md)
 - [Invite-Led Alpha](./invite-led-alpha.md)
+- [Dev.to Limited Partner Review Draft](./devto-limited-partner-review.md)
 - [Design Partner Profile](./design-partner-profile.md)
 - [Demo Path Confirmation Plan](./demo-path-confirmation-plan.md)
 - [Skeptical Evaluator Guide](./skeptical-evaluator.md)
