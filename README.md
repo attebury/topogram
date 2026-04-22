@@ -220,6 +220,12 @@ Use them like this:
 - `verify-brownfield-rehearsal.sh`: the shortest evaluator-facing proof for the canonical import-plan -> review-packet -> proceed-decision brownfield loop
 - `audit-issues-contract-diff.sh`: the shortest emitted-contract audit for the current `issues` parity seams
 
+For the quickest live brownfield walkthrough, run:
+
+```bash
+bash ./scripts/run-brownfield-rehearsal.sh
+```
+
 ## Local Guardrail
 
 This repo now includes a repo-local `pre-push` hook that blocks newly introduced machine-specific absolute filesystem paths in changed human-facing and source files.

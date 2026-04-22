@@ -37,7 +37,15 @@ Use an import-adopt fixture with staged reconcile artifacts:
 node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json
 ```
 
-Then inspect the canonical brownfield review loop first:
+If you want the shortest one-command local walkthrough, run:
+
+```bash
+bash ./scripts/run-brownfield-rehearsal.sh
+```
+
+That will build the staged fixture, print the staged workspace root, and run the canonical brownfield review loop.
+
+If you want to inspect the steps manually, start from:
 
 ```bash
 node ./engine/src/cli.js query import-plan ./engine/tests/fixtures/import/incomplete-topogram/topogram

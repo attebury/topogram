@@ -165,6 +165,8 @@ Use this short path for a live demo:
    - [issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
 6. Show [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) as the brownfield breadth proof.
 7. For import/adopt rehearsal, use:
+   - `bash ./scripts/run-brownfield-rehearsal.sh`
+   - or, if you want the manual steps:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
    - then `query import-plan` against the generated staged workspace
    - then `query review-packet --mode import-adopt`
