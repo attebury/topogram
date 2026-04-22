@@ -32,7 +32,7 @@ test("context bundle maintained-app exposes explicit proof boundaries", () => {
 
   assert.equal(result.ok, true);
   assert.equal(result.artifact.task, "maintained-app");
-  assert.equal(result.artifact.summary.accepted_change_count, 3);
+  assert.equal(result.artifact.summary.accepted_change_count, 4);
   assert.equal(result.artifact.summary.no_go_count, 3);
   assert.match(JSON.stringify(result.artifact.review_boundaries), /maintained-contract-review/);
   assert.ok(Array.isArray(result.artifact.maintained_boundary.maintained_files_in_scope));
