@@ -10,6 +10,21 @@ const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".
 const repoRoot = path.resolve(engineRoot, "..");
 const cliPath = path.join(engineRoot, "src", "cli.js");
 const sourceRoot = path.join(repoRoot, "trials", "supabase-express-api");
+const disposableIgnoredDirs = [
+  ".git",
+  "topogram",
+  "node_modules",
+  ".next",
+  "dist",
+  "build",
+  "coverage",
+  ".turbo",
+  ".yarn",
+  "Pods",
+  "DerivedData",
+  "vendor",
+  "target"
+];
 
 let cleanup = false;
 let printRootOnly = false;
@@ -113,13 +128,14 @@ function readAdoptionStatus() {
 const workspaceRoot = resolveTempRoot();
 fs.cpSync(sourceRoot, workspaceRoot, { recursive: true });
 
-const copiedTopogramRoot = path.join(workspaceRoot, "topogram");
-const copiedGitRoot = path.join(workspaceRoot, ".git");
-fs.rmSync(copiedTopogramRoot, { recursive: true, force: true });
-fs.rmSync(copiedGitRoot, { recursive: true, force: true });
+for (const dirName of disposableIgnoredDirs) {
+  fs.rmSync(path.join(workspaceRoot, dirName), { recursive: true, force: true });
+}
 
-if (fs.existsSync(copiedTopogramRoot)) {
-  fail("Expected copied topogram/ to be removed before import");
+for (const dirName of disposableIgnoredDirs) {
+  if (fs.existsSync(path.join(workspaceRoot, dirName))) {
+    fail(`Expected copied ${dirName}/ to be removed before import`);
+  }
 }
 
 runCli(["import", "app", workspaceRoot, "--from", "db,api,ui,workflows", "--write"]);

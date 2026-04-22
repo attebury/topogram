@@ -2,7 +2,7 @@
 
 This branch adds a disposable verification path for `trials/supabase-express-api`.
 
-It is intentionally **not** a permanent proof refresh. The helper copies the trial source into a temp workspace, strips the copied `topogram/` and `.git/`, then runs the full brownfield import/reconcile/adopt loop against that fresh copy.
+It is intentionally **not** a permanent proof refresh. The helper copies the trial source into a temp workspace, strips the copied `topogram/`, `.git/`, and dependency/build/cache artifacts such as `node_modules`, then runs the full brownfield import/reconcile/adopt loop against that fresh copy.
 
 After the initial `from-plan` pass, the helper also follows any `bundle-review:<slug>` next-best-action selectors surfaced by adoption status, rerunning `from-plan` after each approval step. That keeps the disposable trial aligned with the branch's current review-driven brownfield closure flow instead of assuming one `from-plan` pass is always enough.
 
@@ -20,6 +20,8 @@ Optional flags:
 - `--keep` to preserve the workspace after success (default)
 - `--cleanup` to remove the workspace after a successful run
 - `--print-root` to print the final workspace root only
+
+The temp workspace is preserved by default for inspection. `--cleanup` removes the whole temp workspace after a successful run. The extra stripping is only for disk hygiene and faster disposable verification; it does not change the proof contract being checked.
 
 ## What It Validates
 
