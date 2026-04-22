@@ -1,0 +1,6 @@
+actor actor_manager {
+  name "Manager"
+  description "User reviewing, approving, rejecting, or requesting revisions on submitted articles"
+
+  status active
+}

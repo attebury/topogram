@@ -1,0 +1,10 @@
+entity entity_dummy {
+  name "Dummy"
+  description "Entity for invalid UI tests"
+
+  fields {
+    id uuid required
+  }
+
+  status active
+}

@@ -1,0 +1,12 @@
+capability cap_create_article {
+  name "Create Article"
+  description "Creates a new article draft"
+
+  actors [actor_author]
+  roles [role_author]
+  creates [entity_article]
+  input [shape_input_create_article]
+  output [shape_output_article_detail]
+
+  status active
+}

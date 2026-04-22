@@ -1,0 +1,26 @@
+verification ver_article_review_flow {
+  name "Article review flow"
+  description "Verifies article creation, revision requests, resubmission, approval, and rejection."
+
+  validates [
+    cap_create_article,
+    cap_get_article,
+    cap_list_articles,
+    cap_update_article,
+    cap_request_article_revision,
+    cap_approve_article,
+    cap_reject_article
+  ]
+  method runtime
+
+  scenarios [
+    create_article_in_draft,
+    request_revision_for_submitted_article,
+    resubmit_article_after_revision_requested,
+    reject_approval_without_precondition,
+    approve_submitted_article,
+    reject_submitted_article
+  ]
+
+  status active
+}

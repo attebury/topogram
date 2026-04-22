@@ -1,0 +1,20 @@
+projection proj_api {
+  name "API"
+  description "Bad HTTP cache config"
+  platform dotnet
+
+  realizes [cap_get_task, cap_update_task]
+  outputs [endpoints]
+
+  http {
+    cap_get_task method GET path /tasks/:id success 200 auth user request path
+    cap_update_task method PATCH path /tasks/:id success 200 auth user request body
+  }
+
+  http_cache {
+    cap_get_task response_header ETag request_header If-None-Match required maybe not_modified 302 source ghost code cap_get_task_not_modified
+    cap_update_task response_header ETag request_header If-None-Match required false not_modified 304 source updated_at code cap_update_task_not_modified
+  }
+
+  status active
+}

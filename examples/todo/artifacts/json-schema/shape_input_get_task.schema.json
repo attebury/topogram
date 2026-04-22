@@ -1,0 +1,17 @@
+{
+  "$id": "topogram:shape:shape_input_get_task",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input for fetching a single task",
+  "properties": {
+    "task_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id"
+  ],
+  "title": "Get Task Input",
+  "type": "object"
+}

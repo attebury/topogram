@@ -1,0 +1,83 @@
+{
+  "bundles": [
+    {
+      "bundle_vs_resolved_percent": 4.13,
+      "bytes": 18780,
+      "lines": 1160,
+      "task": "api"
+    },
+    {
+      "bundle_vs_resolved_percent": 3.08,
+      "bytes": 14040,
+      "lines": 835,
+      "task": "ui"
+    },
+    {
+      "bundle_vs_resolved_percent": 2.88,
+      "bytes": 13099,
+      "lines": 858,
+      "task": "db"
+    },
+    {
+      "bundle_vs_resolved_percent": 4.11,
+      "bytes": 18692,
+      "lines": 951,
+      "task": "maintained-app"
+    }
+  ],
+  "diff": {
+    "bytes": 100095,
+    "diff_vs_digest_percent": 288.66,
+    "diff_vs_resolved_percent": 21.99,
+    "lines": 6125
+  },
+  "raw_workspace": {
+    "bytes": 22439,
+    "lines": 759
+  },
+  "resolved_graph": {
+    "bytes": 455222,
+    "lines": 32439
+  },
+  "roots": {
+    "baseline": "/Users/attebury/Documents/topogram/examples/todo/topogram",
+    "workspace": "/Users/attebury/Documents/topogram/examples/content-approval/topogram"
+  },
+  "slices": [
+    {
+      "bytes": 11253,
+      "id": "cap_approve_article",
+      "kind": "capability",
+      "lines": 690,
+      "slice_vs_resolved_percent": 2.47
+    },
+    {
+      "bytes": 11279,
+      "id": "article_review",
+      "kind": "workflow",
+      "lines": 671,
+      "slice_vs_resolved_percent": 2.48
+    },
+    {
+      "bytes": 10104,
+      "id": "proj_api",
+      "kind": "projection",
+      "lines": 605,
+      "slice_vs_resolved_percent": 2.22
+    },
+    {
+      "bytes": 12613,
+      "id": "entity_article",
+      "kind": "entity",
+      "lines": 773,
+      "slice_vs_resolved_percent": 2.77
+    }
+  ],
+  "type": "context_report",
+  "version": 1,
+  "workspace_digest": {
+    "bytes": 34676,
+    "digest_vs_resolved_percent": 7.62,
+    "lines": 1977
+  }
+}

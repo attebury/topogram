@@ -1,0 +1,10 @@
+shape shape_input_get_project {
+  name "Get Project Input"
+  description "Input for fetching a single project"
+
+  fields {
+    project_id uuid required
+  }
+
+  status active
+}

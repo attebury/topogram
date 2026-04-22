@@ -1,0 +1,11 @@
+capability cap_list_tasks {
+  name "List Tasks"
+  description "Lists tasks"
+
+  actors [actor_user]
+  reads [entity_task]
+  input [shape_input_list_tasks]
+  output [shape_output_task_detail]
+
+  status active
+}

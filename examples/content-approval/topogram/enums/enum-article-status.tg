@@ -1,0 +1,3 @@
+enum article_status {
+  values [draft, submitted, needs_revision, approved, rejected]
+}

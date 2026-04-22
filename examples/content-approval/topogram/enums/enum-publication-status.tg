@@ -1,0 +1,3 @@
+enum publication_status {
+  values [active, archived]
+}

@@ -1,0 +1,177 @@
+projection proj_api {
+  name "API"
+  description "HTTP API realization for Todo"
+  platform dotnet
+
+  realizes [cap_create_task, cap_get_task, cap_update_task, cap_complete_task, cap_list_tasks, cap_delete_task, cap_export_tasks, cap_get_task_export_job, cap_download_task_export, cap_list_projects, cap_get_project, cap_create_project, cap_update_project, cap_list_users, cap_get_user, cap_create_user, cap_update_user]
+
+  outputs [
+    database_schema,
+    entity_models,
+    request_contracts,
+    response_contracts,
+    validation_handlers,
+    endpoints
+  ]
+
+  http {
+    cap_create_task method POST path /tasks success 201 auth user request body
+    cap_get_task method GET path /tasks/:id success 200 auth user request path
+    cap_update_task method PATCH path /tasks/:id success 200 auth user request body
+    cap_complete_task method POST path /tasks/:id/complete success 200 auth user request body
+    cap_list_tasks method GET path /tasks success 200 auth user request query
+    cap_delete_task method DELETE path /tasks/:id success 200 auth user request path
+    cap_create_project method POST path /projects success 201 auth user request body
+    cap_get_project method GET path /projects/:id success 200 auth user request path
+    cap_update_project method PATCH path /projects/:id success 200 auth user request body
+    cap_list_projects method GET path /projects success 200 auth user request query
+    cap_create_user method POST path /users success 201 auth user request body
+    cap_get_user method GET path /users/:id success 200 auth user request path
+    cap_update_user method PATCH path /users/:id success 200 auth user request body
+    cap_list_users method GET path /users success 200 auth user request query
+    cap_export_tasks method POST path /tasks/export success 202 auth user request body
+    cap_get_task_export_job method GET path /task-exports/:job_id success 200 auth user request path
+    cap_download_task_export method GET path /task-exports/:job_id/download success 200 auth user request path
+  }
+
+  http_errors {
+    cap_create_task rule_no_task_creation_in_archived_project 409
+    cap_create_task rule_only_active_users_may_own_tasks 400
+    cap_create_task cap_create_task_invalid_request 400
+    cap_get_task cap_get_task_not_found 404
+    cap_get_project cap_get_project_not_found 404
+    cap_update_project cap_get_project_not_found 404
+    cap_get_user cap_get_user_not_found 404
+    cap_update_user cap_get_user_not_found 404
+    cap_delete_task cap_delete_task_not_found 404
+    cap_get_task_export_job cap_get_task_export_job_not_found 404
+    cap_download_task_export cap_download_task_export_not_found 404
+    cap_download_task_export cap_download_task_export_not_ready 409
+  }
+
+  http_fields {
+    cap_create_task input title in body
+    cap_create_task input description in body
+    cap_create_task input priority in body
+    cap_create_task input owner_id in body
+    cap_create_task input project_id in body
+    cap_create_task input due_at in body
+
+    cap_update_task input task_id in path as id
+    cap_update_task input title in body
+    cap_update_task input description in body
+    cap_update_task input priority in body
+    cap_update_task input owner_id in body
+    cap_update_task input due_at in body
+    cap_update_task input status in body
+
+    cap_complete_task input task_id in path as id
+    cap_complete_task input completed_at in body
+
+    cap_get_task input task_id in path as id
+
+    cap_delete_task input task_id in path as id
+    cap_get_project input project_id in path as id
+    cap_update_project input project_id in path as id
+    cap_get_user input user_id in path as id
+    cap_update_user input user_id in path as id
+    cap_get_task_export_job input job_id in path as job_id
+    cap_download_task_export input job_id in path as job_id
+
+    cap_list_tasks input project_id in query
+    cap_list_tasks input owner_id in query
+    cap_list_tasks input status in query
+    cap_list_tasks input after in query
+    cap_list_tasks input limit in query
+    cap_list_projects input after in query
+    cap_list_projects input limit in query
+    cap_list_users input after in query
+    cap_list_users input limit in query
+
+    cap_create_project input name in body
+    cap_create_project input description in body
+    cap_create_project input status in body
+    cap_create_project input owner_id in body
+
+    cap_update_project input name in body
+    cap_update_project input description in body
+    cap_update_project input status in body
+    cap_update_project input owner_id in body
+
+    cap_create_user input email in body
+    cap_create_user input display_name in body
+    cap_create_user input is_active in body
+
+    cap_update_user input email in body
+    cap_update_user input display_name in body
+    cap_update_user input is_active in body
+
+    cap_export_tasks input project_id in body
+    cap_export_tasks input owner_id in body
+    cap_export_tasks input status in body
+    cap_export_tasks input callback_url in body
+  }
+
+  http_responses {
+    cap_list_tasks mode cursor item shape_output_task_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
+    cap_list_projects mode cursor item shape_output_project_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
+    cap_list_users mode cursor item shape_output_user_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
+  }
+
+  http_preconditions {
+    cap_update_task header If-Match required true error 412 source updated_at code cap_update_task_precondition_failed
+    cap_complete_task header If-Match required true error 412 source updated_at code cap_complete_task_precondition_failed
+    cap_delete_task header If-Match required true error 412 source updated_at code cap_delete_task_precondition_failed
+  }
+
+  http_idempotency {
+    cap_create_task header Idempotency-Key required true error 409 code cap_create_task_idempotency_conflict
+    cap_complete_task header Idempotency-Key required true error 409 code cap_complete_task_idempotency_conflict
+  }
+
+  http_cache {
+    cap_get_task response_header ETag request_header If-None-Match required false not_modified 304 source updated_at code cap_get_task_not_modified
+  }
+
+  http_delete {
+    cap_delete_task mode soft field status value archived response body
+  }
+
+  http_async {
+    cap_export_tasks mode job accepted 202 location_header Location retry_after_header Retry-After status_path /task-exports/:job_id status_capability cap_get_task_export_job job shape_output_task_export_job
+  }
+
+  http_status {
+    cap_get_task_export_job async_for cap_export_tasks state_field status completed completed failed failed expired expired download_capability cap_download_task_export download_field download_url error_field error_message
+  }
+
+  http_download {
+    cap_download_task_export async_for cap_export_tasks media application/zip filename task-export.zip disposition attachment
+  }
+
+  http_authz {
+    cap_create_task permission tasks.create
+    cap_get_task ownership owner_or_admin ownership_field owner_id
+    cap_update_task ownership owner_or_admin ownership_field owner_id permission tasks.update
+    cap_complete_task ownership owner_or_admin ownership_field owner_id permission tasks.complete
+    cap_list_tasks permission tasks.read
+    cap_delete_task role manager permission tasks.delete
+    cap_create_project permission projects.create
+    cap_get_project permission projects.read
+    cap_update_project permission projects.update
+    cap_list_projects permission projects.read
+    cap_create_user permission users.create
+    cap_get_user permission users.read
+    cap_update_user permission users.update
+    cap_list_users permission users.read
+    cap_export_tasks permission tasks.export
+    cap_get_task_export_job permission tasks.export.read ownership owner_or_admin ownership_field owner_id
+    cap_download_task_export permission tasks.export.download ownership owner_or_admin ownership_field owner_id
+  }
+
+  http_callbacks {
+    cap_export_tasks event export_completed target_field callback_url method POST payload shape_output_task_export_callback success 202
+  }
+
+  status active
+}

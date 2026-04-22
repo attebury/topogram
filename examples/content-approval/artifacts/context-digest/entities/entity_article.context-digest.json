@@ -1,0 +1,162 @@
+{
+  "focus": {
+    "id": "entity_article",
+    "kind": "entity"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "review_boundary": {
+    "automation_class": "manual_decision",
+    "reasons": [
+      "relation_surface"
+    ]
+  },
+  "summary": {
+    "description": "A draftable and reviewable article in the content approval workflow",
+    "fields": [
+      {
+        "defaultValue": null,
+        "name": "id",
+        "requiredness": "required",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "title",
+        "requiredness": "required",
+        "type": "string"
+      },
+      {
+        "defaultValue": null,
+        "name": "description",
+        "requiredness": "optional",
+        "type": "text"
+      },
+      {
+        "defaultValue": "draft",
+        "name": "status",
+        "requiredness": "required",
+        "type": "article_status"
+      },
+      {
+        "defaultValue": null,
+        "name": "reviewer_id",
+        "requiredness": "optional",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "publication_id",
+        "requiredness": "required",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "created_at",
+        "requiredness": "required",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "updated_at",
+        "requiredness": "required",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "submitted_at",
+        "requiredness": "optional",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "revision_requested_at",
+        "requiredness": "optional",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "approved_at",
+        "requiredness": "optional",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "rejected_at",
+        "requiredness": "optional",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "reviewer_notes",
+        "requiredness": "optional",
+        "type": "text"
+      },
+      {
+        "defaultValue": null,
+        "name": "category",
+        "requiredness": "optional",
+        "type": "string"
+      }
+    ],
+    "id": "entity_article",
+    "keys": [],
+    "kind": "entity",
+    "name": "Article",
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "relations": [
+      {
+        "sourceField": "reviewer_id",
+        "target": "entity_user",
+        "type": "reference"
+      },
+      {
+        "sourceField": "publication_id",
+        "target": "entity_publication",
+        "type": "reference"
+      }
+    ],
+    "reviewBoundary": {
+      "automation_class": "manual_decision",
+      "reasons": [
+        "relation_surface"
+      ]
+    }
+  },
+  "type": "context_digest",
+  "verifications": [],
+  "version": 1
+}

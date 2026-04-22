@@ -1,0 +1,32 @@
+{
+  "$id": "topogram:shape:shape_input_create_task",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Fields accepted when creating a task",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "due_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "owner_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "project_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "project_id"
+  ],
+  "title": "Create Task Input",
+  "type": "object"
+}

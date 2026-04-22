@@ -1,0 +1,15 @@
+.DS_Store
+trials/
+node_modules/
+.env
+.env.local
+.env.*.local
+*.log
+.svelte-kit/
+.vite/
+dist/
+build/
+coverage/
+.cache/
+.tmp/
+trials/

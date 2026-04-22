@@ -1,0 +1,138 @@
+{
+  "focus": {
+    "id": "entity_issue",
+    "kind": "entity"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "review_boundary": {
+    "automation_class": "manual_decision",
+    "reasons": [
+      "relation_surface"
+    ]
+  },
+  "summary": {
+    "description": "A tracked work item in the issue tracker domain",
+    "fields": [
+      {
+        "defaultValue": null,
+        "name": "id",
+        "requiredness": "required",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "title",
+        "requiredness": "required",
+        "type": "string"
+      },
+      {
+        "defaultValue": null,
+        "name": "description",
+        "requiredness": "optional",
+        "type": "text"
+      },
+      {
+        "defaultValue": "open",
+        "name": "status",
+        "requiredness": "required",
+        "type": "issue_status"
+      },
+      {
+        "defaultValue": null,
+        "name": "assignee_id",
+        "requiredness": "optional",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "board_id",
+        "requiredness": "required",
+        "type": "uuid"
+      },
+      {
+        "defaultValue": null,
+        "name": "created_at",
+        "requiredness": "required",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "updated_at",
+        "requiredness": "required",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "closed_at",
+        "requiredness": "optional",
+        "type": "datetime"
+      },
+      {
+        "defaultValue": null,
+        "name": "priority",
+        "requiredness": "optional",
+        "type": "string"
+      }
+    ],
+    "id": "entity_issue",
+    "keys": [],
+    "kind": "entity",
+    "name": "Issue",
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "relations": [
+      {
+        "sourceField": "assignee_id",
+        "target": "entity_user",
+        "type": "reference"
+      },
+      {
+        "sourceField": "board_id",
+        "target": "entity_board",
+        "type": "reference"
+      }
+    ],
+    "reviewBoundary": {
+      "automation_class": "manual_decision",
+      "reasons": [
+        "relation_surface"
+      ]
+    }
+  },
+  "type": "context_digest",
+  "verifications": [],
+  "version": 1
+}

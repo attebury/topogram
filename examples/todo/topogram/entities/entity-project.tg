@@ -1,0 +1,28 @@
+ entity entity_project {
+  name "Project"
+  description "A grouping container for tasks"
+
+  fields {
+    id uuid required
+    name string required
+    description text optional
+    status project_status required default active
+    owner_id uuid optional
+    created_at datetime required
+  }
+
+  keys {
+    primary [id]
+    unique [name]
+  }
+
+  relations {
+    owner_id references entity_user.id
+  }
+
+  invariants {
+    name length <= 120
+  }
+
+  status active
+}

@@ -1,0 +1,204 @@
+{
+  "components": {
+    "responses": {
+      "CapGetTaskExportJobInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskExportJobInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Get Task Export Job Invalid Request (400)"
+      },
+      "CapGetTaskExportJobNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskExportJobNotFoundError"
+            }
+          }
+        },
+        "description": "Cap Get Task Export Job Not Found (404)"
+      }
+    },
+    "schemas": {
+      "CapGetTaskExportJobInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_export_job_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Export Job Invalid Request"
+      },
+      "CapGetTaskExportJobNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_export_job_not_found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Export Job Not Found"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "ShapeOutputTaskExportStatusResponse": {
+        "$id": "topogram:shape:shape_output_task_export_status",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Status payload for long-running task export jobs",
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "accepted",
+            "enum": [
+              "accepted",
+              "running",
+              "completed",
+              "failed",
+              "expired"
+            ],
+            "type": "string"
+          },
+          "status_url": {
+            "type": "string"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "status_url",
+          "submitted_at"
+        ],
+        "title": "Task Export Status",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Topogram API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/task-exports/{job_id}": {
+      "get": {
+        "description": "Fetches the current status of a task export job",
+        "operationId": "cap_get_task_export_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskExportStatusResponse"
+                }
+              }
+            },
+            "description": "Success",
+            "links": {
+              "cap_download_task_exportDownload": {
+                "description": "Use cap_download_task_export when the job is complete",
+                "operationId": "cap_download_task_export",
+                "parameters": {
+                  "job_id": "$response.body#/job_id"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapGetTaskExportJobInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapGetTaskExportJobNotFoundErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get Task Export Job",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id",
+            "permission": "tasks.export.read"
+          }
+        ]
+      }
+    }
+  }
+}

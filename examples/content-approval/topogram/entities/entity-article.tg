@@ -1,0 +1,44 @@
+entity entity_article {
+  name "Article"
+  description "A draftable and reviewable article in the content approval workflow"
+
+  fields {
+    id uuid required
+    title string required
+    description text optional
+    status article_status required default draft
+    reviewer_id uuid optional
+    publication_id uuid required
+    created_at datetime required
+    updated_at datetime required
+    submitted_at datetime optional
+    revision_requested_at datetime optional
+    approved_at datetime optional
+    rejected_at datetime optional
+    reviewer_notes text optional
+    category string optional
+  }
+
+  keys {
+    primary [id]
+    index [publication_id, status]
+    index [reviewer_id, status]
+  }
+
+  relations {
+    reviewer_id references entity_user.id
+    publication_id references entity_publication.id
+  }
+
+  invariants {
+    submitted_at requires status == submitted or status == needs_revision or status == approved or status == rejected
+    revision_requested_at requires status == needs_revision
+    approved_at requires status == approved
+    rejected_at requires status == rejected
+    reviewer_notes requires status == needs_revision or status == approved or status == rejected
+    status == submitted implies reviewer_id is required
+    title length <= 200
+  }
+
+  status active
+}

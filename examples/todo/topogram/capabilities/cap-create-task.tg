@@ -1,0 +1,14 @@
+capability cap_create_task {
+  name "Create Task"
+  description "Allows a user to create a new task"
+
+  actors [actor_user]
+
+  creates [entity_task]
+  reads [entity_project, entity_user]
+
+  input [shape_input_create_task]
+  output [shape_output_task_detail]
+
+  status active
+}

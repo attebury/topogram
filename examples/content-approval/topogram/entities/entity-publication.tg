@@ -1,0 +1,19 @@
+entity entity_publication {
+  name "Publication"
+  description "A publishing space that owns articles and review workflow"
+
+  fields {
+    id uuid required
+    name string required
+    description text optional
+    status publication_status required default active
+    created_at datetime required
+  }
+
+  keys {
+    primary [id]
+    unique [name]
+  }
+
+  status active
+}

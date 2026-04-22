@@ -1,0 +1,11 @@
+capability cap_create_user {
+  name "Create User"
+  description "Allows a user to create a new user"
+
+  actors [actor_user]
+  creates [entity_user]
+  input [shape_input_create_user]
+  output [shape_output_user_detail]
+
+  status active
+}

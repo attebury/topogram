@@ -1,0 +1,14 @@
+ capability cap_close_issue {
+  name "Close Issue"
+  description "Marks an issue as closed"
+
+  actors [actor_user]
+
+  reads [entity_issue]
+  updates [entity_issue]
+
+  input [shape_input_close_issue]
+  output [shape_output_issue_detail]
+
+  status active
+}

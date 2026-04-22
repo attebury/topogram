@@ -1,0 +1,19 @@
+entity entity_bad_invariants {
+  name "Bad Invariants"
+  description "Invalid invariant forms"
+
+  fields {
+    id uuid required
+    status string optional
+    completed_at datetime optional
+    title string required
+  }
+
+  invariants {
+    completed_at requires status
+    status == active implies owner_id
+    title length active 200
+  }
+
+  status active
+}

@@ -1,0 +1,10 @@
+shape shape_input_get_task_export_job {
+  name "Status Input"
+  description "Status input"
+
+  fields {
+    job_id uuid required
+  }
+
+  status active
+}

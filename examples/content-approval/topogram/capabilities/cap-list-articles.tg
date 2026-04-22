@@ -1,0 +1,12 @@
+capability cap_list_articles {
+  name "List Articles"
+  description "Lists articles across draft, submitted, approved, and rejected states"
+
+  actors [actor_author]
+  roles [role_author]
+  reads [entity_article]
+  input [shape_input_list_articles]
+  output [shape_output_article_detail]
+
+  status active
+}

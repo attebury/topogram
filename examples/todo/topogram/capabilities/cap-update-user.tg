@@ -1,0 +1,12 @@
+capability cap_update_user {
+  name "Update User"
+  description "Allows a user to update mutable user fields"
+
+  actors [actor_user]
+  reads [entity_user]
+  updates [entity_user]
+  input [shape_input_update_user]
+  output [shape_output_user_detail]
+
+  status active
+}

@@ -1,0 +1,101 @@
+{
+  "focus": {
+    "id": "workspace",
+    "kind": "workspace"
+  },
+  "inventory": {
+    "capabilities": [
+      "cap_close_issue",
+      "cap_create_issue",
+      "cap_get_issue",
+      "cap_list_issues",
+      "cap_update_issue"
+    ],
+    "entities": [
+      "entity_board",
+      "entity_issue",
+      "entity_user"
+    ],
+    "journeys": [
+      "issue_creation_and_assignment",
+      "issue_resolution_and_closure"
+    ],
+    "projections": [
+      "proj_api",
+      "proj_db_postgres",
+      "proj_db_sqlite",
+      "proj_ui_shared",
+      "proj_ui_web",
+      "proj_ui_web_sveltekit"
+    ],
+    "verifications": [],
+    "workflows": []
+  },
+  "maintained_boundary_pointer": "maintained-boundary.context.json",
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "pointers": {
+    "capabilities": [
+      "capabilities/cap_close_issue.context-digest.json",
+      "capabilities/cap_create_issue.context-digest.json",
+      "capabilities/cap_get_issue.context-digest.json",
+      "capabilities/cap_list_issues.context-digest.json",
+      "capabilities/cap_update_issue.context-digest.json"
+    ],
+    "entities": [
+      "entities/entity_board.context-digest.json",
+      "entities/entity_issue.context-digest.json",
+      "entities/entity_user.context-digest.json"
+    ],
+    "journeys": [
+      "journeys/issue_creation_and_assignment.context-digest.json",
+      "journeys/issue_resolution_and_closure.context-digest.json"
+    ],
+    "maintained_boundary": "maintained-boundary.context.json",
+    "projections": [
+      "projections/proj_api.context-digest.json",
+      "projections/proj_db_postgres.context-digest.json",
+      "projections/proj_db_sqlite.context-digest.json",
+      "projections/proj_ui_shared.context-digest.json",
+      "projections/proj_ui_web.context-digest.json",
+      "projections/proj_ui_web_sveltekit.context-digest.json"
+    ],
+    "workflows": []
+  },
+  "review_boundary": {
+    "automation_class": "manual_decision",
+    "reasons": [
+      "workspace_requires_scoped_review"
+    ]
+  },
+  "type": "context_digest",
+  "version": 1,
+  "workspace": {
+    "counts": {
+      "actor": 2,
+      "capability": 5,
+      "entity": 3,
+      "enum": 2,
+      "projection": 6,
+      "rule": 2,
+      "shape": 7
+    },
+    "root": "/Users/attebury/Documents/topogram/examples/issues/topogram"
+  }
+}

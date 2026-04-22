@@ -1,0 +1,23 @@
+shape shape_output_article_detail from entity_article {
+  name "Article Detail"
+  description "Detailed article view including review decisions"
+
+  fields {
+    id required
+    title required
+    description optional
+    status required
+    reviewer_id optional
+    publication_id required
+    created_at required
+    updated_at required
+    submitted_at optional
+    revision_requested_at optional
+    approved_at optional
+    rejected_at optional
+    reviewer_notes optional
+    category optional
+  }
+
+  status active
+}

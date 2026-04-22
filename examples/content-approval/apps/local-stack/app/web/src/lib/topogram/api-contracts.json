@@ -1,0 +1,4909 @@
+{
+  "cap_approve_article": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_approve_article",
+      "name": "Approve Article",
+      "description": "Approves a submitted article"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_approve_article",
+      "method": "POST",
+      "path": "/articles/:id/approve",
+      "successStatus": 200,
+      "auth": "manager",
+      "requestPlacement": "body",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [
+        {
+          "header": "If-Match",
+          "required": true,
+          "error": 412,
+          "source": "updated_at",
+          "code": "cap_approve_article_precondition_failed"
+        }
+      ],
+      "idempotency": [
+        {
+          "header": "Idempotency-Key",
+          "required": true,
+          "error": 409,
+          "code": "cap_approve_article_idempotency_conflict"
+        }
+      ],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.approve",
+          "ownership": "owner_or_admin"
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_manager",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_approve_article",
+        "name": "Approve Article Input"
+      },
+      "fields": [
+        {
+          "name": "article_id",
+          "sourceName": "article_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        }
+      ],
+      "required": [
+        "article_id"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_approve_article",
+        "title": "Approve Article Input",
+        "description": "Input for approving an article under review",
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewer_notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "article_id"
+        ]
+      },
+      "transport": {
+        "path": [
+          {
+            "name": "article_id",
+            "sourceName": "article_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          }
+        ]
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [
+      {
+        "type": "api_policy_constraint",
+        "rule": {
+          "id": "rule_only_active_users_may_review_articles",
+          "name": "Only active users may review articles"
+        },
+        "requirement": {
+          "type": "comparison",
+          "left": "reviewer.is_active",
+          "operator": "==",
+          "right": {
+            "kind": "symbol",
+            "value": "true"
+          },
+          "raw": "reviewer.is_active == true"
+        },
+        "condition": null,
+        "severity": "error"
+      }
+    ],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "rule_only_active_users_may_review_articles",
+        "status": 400,
+        "source": "policy"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_approve_article_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_approve_article_precondition_failed",
+        "status": 412,
+        "source": "precondition"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_approve_article_idempotency_conflict",
+        "status": 409,
+        "source": "idempotency"
+      }
+    ]
+  },
+  "cap_create_article": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_create_article",
+      "name": "Create Article",
+      "description": "Creates a new article draft"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_create_article",
+      "method": "POST",
+      "path": "/articles",
+      "successStatus": 201,
+      "auth": "user",
+      "requestPlacement": "body",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [],
+      "idempotency": [
+        {
+          "header": "Idempotency-Key",
+          "required": true,
+          "error": 409,
+          "code": "cap_create_article_idempotency_conflict"
+        }
+      ],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.create",
+          "ownership": null
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_author",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_create_article",
+        "name": "Create Article Input"
+      },
+      "fields": [
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [
+        "title",
+        "publication_id"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_create_article",
+        "title": "Create Article Input",
+        "description": "Input for creating an article draft",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publication_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "publication_id"
+        ]
+      },
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [
+      {
+        "type": "api_policy_constraint",
+        "rule": {
+          "id": "rule_no_article_creation_in_archived_publication",
+          "name": "Cannot create articles in archived publications"
+        },
+        "requirement": {
+          "type": "comparison",
+          "left": "publication.status",
+          "operator": "!=",
+          "right": {
+            "kind": "symbol",
+            "value": "archived"
+          },
+          "raw": "publication.status != archived"
+        },
+        "condition": null,
+        "severity": "error"
+      },
+      {
+        "type": "api_policy_constraint",
+        "rule": {
+          "id": "rule_only_active_users_may_review_articles",
+          "name": "Only active users may review articles"
+        },
+        "requirement": {
+          "type": "comparison",
+          "left": "reviewer.is_active",
+          "operator": "==",
+          "right": {
+            "kind": "symbol",
+            "value": "true"
+          },
+          "raw": "reviewer.is_active == true"
+        },
+        "condition": null,
+        "severity": "error"
+      }
+    ],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "rule_no_article_creation_in_archived_publication",
+        "status": 409,
+        "source": "policy"
+      },
+      {
+        "type": "api_error_case",
+        "code": "rule_only_active_users_may_review_articles",
+        "status": 400,
+        "source": "policy"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_create_article_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_create_article_idempotency_conflict",
+        "status": 409,
+        "source": "idempotency"
+      }
+    ]
+  },
+  "cap_get_article": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_get_article",
+      "name": "Get Article",
+      "description": "Fetches a single article"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_get_article",
+      "method": "GET",
+      "path": "/articles/:id",
+      "successStatus": 200,
+      "auth": "user",
+      "requestPlacement": "path",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [],
+      "idempotency": [],
+      "cache": [
+        {
+          "responseHeader": "ETag",
+          "requestHeader": "If-None-Match",
+          "required": false,
+          "notModified": 304,
+          "source": "updated_at",
+          "code": "cap_get_article_not_modified"
+        }
+      ],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": null,
+          "ownership": "owner_or_admin"
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_author",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_get_article",
+        "name": "Get Article Input"
+      },
+      "fields": [
+        {
+          "name": "article_id",
+          "sourceName": "article_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        }
+      ],
+      "required": [
+        "article_id"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_get_article",
+        "title": "Get Article Input",
+        "description": "Input for fetching a single article",
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "article_id"
+        ]
+      },
+      "transport": {
+        "path": [
+          {
+            "name": "article_id",
+            "sourceName": "article_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "query": [],
+        "header": [],
+        "body": []
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "cap_get_article_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_get_article_not_found",
+        "status": 404,
+        "source": "projection_mapping"
+      }
+    ]
+  },
+  "cap_list_articles": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_list_articles",
+      "name": "List Articles",
+      "description": "Lists articles across draft, submitted, approved, and rejected states"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_list_articles",
+      "method": "GET",
+      "path": "/articles",
+      "successStatus": 200,
+      "auth": "user",
+      "requestPlacement": "query",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [],
+      "idempotency": [],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.read",
+          "ownership": null
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_author",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_list_articles",
+        "name": "List Articles Input"
+      },
+      "fields": [
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "query",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "query",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "needs_revision",
+              "approved",
+              "rejected"
+            ]
+          },
+          "transport": {
+            "location": "query",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "after",
+          "sourceName": "after",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transport": {
+            "location": "query",
+            "wireName": "after"
+          }
+        },
+        {
+          "name": "limit",
+          "sourceName": "limit",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "transport": {
+            "location": "query",
+            "wireName": "limit"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_list_articles",
+        "title": "List Articles Input",
+        "description": "Input for listing articles by workflow status, reviewer, or publication",
+        "type": "object",
+        "properties": {
+          "publication_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "needs_revision",
+              "approved",
+              "rejected"
+            ]
+          },
+          "after": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "transport": {
+        "path": [],
+        "query": [
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "submitted",
+                "needs_revision",
+                "approved",
+                "rejected"
+              ]
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "after",
+            "sourceName": "after",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "after"
+            }
+          },
+          {
+            "name": "limit",
+            "sourceName": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "limit"
+            }
+          }
+        ],
+        "header": [],
+        "body": []
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "topogram:shape:shape_output_article_detail",
+              "title": "Article Detail",
+              "description": "Detailed article view including review decisions",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "title": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "description": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "status": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "reviewer_id": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "publication_id": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "created_at": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "updated_at": {
+                  "type": "string",
+                  "x-topogram-type": "required"
+                },
+                "submitted_at": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "revision_requested_at": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "approved_at": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "rejected_at": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "reviewer_notes": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                },
+                "category": {
+                  "type": "string",
+                  "x-topogram-type": "optional"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        }
+      },
+      "mode": "cursor",
+      "collection": true,
+      "itemJsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "pagination": null,
+      "itemShape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "ordering": {
+        "field": "created_at",
+        "direction": "desc"
+      },
+      "cursor": {
+        "requestAfter": "after",
+        "responseNext": "next_cursor",
+        "responsePrev": null
+      },
+      "limit": {
+        "field": "limit",
+        "defaultValue": 25,
+        "maxValue": 100
+      },
+      "total": {
+        "included": false
+      },
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "cap_list_articles_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_list_articles_invalid_cursor",
+        "status": 400,
+        "source": "cursor_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_list_articles_invalid_limit",
+        "status": 400,
+        "source": "cursor_contract"
+      }
+    ]
+  },
+  "cap_reject_article": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_reject_article",
+      "name": "Reject Article",
+      "description": "Rejects a submitted article with reviewer notes"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_reject_article",
+      "method": "POST",
+      "path": "/articles/:id/reject",
+      "successStatus": 200,
+      "auth": "manager",
+      "requestPlacement": "body",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [
+        {
+          "header": "If-Match",
+          "required": true,
+          "error": 412,
+          "source": "updated_at",
+          "code": "cap_reject_article_precondition_failed"
+        }
+      ],
+      "idempotency": [
+        {
+          "header": "Idempotency-Key",
+          "required": true,
+          "error": 409,
+          "code": "cap_reject_article_idempotency_conflict"
+        }
+      ],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.reject",
+          "ownership": "owner_or_admin"
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_manager",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_reject_article",
+        "name": "Reject Article Input"
+      },
+      "fields": [
+        {
+          "name": "article_id",
+          "sourceName": "article_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        }
+      ],
+      "required": [
+        "article_id"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_reject_article",
+        "title": "Reject Article Input",
+        "description": "Input for rejecting an article under review",
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rejected_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewer_notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "article_id"
+        ]
+      },
+      "transport": {
+        "path": [
+          {
+            "name": "article_id",
+            "sourceName": "article_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          }
+        ]
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [
+      {
+        "type": "api_policy_constraint",
+        "rule": {
+          "id": "rule_only_active_users_may_review_articles",
+          "name": "Only active users may review articles"
+        },
+        "requirement": {
+          "type": "comparison",
+          "left": "reviewer.is_active",
+          "operator": "==",
+          "right": {
+            "kind": "symbol",
+            "value": "true"
+          },
+          "raw": "reviewer.is_active == true"
+        },
+        "condition": null,
+        "severity": "error"
+      }
+    ],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "rule_only_active_users_may_review_articles",
+        "status": 400,
+        "source": "policy"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_reject_article_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_reject_article_precondition_failed",
+        "status": 412,
+        "source": "precondition"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_reject_article_idempotency_conflict",
+        "status": 409,
+        "source": "idempotency"
+      }
+    ]
+  },
+  "cap_request_article_revision": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_request_article_revision",
+      "name": "Request Article Revision",
+      "description": "Requests revisions for an article under review"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_request_article_revision",
+      "method": "POST",
+      "path": "/articles/:id/request-revision",
+      "successStatus": 200,
+      "auth": "manager",
+      "requestPlacement": "body",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [
+        {
+          "header": "If-Match",
+          "required": true,
+          "error": 412,
+          "source": "updated_at",
+          "code": "cap_request_article_revision_precondition_failed"
+        }
+      ],
+      "idempotency": [
+        {
+          "header": "Idempotency-Key",
+          "required": true,
+          "error": 409,
+          "code": "cap_request_article_revision_idempotency_conflict"
+        }
+      ],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.request_revision",
+          "ownership": "owner_or_admin"
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_manager",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_request_article_revision",
+        "name": "Request Article Revision Input"
+      },
+      "fields": [
+        {
+          "name": "article_id",
+          "sourceName": "article_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        }
+      ],
+      "required": [
+        "article_id",
+        "reviewer_notes"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_request_article_revision",
+        "title": "Request Article Revision Input",
+        "description": "Input for requesting article revisions during review",
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewer_notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "article_id",
+          "reviewer_notes"
+        ]
+      },
+      "transport": {
+        "path": [
+          {
+            "name": "article_id",
+            "sourceName": "article_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          }
+        ]
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "cap_request_article_revision_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_request_article_revision_precondition_failed",
+        "status": 412,
+        "source": "precondition"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_request_article_revision_idempotency_conflict",
+        "status": 409,
+        "source": "idempotency"
+      }
+    ]
+  },
+  "cap_update_article": {
+    "type": "api_contract_graph",
+    "capability": {
+      "id": "cap_update_article",
+      "name": "Update Article",
+      "description": "Updates an article draft or submits it for review"
+    },
+    "endpoint": {
+      "type": "api_endpoint",
+      "operationId": "cap_update_article",
+      "method": "PATCH",
+      "path": "/articles/:id",
+      "successStatus": 200,
+      "auth": "user",
+      "requestPlacement": "body",
+      "projection": {
+        "id": "proj_api",
+        "name": "API"
+      },
+      "preconditions": [
+        {
+          "header": "If-Match",
+          "required": true,
+          "error": 412,
+          "source": "updated_at",
+          "code": "cap_update_article_precondition_failed"
+        }
+      ],
+      "idempotency": [],
+      "cache": [],
+      "delete": [],
+      "async": [],
+      "status": [],
+      "download": [],
+      "authz": [
+        {
+          "role": null,
+          "permission": "articles.submit",
+          "ownership": "owner_or_admin"
+        }
+      ],
+      "callbacks": [],
+      "actors": [
+        {
+          "type": "api_actor",
+          "id": "actor_author",
+          "kind": "actor",
+          "order": 0
+        }
+      ]
+    },
+    "requestContract": {
+      "type": "api_request_contract",
+      "shape": {
+        "id": "shape_input_update_article",
+        "name": "Update Article Input"
+      },
+      "fields": [
+        {
+          "name": "article_id",
+          "sourceName": "article_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "needs_revision",
+              "approved",
+              "rejected"
+            ]
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        }
+      ],
+      "required": [
+        "article_id"
+      ],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_input_update_article",
+        "title": "Update Article Input",
+        "description": "Input for editing an article draft or submitting it for review",
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "needs_revision",
+              "approved",
+              "rejected"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "article_id"
+        ]
+      },
+      "transport": {
+        "path": [
+          {
+            "name": "article_id",
+            "sourceName": "article_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "submitted",
+                "needs_revision",
+                "approved",
+                "rejected"
+              ]
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          }
+        ]
+      }
+    },
+    "responseContract": {
+      "type": "api_response_contract",
+      "shape": {
+        "id": "shape_output_article_detail",
+        "name": "Article Detail"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "sourceName": "id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "sourceName": "title",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "sourceName": "description",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "sourceName": "status",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "reviewer_id",
+          "sourceName": "reviewer_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_id"
+          }
+        },
+        {
+          "name": "publication_id",
+          "sourceName": "publication_id",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "publication_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "sourceName": "created_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "sourceName": "updated_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "submitted_at",
+          "sourceName": "submitted_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "submitted_at"
+          }
+        },
+        {
+          "name": "revision_requested_at",
+          "sourceName": "revision_requested_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "revision_requested_at"
+          }
+        },
+        {
+          "name": "approved_at",
+          "sourceName": "approved_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "approved_at"
+          }
+        },
+        {
+          "name": "rejected_at",
+          "sourceName": "rejected_at",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "rejected_at"
+          }
+        },
+        {
+          "name": "reviewer_notes",
+          "sourceName": "reviewer_notes",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "reviewer_notes"
+          }
+        },
+        {
+          "name": "category",
+          "sourceName": "category",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "transport": {
+            "location": "body",
+            "wireName": "category"
+          }
+        }
+      ],
+      "required": [],
+      "jsonSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_article_detail",
+        "title": "Article Detail",
+        "description": "Detailed article view including review decisions",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "title": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "description": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "status": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "publication_id": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "created_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "updated_at": {
+            "type": "string",
+            "x-topogram-type": "required"
+          },
+          "submitted_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "revision_requested_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "approved_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "rejected_at": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          },
+          "category": {
+            "type": "string",
+            "x-topogram-type": "optional"
+          }
+        },
+        "additionalProperties": false
+      },
+      "mode": "item",
+      "collection": false,
+      "itemJsonSchema": null,
+      "pagination": null,
+      "transport": {
+        "path": [],
+        "query": [],
+        "header": [],
+        "body": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "reviewer_id",
+            "sourceName": "reviewer_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "sourceName": "publication_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "publication_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "required"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "revision_requested_at",
+            "sourceName": "revision_requested_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "revision_requested_at"
+            }
+          },
+          {
+            "name": "approved_at",
+            "sourceName": "approved_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "approved_at"
+            }
+          },
+          {
+            "name": "rejected_at",
+            "sourceName": "rejected_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "rejected_at"
+            }
+          },
+          {
+            "name": "reviewer_notes",
+            "sourceName": "reviewer_notes",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "reviewer_notes"
+            }
+          },
+          {
+            "name": "category",
+            "sourceName": "category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-topogram-type": "optional"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "category"
+            }
+          }
+        ]
+      }
+    },
+    "policy": [
+      {
+        "type": "api_policy_constraint",
+        "rule": {
+          "id": "rule_only_active_users_may_review_articles",
+          "name": "Only active users may review articles"
+        },
+        "requirement": {
+          "type": "comparison",
+          "left": "reviewer.is_active",
+          "operator": "==",
+          "right": {
+            "kind": "symbol",
+            "value": "true"
+          },
+          "raw": "reviewer.is_active == true"
+        },
+        "condition": null,
+        "severity": "error"
+      }
+    ],
+    "errors": [
+      {
+        "type": "api_error_case",
+        "code": "rule_only_active_users_may_review_articles",
+        "status": 400,
+        "source": "policy"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_update_article_invalid_request",
+        "status": 400,
+        "source": "request_contract"
+      },
+      {
+        "type": "api_error_case",
+        "code": "cap_update_article_precondition_failed",
+        "status": 412,
+        "source": "precondition"
+      }
+    ]
+  }
+}

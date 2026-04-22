@@ -1,0 +1,44 @@
+projection proj_ui_web {
+  name "Issues Web UI"
+  description "Web realization for the shared Issues UI using a React profile"
+
+  platform ui_web
+  realizes [
+    proj_ui_shared,
+    cap_list_issues,
+    cap_get_issue,
+    cap_create_issue,
+    cap_update_issue,
+    cap_close_issue
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen issue_list path /issues
+    screen issue_detail path /issues/:id
+    screen issue_create path /issues/new
+    screen issue_edit path /issues/:id/edit
+  }
+
+  ui_web {
+    screen issue_list shell menu_bar
+    screen issue_list layout responsive_collection
+    screen issue_list desktop_variant data_grid
+    screen issue_list mobile_variant cards
+    screen issue_list collection data_grid
+    screen issue_detail breadcrumbs visible
+    screen issue_detail layout detail_page
+    screen issue_create present sheet
+    screen issue_edit present page
+    action cap_close_issue present button
+    action cap_close_issue placement footer
+  }
+
+  generator_defaults {
+    profile react
+    language typescript
+    styling css
+  }
+
+  status active
+}

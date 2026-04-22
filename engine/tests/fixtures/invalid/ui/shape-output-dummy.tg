@@ -1,0 +1,11 @@
+shape shape_output_dummy {
+  name "Dummy Output"
+  description "Output for invalid UI tests"
+
+  fields {
+    id uuid required
+    created_at datetime required
+  }
+
+  status active
+}

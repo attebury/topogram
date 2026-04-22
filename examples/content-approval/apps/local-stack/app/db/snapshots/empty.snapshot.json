@@ -1,0 +1,17 @@
+{
+  "type": "db_schema_snapshot",
+  "projection": {
+    "id": "proj_db_sqlite",
+    "name": "Content Approval SQLite DB",
+    "platform": "db_sqlite"
+  },
+  "profile": "sqlite_sql",
+  "generatorDefaults": {
+    "profile": "sqlite_sql",
+    "language": "sql",
+    "styling": "css"
+  },
+  "engine": "sqlite",
+  "enums": [],
+  "tables": []
+}

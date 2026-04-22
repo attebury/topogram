@@ -1,0 +1,13 @@
+shape shape_input_export_tasks {
+  name "Export Tasks Input"
+  description "Filters accepted when requesting a task export"
+
+  fields {
+    project_id uuid optional
+    owner_id uuid optional
+    status task_status optional
+    callback_url text optional
+  }
+
+  status active
+}

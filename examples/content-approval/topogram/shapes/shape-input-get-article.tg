@@ -1,0 +1,10 @@
+shape shape_input_get_article {
+  name "Get Article Input"
+  description "Input for fetching a single article"
+
+  fields {
+    article_id uuid required
+  }
+
+  status active
+}

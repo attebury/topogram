@@ -1,0 +1,17 @@
+{
+  "$id": "topogram:shape:shape_input_get_task_export_job",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input for fetching task export job status",
+  "properties": {
+    "job_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id"
+  ],
+  "title": "Get Task Export Job Input",
+  "type": "object"
+}

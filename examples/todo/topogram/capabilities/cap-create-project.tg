@@ -1,0 +1,11 @@
+capability cap_create_project {
+  name "Create Project"
+  description "Allows a user to create a new project"
+
+  actors [actor_user]
+  creates [entity_project]
+  input [shape_input_create_project]
+  output [shape_output_project_detail]
+
+  status active
+}

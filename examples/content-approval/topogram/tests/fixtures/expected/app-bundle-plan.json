@@ -1,0 +1,194 @@
+{
+  "commands": {
+    "bootstrap": "./scripts/bootstrap.sh",
+    "compile": "./scripts/compile-check.sh",
+    "deployCheck": "./scripts/deploy-check.sh",
+    "dev": "./scripts/dev.sh",
+    "runtimeCheck": "./scripts/runtime-check.sh",
+    "smoke": "./scripts/smoke.sh"
+  },
+  "layout": {
+    "app": "app",
+    "compile": "compile",
+    "deploy": "deploy",
+    "runtimeCheck": "runtime-check",
+    "smoke": "smoke"
+  },
+  "name": "Topogram Content Approval App Bundle",
+  "profiles": {
+    "deployment": "fly_io",
+    "environment": "local_process"
+  },
+  "projections": {
+    "api": "proj_api",
+    "db": "proj_db_sqlite",
+    "ui": "proj_ui_web"
+  },
+  "runtimeReference": {
+    "appBundle": {
+      "demoContainerName": "Editorial Desk",
+      "demoPrimaryTitle": "Seeded Demo Article",
+      "name": "Topogram Content Approval App Bundle"
+    },
+    "compileCheck": {
+      "name": "Content Approval Generated Compile Checks"
+    },
+    "demoEnv": {
+      "containerId": "52222222-2222-4222-8222-222222222222",
+      "primaryId": "53333333-3333-4333-8333-333333333333",
+      "userId": "51111111-1111-4111-8111-111111111111"
+    },
+    "environment": {
+      "databaseName": "topogram_content_approval",
+      "envExample": "TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256\nTOPOGRAM_AUTH_JWT_SECRET=topogram-content-approval-jwt-secret\nTOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nTOPOGRAM_AUTH_TOKEN_NO_REVIEWER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOmZhbHNlfQ.pOaYZU9DX1_F84ZKJg_7b_QmtHjvHo7sIao-Nfwg5Js\nPUBLIC_TOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nPUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nPUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222\nTOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nTOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222",
+      "name": "Content Approval Local Runtime Stack"
+    },
+    "localDbProjectionId": "proj_db_sqlite",
+    "ports": {
+      "server": 3002,
+      "web": 5175
+    },
+    "runtimeCheck": {
+      "bundleTitle": "Content Approval Runtime Check Bundle",
+      "demoContainerEnvVar": "TOPOGRAM_DEMO_CONTAINER_ID",
+      "demoPrimaryEnvVar": "TOPOGRAM_DEMO_PRIMARY_ID",
+      "lookupPaths": {
+        "publication": "/lookups/publications",
+        "user": "/lookups/users"
+      },
+      "name": "Content Approval Runtime Check Plan",
+      "notes": [
+        "This example uses the generated bearer_jwt_hs256 auth profile so review claims travel through API and UI proof paths.",
+        "Browser checks prove reviewer-only article actions are visible with the reviewer claim and hidden without it.",
+        "Runtime checks verify a valid signed token without the reviewer claim is rejected with 403.",
+        "Mutating checks create, update, request revision for, approve, and reject runtime-check articles.",
+        "Runtime checks also verify the generated publication and reviewer lookup endpoints.",
+        "Later stages are skipped if environment readiness fails.",
+        "The generated server exposes both `/health` and `/ready`.",
+        "Use the smoke bundle for a faster minimal confidence check.",
+        "Use this runtime-check bundle for richer staged verification and JSON reporting."
+      ],
+      "requiredEnv": [
+        "TOPOGRAM_API_BASE_URL",
+        "TOPOGRAM_WEB_BASE_URL",
+        "TOPOGRAM_AUTH_PROFILE",
+        "TOPOGRAM_AUTH_JWT_SECRET",
+        "TOPOGRAM_AUTH_TOKEN",
+        "TOPOGRAM_AUTH_TOKEN_NO_REVIEWER",
+        "TOPOGRAM_DEMO_CONTAINER_ID",
+        "TOPOGRAM_DEMO_PRIMARY_ID"
+      ],
+      "stageNotes": [
+        {
+          "id": "environment",
+          "summary": "required env, browser-visible reviewer actions, web readiness, API health, API readiness, and DB-backed seeded article lookup"
+        },
+        {
+          "id": "api",
+          "summary": "article creation, review submission, request-revision, claim-gated approval, rejection, lookup endpoints, and negative cases"
+        }
+      ],
+      "verification": {
+        "methods": [
+          "runtime"
+        ],
+        "scenarios": [
+          {
+            "id": "create_article_in_draft",
+            "label": "create article in draft"
+          },
+          {
+            "id": "request_revision_for_submitted_article",
+            "label": "request revision for submitted article"
+          },
+          {
+            "id": "resubmit_article_after_revision_requested",
+            "label": "resubmit article after revision requested"
+          },
+          {
+            "id": "reject_approval_without_precondition",
+            "label": "reject approval without precondition"
+          },
+          {
+            "id": "approve_submitted_article",
+            "label": "approve submitted article"
+          },
+          {
+            "id": "reject_submitted_article",
+            "label": "reject submitted article"
+          }
+        ],
+        "sources": [
+          {
+            "id": "ver_article_review_flow",
+            "method": "runtime",
+            "name": "Article review flow",
+            "validates": [
+              "cap_create_article",
+              "cap_get_article",
+              "cap_list_articles",
+              "cap_update_article",
+              "cap_request_article_revision",
+              "cap_approve_article",
+              "cap_reject_article"
+            ]
+          }
+        ]
+      }
+    },
+    "serviceName": "topogram-content-approval-server",
+    "smoke": {
+      "bundleTitle": "Content Approval Runtime Smoke Bundle",
+      "createPath": "/articles",
+      "createPayload": {
+        "containerField": "publication_id",
+        "extraFields": {
+          "category": "smoke"
+        },
+        "title": "Smoke Test Article"
+      },
+      "defaultContainerEnvVar": "TOPOGRAM_DEMO_CONTAINER_ID",
+      "expectText": "Articles",
+      "getPathPrefix": "/articles/",
+      "listPath": "/articles",
+      "name": "Content Approval Runtime Smoke Plan",
+      "verification": {
+        "methods": [
+          "smoke"
+        ],
+        "scenarios": [
+          {
+            "id": "articles_page_responds",
+            "label": "articles page responds"
+          },
+          {
+            "id": "create_article_smoke",
+            "label": "create article smoke"
+          },
+          {
+            "id": "get_created_article_smoke",
+            "label": "get created article smoke"
+          },
+          {
+            "id": "list_articles_smoke",
+            "label": "list articles smoke"
+          }
+        ],
+        "sources": [
+          {
+            "id": "ver_runtime_smoke",
+            "method": "smoke",
+            "name": "Content approval runtime smoke",
+            "validates": [
+              "cap_create_article",
+              "cap_get_article",
+              "cap_list_articles"
+            ]
+          }
+        ]
+      },
+      "webPath": "/articles"
+    }
+  },
+  "type": "app_bundle_plan"
+}

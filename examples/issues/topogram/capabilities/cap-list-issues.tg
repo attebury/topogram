@@ -1,0 +1,13 @@
+capability cap_list_issues {
+  name "List Issues"
+  description "Lists issues with optional filters"
+
+  actors [actor_user]
+
+  reads [entity_issue]
+
+  input [shape_input_list_issues]
+  output [shape_output_issue_detail]
+
+  status active
+}

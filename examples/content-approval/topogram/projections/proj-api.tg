@@ -1,0 +1,92 @@
+projection proj_api {
+  name "API"
+  description "HTTP API realization for Content Approval"
+  platform dotnet
+
+  realizes [cap_create_article, cap_get_article, cap_update_article, cap_request_article_revision, cap_approve_article, cap_reject_article, cap_list_articles]
+  outputs [database_schema, entity_models, request_contracts, response_contracts, validation_handlers, endpoints]
+
+  http {
+    cap_create_article method POST path /articles success 201 auth user request body
+    cap_get_article method GET path /articles/:id success 200 auth user request path
+    cap_update_article method PATCH path /articles/:id success 200 auth user request body
+    cap_request_article_revision method POST path /articles/:id/request-revision success 200 auth manager request body
+    cap_approve_article method POST path /articles/:id/approve success 200 auth manager request body
+    cap_reject_article method POST path /articles/:id/reject success 200 auth manager request body
+    cap_list_articles method GET path /articles success 200 auth user request query
+  }
+
+  http_errors {
+    cap_create_article rule_no_article_creation_in_archived_publication 409
+    cap_create_article cap_create_article_invalid_request 400
+    cap_get_article cap_get_article_not_found 404
+    cap_request_article_revision cap_request_article_revision_invalid_request 400
+  }
+
+  http_fields {
+    cap_create_article input title in body
+    cap_create_article input description in body
+    cap_create_article input reviewer_id in body
+    cap_create_article input publication_id in body
+    cap_create_article input category in body
+
+    cap_get_article input article_id in path as id
+
+    cap_update_article input article_id in path as id
+    cap_update_article input title in body
+    cap_update_article input description in body
+    cap_update_article input reviewer_id in body
+    cap_update_article input category in body
+    cap_update_article input status in body
+
+    cap_request_article_revision input article_id in path as id
+    cap_request_article_revision input revision_requested_at in body
+    cap_request_article_revision input reviewer_notes in body
+
+    cap_approve_article input article_id in path as id
+    cap_approve_article input approved_at in body
+    cap_approve_article input reviewer_notes in body
+
+    cap_reject_article input article_id in path as id
+    cap_reject_article input rejected_at in body
+    cap_reject_article input reviewer_notes in body
+
+    cap_list_articles input publication_id in query
+    cap_list_articles input reviewer_id in query
+    cap_list_articles input status in query
+  }
+
+  http_responses {
+    cap_list_articles mode cursor item shape_output_article_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
+  }
+
+  http_preconditions {
+    cap_update_article header If-Match required true error 412 source updated_at code cap_update_article_precondition_failed
+    cap_request_article_revision header If-Match required true error 412 source updated_at code cap_request_article_revision_precondition_failed
+    cap_approve_article header If-Match required true error 412 source updated_at code cap_approve_article_precondition_failed
+    cap_reject_article header If-Match required true error 412 source updated_at code cap_reject_article_precondition_failed
+  }
+
+  http_idempotency {
+    cap_create_article header Idempotency-Key required true error 409 code cap_create_article_idempotency_conflict
+    cap_request_article_revision header Idempotency-Key required true error 409 code cap_request_article_revision_idempotency_conflict
+    cap_approve_article header Idempotency-Key required true error 409 code cap_approve_article_idempotency_conflict
+    cap_reject_article header Idempotency-Key required true error 409 code cap_reject_article_idempotency_conflict
+  }
+
+  http_cache {
+    cap_get_article response_header ETag request_header If-None-Match required false not_modified 304 source updated_at code cap_get_article_not_modified
+  }
+
+  http_authz {
+    cap_create_article permission articles.create
+    cap_get_article ownership owner_or_admin
+    cap_update_article ownership owner_or_admin permission articles.submit
+    cap_request_article_revision permission articles.request_revision claim reviewer claim_value true
+    cap_approve_article permission articles.approve claim reviewer claim_value true
+    cap_reject_article permission articles.reject claim reviewer claim_value true
+    cap_list_articles permission articles.read
+  }
+
+  status active
+}

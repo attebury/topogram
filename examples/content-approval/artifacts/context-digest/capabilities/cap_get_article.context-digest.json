@@ -1,0 +1,97 @@
+{
+  "dependencies": {
+    "entities": [
+      "entity_article"
+    ],
+    "shapes": [
+      "shape_input_get_article",
+      "shape_output_article_detail"
+    ]
+  },
+  "focus": {
+    "id": "cap_get_article",
+    "kind": "capability"
+  },
+  "journeys": [
+    "article_resubmission_after_review"
+  ],
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "projections": [
+    "proj_api",
+    "proj_ui_shared",
+    "proj_ui_web",
+    "proj_ui_web_sveltekit"
+  ],
+  "summary": {
+    "actors": [
+      "actor_author"
+    ],
+    "creates": [],
+    "deletes": [],
+    "description": "Fetches a single article",
+    "id": "cap_get_article",
+    "input": [
+      "shape_input_get_article"
+    ],
+    "kind": "capability",
+    "name": "Get Article",
+    "output": [
+      "shape_output_article_detail"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "reads": [
+      "entity_article"
+    ],
+    "reviewBoundary": {
+      "automation_class": "safe",
+      "reasons": [
+        "read_only_surface"
+      ]
+    },
+    "roles": [
+      "role_author"
+    ],
+    "updates": []
+  },
+  "type": "context_digest",
+  "verifications": [
+    "ver_article_review_flow",
+    "ver_runtime_smoke"
+  ],
+  "version": 1,
+  "workflows": []
+}

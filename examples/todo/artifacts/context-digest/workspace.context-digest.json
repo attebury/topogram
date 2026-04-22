@@ -1,0 +1,130 @@
+{
+  "focus": {
+    "id": "workspace",
+    "kind": "workspace"
+  },
+  "inventory": {
+    "capabilities": [
+      "cap_complete_task",
+      "cap_create_project",
+      "cap_create_task",
+      "cap_create_user",
+      "cap_delete_task",
+      "cap_download_task_export",
+      "cap_export_tasks",
+      "cap_get_project",
+      "cap_get_task",
+      "cap_get_task_export_job",
+      "cap_get_user",
+      "cap_list_projects",
+      "cap_list_tasks",
+      "cap_list_users",
+      "cap_update_project",
+      "cap_update_task",
+      "cap_update_user"
+    ],
+    "entities": [
+      "entity_project",
+      "entity_task",
+      "entity_user"
+    ],
+    "journeys": [
+      "task_creation_and_ownership"
+    ],
+    "projections": [
+      "proj_api",
+      "proj_db_postgres",
+      "proj_db_sqlite",
+      "proj_ui_shared",
+      "proj_ui_web",
+      "proj_ui_web_react"
+    ],
+    "verifications": [
+      "ver_create_task_policy",
+      "ver_runtime_smoke",
+      "ver_task_runtime_flow"
+    ],
+    "workflows": []
+  },
+  "maintained_boundary_pointer": "maintained-boundary.context.json",
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "pointers": {
+    "capabilities": [
+      "capabilities/cap_complete_task.context-digest.json",
+      "capabilities/cap_create_project.context-digest.json",
+      "capabilities/cap_create_task.context-digest.json",
+      "capabilities/cap_create_user.context-digest.json",
+      "capabilities/cap_delete_task.context-digest.json",
+      "capabilities/cap_download_task_export.context-digest.json",
+      "capabilities/cap_export_tasks.context-digest.json",
+      "capabilities/cap_get_project.context-digest.json",
+      "capabilities/cap_get_task.context-digest.json",
+      "capabilities/cap_get_task_export_job.context-digest.json",
+      "capabilities/cap_get_user.context-digest.json",
+      "capabilities/cap_list_projects.context-digest.json",
+      "capabilities/cap_list_tasks.context-digest.json",
+      "capabilities/cap_list_users.context-digest.json",
+      "capabilities/cap_update_project.context-digest.json",
+      "capabilities/cap_update_task.context-digest.json",
+      "capabilities/cap_update_user.context-digest.json"
+    ],
+    "entities": [
+      "entities/entity_project.context-digest.json",
+      "entities/entity_task.context-digest.json",
+      "entities/entity_user.context-digest.json"
+    ],
+    "journeys": [
+      "journeys/task_creation_and_ownership.context-digest.json"
+    ],
+    "maintained_boundary": "maintained-boundary.context.json",
+    "projections": [
+      "projections/proj_api.context-digest.json",
+      "projections/proj_db_postgres.context-digest.json",
+      "projections/proj_db_sqlite.context-digest.json",
+      "projections/proj_ui_shared.context-digest.json",
+      "projections/proj_ui_web.context-digest.json",
+      "projections/proj_ui_web_react.context-digest.json"
+    ],
+    "workflows": []
+  },
+  "review_boundary": {
+    "automation_class": "manual_decision",
+    "reasons": [
+      "workspace_requires_scoped_review"
+    ]
+  },
+  "type": "context_digest",
+  "version": 1,
+  "workspace": {
+    "counts": {
+      "actor": 2,
+      "capability": 17,
+      "decision": 1,
+      "entity": 3,
+      "enum": 4,
+      "operation": 1,
+      "projection": 6,
+      "rule": 2,
+      "shape": 25,
+      "verification": 3
+    },
+    "root": "/Users/attebury/Documents/topogram/examples/todo/topogram"
+  }
+}

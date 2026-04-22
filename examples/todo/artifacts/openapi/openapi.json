@@ -1,0 +1,1618 @@
+{
+  "components": {
+    "responses": {
+      "CapCompleteTaskIdempotencyConflictErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCompleteTaskIdempotencyConflictError"
+            }
+          }
+        },
+        "description": "Cap Complete Task Idempotency Conflict (409)"
+      },
+      "CapCompleteTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCompleteTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Complete Task Invalid Request (400)"
+      },
+      "CapCompleteTaskPreconditionFailedErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCompleteTaskPreconditionFailedError"
+            }
+          }
+        },
+        "description": "Cap Complete Task Precondition Failed (412)"
+      },
+      "CapCreateTaskIdempotencyConflictErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateTaskIdempotencyConflictError"
+            }
+          }
+        },
+        "description": "Cap Create Task Idempotency Conflict (409)"
+      },
+      "CapCreateTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Create Task Invalid Request (400)"
+      },
+      "CapDeleteTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDeleteTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Delete Task Invalid Request (400)"
+      },
+      "CapDeleteTaskNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDeleteTaskNotFoundError"
+            }
+          }
+        },
+        "description": "Cap Delete Task Not Found (404)"
+      },
+      "CapDeleteTaskPreconditionFailedErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDeleteTaskPreconditionFailedError"
+            }
+          }
+        },
+        "description": "Cap Delete Task Precondition Failed (412)"
+      },
+      "CapDownloadTaskExportInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDownloadTaskExportInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Download Task Export Invalid Request (400)"
+      },
+      "CapDownloadTaskExportNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDownloadTaskExportNotFoundError"
+            }
+          }
+        },
+        "description": "Cap Download Task Export Not Found (404)"
+      },
+      "CapDownloadTaskExportNotReadyErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapDownloadTaskExportNotReadyError"
+            }
+          }
+        },
+        "description": "Cap Download Task Export Not Ready (409)"
+      },
+      "CapExportTasksInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapExportTasksInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Export Tasks Invalid Request (400)"
+      },
+      "CapGetTaskExportJobInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskExportJobInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Get Task Export Job Invalid Request (400)"
+      },
+      "CapGetTaskExportJobNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskExportJobNotFoundError"
+            }
+          }
+        },
+        "description": "Cap Get Task Export Job Not Found (404)"
+      },
+      "CapGetTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Get Task Invalid Request (400)"
+      },
+      "CapGetTaskNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetTaskNotFoundError"
+            }
+          }
+        },
+        "description": "Cap Get Task Not Found (404)"
+      },
+      "CapListTasksInvalidCursorErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListTasksInvalidCursorError"
+            }
+          }
+        },
+        "description": "Cap List Tasks Invalid Cursor (400)"
+      },
+      "CapListTasksInvalidLimitErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListTasksInvalidLimitError"
+            }
+          }
+        },
+        "description": "Cap List Tasks Invalid Limit (400)"
+      },
+      "CapListTasksInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListTasksInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap List Tasks Invalid Request (400)"
+      },
+      "CapUpdateTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapUpdateTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Update Task Invalid Request (400)"
+      },
+      "CapUpdateTaskPreconditionFailedErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapUpdateTaskPreconditionFailedError"
+            }
+          }
+        },
+        "description": "Cap Update Task Precondition Failed (412)"
+      },
+      "RuleNoTaskCreationInArchivedProjectErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleNoTaskCreationInArchivedProjectError"
+            }
+          }
+        },
+        "description": "Rule No Task Creation In Archived Project (409)"
+      },
+      "RuleOnlyActiveUsersMayOwnTasksErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleOnlyActiveUsersMayOwnTasksError"
+            }
+          }
+        },
+        "description": "Rule Only Active Users May Own Tasks (400)"
+      }
+    },
+    "schemas": {
+      "CapCompleteTaskIdempotencyConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_complete_task_idempotency_conflict",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Complete Task Idempotency Conflict"
+      },
+      "CapCompleteTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_complete_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Complete Task Invalid Request"
+      },
+      "CapCompleteTaskPreconditionFailedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_complete_task_precondition_failed",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Complete Task Precondition Failed"
+      },
+      "CapCreateTaskIdempotencyConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_create_task_idempotency_conflict",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Create Task Idempotency Conflict"
+      },
+      "CapCreateTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_create_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Create Task Invalid Request"
+      },
+      "CapDeleteTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_delete_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Delete Task Invalid Request"
+      },
+      "CapDeleteTaskNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_delete_task_not_found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Delete Task Not Found"
+      },
+      "CapDeleteTaskPreconditionFailedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_delete_task_precondition_failed",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Delete Task Precondition Failed"
+      },
+      "CapDownloadTaskExportInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_download_task_export_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Download Task Export Invalid Request"
+      },
+      "CapDownloadTaskExportNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_download_task_export_not_found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Download Task Export Not Found"
+      },
+      "CapDownloadTaskExportNotReadyError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_download_task_export_not_ready",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Download Task Export Not Ready"
+      },
+      "CapExportTasksInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_export_tasks_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Export Tasks Invalid Request"
+      },
+      "CapGetTaskExportJobInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_export_job_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Export Job Invalid Request"
+      },
+      "CapGetTaskExportJobNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_export_job_not_found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Export Job Not Found"
+      },
+      "CapGetTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Invalid Request"
+      },
+      "CapGetTaskNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_get_task_not_found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Get Task Not Found"
+      },
+      "CapListTasksInvalidCursorError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_list_tasks_invalid_cursor",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap List Tasks Invalid Cursor"
+      },
+      "CapListTasksInvalidLimitError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_list_tasks_invalid_limit",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap List Tasks Invalid Limit"
+      },
+      "CapListTasksInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_list_tasks_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap List Tasks Invalid Request"
+      },
+      "CapUpdateTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_update_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Update Task Invalid Request"
+      },
+      "CapUpdateTaskPreconditionFailedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_update_task_precondition_failed",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Update Task Precondition Failed"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "RuleNoTaskCreationInArchivedProjectError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "rule_no_task_creation_in_archived_project",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Rule No Task Creation In Archived Project"
+      },
+      "RuleOnlyActiveUsersMayOwnTasksError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "rule_only_active_users_may_own_tasks",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Rule Only Active Users May Own Tasks"
+      },
+      "ShapeInputCompleteTaskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShapeInputCreateTaskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "due_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "project_id"
+        ],
+        "type": "object"
+      },
+      "ShapeInputExportTasksRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "callback_url": {
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "archived"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShapeInputUpdateTaskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "due_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShapeOutputTaskDetailCursorPageResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "type": "object"
+      },
+      "ShapeOutputTaskDetailResponse": {
+        "$id": "topogram:shape:shape_output_task_detail",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Detailed task payload",
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "due_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Task Detail Output",
+        "type": "object"
+      },
+      "ShapeOutputTaskExportCallbackResponse": {
+        "$id": "topogram:shape:shape_output_task_export_callback",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Outbound webhook payload sent when a task export completes",
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "running",
+              "completed",
+              "failed",
+              "expired"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status"
+        ],
+        "title": "Task Export Callback",
+        "type": "object"
+      },
+      "ShapeOutputTaskExportJobResponse": {
+        "$id": "topogram:shape:shape_output_task_export_job",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Accepted job payload for long-running task exports",
+        "properties": {
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "accepted",
+            "type": "string"
+          },
+          "status_url": {
+            "type": "string"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "status_url",
+          "submitted_at"
+        ],
+        "title": "Task Export Job",
+        "type": "object"
+      },
+      "ShapeOutputTaskExportStatusResponse": {
+        "$id": "topogram:shape:shape_output_task_export_status",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Status payload for long-running task export jobs",
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "accepted",
+            "enum": [
+              "accepted",
+              "running",
+              "completed",
+              "failed",
+              "expired"
+            ],
+            "type": "string"
+          },
+          "status_url": {
+            "type": "string"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "status_url",
+          "submitted_at"
+        ],
+        "title": "Task Export Status",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Topogram API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/task-exports/{job_id}": {
+      "get": {
+        "description": "Fetches the current status of a task export job",
+        "operationId": "cap_get_task_export_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskExportStatusResponse"
+                }
+              }
+            },
+            "description": "Success",
+            "links": {
+              "cap_download_task_exportDownload": {
+                "description": "Use cap_download_task_export when the job is complete",
+                "operationId": "cap_download_task_export",
+                "parameters": {
+                  "job_id": "$response.body#/job_id"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapGetTaskExportJobInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapGetTaskExportJobNotFoundErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get Task Export Job",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin",
+            "permission": "tasks.export.read"
+          }
+        ]
+      }
+    },
+    "/task-exports/{job_id}/download": {
+      "get": {
+        "description": "Downloads the completed task export artifact",
+        "operationId": "cap_download_task_export",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Success",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapDownloadTaskExportInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapDownloadTaskExportNotFoundErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/CapDownloadTaskExportNotReadyErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Download Task Export",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin",
+            "permission": "tasks.export.download"
+          }
+        ]
+      }
+    },
+    "/tasks": {
+      "get": {
+        "description": "Allows a user to list tasks",
+        "operationId": "cap_list_tasks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailCursorPageResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CapListTasksInvalidRequestError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapListTasksInvalidCursorError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapListTasksInvalidLimitError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (400)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List Tasks",
+        "x-topogram-authorization": [
+          {
+            "permission": "tasks.read"
+          }
+        ]
+      },
+      "post": {
+        "description": "Allows a user to create a new task",
+        "operationId": "cap_create_task",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputCreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleOnlyActiveUsersMayOwnTasksError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateTaskInvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (400)"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleNoTaskCreationInArchivedProjectError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateTaskIdempotencyConflictError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (409)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create Task",
+        "x-topogram-authorization": [
+          {
+            "permission": "tasks.create"
+          }
+        ]
+      }
+    },
+    "/tasks/export": {
+      "post": {
+        "callbacks": {
+          "export_completed": {
+            "{$request.body#/callback_url}": {
+              "post": {
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/ShapeOutputTaskExportCallbackResponse"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "202": {
+                    "description": "Callback accepted"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Starts an asynchronous export job for tasks",
+        "operationId": "cap_export_tasks",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputExportTasksRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskExportJobResponse"
+                }
+              }
+            },
+            "description": "Accepted",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "links": {
+              "cap_get_task_export_jobStatus": {
+                "description": "Follow cap_get_task_export_job to monitor the async job",
+                "operationId": "cap_get_task_export_job",
+                "parameters": {
+                  "job_id": "$response.body#/job_id"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapExportTasksInvalidRequestErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Export Tasks",
+        "x-topogram-authorization": [
+          {
+            "permission": "tasks.export"
+          }
+        ]
+      }
+    },
+    "/tasks/{id}": {
+      "delete": {
+        "description": "Allows a user to archive a task through the delete endpoint",
+        "operationId": "cap_delete_task",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/CapDeleteTaskInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapDeleteTaskNotFoundErrorResponse"
+          },
+          "412": {
+            "$ref": "#/components/responses/CapDeleteTaskPreconditionFailedErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete Task",
+        "x-topogram-authorization": [
+          {
+            "permission": "tasks.delete",
+            "role": "manager"
+          }
+        ]
+      },
+      "get": {
+        "description": "Allows a user to fetch a single task by id",
+        "operationId": "cap_get_task",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-None-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapGetTaskInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapGetTaskNotFoundErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get Task",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin"
+          }
+        ]
+      },
+      "patch": {
+        "description": "Allows a user to update mutable task fields",
+        "operationId": "cap_update_task",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputUpdateTaskRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleOnlyActiveUsersMayOwnTasksError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapUpdateTaskInvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (400)"
+          },
+          "412": {
+            "$ref": "#/components/responses/CapUpdateTaskPreconditionFailedErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update Task",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin",
+            "permission": "tasks.update"
+          }
+        ]
+      }
+    },
+    "/tasks/{id}/complete": {
+      "post": {
+        "description": "Allows a user to mark a task complete",
+        "operationId": "cap_complete_task",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputCompleteTaskRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/CapCompleteTaskInvalidRequestErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/CapCompleteTaskIdempotencyConflictErrorResponse"
+          },
+          "412": {
+            "$ref": "#/components/responses/CapCompleteTaskPreconditionFailedErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Complete Task",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin",
+            "permission": "tasks.complete"
+          }
+        ]
+      }
+    }
+  }
+}

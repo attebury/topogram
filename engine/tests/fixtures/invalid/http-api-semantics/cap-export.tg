@@ -1,0 +1,11 @@
+capability cap_export_tasks {
+  name "Export Tasks"
+  description "Starts export"
+
+  actors [actor_user]
+  reads [entity_task]
+  input [shape_input_export_tasks]
+  output [shape_output_task_export_job]
+
+  status active
+}

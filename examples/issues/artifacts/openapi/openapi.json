@@ -1,0 +1,969 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Topogram API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/issues/{id}/close": {
+      "post": {
+        "operationId": "cap_close_issue",
+        "summary": "Close Issue",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputIssueDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapCloseIssueInvalidRequestErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/CapCloseIssueIdempotencyConflictErrorResponse"
+          },
+          "412": {
+            "$ref": "#/components/responses/CapCloseIssuePreconditionFailedErrorResponse"
+          }
+        },
+        "description": "Marks an issue as closed",
+        "x-topogram-authorization": [
+          {
+            "permission": "issues.close",
+            "ownership": "owner_or_admin"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputCloseIssueRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/issues": {
+      "post": {
+        "operationId": "cap_create_issue",
+        "summary": "Create Issue",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputIssueDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error (400)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleOnlyActiveUsersMayBeAssignedIssuesError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateIssueInvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error (409)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleNoIssueCreationInArchivedBoardError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateIssueIdempotencyConflictError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Allows a user to create a new issue",
+        "x-topogram-authorization": [
+          {
+            "permission": "issues.create"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputCreateIssueRequest"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "cap_list_issues",
+        "summary": "List Issues",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputIssueDetailCursorPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error (400)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CapListIssuesInvalidRequestError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapListIssuesInvalidCursorError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapListIssuesInvalidLimitError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Lists issues with optional filters",
+        "x-topogram-authorization": [
+          {
+            "permission": "issues.read"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "board_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "in_progress",
+                "closed",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            }
+          }
+        ]
+      }
+    },
+    "/issues/{id}": {
+      "get": {
+        "operationId": "cap_get_issue",
+        "summary": "Get Issue",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputIssueDetailResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/CapGetIssueInvalidRequestErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/CapGetIssueNotFoundErrorResponse"
+          }
+        },
+        "description": "Loads a single issue",
+        "x-topogram-authorization": [
+          {
+            "ownership": "owner_or_admin"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "cap_update_issue",
+        "summary": "Update Issue",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputIssueDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error (400)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleOnlyActiveUsersMayBeAssignedIssuesError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapUpdateIssueInvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "412": {
+            "$ref": "#/components/responses/CapUpdateIssuePreconditionFailedErrorResponse"
+          }
+        },
+        "description": "Updates mutable issue fields",
+        "x-topogram-authorization": [
+          {
+            "permission": "issues.update",
+            "ownership": "owner_or_admin"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputUpdateIssueRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ShapeInputCloseIssueRequest": {
+        "type": "object",
+        "properties": {
+          "closed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShapeOutputIssueDetailResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "topogram:shape:shape_output_issue_detail",
+        "title": "Issue Detail Output",
+        "description": "Detailed issue payload",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "closed",
+              "archived"
+            ],
+            "default": "open"
+          },
+          "assignee_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "board_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "priority": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "status",
+          "board_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "CapCloseIssueInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_close_issue_invalid_request"
+              }
+            }
+          }
+        ],
+        "title": "Cap Close Issue Invalid Request"
+      },
+      "CapCloseIssuePreconditionFailedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_close_issue_precondition_failed"
+              }
+            }
+          }
+        ],
+        "title": "Cap Close Issue Precondition Failed"
+      },
+      "CapCloseIssueIdempotencyConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_close_issue_idempotency_conflict"
+              }
+            }
+          }
+        ],
+        "title": "Cap Close Issue Idempotency Conflict"
+      },
+      "ShapeInputCreateIssueRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assignee_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "board_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priority": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "board_id"
+        ]
+      },
+      "RuleNoIssueCreationInArchivedBoardError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "rule_no_issue_creation_in_archived_board"
+              }
+            }
+          }
+        ],
+        "title": "Rule No Issue Creation In Archived Board"
+      },
+      "RuleOnlyActiveUsersMayBeAssignedIssuesError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "rule_only_active_users_may_be_assigned_issues"
+              }
+            }
+          }
+        ],
+        "title": "Rule Only Active Users May Be Assigned Issues"
+      },
+      "CapCreateIssueInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_create_issue_invalid_request"
+              }
+            }
+          }
+        ],
+        "title": "Cap Create Issue Invalid Request"
+      },
+      "CapCreateIssueIdempotencyConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_create_issue_idempotency_conflict"
+              }
+            }
+          }
+        ],
+        "title": "Cap Create Issue Idempotency Conflict"
+      },
+      "CapGetIssueInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_get_issue_invalid_request"
+              }
+            }
+          }
+        ],
+        "title": "Cap Get Issue Invalid Request"
+      },
+      "CapGetIssueNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_get_issue_not_found"
+              }
+            }
+          }
+        ],
+        "title": "Cap Get Issue Not Found"
+      },
+      "ShapeOutputIssueDetailCursorPageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShapeOutputIssueDetailResponse"
+            }
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        }
+      },
+      "CapListIssuesInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_list_issues_invalid_request"
+              }
+            }
+          }
+        ],
+        "title": "Cap List Issues Invalid Request"
+      },
+      "CapListIssuesInvalidCursorError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_list_issues_invalid_cursor"
+              }
+            }
+          }
+        ],
+        "title": "Cap List Issues Invalid Cursor"
+      },
+      "CapListIssuesInvalidLimitError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_list_issues_invalid_limit"
+              }
+            }
+          }
+        ],
+        "title": "Cap List Issues Invalid Limit"
+      },
+      "ShapeInputUpdateIssueRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assignee_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "closed",
+              "archived"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CapUpdateIssueInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_update_issue_invalid_request"
+              }
+            }
+          }
+        ],
+        "title": "Cap Update Issue Invalid Request"
+      },
+      "CapUpdateIssuePreconditionFailedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "const": "cap_update_issue_precondition_failed"
+              }
+            }
+          }
+        ],
+        "title": "Cap Update Issue Precondition Failed"
+      }
+    },
+    "responses": {
+      "CapCloseIssueInvalidRequestErrorResponse": {
+        "description": "Cap Close Issue Invalid Request (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCloseIssueInvalidRequestError"
+            }
+          }
+        }
+      },
+      "CapCloseIssuePreconditionFailedErrorResponse": {
+        "description": "Cap Close Issue Precondition Failed (412)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCloseIssuePreconditionFailedError"
+            }
+          }
+        }
+      },
+      "CapCloseIssueIdempotencyConflictErrorResponse": {
+        "description": "Cap Close Issue Idempotency Conflict (409)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCloseIssueIdempotencyConflictError"
+            }
+          }
+        }
+      },
+      "RuleNoIssueCreationInArchivedBoardErrorResponse": {
+        "description": "Rule No Issue Creation In Archived Board (409)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleNoIssueCreationInArchivedBoardError"
+            }
+          }
+        }
+      },
+      "RuleOnlyActiveUsersMayBeAssignedIssuesErrorResponse": {
+        "description": "Rule Only Active Users May Be Assigned Issues (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleOnlyActiveUsersMayBeAssignedIssuesError"
+            }
+          }
+        }
+      },
+      "CapCreateIssueInvalidRequestErrorResponse": {
+        "description": "Cap Create Issue Invalid Request (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateIssueInvalidRequestError"
+            }
+          }
+        }
+      },
+      "CapCreateIssueIdempotencyConflictErrorResponse": {
+        "description": "Cap Create Issue Idempotency Conflict (409)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateIssueIdempotencyConflictError"
+            }
+          }
+        }
+      },
+      "CapGetIssueInvalidRequestErrorResponse": {
+        "description": "Cap Get Issue Invalid Request (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetIssueInvalidRequestError"
+            }
+          }
+        }
+      },
+      "CapGetIssueNotFoundErrorResponse": {
+        "description": "Cap Get Issue Not Found (404)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapGetIssueNotFoundError"
+            }
+          }
+        }
+      },
+      "CapListIssuesInvalidRequestErrorResponse": {
+        "description": "Cap List Issues Invalid Request (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListIssuesInvalidRequestError"
+            }
+          }
+        }
+      },
+      "CapListIssuesInvalidCursorErrorResponse": {
+        "description": "Cap List Issues Invalid Cursor (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListIssuesInvalidCursorError"
+            }
+          }
+        }
+      },
+      "CapListIssuesInvalidLimitErrorResponse": {
+        "description": "Cap List Issues Invalid Limit (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapListIssuesInvalidLimitError"
+            }
+          }
+        }
+      },
+      "CapUpdateIssueInvalidRequestErrorResponse": {
+        "description": "Cap Update Issue Invalid Request (400)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapUpdateIssueInvalidRequestError"
+            }
+          }
+        }
+      },
+      "CapUpdateIssuePreconditionFailedErrorResponse": {
+        "description": "Cap Update Issue Precondition Failed (412)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapUpdateIssuePreconditionFailedError"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+actor actor_user {
+  name "User"
+  description "Fixture actor for invalid UI tests"
+
+  status active
+}

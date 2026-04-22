@@ -1,0 +1,14 @@
+shape shape_input_create_article {
+  name "Create Article Input"
+  description "Input for creating an article draft"
+
+  fields {
+    title text required
+    description text optional
+    reviewer_id uuid optional
+    publication_id uuid required
+    category text optional
+  }
+
+  status active
+}

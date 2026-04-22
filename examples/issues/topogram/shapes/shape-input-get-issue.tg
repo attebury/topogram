@@ -1,0 +1,10 @@
+shape shape_input_get_issue {
+  name "Get Issue Input"
+  description "Input for loading a single issue"
+
+  fields {
+    issue_id uuid required
+  }
+
+  status active
+}

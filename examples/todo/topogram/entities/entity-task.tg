@@ -1,0 +1,38 @@
+entity entity_task {
+  name "Task"
+  description "A unit of work tracked in the Todo domain"
+
+  fields {
+    id uuid required
+    title string required
+    description text optional
+    status task_status required default draft
+    priority task_priority required default medium
+    owner_id uuid optional
+    project_id uuid required
+    created_at datetime required
+    updated_at datetime required
+    completed_at datetime optional
+    due_at datetime optional
+  }
+
+  keys {
+    primary [id]
+    index [project_id, status]
+    index [owner_id, status]
+  }
+
+  relations {
+    owner_id references entity_user.id
+    project_id references entity_project.id
+  }
+
+  invariants {
+    completed_at requires status == completed
+    status == active implies owner_id is required
+    status == draft implies completed_at is null
+    title length <= 200
+  }
+
+  status active
+}

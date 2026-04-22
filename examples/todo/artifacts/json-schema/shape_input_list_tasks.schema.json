@@ -1,0 +1,34 @@
+{
+  "$id": "topogram:shape:shape_input_list_tasks",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input for listing tasks",
+  "properties": {
+    "after": {
+      "type": "string"
+    },
+    "limit": {
+      "default": 25,
+      "type": "integer"
+    },
+    "owner_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "project_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "completed",
+        "archived"
+      ],
+      "type": "string"
+    }
+  },
+  "title": "List Tasks Input",
+  "type": "object"
+}

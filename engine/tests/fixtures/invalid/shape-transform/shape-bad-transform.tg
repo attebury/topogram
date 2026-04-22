@@ -1,0 +1,19 @@
+shape shape_bad_transform from entity_base {
+  name "Bad Transform"
+  description "Contains invalid rename and override usage"
+  include [title, missing_field, status]
+
+  rename {
+    missing_field headline
+    title headline
+    status headline
+  }
+
+  overrides {
+    ghost optional
+    headline default
+    title bogus active
+  }
+
+  status active
+}

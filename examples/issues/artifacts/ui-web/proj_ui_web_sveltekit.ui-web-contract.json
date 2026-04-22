@@ -1,0 +1,298 @@
+{
+  "generatorDefaults": {
+    "language": "typescript",
+    "profile": "sveltekit",
+    "styling": "css"
+  },
+  "outputs": [
+    "ui_contract",
+    "web_app"
+  ],
+  "projection": {
+    "id": "proj_ui_web_sveltekit",
+    "name": "Issues Web UI (SvelteKit)",
+    "platform": "ui_web"
+  },
+  "screens": [
+    {
+      "actionWeb": {
+        "cap_create_issue": {}
+      },
+      "actions": {
+        "destructive": null,
+        "primary": {
+          "id": "cap_create_issue",
+          "kind": "capability"
+        },
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [
+          "board_id",
+          "assignee_id",
+          "status"
+        ],
+        "pagination": "cursor",
+        "search": [],
+        "sort": [
+          {
+            "direction": "desc",
+            "field": "created_at"
+          }
+        ]
+      },
+      "detailCapability": {
+        "id": "cap_get_issue",
+        "kind": "capability"
+      },
+      "emptyState": {
+        "body": "Create an issue to get started",
+        "title": "No issues yet"
+      },
+      "id": "issue_list",
+      "inputShape": null,
+      "itemShape": {
+        "id": "shape_output_issue_card",
+        "kind": "shape"
+      },
+      "kind": "list",
+      "loadCapability": {
+        "id": "cap_list_issues",
+        "kind": "capability"
+      },
+      "lookups": [
+        {
+          "emptyLabel": "All boards",
+          "entity": {
+            "id": "entity_board",
+            "kind": "entity"
+          },
+          "field": "board_id",
+          "labelField": "name"
+        },
+        {
+          "emptyLabel": "All assignees",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "assignee_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "route": "/issues",
+      "submitCapability": null,
+      "title": "Issues",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "desktop_variant": "table",
+        "layout": "responsive_collection",
+        "mobile_variant": "cards"
+      }
+    },
+    {
+      "actionWeb": {
+        "cap_close_issue": {},
+        "cap_update_issue": {}
+      },
+      "actions": {
+        "destructive": null,
+        "primary": {
+          "id": "cap_update_issue",
+          "kind": "capability"
+        },
+        "screen": [
+          {
+            "capability": {
+              "id": "cap_close_issue",
+              "kind": "capability"
+            },
+            "prominence": "primary"
+          }
+        ],
+        "secondary": {
+          "id": "cap_close_issue",
+          "kind": "capability"
+        },
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "pagination": null,
+        "search": [],
+        "sort": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "issue_detail",
+      "inputShape": null,
+      "itemShape": null,
+      "kind": "detail",
+      "loadCapability": {
+        "id": "cap_get_issue",
+        "kind": "capability"
+      },
+      "lookups": [],
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "route": "/issues/:id",
+      "submitCapability": null,
+      "title": "Issue Details",
+      "type": "ui_screen_contract",
+      "viewShape": {
+        "id": "shape_output_issue_detail",
+        "kind": "shape"
+      },
+      "visibility": [
+        {
+          "capability": {
+            "id": "cap_update_issue",
+            "kind": "capability"
+          },
+          "predicate": "ownership",
+          "value": "owner_or_admin"
+        },
+        {
+          "capability": {
+            "id": "cap_close_issue",
+            "kind": "capability"
+          },
+          "predicate": "ownership",
+          "value": "owner_or_admin"
+        }
+      ],
+      "web": {
+        "layout": "detail_page"
+      }
+    },
+    {
+      "actionWeb": {},
+      "actions": {
+        "destructive": null,
+        "primary": null,
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "pagination": null,
+        "search": [],
+        "sort": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "issue_create",
+      "inputShape": {
+        "id": "shape_input_create_issue",
+        "kind": "shape"
+      },
+      "itemShape": null,
+      "kind": "form",
+      "loadCapability": null,
+      "lookups": [
+        {
+          "emptyLabel": null,
+          "entity": {
+            "id": "entity_board",
+            "kind": "entity"
+          },
+          "field": "board_id",
+          "labelField": "name"
+        },
+        {
+          "emptyLabel": "Unassigned",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "assignee_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": "issue_detail",
+        "successRefresh": null
+      },
+      "route": "/issues/new",
+      "submitCapability": {
+        "id": "cap_create_issue",
+        "kind": "capability"
+      },
+      "title": "Create Issue",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "present": "page"
+      }
+    },
+    {
+      "actionWeb": {},
+      "actions": {
+        "destructive": null,
+        "primary": null,
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "pagination": null,
+        "search": [],
+        "sort": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "issue_edit",
+      "inputShape": {
+        "id": "shape_input_update_issue",
+        "kind": "shape"
+      },
+      "itemShape": null,
+      "kind": "form",
+      "loadCapability": null,
+      "lookups": [
+        {
+          "emptyLabel": "Unassigned",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "assignee_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": "issue_detail",
+        "successRefresh": null
+      },
+      "route": "/issues/:id/edit",
+      "submitCapability": {
+        "id": "cap_update_issue",
+        "kind": "capability"
+      },
+      "title": "Edit Issue",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "present": "page"
+      }
+    }
+  ],
+  "sharedProjection": {
+    "id": "proj_ui_shared",
+    "name": "Issues Shared UI"
+  }
+}

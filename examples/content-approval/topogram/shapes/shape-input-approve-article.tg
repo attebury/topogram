@@ -1,0 +1,12 @@
+shape shape_input_approve_article {
+  name "Approve Article Input"
+  description "Input for approving an article under review"
+
+  fields {
+    article_id uuid required
+    approved_at datetime optional
+    reviewer_notes text optional
+  }
+
+  status active
+}

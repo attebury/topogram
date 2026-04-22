@@ -1,0 +1,76 @@
+projection proj_ui_shared {
+  name "Issues Shared UI"
+  description "Platform-neutral UI semantics for the Issues product"
+
+  platform ui_shared
+  realizes [
+    cap_list_issues,
+    cap_get_issue,
+    cap_create_issue,
+    cap_update_issue,
+    cap_close_issue
+  ]
+  outputs [ui_contract]
+
+  ui_app_shell {
+    brand "Topogram Issues"
+    shell split_view
+    global_search true
+    notifications true
+    account_menu true
+    footer legal
+    windowing multi_window
+  }
+
+  ui_screens {
+    screen issue_list kind list title "Issues" load cap_list_issues item_shape shape_output_issue_card detail_capability cap_get_issue primary_action cap_create_issue empty_title "No issues yet" empty_body "Create an issue to get started" loading_state skeleton error_state inline
+    screen issue_detail kind detail title "Issue Details" load cap_get_issue view_shape shape_output_issue_detail primary_action cap_update_issue secondary_action cap_close_issue loading_state skeleton
+    screen issue_create kind form title "Create Issue" input_shape shape_input_create_issue submit cap_create_issue success_navigate issue_detail success_state banner
+    screen issue_edit kind form title "Edit Issue" input_shape shape_input_update_issue submit cap_update_issue success_navigate issue_detail success_state banner
+  }
+
+  ui_collections {
+    screen issue_list filter board_id
+    screen issue_list filter assignee_id
+    screen issue_list filter status
+    screen issue_list pagination cursor
+    screen issue_list sort created_at desc
+    screen issue_list group status
+    screen issue_list view data_grid
+    screen issue_list refresh pull_to_refresh
+  }
+
+  ui_actions {
+    screen issue_detail action cap_close_issue prominence primary placement footer
+  }
+
+  ui_visibility {
+    action cap_update_issue visible_if ownership owner_or_admin
+    action cap_close_issue visible_if ownership owner_or_admin
+  }
+
+  ui_lookups {
+    screen issue_list field board_id entity entity_board label_field name empty_label "All boards"
+    screen issue_list field assignee_id entity entity_user label_field display_name empty_label "All assignees"
+    screen issue_create field board_id entity entity_board label_field name
+    screen issue_create field assignee_id entity entity_user label_field display_name empty_label "Unassigned"
+    screen issue_edit field assignee_id entity entity_user label_field display_name empty_label "Unassigned"
+  }
+
+  ui_navigation {
+    group work label "Work" placement primary pattern command_palette
+    screen issue_list group work label "Issues" order 10 visible true default true sitemap include pattern segmented_control
+    screen issue_create group work label "Create Issue" visible false breadcrumb issue_list sitemap exclude
+    screen issue_detail group work label "Issue Details" visible false breadcrumb issue_list sitemap exclude pattern stack_navigation
+  }
+
+  ui_screen_regions {
+    screen issue_list region toolbar pattern action_bar placement primary
+    screen issue_list region results pattern data_grid_view placement primary
+    screen issue_detail region summary pattern master_detail placement primary
+    screen issue_detail region aside pattern inspector_pane placement supporting
+    screen issue_detail region activity pattern activity_feed placement supporting
+  }
+
+  status active
+}

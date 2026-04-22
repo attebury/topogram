@@ -1,0 +1,38 @@
+name: Fast Verification
+
+on:
+  pull_request:
+    paths:
+      - "engine/**"
+      - "examples/**"
+      - "product/**"
+      - "scripts/**"
+      - "README.md"
+      - ".github/workflows/fast-verification.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "engine/**"
+      - "examples/**"
+      - "product/**"
+      - "scripts/**"
+      - "README.md"
+      - ".github/workflows/fast-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fast:
+    name: Engine semantic regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run fast verification
+        run: bash ./scripts/verify-engine.sh

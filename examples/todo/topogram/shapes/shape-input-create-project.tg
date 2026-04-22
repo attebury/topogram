@@ -1,0 +1,6 @@
+shape shape_input_create_project from entity_project {
+  name "Create Project Input"
+  description "Fields accepted when creating a project"
+  include [name, description, status, owner_id]
+  status active
+}

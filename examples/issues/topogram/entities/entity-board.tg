@@ -1,0 +1,23 @@
+entity entity_board {
+  name "Board"
+  description "A tracking board that groups issues"
+
+  fields {
+    id uuid required
+    name string required
+    description text optional
+    status board_status required default active
+    created_at datetime required
+  }
+
+  keys {
+    primary [id]
+    unique [name]
+  }
+
+  invariants {
+    name length <= 120
+  }
+
+  status active
+}

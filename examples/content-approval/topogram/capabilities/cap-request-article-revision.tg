@@ -1,0 +1,12 @@
+capability cap_request_article_revision {
+  name "Request Article Revision"
+  description "Requests revisions for an article under review"
+
+  actors [actor_manager]
+  roles [role_manager]
+  updates [entity_article]
+  input [shape_input_request_article_revision]
+  output [shape_output_article_detail]
+
+  status active
+}

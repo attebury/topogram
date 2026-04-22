@@ -1,0 +1,2462 @@
+{
+  "dependencies": {
+    "capabilities": [
+      "cap_complete_task",
+      "cap_create_project",
+      "cap_create_task",
+      "cap_create_user",
+      "cap_delete_task",
+      "cap_download_task_export",
+      "cap_export_tasks",
+      "cap_get_project",
+      "cap_get_task",
+      "cap_get_task_export_job",
+      "cap_get_user",
+      "cap_list_projects",
+      "cap_list_tasks",
+      "cap_list_users",
+      "cap_update_project",
+      "cap_update_task",
+      "cap_update_user"
+    ],
+    "projections": [
+      "proj_api"
+    ],
+    "rules": [
+      "rule_no_task_creation_in_archived_project",
+      "rule_only_active_users_may_own_tasks"
+    ],
+    "shapes": [
+      "shape_input_complete_task",
+      "shape_input_create_project",
+      "shape_input_create_task",
+      "shape_input_create_user",
+      "shape_input_delete_task",
+      "shape_input_export_tasks",
+      "shape_input_get_project",
+      "shape_input_get_task",
+      "shape_input_get_task_export_job",
+      "shape_input_get_user",
+      "shape_input_list_projects",
+      "shape_input_list_tasks",
+      "shape_input_list_users",
+      "shape_input_update_project",
+      "shape_input_update_task",
+      "shape_input_update_user",
+      "shape_output_project_detail",
+      "shape_output_task_detail",
+      "shape_output_task_export_job",
+      "shape_output_task_export_status",
+      "shape_output_user_detail"
+    ]
+  },
+  "included_surfaces": {
+    "capabilities": [
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to mark a task complete",
+        "id": "cap_complete_task",
+        "input": [
+          "shape_input_complete_task"
+        ],
+        "kind": "capability",
+        "name": "Complete Task",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": [
+          "entity_task"
+        ]
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [
+          "entity_project"
+        ],
+        "deletes": [],
+        "description": "Allows a user to create a new project",
+        "id": "cap_create_project",
+        "input": [
+          "shape_input_create_project"
+        ],
+        "kind": "capability",
+        "name": "Create Project",
+        "output": [
+          "shape_output_project_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [
+          "entity_task"
+        ],
+        "deletes": [],
+        "description": "Allows a user to create a new task",
+        "id": "cap_create_task",
+        "input": [
+          "shape_input_create_task"
+        ],
+        "kind": "capability",
+        "name": "Create Task",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project",
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [
+          "entity_user"
+        ],
+        "deletes": [],
+        "description": "Allows a user to create a new user",
+        "id": "cap_create_user",
+        "input": [
+          "shape_input_create_user"
+        ],
+        "kind": "capability",
+        "name": "Create User",
+        "output": [
+          "shape_output_user_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [
+          "entity_task"
+        ],
+        "description": "Allows a user to archive a task through the delete endpoint",
+        "id": "cap_delete_task",
+        "input": [
+          "shape_input_delete_task"
+        ],
+        "kind": "capability",
+        "name": "Delete Task",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Downloads the completed task export artifact",
+        "id": "cap_download_task_export",
+        "input": [
+          "shape_input_get_task_export_job"
+        ],
+        "kind": "capability",
+        "name": "Download Task Export",
+        "output": [],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Starts an asynchronous export job for tasks",
+        "id": "cap_export_tasks",
+        "input": [
+          "shape_input_export_tasks"
+        ],
+        "kind": "capability",
+        "name": "Export Tasks",
+        "output": [
+          "shape_output_task_export_job"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project",
+          "entity_task",
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to fetch a single project by id",
+        "id": "cap_get_project",
+        "input": [
+          "shape_input_get_project"
+        ],
+        "kind": "capability",
+        "name": "Get Project",
+        "output": [
+          "shape_output_project_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to fetch a single task by id",
+        "id": "cap_get_task",
+        "input": [
+          "shape_input_get_task"
+        ],
+        "kind": "capability",
+        "name": "Get Task",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Fetches the current status of a task export job",
+        "id": "cap_get_task_export_job",
+        "input": [
+          "shape_input_get_task_export_job"
+        ],
+        "kind": "capability",
+        "name": "Get Task Export Job",
+        "output": [
+          "shape_output_task_export_status"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to fetch a single user by id",
+        "id": "cap_get_user",
+        "input": [
+          "shape_input_get_user"
+        ],
+        "kind": "capability",
+        "name": "Get User",
+        "output": [
+          "shape_output_user_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to list projects",
+        "id": "cap_list_projects",
+        "input": [
+          "shape_input_list_projects"
+        ],
+        "kind": "capability",
+        "name": "List Projects",
+        "output": [
+          "shape_output_project_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to list tasks",
+        "id": "cap_list_tasks",
+        "input": [
+          "shape_input_list_tasks"
+        ],
+        "kind": "capability",
+        "name": "List Tasks",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project",
+          "entity_task",
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to list users",
+        "id": "cap_list_users",
+        "input": [
+          "shape_input_list_users"
+        ],
+        "kind": "capability",
+        "name": "List Users",
+        "output": [
+          "shape_output_user_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        },
+        "roles": [],
+        "updates": []
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to update mutable project fields",
+        "id": "cap_update_project",
+        "input": [
+          "shape_input_update_project"
+        ],
+        "kind": "capability",
+        "name": "Update Project",
+        "output": [
+          "shape_output_project_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_project"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": [
+          "entity_project"
+        ]
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to update mutable task fields",
+        "id": "cap_update_task",
+        "input": [
+          "shape_input_update_task"
+        ],
+        "kind": "capability",
+        "name": "Update Task",
+        "output": [
+          "shape_output_task_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_task"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": [
+          "entity_task"
+        ]
+      },
+      {
+        "actors": [
+          "actor_user"
+        ],
+        "creates": [],
+        "deletes": [],
+        "description": "Allows a user to update mutable user fields",
+        "id": "cap_update_user",
+        "input": [
+          "shape_input_update_user"
+        ],
+        "kind": "capability",
+        "name": "Update User",
+        "output": [
+          "shape_output_user_detail"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "reads": [
+          "entity_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        },
+        "roles": [],
+        "updates": [
+          "entity_user"
+        ]
+      }
+    ],
+    "projections": [
+      {
+        "dbTables": [],
+        "description": "HTTP API realization for Todo",
+        "httpCapabilities": [
+          "cap_complete_task",
+          "cap_create_project",
+          "cap_create_task",
+          "cap_create_user",
+          "cap_delete_task",
+          "cap_download_task_export",
+          "cap_export_tasks",
+          "cap_get_project",
+          "cap_get_task",
+          "cap_get_task_export_job",
+          "cap_get_user",
+          "cap_list_projects",
+          "cap_list_tasks",
+          "cap_list_users",
+          "cap_update_project",
+          "cap_update_task",
+          "cap_update_user"
+        ],
+        "id": "proj_api",
+        "kind": "projection",
+        "name": "API",
+        "outputs": [
+          "database_schema",
+          "endpoints",
+          "entity_models",
+          "request_contracts",
+          "response_contracts",
+          "validation_handlers"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "platform": "dotnet",
+        "realizes": [
+          "cap_complete_task",
+          "cap_create_project",
+          "cap_create_task",
+          "cap_create_user",
+          "cap_delete_task",
+          "cap_download_task_export",
+          "cap_export_tasks",
+          "cap_get_project",
+          "cap_get_task",
+          "cap_get_task_export_job",
+          "cap_get_user",
+          "cap_list_projects",
+          "cap_list_tasks",
+          "cap_list_users",
+          "cap_update_project",
+          "cap_update_task",
+          "cap_update_user"
+        ],
+        "reviewBoundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "api_surface"
+          ]
+        },
+        "uiScreens": []
+      }
+    ],
+    "rules": [
+      {
+        "actors": [],
+        "appliesTo": [
+          "cap_create_task"
+        ],
+        "description": "New tasks may not be created in archived projects",
+        "id": "rule_no_task_creation_in_archived_project",
+        "kind": "rule",
+        "name": "Cannot create tasks in archived projects",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "roles": [],
+        "severity": "error"
+      },
+      {
+        "actors": [],
+        "appliesTo": [
+          "cap_create_task",
+          "cap_update_task"
+        ],
+        "description": "A task owner must be an active user",
+        "id": "rule_only_active_users_may_own_tasks",
+        "kind": "rule",
+        "name": "Only active users may own tasks",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "roles": [],
+        "severity": "error"
+      }
+    ],
+    "shapes": [
+      {
+        "derivedFrom": [],
+        "description": "Input for marking a task complete",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "task_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "completed_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_input_complete_task",
+        "include": [],
+        "kind": "shape",
+        "name": "Complete Task Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Fields accepted when creating a project",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "name",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "active",
+            "name": "status",
+            "requiredness": "required",
+            "type": "project_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_create_project",
+        "include": [
+          "description",
+          "name",
+          "owner_id",
+          "status"
+        ],
+        "kind": "shape",
+        "name": "Create Project Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Fields accepted when creating a task",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "title",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "medium",
+            "name": "priority",
+            "requiredness": "required",
+            "type": "task_priority"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "due_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_input_create_task",
+        "include": [
+          "description",
+          "due_at",
+          "owner_id",
+          "priority",
+          "project_id",
+          "title"
+        ],
+        "kind": "shape",
+        "name": "Create Task Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Fields accepted when creating a user",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "email",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "display_name",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": "true",
+            "name": "is_active",
+            "requiredness": "required",
+            "type": "boolean"
+          }
+        ],
+        "id": "shape_input_create_user",
+        "include": [
+          "display_name",
+          "email",
+          "is_active"
+        ],
+        "kind": "shape",
+        "name": "Create User Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for deleting a task",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "task_id",
+            "requiredness": "required",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_delete_task",
+        "include": [],
+        "kind": "shape",
+        "name": "Delete Task Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Filters accepted when requesting a task export",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "status",
+            "requiredness": "optional",
+            "type": "task_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "callback_url",
+            "requiredness": "optional",
+            "type": "text"
+          }
+        ],
+        "id": "shape_input_export_tasks",
+        "include": [],
+        "kind": "shape",
+        "name": "Export Tasks Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for fetching a single project",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "required",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_get_project",
+        "include": [],
+        "kind": "shape",
+        "name": "Get Project Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for fetching a single task",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "task_id",
+            "requiredness": "required",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_get_task",
+        "include": [],
+        "kind": "shape",
+        "name": "Get Task Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for fetching task export job status",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "job_id",
+            "requiredness": "required",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_get_task_export_job",
+        "include": [],
+        "kind": "shape",
+        "name": "Get Task Export Job Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for fetching a single user",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "user_id",
+            "requiredness": "required",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_get_user",
+        "include": [],
+        "kind": "shape",
+        "name": "Get User Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for listing projects",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "after",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "25",
+            "name": "limit",
+            "requiredness": "optional",
+            "type": "integer"
+          }
+        ],
+        "id": "shape_input_list_projects",
+        "include": [],
+        "kind": "shape",
+        "name": "List Projects Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for listing tasks",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "status",
+            "requiredness": "optional",
+            "type": "task_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "after",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "25",
+            "name": "limit",
+            "requiredness": "optional",
+            "type": "integer"
+          }
+        ],
+        "id": "shape_input_list_tasks",
+        "include": [],
+        "kind": "shape",
+        "name": "List Tasks Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for listing users",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "after",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "25",
+            "name": "limit",
+            "requiredness": "optional",
+            "type": "integer"
+          }
+        ],
+        "id": "shape_input_list_users",
+        "include": [],
+        "kind": "shape",
+        "name": "List Users Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for updating a project",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "name",
+            "requiredness": "optional",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": null,
+            "name": "status",
+            "requiredness": "optional",
+            "type": "project_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          }
+        ],
+        "id": "shape_input_update_project",
+        "include": [],
+        "kind": "shape",
+        "name": "Update Project Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for updating a task",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "task_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "title",
+            "requiredness": "optional",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": null,
+            "name": "priority",
+            "requiredness": "optional",
+            "type": "task_priority"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "due_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "status",
+            "requiredness": "optional",
+            "type": "task_status"
+          }
+        ],
+        "id": "shape_input_update_task",
+        "include": [],
+        "kind": "shape",
+        "name": "Update Task Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Input for updating a user",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "user_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "email",
+            "requiredness": "optional",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "display_name",
+            "requiredness": "optional",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "is_active",
+            "requiredness": "optional",
+            "type": "boolean"
+          }
+        ],
+        "id": "shape_input_update_user",
+        "include": [],
+        "kind": "shape",
+        "name": "Update User Input",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Detailed project payload",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "name",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "active",
+            "name": "status",
+            "requiredness": "required",
+            "type": "project_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "created_at",
+            "requiredness": "required",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_output_project_detail",
+        "include": [
+          "created_at",
+          "description",
+          "id",
+          "name",
+          "owner_id",
+          "status"
+        ],
+        "kind": "shape",
+        "name": "Project Detail Output",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Detailed task payload",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "title",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "description",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": "draft",
+            "name": "status",
+            "requiredness": "required",
+            "type": "task_status"
+          },
+          {
+            "defaultValue": "medium",
+            "name": "priority",
+            "requiredness": "required",
+            "type": "task_priority"
+          },
+          {
+            "defaultValue": null,
+            "name": "owner_id",
+            "requiredness": "optional",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "project_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "created_at",
+            "requiredness": "required",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "updated_at",
+            "requiredness": "required",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "completed_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "due_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_output_task_detail",
+        "include": [
+          "completed_at",
+          "created_at",
+          "description",
+          "due_at",
+          "id",
+          "owner_id",
+          "priority",
+          "project_id",
+          "status",
+          "title",
+          "updated_at"
+        ],
+        "kind": "shape",
+        "name": "Task Detail Output",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Accepted job payload for long-running task exports",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "job_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": "accepted",
+            "name": "status",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "status_url",
+            "requiredness": "required",
+            "type": "text"
+          },
+          {
+            "defaultValue": null,
+            "name": "submitted_at",
+            "requiredness": "required",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_output_task_export_job",
+        "include": [],
+        "kind": "shape",
+        "name": "Task Export Job",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Status payload for long-running task export jobs",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "job_id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": "accepted",
+            "name": "status",
+            "requiredness": "required",
+            "type": "export_job_status"
+          },
+          {
+            "defaultValue": null,
+            "name": "status_url",
+            "requiredness": "required",
+            "type": "text"
+          },
+          {
+            "defaultValue": null,
+            "name": "submitted_at",
+            "requiredness": "required",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "completed_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "expires_at",
+            "requiredness": "optional",
+            "type": "datetime"
+          },
+          {
+            "defaultValue": null,
+            "name": "download_url",
+            "requiredness": "optional",
+            "type": "text"
+          },
+          {
+            "defaultValue": null,
+            "name": "error_message",
+            "requiredness": "optional",
+            "type": "text"
+          }
+        ],
+        "id": "shape_output_task_export_status",
+        "include": [],
+        "kind": "shape",
+        "name": "Task Export Status",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      },
+      {
+        "derivedFrom": [],
+        "description": "Detailed user payload",
+        "exclude": [],
+        "fields": [
+          {
+            "defaultValue": null,
+            "name": "id",
+            "requiredness": "required",
+            "type": "uuid"
+          },
+          {
+            "defaultValue": null,
+            "name": "email",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": null,
+            "name": "display_name",
+            "requiredness": "required",
+            "type": "string"
+          },
+          {
+            "defaultValue": "true",
+            "name": "is_active",
+            "requiredness": "required",
+            "type": "boolean"
+          },
+          {
+            "defaultValue": null,
+            "name": "created_at",
+            "requiredness": "required",
+            "type": "datetime"
+          }
+        ],
+        "id": "shape_output_user_detail",
+        "include": [
+          "created_at",
+          "display_name",
+          "email",
+          "id",
+          "is_active"
+        ],
+        "kind": "shape",
+        "name": "User Detail Output",
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        }
+      }
+    ]
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "review_boundaries": {
+    "capabilities": [
+      {
+        "id": "cap_complete_task",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_create_project",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_create_task",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_create_user",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_delete_task",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_download_task_export",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_export_tasks",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_get_project",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_get_task",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_get_task_export_job",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_get_user",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_list_projects",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_list_tasks",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_list_users",
+        "review_boundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "read_only_surface"
+          ]
+        }
+      },
+      {
+        "id": "cap_update_project",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_update_task",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      },
+      {
+        "id": "cap_update_user",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "writes_modeled_state"
+          ]
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "proj_api",
+        "review_boundary": {
+          "automation_class": "review_required",
+          "reasons": [
+            "api_surface"
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "capabilityCount": 17,
+    "focus": "API-facing capability, shape, and projection context",
+    "projectionCount": 1
+  },
+  "task": "api",
+  "type": "context_bundle",
+  "verification": [
+    {
+      "description": "Verifies create-task behavior and policy",
+      "id": "ver_create_task_policy",
+      "kind": "verification",
+      "method": "runtime",
+      "name": "Create task policy",
+      "ownership_boundary": {
+        "canonical_topogram": {
+          "agent_mode": "propose_review_adopt",
+          "owner": "human"
+        },
+        "generated_artifacts": {
+          "agent_mode": "regenerate_or_compare",
+          "owner": "engine"
+        },
+        "maintained_code": {
+          "agent_mode": "bounded_edit_only",
+          "owner": "human"
+        },
+        "proposal_surfaces": {
+          "agent_mode": "stage_map_customize_reject",
+          "owner": "human"
+        }
+      },
+      "scenarios": [
+        "create_task_in_active_project",
+        "reject_assignment_to_inactive_user",
+        "reject_task_in_archived_project"
+      ],
+      "validates": [
+        "cap_create_task",
+        "rule_no_task_creation_in_archived_project",
+        "rule_only_active_users_may_own_tasks"
+      ]
+    },
+    {
+      "description": "Covers the minimum web and API checks for the generated Todo stack.",
+      "id": "ver_runtime_smoke",
+      "kind": "verification",
+      "method": "smoke",
+      "name": "Todo runtime smoke",
+      "ownership_boundary": {
+        "canonical_topogram": {
+          "agent_mode": "propose_review_adopt",
+          "owner": "human"
+        },
+        "generated_artifacts": {
+          "agent_mode": "regenerate_or_compare",
+          "owner": "engine"
+        },
+        "maintained_code": {
+          "agent_mode": "bounded_edit_only",
+          "owner": "human"
+        },
+        "proposal_surfaces": {
+          "agent_mode": "stage_map_customize_reject",
+          "owner": "human"
+        }
+      },
+      "scenarios": [
+        "create_task_smoke",
+        "get_created_task_smoke",
+        "list_tasks_smoke",
+        "tasks_page_responds"
+      ],
+      "validates": [
+        "cap_create_task",
+        "cap_get_task",
+        "cap_list_tasks"
+      ]
+    },
+    {
+      "description": "Verifies core task CRUD and export runtime behavior.",
+      "id": "ver_task_runtime_flow",
+      "kind": "verification",
+      "method": "runtime",
+      "name": "Task runtime flow",
+      "ownership_boundary": {
+        "canonical_topogram": {
+          "agent_mode": "propose_review_adopt",
+          "owner": "human"
+        },
+        "generated_artifacts": {
+          "agent_mode": "regenerate_or_compare",
+          "owner": "engine"
+        },
+        "maintained_code": {
+          "agent_mode": "bounded_edit_only",
+          "owner": "human"
+        },
+        "proposal_surfaces": {
+          "agent_mode": "stage_map_customize_reject",
+          "owner": "human"
+        }
+      },
+      "scenarios": [
+        "complete_task_runtime",
+        "create_task_runtime",
+        "delete_task_runtime",
+        "download_task_export_runtime",
+        "export_tasks_runtime",
+        "get_created_task_runtime",
+        "get_task_export_job_runtime",
+        "list_tasks_runtime",
+        "update_task_runtime"
+      ],
+      "validates": [
+        "cap_complete_task",
+        "cap_create_task",
+        "cap_delete_task",
+        "cap_download_task_export",
+        "cap_export_tasks",
+        "cap_get_task",
+        "cap_get_task_export_job",
+        "cap_list_tasks",
+        "cap_update_task"
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,337 @@
+{
+  "env": {
+    "apiBase": "TOPOGRAM_API_BASE_URL",
+    "demoContainerId": "TOPOGRAM_DEMO_CONTAINER_ID",
+    "demoPrimaryId": "TOPOGRAM_DEMO_PRIMARY_ID",
+    "demoUserId": "TOPOGRAM_DEMO_USER_ID",
+    "required": [
+      "TOPOGRAM_API_BASE_URL",
+      "TOPOGRAM_WEB_BASE_URL",
+      "TOPOGRAM_DEMO_CONTAINER_ID",
+      "TOPOGRAM_DEMO_PRIMARY_ID"
+    ],
+    "webBase": "TOPOGRAM_WEB_BASE_URL"
+  },
+  "name": "Todo Runtime Check Plan",
+  "projections": {
+    "api": "proj_api",
+    "db": "proj_db_postgres",
+    "ui": "proj_ui_web"
+  },
+  "report": {
+    "outputPath": "state/runtime-check-report.json"
+  },
+  "stages": [
+    {
+      "checks": [
+        {
+          "id": "required_env",
+          "kind": "env_required",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "expectStatus": 200,
+          "expectText": "Tasks",
+          "id": "web_tasks_page_ready",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/tasks"
+        },
+        {
+          "expectStatus": 200,
+          "expectText": "Projects",
+          "id": "web_projects_page_ready",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/projects"
+        },
+        {
+          "expectStatus": 200,
+          "expectText": "Users",
+          "id": "web_users_page_ready",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/users"
+        },
+        {
+          "expectOk": true,
+          "expectStatus": 200,
+          "id": "api_health_ready",
+          "kind": "api_health",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/health"
+        },
+        {
+          "expectReady": true,
+          "expectStatus": 200,
+          "id": "api_ready",
+          "kind": "api_ready",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/ready"
+        },
+        {
+          "capabilityId": "cap_get_task",
+          "expectShape": "task_detail",
+          "id": "api_seed_task_ready",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false,
+          "pathParams": {
+            "task_id": "$env:TOPOGRAM_DEMO_TASK_ID"
+          }
+        },
+        {
+          "expectStatus": 200,
+          "expectText": "Edit Task",
+          "id": "web_task_detail_owner_edit_visible",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/tasks/$env:TOPOGRAM_DEMO_PRIMARY_ID"
+        },
+        {
+          "expectNotText": "Edit Task",
+          "expectStatus": 200,
+          "expectText": "Back to Tasks",
+          "id": "web_task_detail_non_owner_edit_hidden",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/tasks/$env:TOPOGRAM_DEMO_PRIMARY_ID?topogram_auth_user_id=99999999-9999-4999-8999-999999999999"
+        }
+      ],
+      "failFast": true,
+      "id": "environment",
+      "name": "Environment Readiness"
+    },
+    {
+      "checks": [
+        {
+          "capabilityId": "cap_create_task",
+          "id": "create_task",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_get_task",
+          "id": "get_created_task",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_list_tasks",
+          "id": "list_tasks",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_export_tasks",
+          "id": "export_tasks",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_get_task_export_job",
+          "id": "get_task_export_job",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_download_task_export",
+          "id": "download_task_export",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "id": "project_lookup_ready",
+          "kind": "lookup_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/lookups/projects"
+        },
+        {
+          "id": "user_lookup_ready",
+          "kind": "lookup_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/lookups/users"
+        },
+        {
+          "capabilityId": "cap_update_task",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "update_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_update_task",
+          "expectErrorCode": "stale_precondition",
+          "expectStatus": 412,
+          "id": "update_with_stale_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false,
+          "stalePrecondition": true
+        },
+        {
+          "capabilityId": "cap_update_task",
+          "id": "update_task",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_complete_task",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "complete_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_complete_task",
+          "id": "complete_task",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_delete_task",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "delete_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_delete_task",
+          "id": "delete_task",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_create_task",
+          "expectErrorCode": "cap_create_task_invalid_request",
+          "expectStatusClass": 4,
+          "id": "invalid_create_returns_4xx",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_get_task",
+          "expectErrorCode": "cap_get_task_not_found",
+          "expectStatus": 404,
+          "id": "get_unknown_task_not_found",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        }
+      ],
+      "failFast": false,
+      "id": "api",
+      "name": "API Runtime Flows"
+    }
+  ],
+  "type": "runtime_check_plan",
+  "verification": {
+    "methods": [
+      "runtime"
+    ],
+    "scenarios": [
+      {
+        "id": "create_task_in_active_project",
+        "label": "create task in active project"
+      },
+      {
+        "id": "reject_task_in_archived_project",
+        "label": "reject task in archived project"
+      },
+      {
+        "id": "reject_assignment_to_inactive_user",
+        "label": "reject assignment to inactive user"
+      },
+      {
+        "id": "create_task_runtime",
+        "label": "create task runtime"
+      },
+      {
+        "id": "get_created_task_runtime",
+        "label": "get created task runtime"
+      },
+      {
+        "id": "list_tasks_runtime",
+        "label": "list tasks runtime"
+      },
+      {
+        "id": "update_task_runtime",
+        "label": "update task runtime"
+      },
+      {
+        "id": "complete_task_runtime",
+        "label": "complete task runtime"
+      },
+      {
+        "id": "delete_task_runtime",
+        "label": "delete task runtime"
+      },
+      {
+        "id": "export_tasks_runtime",
+        "label": "export tasks runtime"
+      },
+      {
+        "id": "get_task_export_job_runtime",
+        "label": "get task export job runtime"
+      },
+      {
+        "id": "download_task_export_runtime",
+        "label": "download task export runtime"
+      }
+    ],
+    "sources": [
+      {
+        "id": "ver_create_task_policy",
+        "method": "runtime",
+        "name": "Create task policy",
+        "validates": [
+          "cap_create_task",
+          "rule_no_task_creation_in_archived_project",
+          "rule_only_active_users_may_own_tasks"
+        ]
+      },
+      {
+        "id": "ver_task_runtime_flow",
+        "method": "runtime",
+        "name": "Task runtime flow",
+        "validates": [
+          "cap_create_task",
+          "cap_get_task",
+          "cap_list_tasks",
+          "cap_update_task",
+          "cap_complete_task",
+          "cap_delete_task",
+          "cap_export_tasks",
+          "cap_get_task_export_job",
+          "cap_download_task_export"
+        ]
+      }
+    ]
+  }
+}

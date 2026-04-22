@@ -1,0 +1,257 @@
+import {
+  generateDbBundle,
+  generateServerBundle,
+  generateWebBundle,
+  getDefaultEnvironmentProjections
+} from "./shared.js";
+import { getExampleImplementation } from "../../example-implementation.js";
+import { mergeNamedBundles, renderRootEnvFileShellScript, renderRootShellScript } from "./bundle-shared.js";
+
+function projectionProfile(projection, fallback) {
+  for (const entry of projection.generatorDefaults || []) {
+    if (entry.key === "profile" && entry.value != null) {
+      return entry.value;
+    }
+  }
+  return fallback;
+}
+
+function slugifyAppName(name) {
+  return String(name || "topogram-app")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "topogram-app";
+}
+
+function buildDeploymentPlan(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const profile = options.profileId || "fly_io";
+  const supportedProfiles = ["fly_io", "railway"];
+  const webProfile = projectionProfile(uiProjection, "sveltekit");
+  const databaseTarget = dbProjection.platform === "db_sqlite"
+    ? "sqlite_file"
+    : profile === "fly_io"
+      ? "managed_postgres"
+      : "railway_postgres";
+  if (!supportedProfiles.includes(profile)) {
+    throw new Error(`Unsupported deployment profile '${profile}'`);
+  }
+
+  return {
+    type: "deployment_plan",
+    deployment: {
+      name: runtimeReference.appBundle.name.replace("App Bundle", "Deployment Stack"),
+      profile
+    },
+    projections: {
+      api: apiProjection.id,
+      ui: uiProjection.id,
+      db: dbProjection.id
+    },
+    runtime: {
+      server: "hono",
+      web: webProfile,
+      orm: "prisma"
+    },
+    targets: {
+      server: profile === "fly_io" ? "fly.io" : "railway",
+      web: "vercel",
+      database: databaseTarget
+    },
+    requiredEnv: ["DATABASE_URL", "PUBLIC_TOPOGRAM_API_BASE_URL"],
+    recommendedCommands: {
+      deployServer: profile === "fly_io" ? "fly deploy" : "railway up",
+      deployWeb: "vercel deploy",
+      migrate: "npm run db:migrate"
+    }
+  };
+}
+
+function renderDeploymentEnvExample(plan) {
+  return `# Deployment profile
+TOPOGRAM_DEPLOY_PROFILE=${plan.deployment.profile}
+
+# Shared runtime variables
+DATABASE_URL=
+PUBLIC_TOPOGRAM_API_BASE_URL=
+
+# Optional server runtime values
+PORT=3000
+NODE_ENV=production
+`;
+}
+
+function renderDeploymentReadme(plan) {
+  const platformNotes = plan.deployment.profile === "fly_io"
+    ? `## Fly.io Server Deploy
+
+- Review \`fly.toml\`
+- Set secrets with \`fly secrets set DATABASE_URL=...\`
+- Deploy with \`${plan.recommendedCommands.deployServer}\`
+`
+    : `## Railway Server Deploy
+
+- Review \`railway.json\`
+- Set environment variables in Railway
+- Deploy with \`${plan.recommendedCommands.deployServer}\`
+`;
+
+  return `# ${plan.deployment.name}
+
+This bundle packages deployment helpers for the generated runtime.
+
+- \`server/\`: generated Hono + Prisma server scaffold
+- \`web/\`: generated ${plan.runtime.web === "react" ? "Vite + React Router" : "SvelteKit"} web scaffold
+- platform deployment files for \`${plan.deployment.profile}\`
+- a Vercel config for the web app
+
+${platformNotes}
+## Web Deploy
+
+- Review \`web/vercel.json\`
+- Set \`PUBLIC_TOPOGRAM_API_BASE_URL\`
+- Deploy with \`${plan.recommendedCommands.deployWeb}\`
+
+## Database Migrations
+
+- Run \`${plan.recommendedCommands.migrate}\` against the target database before or during deploy
+- The generated server bundle includes Prisma schema and DB lifecycle scripts for greenfield or brownfield environments
+`;
+}
+
+function renderDeploymentPackageJson(plan) {
+  return `${JSON.stringify({
+    name: "topogram-deployment-bundle",
+    private: true,
+    scripts: {
+      "deploy:check": "bash ./scripts/deploy-check.sh",
+      "deploy:server": plan.recommendedCommands.deployServer,
+      "deploy:web": plan.recommendedCommands.deployWeb,
+      "db:migrate": "bash ./scripts/deploy-migrate.sh"
+    }
+  }, null, 2)}\n`;
+}
+
+function renderDeploymentCheckScript(plan) {
+  return renderRootEnvFileShellScript([
+    "for name in DATABASE_URL PUBLIC_TOPOGRAM_API_BASE_URL; do",
+    '  if [[ -z "${!name:-}" ]]; then',
+    '    echo "Missing required deployment variable: $name" >&2',
+    "    exit 1",
+    "  fi",
+    "done",
+    "",
+    `echo "Deployment configuration looks ready for ${plan.deployment.profile}."`
+  ], {
+    blankLineAfterRoot: false,
+    includeScriptDir: false,
+    rootDirExpression: 'ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"'
+  });
+}
+
+function renderDeploymentMigrateScript() {
+  return renderRootShellScript([
+    'cd "$ROOT_DIR/server"',
+    "npm install",
+    "npm exec -- prisma generate --schema prisma/schema.prisma",
+    "npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate"
+  ]);
+}
+
+function renderServerDockerfile() {
+  return `FROM node:22-alpine
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install
+
+COPY tsconfig.json ./
+COPY prisma ./prisma
+COPY src ./src
+
+RUN npm exec -- prisma generate --schema prisma/schema.prisma
+
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+`;
+}
+
+function renderFlyToml(plan) {
+  return `app = "${slugifyAppName(plan.deployment.name)}"
+primary_region = "ord"
+
+[build]
+  dockerfile = "server/Dockerfile"
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+`;
+}
+
+function renderRailwayJson() {
+  return `${JSON.stringify({
+    "$schema": "https://railway.app/railway.schema.json",
+    build: {
+      builder: "DOCKERFILE",
+      dockerfilePath: "server/Dockerfile"
+    },
+    deploy: {
+      startCommand: "npm run dev",
+      restartPolicyType: "ON_FAILURE",
+      restartPolicyMaxRetries: 10
+    }
+  }, null, 2)}\n`;
+}
+
+function renderVercelJson(plan) {
+  return `${JSON.stringify({
+    framework: plan.runtime.web === "react" ? "vite" : "sveltekit"
+  }, null, 2)}\n`;
+}
+
+export function generateDeploymentBundle(graph, options = {}) {
+  const plan = buildDeploymentPlan(graph, options);
+  const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const files = {
+    ".env.example": renderDeploymentEnvExample(plan),
+    "README.md": renderDeploymentReadme(plan),
+    "package.json": renderDeploymentPackageJson(plan),
+    "scripts/deploy-check.sh": renderDeploymentCheckScript(plan),
+    "scripts/deploy-migrate.sh": renderDeploymentMigrateScript(),
+    "server/Dockerfile": renderServerDockerfile(),
+    "web/vercel.json": renderVercelJson(plan)
+  };
+
+  if (plan.deployment.profile === "fly_io") {
+    files["fly.toml"] = renderFlyToml(plan);
+  }
+  if (plan.deployment.profile === "railway") {
+    files["railway.json"] = renderRailwayJson();
+  }
+
+  const serverBundle = generateServerBundle(graph, apiProjection.id);
+  const webBundle = generateWebBundle(graph, uiProjection.id);
+  const dbBundle = generateDbBundle(graph, dbProjection.id);
+  mergeNamedBundles(files, {
+    server: serverBundle,
+    web: webBundle,
+    db: dbBundle
+  });
+
+  return files;
+}
+
+export function generateDeploymentPlan(graph, options = {}) {
+  return buildDeploymentPlan(graph, options);
+}

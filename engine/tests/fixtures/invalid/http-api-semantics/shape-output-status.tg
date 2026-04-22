@@ -1,0 +1,11 @@
+shape shape_output_task_export_status {
+  name "Status Output"
+  description "Status output"
+
+  fields {
+    job_id uuid required
+    status string required
+  }
+
+  status active
+}

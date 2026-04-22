@@ -1,0 +1,20 @@
+{
+  "engine": "sqlite",
+  "from": {
+    "snapshotPath": "/Users/attebury/Documents/topogram/examples/issues/apps/local-stack/app/db/state/current.snapshot.json",
+    "tableCount": 3
+  },
+  "manual": [],
+  "manualInterventionRequired": false,
+  "operations": [],
+  "projection": {
+    "id": "proj_db_sqlite",
+    "name": "Issues SQLite DB",
+    "platform": "db_sqlite"
+  },
+  "supported": true,
+  "to": {
+    "tableCount": 3
+  },
+  "type": "db_migration_plan"
+}

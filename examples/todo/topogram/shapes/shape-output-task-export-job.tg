@@ -1,0 +1,13 @@
+shape shape_output_task_export_job {
+  name "Task Export Job"
+  description "Accepted job payload for long-running task exports"
+
+  fields {
+    job_id uuid required
+    status string required default accepted
+    status_url text required
+    submitted_at datetime required
+  }
+
+  status active
+}

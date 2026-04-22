@@ -1,0 +1,112 @@
+{
+  "focus": {
+    "id": "workspace",
+    "kind": "workspace"
+  },
+  "inventory": {
+    "capabilities": [
+      "cap_approve_article",
+      "cap_create_article",
+      "cap_get_article",
+      "cap_list_articles",
+      "cap_reject_article",
+      "cap_request_article_revision",
+      "cap_update_article"
+    ],
+    "entities": [
+      "entity_article",
+      "entity_publication",
+      "entity_user"
+    ],
+    "journeys": [
+      "article_resubmission_after_review"
+    ],
+    "projections": [
+      "proj_api",
+      "proj_db_postgres",
+      "proj_db_sqlite",
+      "proj_ui_shared",
+      "proj_ui_web",
+      "proj_ui_web_sveltekit"
+    ],
+    "verifications": [
+      "ver_article_review_flow",
+      "ver_runtime_smoke"
+    ],
+    "workflows": [
+      "article_review"
+    ]
+  },
+  "maintained_boundary_pointer": "maintained-boundary.context.json",
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "pointers": {
+    "capabilities": [
+      "capabilities/cap_approve_article.context-digest.json",
+      "capabilities/cap_create_article.context-digest.json",
+      "capabilities/cap_get_article.context-digest.json",
+      "capabilities/cap_list_articles.context-digest.json",
+      "capabilities/cap_reject_article.context-digest.json",
+      "capabilities/cap_request_article_revision.context-digest.json",
+      "capabilities/cap_update_article.context-digest.json"
+    ],
+    "entities": [
+      "entities/entity_article.context-digest.json",
+      "entities/entity_publication.context-digest.json",
+      "entities/entity_user.context-digest.json"
+    ],
+    "journeys": [
+      "journeys/article_resubmission_after_review.context-digest.json"
+    ],
+    "maintained_boundary": "maintained-boundary.context.json",
+    "projections": [
+      "projections/proj_api.context-digest.json",
+      "projections/proj_db_postgres.context-digest.json",
+      "projections/proj_db_sqlite.context-digest.json",
+      "projections/proj_ui_shared.context-digest.json",
+      "projections/proj_ui_web.context-digest.json",
+      "projections/proj_ui_web_sveltekit.context-digest.json"
+    ],
+    "workflows": [
+      "workflows/article_review.context-digest.json"
+    ]
+  },
+  "review_boundary": {
+    "automation_class": "manual_decision",
+    "reasons": [
+      "workspace_requires_scoped_review"
+    ]
+  },
+  "type": "context_digest",
+  "version": 1,
+  "workspace": {
+    "counts": {
+      "actor": 4,
+      "capability": 7,
+      "entity": 3,
+      "enum": 2,
+      "projection": 6,
+      "role": 2,
+      "rule": 2,
+      "shape": 9,
+      "verification": 2
+    },
+    "root": "/Users/attebury/Documents/topogram/examples/content-approval/topogram"
+  }
+}

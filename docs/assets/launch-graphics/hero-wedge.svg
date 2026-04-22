@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="700" viewBox="0 0 1440 700" role="img" aria-labelledby="title desc">
+  <title id="title">Topogram hero wedge</title>
+  <desc id="desc">A polished launch graphic showing durable intent flowing through generated outputs and verification into safer change in real software.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7f4ec"/>
+      <stop offset="100%" stop-color="#ece6d6"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fffdf7"/>
+      <stop offset="100%" stop-color="#f7f2e5"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#2f372d" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .label { font: 700 30px Georgia, "Times New Roman", serif; fill: #1d261b; }
+      .body { font: 400 18px Georgia, "Times New Roman", serif; fill: #435042; }
+      .kicker { font: 700 16px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.12em; text-transform: uppercase; fill: #6a765f; }
+      .headline { font: 700 52px Georgia, "Times New Roman", serif; fill: #172016; }
+      .subhead { font: 400 22px Georgia, "Times New Roman", serif; fill: #3d493a; }
+      .callout { font: 700 26px Georgia, "Times New Roman", serif; fill: #22301f; }
+      .arrow { stroke: #708064; stroke-width: 6; fill: none; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="700" fill="url(#bg)"/>
+  <circle cx="1230" cy="120" r="150" fill="#dfe6cf" opacity="0.65"/>
+  <circle cx="160" cy="580" r="180" fill="#e8ddc4" opacity="0.75"/>
+
+  <text x="110" y="105" class="kicker">Topogram alpha story</text>
+  <text x="110" y="168" class="headline">Controlled software evolution</text>
+  <text x="110" y="228" class="subhead">Keep intent, generated outputs, and verification aligned so software change stays structured, explainable, and provable.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="90" y="310" rx="34" ry="34" width="240" height="220" fill="url(#panel)"/>
+    <rect x="380" y="310" rx="34" ry="34" width="240" height="220" fill="url(#panel)"/>
+    <rect x="670" y="310" rx="34" ry="34" width="240" height="220" fill="url(#panel)"/>
+    <rect x="960" y="310" rx="34" ry="34" width="300" height="220" fill="#f2eddc"/>
+  </g>
+
+  <g>
+    <text x="120" y="360" class="kicker">1</text>
+    <text x="120" y="405" class="label">Durable intent</text>
+    <text x="120" y="442" class="body">Entities, workflows, rules,</text>
+    <text x="120" y="470" class="body">journeys, and decisions</text>
+    <text x="120" y="498" class="body">stay explicit and reviewable.</text>
+  </g>
+
+  <g>
+    <text x="410" y="360" class="kicker">2</text>
+    <text x="410" y="405" class="label">Generated outputs</text>
+    <text x="410" y="442" class="body">Contracts, runtimes, and</text>
+    <text x="410" y="470" class="body">artifacts come from the</text>
+    <text x="410" y="498" class="body">same modeled intent.</text>
+  </g>
+
+  <g>
+    <text x="700" y="360" class="kicker">3</text>
+    <text x="700" y="405" class="label">Verification</text>
+    <text x="700" y="442" class="body">Compile, smoke, runtime,</text>
+    <text x="700" y="470" class="body">parity, and contract audit</text>
+    <text x="700" y="498" class="body">stay attached to the model.</text>
+  </g>
+
+  <g>
+    <text x="990" y="360" class="kicker">4</text>
+    <text x="990" y="405" class="label">Safer change in real software</text>
+    <text x="990" y="442" class="body">Humans and agents get clearer</text>
+    <text x="990" y="470" class="body">review boundaries, proof, and</text>
+    <text x="990" y="498" class="body">a more explainable path to change.</text>
+  </g>
+
+  <path class="arrow" d="M330 420 C348 420, 362 420, 380 420"/>
+  <polygon points="370,406 395,420 370,434" fill="#708064"/>
+  <path class="arrow" d="M620 420 C638 420, 652 420, 670 420"/>
+  <polygon points="660,406 685,420 660,434" fill="#708064"/>
+  <path class="arrow" d="M910 420 C928 420, 942 420, 960 420"/>
+  <polygon points="950,406 975,420 950,434" fill="#708064"/>
+
+  <rect x="90" y="580" width="1240" height="72" rx="24" ry="24" fill="#23311f"/>
+  <text x="720" y="625" text-anchor="middle" class="callout" fill="#f8f4e7">Controlled software evolution for humans and agents</text>
+</svg>

@@ -1,0 +1,78 @@
+{
+  "focus": {
+    "id": "proj_ui_web_sveltekit",
+    "kind": "projection"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "summary": {
+    "dbTables": [],
+    "description": "Web realization for the shared Content Approval UI using a SvelteKit profile",
+    "httpCapabilities": [],
+    "id": "proj_ui_web_sveltekit",
+    "kind": "projection",
+    "name": "Content Approval Web UI (SvelteKit)",
+    "outputs": [
+      "ui_contract",
+      "web_app"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "platform": "ui_web",
+    "realizes": [
+      "cap_approve_article",
+      "cap_create_article",
+      "cap_get_article",
+      "cap_list_articles",
+      "cap_reject_article",
+      "cap_request_article_revision",
+      "cap_update_article",
+      "proj_ui_shared"
+    ],
+    "reviewBoundary": {
+      "automation_class": "safe",
+      "reasons": [
+        "metadata_only"
+      ]
+    },
+    "uiScreens": []
+  },
+  "type": "context_digest",
+  "verifications": [
+    "ver_article_review_flow",
+    "ver_runtime_smoke"
+  ],
+  "version": 1
+}

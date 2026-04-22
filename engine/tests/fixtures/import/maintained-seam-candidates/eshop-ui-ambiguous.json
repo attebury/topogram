@@ -1,0 +1,66 @@
+{
+  "source_trial": "trials/eShopOnWeb",
+  "scenario": "UI report import with only generic structural hints should not emit maintained seam candidates",
+  "adoption_plan": {
+    "type": "reconcile_adoption_plan",
+    "workspace": "/tmp/eshoponweb",
+    "approved_review_groups": [],
+    "items": [
+      {
+        "bundle": "order",
+        "kind": "ui",
+        "item": "ui_order_detail",
+        "status": "pending",
+        "track": "ui",
+        "source_path": "candidates/reconcile/model/bundles/order/docs/reports/ui-order_detail.md",
+        "canonical_rel_path": "docs/reports/ui-order_detail.md",
+        "related_capabilities": [],
+        "related_docs": [],
+        "blocking_dependencies": []
+      }
+    ]
+  },
+  "maintained_boundary": {
+    "outputs": [
+      {
+        "output_id": "maintained_app",
+        "kind": "maintained_runtime",
+        "root_paths": ["product/app/src/pages/orders/**"],
+        "seams": [
+          { "seam_id": "seam_order_summary_presenter" },
+          { "seam_id": "seam_order_history_presenter" }
+        ]
+      }
+    ],
+    "seams": [
+      {
+        "seam_id": "seam_order_summary_presenter",
+        "output_id": "maintained_app",
+        "label": "order summary presenter",
+        "kind": "ui_presenter",
+        "ownership_class": "contract_bound",
+        "status": "review_required",
+        "maintained_modules": [
+          "product/app/src/pages/orders/OrderSummaryPage.tsx"
+        ],
+        "emitted_dependencies": ["cap_get_order_summary"],
+        "allowed_change_classes": ["review_required"],
+        "drift_signals": ["verification_expectation_changed"]
+      },
+      {
+        "seam_id": "seam_order_history_presenter",
+        "output_id": "maintained_app",
+        "label": "order history presenter",
+        "kind": "ui_presenter",
+        "ownership_class": "contract_bound",
+        "status": "review_required",
+        "maintained_modules": [
+          "product/app/src/pages/orders/OrderHistoryPage.tsx"
+        ],
+        "emitted_dependencies": ["cap_list_order_history"],
+        "allowed_change_classes": ["review_required"],
+        "drift_signals": ["verification_expectation_changed"]
+      }
+    ]
+  }
+}

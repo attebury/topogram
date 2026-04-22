@@ -1,0 +1,74 @@
+{
+  "focus": {
+    "id": "proj_db_postgres",
+    "kind": "projection"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "summary": {
+    "dbTables": [
+      "projects",
+      "tasks",
+      "users"
+    ],
+    "description": "Postgres persistence realization for the Todo domain",
+    "httpCapabilities": [],
+    "id": "proj_db_postgres",
+    "kind": "projection",
+    "name": "Todo Postgres DB",
+    "outputs": [
+      "db_contract",
+      "sql_schema"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "platform": "db_postgres",
+    "realizes": [
+      "entity_project",
+      "entity_task",
+      "entity_user"
+    ],
+    "reviewBoundary": {
+      "automation_class": "review_required",
+      "reasons": [
+        "db_surface"
+      ]
+    },
+    "uiScreens": []
+  },
+  "type": "context_digest",
+  "verifications": [],
+  "version": 1
+}

@@ -1,0 +1,22 @@
+{
+  "bootstrapped_topogram_root": false,
+  "canonical_journey_count": 1,
+  "draft_journeys": [],
+  "generated_draft_count": 0,
+  "skipped_entities": [
+    {
+      "entity_id": "entity_project",
+      "reason": "canonical_journey_exists"
+    },
+    {
+      "entity_id": "entity_task",
+      "reason": "canonical_journey_exists"
+    },
+    {
+      "entity_id": "entity_user",
+      "reason": "canonical_journey_exists"
+    }
+  ],
+  "type": "generate_journeys",
+  "workspace": "/Users/attebury/Documents/topogram/examples/todo/topogram"
+}

@@ -1,0 +1,11 @@
+capability cap_list_dummy {
+  name "List Dummy"
+  description "Capability for invalid UI tests"
+
+  actors [actor_user]
+  reads [entity_dummy]
+  input [shape_input_dummy]
+  output [shape_output_dummy]
+
+  status active
+}

@@ -1,0 +1,45 @@
+projection proj_db_sqlite {
+  name "Issues SQLite DB"
+  description "SQLite persistence realization for the Issues domain"
+
+  platform db_sqlite
+  realizes [entity_issue, entity_board, entity_user]
+  outputs [db_contract, sql_schema]
+
+  db_tables {
+    entity_issue table issues
+    entity_board table boards
+    entity_user table users
+  }
+
+  db_keys {
+    entity_issue primary [id]
+    entity_board primary [id]
+    entity_user primary [id]
+  }
+
+  db_indexes {
+    entity_issue index [board_id, status]
+    entity_issue index [assignee_id, status]
+    entity_board unique [name]
+    entity_user unique [email]
+  }
+
+  db_relations {
+    entity_issue foreign_key assignee_id references entity_user.id on_delete set_null
+    entity_issue foreign_key board_id references entity_board.id on_delete cascade
+  }
+
+  db_lifecycle {
+    entity_issue soft_delete field status value archived
+    entity_issue timestamps created_at created_at updated_at updated_at
+  }
+
+  generator_defaults {
+    profile sqlite_sql
+    language sql
+    styling css
+  }
+
+  status active
+}

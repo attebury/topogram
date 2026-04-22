@@ -1,0 +1,16 @@
+verification ver_runtime_smoke {
+  name "Content approval runtime smoke"
+  description "Covers the minimum web and API checks for the generated Content Approval stack."
+
+  validates [cap_create_article, cap_get_article, cap_list_articles]
+  method smoke
+
+  scenarios [
+    articles_page_responds,
+    create_article_smoke,
+    get_created_article_smoke,
+    list_articles_smoke
+  ]
+
+  status active
+}

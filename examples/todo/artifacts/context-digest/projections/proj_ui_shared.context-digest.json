@@ -1,0 +1,103 @@
+{
+  "focus": {
+    "id": "proj_ui_shared",
+    "kind": "projection"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "summary": {
+    "dbTables": [],
+    "description": "Platform-neutral UI semantics for the Todo product",
+    "httpCapabilities": [],
+    "id": "proj_ui_shared",
+    "kind": "projection",
+    "name": "Todo Shared UI",
+    "outputs": [
+      "ui_contract"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "platform": "ui_shared",
+    "realizes": [
+      "cap_complete_task",
+      "cap_create_project",
+      "cap_create_task",
+      "cap_create_user",
+      "cap_delete_task",
+      "cap_download_task_export",
+      "cap_export_tasks",
+      "cap_get_project",
+      "cap_get_task",
+      "cap_get_task_export_job",
+      "cap_get_user",
+      "cap_list_projects",
+      "cap_list_tasks",
+      "cap_list_users",
+      "cap_update_project",
+      "cap_update_task",
+      "cap_update_user"
+    ],
+    "reviewBoundary": {
+      "automation_class": "manual_decision",
+      "reasons": [
+        "ui_surface"
+      ]
+    },
+    "uiScreens": [
+      "project_create",
+      "project_detail",
+      "project_edit",
+      "project_list",
+      "task_board",
+      "task_calendar",
+      "task_create",
+      "task_detail",
+      "task_edit",
+      "task_exports",
+      "task_list",
+      "user_create",
+      "user_detail",
+      "user_edit",
+      "user_list"
+    ]
+  },
+  "type": "context_digest",
+  "verifications": [
+    "ver_create_task_policy",
+    "ver_runtime_smoke",
+    "ver_task_runtime_flow"
+  ],
+  "version": 1
+}

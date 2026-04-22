@@ -1,0 +1,6 @@
+shape shape_output_project_detail from entity_project {
+  name "Project Detail Output"
+  description "Detailed project payload"
+  include [id, name, description, status, owner_id, created_at]
+  status active
+}

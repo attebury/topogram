@@ -1,0 +1,13 @@
+{
+  "type": "db_schema_snapshot",
+  "projection": {
+    "id": "proj_db_postgres",
+    "name": "Empty",
+    "platform": "db_postgres"
+  },
+  "profile": "postgres_sql",
+  "generatorDefaults": {},
+  "engine": "postgres",
+  "tables": [],
+  "enums": []
+}

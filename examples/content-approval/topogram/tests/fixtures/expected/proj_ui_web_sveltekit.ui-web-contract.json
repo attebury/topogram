@@ -1,0 +1,658 @@
+{
+  "appShell": {
+    "accountMenu": true,
+    "brand": "Topogram Content Approval",
+    "footer": "legal",
+    "globalSearch": true,
+    "notifications": true,
+    "primaryNav": "primary",
+    "secondaryNav": "secondary",
+    "shell": "sidebar",
+    "utilityNav": "utility",
+    "windowing": "single_window",
+    "workspaceSwitcher": false
+  },
+  "generatorDefaults": {
+    "language": "typescript",
+    "profile": "sveltekit",
+    "styling": "css"
+  },
+  "navigation": {
+    "defaultScreenId": "article_list",
+    "groups": [
+      {
+        "icon": null,
+        "id": "editorial",
+        "label": "Editorial",
+        "order": null,
+        "pattern": "navigation_rail",
+        "placement": "primary"
+      }
+    ],
+    "items": [
+      {
+        "breadcrumb": null,
+        "default": true,
+        "groupId": "editorial",
+        "label": "Articles",
+        "order": "10",
+        "pattern": null,
+        "placement": "primary",
+        "route": "/articles",
+        "screenId": "article_list",
+        "sitemap": "include",
+        "visible": true
+      },
+      {
+        "breadcrumb": "article_list",
+        "default": false,
+        "groupId": "editorial",
+        "label": "Article Details",
+        "order": null,
+        "pattern": null,
+        "placement": "primary",
+        "route": "/articles/:id",
+        "screenId": "article_detail",
+        "sitemap": "exclude",
+        "visible": false
+      },
+      {
+        "breadcrumb": "article_list",
+        "default": false,
+        "groupId": "editorial",
+        "label": "Create Article",
+        "order": null,
+        "pattern": null,
+        "placement": "primary",
+        "route": "/articles/new",
+        "screenId": "article_create",
+        "sitemap": "exclude",
+        "visible": false
+      },
+      {
+        "breadcrumb": null,
+        "default": false,
+        "groupId": null,
+        "label": "Edit Article",
+        "order": null,
+        "pattern": null,
+        "placement": "primary",
+        "route": "/articles/:id/edit",
+        "screenId": "article_edit",
+        "sitemap": "include",
+        "visible": false
+      },
+      {
+        "breadcrumb": null,
+        "default": false,
+        "groupId": "editorial",
+        "label": "Settings",
+        "order": "20",
+        "pattern": "tabs",
+        "placement": "primary",
+        "route": "/settings",
+        "screenId": "editorial_settings",
+        "sitemap": "include",
+        "visible": true
+      }
+    ],
+    "patterns": [
+      "navigation_rail",
+      "tabs"
+    ]
+  },
+  "outputs": [
+    "ui_contract",
+    "web_app"
+  ],
+  "projection": {
+    "id": "proj_ui_web_sveltekit",
+    "name": "Content Approval Web UI (SvelteKit)",
+    "platform": "ui_web"
+  },
+  "screens": [
+    {
+      "actionWeb": {
+        "cap_create_article": {}
+      },
+      "actions": {
+        "destructive": null,
+        "primary": {
+          "id": "cap_create_article",
+          "kind": "capability"
+        },
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [
+          "publication_id",
+          "reviewer_id",
+          "status"
+        ],
+        "groupBy": [
+          "status"
+        ],
+        "pagination": null,
+        "refresh": "manual",
+        "search": [],
+        "sort": [
+          {
+            "direction": "desc",
+            "field": "created_at"
+          }
+        ],
+        "views": [
+          "table"
+        ]
+      },
+      "detailCapability": {
+        "id": "cap_get_article",
+        "kind": "capability"
+      },
+      "emptyState": {
+        "body": "Create an article to start the review workflow",
+        "title": "No articles yet"
+      },
+      "id": "article_list",
+      "inputShape": null,
+      "itemShape": {
+        "id": "shape_output_article_card",
+        "kind": "shape"
+      },
+      "kind": "list",
+      "loadCapability": {
+        "id": "cap_list_articles",
+        "kind": "capability"
+      },
+      "lookups": [
+        {
+          "emptyLabel": "All publications",
+          "entity": {
+            "id": "entity_publication",
+            "kind": "entity"
+          },
+          "field": "publication_id",
+          "labelField": "name"
+        },
+        {
+          "emptyLabel": "All reviewers",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "reviewer_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "patterns": [
+        "action_bar",
+        "resource_table",
+        "empty_state_panel"
+      ],
+      "regions": [
+        {
+          "pattern": "action_bar",
+          "placement": "primary",
+          "region": "toolbar",
+          "state": null,
+          "title": null,
+          "variant": null
+        },
+        {
+          "pattern": "resource_table",
+          "placement": "primary",
+          "region": "results",
+          "state": null,
+          "title": null,
+          "variant": null
+        },
+        {
+          "pattern": "empty_state_panel",
+          "placement": "supporting",
+          "region": "results",
+          "state": "empty",
+          "title": null,
+          "variant": null
+        }
+      ],
+      "route": "/articles",
+      "states": {
+        "empty": "empty_state_panel",
+        "error": "inline",
+        "loading": "skeleton",
+        "notFound": "auto",
+        "success": "auto",
+        "unauthorized": "auto"
+      },
+      "submitCapability": null,
+      "title": "Articles",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "collection": "table",
+        "desktop_variant": "table",
+        "layout": "responsive_collection",
+        "mobile_variant": "cards",
+        "shell": "sidebar"
+      }
+    },
+    {
+      "actionWeb": {
+        "cap_approve_article": {},
+        "cap_reject_article": {},
+        "cap_request_article_revision": {
+          "placement": "toolbar",
+          "present": "popover"
+        },
+        "cap_update_article": {}
+      },
+      "actions": {
+        "destructive": {
+          "id": "cap_request_article_revision",
+          "kind": "capability"
+        },
+        "primary": {
+          "id": "cap_update_article",
+          "kind": "capability"
+        },
+        "screen": [
+          {
+            "capability": {
+              "id": "cap_approve_article",
+              "kind": "capability"
+            },
+            "placement": "footer",
+            "prominence": "primary"
+          },
+          {
+            "capability": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            },
+            "placement": "toolbar",
+            "prominence": "secondary"
+          },
+          {
+            "capability": {
+              "id": "cap_reject_article",
+              "kind": "capability"
+            },
+            "placement": "footer",
+            "prominence": "destructive"
+          }
+        ],
+        "secondary": {
+          "id": "cap_approve_article",
+          "kind": "capability"
+        },
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "groupBy": [],
+        "pagination": null,
+        "refresh": "manual",
+        "search": [],
+        "sort": [],
+        "views": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "article_detail",
+      "inputShape": null,
+      "itemShape": null,
+      "kind": "detail",
+      "loadCapability": {
+        "id": "cap_get_article",
+        "kind": "capability"
+      },
+      "lookups": [],
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "patterns": [
+        "detail_panel",
+        "activity_feed"
+      ],
+      "regions": [
+        {
+          "pattern": "detail_panel",
+          "placement": "primary",
+          "region": "summary",
+          "state": null,
+          "title": null,
+          "variant": null
+        },
+        {
+          "pattern": "activity_feed",
+          "placement": "supporting",
+          "region": "activity",
+          "state": null,
+          "title": null,
+          "variant": null
+        }
+      ],
+      "route": "/articles/:id",
+      "states": {
+        "empty": "auto",
+        "error": "auto",
+        "loading": "skeleton",
+        "notFound": "auto",
+        "success": "auto",
+        "unauthorized": "auto"
+      },
+      "submitCapability": null,
+      "title": "Article Details",
+      "type": "ui_screen_contract",
+      "viewShape": {
+        "id": "shape_output_article_detail",
+        "kind": "shape"
+      },
+      "visibility": [
+        {
+          "capability": {
+            "id": "cap_update_article",
+            "kind": "capability"
+          },
+          "claimValue": null,
+          "ownershipField": null,
+          "predicate": "ownership",
+          "value": "owner_or_admin"
+        },
+        {
+          "capability": {
+            "id": "cap_request_article_revision",
+            "kind": "capability"
+          },
+          "claimValue": "true",
+          "ownershipField": null,
+          "predicate": "claim",
+          "value": "reviewer"
+        },
+        {
+          "capability": {
+            "id": "cap_approve_article",
+            "kind": "capability"
+          },
+          "claimValue": "true",
+          "ownershipField": null,
+          "predicate": "claim",
+          "value": "reviewer"
+        },
+        {
+          "capability": {
+            "id": "cap_reject_article",
+            "kind": "capability"
+          },
+          "claimValue": "true",
+          "ownershipField": null,
+          "predicate": "claim",
+          "value": "reviewer"
+        }
+      ],
+      "web": {
+        "breadcrumbs": "visible",
+        "layout": "detail_page"
+      }
+    },
+    {
+      "actionWeb": {},
+      "actions": {
+        "destructive": null,
+        "primary": null,
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "groupBy": [],
+        "pagination": null,
+        "refresh": "manual",
+        "search": [],
+        "sort": [],
+        "views": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "article_create",
+      "inputShape": {
+        "id": "shape_input_create_article",
+        "kind": "shape"
+      },
+      "itemShape": null,
+      "kind": "form",
+      "loadCapability": null,
+      "lookups": [
+        {
+          "emptyLabel": null,
+          "entity": {
+            "id": "entity_publication",
+            "kind": "entity"
+          },
+          "field": "publication_id",
+          "labelField": "name"
+        },
+        {
+          "emptyLabel": "Unassigned",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "reviewer_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": "article_detail",
+        "successRefresh": null
+      },
+      "patterns": [
+        "edit_form"
+      ],
+      "regions": [],
+      "route": "/articles/new",
+      "states": {
+        "empty": "auto",
+        "error": "auto",
+        "loading": "auto",
+        "notFound": "auto",
+        "success": "banner",
+        "unauthorized": "auto"
+      },
+      "submitCapability": {
+        "id": "cap_create_article",
+        "kind": "capability"
+      },
+      "title": "Create Article",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "present": "drawer"
+      }
+    },
+    {
+      "actionWeb": {},
+      "actions": {
+        "destructive": null,
+        "primary": null,
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "groupBy": [],
+        "pagination": null,
+        "refresh": "manual",
+        "search": [],
+        "sort": [],
+        "views": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "article_edit",
+      "inputShape": {
+        "id": "shape_input_update_article",
+        "kind": "shape"
+      },
+      "itemShape": null,
+      "kind": "form",
+      "loadCapability": null,
+      "lookups": [
+        {
+          "emptyLabel": "Unassigned",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "field": "reviewer_id",
+          "labelField": "display_name"
+        }
+      ],
+      "navigation": {
+        "successNavigate": "article_detail",
+        "successRefresh": null
+      },
+      "patterns": [
+        "edit_form"
+      ],
+      "regions": [],
+      "route": "/articles/:id/edit",
+      "states": {
+        "empty": "auto",
+        "error": "auto",
+        "loading": "auto",
+        "notFound": "auto",
+        "success": "banner",
+        "unauthorized": "auto"
+      },
+      "submitCapability": {
+        "id": "cap_update_article",
+        "kind": "capability"
+      },
+      "title": "Edit Article",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "present": "page"
+      }
+    },
+    {
+      "actionWeb": {},
+      "actions": {
+        "destructive": null,
+        "primary": null,
+        "screen": [],
+        "secondary": null,
+        "terminal": null
+      },
+      "collection": {
+        "filters": [],
+        "groupBy": [],
+        "pagination": null,
+        "refresh": "manual",
+        "search": [],
+        "sort": [],
+        "views": []
+      },
+      "detailCapability": null,
+      "emptyState": null,
+      "id": "editorial_settings",
+      "inputShape": null,
+      "itemShape": null,
+      "kind": "settings",
+      "loadCapability": null,
+      "lookups": [],
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "patterns": [
+        "settings_section"
+      ],
+      "regions": [
+        {
+          "pattern": "settings_section",
+          "placement": "primary",
+          "region": "tabs",
+          "state": null,
+          "title": null,
+          "variant": null
+        },
+        {
+          "pattern": "settings_section",
+          "placement": "primary",
+          "region": "summary",
+          "state": null,
+          "title": null,
+          "variant": null
+        }
+      ],
+      "route": "/settings",
+      "states": {
+        "empty": "auto",
+        "error": "auto",
+        "loading": "auto",
+        "notFound": "auto",
+        "success": "auto",
+        "unauthorized": "auto"
+      },
+      "submitCapability": null,
+      "title": "Editorial Settings",
+      "type": "ui_screen_contract",
+      "viewShape": null,
+      "visibility": [],
+      "web": {
+        "layout": "detail_page",
+        "shell": "topbar"
+      }
+    }
+  ],
+  "sharedProjection": {
+    "id": "proj_ui_shared",
+    "name": "Content Approval Shared UI"
+  },
+  "sitemap": [
+    {
+      "include": true,
+      "label": "Articles",
+      "route": "/articles",
+      "screenId": "article_list"
+    },
+    {
+      "include": false,
+      "label": "Article Details",
+      "route": "/articles/:id",
+      "screenId": "article_detail"
+    },
+    {
+      "include": false,
+      "label": "Create Article",
+      "route": "/articles/new",
+      "screenId": "article_create"
+    },
+    {
+      "include": true,
+      "label": "Edit Article",
+      "route": "/articles/:id/edit",
+      "screenId": "article_edit"
+    },
+    {
+      "include": true,
+      "label": "Settings",
+      "route": "/settings",
+      "screenId": "editorial_settings"
+    }
+  ]
+}

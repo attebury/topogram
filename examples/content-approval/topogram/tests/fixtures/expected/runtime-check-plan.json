@@ -1,0 +1,295 @@
+{
+  "env": {
+    "apiBase": "TOPOGRAM_API_BASE_URL",
+    "demoContainerId": "TOPOGRAM_DEMO_CONTAINER_ID",
+    "demoPrimaryId": "TOPOGRAM_DEMO_PRIMARY_ID",
+    "demoUserId": "TOPOGRAM_DEMO_USER_ID",
+    "required": [
+      "TOPOGRAM_API_BASE_URL",
+      "TOPOGRAM_WEB_BASE_URL",
+      "TOPOGRAM_AUTH_PROFILE",
+      "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_TOKEN",
+      "TOPOGRAM_AUTH_TOKEN_NO_REVIEWER",
+      "TOPOGRAM_DEMO_CONTAINER_ID",
+      "TOPOGRAM_DEMO_PRIMARY_ID"
+    ],
+    "webBase": "TOPOGRAM_WEB_BASE_URL"
+  },
+  "name": "Content Approval Runtime Check Plan",
+  "projections": {
+    "api": "proj_api",
+    "db": "proj_db_sqlite",
+    "ui": "proj_ui_web"
+  },
+  "report": {
+    "outputPath": "state/runtime-check-report.json"
+  },
+  "stages": [
+    {
+      "checks": [
+        {
+          "id": "required_env",
+          "kind": "env_required",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "expectStatus": 200,
+          "expectText": "Articles",
+          "id": "web_articles_page_ready",
+          "kind": "web_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/articles"
+        },
+        {
+          "expectText": "Approve Article",
+          "id": "web_article_detail_reviewer_actions_visible",
+          "kind": "web_browser_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/articles/$env:TOPOGRAM_DEMO_PRIMARY_ID"
+        },
+        {
+          "expectNotText": "Approve Article",
+          "id": "web_article_detail_reviewer_actions_hidden",
+          "kind": "web_browser_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/articles/$env:TOPOGRAM_DEMO_PRIMARY_ID?topogram_auth_claims=%7B%22reviewer%22%3Afalse%7D"
+        },
+        {
+          "expectOk": true,
+          "expectStatus": 200,
+          "id": "api_health_ready",
+          "kind": "api_health",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/health"
+        },
+        {
+          "expectReady": true,
+          "expectStatus": 200,
+          "id": "api_ready",
+          "kind": "api_ready",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/ready"
+        },
+        {
+          "capabilityId": "cap_get_article",
+          "expectShape": "article_detail",
+          "id": "api_seed_article_ready",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false,
+          "pathParams": {
+            "article_id": "$env:TOPOGRAM_DEMO_PRIMARY_ID"
+          }
+        }
+      ],
+      "failFast": true,
+      "id": "environment",
+      "name": "Environment Readiness"
+    },
+    {
+      "checks": [
+        {
+          "capabilityId": "cap_create_article",
+          "id": "create_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_get_article",
+          "id": "get_created_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_list_articles",
+          "id": "list_articles",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "id": "publication_lookup_ready",
+          "kind": "lookup_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/lookups/publications"
+        },
+        {
+          "id": "user_lookup_ready",
+          "kind": "lookup_contract",
+          "mandatory": true,
+          "mutating": false,
+          "path": "/lookups/users"
+        },
+        {
+          "capabilityId": "cap_update_article",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "update_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_update_article",
+          "expectErrorCode": "stale_precondition",
+          "expectStatus": 412,
+          "id": "update_with_stale_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false,
+          "stalePrecondition": true
+        },
+        {
+          "capabilityId": "cap_update_article",
+          "id": "update_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_request_article_revision",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "request_revision_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_request_article_revision",
+          "id": "request_article_revision",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_update_article",
+          "id": "resubmit_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_approve_article",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "approve_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_approve_article",
+          "expectErrorCode": "forbidden",
+          "expectStatus": 403,
+          "id": "approve_without_reviewer_claim",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_approve_article",
+          "id": "approve_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_reject_article",
+          "expectErrorCodeFrom": "precondition",
+          "expectStatusFrom": "precondition",
+          "id": "reject_without_precondition",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_reject_article",
+          "id": "reject_article",
+          "kind": "api_contract",
+          "mandatory": true,
+          "mutating": true
+        },
+        {
+          "capabilityId": "cap_create_article",
+          "expectErrorCode": "cap_create_article_invalid_request",
+          "expectStatusClass": 4,
+          "id": "invalid_create_returns_4xx",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "capabilityId": "cap_get_article",
+          "expectErrorCode": "cap_get_article_not_found",
+          "expectStatus": 404,
+          "id": "get_unknown_article_not_found",
+          "kind": "api_negative",
+          "mandatory": true,
+          "mutating": false
+        }
+      ],
+      "failFast": false,
+      "id": "api",
+      "name": "API Runtime Flows"
+    }
+  ],
+  "type": "runtime_check_plan",
+  "verification": {
+    "methods": [
+      "runtime"
+    ],
+    "scenarios": [
+      {
+        "id": "create_article_in_draft",
+        "label": "create article in draft"
+      },
+      {
+        "id": "request_revision_for_submitted_article",
+        "label": "request revision for submitted article"
+      },
+      {
+        "id": "resubmit_article_after_revision_requested",
+        "label": "resubmit article after revision requested"
+      },
+      {
+        "id": "reject_approval_without_precondition",
+        "label": "reject approval without precondition"
+      },
+      {
+        "id": "approve_submitted_article",
+        "label": "approve submitted article"
+      },
+      {
+        "id": "reject_submitted_article",
+        "label": "reject submitted article"
+      }
+    ],
+    "sources": [
+      {
+        "id": "ver_article_review_flow",
+        "method": "runtime",
+        "name": "Article review flow",
+        "validates": [
+          "cap_create_article",
+          "cap_get_article",
+          "cap_list_articles",
+          "cap_update_article",
+          "cap_request_article_revision",
+          "cap_approve_article",
+          "cap_reject_article"
+        ]
+      }
+    ]
+  }
+}

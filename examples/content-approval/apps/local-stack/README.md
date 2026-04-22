@@ -1,0 +1,55 @@
+# Topogram Content Approval App Bundle
+
+This is the polished generated app bundle for Topogram v0.1.
+
+It includes:
+- `app/`: the runnable local app stack
+- `deploy/`: deployment packaging
+- `compile/`: generated compile verification
+- `smoke/`: minimal runtime confidence check
+- `runtime-check/`: richer staged runtime verification with JSON reporting
+
+## Start Here
+
+1. Copy `.env.example` to `.env` if you want to customize defaults
+2. Bootstrap the app:
+   - `bash scripts/bootstrap.sh`
+   - this provisions or migrates the database and seeds demo data by default
+3. Run the app:
+   - `bash scripts/dev.sh`
+4. Compile-check it:
+   - `bash scripts/compile-check.sh`
+5. Run richer staged runtime checks:
+   - `bash scripts/runtime-check.sh`
+6. Run the lightweight smoke check:
+   - `bash scripts/smoke.sh`
+
+## Golden Path
+
+For the default generated bundle:
+
+1. Use the `local_process` environment profile
+2. Run `bash scripts/bootstrap.sh`
+3. Run `bash scripts/dev.sh`
+4. Open the web app at `http://localhost:5175/articles`
+5. Confirm the seeded "Editorial Desk" and "Seeded Demo Article" flow through the stack
+6. Run `bash scripts/compile-check.sh`
+7. Run `bash scripts/runtime-check.sh`
+8. Run `bash scripts/smoke.sh`
+
+## Deployment
+
+- Validate deploy configuration:
+  - `bash scripts/deploy-check.sh`
+- Then use the generated deployment bundle under `deploy/`
+
+## Notes
+
+- The default generated app profile is `local_process`
+- The default generated deployment profile is `fly_io`
+- Demo data is seeded during bootstrap unless `TOPOGRAM_SEED_DEMO=false`
+- If `.env` is missing, generated scripts fall back to `.env.example`
+- You can regenerate other environment or deployment profiles from the Topogram source project
+- The generated server exposes `GET /health` for liveness and `GET /ready` for DB-backed readiness
+- Use `smoke/` when you want a quick "is the stack basically working?" check
+- Use `runtime-check/` when you want staged readiness plus deeper API flow coverage

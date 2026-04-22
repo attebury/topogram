@@ -1,0 +1,10 @@
+rule rule_no_issue_creation_in_archived_board {
+  name "Cannot create issues in archived boards"
+  description "New issues may not be created in archived boards"
+
+  applies_to [cap_create_issue]
+  requirement "board.status != archived"
+  severity error
+
+  status active
+}

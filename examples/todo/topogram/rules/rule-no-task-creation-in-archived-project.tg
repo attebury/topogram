@@ -1,0 +1,10 @@
+rule rule_no_task_creation_in_archived_project {
+  name "Cannot create tasks in archived projects"
+  description "New tasks may not be created in archived projects"
+
+  applies_to [cap_create_task]
+  requirement "project.status != archived"
+  severity error
+
+  status active
+}

@@ -1,0 +1,795 @@
+{
+  "shape_input_complete_task": {
+    "$id": "topogram:shape:shape_input_complete_task",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for marking a task complete",
+    "properties": {
+      "completed_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "task_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "task_id"
+    ],
+    "title": "Complete Task Input",
+    "type": "object"
+  },
+  "shape_input_create_project": {
+    "$id": "topogram:shape:shape_input_create_project",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Fields accepted when creating a project",
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "active",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "status"
+    ],
+    "title": "Create Project Input",
+    "type": "object"
+  },
+  "shape_input_create_task": {
+    "$id": "topogram:shape:shape_input_create_task",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Fields accepted when creating a task",
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "due_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "priority": {
+        "default": "medium",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string"
+      },
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "priority",
+      "project_id"
+    ],
+    "title": "Create Task Input",
+    "type": "object"
+  },
+  "shape_input_create_user": {
+    "$id": "topogram:shape:shape_input_create_user",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Fields accepted when creating a user",
+    "properties": {
+      "display_name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "is_active": {
+        "default": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "email",
+      "display_name",
+      "is_active"
+    ],
+    "title": "Create User Input",
+    "type": "object"
+  },
+  "shape_input_delete_task": {
+    "$id": "topogram:shape:shape_input_delete_task",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for deleting a task",
+    "properties": {
+      "task_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "task_id"
+    ],
+    "title": "Delete Task Input",
+    "type": "object"
+  },
+  "shape_input_export_tasks": {
+    "$id": "topogram:shape:shape_input_export_tasks",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Filters accepted when requesting a task export",
+    "properties": {
+      "callback_url": {
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "draft",
+          "active",
+          "completed",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "title": "Export Tasks Input",
+    "type": "object"
+  },
+  "shape_input_get_project": {
+    "$id": "topogram:shape:shape_input_get_project",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for fetching a single project",
+    "properties": {
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "project_id"
+    ],
+    "title": "Get Project Input",
+    "type": "object"
+  },
+  "shape_input_get_task": {
+    "$id": "topogram:shape:shape_input_get_task",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for fetching a single task",
+    "properties": {
+      "task_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "task_id"
+    ],
+    "title": "Get Task Input",
+    "type": "object"
+  },
+  "shape_input_get_task_export_job": {
+    "$id": "topogram:shape:shape_input_get_task_export_job",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for fetching task export job status",
+    "properties": {
+      "job_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "job_id"
+    ],
+    "title": "Get Task Export Job Input",
+    "type": "object"
+  },
+  "shape_input_get_user": {
+    "$id": "topogram:shape:shape_input_get_user",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for fetching a single user",
+    "properties": {
+      "user_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "user_id"
+    ],
+    "title": "Get User Input",
+    "type": "object"
+  },
+  "shape_input_list_projects": {
+    "$id": "topogram:shape:shape_input_list_projects",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for listing projects",
+    "properties": {
+      "after": {
+        "type": "string"
+      },
+      "limit": {
+        "default": 25,
+        "type": "integer"
+      }
+    },
+    "title": "List Projects Input",
+    "type": "object"
+  },
+  "shape_input_list_tasks": {
+    "$id": "topogram:shape:shape_input_list_tasks",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for listing tasks",
+    "properties": {
+      "after": {
+        "type": "string"
+      },
+      "limit": {
+        "default": 25,
+        "type": "integer"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "draft",
+          "active",
+          "completed",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "title": "List Tasks Input",
+    "type": "object"
+  },
+  "shape_input_list_users": {
+    "$id": "topogram:shape:shape_input_list_users",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for listing users",
+    "properties": {
+      "after": {
+        "type": "string"
+      },
+      "limit": {
+        "default": 25,
+        "type": "integer"
+      }
+    },
+    "title": "List Users Input",
+    "type": "object"
+  },
+  "shape_input_update_project": {
+    "$id": "topogram:shape:shape_input_update_project",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for updating a project",
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "project_id"
+    ],
+    "title": "Update Project Input",
+    "type": "object"
+  },
+  "shape_input_update_task": {
+    "$id": "topogram:shape:shape_input_update_task",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for updating a task",
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "due_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "priority": {
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "draft",
+          "active",
+          "completed",
+          "archived"
+        ],
+        "type": "string"
+      },
+      "task_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "task_id"
+    ],
+    "title": "Update Task Input",
+    "type": "object"
+  },
+  "shape_input_update_user": {
+    "$id": "topogram:shape:shape_input_update_user",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Input for updating a user",
+    "properties": {
+      "display_name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "is_active": {
+        "type": "boolean"
+      },
+      "user_id": {
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "user_id"
+    ],
+    "title": "Update User Input",
+    "type": "object"
+  },
+  "shape_output_project_card": {
+    "$id": "topogram:shape:shape_output_project_card",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Compact project payload for cards and lists",
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "active",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "status"
+    ],
+    "title": "Project Card Output",
+    "type": "object"
+  },
+  "shape_output_project_detail": {
+    "$id": "topogram:shape:shape_output_project_detail",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Detailed project payload",
+    "properties": {
+      "created_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "active",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "status",
+      "created_at"
+    ],
+    "title": "Project Detail Output",
+    "type": "object"
+  },
+  "shape_output_task_card": {
+    "$id": "topogram:shape:shape_output_task_card",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Compact task payload for cards and lists",
+    "properties": {
+      "dueAt": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "ownerId": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "priority": {
+        "default": "medium",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string"
+      },
+      "status": {
+        "default": "active",
+        "enum": [
+          "draft",
+          "active",
+          "completed",
+          "archived"
+        ],
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "status",
+      "priority",
+      "ownerId"
+    ],
+    "title": "Task Card Output",
+    "type": "object"
+  },
+  "shape_output_task_detail": {
+    "$id": "topogram:shape:shape_output_task_detail",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Detailed task payload",
+    "properties": {
+      "completed_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "created_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "due_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "owner_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "priority": {
+        "default": "medium",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string"
+      },
+      "project_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "draft",
+        "enum": [
+          "draft",
+          "active",
+          "completed",
+          "archived"
+        ],
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updated_at": {
+        "format": "date-time",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "status",
+      "priority",
+      "project_id",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "Task Detail Output",
+    "type": "object"
+  },
+  "shape_output_task_export_callback": {
+    "$id": "topogram:shape:shape_output_task_export_callback",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Outbound webhook payload sent when a task export completes",
+    "properties": {
+      "completed_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "download_url": {
+        "type": "string"
+      },
+      "error_message": {
+        "type": "string"
+      },
+      "job_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "accepted",
+          "running",
+          "completed",
+          "failed",
+          "expired"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "job_id",
+      "status"
+    ],
+    "title": "Task Export Callback",
+    "type": "object"
+  },
+  "shape_output_task_export_job": {
+    "$id": "topogram:shape:shape_output_task_export_job",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Accepted job payload for long-running task exports",
+    "properties": {
+      "job_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "accepted",
+        "type": "string"
+      },
+      "status_url": {
+        "type": "string"
+      },
+      "submitted_at": {
+        "format": "date-time",
+        "type": "string"
+      }
+    },
+    "required": [
+      "job_id",
+      "status",
+      "status_url",
+      "submitted_at"
+    ],
+    "title": "Task Export Job",
+    "type": "object"
+  },
+  "shape_output_task_export_status": {
+    "$id": "topogram:shape:shape_output_task_export_status",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Status payload for long-running task export jobs",
+    "properties": {
+      "completed_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "download_url": {
+        "type": "string"
+      },
+      "error_message": {
+        "type": "string"
+      },
+      "expires_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "job_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "status": {
+        "default": "accepted",
+        "enum": [
+          "accepted",
+          "running",
+          "completed",
+          "failed",
+          "expired"
+        ],
+        "type": "string"
+      },
+      "status_url": {
+        "type": "string"
+      },
+      "submitted_at": {
+        "format": "date-time",
+        "type": "string"
+      }
+    },
+    "required": [
+      "job_id",
+      "status",
+      "status_url",
+      "submitted_at"
+    ],
+    "title": "Task Export Status",
+    "type": "object"
+  },
+  "shape_output_user_card": {
+    "$id": "topogram:shape:shape_output_user_card",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Compact user payload for cards and lists",
+    "properties": {
+      "display_name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "is_active": {
+        "default": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "display_name",
+      "email",
+      "is_active"
+    ],
+    "title": "User Card Output",
+    "type": "object"
+  },
+  "shape_output_user_detail": {
+    "$id": "topogram:shape:shape_output_user_detail",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Detailed user payload",
+    "properties": {
+      "created_at": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "display_name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "is_active": {
+        "default": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "display_name",
+      "is_active",
+      "created_at"
+    ],
+    "title": "User Detail Output",
+    "type": "object"
+  }
+}

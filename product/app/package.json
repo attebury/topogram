@@ -1,0 +1,11 @@
+{
+  "name": "topogram-product-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile-check": "node ./scripts/compile-check.mjs",
+    "smoke": "node ./scripts/smoke.mjs",
+    "runtime-check": "node ./scripts/runtime-check.mjs",
+    "verify": "npm run compile-check && npm run smoke && npm run runtime-check"
+  }
+}

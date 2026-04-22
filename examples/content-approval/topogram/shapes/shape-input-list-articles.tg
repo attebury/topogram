@@ -1,0 +1,14 @@
+shape shape_input_list_articles {
+  name "List Articles Input"
+  description "Input for listing articles by workflow status, reviewer, or publication"
+
+  fields {
+    publication_id uuid optional
+    reviewer_id uuid optional
+    status article_status optional
+    after datetime optional
+    limit integer optional
+  }
+
+  status active
+}

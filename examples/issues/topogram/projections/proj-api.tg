@@ -1,0 +1,83 @@
+projection proj_api {
+  name "API"
+  description "HTTP API realization for Issues"
+  platform dotnet
+
+  realizes [cap_create_issue, cap_get_issue, cap_update_issue, cap_close_issue, cap_list_issues]
+
+  outputs [
+    database_schema,
+    entity_models,
+    request_contracts,
+    response_contracts,
+    validation_handlers,
+    endpoints
+  ]
+
+  http {
+    cap_create_issue method POST path /issues success 201 auth user request body
+    cap_get_issue method GET path /issues/:id success 200 auth user request path
+    cap_update_issue method PATCH path /issues/:id success 200 auth user request body
+    cap_close_issue method POST path /issues/:id/close success 200 auth user request body
+    cap_list_issues method GET path /issues success 200 auth user request query
+  }
+
+  http_errors {
+    cap_create_issue rule_no_issue_creation_in_archived_board 409
+    cap_create_issue rule_only_active_users_may_be_assigned_issues 400
+    cap_create_issue cap_create_issue_invalid_request 400
+    cap_get_issue cap_get_issue_not_found 404
+  }
+
+  http_fields {
+    cap_create_issue input title in body
+    cap_create_issue input description in body
+    cap_create_issue input assignee_id in body
+    cap_create_issue input board_id in body
+    cap_create_issue input priority in body
+
+    cap_get_issue input issue_id in path as id
+
+    cap_update_issue input issue_id in path as id
+    cap_update_issue input title in body
+    cap_update_issue input description in body
+    cap_update_issue input assignee_id in body
+    cap_update_issue input priority in body
+    cap_update_issue input status in body
+
+    cap_close_issue input issue_id in path as id
+    cap_close_issue input closed_at in body
+
+    cap_list_issues input board_id in query
+    cap_list_issues input assignee_id in query
+    cap_list_issues input status in query
+  }
+
+  http_responses {
+    cap_list_issues mode cursor item shape_output_issue_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
+  }
+
+  http_preconditions {
+    cap_update_issue header If-Match required true error 412 source updated_at code cap_update_issue_precondition_failed
+    cap_close_issue header If-Match required true error 412 source updated_at code cap_close_issue_precondition_failed
+  }
+
+  http_idempotency {
+    cap_create_issue header Idempotency-Key required true error 409 code cap_create_issue_idempotency_conflict
+    cap_close_issue header Idempotency-Key required true error 409 code cap_close_issue_idempotency_conflict
+  }
+
+  http_cache {
+    cap_get_issue response_header ETag request_header If-None-Match required false not_modified 304 source updated_at code cap_get_issue_not_modified
+  }
+
+  http_authz {
+    cap_create_issue permission issues.create
+    cap_get_issue ownership owner_or_admin ownership_field assignee_id
+    cap_update_issue ownership owner_or_admin ownership_field assignee_id permission issues.update
+    cap_close_issue ownership owner_or_admin ownership_field assignee_id permission issues.close
+    cap_list_issues permission issues.read
+  }
+
+  status active
+}

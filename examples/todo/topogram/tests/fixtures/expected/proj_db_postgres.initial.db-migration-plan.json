@@ -1,0 +1,87 @@
+{
+  "engine": "postgres",
+  "from": {
+    "snapshotPath": "/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/migrations/empty.snapshot.json",
+    "tableCount": 0
+  },
+  "manual": [],
+  "manualInterventionRequired": false,
+  "operations": [
+    {
+      "enum": "project_status",
+      "type": "create_enum",
+      "values": [
+        "active",
+        "archived"
+      ]
+    },
+    {
+      "enum": "task_priority",
+      "type": "create_enum",
+      "values": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "enum": "task_status",
+      "type": "create_enum",
+      "values": [
+        "draft",
+        "active",
+        "completed",
+        "archived"
+      ]
+    },
+    {
+      "entity": "entity_project",
+      "table": "projects",
+      "type": "create_table"
+    },
+    {
+      "fields": [
+        "owner_id",
+        "status"
+      ],
+      "table": "projects",
+      "type": "add_index"
+    },
+    {
+      "entity": "entity_task",
+      "table": "tasks",
+      "type": "create_table"
+    },
+    {
+      "fields": [
+        "owner_id",
+        "status"
+      ],
+      "table": "tasks",
+      "type": "add_index"
+    },
+    {
+      "fields": [
+        "project_id",
+        "status"
+      ],
+      "table": "tasks",
+      "type": "add_index"
+    },
+    {
+      "entity": "entity_user",
+      "table": "users",
+      "type": "create_table"
+    }
+  ],
+  "projection": {
+    "id": "proj_db_postgres",
+    "name": "Todo Postgres DB",
+    "platform": "db_postgres"
+  },
+  "supported": true,
+  "to": {
+    "tableCount": 3
+  },
+  "type": "db_migration_plan"
+}

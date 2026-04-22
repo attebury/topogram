@@ -1,0 +1,5 @@
+actor manager {
+  name "Manager"
+  description "A reviewer with approval authority in the Content Approval application"
+  status active
+}

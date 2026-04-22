@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  active
+  archived
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+}
+
+enum TaskStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+model Project {
+  created_at DateTime @db.Timestamptz(3)
+  description String?
+  id String @id @db.Uuid
+  name String @unique
+  owner_id String? @db.Uuid
+  owner User? @relation("Project_owner_id_to_User", fields: [owner_id], references: [id])
+  status ProjectStatus @default(active)
+  tasks Task[] @relation("Task_project_id_to_Project")
+  @@index([owner_id, status])
+  @@map("projects")
+}
+
+model Task {
+  completed_at DateTime? @db.Timestamptz(3)
+  created_at DateTime @db.Timestamptz(3)
+  description String?
+  due_at DateTime? @db.Timestamptz(3)
+  id String @id @db.Uuid
+  owner_id String? @db.Uuid
+  owner User? @relation("Task_owner_id_to_User", fields: [owner_id], references: [id])
+  priority TaskPriority @default(medium)
+  project_id String @db.Uuid
+  project Project @relation("Task_project_id_to_Project", fields: [project_id], references: [id])
+  status TaskStatus @default(draft)
+  title String
+  updated_at DateTime @db.Timestamptz(3)
+  @@index([owner_id, status])
+  @@index([project_id, status])
+  @@map("tasks")
+}
+
+model User {
+  created_at DateTime @db.Timestamptz(3)
+  display_name String
+  email String @unique
+  id String @id @db.Uuid
+  is_active Boolean @default(true)
+  projects Project[] @relation("Project_owner_id_to_User")
+  tasks Task[] @relation("Task_owner_id_to_User")
+  @@map("users")
+}

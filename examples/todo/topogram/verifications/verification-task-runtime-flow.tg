@@ -1,0 +1,31 @@
+verification ver_task_runtime_flow {
+  name "Task runtime flow"
+  description "Verifies core task CRUD and export runtime behavior."
+
+  validates [
+    cap_create_task,
+    cap_get_task,
+    cap_list_tasks,
+    cap_update_task,
+    cap_complete_task,
+    cap_delete_task,
+    cap_export_tasks,
+    cap_get_task_export_job,
+    cap_download_task_export
+  ]
+  method runtime
+
+  scenarios [
+    create_task_runtime,
+    get_created_task_runtime,
+    list_tasks_runtime,
+    update_task_runtime,
+    complete_task_runtime,
+    delete_task_runtime,
+    export_tasks_runtime,
+    get_task_export_job_runtime,
+    download_task_export_runtime
+  ]
+
+  status active
+}

@@ -1,0 +1,12 @@
+{
+  "name": "topogram-runtime-stack",
+  "private": true,
+  "scripts": {
+    "db:bootstrap": "bash ./scripts/bootstrap-db.sh",
+    "dev:server": "bash ./scripts/server-dev.sh",
+    "dev:web": "bash ./scripts/web-dev.sh",
+    "dev": "bash ./scripts/stack-dev.sh",
+    "docker:db": "bash ./scripts/docker-db.sh",
+    "docker:stack": "bash ./scripts/docker-stack.sh"
+  }
+}

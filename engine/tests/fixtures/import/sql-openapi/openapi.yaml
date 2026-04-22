@@ -1,0 +1,37 @@
+openapi: 3.1.0
+info:
+  title: Task API
+  version: 1.0.0
+paths:
+  /tasks:
+    post:
+      operationId: cap_create_task
+      summary: Create Task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /tasks/{id}:
+    patch:
+      operationId: cap_update_task
+      summary: Update Task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'

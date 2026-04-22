@@ -1,0 +1,6 @@
+shape shape_output_project_card from entity_project {
+  name "Project Card Output"
+  description "Compact project payload for cards and lists"
+  include [id, name, description, status, owner_id]
+  status active
+}

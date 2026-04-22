@@ -1,0 +1,40 @@
+{
+  "$id": "topogram:shape:shape_input_update_task",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input for updating a task",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "due_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "owner_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "completed",
+        "archived"
+      ],
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id"
+  ],
+  "title": "Update Task Input",
+  "type": "object"
+}

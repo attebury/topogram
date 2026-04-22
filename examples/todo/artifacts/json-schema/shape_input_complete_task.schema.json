@@ -1,0 +1,21 @@
+{
+  "$id": "topogram:shape:shape_input_complete_task",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input for marking a task complete",
+  "properties": {
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id"
+  ],
+  "title": "Complete Task Input",
+  "type": "object"
+}

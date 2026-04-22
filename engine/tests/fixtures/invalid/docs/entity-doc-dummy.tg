@@ -1,0 +1,8 @@
+entity entity_doc_dummy {
+  name "Doc Dummy"
+  description "Dummy entity for invalid doc fixtures"
+  fields {
+    id uuid required
+  }
+  status active
+}

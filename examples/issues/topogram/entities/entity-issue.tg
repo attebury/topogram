@@ -1,0 +1,37 @@
+entity entity_issue {
+  name "Issue"
+  description "A tracked work item in the issue tracker domain"
+
+  fields {
+    id uuid required
+    title string required
+    description text optional
+    status issue_status required default open
+    assignee_id uuid optional
+    board_id uuid required
+    created_at datetime required
+    updated_at datetime required
+    closed_at datetime optional
+    priority string optional
+  }
+
+  keys {
+    primary [id]
+    index [board_id, status]
+    index [assignee_id, status]
+  }
+
+  relations {
+    assignee_id references entity_user.id
+    board_id references entity_board.id
+  }
+
+  invariants {
+    closed_at requires status == closed
+    status == in_progress implies assignee_id is required
+    status == open implies closed_at is null
+    title length <= 200
+  }
+
+  status active
+}

@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "command": "npm run check",
+      "cwd": "server",
+      "id": "server_typecheck",
+      "install": "npm install"
+    },
+    {
+      "command": "npm run check",
+      "cwd": "web",
+      "id": "web_typecheck",
+      "install": "npm install"
+    },
+    {
+      "command": "npm run build",
+      "cwd": "web",
+      "id": "web_build",
+      "install": "npm install"
+    }
+  ],
+  "name": "Todo Generated Compile Checks",
+  "projections": {
+    "api": "proj_api",
+    "db": "proj_db_postgres",
+    "ui": "proj_ui_web"
+  },
+  "type": "compile_check_plan"
+}

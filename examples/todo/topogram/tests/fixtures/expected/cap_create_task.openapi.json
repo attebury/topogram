@@ -1,0 +1,342 @@
+{
+  "components": {
+    "responses": {
+      "CapCreateTaskIdempotencyConflictErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateTaskIdempotencyConflictError"
+            }
+          }
+        },
+        "description": "Cap Create Task Idempotency Conflict (409)"
+      },
+      "CapCreateTaskInvalidRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapCreateTaskInvalidRequestError"
+            }
+          }
+        },
+        "description": "Cap Create Task Invalid Request (400)"
+      },
+      "RuleNoTaskCreationInArchivedProjectErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleNoTaskCreationInArchivedProjectError"
+            }
+          }
+        },
+        "description": "Rule No Task Creation In Archived Project (409)"
+      },
+      "RuleOnlyActiveUsersMayOwnTasksErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RuleOnlyActiveUsersMayOwnTasksError"
+            }
+          }
+        },
+        "description": "Rule Only Active Users May Own Tasks (400)"
+      }
+    },
+    "schemas": {
+      "CapCreateTaskIdempotencyConflictError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_create_task_idempotency_conflict",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Create Task Idempotency Conflict"
+      },
+      "CapCreateTaskInvalidRequestError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "cap_create_task_invalid_request",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Cap Create Task Invalid Request"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "RuleNoTaskCreationInArchivedProjectError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "rule_no_task_creation_in_archived_project",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Rule No Task Creation In Archived Project"
+      },
+      "RuleOnlyActiveUsersMayOwnTasksError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorResponse"
+          },
+          {
+            "properties": {
+              "code": {
+                "const": "rule_only_active_users_may_own_tasks",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Rule Only Active Users May Own Tasks"
+      },
+      "ShapeInputCreateTaskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "due_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "priority": {
+            "default": "medium",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "priority",
+          "project_id"
+        ],
+        "type": "object"
+      },
+      "ShapeOutputTaskDetailResponse": {
+        "$id": "topogram:shape:shape_output_task_detail",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Detailed task payload",
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "due_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "priority": {
+            "default": "medium",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Task Detail Output",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Topogram API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/tasks": {
+      "post": {
+        "description": "Allows a user to create a new task",
+        "operationId": "cap_create_task",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeInputCreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShapeOutputTaskDetailResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleOnlyActiveUsersMayOwnTasksError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateTaskInvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (400)"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RuleNoTaskCreationInArchivedProjectError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CapCreateTaskIdempotencyConflictError"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Error (409)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create Task",
+        "x-topogram-authorization": [
+          {
+            "permission": "tasks.create"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+actor actor_author {
+  name "Author"
+  description "User drafting and resubmitting articles"
+
+  status active
+}

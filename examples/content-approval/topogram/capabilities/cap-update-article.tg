@@ -1,0 +1,12 @@
+capability cap_update_article {
+  name "Update Article"
+  description "Updates an article draft or submits it for review"
+
+  actors [actor_author]
+  roles [role_author]
+  updates [entity_article]
+  input [shape_input_update_article]
+  output [shape_output_article_detail]
+
+  status active
+}

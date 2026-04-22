@@ -1,0 +1,16 @@
+shape shape_output_article_card from entity_article {
+  name "Article Card"
+  description "Compact card view for article listings"
+
+  fields {
+    id required
+    title required
+    status required
+    reviewer_id optional
+    publication_id required
+    updated_at required
+    category optional
+  }
+
+  status active
+}

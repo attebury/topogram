@@ -1,0 +1,18 @@
+projection proj_api {
+  name "API"
+  description "Bad HTTP response config"
+  platform dotnet
+
+  realizes [cap_list_tasks]
+  outputs [endpoints]
+
+  http {
+    cap_list_tasks method GET path /tasks success 200 auth user request query
+  }
+
+  http_responses {
+    cap_list_tasks mode cursor cursor request_after ghost response_next next_cursor limit field missing_limit default 50 max 10 sort by missing_out direction sideways total included maybe
+  }
+
+  status active
+}

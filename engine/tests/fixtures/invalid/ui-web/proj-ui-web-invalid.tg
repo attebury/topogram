@@ -1,0 +1,27 @@
+projection proj_ui_web_invalid {
+  name "Invalid Web UI"
+  description "Web projection with invalid route and generator defaults"
+
+  platform ui_web
+  realizes [proj_ui_shared_stub]
+  outputs [web_app]
+
+  ui_routes {
+    screen stub_home path home
+    screen ghost_screen path /same
+    screen stub_home path /same
+  }
+
+  ui_web {
+    screen ghost_screen layout cards
+    action cap_missing confirm popup
+  }
+
+  generator_defaults {
+    profile angular
+    language elm
+    styling sass
+  }
+
+  status active
+}

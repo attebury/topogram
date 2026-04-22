@@ -1,0 +1,10 @@
+shape shape_input_update_task {
+  name "Update Task Input"
+  description "Input for updating a task"
+
+  fields {
+    task_id uuid required
+  }
+
+  status active
+}

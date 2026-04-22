@@ -1,0 +1,12 @@
+entity entity_db_dummy {
+  name "DB Dummy"
+  description "Entity for invalid DB tests"
+
+  fields {
+    id uuid required
+    owner_id uuid optional
+    created_at datetime required
+  }
+
+  status active
+}

@@ -1,0 +1,6 @@
+shape shape_output_task_detail from entity_task {
+  name "Task Detail"
+  description "Task detail output"
+  include [id, created_at]
+  status active
+}

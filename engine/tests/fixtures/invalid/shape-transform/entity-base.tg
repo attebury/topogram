@@ -1,0 +1,12 @@
+entity entity_base {
+  name "Base"
+  description "Base entity for invalid shape transform tests"
+
+  fields {
+    id uuid required
+    title string required
+    status string optional
+  }
+
+  status active
+}

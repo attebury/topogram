@@ -1,0 +1,30 @@
+{
+  "$id": "topogram:shape:shape_input_export_tasks",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Filters accepted when requesting a task export",
+  "properties": {
+    "callback_url": {
+      "type": "string"
+    },
+    "owner_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "project_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "completed",
+        "archived"
+      ],
+      "type": "string"
+    }
+  },
+  "title": "Export Tasks Input",
+  "type": "object"
+}

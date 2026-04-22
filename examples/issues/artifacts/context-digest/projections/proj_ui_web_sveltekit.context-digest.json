@@ -1,0 +1,73 @@
+{
+  "focus": {
+    "id": "proj_ui_web_sveltekit",
+    "kind": "projection"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "summary": {
+    "dbTables": [],
+    "description": "Web realization for the shared Issues UI using a SvelteKit profile",
+    "httpCapabilities": [],
+    "id": "proj_ui_web_sveltekit",
+    "kind": "projection",
+    "name": "Issues Web UI (SvelteKit)",
+    "outputs": [
+      "ui_contract",
+      "web_app"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "platform": "ui_web",
+    "realizes": [
+      "cap_close_issue",
+      "cap_create_issue",
+      "cap_get_issue",
+      "cap_list_issues",
+      "cap_update_issue",
+      "proj_ui_shared"
+    ],
+    "reviewBoundary": {
+      "automation_class": "safe",
+      "reasons": [
+        "metadata_only"
+      ]
+    },
+    "uiScreens": []
+  },
+  "type": "context_digest",
+  "verifications": [],
+  "version": 1
+}

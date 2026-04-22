@@ -1,0 +1,11 @@
+entity entity_task {
+  name "Task"
+  description "Task entity"
+
+  fields {
+    id uuid required
+    updated_at datetime required
+  }
+
+  status active
+}

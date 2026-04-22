@@ -1,0 +1,182 @@
+import { generateHonoServer } from "../apps/backend/hono.js";
+import { generateWebApp } from "../apps/web/index.js";
+import { generateApiContractGraph } from "../api.js";
+import { generateDbLifecycleBundleForProjection } from "../db/lifecycle-shared.js";
+import { getProjection } from "../db/shared.js";
+import { getDefaultBackendDbProjection } from "../../realization/backend/index.js";
+
+function verificationScenarioValue(item) {
+  if (!item) {
+    return null;
+  }
+  if (typeof item === "string") {
+    return item;
+  }
+  return item.value || null;
+}
+
+function scenarioLabel(scenario) {
+  return String(scenario || "")
+    .replace(/^verify_/, "")
+    .replaceAll("_", " ")
+    .trim();
+}
+
+export function getVerificationEntries(graph, methods = []) {
+  const methodSet = new Set(methods);
+  return (graph.byKind.verification || [])
+    .filter((verification) => methodSet.size === 0 || methodSet.has(verification.method))
+    .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+export function buildVerificationSummary(graph, methods = []) {
+  const verifications = getVerificationEntries(graph, methods);
+  if (verifications.length === 0) {
+    return null;
+  }
+
+  const scenarioMap = new Map();
+  for (const verification of verifications) {
+    const rawScenarios = Array.isArray(verification.scenarios)
+      ? verification.scenarios
+      : Array.isArray(verification.plan?.scenarios)
+        ? verification.plan.scenarios.map((entry) => entry?.target?.id || null)
+        : [];
+    for (const raw of rawScenarios) {
+      const id = verificationScenarioValue(raw);
+      if (!id || scenarioMap.has(id)) {
+        continue;
+      }
+      scenarioMap.set(id, {
+        id,
+        label: scenarioLabel(id)
+      });
+    }
+  }
+
+  return {
+    methods: [...new Set(verifications.map((verification) => verification.method))],
+    sources: verifications.map((verification) => ({
+      id: verification.id,
+      name: verification.name || verification.id,
+      method: verification.method,
+      validates: (verification.validates || []).map((item) => item.id)
+    })),
+    scenarios: [...scenarioMap.values()]
+  };
+}
+
+export function getVerifiedCapabilityIds(graph, methods = []) {
+  const verifications = getVerificationEntries(graph, methods);
+  const capabilityIds = new Set();
+  for (const verification of verifications) {
+    for (const target of verification.validates || []) {
+      if (target.kind === "capability") {
+        capabilityIds.add(target.id);
+      }
+    }
+  }
+  return capabilityIds;
+}
+
+export function selectChecksByVerification(graph, checks, methods = [], options = {}) {
+  const capabilityIds = getVerifiedCapabilityIds(graph, methods);
+  if (capabilityIds.size === 0) {
+    return {
+      checks,
+      selection: null
+    };
+  }
+
+  const selected = [];
+  const selectedCheckIds = [];
+  const omittedCheckIds = [];
+
+  for (const check of checks) {
+    const keepLookup = options.keepLookupChecks && check.kind === "lookup_contract";
+    const keepWeb = options.keepWebChecks && (check.kind === "web_contract" || check.type === "web_get");
+    const matchesCapability = check.capabilityId && capabilityIds.has(check.capabilityId);
+    const keep = keepLookup || keepWeb || matchesCapability;
+
+    if (keep) {
+      selected.push(check);
+      selectedCheckIds.push(check.id);
+    } else {
+      omittedCheckIds.push(check.id);
+    }
+  }
+
+  return {
+    checks: selected.length > 0 ? selected : checks,
+    selection: {
+      methods,
+      capabilityIds: [...capabilityIds].sort(),
+      selectedCheckIds,
+      omittedCheckIds
+    }
+  };
+}
+
+function apiProjectionCandidates(graph) {
+  return (graph.byKind.projection || []).filter((projection) => (projection.http || []).length > 0);
+}
+
+function uiWebProjectionCandidates(graph) {
+  return (graph.byKind.projection || []).filter(
+    (projection) => projection.platform === "ui_web" && (projection.uiRoutes || []).length > 0
+  );
+}
+
+export function getDefaultEnvironmentProjections(graph, options = {}) {
+  const apiProjection =
+    (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
+    apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||
+    apiProjectionCandidates(graph)[0];
+  const uiProjection =
+    uiWebProjectionCandidates(graph).find((projection) => projection.id === "proj_ui_web") ||
+    uiWebProjectionCandidates(graph)[0];
+  const dbProjection = getDefaultBackendDbProjection(graph, options);
+
+  if (!apiProjection) {
+    throw new Error("Environment generation requires at least one API projection");
+  }
+  if (!uiProjection) {
+    throw new Error("Environment generation requires at least one ui_web projection");
+  }
+  if (!dbProjection) {
+    throw new Error("Environment generation requires at least one DB projection");
+  }
+
+  return { apiProjection, uiProjection, dbProjection };
+}
+
+export function generateServerBundle(graph, projectionId) {
+  return generateHonoServer(graph, { projectionId });
+}
+
+export function generateWebBundle(graph, projectionId) {
+  return generateWebApp(graph, { projectionId });
+}
+
+export function generateDbBundle(graph, projectionId) {
+  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId));
+}
+
+export function generateRuntimeApiContracts(graph) {
+  return generateApiContractGraph(graph, {});
+}
+
+export function runtimePorts(runtimeReference) {
+  return {
+    server: runtimeReference?.ports?.server || 3000,
+    web: runtimeReference?.ports?.web || 5173
+  };
+}
+
+export function runtimeUrls(runtimeReference) {
+  const ports = runtimePorts(runtimeReference);
+  return {
+    api: `http://localhost:${ports.server}`,
+    web: `http://localhost:${ports.web}`
+  };
+}

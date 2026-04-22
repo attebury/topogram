@@ -1,0 +1,38 @@
+{
+  "$id": "topogram:shape:shape_output_task_export_callback",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Outbound webhook payload sent when a task export completes",
+  "properties": {
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "download_url": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "job_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "accepted",
+        "running",
+        "completed",
+        "failed",
+        "expired"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id",
+    "status"
+  ],
+  "title": "Task Export Callback",
+  "type": "object"
+}

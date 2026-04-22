@@ -1,0 +1,10 @@
+shape shape_input_dummy {
+  name "Dummy Input"
+  description "Input for invalid UI tests"
+
+  fields {
+    status text optional
+  }
+
+  status active
+}

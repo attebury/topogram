@@ -1,0 +1,6 @@
+role role_author {
+  name "Author"
+  description "May create and update articles that move through the editorial workflow"
+
+  status active
+}

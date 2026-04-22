@@ -1,0 +1,10 @@
+capability cap_bad {
+  name "Broken Capability"
+  description "References a missing shape"
+
+  reads [entity_missing]
+  input [shape_missing]
+  output [shape_missing]
+
+  status active
+}

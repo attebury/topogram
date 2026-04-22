@@ -1,0 +1,6 @@
+role role_manager {
+  name "Manager"
+  description "May review submitted articles and request editorial decisions"
+
+  status active
+}

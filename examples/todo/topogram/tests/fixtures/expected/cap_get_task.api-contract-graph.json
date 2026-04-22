@@ -1,0 +1,538 @@
+{
+  "capability": {
+    "description": "Allows a user to fetch a single task by id",
+    "id": "cap_get_task",
+    "name": "Get Task"
+  },
+  "endpoint": {
+    "actors": [
+      {
+        "id": "actor_user",
+        "kind": "actor",
+        "order": 0,
+        "type": "api_actor"
+      }
+    ],
+    "async": [],
+    "auth": "user",
+    "authz": [
+      {
+        "claim": null,
+        "claimValue": null,
+        "ownership": "owner_or_admin",
+        "ownershipField": "owner_id",
+        "permission": null,
+        "role": null
+      }
+    ],
+    "cache": [
+      {
+        "code": "cap_get_task_not_modified",
+        "notModified": 304,
+        "requestHeader": "If-None-Match",
+        "required": false,
+        "responseHeader": "ETag",
+        "source": "updated_at"
+      }
+    ],
+    "callbacks": [],
+    "delete": [],
+    "download": [],
+    "idempotency": [],
+    "method": "GET",
+    "operationId": "cap_get_task",
+    "path": "/tasks/:id",
+    "preconditions": [],
+    "projection": {
+      "id": "proj_api",
+      "name": "API"
+    },
+    "requestPlacement": "path",
+    "status": [],
+    "successStatus": 200,
+    "type": "api_endpoint"
+  },
+  "errors": [
+    {
+      "code": "cap_get_task_invalid_request",
+      "source": "request_contract",
+      "status": 400,
+      "type": "api_error_case"
+    },
+    {
+      "code": "cap_get_task_not_found",
+      "source": "projection_mapping",
+      "status": 404,
+      "type": "api_error_case"
+    }
+  ],
+  "policy": [],
+  "requestContract": {
+    "fields": [
+      {
+        "name": "task_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceName": "task_id",
+        "transport": {
+          "location": "path",
+          "wireName": "id"
+        }
+      }
+    ],
+    "jsonSchema": {
+      "$id": "topogram:shape:shape_input_get_task",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Input for fetching a single task",
+      "properties": {
+        "task_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id"
+      ],
+      "title": "Get Task Input",
+      "type": "object"
+    },
+    "required": [
+      "task_id"
+    ],
+    "shape": {
+      "id": "shape_input_get_task",
+      "name": "Get Task Input"
+    },
+    "transport": {
+      "body": [],
+      "header": [],
+      "path": [
+        {
+          "name": "task_id",
+          "required": true,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceName": "task_id",
+          "transport": {
+            "location": "path",
+            "wireName": "id"
+          }
+        }
+      ],
+      "query": []
+    },
+    "type": "api_request_contract"
+  },
+  "responseContract": {
+    "collection": false,
+    "fields": [
+      {
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceName": "id",
+        "transport": {
+          "location": "body",
+          "wireName": "id"
+        }
+      },
+      {
+        "name": "title",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "sourceName": "title",
+        "transport": {
+          "location": "body",
+          "wireName": "title"
+        }
+      },
+      {
+        "name": "description",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "sourceName": "description",
+        "transport": {
+          "location": "body",
+          "wireName": "description"
+        }
+      },
+      {
+        "name": "status",
+        "required": true,
+        "schema": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "completed",
+            "archived"
+          ],
+          "type": "string"
+        },
+        "sourceName": "status",
+        "transport": {
+          "location": "body",
+          "wireName": "status"
+        }
+      },
+      {
+        "name": "priority",
+        "required": true,
+        "schema": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "type": "string"
+        },
+        "sourceName": "priority",
+        "transport": {
+          "location": "body",
+          "wireName": "priority"
+        }
+      },
+      {
+        "name": "owner_id",
+        "required": false,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceName": "owner_id",
+        "transport": {
+          "location": "body",
+          "wireName": "owner_id"
+        }
+      },
+      {
+        "name": "project_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceName": "project_id",
+        "transport": {
+          "location": "body",
+          "wireName": "project_id"
+        }
+      },
+      {
+        "name": "created_at",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceName": "created_at",
+        "transport": {
+          "location": "body",
+          "wireName": "created_at"
+        }
+      },
+      {
+        "name": "updated_at",
+        "required": true,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceName": "updated_at",
+        "transport": {
+          "location": "body",
+          "wireName": "updated_at"
+        }
+      },
+      {
+        "name": "completed_at",
+        "required": false,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceName": "completed_at",
+        "transport": {
+          "location": "body",
+          "wireName": "completed_at"
+        }
+      },
+      {
+        "name": "due_at",
+        "required": false,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceName": "due_at",
+        "transport": {
+          "location": "body",
+          "wireName": "due_at"
+        }
+      }
+    ],
+    "itemJsonSchema": null,
+    "jsonSchema": {
+      "$id": "topogram:shape:shape_output_task_detail",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Detailed task payload",
+      "properties": {
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "due_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "owner_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "priority": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "type": "string"
+        },
+        "project_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "completed",
+            "archived"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "status",
+        "priority",
+        "project_id",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "Task Detail Output",
+      "type": "object"
+    },
+    "mode": "item",
+    "pagination": null,
+    "required": [
+      "id",
+      "title",
+      "status",
+      "priority",
+      "project_id",
+      "created_at",
+      "updated_at"
+    ],
+    "shape": {
+      "id": "shape_output_task_detail",
+      "name": "Task Detail Output"
+    },
+    "transport": {
+      "body": [
+        {
+          "name": "id",
+          "required": true,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceName": "id",
+          "transport": {
+            "location": "body",
+            "wireName": "id"
+          }
+        },
+        {
+          "name": "title",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "sourceName": "title",
+          "transport": {
+            "location": "body",
+            "wireName": "title"
+          }
+        },
+        {
+          "name": "description",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "sourceName": "description",
+          "transport": {
+            "location": "body",
+            "wireName": "description"
+          }
+        },
+        {
+          "name": "status",
+          "required": true,
+          "schema": {
+            "default": "draft",
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "sourceName": "status",
+          "transport": {
+            "location": "body",
+            "wireName": "status"
+          }
+        },
+        {
+          "name": "priority",
+          "required": true,
+          "schema": {
+            "default": "medium",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "sourceName": "priority",
+          "transport": {
+            "location": "body",
+            "wireName": "priority"
+          }
+        },
+        {
+          "name": "owner_id",
+          "required": false,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceName": "owner_id",
+          "transport": {
+            "location": "body",
+            "wireName": "owner_id"
+          }
+        },
+        {
+          "name": "project_id",
+          "required": true,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceName": "project_id",
+          "transport": {
+            "location": "body",
+            "wireName": "project_id"
+          }
+        },
+        {
+          "name": "created_at",
+          "required": true,
+          "schema": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceName": "created_at",
+          "transport": {
+            "location": "body",
+            "wireName": "created_at"
+          }
+        },
+        {
+          "name": "updated_at",
+          "required": true,
+          "schema": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceName": "updated_at",
+          "transport": {
+            "location": "body",
+            "wireName": "updated_at"
+          }
+        },
+        {
+          "name": "completed_at",
+          "required": false,
+          "schema": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceName": "completed_at",
+          "transport": {
+            "location": "body",
+            "wireName": "completed_at"
+          }
+        },
+        {
+          "name": "due_at",
+          "required": false,
+          "schema": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceName": "due_at",
+          "transport": {
+            "location": "body",
+            "wireName": "due_at"
+          }
+        }
+      ],
+      "header": [],
+      "path": [],
+      "query": []
+    },
+    "type": "api_response_contract"
+  },
+  "type": "api_contract_graph"
+}
