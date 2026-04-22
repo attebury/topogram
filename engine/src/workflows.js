@@ -7408,7 +7408,10 @@ function reconcileWorkflow(inputPath, options = {}) {
   const planItemSummary = summarizeAdoptionPlanItems(adoptionPlan.items);
   const agentAdoptionPlan = buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact);
   for (const bundle of bundlesWithAuthHintClosures) {
-    candidateModelFiles[`candidates/reconcile/model/bundles/${bundle.slug}/README.md`] = renderCandidateBundleReadme(bundle, agentAdoptionPlan.imported_proposal_surfaces || []);
+    const readmePath = `candidates/reconcile/model/bundles/${bundle.slug}/README.md`;
+    const readme = renderCandidateBundleReadme(bundle, agentAdoptionPlan.imported_proposal_surfaces || []);
+    candidateModelFiles[readmePath] = readme;
+    files[readmePath] = readme;
   }
   appliedItems = planItemSummary.applied_items;
   approvedItems = planItemSummary.approved_items;

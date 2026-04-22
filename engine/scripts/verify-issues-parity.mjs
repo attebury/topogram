@@ -33,8 +33,8 @@ console.log(
     type: "issues_parity_verification",
     workspace: issuesPath,
     web: {
-      profiles: [evidence.web.reactProfile, evidence.web.sveltekitProfile],
-      screen_count: evidence.web.reactScreens.length,
+      profiles: [evidence.web.leftProfile, evidence.web.rightProfile],
+      screen_count: evidence.web.leftScreens.length,
       semantic_parity: evidence.web.semanticParity
     },
     runtime: {
