@@ -34,6 +34,7 @@ export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintaine
     requires_human_review: adoptionPlan.requires_human_review || [],
     proposal_surfaces: importMaintained.proposal_surfaces,
     maintained_risk: importMaintained.maintained_risk,
+    maintained_seam_review_summary: importMaintained.maintained_seam_review_summary,
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
     preset_blockers: presetGuidanceSummary.preset_blockers,
@@ -2028,13 +2029,48 @@ function buildImportProposalMaintainedImpacts(proposalSurface, maintainedBoundar
     affected_seams: output.seams,
     highest_severity: output.summary.highest_severity
   }));
+  const candidateSummary = summarizeImportMaintainedSeamCandidates(proposalSurface, matchedSeams);
 
   return {
     dependency_ids: dependencyIds,
     maintained_seam_candidates: proposalSurface.maintained_seam_candidates || [],
+    maintained_seam_candidate_summary: candidateSummary,
     affected_outputs: matchedOutputs,
     affected_seams: matchedSeams.map((seam) => compactMaintainedSeamSummary(seam)),
     highest_severity: matchedSeams.sort((a, b) => severityRank(b.status) - severityRank(a.status))[0]?.status || "aligned"
+  };
+}
+
+function summarizeImportMaintainedSeamCandidates(proposalSurface = {}, matchedSeams = []) {
+  const candidates = proposalSurface.maintained_seam_candidates || [];
+  const highestConfidence = candidates.reduce((max, candidate) => Math.max(max, Number(candidate.confidence || 0)), 0);
+  const topCandidate = [...candidates].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))[0] || null;
+  const matchedOutputs = stableSortedStrings(matchedSeams.map((seam) => seam.output_id).filter(Boolean));
+  const status = candidates.length > 0
+    ? "clear_candidate"
+    : matchedSeams.length > 0
+      ? "matched_without_explicit_candidate"
+      : "no_candidate";
+
+  return {
+    status,
+    candidate_count: candidates.length,
+    matched_seam_count: matchedSeams.length,
+    matched_output_ids: matchedOutputs,
+    highest_confidence: candidates.length > 0 ? highestConfidence : null,
+    top_candidate: topCandidate
+      ? {
+          seam_id: topCandidate.seam_id || null,
+          output_id: topCandidate.output_id || null,
+          status: topCandidate.status || null,
+          confidence: Number(topCandidate.confidence || 0)
+        }
+      : null,
+    review_guidance: candidates.length > 0
+      ? "Review the candidate maintained seam mapping before selective adoption."
+      : matchedSeams.length > 0
+        ? "Proposal dependencies overlap maintained seams, but there is no explicit candidate mapping yet."
+        : "No conservative maintained seam candidate was inferred for this proposal surface."
   };
 }
 
@@ -2068,10 +2104,34 @@ function buildImportMaintainedRisk(proposalSurfaces = [], maintainedBoundaryArti
     },
     maintainedBoundary: maintainedBoundaryArtifact
   });
+  const proposalSurfaceSummaries = enrichedProposalSurfaces.map((surface) => ({
+    id: surface.id,
+    bundle: surface.bundle || null,
+    kind: surface.kind || null,
+    ...surface.maintained_impacts?.maintained_seam_candidate_summary
+  }));
+  const surfacesWithCandidates = proposalSurfaceSummaries.filter((surface) => surface.status === "clear_candidate");
+  const surfacesWithoutCandidates = proposalSurfaceSummaries.filter((surface) => surface.status === "no_candidate");
+  const maintainedSeamReviewSummary = {
+    status: surfacesWithCandidates.length > 0
+      ? (surfacesWithoutCandidates.length > 0 ? "mixed" : "clear_candidate")
+      : "no_candidate",
+    proposal_surface_count: proposalSurfaceSummaries.length,
+    surfaces_with_candidates_count: surfacesWithCandidates.length,
+    surfaces_without_candidates_count: surfacesWithoutCandidates.length,
+    candidate_count: proposalSurfaceSummaries.reduce((sum, surface) => sum + (surface.candidate_count || 0), 0),
+    top_candidate: surfacesWithCandidates
+      .sort((a, b) => (b.highest_confidence || 0) - (a.highest_confidence || 0))[0]?.top_candidate || null,
+    proposal_surfaces: proposalSurfaceSummaries
+  };
 
   return {
     proposal_surfaces: enrichedProposalSurfaces,
-    maintained_risk: maintainedRisk
+    maintained_risk: {
+      ...maintainedRisk,
+      maintained_seam_review_summary: maintainedSeamReviewSummary
+    },
+    maintained_seam_review_summary: maintainedSeamReviewSummary
   };
 }
 
@@ -2680,6 +2740,7 @@ export function proceedDecisionFromRisk(risk, nextAction, writeScope, verificati
     recommended_write_scope: writeScope || null,
     recommended_verification_targets: verificationTargets || null,
     maintained_risk: maintainedRisk,
+    maintained_seam_review_summary: maintainedRisk?.maintained_seam_review_summary || null,
     output_verification_targets: maintainedRisk?.output_verification_targets || [],
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids
@@ -2767,6 +2828,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
     verification_targets: importPlan.verification_targets || null,
     proposal_surfaces: importPlan.proposal_surfaces || [],
     maintained_risk: importPlan.maintained_risk || null,
+    maintained_seam_review_summary: importPlan.maintained_seam_review_summary || null,
     output_verification_targets: importPlan.maintained_risk?.output_verification_targets || [],
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,

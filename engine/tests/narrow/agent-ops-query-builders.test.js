@@ -505,11 +505,65 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].seam_id, "seam_explicit_mapping");
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].confidence, 0.86);
   assert.match(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].match_reasons.join(" "), /dependency overlap/);
+  assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidate_summary.status, "clear_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.status, "clear_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.surfaces_with_candidates_count, 1);
+  assert.equal(importPlan.maintained_seam_review_summary.top_candidate.seam_id, "seam_explicit_mapping");
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.affected_seams[0].seam_id, "seam_explicit_mapping");
   assert.equal(reviewPacket.type, "review_packet_query");
   assert.equal(reviewPacket.source, "import-plan");
   assert.equal(reviewPacket.canonical_writes[0].canonical_rel_path, "capabilities/cap-update-issue.tg");
   assert.equal(reviewPacket.output_verification_targets[0].output_id, "maintained_app");
+  assert.equal(reviewPacket.maintained_seam_review_summary.status, "clear_candidate");
+});
+
+test("buildImportPlanPayload summarizes no-candidate maintained seam review conservatively", () => {
+  const adoptionPlan = {
+    approved_review_groups: [],
+    staged_items: [],
+    accepted_items: [],
+    rejected_items: [],
+    requires_human_review: [],
+    imported_proposal_surfaces: [
+      {
+        id: "catalog:doc:workflow_catalog",
+        bundle: "catalog",
+        kind: "doc",
+        canonical_rel_path: "docs/workflows/workflow-catalog.md",
+        maintained_seam_candidates: [],
+        requirements: {
+          related_docs: ["workflow_catalog"]
+        }
+      }
+    ]
+  };
+  const taskModeArtifact = {
+    summary: { focus: "Brownfield import review" },
+    next_action: { kind: "review_bundle" },
+    write_scope: { safe_to_edit: ["topogram/**"] },
+    verification_targets: { generated_checks: ["compile-check"] }
+  };
+
+  const importPlan = buildImportPlanPayload(adoptionPlan, taskModeArtifact, {
+    outputs: [],
+    seams: []
+  });
+  const risk = classifyRisk({ importPlan, verificationTargets: importPlan.verification_targets, maintainedRisk: importPlan.maintained_risk });
+  const reviewPacket = buildReviewPacketPayloadForImportPlan({ importPlan, risk });
+  const proceed = proceedDecisionFromRisk(
+    risk,
+    importPlan.next_action,
+    importPlan.write_scope,
+    importPlan.verification_targets,
+    importPlan.maintained_risk
+  );
+
+  assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidate_summary.status, "no_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.status, "no_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.surfaces_without_candidates_count, 1);
+  assert.match(importPlan.maintained_seam_review_summary.proposal_surfaces[0].review_guidance, /No conservative maintained seam candidate/);
+  assert.equal(reviewPacket.maintained_seam_review_summary.status, "no_candidate");
+  assert.equal(proceed.maintained_seam_review_summary.status, "no_candidate");
 });
 
 test("workflow preset inventory and import review packet expose provider and team preset categories", () => {

@@ -243,6 +243,7 @@ Current adoption states:
 `query import-plan` now also carries additive seam-aware maintained information:
 
 - `maintained_risk`
+- `maintained_seam_review_summary`
 - per-proposal-surface `maintained_impacts`
 - output-specific verification targets for affected maintained outputs
 - `workflow_presets` for provider and team workflow guidance currently in scope
@@ -256,6 +257,15 @@ When `maintained_seam_candidates` are present, treat them as conservative, revie
 - path and output corroboration can raise confidence
 - ambiguous or weak evidence should produce no candidate rather than a speculative best guess
 - the current live proof bar is one real positive trial (`trials/supabase-express-api`) plus one real negative/no-guessing trial (`trials/eShopOnWeb`)
+
+`maintained_seam_review_summary` is the compact operator read for that inference:
+
+- `clear_candidate`
+  - at least one proposal surface has a conservative maintained seam candidate
+- `mixed`
+  - at least one proposal surface has a candidate and at least one does not
+- `no_candidate`
+  - no proposal surface produced a conservative candidate, which is the expected outcome when evidence is weak or generic
 
 That keeps import/adopt review aligned with the same maintained seam/output vocabulary used by the change-oriented operator surfaces.
 
