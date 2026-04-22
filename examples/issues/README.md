@@ -19,13 +19,22 @@ That proof is documented in [docs/multi-runtime-proof-issues.md](/Users/attebury
 ## Layout
 
 - [topogram](/Users/attebury/Documents/topogram/examples/issues/topogram): the canonical Issues Topogram package
+- [topogram/tests/fixtures](/Users/attebury/Documents/topogram/examples/issues/topogram/tests/fixtures): regression fixtures for the Issues Topogram package
 - [implementation](/Users/attebury/Documents/topogram/examples/issues/implementation): issue-specific implementation data and renderers used by the generic engine
 - [artifacts](/Users/attebury/Documents/topogram/examples/issues/artifacts): generated contracts, docs, schemas, and runtime bundles for the Issues example
 - [apps](/Users/attebury/Documents/topogram/examples/issues/apps): runnable generated runtimes for the Issues example
 
+## Runtimes
+
+- [apps/backend](/Users/attebury/Documents/topogram/examples/issues/apps/backend): generated backend runtime
+- [apps/web](/Users/attebury/Documents/topogram/examples/issues/apps/web): generated React web runtime
+- [apps/web-sveltekit](/Users/attebury/Documents/topogram/examples/issues/apps/web-sveltekit): generated SvelteKit web runtime
+- [apps/local-stack](/Users/attebury/Documents/topogram/examples/issues/apps/local-stack): generated full local runnable stack
+
 ## Working Agreement
 
 - Edit the Issues source in `topogram/`.
+- Keep regression expectations in `topogram/tests/fixtures/`.
 - Use this example to test whether the engine handles a non-Todo domain cleanly.
 - This example now has its own runnable backend, React web app, SvelteKit web app, local stack bundle, and runtime-check bundle generated from example-owned implementation modules.
 - Treat the React and SvelteKit apps here as two realizations of one canonical `issues` model, not as two unrelated examples.
