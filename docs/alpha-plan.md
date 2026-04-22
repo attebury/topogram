@@ -82,8 +82,7 @@ Current working references:
 
 - [design-partner-profile.md](/Users/attebury/Documents/topogram/docs/design-partner-profile.md)
 - [invite-led-alpha.md](/Users/attebury/Documents/topogram/docs/invite-led-alpha.md)
-- [alpha-metrics-plan.md](/Users/attebury/Documents/topogram/docs/alpha-metrics-plan.md)
-- [alpha-metrics-instrumentation-plan.md](/Users/attebury/Documents/topogram/docs/alpha-metrics-instrumentation-plan.md)
+- [alpha-launch-tracker.md](/Users/attebury/Documents/topogram/docs/alpha-launch-tracker.md)
 
 ## Can slip without blocking alpha
 
@@ -186,7 +185,7 @@ Definition of done:
 
 Near-term follow-on after the story and demo path are stable:
 
-- start the lightweight alpha measurement loop from [alpha-metrics-instrumentation-plan.md](/Users/attebury/Documents/topogram/docs/alpha-metrics-instrumentation-plan.md)
+- start a lightweight alpha measurement loop once the evaluator path is stable enough to measure consistently
 
 ### 5. Product shaping after alpha
 

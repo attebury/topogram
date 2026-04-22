@@ -134,7 +134,7 @@ Priority candidates for the next phase:
   - import/adopt
   - diff review
   - verification
-- keep the workflow grammar machine-readable and Topogram-defined, then layer provider/team workflow presets on top of it rather than making tool-specific adapters the primary integration contract; see [../docs/workflow-presets-plan.md](/Users/attebury/Documents/topogram/docs/workflow-presets-plan.md)
+- keep the workflow grammar machine-readable and Topogram-defined, then layer provider/team workflow presets on top of it rather than making tool-specific adapters the primary integration contract
 - add machine-readable write-scope contracts so agents can tell:
   - what files are safe to edit
   - what files are generator-owned
