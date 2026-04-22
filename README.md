@@ -204,6 +204,7 @@ bash ./scripts/verify-generated-example.sh todo compile-smoke
 bash ./scripts/verify-issues-parity.sh
 bash ./scripts/verify-parity-matrix.sh
 bash ./scripts/verify-agent-planning.sh
+bash ./scripts/verify-brownfield-rehearsal.sh
 bash ./scripts/audit-issues-contract-diff.sh
 ```
 
@@ -216,6 +217,7 @@ Use them like this:
 - `verify-issues-parity.sh`: the shortest evaluator-facing proof for `issues` web and backend parity
 - `verify-parity-matrix.sh`: the shortest evaluator-facing proof for the current cross-domain parity matrix
 - `verify-agent-planning.sh`: the shortest evaluator-facing proof for the current single-agent and multi-agent planning stack
+- `verify-brownfield-rehearsal.sh`: the shortest evaluator-facing proof for the canonical import-plan -> review-packet -> proceed-decision brownfield loop
 - `audit-issues-contract-diff.sh`: the shortest emitted-contract audit for the current `issues` parity seams
 
 ## Local Guardrail

@@ -167,6 +167,9 @@ Use this short path for a live demo:
 7. For import/adopt rehearsal, use:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
    - then `query import-plan` against the generated staged workspace
+   - then `query review-packet --mode import-adopt`
+   - then `query proceed-decision --mode import-adopt`
+   - on this fixture, expect the conservative stop because maintained no-go seams are already in scope
 8. For planning rehearsal, use:
    - `query next-action`
    - `query single-agent-plan`
@@ -175,4 +178,5 @@ Use this short path for a live demo:
    - `query multi-agent-plan --mode import-adopt`
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`
+   - and `bash ./scripts/verify-brownfield-rehearsal.sh`
 9. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.

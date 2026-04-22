@@ -128,6 +128,27 @@ function workflowPresetSelectors({
   };
 }
 
+function importAdoptOnlyRequested({
+  modeId,
+  capabilityId,
+  workflowId,
+  projectionId,
+  entityId,
+  journeyId,
+  surfaceId,
+  fromTopogramPath
+} = {}) {
+  return modeId === "import-adopt" && !(
+    capabilityId ||
+    workflowId ||
+    projectionId ||
+    entityId ||
+    journeyId ||
+    surfaceId ||
+    fromTopogramPath
+  );
+}
+
 const args = process.argv.slice(2);
 if (args.length === 0) {
   printUsage();
@@ -735,9 +756,12 @@ try {
   if (commandArgs?.queryName === "risk-summary") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || modeId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const useImportAdoptPath =
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      (!hasSelectors && !modeId);
 
-    if (!hasSelectors && fs.existsSync(adoptionPlanPath)) {
+    if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
       const adoptionPlan = JSON.parse(fs.readFileSync(adoptionPlanPath, "utf8"));
       const ast = parsePath(inputPath);
       const taskModeResult = generateWorkspace(ast, {
@@ -874,9 +898,12 @@ try {
   if (commandArgs?.queryName === "canonical-writes") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || modeId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const useImportAdoptPath =
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      (!hasSelectors && !modeId);
 
-    if (!hasSelectors && fs.existsSync(adoptionPlanPath)) {
+    if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
       const adoptionPlan = JSON.parse(fs.readFileSync(adoptionPlanPath, "utf8"));
       const proposalSurfaces = adoptionPlan.imported_proposal_surfaces || [];
       console.log(stableStringify(buildCanonicalWritesPayloadForImportPlan(proposalSurfaces)));
@@ -907,9 +934,12 @@ try {
   if (commandArgs?.queryName === "proceed-decision") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || modeId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const useImportAdoptPath =
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      (!hasSelectors && !modeId);
 
-    if (!hasSelectors && fs.existsSync(adoptionPlanPath)) {
+    if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
       const adoptionPlan = JSON.parse(fs.readFileSync(adoptionPlanPath, "utf8"));
       const ast = parsePath(inputPath);
       const taskModeResult = generateWorkspace(ast, {
@@ -943,6 +973,17 @@ try {
         verificationTargets: importPlan.verification_targets,
         maintainedRisk: importPlan.maintained_risk || null
       });
+      const resolvedWorkflowContext = buildResolvedWorkflowContextPayload({
+        workspace: topogramRoot,
+        taskModeArtifact: taskModeResult.artifact,
+        importPlan,
+        selectors: workflowPresetSelectors({
+          taskModeArtifact: taskModeResult.artifact,
+          providerId,
+          presetId,
+          queryFamily: "proceed-decision"
+        })
+      });
       console.log(stableStringify(proceedDecisionFromRisk(
         risk,
         importPlan.next_action,
@@ -950,7 +991,7 @@ try {
         importPlan.verification_targets,
         importPlan.maintained_risk || null,
         importPlan.workflow_presets || null,
-        null
+        resolvedWorkflowContext
       )));
       process.exit(0);
     }
@@ -1051,9 +1092,12 @@ try {
   if (commandArgs?.queryName === "review-packet") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || modeId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const useImportAdoptPath =
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      (!hasSelectors && !modeId);
 
-    if (!hasSelectors && fs.existsSync(adoptionPlanPath)) {
+    if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
       const adoptionPlan = JSON.parse(fs.readFileSync(adoptionPlanPath, "utf8"));
       const ast = parsePath(inputPath);
       const taskModeResult = generateWorkspace(ast, {

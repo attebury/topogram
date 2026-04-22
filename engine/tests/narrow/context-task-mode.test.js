@@ -581,6 +581,40 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
   assert.match(importReviewPacketRun.stdout, /"recommended_preset_action"/);
   assert.match(importReviewPacketRun.stdout, /"preset_guidance_summary"/);
 
+  const importProceedDecisionModeRun = spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "proceed-decision",
+    buildAdoptionPlanFixture(
+      path.join(repoRoot, "engine", "tests", "fixtures", "import", "incomplete-topogram", "topogram"),
+      { scenario: "projection-impact" }
+    ),
+    "--mode",
+    "import-adopt"
+  ], { encoding: "utf8" });
+  assert.equal(importProceedDecisionModeRun.status, 0, importProceedDecisionModeRun.stderr);
+  assert.match(importProceedDecisionModeRun.stdout, /"type": "proceed_decision_query"/);
+  assert.match(importProceedDecisionModeRun.stdout, /"decision": "stop_no_go"/);
+  assert.match(importProceedDecisionModeRun.stdout, /"recommended_query_family": "import-plan"/);
+  assert.match(importProceedDecisionModeRun.stdout, /"current_surface": "proceed-decision"/);
+
+  const importReviewPacketModeRun = spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "review-packet",
+    buildAdoptionPlanFixture(
+      path.join(repoRoot, "engine", "tests", "fixtures", "import", "incomplete-topogram", "topogram"),
+      { scenario: "projection-impact" }
+    ),
+    "--mode",
+    "import-adopt"
+  ], { encoding: "utf8" });
+  assert.equal(importReviewPacketModeRun.status, 0, importReviewPacketModeRun.stderr);
+  assert.match(importReviewPacketModeRun.stdout, /"type": "review_packet_query"/);
+  assert.match(importReviewPacketModeRun.stdout, /"source": "import-plan"/);
+  assert.match(importReviewPacketModeRun.stdout, /"recommended_query_family": "import-plan"/);
+  assert.match(importReviewPacketModeRun.stdout, /"current_surface": "review-packet"/);
+
   const workflowPresetCustomizationRun = spawnSync(process.execPath, [
     cliPath,
     "query",
