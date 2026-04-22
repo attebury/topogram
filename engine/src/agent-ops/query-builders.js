@@ -2737,8 +2737,16 @@ export function proceedDecisionFromRisk(risk, nextAction, writeScope, verificati
     blocking_factors: risk.blocking_factors || [],
     required_human_review: Boolean(risk.recommended_human_review),
     recommended_next_action: nextAction || null,
+    recommended_query_family: recommendedQueryFamilyForAction(nextAction, resolvedWorkflowContext?.resolved_task_mode || null),
     recommended_write_scope: writeScope || null,
     recommended_verification_targets: verificationTargets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: resolvedWorkflowContext?.resolved_task_mode || null,
+      nextAction,
+      primaryArtifacts: resolvedWorkflowContext?.artifact_load_order || [],
+      verificationTargets,
+      currentSurface: "proceed-decision"
+    }),
     maintained_risk: maintainedRisk,
     maintained_seam_review_summary: maintainedRisk?.maintained_seam_review_summary || null,
     output_verification_targets: maintainedRisk?.output_verification_targets || [],
@@ -2816,6 +2824,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
       maintained_risk: importPlan.maintained_risk || null
     },
     next_action: importPlan.next_action || null,
+    recommended_query_family: recommendedQueryFamilyForAction(importPlan.next_action, "import-adopt"),
     canonical_writes: (importPlan.proposal_surfaces || [])
       .filter((surface) => surface.canonical_rel_path)
       .map((surface) => ({
@@ -2829,6 +2838,13 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
     proposal_surfaces: importPlan.proposal_surfaces || [],
     maintained_risk: importPlan.maintained_risk || null,
     maintained_seam_review_summary: importPlan.maintained_seam_review_summary || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: "import-adopt",
+      nextAction: importPlan.next_action || null,
+      primaryArtifacts: ["import-plan", "adoption-plan.agent.json"],
+      verificationTargets: importPlan.verification_targets || null,
+      currentSurface: "review-packet"
+    }),
     output_verification_targets: importPlan.maintained_risk?.output_verification_targets || [],
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
@@ -2858,6 +2874,7 @@ export function buildReviewPacketPayloadForChangePlan({ changePlan, risk }) {
       maintained_risk: maintainedRisk
     },
     next_action: changePlan.next_action || null,
+    recommended_query_family: recommendedQueryFamilyForAction(changePlan.next_action, changePlan.mode || null),
     canonical_writes: canonicalWriteCandidatesFromWriteScope(changePlan.write_scope).map((entry) => ({
       path: entry
     })),
@@ -2867,6 +2884,13 @@ export function buildReviewPacketPayloadForChangePlan({ changePlan, risk }) {
     diff_summary: changePlan.diff_summary || null,
     write_scope: changePlan.write_scope || null,
     verification_targets: changePlan.verification_targets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: changePlan.mode || null,
+      nextAction: changePlan.next_action || null,
+      primaryArtifacts: changePlan.context_artifacts || [],
+      verificationTargets: changePlan.verification_targets || null,
+      currentSurface: "review-packet"
+    }),
     alignment_recommendations: changePlan.alignment_recommendations || [],
     output_verification_targets: maintainedRisk.output_verification_targets || []
   };
@@ -2879,6 +2903,67 @@ function currentFocusFromTaskMode(taskModeArtifact) {
   }
   const focus = taskModeArtifact?.summary?.focus || null;
   return focus ? { kind: "mode_focus", label: focus } : null;
+}
+
+function verificationSurfaceForTargets(verificationTargets) {
+  const targetCount = ((verificationTargets?.generated_checks || []).length)
+    + ((verificationTargets?.maintained_app_checks || []).length)
+    + ((verificationTargets?.verification_ids || []).length);
+  return targetCount > 0 ? "verification-targets" : null;
+}
+
+function recommendedQueryFamilyForAction(nextAction, mode = null) {
+  switch (nextAction?.kind) {
+    case "review_staged":
+    case "review_bundle":
+    case "inspect_review_group":
+    case "inspect_proposal_surface":
+    case "customize_workflow_preset":
+    case "refresh_workflow_preset_customization":
+    case "import_declared_workflow_preset":
+      return "import-plan";
+    case "review_diff_impact":
+    case "inspect_projection":
+    case "inspect_diff":
+    case "review_diff_boundaries":
+      return "change-plan";
+    case "inspect_maintained_impact":
+    case "inspect_boundary_before_edit":
+    case "run_maintained_checks":
+      return "maintained-boundary";
+    case "inspect_verification_targets":
+      return "verification-targets";
+    case "inspect_workspace_digest":
+      return "single-agent-plan";
+    default:
+      break;
+  }
+
+  if (mode === "import-adopt") return "import-plan";
+  if (mode === "maintained-app-edit") return "maintained-boundary";
+  if (mode === "verification") return "verification-targets";
+  return "change-plan";
+}
+
+function immediateArtifacts(primaryArtifacts = []) {
+  return (primaryArtifacts || []).slice(0, 2);
+}
+
+function buildOperatorLoopSummary({
+  mode = null,
+  nextAction = null,
+  primaryArtifacts = [],
+  verificationTargets = null,
+  currentSurface = null
+} = {}) {
+  return {
+    current_surface: currentSurface,
+    start_query_family: recommendedQueryFamilyForAction(nextAction, mode),
+    immediate_artifacts: immediateArtifacts(primaryArtifacts),
+    review_surface: "review-packet",
+    decision_surface: "proceed-decision",
+    verification_surface: verificationSurfaceForTargets(verificationTargets)
+  };
 }
 
 function nextActionRequiresReview(nextAction) {
@@ -3440,6 +3525,13 @@ export function buildSingleAgentPlanPayload({
     write_scope: taskModeArtifact?.write_scope || null,
     review_boundaries: buildReviewBoundaries(taskModeArtifact, importPlan),
     proof_targets: taskModeArtifact?.verification_targets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: taskModeArtifact?.mode || null,
+      nextAction: taskModeArtifact?.next_action || null,
+      primaryArtifacts,
+      verificationTargets: taskModeArtifact?.verification_targets || null,
+      currentSurface: "single-agent-plan"
+    }),
     recommended_sequence: buildRecommendedSequence(taskModeArtifact, importPlan),
     blocking_conditions: buildBlockingConditions(taskModeArtifact, importPlan),
     primary_artifacts: primaryArtifacts,

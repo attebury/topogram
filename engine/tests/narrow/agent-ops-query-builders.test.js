@@ -512,6 +512,9 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.affected_seams[0].seam_id, "seam_explicit_mapping");
   assert.equal(reviewPacket.type, "review_packet_query");
   assert.equal(reviewPacket.source, "import-plan");
+  assert.equal(reviewPacket.recommended_query_family, "import-plan");
+  assert.equal(reviewPacket.operator_loop.current_surface, "review-packet");
+  assert.equal(reviewPacket.operator_loop.start_query_family, "import-plan");
   assert.equal(reviewPacket.canonical_writes[0].canonical_rel_path, "capabilities/cap-update-issue.tg");
   assert.equal(reviewPacket.output_verification_targets[0].output_id, "maintained_app");
   assert.equal(reviewPacket.maintained_seam_review_summary.status, "clear_candidate");
@@ -563,6 +566,9 @@ test("buildImportPlanPayload summarizes no-candidate maintained seam review cons
   assert.equal(importPlan.maintained_seam_review_summary.surfaces_without_candidates_count, 1);
   assert.match(importPlan.maintained_seam_review_summary.proposal_surfaces[0].review_guidance, /No conservative maintained seam candidate/);
   assert.equal(reviewPacket.maintained_seam_review_summary.status, "no_candidate");
+  assert.equal(proceed.recommended_query_family, "import-plan");
+  assert.equal(proceed.operator_loop.current_surface, "proceed-decision");
+  assert.equal(proceed.operator_loop.start_query_family, "import-plan");
   assert.equal(proceed.maintained_seam_review_summary.status, "no_candidate");
 });
 
@@ -2094,6 +2100,11 @@ test("buildSingleAgentPlanPayload produces an import-adopt baseline from task mo
   assert.equal(plan.mode, "import-adopt");
   assert.equal(plan.current_focus.label, "Proposal review and adoption planning");
   assert.equal(plan.next_action.kind, "review_staged");
+  assert.equal(plan.operator_loop.current_surface, "single-agent-plan");
+  assert.equal(plan.operator_loop.start_query_family, "import-plan");
+  assert.equal(plan.operator_loop.review_surface, "review-packet");
+  assert.equal(plan.operator_loop.decision_surface, "proceed-decision");
+  assert.equal(plan.operator_loop.verification_surface, "verification-targets");
   assert.deepEqual(plan.primary_artifacts, [
     "import-plan",
     "review-packet",
@@ -2143,6 +2154,8 @@ test("buildSingleAgentPlanPayload produces a maintained-app-edit plan without im
   assert.equal(plan.type, "single_agent_plan");
   assert.equal(plan.mode, "maintained-app-edit");
   assert.equal(plan.primary_artifacts[0], "context-bundle.maintained-app.json");
+  assert.equal(plan.operator_loop.start_query_family, "maintained-boundary");
+  assert.equal(plan.operator_loop.verification_surface, "verification-targets");
   assert.equal(plan.recommended_sequence[1].action, "inspect_review_boundaries");
   assert.equal(plan.recommended_sequence[3].action, "run_proof_targets");
   assert.equal(plan.blocking_conditions.length, 0);

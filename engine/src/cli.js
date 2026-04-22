@@ -1202,6 +1202,38 @@ try {
       mode: result.artifact.mode,
       summary: result.artifact.summary || null,
       next_action: result.artifact.next_action || null,
+      recommended_query_family: (function resolveRecommendedQueryFamily(nextAction, mode) {
+        switch (nextAction?.kind) {
+          case "review_staged":
+          case "review_bundle":
+          case "inspect_review_group":
+          case "inspect_proposal_surface":
+          case "customize_workflow_preset":
+          case "refresh_workflow_preset_customization":
+          case "import_declared_workflow_preset":
+            return "import-plan";
+          case "review_diff_impact":
+          case "inspect_projection":
+          case "inspect_diff":
+          case "review_diff_boundaries":
+            return "change-plan";
+          case "inspect_maintained_impact":
+          case "inspect_boundary_before_edit":
+          case "run_maintained_checks":
+            return "maintained-boundary";
+          case "inspect_verification_targets":
+            return "verification-targets";
+          case "inspect_workspace_digest":
+            return "single-agent-plan";
+          default:
+            break;
+        }
+        if (mode === "import-adopt") return "import-plan";
+        if (mode === "maintained-app-edit") return "maintained-boundary";
+        if (mode === "verification") return "verification-targets";
+        return "change-plan";
+      }(result.artifact.next_action || null, result.artifact.mode)),
+      immediate_artifacts: (result.artifact.preferred_context_artifacts || []).slice(0, 2),
       preferred_context_artifacts: result.artifact.preferred_context_artifacts || [],
       review_emphasis: result.artifact.review_emphasis || [],
       write_scope: result.artifact.write_scope || null,
