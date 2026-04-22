@@ -215,6 +215,11 @@ Use them like this:
 - `verify-agent-planning.sh`: the shortest evaluator-facing proof for the current single-agent and multi-agent planning stack
 - `audit-issues-contract-diff.sh`: the shortest emitted-contract audit for the current `issues` parity seams
 
+## License
+
+Topogram is licensed under the Apache License 2.0. See [LICENSE](/Users/attebury/Documents/topogram/LICENSE).
+Copyright is documented in [NOTICE](/Users/attebury/Documents/topogram/NOTICE).
+
 ## Repo Layout
 
 This repo is organized around a clean separation between the engine, example Topogram packages, generated artifacts and runtimes, and maintained proof code.
