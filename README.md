@@ -218,6 +218,18 @@ Use them like this:
 - `verify-agent-planning.sh`: the shortest evaluator-facing proof for the current single-agent and multi-agent planning stack
 - `audit-issues-contract-diff.sh`: the shortest emitted-contract audit for the current `issues` parity seams
 
+## Local Guardrail
+
+This repo now includes a repo-local `pre-push` hook that blocks newly introduced machine-specific absolute filesystem paths in changed human-facing and source files.
+
+To enable it locally:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook intentionally skips known generated example outputs and expected fixtures under `examples/**` for now. The broader normalization of those committed generated paths remains separate cleanup work.
+
 ## License
 
 Topogram is licensed under the Apache License 2.0. See [LICENSE](./LICENSE).
