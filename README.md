@@ -72,6 +72,7 @@ The current planning boundary is now explicit too:
 - `query single-agent-plan` is the default operating loop for one agent or operator
 - `query multi-agent-plan --mode import-adopt` is the optional decomposition for more complex brownfield work
 - `query work-packet --mode import-adopt --lane <id>` is the bounded assignment surface for one worker
+- `review-packet` and `proceed-decision` now carry the compact operator loop, recommended query family, and first artifacts to inspect
 
 That planning stack is artifact-backed and alpha-complete for guidance. It is not yet a built-in scheduler or hosted orchestration runtime.
 
@@ -106,7 +107,7 @@ This repo is grounded in working proofs, not just concept demos:
 - [examples/todo](./examples/todo): the smallest end-to-end reference example
 - [examples/issues](./examples/issues): a multi-frontend issue-tracker proof
 - [examples/content-approval](./examples/content-approval): a workflow-heavy proof that pressures non-Todo abstractions
-- [product/app](./product/app): a hand-maintained proof app showing how Topogram can guide edits to existing code
+- [product/app](./product/app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances
 - [docs/confirmed-proof-matrix.md](./docs/confirmed-proof-matrix.md): closed brownfield proofs across a broad set of real stacks
 - [docs/testing-strategy.md](./docs/testing-strategy.md): the verification philosophy and current regression layers
 - [docs/proof-points-and-limits.md](./docs/proof-points-and-limits.md): the current claim boundary, proof matrix, and known limits
@@ -175,7 +176,9 @@ The current agent-facing contract also includes:
 
 - explicit review classes: `safe`, `review_required`, `manual_decision`, `no_go`
 - machine-readable maintained-app boundaries for human-owned code seams
+- seam-family-aware maintained drift and conformance summaries so one semantic drift can be shown across multiple maintained surfaces
 - a stage-based adoption-plan view where proposals can be `accept`, `map`, `customize`, `stage`, or `reject`
+- conservative brownfield seam-review summaries that distinguish clear candidates from no-candidate proposals
 
 ## Getting Started
 
@@ -214,6 +217,18 @@ Use them like this:
 - `verify-parity-matrix.sh`: the shortest evaluator-facing proof for the current cross-domain parity matrix
 - `verify-agent-planning.sh`: the shortest evaluator-facing proof for the current single-agent and multi-agent planning stack
 - `audit-issues-contract-diff.sh`: the shortest emitted-contract audit for the current `issues` parity seams
+
+## Local Guardrail
+
+This repo now includes a repo-local `pre-push` hook that blocks newly introduced machine-specific absolute filesystem paths in changed human-facing and source files.
+
+To enable it locally:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook intentionally skips known generated example outputs and expected fixtures under `examples/**` for now. The broader normalization of those committed generated paths remains separate cleanup work.
 
 ## License
 

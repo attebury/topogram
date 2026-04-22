@@ -6,7 +6,11 @@ import {
   summarizeArticleWorkflowDecision
 } from "../src/content-approval-change-guards.js";
 import { buildArticleDetailPage, buildArticleEditFormModel, buildRequestRevisionFormModel } from "../src/content-approval-ui.js";
-import { buildIssueCardViewModel, buildIssueDetailViewModel } from "../src/issues.js";
+import {
+  buildIssueCardViewModel,
+  buildIssueCrossSurfaceAlignment,
+  buildIssueDetailViewModel
+} from "../src/issues.js";
 import {
   assessProjectOwnerRelationChange,
   summarizeProjectOwnerRelationDecision
@@ -377,12 +381,55 @@ export function assertMaintainedAppProofScenarios({ articleResubmissionJourney, 
     priority: "medium",
     assigneeId: "user_runtime"
   });
+  const expectedIssueCrossSurfaceAlignment = buildIssueCrossSurfaceAlignment(
+    {
+      id: "issue_runtime",
+      title: "Runtime Proof Issue",
+      status: "in_progress",
+      board_id: "board_runtime",
+      assignee_id: "user_runtime",
+      priority: "high",
+      closed_at: null
+    },
+    {
+      userId: "user_runtime",
+      isAdmin: false
+    }
+  );
 
   assert.equal(issueCardViewModel.route, "/issues/issue_runtime");
   assert.equal(issueCardViewModel.priorityBadge, "medium");
   assert.equal(issueCardViewModel.assigneeBadge, "user_runtime");
   assert.match(issueCardViewModel.summary, /Assignee: user_runtime/);
   assert.match(issueCardViewModel.summary, /Priority: medium/);
+  assert.equal(
+    issueCardViewModel.crossSurfaceAlignment.detailActionState.visibilityState,
+    "read_only_detail",
+    "Expected the issue list/card summary to stay read-only while still mirroring the same governed detail seam."
+  );
+  assertIssueCrossSurfaceAlignment({
+    detailViewModel: ownerIssueDetailViewModel,
+    cardViewModel: issueCardViewModel,
+    expectedAlignment: expectedIssueCrossSurfaceAlignment
+  });
+  assert.throws(
+    () =>
+      assertIssueCrossSurfaceAlignment({
+        detailViewModel: ownerIssueDetailViewModel,
+        cardViewModel: {
+          ...issueCardViewModel,
+          crossSurfaceAlignment: {
+            ...issueCardViewModel.crossSurfaceAlignment,
+            routeMetadata: {
+              ...issueCardViewModel.crossSurfaceAlignment.routeMetadata,
+              detailSurfaceId: "issue_list"
+            }
+          }
+        },
+        expectedAlignment: expectedIssueCrossSurfaceAlignment
+      }),
+    /cross-surface alignment drift/i
+  );
   assert.equal(
     issueCreationJourney.related_capabilities.includes("cap_list_issues"),
     true,
@@ -477,5 +524,48 @@ export function assertMaintainedAppProofScenarios({ articleResubmissionJourney, 
   assert.match(
     summarizeProjectOwnerRelationDecision(unsupportedProjectOwnerAssessment),
     /manual decision required/i
+  );
+}
+
+export function assertIssueCrossSurfaceAlignment({ detailViewModel, cardViewModel, expectedAlignment }) {
+  assert.deepEqual(
+    detailViewModel.crossSurfaceAlignment.routeMetadata,
+    expectedAlignment.routeMetadata,
+    "Issue cross-surface alignment drift: detail route metadata no longer matches the governed seam."
+  );
+  assert.deepEqual(
+    cardViewModel.crossSurfaceAlignment.routeMetadata,
+    expectedAlignment.routeMetadata,
+    "Issue cross-surface alignment drift: list/card route metadata no longer points at the same governed detail seam."
+  );
+  assert.equal(
+    detailViewModel.crossSurfaceAlignment.ownershipRule,
+    expectedAlignment.ownershipRule,
+    "Issue cross-surface alignment drift: detail ownership rule no longer matches the emitted semantic rule."
+  );
+  assert.equal(
+    cardViewModel.crossSurfaceAlignment.ownershipRule,
+    expectedAlignment.ownershipRule,
+    "Issue cross-surface alignment drift: list/card ownership rule no longer matches the emitted semantic rule."
+  );
+  assert.equal(
+    detailViewModel.assigneeBadge,
+    expectedAlignment.summaryState.assigneeBadge,
+    "Issue cross-surface alignment drift: detail assignee badge no longer mirrors the governed summary state."
+  );
+  assert.equal(
+    cardViewModel.assigneeBadge,
+    expectedAlignment.summaryState.assigneeBadge,
+    "Issue cross-surface alignment drift: list/card assignee badge no longer mirrors the governed summary state."
+  );
+  assert.equal(
+    detailViewModel.actionVisibility.canEdit,
+    expectedAlignment.detailActionState.canEdit,
+    "Issue cross-surface alignment drift: detail edit visibility no longer matches the shared ownership rule."
+  );
+  assert.equal(
+    detailViewModel.actionVisibility.canClose,
+    expectedAlignment.detailActionState.canClose,
+    "Issue cross-surface alignment drift: detail close visibility no longer matches the shared ownership rule."
   );
 }

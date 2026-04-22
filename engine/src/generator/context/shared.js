@@ -479,6 +479,8 @@ function readLocalMaintainedProofMetadataFromWorkspace(workspaceRoot) {
         maintainedFiles,
         emittedDependencies,
         humanOwnedSeams,
+        seamFamilyId: doc.metadata.seam_family_id || null,
+        seamFamilyLabel: doc.metadata.seam_family_label || null,
         exists: true,
         absolutePath: doc.file,
         relativePath: doc.relativePath,
@@ -535,6 +537,8 @@ export function buildMaintainedBoundaryArtifact({
       maintained_files: item.maintainedFiles || [],
       emitted_dependencies: item.emittedDependencies || [],
       human_owned_seams: item.humanOwnedSeams || [],
+      seam_family_id: item.seamFamilyId || null,
+      seam_family_label: item.seamFamilyLabel || null,
       review_boundary: item.reviewBoundary,
       ownership_boundary: item.ownership_boundary
     })),
@@ -572,6 +576,19 @@ export function maintainedProofMetadata(graph) {
       maintainedFiles: ["product/app/src/issues.js"],
       emittedDependencies: ["proj_web", "proj_api", "journey_issue_resolution_and_closure"],
       humanOwnedSeams: ["maintained presenter structure", "detail/list rendering treatment"]
+    },
+    {
+      classification: "accepted_change",
+      path: "product/app/proof/issues-cross-surface-alignment-story.md",
+      maintainedFiles: ["product/app/src/issues.js"],
+      emittedDependencies: ["proj_web", "proj_api", "journey_issue_creation_and_assignment", "journey_issue_resolution_and_closure"],
+      humanOwnedSeams: [
+        "issues detail action state",
+        "issues list/card summary state",
+        "issues route and action metadata"
+      ],
+      seamFamilyId: "issues_cross_surface_alignment",
+      seamFamilyLabel: "issues cross-surface ownership alignment"
     },
     {
       classification: "guarded_manual_decision",
@@ -776,6 +793,8 @@ function mergeMaintainedSeam(existing, next) {
   if (!existing) {
     return {
       ...next,
+      seam_family_id: next.seam_family_id || null,
+      seam_family_label: next.seam_family_label || null,
       maintained_modules: stableSortedStrings(next.maintained_modules || []),
       emitted_dependencies: stableSortedStrings(next.emitted_dependencies || []),
       human_owned_aspects: stableSortedStrings(next.human_owned_aspects || []),
@@ -796,6 +815,8 @@ function mergeMaintainedSeam(existing, next) {
   return {
     ...existing,
     kind: existing.kind || next.kind,
+    seam_family_id: existing.seam_family_id || next.seam_family_id || null,
+    seam_family_label: existing.seam_family_label || next.seam_family_label || null,
     status: nextStatus > currentStatus ? next.status : existing.status,
     ownership_class: nextOwnership > currentOwnership ? next.ownership_class : existing.ownership_class,
     maintained_modules: stableSortedStrings([...(existing.maintained_modules || []), ...(next.maintained_modules || [])]),
@@ -818,6 +839,8 @@ export function buildMaintainedSeams(proofStories = []) {
       const output = maintainedOutputDescriptor(story.maintainedFiles || story.maintained_files || []);
       const seam = {
         seam_id: `seam_${seamIdHint(seamLabel)}`,
+        seam_family_id: story.seamFamilyId || story.seam_family_id || null,
+        seam_family_label: story.seamFamilyLabel || story.seam_family_label || null,
         output_id: output.output_id,
         label: seamLabel,
         kind: maintainedSeamKind(seamLabel),

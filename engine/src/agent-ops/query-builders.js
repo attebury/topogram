@@ -34,6 +34,7 @@ export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintaine
     requires_human_review: adoptionPlan.requires_human_review || [],
     proposal_surfaces: importMaintained.proposal_surfaces,
     maintained_risk: importMaintained.maintained_risk,
+    maintained_seam_review_summary: importMaintained.maintained_seam_review_summary,
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
     preset_blockers: presetGuidanceSummary.preset_blockers,
@@ -1167,6 +1168,8 @@ function normalizeProofStorySummary(story) {
     classification: story?.classification || null,
     relativePath: story?.relativePath || null,
     maintained_files: story?.maintained_files || story?.maintainedFiles || [],
+    seam_family_id: story?.seam_family_id || story?.seamFamilyId || null,
+    seam_family_label: story?.seam_family_label || story?.seamFamilyLabel || null,
     review_boundary: story?.review_boundary || null
   };
 }
@@ -1174,6 +1177,8 @@ function normalizeProofStorySummary(story) {
 function normalizeSeamSummary(seam, proofStoryMapper = normalizeProofStorySummary) {
   return {
     seam_id: seam?.seam_id || null,
+    seam_family_id: seam?.seam_family_id || null,
+    seam_family_label: seam?.seam_family_label || null,
     output_id: seam?.output_id || null,
     label: seam?.label || null,
     kind: seam?.kind || null,
@@ -1224,6 +1229,7 @@ function normalizeMaintainedOutput(output, seamMap, {
   });
   const statuses = stableSortedStrings(sortedSeams.map((seam) => seam[summaryField]).filter(Boolean));
   const statusCounts = Object.fromEntries(statuses.map((status) => [status, sortedSeams.filter((seam) => seam[summaryField] === status).length]));
+  const seamFamilies = stableSortedStrings(sortedSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     output_id: output?.output_id || null,
@@ -1235,13 +1241,16 @@ function normalizeMaintainedOutput(output, seamMap, {
     verification_targets: output?.verification_targets || verificationTargetsFallback || null,
     maintained_files_in_scope: files,
     human_owned_seams: humanOwnedSeams,
+    seam_families: seamFamilies,
     proof_stories: proofStories,
     seams: sortedSeams,
     summary: {
       affected_seam_count: sortedSeams.length,
+      affected_seam_family_count: seamFamilies.length,
       maintained_file_count: files.length,
       highest_severity: sortedSeams[0]?.[summaryField] || "aligned",
-      status_counts: statusCounts
+      status_counts: statusCounts,
+      affected_seam_families: seamFamilies
     }
   };
 }
@@ -2020,13 +2029,48 @@ function buildImportProposalMaintainedImpacts(proposalSurface, maintainedBoundar
     affected_seams: output.seams,
     highest_severity: output.summary.highest_severity
   }));
+  const candidateSummary = summarizeImportMaintainedSeamCandidates(proposalSurface, matchedSeams);
 
   return {
     dependency_ids: dependencyIds,
     maintained_seam_candidates: proposalSurface.maintained_seam_candidates || [],
+    maintained_seam_candidate_summary: candidateSummary,
     affected_outputs: matchedOutputs,
     affected_seams: matchedSeams.map((seam) => compactMaintainedSeamSummary(seam)),
     highest_severity: matchedSeams.sort((a, b) => severityRank(b.status) - severityRank(a.status))[0]?.status || "aligned"
+  };
+}
+
+function summarizeImportMaintainedSeamCandidates(proposalSurface = {}, matchedSeams = []) {
+  const candidates = proposalSurface.maintained_seam_candidates || [];
+  const highestConfidence = candidates.reduce((max, candidate) => Math.max(max, Number(candidate.confidence || 0)), 0);
+  const topCandidate = [...candidates].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))[0] || null;
+  const matchedOutputs = stableSortedStrings(matchedSeams.map((seam) => seam.output_id).filter(Boolean));
+  const status = candidates.length > 0
+    ? "clear_candidate"
+    : matchedSeams.length > 0
+      ? "matched_without_explicit_candidate"
+      : "no_candidate";
+
+  return {
+    status,
+    candidate_count: candidates.length,
+    matched_seam_count: matchedSeams.length,
+    matched_output_ids: matchedOutputs,
+    highest_confidence: candidates.length > 0 ? highestConfidence : null,
+    top_candidate: topCandidate
+      ? {
+          seam_id: topCandidate.seam_id || null,
+          output_id: topCandidate.output_id || null,
+          status: topCandidate.status || null,
+          confidence: Number(topCandidate.confidence || 0)
+        }
+      : null,
+    review_guidance: candidates.length > 0
+      ? "Review the candidate maintained seam mapping before selective adoption."
+      : matchedSeams.length > 0
+        ? "Proposal dependencies overlap maintained seams, but there is no explicit candidate mapping yet."
+        : "No conservative maintained seam candidate was inferred for this proposal surface."
   };
 }
 
@@ -2060,16 +2104,42 @@ function buildImportMaintainedRisk(proposalSurfaces = [], maintainedBoundaryArti
     },
     maintainedBoundary: maintainedBoundaryArtifact
   });
+  const proposalSurfaceSummaries = enrichedProposalSurfaces.map((surface) => ({
+    id: surface.id,
+    bundle: surface.bundle || null,
+    kind: surface.kind || null,
+    ...surface.maintained_impacts?.maintained_seam_candidate_summary
+  }));
+  const surfacesWithCandidates = proposalSurfaceSummaries.filter((surface) => surface.status === "clear_candidate");
+  const surfacesWithoutCandidates = proposalSurfaceSummaries.filter((surface) => surface.status === "no_candidate");
+  const maintainedSeamReviewSummary = {
+    status: surfacesWithCandidates.length > 0
+      ? (surfacesWithoutCandidates.length > 0 ? "mixed" : "clear_candidate")
+      : "no_candidate",
+    proposal_surface_count: proposalSurfaceSummaries.length,
+    surfaces_with_candidates_count: surfacesWithCandidates.length,
+    surfaces_without_candidates_count: surfacesWithoutCandidates.length,
+    candidate_count: proposalSurfaceSummaries.reduce((sum, surface) => sum + (surface.candidate_count || 0), 0),
+    top_candidate: surfacesWithCandidates
+      .sort((a, b) => (b.highest_confidence || 0) - (a.highest_confidence || 0))[0]?.top_candidate || null,
+    proposal_surfaces: proposalSurfaceSummaries
+  };
 
   return {
     proposal_surfaces: enrichedProposalSurfaces,
-    maintained_risk: maintainedRisk
+    maintained_risk: {
+      ...maintainedRisk,
+      maintained_seam_review_summary: maintainedSeamReviewSummary
+    },
+    maintained_seam_review_summary: maintainedSeamReviewSummary
   };
 }
 
 function compactMaintainedSeamSummary(seam) {
   return {
     seam_id: seam?.seam_id || null,
+    seam_family_id: seam?.seam_family_id || null,
+    seam_family_label: seam?.seam_family_label || null,
     output_id: seam?.output_id || null,
     kind: seam?.kind || null,
     status: seam?.status || null,
@@ -2084,6 +2154,7 @@ function compactMaintainedOutputSummary(output) {
     kind: output?.kind || null,
     highest_severity: output?.highest_severity || output?.summary?.highest_severity || "aligned",
     affected_seam_count: output?.affected_seams?.length || output?.summary?.affected_seam_count || 0,
+    affected_seam_family_count: output?.summary?.affected_seam_family_count || 0,
     maintained_file_count: output?.maintained_files_in_scope?.length || output?.summary?.maintained_file_count || 0,
     verification_targets: verificationTargets
   };
@@ -2137,12 +2208,15 @@ export function buildMaintainedRiskSummary({ maintainedImpacts = null, maintaine
     output_id: output.output_id,
     verification_targets: output.verification_targets || null
   }));
+  const affectedSeamFamilies = stableSortedStrings(compactSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     affected_output_count: compactOutputs.length || diffSummary?.affected_output_count || 0,
     affected_seam_count: compactSeams.length || diffSummary?.affected_seam_count || 0,
+    affected_seam_family_count: affectedSeamFamilies.length,
     highest_severity: highestSeverity,
     status_counts: statusCounts,
+    affected_seam_families: affectedSeamFamilies,
     affected_outputs: compactOutputs,
     affected_seams: compactSeams,
     maintained_files_in_scope: maintainedFilesInScope,
@@ -2266,10 +2340,12 @@ export function buildMaintainedDriftPayload({ diffArtifact, maintainedBoundaryAr
     verification_targets: output.verification_targets,
     maintained_files_in_scope: output.maintained_files_in_scope,
     human_owned_seams: output.human_owned_seams,
+    seam_families: output.seam_families,
     affected_seams: output.seams,
     proof_stories: output.proof_stories,
     summary: output.summary
   }));
+  const affectedSeamFamilies = stableSortedStrings(affectedSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     type: "maintained_drift_query",
@@ -2282,14 +2358,17 @@ export function buildMaintainedDriftPayload({ diffArtifact, maintainedBoundaryAr
     },
     summary: {
       affected_seam_count: affectedSeams.length,
+      affected_seam_family_count: affectedSeamFamilies.length,
       affected_output_count: outputs.length,
       maintained_file_count: maintainedFiles.length,
       highest_severity: highestSeverity,
-      status_counts: statusCounts
+      status_counts: statusCounts,
+      affected_seam_families: affectedSeamFamilies
     },
     outputs,
     maintained_files_in_scope: maintainedFiles,
     human_owned_seams: humanOwnedSeams,
+    affected_seam_families: affectedSeamFamilies,
     affected_seams: affectedSeams,
     proof_stories: (diffMaintained?.proof_stories || maintainedBoundaryArtifact?.proof_stories || []).map((story) => normalizeProofStorySummary(story)),
     verification_targets: verificationTargets || null,
@@ -2395,18 +2474,22 @@ export function buildMaintainedConformancePayload({
     verification_targets: output.verification_targets,
     maintained_files_in_scope: output.maintained_files_in_scope,
     human_owned_seams: output.human_owned_seams,
+    seam_families: output.seam_families,
     conformance_status: output.summary.highest_severity,
     summary: {
       governed_seam_count: output.seams.length,
+      affected_seam_family_count: output.summary.affected_seam_family_count || 0,
       aligned_count: output.seams.filter((seam) => seam.conformance_state === "aligned").length,
       review_required_count: output.seams.filter((seam) => seam.conformance_state === "review_required").length,
       drift_suspected_count: output.seams.filter((seam) => seam.conformance_state === "drift_suspected").length,
       no_go_count: output.seams.filter((seam) => seam.conformance_state === "no_go").length,
       unverifiable_count: output.seams.filter((seam) => seam.conformance_state === "unverifiable").length,
-      highest_severity: output.summary.highest_severity
+      highest_severity: output.summary.highest_severity,
+      affected_seam_families: output.summary.affected_seam_families || []
     },
     seams: output.seams
   }));
+  const seamFamilies = stableSortedStrings(seams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     type: "maintained_conformance_query",
@@ -2415,12 +2498,14 @@ export function buildMaintainedConformancePayload({
     conformance_status: conformanceStatus,
     summary: {
       governed_seam_count: seams.length,
+      affected_seam_family_count: seamFamilies.length,
       aligned_count: counts.aligned,
       review_required_count: counts.review_required,
       drift_suspected_count: counts.drift_suspected,
       no_go_count: counts.no_go,
       unverifiable_count: counts.unverifiable,
-      highest_severity: conformanceStatus
+      highest_severity: conformanceStatus,
+      affected_seam_families: seamFamilies
     },
     outputs,
     seams,
@@ -2467,6 +2552,7 @@ export function buildSeamCheckPayload({
     });
   const summary = {
     seam_count: seamChecks.length,
+    seam_family_count: stableSortedStrings(seamChecks.map((item) => item.seam_family_id).filter(Boolean)).length,
     aligned_count: seamChecks.filter((item) => item.check_status === "aligned").length,
     guarded_count: seamChecks.filter((item) => item.check_status === "guarded").length,
     stale_count: seamChecks.filter((item) => item.check_status === "stale").length,
@@ -2651,9 +2737,18 @@ export function proceedDecisionFromRisk(risk, nextAction, writeScope, verificati
     blocking_factors: risk.blocking_factors || [],
     required_human_review: Boolean(risk.recommended_human_review),
     recommended_next_action: nextAction || null,
+    recommended_query_family: recommendedQueryFamilyForAction(nextAction, resolvedWorkflowContext?.resolved_task_mode || null),
     recommended_write_scope: writeScope || null,
     recommended_verification_targets: verificationTargets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: resolvedWorkflowContext?.resolved_task_mode || null,
+      nextAction,
+      primaryArtifacts: resolvedWorkflowContext?.artifact_load_order || [],
+      verificationTargets,
+      currentSurface: "proceed-decision"
+    }),
     maintained_risk: maintainedRisk,
+    maintained_seam_review_summary: maintainedRisk?.maintained_seam_review_summary || null,
     output_verification_targets: maintainedRisk?.output_verification_targets || [],
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids
@@ -2729,6 +2824,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
       maintained_risk: importPlan.maintained_risk || null
     },
     next_action: importPlan.next_action || null,
+    recommended_query_family: recommendedQueryFamilyForAction(importPlan.next_action, "import-adopt"),
     canonical_writes: (importPlan.proposal_surfaces || [])
       .filter((surface) => surface.canonical_rel_path)
       .map((surface) => ({
@@ -2741,6 +2837,14 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
     verification_targets: importPlan.verification_targets || null,
     proposal_surfaces: importPlan.proposal_surfaces || [],
     maintained_risk: importPlan.maintained_risk || null,
+    maintained_seam_review_summary: importPlan.maintained_seam_review_summary || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: "import-adopt",
+      nextAction: importPlan.next_action || null,
+      primaryArtifacts: ["import-plan", "adoption-plan.agent.json"],
+      verificationTargets: importPlan.verification_targets || null,
+      currentSurface: "review-packet"
+    }),
     output_verification_targets: importPlan.maintained_risk?.output_verification_targets || [],
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
@@ -2770,6 +2874,7 @@ export function buildReviewPacketPayloadForChangePlan({ changePlan, risk }) {
       maintained_risk: maintainedRisk
     },
     next_action: changePlan.next_action || null,
+    recommended_query_family: recommendedQueryFamilyForAction(changePlan.next_action, changePlan.mode || null),
     canonical_writes: canonicalWriteCandidatesFromWriteScope(changePlan.write_scope).map((entry) => ({
       path: entry
     })),
@@ -2779,6 +2884,13 @@ export function buildReviewPacketPayloadForChangePlan({ changePlan, risk }) {
     diff_summary: changePlan.diff_summary || null,
     write_scope: changePlan.write_scope || null,
     verification_targets: changePlan.verification_targets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: changePlan.mode || null,
+      nextAction: changePlan.next_action || null,
+      primaryArtifacts: changePlan.context_artifacts || [],
+      verificationTargets: changePlan.verification_targets || null,
+      currentSurface: "review-packet"
+    }),
     alignment_recommendations: changePlan.alignment_recommendations || [],
     output_verification_targets: maintainedRisk.output_verification_targets || []
   };
@@ -2791,6 +2903,67 @@ function currentFocusFromTaskMode(taskModeArtifact) {
   }
   const focus = taskModeArtifact?.summary?.focus || null;
   return focus ? { kind: "mode_focus", label: focus } : null;
+}
+
+function verificationSurfaceForTargets(verificationTargets) {
+  const targetCount = ((verificationTargets?.generated_checks || []).length)
+    + ((verificationTargets?.maintained_app_checks || []).length)
+    + ((verificationTargets?.verification_ids || []).length);
+  return targetCount > 0 ? "verification-targets" : null;
+}
+
+function recommendedQueryFamilyForAction(nextAction, mode = null) {
+  switch (nextAction?.kind) {
+    case "review_staged":
+    case "review_bundle":
+    case "inspect_review_group":
+    case "inspect_proposal_surface":
+    case "customize_workflow_preset":
+    case "refresh_workflow_preset_customization":
+    case "import_declared_workflow_preset":
+      return "import-plan";
+    case "review_diff_impact":
+    case "inspect_projection":
+    case "inspect_diff":
+    case "review_diff_boundaries":
+      return "change-plan";
+    case "inspect_maintained_impact":
+    case "inspect_boundary_before_edit":
+    case "run_maintained_checks":
+      return "maintained-boundary";
+    case "inspect_verification_targets":
+      return "verification-targets";
+    case "inspect_workspace_digest":
+      return "single-agent-plan";
+    default:
+      break;
+  }
+
+  if (mode === "import-adopt") return "import-plan";
+  if (mode === "maintained-app-edit") return "maintained-boundary";
+  if (mode === "verification") return "verification-targets";
+  return "change-plan";
+}
+
+function immediateArtifacts(primaryArtifacts = []) {
+  return (primaryArtifacts || []).slice(0, 2);
+}
+
+function buildOperatorLoopSummary({
+  mode = null,
+  nextAction = null,
+  primaryArtifacts = [],
+  verificationTargets = null,
+  currentSurface = null
+} = {}) {
+  return {
+    current_surface: currentSurface,
+    start_query_family: recommendedQueryFamilyForAction(nextAction, mode),
+    immediate_artifacts: immediateArtifacts(primaryArtifacts),
+    review_surface: "review-packet",
+    decision_surface: "proceed-decision",
+    verification_surface: verificationSurfaceForTargets(verificationTargets)
+  };
 }
 
 function nextActionRequiresReview(nextAction) {
@@ -3352,6 +3525,13 @@ export function buildSingleAgentPlanPayload({
     write_scope: taskModeArtifact?.write_scope || null,
     review_boundaries: buildReviewBoundaries(taskModeArtifact, importPlan),
     proof_targets: taskModeArtifact?.verification_targets || null,
+    operator_loop: buildOperatorLoopSummary({
+      mode: taskModeArtifact?.mode || null,
+      nextAction: taskModeArtifact?.next_action || null,
+      primaryArtifacts,
+      verificationTargets: taskModeArtifact?.verification_targets || null,
+      currentSurface: "single-agent-plan"
+    }),
     recommended_sequence: buildRecommendedSequence(taskModeArtifact, importPlan),
     blocking_conditions: buildBlockingConditions(taskModeArtifact, importPlan),
     primary_artifacts: primaryArtifacts,

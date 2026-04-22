@@ -578,7 +578,6 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     topogramRoot
   ], { encoding: "utf8" });
   assert.equal(importReviewPacketRun.status, 0, importReviewPacketRun.stderr);
-  assert.match(importReviewPacketRun.stdout, /"workflow_preset_refresh_summary"/);
   assert.match(importReviewPacketRun.stdout, /"recommended_preset_action"/);
   assert.match(importReviewPacketRun.stdout, /"preset_guidance_summary"/);
 
@@ -659,6 +658,8 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
   assert.match(nextActionRun.stdout, /"type": "next_action_query"/);
   assert.match(nextActionRun.stdout, /"next_action"/);
   assert.match(nextActionRun.stdout, /"kind": "review_staged"/);
+  assert.match(nextActionRun.stdout, /"recommended_query_family": "import-plan"/);
+  assert.match(nextActionRun.stdout, /"immediate_artifacts"/);
   assert.match(nextActionRun.stdout, /"plan_present": true/);
 
   const singleAgentImportRun = spawnSync(process.execPath, [
@@ -676,6 +677,8 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
   assert.match(singleAgentImportRun.stdout, /"type": "single_agent_plan"/);
   assert.match(singleAgentImportRun.stdout, /"mode": "import-adopt"/);
   assert.match(singleAgentImportRun.stdout, /"next_action"/);
+  assert.match(singleAgentImportRun.stdout, /"operator_loop"/);
+  assert.match(singleAgentImportRun.stdout, /"start_query_family": "import-plan"/);
   assert.match(singleAgentImportRun.stdout, /"primary_artifacts"/);
   assert.match(singleAgentImportRun.stdout, /"blocking_conditions"/);
   assert.match(singleAgentImportRun.stdout, /"preset_guidance_summary"/);
@@ -692,6 +695,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
   assert.equal(singleAgentMaintainedRun.status, 0, singleAgentMaintainedRun.stderr);
   assert.match(singleAgentMaintainedRun.stdout, /"type": "single_agent_plan"/);
   assert.match(singleAgentMaintainedRun.stdout, /"mode": "maintained-app-edit"/);
+  assert.match(singleAgentMaintainedRun.stdout, /"start_query_family": "maintained-boundary"/);
   assert.match(singleAgentMaintainedRun.stdout, /"proof_targets"/);
   assert.match(singleAgentMaintainedRun.stdout, /"context-bundle\.maintained-app\.json"/);
 

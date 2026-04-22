@@ -31,6 +31,7 @@ import {
   proceedDecisionFromRisk,
   summarizeDiffArtifact
 } from "../../src/agent-ops/query-builders.js";
+import { buildMaintainedBoundaryArtifact, maintainedProofMetadata } from "../../src/generator/context/shared.js";
 
 function makeChangePlanGraph() {
   return {
@@ -250,6 +251,31 @@ function makeRootedGraphWithMaintainedFiles() {
   fs.writeFileSync(
     path.join(root, "product", "app", "proof", "content-approval-workflow-decision-story.md"),
     "# Content Approval Workflow Decision Story\n",
+    "utf8"
+  );
+  return {
+    ...makeChangePlanGraph(),
+    root
+  };
+}
+
+function makeIssuesCrossSurfaceGraph() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-issues-cross-surface-"));
+  fs.mkdirSync(path.join(root, "product", "app", "src"), { recursive: true });
+  fs.mkdirSync(path.join(root, "product", "app", "proof"), { recursive: true });
+  fs.writeFileSync(
+    path.join(root, "product", "app", "src", "issues.js"),
+    [
+      "export const issueDetailSurface = 'issue_detail';",
+      "export const issueListSurface = 'issue_list';",
+      "export const ownerOrAdminRule = 'owner_or_admin';",
+      "export const assigneeId = 'user_runtime';"
+    ].join("\n"),
+    "utf8"
+  );
+  fs.writeFileSync(
+    path.join(root, "product", "app", "proof", "issues-cross-surface-alignment-story.md"),
+    "# Issues Cross-Surface Alignment Story\n",
     "utf8"
   );
   return {
@@ -479,11 +505,71 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].seam_id, "seam_explicit_mapping");
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].confidence, 0.86);
   assert.match(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidates[0].match_reasons.join(" "), /dependency overlap/);
+  assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidate_summary.status, "clear_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.status, "clear_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.surfaces_with_candidates_count, 1);
+  assert.equal(importPlan.maintained_seam_review_summary.top_candidate.seam_id, "seam_explicit_mapping");
   assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.affected_seams[0].seam_id, "seam_explicit_mapping");
   assert.equal(reviewPacket.type, "review_packet_query");
   assert.equal(reviewPacket.source, "import-plan");
+  assert.equal(reviewPacket.recommended_query_family, "import-plan");
+  assert.equal(reviewPacket.operator_loop.current_surface, "review-packet");
+  assert.equal(reviewPacket.operator_loop.start_query_family, "import-plan");
   assert.equal(reviewPacket.canonical_writes[0].canonical_rel_path, "capabilities/cap-update-issue.tg");
   assert.equal(reviewPacket.output_verification_targets[0].output_id, "maintained_app");
+  assert.equal(reviewPacket.maintained_seam_review_summary.status, "clear_candidate");
+});
+
+test("buildImportPlanPayload summarizes no-candidate maintained seam review conservatively", () => {
+  const adoptionPlan = {
+    approved_review_groups: [],
+    staged_items: [],
+    accepted_items: [],
+    rejected_items: [],
+    requires_human_review: [],
+    imported_proposal_surfaces: [
+      {
+        id: "catalog:doc:workflow_catalog",
+        bundle: "catalog",
+        kind: "doc",
+        canonical_rel_path: "docs/workflows/workflow-catalog.md",
+        maintained_seam_candidates: [],
+        requirements: {
+          related_docs: ["workflow_catalog"]
+        }
+      }
+    ]
+  };
+  const taskModeArtifact = {
+    summary: { focus: "Brownfield import review" },
+    next_action: { kind: "review_bundle" },
+    write_scope: { safe_to_edit: ["topogram/**"] },
+    verification_targets: { generated_checks: ["compile-check"] }
+  };
+
+  const importPlan = buildImportPlanPayload(adoptionPlan, taskModeArtifact, {
+    outputs: [],
+    seams: []
+  });
+  const risk = classifyRisk({ importPlan, verificationTargets: importPlan.verification_targets, maintainedRisk: importPlan.maintained_risk });
+  const reviewPacket = buildReviewPacketPayloadForImportPlan({ importPlan, risk });
+  const proceed = proceedDecisionFromRisk(
+    risk,
+    importPlan.next_action,
+    importPlan.write_scope,
+    importPlan.verification_targets,
+    importPlan.maintained_risk
+  );
+
+  assert.equal(importPlan.proposal_surfaces[0].maintained_impacts.maintained_seam_candidate_summary.status, "no_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.status, "no_candidate");
+  assert.equal(importPlan.maintained_seam_review_summary.surfaces_without_candidates_count, 1);
+  assert.match(importPlan.maintained_seam_review_summary.proposal_surfaces[0].review_guidance, /No conservative maintained seam candidate/);
+  assert.equal(reviewPacket.maintained_seam_review_summary.status, "no_candidate");
+  assert.equal(proceed.recommended_query_family, "import-plan");
+  assert.equal(proceed.operator_loop.current_surface, "proceed-decision");
+  assert.equal(proceed.operator_loop.start_query_family, "import-plan");
+  assert.equal(proceed.maintained_seam_review_summary.status, "no_candidate");
 });
 
 test("workflow preset inventory and import review packet expose provider and team preset categories", () => {
@@ -1500,6 +1586,183 @@ test("buildSeamCheckPayload reports seam probes and stale diff pressure", () => 
   assert.match(JSON.stringify(payload.seams[0].probes), /\"probe_id\":\"emitted_dependency_tokens_corroborated\",\"status\":\"pass\"/);
 });
 
+test("maintained proof metadata includes the issues cross-surface alignment story", () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
+  const boundary = buildMaintainedBoundaryArtifact({
+    proofStories: maintainedProofMetadata({ root: repoRoot })
+  });
+
+  const crossSurfaceStory = boundary.proof_stories.find(
+    (story) => story.relativePath === "product/app/proof/issues-cross-surface-alignment-story.md"
+  );
+  const crossSurfaceSeams = boundary.seams.filter((seam) => seam.seam_family_id === "issues_cross_surface_alignment");
+
+  assert.ok(crossSurfaceStory);
+  assert.equal(crossSurfaceStory.seam_family_id, "issues_cross_surface_alignment");
+  assert.equal(crossSurfaceStory.seam_family_label, "issues cross-surface ownership alignment");
+  assert.equal(crossSurfaceSeams.length, 3);
+  assert.deepEqual(
+    crossSurfaceSeams.map((seam) => seam.label),
+    ["issues detail action state", "issues list/card summary state", "issues route and action metadata"]
+  );
+});
+
+test("maintained payloads group cross-surface issues seams under one family", () => {
+  const graph = makeIssuesCrossSurfaceGraph();
+  const affectedSeams = [
+    {
+      seam_id: "seam_issues_detail_action_state",
+      seam_family_id: "issues_cross_surface_alignment",
+      seam_family_label: "issues cross-surface ownership alignment",
+      output_id: "maintained_app",
+      label: "issues detail action state",
+      kind: "ui_presenter",
+      ownership_class: "contract_bound",
+      status: "review_required",
+      maintained_modules: ["product/app/src/issues.js"],
+      emitted_dependencies: ["proj_web", "journey_issue_resolution_and_closure"],
+      proof_stories: [
+        {
+          classification: "accepted_change",
+          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["product/app/src/issues.js"],
+          seam_family_id: "issues_cross_surface_alignment",
+          seam_family_label: "issues cross-surface ownership alignment",
+          review_boundary: { automation_class: "review_required" }
+        }
+      ]
+    },
+    {
+      seam_id: "seam_issues_list_card_summary_state",
+      seam_family_id: "issues_cross_surface_alignment",
+      seam_family_label: "issues cross-surface ownership alignment",
+      output_id: "maintained_app",
+      label: "issues list/card summary state",
+      kind: "ui_presenter",
+      ownership_class: "contract_bound",
+      status: "review_required",
+      maintained_modules: ["product/app/src/issues.js"],
+      emitted_dependencies: ["proj_web", "journey_issue_creation_and_assignment"],
+      proof_stories: [
+        {
+          classification: "accepted_change",
+          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["product/app/src/issues.js"],
+          seam_family_id: "issues_cross_surface_alignment",
+          seam_family_label: "issues cross-surface ownership alignment",
+          review_boundary: { automation_class: "review_required" }
+        }
+      ]
+    },
+    {
+      seam_id: "seam_issues_route_and_action_metadata",
+      seam_family_id: "issues_cross_surface_alignment",
+      seam_family_label: "issues cross-surface ownership alignment",
+      output_id: "maintained_app",
+      label: "issues route and action metadata",
+      kind: "route_glue",
+      ownership_class: "contract_bound",
+      status: "review_required",
+      maintained_modules: ["product/app/src/issues.js"],
+      emitted_dependencies: ["proj_api", "proj_web", "journey_issue_resolution_and_closure"],
+      proof_stories: [
+        {
+          classification: "accepted_change",
+          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["product/app/src/issues.js"],
+          seam_family_id: "issues_cross_surface_alignment",
+          seam_family_label: "issues cross-surface ownership alignment",
+          review_boundary: { automation_class: "review_required" }
+        }
+      ]
+    }
+  ];
+
+  const maintainedBoundaryArtifact = {
+    maintained_files_in_scope: ["product/app/src/issues.js"],
+    outputs: [
+      {
+        output_id: "maintained_app",
+        label: "Maintained App",
+        kind: "maintained_runtime",
+        root_paths: ["product/app/**"],
+        maintained_files_in_scope: ["product/app/src/issues.js"],
+        seams: affectedSeams.map((seam) => ({ seam_id: seam.seam_id })),
+        proof_stories: [
+          {
+            classification: "accepted_change",
+            relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
+            maintained_files: ["product/app/src/issues.js"],
+            seam_family_id: "issues_cross_surface_alignment",
+            seam_family_label: "issues cross-surface ownership alignment",
+            review_boundary: { automation_class: "review_required" }
+          }
+        ]
+      }
+    ],
+    seams: affectedSeams,
+    proof_stories: [
+      {
+        classification: "accepted_change",
+        relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
+        maintained_files: ["product/app/src/issues.js"],
+        seam_family_id: "issues_cross_surface_alignment",
+        seam_family_label: "issues cross-surface ownership alignment",
+        review_boundary: { automation_class: "review_required" }
+      }
+    ]
+  };
+  const diffArtifact = {
+    baseline_root: "/tmp/baseline",
+    review_boundary_changes: [],
+    affected_verifications: [],
+    affected_maintained_surfaces: {
+      maintained_files_in_scope: ["product/app/src/issues.js"],
+      affected_seams: affectedSeams,
+      proof_stories: maintainedBoundaryArtifact.proof_stories
+    }
+  };
+  const verificationTargets = {
+    generated_checks: ["compile-check"],
+    maintained_app_checks: ["product/app/scripts/runtime-check.mjs"]
+  };
+
+  const driftPayload = buildMaintainedDriftPayload({
+    diffArtifact,
+    maintainedBoundaryArtifact,
+    verificationTargets,
+    nextAction: { kind: "inspect_maintained_drift" }
+  });
+  const conformancePayload = buildMaintainedConformancePayload({
+    graph,
+    diffArtifact,
+    maintainedBoundaryArtifact,
+    verificationTargets,
+    nextAction: { kind: "inspect_verification_targets" }
+  });
+  const seamCheckPayload = buildSeamCheckPayload({
+    graph,
+    diffArtifact,
+    maintainedBoundaryArtifact,
+    verificationTargets
+  });
+
+  assert.equal(driftPayload.summary.affected_seam_count, 3);
+  assert.equal(driftPayload.summary.affected_seam_family_count, 1);
+  assert.deepEqual(driftPayload.affected_seam_families, ["issues_cross_surface_alignment"]);
+  assert.deepEqual(driftPayload.outputs[0].seam_families, ["issues_cross_surface_alignment"]);
+  assert.equal(driftPayload.outputs[0].summary.affected_seam_family_count, 1);
+  assert.equal(driftPayload.affected_seams[0].seam_family_label, "issues cross-surface ownership alignment");
+
+  assert.equal(conformancePayload.summary.affected_seam_family_count, 1);
+  assert.deepEqual(conformancePayload.summary.affected_seam_families, ["issues_cross_surface_alignment"]);
+  assert.equal(conformancePayload.outputs[0].summary.affected_seam_family_count, 1);
+  assert.deepEqual(conformancePayload.outputs[0].summary.affected_seam_families, ["issues_cross_surface_alignment"]);
+
+  assert.equal(seamCheckPayload.summary.seam_family_count, 1);
+  assert.equal(seamCheckPayload.seams[0].seam_family_id, "issues_cross_surface_alignment");
+});
+
 test("buildChangePlanPayload surfaces direct projection changes conservatively", () => {
   const graph = makeChangePlanGraph();
   const changePlan = buildChangePlanPayload({
@@ -1837,6 +2100,11 @@ test("buildSingleAgentPlanPayload produces an import-adopt baseline from task mo
   assert.equal(plan.mode, "import-adopt");
   assert.equal(plan.current_focus.label, "Proposal review and adoption planning");
   assert.equal(plan.next_action.kind, "review_staged");
+  assert.equal(plan.operator_loop.current_surface, "single-agent-plan");
+  assert.equal(plan.operator_loop.start_query_family, "import-plan");
+  assert.equal(plan.operator_loop.review_surface, "review-packet");
+  assert.equal(plan.operator_loop.decision_surface, "proceed-decision");
+  assert.equal(plan.operator_loop.verification_surface, "verification-targets");
   assert.deepEqual(plan.primary_artifacts, [
     "import-plan",
     "review-packet",
@@ -1886,6 +2154,8 @@ test("buildSingleAgentPlanPayload produces a maintained-app-edit plan without im
   assert.equal(plan.type, "single_agent_plan");
   assert.equal(plan.mode, "maintained-app-edit");
   assert.equal(plan.primary_artifacts[0], "context-bundle.maintained-app.json");
+  assert.equal(plan.operator_loop.start_query_family, "maintained-boundary");
+  assert.equal(plan.operator_loop.verification_surface, "verification-targets");
   assert.equal(plan.recommended_sequence[1].action, "inspect_review_boundaries");
   assert.equal(plan.recommended_sequence[3].action, "run_proof_targets");
   assert.equal(plan.blocking_conditions.length, 0);

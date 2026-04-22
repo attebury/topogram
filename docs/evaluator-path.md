@@ -39,6 +39,16 @@ The key question here is:
 
 - can Topogram help with real maintained code instead of only generating reference apps?
 
+The current maintained-app proof is stronger than a single accepted example. It now shows that one semantic change can stay coherent across:
+
+- issue detail actions
+- issue list/card summary state
+- route and affordance metadata
+
+Use this story as the clearest maintained-depth proof:
+
+- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
+
 Before moving on, make one seam-aware check explicit:
 
 - which maintained seam moved?
@@ -55,6 +65,7 @@ The shortest live path is:
 Presenter notes for this stop:
 
 - seam-awareness is not just file tagging; it ties outputs, seams, emitted dependencies, proof stories, and verification targets together
+- the new `issues` cross-surface story shows one maintained semantic rule spanning detail, list, and route surfaces instead of one isolated presenter edit
 - the strongest current comparison direction is Topogram change to maintained drift and seam impact
 - the reverse direction is still conservative and evidence-backed, not full semantic understanding of arbitrary maintained code
 - in multi-output repos, seams are grouped under outputs so drift, conformance, and verification can differ by output
@@ -94,6 +105,12 @@ The key question here is:
 
 - is this only a greenfield story?
 - can Topogram give one agent or several agents a bounded, review-aware operating path without becoming a black-box scheduler?
+
+The current brownfield/operator proof is also easier to explain now:
+
+- import/adopt surfaces carry conservative maintained seam-review summaries
+- `review-packet` and `proceed-decision` expose the recommended query family and compact operator loop
+- the shortest operator path is now visible in the artifact payloads themselves rather than only in surrounding docs
 
 ## 5. Check verification and limits
 
@@ -137,22 +154,25 @@ Use this short path for a live demo:
 
 1. Open [README.md](../README.md) and state the wedge in one sentence.
 2. Show [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md) as the “Topogram touches maintained code” proof.
-3. Show one seam-aware maintained query sequence:
+3. Show [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md) as the clearest “one semantic change, multiple maintained surfaces” proof.
+4. Show one seam-aware maintained query sequence:
    - `query maintained-boundary`
    - `query maintained-drift`
    - `query seam-check` or `query maintained-conformance`
-4. Show the three boundary categories:
+5. Show the three boundary categories:
    - [issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
    - [content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
    - [issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
-5. Show [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) as the brownfield breadth proof.
-6. For import/adopt rehearsal, use:
+6. Show [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) as the brownfield breadth proof.
+7. For import/adopt rehearsal, use:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
    - then `query import-plan` against the generated staged workspace
-7. For planning rehearsal, use:
+8. For planning rehearsal, use:
    - `query next-action`
    - `query single-agent-plan`
+   - `query review-packet`
+   - `query proceed-decision`
    - `query multi-agent-plan --mode import-adopt`
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`
-8. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.
+9. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.

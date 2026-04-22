@@ -243,6 +243,7 @@ Current adoption states:
 `query import-plan` now also carries additive seam-aware maintained information:
 
 - `maintained_risk`
+- `maintained_seam_review_summary`
 - per-proposal-surface `maintained_impacts`
 - output-specific verification targets for affected maintained outputs
 - `workflow_presets` for provider and team workflow guidance currently in scope
@@ -256,6 +257,15 @@ When `maintained_seam_candidates` are present, treat them as conservative, revie
 - path and output corroboration can raise confidence
 - ambiguous or weak evidence should produce no candidate rather than a speculative best guess
 - the current live proof bar is one real positive trial (`trials/supabase-express-api`) plus one real negative/no-guessing trial (`trials/eShopOnWeb`)
+
+`maintained_seam_review_summary` is the compact operator read for that inference:
+
+- `clear_candidate`
+  - at least one proposal surface has a conservative maintained seam candidate
+- `mixed`
+  - at least one proposal surface has a candidate and at least one does not
+- `no_candidate`
+  - no proposal surface produced a conservative candidate, which is the expected outcome when evidence is weak or generic
 
 That keeps import/adopt review aligned with the same maintained seam/output vocabulary used by the change-oriented operator surfaces.
 
@@ -329,6 +339,8 @@ Answers:
 
 For change-oriented work, this surface now includes `maintained_risk`, which is a compact seam-aware maintained summary rather than only a maintained-file count.
 
+For both change-oriented and import/adopt work, this surface stays compact and advisory. The fuller operator loop now appears on `review-packet`, `proceed-decision`, and `single-agent-plan`.
+
 ### `query proceed-decision`
 
 Backed by:
@@ -343,6 +355,13 @@ Answers:
 - which output-specific verification targets should follow
 
 For change-oriented work, this surface now exposes `maintained_risk` and `output_verification_targets` in addition to the aggregate verification bundle.
+
+This surface now also includes:
+
+- `recommended_query_family`
+- `operator_loop`
+
+`recommended_query_family` points to the next query family that should usually anchor the operator path. `operator_loop` is a compact reminder of which artifacts to read first, which review surface matters next, and which verification surface closes the loop.
 
 ### `query review-packet`
 
@@ -360,6 +379,13 @@ Answers:
 - for import/adopt work, which provider workflow preset surfaces and refresh diffs still need review
 
 The import/adoption packet shape stays narrower than the change-oriented packet, but it now carries `workflow_presets` as a separate category so provider workflow guidance can be reviewed without becoming a second workflow system.
+
+This surface now also includes:
+
+- `recommended_query_family`
+- `operator_loop`
+
+That keeps the review packet readable while still making the shortest next loop explicit.
 
 When a provider workflow preset is marked `customize`, the canonical local destination for the derived team preset is:
 
@@ -411,6 +437,9 @@ Answers:
 - which steps are review-oriented vs directly executable
 - which blockers are currently preventing progress
 - the embedded `resolved_workflow_context`
+- the compact `operator_loop` for the current mode
+
+`operator_loop` is the shortest readable path from the current plan to review, decision, and verification. It is meant to reduce query-hopping and repeated interpretation, not introduce a second planning system.
 
 `query next-action` stays the lightweight pointer. `query single-agent-plan` is the fuller default operating plan that future multi-agent decomposition should split into lanes and handoffs.
 

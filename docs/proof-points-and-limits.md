@@ -31,9 +31,9 @@ Topogram is most credible today when framed as a system that helps teams:
 - model-driven contracts, generated artifacts, and runtime bundles across multiple example domains
 - verification attached to modeled intent through compile, smoke, and runtime-check paths
 - brownfield recovery and closed adoption proofs across a broad set of real stacks
-- hand-maintained app evolution proofs that follow emitted Topogram artifacts rather than raw model text
+- hand-maintained app evolution proofs that follow emitted Topogram artifacts rather than raw model text, including one semantic rule held coherently across multiple maintained surfaces
 - explicit no-go behavior for unsafe or ambiguous changes in the maintained-app proof package
-- explicit single-agent planning, import-adopt multi-agent decomposition, and bounded work-packet assignment surfaces for external agent systems
+- explicit single-agent planning, import-adopt multi-agent decomposition, bounded work-packet assignment surfaces for external agent systems, and compact operator-loop guidance in review and decision surfaces
 
 ### Partially proven
 
@@ -67,6 +67,12 @@ These establish that Topogram can model, generate, and verify multiple domains a
 
 This is the strongest current evidence that Topogram is not only a greenfield reference-app story.
 
+The current import/adopt operator proof is also more explicit now:
+
+- conservative maintained seam-review summaries on import-plan surfaces
+- explicit distinction between clear-candidate and no-candidate maintained proposals
+- review and decision surfaces that carry the recommended query family and compact operator loop directly
+
 ### Planning proof
 
 - [docs/agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md)
@@ -83,6 +89,7 @@ They do not establish a live scheduler or autonomous orchestration runtime.
 ### Hand-maintained app evolution proof
 
 - [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
 - [product/app/proof/issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
 - [product/app/proof/issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
 - [product/app/proof/content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
@@ -96,6 +103,14 @@ These establish that Topogram’s value is not only “generate an app.” It ca
 - which governed seam and output are implicated
 - which emitted dependencies and verification targets anchor that seam
 - what should stay manual or be rejected
+
+The newest maintained proof depth is the `issues` cross-surface alignment case:
+
+- one semantic change
+- one governed output: `maintained_app`
+- one seam family
+- multiple maintained embodiments across detail actions, list/card summary state, and route metadata
+- one coherent drift and conformance story when a single maintained surface falls behind
 
 The current maintained proof is intentionally seam-aware, but still conservative:
 

@@ -30,10 +30,12 @@ That is the core alpha trust story:
 - safe changes can be mirrored
 - guarded changes keep product judgment human-owned
 - no-go changes stop clearly instead of drifting
+- maintained semantic changes can now be checked across multiple surfaces, not only one file at a time
 
 For the deeper maintained-app proof, see:
 
 - [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
 
 ## 3. Why Brownfield Matters
 
@@ -44,6 +46,11 @@ It can also recover structure from real systems, reconcile that evidence into re
 ![Topogram brownfield reconcile flow](./assets/launch-graphics/brownfield-reconcile-flow.svg)
 
 This is why the alpha is framed around controlled software evolution instead of “generate an app from scratch.”
+
+The brownfield/operator path is also more readable now:
+
+- import/adopt proposals show conservative maintained seam-review summaries
+- `review-packet` and `proceed-decision` make the next query family and operator loop explicit
 
 For the fuller brownfield flow, see:
 
