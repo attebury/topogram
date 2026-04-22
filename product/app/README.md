@@ -25,6 +25,7 @@ The proof now exercises two maintained-app update stories:
 - `issues`
   - issue detail ownership visibility now carries owner-or-admin action semantics for edit and close behavior
   - issue list/card visibility now mirrors the emitted issue list contract and compact issue-card output
+  - issue route/action metadata now stays aligned with the same governed detail seam so list/detail affordances move together
 - `todo`
   - task detail and mutation contracts now include first-class `priority`
   - project detail and mutation contracts now include first-class `owner_id`
@@ -36,6 +37,7 @@ Hand-maintained app updates:
 - the content-approval maintained proof now includes a workflow-surface guard that flags new affordances as manual-decision cases when product judgment is still needed
 - the issues presenter now models ownership-based issue detail action visibility in hand-maintained code, including owner/admin allowed states and non-owner hidden states
 - the issues presenter now also exposes a maintained issue-card/list summary so emitted list visibility expectations are checked alongside detail ownership behavior
+- the issues presenter now exposes explicit cross-surface alignment metadata so detail actions, list/card summaries, and route metadata can fail as one maintained seam family instead of three unrelated findings
 - the Todo presenter renders task priority in summary and view-model metadata
 - the Todo presenter now also exposes a maintained task-card/list summary so emitted list visibility expectations are checked alongside detail behavior
 - the Todo presenter and route helpers render project-owner relationship data in summary and detail view-model metadata
@@ -142,6 +144,7 @@ For an evaluator-facing review artifact outside the generated verification loop,
 - [proof/content-approval-unsupported-change-story.md](./proof/content-approval-unsupported-change-story.md): the matching no-go story for unsafe enum changes that require manual DB intervention
 - [proof/content-approval-workflow-decision-story.md](./proof/content-approval-workflow-decision-story.md): the maintained-app no-go story for ambiguous workflow/UI decisions
 - [proof/issues-ownership-visibility-story.md](./proof/issues-ownership-visibility-story.md): the passing maintained-app proof for owner-or-admin detail visibility and compact issue-card/list alignment
+- [proof/issues-cross-surface-alignment-story.md](./proof/issues-cross-surface-alignment-story.md): the passing maintained-app proof for keeping detail actions, list/card summaries, and route metadata aligned as one governed issue seam family
 - [proof/issues-ownership-visibility-drift-story.md](./proof/issues-ownership-visibility-drift-story.md): the maintained-app drift story for owner-only issue detail actions
 - [proof/maintained-contract-review.md](./proof/maintained-contract-review.md): a hand-written contract review artifact for auditors and skeptical evaluators
 - [proof/maintained-proof-checklist.md](./proof/maintained-proof-checklist.md): the reusable checklist for adding the next hand-maintained proof

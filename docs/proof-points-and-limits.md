@@ -83,6 +83,7 @@ They do not establish a live scheduler or autonomous orchestration runtime.
 ### Hand-maintained app evolution proof
 
 - [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
 - [product/app/proof/issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
 - [product/app/proof/issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
 - [product/app/proof/content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)

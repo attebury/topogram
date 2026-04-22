@@ -88,10 +88,13 @@ The Issues example now carries a maintained ownership-visibility proof:
   - emitted UI contract still points `issue_list` at `shape_output_issue_card`
   - emitted issue docs still describe the compact list/card output, including `assigneeId` and `priority`
   - maintained presenter in `product/app/src/issues.js` mirrors that card/list surface so “find it again in list and detail” remains part of the hand-maintained proof
+- issue cross-surface alignment
+  - emitted ownership semantics now have to stay aligned across detail action state, list/card summary state, and route/action metadata together
+  - maintained presenter in `product/app/src/issues.js` now carries an explicit cross-surface alignment helper so those surfaces move as one governed seam family
 
 ## Maintained Change Boundary
 
-The maintained-app proof package now has three explicit change classes:
+The maintained-app proof package now has four explicit proof cases:
 
 ```mermaid
 flowchart LR
@@ -102,6 +105,9 @@ flowchart LR
 - accepted change
   - the emitted surface moves in a way the maintained app can mirror directly
   - example: [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md)
+- cross-surface maintained alignment
+  - one emitted semantic rule must stay coherent across multiple maintained surfaces inside the same governed output
+  - example: [issues-cross-surface-alignment-story.md](./issues-cross-surface-alignment-story.md)
 - guarded/manual-decision change
   - Topogram can identify the affected maintained surface, but final product treatment should stay human-owned
   - example: [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md)
@@ -125,6 +131,7 @@ Use this as the quick seam-aware map for the maintained proof package:
 | Story | Seam | Output | Boundary |
 | --- | --- | --- | --- |
 | [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md) | `seam_maintained_presenter_structure` | `maintained_app` | safe / review-required |
+| [issues-cross-surface-alignment-story.md](./issues-cross-surface-alignment-story.md) | `issues_cross_surface_alignment` seam family | `maintained_app` | cross-surface alignment / review-required |
 | [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md) | `seam_new_workflow_affordance_treatment` | `maintained_app` | guarded / manual-decision |
 | [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md) | `seam_owner_visibility_semantics_must_not_drift` | `maintained_app` | no-go |
 | [todo-project-owner-unsupported-change-story.md](./todo-project-owner-unsupported-change-story.md) | `seam_ownership_retargeting_remains_manual` | `maintained_app` | no-go |
@@ -189,13 +196,14 @@ The proof passes when:
 3. `runtime-check` confirms the Content Approval presenter plus maintained page/form/action models match the `needs_revision` Topogram detail shape expectations
 4. the maintained workflow guard distinguishes stable workflow surfaces from new affordances that still require human UX judgment
 5. the Todo priority, task list/card visibility, and project-owner proofs still pass
-6. the Issues ownership-visibility and list/card visibility proofs still pass
+6. the Issues ownership-visibility, list/card visibility, and cross-surface alignment proofs still pass
 
 For the fuller DB-plus-maintained-app narrative, see:
 
 - [content-approval-db-change-story.md](./content-approval-db-change-story.md)
 - [content-approval-unsupported-change-story.md](./content-approval-unsupported-change-story.md)
 - [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md)
+- [issues-cross-surface-alignment-story.md](./issues-cross-surface-alignment-story.md)
 - [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md)
 - [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md)
 - [maintained-contract-review.md](./maintained-contract-review.md)

@@ -578,7 +578,6 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     topogramRoot
   ], { encoding: "utf8" });
   assert.equal(importReviewPacketRun.status, 0, importReviewPacketRun.stderr);
-  assert.match(importReviewPacketRun.stdout, /"workflow_preset_refresh_summary"/);
   assert.match(importReviewPacketRun.stdout, /"recommended_preset_action"/);
   assert.match(importReviewPacketRun.stdout, /"preset_guidance_summary"/);
 

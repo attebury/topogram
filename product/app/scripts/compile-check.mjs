@@ -6,7 +6,14 @@ import {
   summarizeArticleWorkflowDecision
 } from "../src/content-approval-change-guards.js";
 import { buildArticleDetailPage, buildArticleEditFormModel, buildRequestRevisionFormModel } from "../src/content-approval-ui.js";
-import { ISSUE_ROUTES, buildIssueCardViewModel, buildIssueDetailViewModel, summarizeIssueDetail, summarizeIssueCard } from "../src/issues.js";
+import {
+  ISSUE_ROUTES,
+  buildIssueCardViewModel,
+  buildIssueCrossSurfaceAlignment,
+  buildIssueDetailViewModel,
+  summarizeIssueDetail,
+  summarizeIssueCard
+} from "../src/issues.js";
 import {
   TODO_PROJECT_ROUTES,
   TODO_ROUTES,
@@ -181,11 +188,28 @@ const issueViewModel = buildIssueDetailViewModel(
     isAdmin: false
   }
 );
+const expectedIssueAlignment = buildIssueCrossSurfaceAlignment(
+  {
+    id: "issue_123",
+    title: "Compile Check Issue",
+    status: "in_progress",
+    board_id: "board_123",
+    assignee_id: "user_123",
+    priority: "high",
+    closed_at: null
+  },
+  {
+    userId: "user_123",
+    isAdmin: false
+  }
+);
 
 assert.equal(issueViewModel.route, "/issues/issue_123");
 assert.equal(issueViewModel.editRoute, "/issues/issue_123/edit");
 assert.equal(issueViewModel.actionVisibility.canEdit, true);
 assert.equal(issueViewModel.actionVisibility.canClose, true);
+assert.deepEqual(issueViewModel.crossSurfaceAlignment.routeMetadata, expectedIssueAlignment.routeMetadata);
+assert.equal(issueViewModel.crossSurfaceAlignment.seamFamilyId, "issues_cross_surface_alignment");
 
 const issueCardSummary = summarizeIssueCard({
   id: "issue_123",
@@ -209,6 +233,8 @@ const issueCardViewModel = buildIssueCardViewModel({
 assert.equal(issueCardViewModel.route, "/issues/issue_123");
 assert.equal(issueCardViewModel.assigneeBadge, "user_123");
 assert.equal(issueCardViewModel.priorityBadge, "medium");
+assert.equal(issueCardViewModel.crossSurfaceAlignment.ownershipRule, "owner_or_admin");
+assert.equal(issueCardViewModel.crossSurfaceAlignment.routeMetadata.detailSurfaceId, "issue_detail");
 
 assert.equal(TODO_ROUTES.list, "/tasks");
 assert.equal(TODO_ROUTES.detail("abc"), "/tasks/abc");

@@ -6,7 +6,13 @@ import {
   summarizeArticleWorkflowDecision
 } from "../src/content-approval-change-guards.js";
 import { buildArticleDetailPage, buildArticleEditFormModel, buildRequestRevisionFormModel } from "../src/content-approval-ui.js";
-import { buildIssueCardViewModel, buildIssueDetailViewModel, summarizeIssueDetail, summarizeIssueCard } from "../src/issues.js";
+import {
+  buildIssueCardViewModel,
+  buildIssueCrossSurfaceAlignment,
+  buildIssueDetailViewModel,
+  summarizeIssueDetail,
+  summarizeIssueCard
+} from "../src/issues.js";
 import { summarizeProjectDetail, summarizeTaskCard, summarizeTaskDetail } from "../src/todo.js";
 import { assessProjectOwnerRelationChange, summarizeProjectOwnerRelationDecision } from "../src/todo-change-guards.js";
 
@@ -145,9 +151,25 @@ const nonOwnerIssueViewModel = buildIssueDetailViewModel(
     isAdmin: false
   }
 );
+const expectedIssueAlignment = buildIssueCrossSurfaceAlignment(
+  {
+    id: "issue_smoke",
+    title: "Smoke Test Issue",
+    status: "in_progress",
+    board_id: "board_smoke",
+    assignee_id: "user_smoke",
+    priority: "medium",
+    closed_at: null
+  },
+  {
+    userId: "viewer_smoke",
+    isAdmin: false
+  }
+);
 
 assert.equal(nonOwnerIssueViewModel.actionVisibility.canEdit, false);
 assert.equal(nonOwnerIssueViewModel.actionVisibility.canClose, false);
+assert.deepEqual(nonOwnerIssueViewModel.crossSurfaceAlignment.routeMetadata, expectedIssueAlignment.routeMetadata);
 
 const issueCardViewModel = buildIssueCardViewModel({
   id: "issue_smoke",
@@ -159,6 +181,7 @@ const issueCardViewModel = buildIssueCardViewModel({
 
 assert.equal(issueCardViewModel.assigneeBadge, "user_smoke");
 assert.equal(issueCardViewModel.priorityBadge, "medium");
+assert.equal(issueCardViewModel.crossSurfaceAlignment.detailActionState.visibilityState, "read_only_detail");
 
 const taskSummary = summarizeTaskDetail({
   title: "Smoke Test Task",

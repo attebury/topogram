@@ -1167,6 +1167,8 @@ function normalizeProofStorySummary(story) {
     classification: story?.classification || null,
     relativePath: story?.relativePath || null,
     maintained_files: story?.maintained_files || story?.maintainedFiles || [],
+    seam_family_id: story?.seam_family_id || story?.seamFamilyId || null,
+    seam_family_label: story?.seam_family_label || story?.seamFamilyLabel || null,
     review_boundary: story?.review_boundary || null
   };
 }
@@ -1174,6 +1176,8 @@ function normalizeProofStorySummary(story) {
 function normalizeSeamSummary(seam, proofStoryMapper = normalizeProofStorySummary) {
   return {
     seam_id: seam?.seam_id || null,
+    seam_family_id: seam?.seam_family_id || null,
+    seam_family_label: seam?.seam_family_label || null,
     output_id: seam?.output_id || null,
     label: seam?.label || null,
     kind: seam?.kind || null,
@@ -1224,6 +1228,7 @@ function normalizeMaintainedOutput(output, seamMap, {
   });
   const statuses = stableSortedStrings(sortedSeams.map((seam) => seam[summaryField]).filter(Boolean));
   const statusCounts = Object.fromEntries(statuses.map((status) => [status, sortedSeams.filter((seam) => seam[summaryField] === status).length]));
+  const seamFamilies = stableSortedStrings(sortedSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     output_id: output?.output_id || null,
@@ -1235,13 +1240,16 @@ function normalizeMaintainedOutput(output, seamMap, {
     verification_targets: output?.verification_targets || verificationTargetsFallback || null,
     maintained_files_in_scope: files,
     human_owned_seams: humanOwnedSeams,
+    seam_families: seamFamilies,
     proof_stories: proofStories,
     seams: sortedSeams,
     summary: {
       affected_seam_count: sortedSeams.length,
+      affected_seam_family_count: seamFamilies.length,
       maintained_file_count: files.length,
       highest_severity: sortedSeams[0]?.[summaryField] || "aligned",
-      status_counts: statusCounts
+      status_counts: statusCounts,
+      affected_seam_families: seamFamilies
     }
   };
 }
@@ -2070,6 +2078,8 @@ function buildImportMaintainedRisk(proposalSurfaces = [], maintainedBoundaryArti
 function compactMaintainedSeamSummary(seam) {
   return {
     seam_id: seam?.seam_id || null,
+    seam_family_id: seam?.seam_family_id || null,
+    seam_family_label: seam?.seam_family_label || null,
     output_id: seam?.output_id || null,
     kind: seam?.kind || null,
     status: seam?.status || null,
@@ -2084,6 +2094,7 @@ function compactMaintainedOutputSummary(output) {
     kind: output?.kind || null,
     highest_severity: output?.highest_severity || output?.summary?.highest_severity || "aligned",
     affected_seam_count: output?.affected_seams?.length || output?.summary?.affected_seam_count || 0,
+    affected_seam_family_count: output?.summary?.affected_seam_family_count || 0,
     maintained_file_count: output?.maintained_files_in_scope?.length || output?.summary?.maintained_file_count || 0,
     verification_targets: verificationTargets
   };
@@ -2137,12 +2148,15 @@ export function buildMaintainedRiskSummary({ maintainedImpacts = null, maintaine
     output_id: output.output_id,
     verification_targets: output.verification_targets || null
   }));
+  const affectedSeamFamilies = stableSortedStrings(compactSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     affected_output_count: compactOutputs.length || diffSummary?.affected_output_count || 0,
     affected_seam_count: compactSeams.length || diffSummary?.affected_seam_count || 0,
+    affected_seam_family_count: affectedSeamFamilies.length,
     highest_severity: highestSeverity,
     status_counts: statusCounts,
+    affected_seam_families: affectedSeamFamilies,
     affected_outputs: compactOutputs,
     affected_seams: compactSeams,
     maintained_files_in_scope: maintainedFilesInScope,
@@ -2266,10 +2280,12 @@ export function buildMaintainedDriftPayload({ diffArtifact, maintainedBoundaryAr
     verification_targets: output.verification_targets,
     maintained_files_in_scope: output.maintained_files_in_scope,
     human_owned_seams: output.human_owned_seams,
+    seam_families: output.seam_families,
     affected_seams: output.seams,
     proof_stories: output.proof_stories,
     summary: output.summary
   }));
+  const affectedSeamFamilies = stableSortedStrings(affectedSeams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     type: "maintained_drift_query",
@@ -2282,14 +2298,17 @@ export function buildMaintainedDriftPayload({ diffArtifact, maintainedBoundaryAr
     },
     summary: {
       affected_seam_count: affectedSeams.length,
+      affected_seam_family_count: affectedSeamFamilies.length,
       affected_output_count: outputs.length,
       maintained_file_count: maintainedFiles.length,
       highest_severity: highestSeverity,
-      status_counts: statusCounts
+      status_counts: statusCounts,
+      affected_seam_families: affectedSeamFamilies
     },
     outputs,
     maintained_files_in_scope: maintainedFiles,
     human_owned_seams: humanOwnedSeams,
+    affected_seam_families: affectedSeamFamilies,
     affected_seams: affectedSeams,
     proof_stories: (diffMaintained?.proof_stories || maintainedBoundaryArtifact?.proof_stories || []).map((story) => normalizeProofStorySummary(story)),
     verification_targets: verificationTargets || null,
@@ -2395,18 +2414,22 @@ export function buildMaintainedConformancePayload({
     verification_targets: output.verification_targets,
     maintained_files_in_scope: output.maintained_files_in_scope,
     human_owned_seams: output.human_owned_seams,
+    seam_families: output.seam_families,
     conformance_status: output.summary.highest_severity,
     summary: {
       governed_seam_count: output.seams.length,
+      affected_seam_family_count: output.summary.affected_seam_family_count || 0,
       aligned_count: output.seams.filter((seam) => seam.conformance_state === "aligned").length,
       review_required_count: output.seams.filter((seam) => seam.conformance_state === "review_required").length,
       drift_suspected_count: output.seams.filter((seam) => seam.conformance_state === "drift_suspected").length,
       no_go_count: output.seams.filter((seam) => seam.conformance_state === "no_go").length,
       unverifiable_count: output.seams.filter((seam) => seam.conformance_state === "unverifiable").length,
-      highest_severity: output.summary.highest_severity
+      highest_severity: output.summary.highest_severity,
+      affected_seam_families: output.summary.affected_seam_families || []
     },
     seams: output.seams
   }));
+  const seamFamilies = stableSortedStrings(seams.map((seam) => seam.seam_family_id).filter(Boolean));
 
   return {
     type: "maintained_conformance_query",
@@ -2415,12 +2438,14 @@ export function buildMaintainedConformancePayload({
     conformance_status: conformanceStatus,
     summary: {
       governed_seam_count: seams.length,
+      affected_seam_family_count: seamFamilies.length,
       aligned_count: counts.aligned,
       review_required_count: counts.review_required,
       drift_suspected_count: counts.drift_suspected,
       no_go_count: counts.no_go,
       unverifiable_count: counts.unverifiable,
-      highest_severity: conformanceStatus
+      highest_severity: conformanceStatus,
+      affected_seam_families: seamFamilies
     },
     outputs,
     seams,
@@ -2467,6 +2492,7 @@ export function buildSeamCheckPayload({
     });
   const summary = {
     seam_count: seamChecks.length,
+    seam_family_count: stableSortedStrings(seamChecks.map((item) => item.seam_family_id).filter(Boolean)).length,
     aligned_count: seamChecks.filter((item) => item.check_status === "aligned").length,
     guarded_count: seamChecks.filter((item) => item.check_status === "guarded").length,
     stale_count: seamChecks.filter((item) => item.check_status === "stale").length,
