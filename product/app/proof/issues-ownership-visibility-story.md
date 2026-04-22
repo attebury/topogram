@@ -19,13 +19,13 @@ That means the maintained app should mirror these semantics:
 
 Relevant maintained file:
 
-- [product/app/src/issues.js](/Users/attebury/Documents/topogram/product/app/src/issues.js)
+- [product/app/src/issues.js](../src/issues.js)
 
 Relevant proof gates:
 
-- [product/app/scripts/compile-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/compile-check.mjs)
-- [product/app/scripts/smoke.mjs](/Users/attebury/Documents/topogram/product/app/scripts/smoke.mjs)
-- [product/app/scripts/runtime-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/runtime-check.mjs)
+- [product/app/scripts/compile-check.mjs](../scripts/compile-check.mjs)
+- [product/app/scripts/smoke.mjs](../scripts/smoke.mjs)
+- [product/app/scripts/runtime-check.mjs](../scripts/runtime-check.mjs)
 
 ## Seam Summary
 
@@ -88,7 +88,7 @@ This proof passes when:
 
 Read this alongside:
 
-- [issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md)
+- [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md)
 
 Together they show the full wedge:
 

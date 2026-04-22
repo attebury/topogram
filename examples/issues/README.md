@@ -7,29 +7,29 @@ It is also the current first explicit multi-target proof for the same domain acr
 - React via `proj_ui_web`
 - SvelteKit via `proj_ui_web_sveltekit`
 
-That proof is documented in [docs/multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md).
+That proof is documented in [docs/multi-target-proof-issues.md](../../docs/multi-target-proof-issues.md).
 
 It now also carries the first explicit multi-runtime proof for the same domain across two backend realizations:
 
 - Hono via `hono-server`
 - Express via `express-server`
 
-That proof is documented in [docs/multi-runtime-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-issues.md).
+That proof is documented in [docs/multi-runtime-proof-issues.md](../../docs/multi-runtime-proof-issues.md).
 
 ## Layout
 
-- [topogram](/Users/attebury/Documents/topogram/examples/issues/topogram): the canonical Issues Topogram package
-- [topogram/tests/fixtures](/Users/attebury/Documents/topogram/examples/issues/topogram/tests/fixtures): regression fixtures for the Issues Topogram package
-- [implementation](/Users/attebury/Documents/topogram/examples/issues/implementation): issue-specific implementation data and renderers used by the generic engine
-- [artifacts](/Users/attebury/Documents/topogram/examples/issues/artifacts): generated contracts, docs, schemas, and runtime bundles for the Issues example
-- [apps](/Users/attebury/Documents/topogram/examples/issues/apps): runnable generated runtimes for the Issues example
+- [topogram](./topogram): the canonical Issues Topogram package
+- [topogram/tests/fixtures](./topogram/tests/fixtures): regression fixtures for the Issues Topogram package
+- [implementation](./implementation): issue-specific implementation data and renderers used by the generic engine
+- [artifacts](./artifacts): generated contracts, docs, schemas, and runtime bundles for the Issues example
+- [apps](./apps): runnable generated runtimes for the Issues example
 
 ## Runtimes
 
-- [apps/backend](/Users/attebury/Documents/topogram/examples/issues/apps/backend): generated backend runtime
-- [apps/web](/Users/attebury/Documents/topogram/examples/issues/apps/web): generated React web runtime
-- [apps/web-sveltekit](/Users/attebury/Documents/topogram/examples/issues/apps/web-sveltekit): generated SvelteKit web runtime
-- [apps/local-stack](/Users/attebury/Documents/topogram/examples/issues/apps/local-stack): generated full local runnable stack
+- [apps/backend](./apps/backend): generated backend runtime
+- [apps/web](./apps/web): generated React web runtime
+- [apps/web-sveltekit](./apps/web-sveltekit): generated SvelteKit web runtime
+- [apps/local-stack](./apps/local-stack): generated full local runnable stack
 
 ## Working Agreement
 

@@ -215,7 +215,7 @@ For alpha, the shortest seam-aware operator path should be:
 For import/adopt rehearsal:
 
 - use the example workspace directly when staged reconcile artifacts already exist
-- otherwise use [build-adoption-plan-fixture.mjs](/Users/attebury/Documents/topogram/engine/scripts/build-adoption-plan-fixture.mjs)
+- otherwise use [build-adoption-plan-fixture.mjs](../engine/scripts/build-adoption-plan-fixture.mjs)
 - for a non-empty staged proposal demo, use the `projection-impact` scenario
 
 ### `get_adoption_plan`

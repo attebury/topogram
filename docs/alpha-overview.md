@@ -10,7 +10,7 @@ Topogram helps humans and agents evolve software safely.
 
 It keeps intent, generated outputs, and verification aligned so software change stays structured, explainable, and provable.
 
-![Topogram hero wedge](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/hero-wedge.svg)
+![Topogram hero wedge](./assets/launch-graphics/hero-wedge.svg)
 
 What this means in practice:
 
@@ -23,7 +23,7 @@ What this means in practice:
 
 The clearest current alpha proof is not just that Topogram generates artifacts. It is that Topogram can guide change in maintained code and distinguish what should be accepted, reviewed, or rejected.
 
-![Topogram change boundary](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/change-boundary.svg)
+![Topogram change boundary](./assets/launch-graphics/change-boundary.svg)
 
 That is the core alpha trust story:
 
@@ -33,7 +33,7 @@ That is the core alpha trust story:
 
 For the deeper maintained-app proof, see:
 
-- [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
+- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
 
 ## 3. Why Brownfield Matters
 
@@ -41,14 +41,14 @@ Topogram is not only a greenfield reference-app story.
 
 It can also recover structure from real systems, reconcile that evidence into reviewable bundles, and selectively adopt approved meaning into canonical Topogram surfaces.
 
-![Topogram brownfield reconcile flow](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/brownfield-reconcile-flow.svg)
+![Topogram brownfield reconcile flow](./assets/launch-graphics/brownfield-reconcile-flow.svg)
 
 This is why the alpha is framed around controlled software evolution instead of “generate an app from scratch.”
 
 For the fuller brownfield flow, see:
 
-- [docs/brownfield-import-roadmap.md](/Users/attebury/Documents/topogram/docs/brownfield-import-roadmap.md)
-- [docs/confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
+- [docs/brownfield-import-roadmap.md](./brownfield-import-roadmap.md)
+- [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 
 ## 4. Current Boundary
 
@@ -67,13 +67,13 @@ Topogram's alpha claim is intentionally narrow:
 
 For the current public claim boundary, see:
 
-- [docs/proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
+- [docs/proof-points-and-limits.md](./proof-points-and-limits.md)
 
 ## 5. Best Next Reads
 
 If this overview feels credible, read these next:
 
-1. [docs/evaluator-path.md](/Users/attebury/Documents/topogram/docs/evaluator-path.md)
-2. [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
-3. [docs/confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
-4. [docs/proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
+1. [docs/evaluator-path.md](./evaluator-path.md)
+2. [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+3. [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+4. [docs/proof-points-and-limits.md](./proof-points-and-limits.md)

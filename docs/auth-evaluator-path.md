@@ -12,8 +12,8 @@ Use it when the question is not "does Topogram have auth at all?" but:
 
 Read:
 
-- [auth-profile-bearer-jwt-hs256.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-jwt-hs256.md)
-- [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
+- [auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md)
+- [proof-points-and-limits.md](./proof-points-and-limits.md)
 
 The key question here is:
 
@@ -28,7 +28,7 @@ The intended answer is:
 
 Read:
 
-- [auth-modeling.md](/Users/attebury/Documents/topogram/docs/auth-modeling.md)
+- [auth-modeling.md](./auth-modeling.md)
 
 The key question here is:
 
@@ -44,8 +44,8 @@ The intended answer is:
 
 Inspect:
 
-- [examples/issues](/Users/attebury/Documents/topogram/examples/issues)
-- [examples/content-approval](/Users/attebury/Documents/topogram/examples/content-approval)
+- [examples/issues](../examples/issues)
+- [examples/content-approval](../examples/content-approval)
 
 Use this proof mapping:
 
@@ -68,8 +68,8 @@ What those examples prove today:
 
 Read:
 
-- [brownfield-import-roadmap.md](/Users/attebury/Documents/topogram/docs/brownfield-import-roadmap.md)
-- [agent-query-contract.md](/Users/attebury/Documents/topogram/docs/agent-query-contract.md)
+- [brownfield-import-roadmap.md](./brownfield-import-roadmap.md)
+- [agent-query-contract.md](./agent-query-contract.md)
 
 Then inspect the two brownfield auth query surfaces:
 
@@ -89,8 +89,8 @@ The intended answer is:
 
 Read:
 
-- [auth-profile-bearer-demo.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-demo.md)
-- [bearer-demo-launch-checklist.md](/Users/attebury/Documents/topogram/docs/bearer-demo-launch-checklist.md)
+- [auth-profile-bearer-demo.md](./auth-profile-bearer-demo.md)
+- [bearer-demo-launch-checklist.md](./bearer-demo-launch-checklist.md)
 
 The key question here is:
 

@@ -2,7 +2,7 @@
 
 ## Repo
 
-- Trial repo: `/Users/attebury/Documents/topogram/trials/eShopOnWeb`
+- Trial repo: `./trials/eShopOnWeb`
 - Source: `dotnet-architecture/eShopOnWeb`
 
 ## What This Trial Proved
@@ -66,29 +66,29 @@ Recovered meaningful server-rendered bundles include:
 
 Canonical outputs now exist under:
 
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/capabilities`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/decisions`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/workflows`
+- `./trials/eShopOnWeb/topogram/docs/reports`
+- `./trials/eShopOnWeb/topogram/capabilities`
+- `./trials/eShopOnWeb/topogram/decisions`
+- `./trials/eShopOnWeb/topogram/docs/workflows`
 
 Representative server-rendered UI outputs:
 
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-basket.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-basket_checkout.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-basket_success.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-order_list.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-order_detail.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-account_login.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-account_register.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-catalog_home.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-privacy.md`
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/docs/reports/ui-error.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket_checkout.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket_success.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-order_list.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-order_detail.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-account_login.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-account_register.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-catalog_home.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-privacy.md`
+- `./trials/eShopOnWeb/topogram/docs/reports/ui-error.md`
 
 ## Queue State
 
 The saved queue is here:
 
-- `/Users/attebury/Documents/topogram/trials/eShopOnWeb/topogram/candidates/reconcile/adoption-status.md`
+- `./trials/eShopOnWeb/topogram/candidates/reconcile/adoption-status.md`
 
 Current state:
 

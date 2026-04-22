@@ -6,17 +6,17 @@ Topogram reads `.tg` files, validates them, resolves them into a semantic graph,
 
 ## Layout
 
-- [src](/Users/attebury/Documents/topogram/engine/src): parser, validator, resolver, generator, and CLI
-- [ARCHITECTURE.md](/Users/attebury/Documents/topogram/engine/ARCHITECTURE.md): engine/example boundary and layer model
-- [REALIZATION-CONTRACTS.md](/Users/attebury/Documents/topogram/engine/REALIZATION-CONTRACTS.md): frozen realization interfaces and invariants
-- [scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js): dependency-free regression runner
-- [tests/fixtures/invalid](/Users/attebury/Documents/topogram/engine/tests/fixtures/invalid): engine-specific invalid model cases
-- [../examples/todo/topogram](/Users/attebury/Documents/topogram/examples/todo/topogram): the current reference Topogram package
-- [../examples/todo/topogram/tests/fixtures](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures): Todo-specific expected outputs and migration snapshots
-- [../examples/todo/artifacts](/Users/attebury/Documents/topogram/examples/todo/artifacts): generated contracts, docs, and runtime bundles for the Todo example
-- [../examples/todo/apps](/Users/attebury/Documents/topogram/examples/todo/apps): runnable generated runtimes for the Todo example
-- [../examples/issues](/Users/attebury/Documents/topogram/examples/issues): multi-frontend proof example
-- [../examples/content-approval](/Users/attebury/Documents/topogram/examples/content-approval): workflow-heavy proof example
+- [src](./src): parser, validator, resolver, generator, and CLI
+- [ARCHITECTURE.md](./ARCHITECTURE.md): engine/example boundary and layer model
+- [REALIZATION-CONTRACTS.md](./REALIZATION-CONTRACTS.md): frozen realization interfaces and invariants
+- [scripts/test.js](./scripts/test.js): dependency-free regression runner
+- [tests/fixtures/invalid](./tests/fixtures/invalid): engine-specific invalid model cases
+- [../examples/todo/topogram](../examples/todo/topogram): the current reference Topogram package
+- [../examples/todo/topogram/tests/fixtures](../examples/todo/topogram/tests/fixtures): Todo-specific expected outputs and migration snapshots
+- [../examples/todo/artifacts](../examples/todo/artifacts): generated contracts, docs, and runtime bundles for the Todo example
+- [../examples/todo/apps](../examples/todo/apps): runnable generated runtimes for the Todo example
+- [../examples/issues](../examples/issues): multi-frontend proof example
+- [../examples/content-approval](../examples/content-approval): workflow-heavy proof example
 
 ## Architecture
 
@@ -58,7 +58,7 @@ This keeps source-of-truth semantics separate from draft and generated surfaces,
 
 ## Commands
 
-Run these from `/Users/attebury/Documents/topogram/engine`.
+Run these from `./engine`.
 
 ```bash
 npm run validate
@@ -193,9 +193,9 @@ Examples may also provide proof-specific tokens such as:
 
 The current example proof matrix is:
 
-- `permission`: [../examples/issues](/Users/attebury/Documents/topogram/examples/issues)
-- `ownership`: [../examples/issues](/Users/attebury/Documents/topogram/examples/issues)
-- `claim`: [../examples/content-approval](/Users/attebury/Documents/topogram/examples/content-approval)
+- `permission`: [../examples/issues](../examples/issues)
+- `ownership`: [../examples/issues](../examples/issues)
+- `claim`: [../examples/content-approval](../examples/content-approval)
 
 Generated web clients attach `PUBLIC_TOPOGRAM_AUTH_TOKEN` automatically on secured requests, and generated smoke/runtime-check bundles use `TOPOGRAM_AUTH_TOKEN` when present.
 
@@ -207,11 +207,11 @@ The current auth proof boundary includes:
 - generated permission, ownership, and claim enforcement
 - generated UI visibility that follows the same modeled auth rules
 
-For the primary auth profile and alpha boundary, see [../docs/auth-profile-bearer-jwt-hs256.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-jwt-hs256.md).
+For the primary auth profile and alpha boundary, see [../docs/auth-profile-bearer-jwt-hs256.md](../docs/auth-profile-bearer-jwt-hs256.md).
 
-`bearer_demo` remains supported as a lighter local/demo profile. It is no longer the primary auth narrative. For that profile, see [../docs/auth-profile-bearer-demo.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-demo.md).
+`bearer_demo` remains supported as a lighter local/demo profile. It is no longer the primary auth narrative. For that profile, see [../docs/auth-profile-bearer-demo.md](../docs/auth-profile-bearer-demo.md).
 
-For the modeled authorization surface itself, including when to use `permission`, `ownership`, and `claim`, see [../docs/auth-modeling.md](/Users/attebury/Documents/topogram/docs/auth-modeling.md).
+For the modeled authorization surface itself, including when to use `permission`, `ownership`, and `claim`, see [../docs/auth-modeling.md](../docs/auth-modeling.md).
 
 For brownfield repos, `reconcile` can now infer review-required auth hints from imported auth evidence and surface them in bundle READMEs, reconcile reports, and projection patch candidates. That currently includes:
 

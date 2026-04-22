@@ -20,14 +20,14 @@ In the emitted `issue_detail` screen contract:
 - `cap_close_issue` uses `predicate=ownership`
 - both use `ownershipField=assignee_id`
 
-The canonical journey [issue-resolution-and-closure.md](/Users/attebury/Documents/topogram/examples/issues/topogram/docs/journeys/issue-resolution-and-closure.md) reinforces the same intent:
+The canonical journey [issue-resolution-and-closure.md](../../../examples/issues/topogram/docs/journeys/issue-resolution-and-closure.md) reinforces the same intent:
 
 - the assignee uses the normal detail flow to update and close work
 - non-owners should not see owner-only detail actions as if they were allowed
 
 The maintained proof mirrors that in:
 
-- [product/app/src/issues.js](/Users/attebury/Documents/topogram/product/app/src/issues.js)
+- [product/app/src/issues.js](../src/issues.js)
 
 ## Seam Summary
 
@@ -60,12 +60,12 @@ The product-app proof should fail in a clear, local way.
 
 The expected checks to catch this drift are:
 
-- [product/app/scripts/runtime-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/runtime-check.mjs)
+- [product/app/scripts/runtime-check.mjs](../scripts/runtime-check.mjs)
   - verifies emitted `issue_detail` visibility and the canonical `issue_resolution_and_closure` journey
   - asserts owner/admin can act and non-owners cannot
-- [product/app/scripts/smoke.mjs](/Users/attebury/Documents/topogram/product/app/scripts/smoke.mjs)
+- [product/app/scripts/smoke.mjs](../scripts/smoke.mjs)
   - asserts non-owner issue detail visibility stays hidden in the maintained presenter
-- [product/app/scripts/compile-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/compile-check.mjs)
+- [product/app/scripts/compile-check.mjs](../scripts/compile-check.mjs)
   - asserts the maintained presenter still exposes the expected detail routes and owner-visible actions
 
 This proof matters because it shows that the maintained gate is not just checking field presence.

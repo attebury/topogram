@@ -27,11 +27,11 @@ The canonical story for alpha is:
 
 The canonical evaluator path should remain:
 
-1. state the wedge from [README.md](/Users/attebury/Documents/topogram/README.md)
-2. show maintained-app evolution proof in [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
+1. state the wedge from [README.md](../README.md)
+2. show maintained-app evolution proof in [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
 3. show one safe, one guarded, and one no-go change
-4. show brownfield breadth through [confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
-5. close on [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
+4. show brownfield breadth through [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+5. close on [proof-points-and-limits.md](./proof-points-and-limits.md)
 
 The alpha is not primarily a "generate an app from scratch" story, even though generated examples remain an important proof surface.
 
@@ -48,8 +48,8 @@ These are the things that should be complete before treating the alpha as extern
 
 Current closeout reference:
 
-- [alpha-ready-checklist.md](/Users/attebury/Documents/topogram/docs/alpha-ready-checklist.md)
-- [alpha-launch-and-repo-shaping-plan.md](/Users/attebury/Documents/topogram/docs/alpha-launch-and-repo-shaping-plan.md)
+- [alpha-ready-checklist.md](./alpha-ready-checklist.md)
+- [alpha-launch-and-repo-shaping-plan.md](./alpha-launch-and-repo-shaping-plan.md)
 
 ### 2. Proof-backed product wedge
 
@@ -80,9 +80,9 @@ Current closeout reference:
 
 Current working references:
 
-- [design-partner-profile.md](/Users/attebury/Documents/topogram/docs/design-partner-profile.md)
-- [invite-led-alpha.md](/Users/attebury/Documents/topogram/docs/invite-led-alpha.md)
-- [alpha-launch-tracker.md](/Users/attebury/Documents/topogram/docs/alpha-launch-tracker.md)
+- [design-partner-profile.md](./design-partner-profile.md)
+- [invite-led-alpha.md](./invite-led-alpha.md)
+- [alpha-launch-tracker.md](./alpha-launch-tracker.md)
 
 ## Can slip without blocking alpha
 

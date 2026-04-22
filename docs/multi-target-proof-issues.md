@@ -15,7 +15,7 @@ It is not yet a claim that broad multi-runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/issues/topogram](/Users/attebury/Documents/topogram/examples/issues/topogram)
+- [examples/issues/topogram](../examples/issues/topogram)
 
 That single package drives:
 
@@ -34,13 +34,13 @@ The current proof uses two existing web targets for the same `issues` model:
 Relevant outputs:
 
 - React UI contract:
-  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
 - React app:
-  [examples/issues/apps/web](/Users/attebury/Documents/topogram/examples/issues/apps/web)
+  [examples/issues/apps/web](../examples/issues/apps/web)
 - SvelteKit app:
-  [examples/issues/apps/web-sveltekit](/Users/attebury/Documents/topogram/examples/issues/apps/web-sveltekit)
+  [examples/issues/apps/web-sveltekit](../examples/issues/apps/web-sveltekit)
 
 ## What Must Stay The Same
 
@@ -74,6 +74,6 @@ It does not yet prove:
 
 The parity contract is locked in the engine regression suite:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../engine/scripts/test.js)
 
 That suite compares the emitted React and SvelteKit `issues` UI contracts directly, rather than comparing generated framework source code.

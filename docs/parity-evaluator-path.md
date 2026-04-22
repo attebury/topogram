@@ -13,16 +13,16 @@ It ties together:
 
 Start with:
 
-- [docs/parity-proof-matrix.md](/Users/attebury/Documents/topogram/docs/parity-proof-matrix.md)
-- [docs/multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md)
-- [docs/multi-runtime-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-issues.md)
+- [docs/parity-proof-matrix.md](./parity-proof-matrix.md)
+- [docs/multi-target-proof-issues.md](./multi-target-proof-issues.md)
+- [docs/multi-runtime-proof-issues.md](./multi-runtime-proof-issues.md)
 
 Then skim the repeatability notes:
 
-- [docs/multi-target-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-content-approval.md)
-- [docs/multi-runtime-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-content-approval.md)
-- [docs/multi-target-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-todo.md)
-- [docs/multi-runtime-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-todo.md)
+- [docs/multi-target-proof-content-approval.md](./multi-target-proof-content-approval.md)
+- [docs/multi-runtime-proof-content-approval.md](./multi-runtime-proof-content-approval.md)
+- [docs/multi-target-proof-todo.md](./multi-target-proof-todo.md)
+- [docs/multi-runtime-proof-todo.md](./multi-runtime-proof-todo.md)
 
 ## What To Verify
 
@@ -36,22 +36,22 @@ The seams that matter are:
 Representative emitted artifacts:
 
 - `issues` web:
-  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
   and
-  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
 - `issues` backend:
-  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 - `content-approval` backend:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 - `todo` backend:
-  [examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What To Run
 
 For the shortest repo-level parity proof, run:
 
 ```bash
-bash /Users/attebury/Documents/topogram/scripts/verify-parity-matrix.sh
+bash ./scripts/verify-parity-matrix.sh
 ```
 
 That command checks:

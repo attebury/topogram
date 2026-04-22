@@ -55,22 +55,22 @@ Topogram is most credible today when framed as a system that helps teams:
 
 ### Greenfield and generated proof
 
-- [examples/todo](/Users/attebury/Documents/topogram/examples/todo)
-- [examples/issues](/Users/attebury/Documents/topogram/examples/issues)
-- [examples/content-approval](/Users/attebury/Documents/topogram/examples/content-approval)
+- [examples/todo](../examples/todo)
+- [examples/issues](../examples/issues)
+- [examples/content-approval](../examples/content-approval)
 
 These establish that Topogram can model, generate, and verify multiple domains and stacks from shared semantics.
 
 ### Brownfield proof
 
-- [docs/confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
+- [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 
 This is the strongest current evidence that Topogram is not only a greenfield reference-app story.
 
 ### Planning proof
 
-- [docs/agent-planning-evaluator-path.md](/Users/attebury/Documents/topogram/docs/agent-planning-evaluator-path.md)
-- [docs/agent-query-contract.md](/Users/attebury/Documents/topogram/docs/agent-query-contract.md)
+- [docs/agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md)
+- [docs/agent-query-contract.md](./agent-query-contract.md)
 
 These establish the current planning boundary:
 
@@ -82,11 +82,11 @@ They do not establish a live scheduler or autonomous orchestration runtime.
 
 ### Hand-maintained app evolution proof
 
-- [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
-- [product/app/proof/issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md)
-- [product/app/proof/issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md)
-- [product/app/proof/content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md)
-- [product/app/proof/todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md)
+- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [product/app/proof/issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
+- [product/app/proof/issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
+- [product/app/proof/content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
+- [product/app/proof/todo-project-owner-unsupported-change-story.md](../product/app/proof/todo-project-owner-unsupported-change-story.md)
 
 These establish that Topogram’s value is not only “generate an app.” It can also help decide:
 
@@ -105,7 +105,7 @@ The current maintained proof is intentionally seam-aware, but still conservative
 
 ### Verification strategy
 
-- [docs/testing-strategy.md](/Users/attebury/Documents/topogram/docs/testing-strategy.md)
+- [docs/testing-strategy.md](./testing-strategy.md)
 
 This is the current explanation of how model validity, emitted artifacts, runtime bundles, and maintained-app behavior are verified.
 
@@ -122,7 +122,7 @@ flowchart LR
 
 ### Parity proof matrix
 
-- [docs/parity-proof-matrix.md](/Users/attebury/Documents/topogram/docs/parity-proof-matrix.md)
+- [docs/parity-proof-matrix.md](./parity-proof-matrix.md)
 
 This is the compact inventory of what parity is already proven now, and what remains only partially proven.
 
@@ -137,45 +137,45 @@ flowchart TB
 
 ### First multi-target proof
 
-- [docs/multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md)
+- [docs/multi-target-proof-issues.md](./multi-target-proof-issues.md)
 
 This is the first explicit proof that one canonical domain model can preserve shared UI semantics across two web realizations.
 
 ### Second multi-target proof
 
-- [docs/multi-target-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-content-approval.md)
+- [docs/multi-target-proof-content-approval.md](./multi-target-proof-content-approval.md)
 
 This is the second explicit proof that the same parity seam can hold in a different, workflow-heavy domain with claim-aware auth pressure.
 
 ### Third multi-target proof
 
-- [docs/multi-target-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-todo.md)
+- [docs/multi-target-proof-todo.md](./multi-target-proof-todo.md)
 
 This is the third explicit proof that the same web parity seam also holds in the smaller reference domain.
 
 ### First multi-runtime proof
 
-- [docs/multi-runtime-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-issues.md)
+- [docs/multi-runtime-proof-issues.md](./multi-runtime-proof-issues.md)
 
 This is the first explicit proof that one canonical domain model can preserve shared API semantics across two generated backend runtime targets.
 
 ### Second multi-runtime proof
 
-- [docs/multi-runtime-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-content-approval.md)
+- [docs/multi-runtime-proof-content-approval.md](./multi-runtime-proof-content-approval.md)
 
 This is the second explicit proof that the same backend parity seam can hold in a different, workflow-heavy domain with claim-aware auth pressure.
 
 ### Third multi-runtime proof
 
-- [docs/multi-runtime-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-todo.md)
+- [docs/multi-runtime-proof-todo.md](./multi-runtime-proof-todo.md)
 
 This is the third explicit proof that the same backend parity seam also holds in the smaller reference domain.
 
 ### Auth limitation boundary
 
-- [docs/auth-profile-bearer-jwt-hs256.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-jwt-hs256.md)
-- [docs/auth-profile-bearer-demo.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-demo.md)
-- [docs/bearer-demo-launch-checklist.md](/Users/attebury/Documents/topogram/docs/bearer-demo-launch-checklist.md)
+- [docs/auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md)
+- [docs/auth-profile-bearer-demo.md](./auth-profile-bearer-demo.md)
+- [docs/bearer-demo-launch-checklist.md](./bearer-demo-launch-checklist.md)
 
 Use these as the authority for what Topogram does and does not prove today on auth.
 
@@ -200,5 +200,5 @@ That is now the clearest next answer to the “too example-shaped” critique wi
 
 The current invite-led alpha audience and contact path are documented here:
 
-- [docs/design-partner-profile.md](/Users/attebury/Documents/topogram/docs/design-partner-profile.md)
-- [docs/invite-led-alpha.md](/Users/attebury/Documents/topogram/docs/invite-led-alpha.md)
+- [docs/design-partner-profile.md](./design-partner-profile.md)
+- [docs/invite-led-alpha.md](./invite-led-alpha.md)

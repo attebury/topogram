@@ -51,7 +51,7 @@ node ./engine/src/cli.js query handoff-status ./engine/tests/fixtures/import/inc
 For the shortest evaluator-facing verification path, run:
 
 ```bash
-bash /Users/attebury/Documents/topogram/scripts/verify-agent-planning.sh
+bash ./scripts/verify-agent-planning.sh
 ```
 
 ## What The Planning Surface Proves

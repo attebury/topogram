@@ -23,10 +23,10 @@ The Content Approval model changed in these ways:
 
 Relevant model files:
 
-- [examples/content-approval/topogram/enums/enum-article-status.tg](/Users/attebury/Documents/topogram/examples/content-approval/topogram/enums/enum-article-status.tg)
-- [examples/content-approval/topogram/entities/entity-article.tg](/Users/attebury/Documents/topogram/examples/content-approval/topogram/entities/entity-article.tg)
-- [examples/content-approval/topogram/capabilities/cap-request-article-revision.tg](/Users/attebury/Documents/topogram/examples/content-approval/topogram/capabilities/cap-request-article-revision.tg)
-- [examples/content-approval/topogram/projections/proj-api.tg](/Users/attebury/Documents/topogram/examples/content-approval/topogram/projections/proj-api.tg)
+- [examples/content-approval/topogram/enums/enum-article-status.tg](../../../examples/content-approval/topogram/enums/enum-article-status.tg)
+- [examples/content-approval/topogram/entities/entity-article.tg](../../../examples/content-approval/topogram/entities/entity-article.tg)
+- [examples/content-approval/topogram/capabilities/cap-request-article-revision.tg](../../../examples/content-approval/topogram/capabilities/cap-request-article-revision.tg)
+- [examples/content-approval/topogram/projections/proj-api.tg](../../../examples/content-approval/topogram/projections/proj-api.tg)
 
 ## Realization And Contract Impact
 
@@ -48,11 +48,11 @@ This is the important part of the proof: the change is not only visible in gener
 
 The additive brownfield migration proof starts from a pre-change snapshot:
 
-- [examples/content-approval/topogram/tests/fixtures/migrations/proj_db_postgres.needs-revision-from.snapshot.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/migrations/proj_db_postgres.needs-revision-from.snapshot.json)
+- [examples/content-approval/topogram/tests/fixtures/migrations/proj_db_postgres.needs-revision-from.snapshot.json](../../../examples/content-approval/topogram/tests/fixtures/migrations/proj_db_postgres.needs-revision-from.snapshot.json)
 
 From that snapshot, Topogram now generates this supported migration plan:
 
-- [examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.db-migration-plan.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.db-migration-plan.json)
+- [examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.db-migration-plan.json](../../../examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.db-migration-plan.json)
 
 The key operations are:
 
@@ -61,7 +61,7 @@ The key operations are:
 
 And the generated SQL is:
 
-- [examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.migration.sql](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.migration.sql)
+- [examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.migration.sql](../../../examples/content-approval/topogram/tests/fixtures/expected/proj_db_postgres.needs-revision.migration.sql)
 
 The lifecycle path is also proven now, not just the planner:
 
@@ -83,9 +83,9 @@ The maintained proof app was updated without treating it as disposable generated
 
 Updated maintained files:
 
-- [product/app/src/content-approval.js](/Users/attebury/Documents/topogram/product/app/src/content-approval.js)
-- [product/app/src/content-approval-ui.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-ui.js)
-- [product/app/src/content-approval-actions.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-actions.js)
+- [product/app/src/content-approval.js](../src/content-approval.js)
+- [product/app/src/content-approval-ui.js](../src/content-approval-ui.js)
+- [product/app/src/content-approval-actions.js](../src/content-approval-actions.js)
 
 What changed in that code:
 
@@ -107,14 +107,14 @@ Generated and maintained verification now covers the whole story.
 
 Maintained app:
 
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/compile-check.mjs`
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/smoke.mjs`
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/runtime-check.mjs`
+- `cd ./product/app && node ./scripts/compile-check.mjs`
+- `cd ./product/app && node ./scripts/smoke.mjs`
+- `cd ./product/app && node ./scripts/runtime-check.mjs`
 
 Engine and examples:
 
-- `cd /Users/attebury/Documents/topogram/engine && npm test`
-- `cd /Users/attebury/Documents/topogram/engine && node ./src/cli.js ../examples/content-approval/topogram --validate`
+- `cd ./engine && npm test`
+- `cd ./engine && node ./src/cli.js ../examples/content-approval/topogram --validate`
 
 The engine suite now proves all of these:
 

@@ -14,24 +14,24 @@ It ties together:
 
 Start with:
 
-- [docs/multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md)
-- [docs/multi-runtime-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-issues.md)
+- [docs/multi-target-proof-issues.md](./multi-target-proof-issues.md)
+- [docs/multi-runtime-proof-issues.md](./multi-runtime-proof-issues.md)
 
 Then verify the seams directly:
 
 - UI seam:
-  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
   and
-  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
 - API/runtime seam:
-  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What To Run
 
 For the shortest parity proof, run:
 
 ```bash
-bash /Users/attebury/Documents/topogram/scripts/verify-issues-parity.sh
+bash ./scripts/verify-issues-parity.sh
 ```
 
 That command checks:
@@ -45,7 +45,7 @@ The output is compact JSON so an evaluator or agent can read it quickly.
 For the shortest emitted-contract audit, run:
 
 ```bash
-bash /Users/attebury/Documents/topogram/scripts/audit-issues-contract-diff.sh
+bash ./scripts/audit-issues-contract-diff.sh
 ```
 
 That command reads the emitted `issues` seams on disk and reports whether they differ semantically, without asking the reviewer to inspect generator internals.

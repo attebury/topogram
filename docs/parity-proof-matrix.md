@@ -13,12 +13,12 @@ It answers four questions quickly:
 
 | Domain | Seam | Targets | Proof Surface | Status |
 | --- | --- | --- | --- | --- |
-| `issues` | UI contract parity | React `proj_ui_web` and SvelteKit `proj_ui_web_sveltekit` | [multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md), [issues-parity-evaluator-path.md](/Users/attebury/Documents/topogram/docs/issues-parity-evaluator-path.md) | Proven now |
-| `issues` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-issues.md), [issues-parity-evaluator-path.md](/Users/attebury/Documents/topogram/docs/issues-parity-evaluator-path.md) | Proven now |
-| `content-approval` | UI contract parity | React `proj_ui_web` and SvelteKit `proj_ui_web_sveltekit` | [multi-target-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-content-approval.md) | Proven now |
-| `content-approval` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-content-approval.md) | Proven now |
-| `todo` | UI contract parity | React `proj_ui_web_react` and SvelteKit `proj_ui_web` | [multi-target-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-todo.md) | Proven now |
-| `todo` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-todo.md) | Proven now |
+| `issues` | UI contract parity | React `proj_ui_web` and SvelteKit `proj_ui_web_sveltekit` | [multi-target-proof-issues.md](./multi-target-proof-issues.md), [issues-parity-evaluator-path.md](./issues-parity-evaluator-path.md) | Proven now |
+| `issues` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-issues.md](./multi-runtime-proof-issues.md), [issues-parity-evaluator-path.md](./issues-parity-evaluator-path.md) | Proven now |
+| `content-approval` | UI contract parity | React `proj_ui_web` and SvelteKit `proj_ui_web_sveltekit` | [multi-target-proof-content-approval.md](./multi-target-proof-content-approval.md) | Proven now |
+| `content-approval` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-content-approval.md](./multi-runtime-proof-content-approval.md) | Proven now |
+| `todo` | UI contract parity | React `proj_ui_web_react` and SvelteKit `proj_ui_web` | [multi-target-proof-todo.md](./multi-target-proof-todo.md) | Proven now |
+| `todo` | Backend runtime parity | Hono `hono-server` and Express `express-server` | [multi-runtime-proof-todo.md](./multi-runtime-proof-todo.md) | Proven now |
 
 ## What Is Still Only Partially Proven
 
@@ -35,12 +35,12 @@ Still only partially proven:
 
 For the fastest parity review:
 
-1. start with [parity-evaluator-path.md](/Users/attebury/Documents/topogram/docs/parity-evaluator-path.md)
-2. use [issues-parity-evaluator-path.md](/Users/attebury/Documents/topogram/docs/issues-parity-evaluator-path.md) as the deepest single-domain walkthrough
-3. read [multi-target-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-content-approval.md)
-4. read [multi-runtime-proof-content-approval.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-content-approval.md)
-5. read [multi-target-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-todo.md)
-6. read [multi-runtime-proof-todo.md](/Users/attebury/Documents/topogram/docs/multi-runtime-proof-todo.md)
+1. start with [parity-evaluator-path.md](./parity-evaluator-path.md)
+2. use [issues-parity-evaluator-path.md](./issues-parity-evaluator-path.md) as the deepest single-domain walkthrough
+3. read [multi-target-proof-content-approval.md](./multi-target-proof-content-approval.md)
+4. read [multi-runtime-proof-content-approval.md](./multi-runtime-proof-content-approval.md)
+5. read [multi-target-proof-todo.md](./multi-target-proof-todo.md)
+6. read [multi-runtime-proof-todo.md](./multi-runtime-proof-todo.md)
 
 That gives the evaluator one compact repo-level parity path plus the per-domain notes showing repeatability across all three domains.
 

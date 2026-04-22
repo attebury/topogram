@@ -15,7 +15,7 @@ It is not yet a claim that broad backend/runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/todo/topogram](/Users/attebury/Documents/topogram/examples/todo/topogram)
+- [examples/todo/topogram](../examples/todo/topogram)
 
 That single package drives:
 
@@ -33,11 +33,11 @@ The current proof uses two backend targets for the same `todo` model:
 Relevant generated outputs:
 
 - Hono server fixture:
-  [examples/todo/topogram/tests/fixtures/expected/hono-server](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/hono-server)
+  [examples/todo/topogram/tests/fixtures/expected/hono-server](../examples/todo/topogram/tests/fixtures/expected/hono-server)
 - Express server fixture:
-  [examples/todo/topogram/tests/fixtures/expected/express-server](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/express-server)
+  [examples/todo/topogram/tests/fixtures/expected/express-server](../examples/todo/topogram/tests/fixtures/expected/express-server)
 - Shared emitted server contract:
-  [examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What Must Stay The Same
 
@@ -69,6 +69,6 @@ It does not yet prove:
 
 The parity contract is locked in the engine regression suite:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../engine/scripts/test.js)
 
 That suite checks that the `todo` Hono and Express bundles both build successfully and preserve the same generated `server-contract` semantics, while still remaining visibly different runtime targets.

@@ -60,7 +60,7 @@ The current answer is:
 - generated verification is only one layer
 - brownfield proof and maintained-app proof add additional trust anchors
 - the maintained-app proof package also includes evaluator-facing contract review material outside the generated runtime loop
-- auth now has its own evaluator-facing path, centered on signed-token proof and explicit limits, in [auth-evaluator-path.md](/Users/attebury/Documents/topogram/docs/auth-evaluator-path.md)
+- auth now has its own evaluator-facing path, centered on signed-token proof and explicit limits, in [auth-evaluator-path.md](./auth-evaluator-path.md)
 
 The stronger long-term answer is to keep adding independent validation layers over time.
 
@@ -169,7 +169,7 @@ The current claim should not be that every app team should adopt a new modeling 
 
 Use the canonical evaluator flow:
 
-- [evaluator-path.md](/Users/attebury/Documents/topogram/docs/evaluator-path.md)
+- [evaluator-path.md](./evaluator-path.md)
 
 That path is designed to answer the right question first:
 

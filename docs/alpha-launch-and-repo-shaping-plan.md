@@ -21,13 +21,13 @@ The public alpha should let a new evaluator understand, in one pass:
 
 These are the launch-critical surfaces that should stay coherent together:
 
-- [README.md](/Users/attebury/Documents/topogram/README.md)
-- [evaluator-path.md](/Users/attebury/Documents/topogram/docs/evaluator-path.md)
-- [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
-- [alpha-ready-checklist.md](/Users/attebury/Documents/topogram/docs/alpha-ready-checklist.md)
-- [alpha-launch-tracker.md](/Users/attebury/Documents/topogram/docs/alpha-launch-tracker.md)
-- maintained proof package under [product/app/proof](/Users/attebury/Documents/topogram/product/app/proof)
-- brownfield proof inventory through [confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
+- [README.md](../README.md)
+- [evaluator-path.md](./evaluator-path.md)
+- [proof-points-and-limits.md](./proof-points-and-limits.md)
+- [alpha-ready-checklist.md](./alpha-ready-checklist.md)
+- [alpha-launch-tracker.md](./alpha-launch-tracker.md)
+- maintained proof package under [product/app/proof](../product/app/proof)
+- brownfield proof inventory through [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 
 Launch-ready means:
 
@@ -72,9 +72,9 @@ After the first remote push:
 - `alpha/*` branches are for launch-closeout work only
 - `post-alpha/*` branches are for shaping work
 - no change that broadens claims lands without checking:
-  - [README.md](/Users/attebury/Documents/topogram/README.md)
-  - [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
-  - [alpha-ready-checklist.md](/Users/attebury/Documents/topogram/docs/alpha-ready-checklist.md)
+  - [README.md](../README.md)
+  - [proof-points-and-limits.md](./proof-points-and-limits.md)
+  - [alpha-ready-checklist.md](./alpha-ready-checklist.md)
 
 Every future change should be classified as:
 

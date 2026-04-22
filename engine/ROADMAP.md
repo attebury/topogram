@@ -55,7 +55,7 @@ Priority candidates for the next phase:
 
 4. Additional UI targets
 - iOS, Android, desktop, and other platform realizations on top of shared UI semantics
-- before broadening targets further, consider adding a semantic `ui_patterns` layer between UI contracts and target renderers; see [../docs/ui-patterns-plan.md](/Users/attebury/Documents/topogram/docs/ui-patterns-plan.md)
+- before broadening targets further, consider adding a semantic `ui_patterns` layer between UI contracts and target renderers; see [../docs/ui-patterns-plan.md](../docs/ui-patterns-plan.md)
 
 5. More persistence/runtime options
 - deepen Drizzle parity
@@ -68,7 +68,7 @@ Priority candidates for the next phase:
 - explore git-backed Topogram packages as reusable semantic modules, not only whole apps
 - define a package manifest with `recommended exports` for likely reusable surfaces and `requirements` for dependent entities, enums, shapes, and other needed model pieces
 - support first-class `import topogram` flows so consuming teams can inspect any open Topogram before adoption instead of merging blindly
-- generalize this into a provider integration model where providers can publish package exports, runtime or deploy profiles, and connector modules through one candidate-first, metadata-first manifest model; see [../docs/provider-integration-plan.md](/Users/attebury/Documents/topogram/docs/provider-integration-plan.md)
+- generalize this into a provider integration model where providers can publish package exports, runtime or deploy profiles, and connector modules through one candidate-first, metadata-first manifest model; see [../docs/provider-integration-plan.md](../docs/provider-integration-plan.md)
 - evolve toward a registry model where:
   - humans discover and evaluate packages through a readable site such as `topograms.dev`
   - agents query the same package metadata through an MCP server

@@ -101,16 +101,16 @@ flowchart LR
 
 - accepted change
   - the emitted surface moves in a way the maintained app can mirror directly
-  - example: [issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md)
+  - example: [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md)
 - guarded/manual-decision change
   - Topogram can identify the affected maintained surface, but final product treatment should stay human-owned
-  - example: [content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md)
+  - example: [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md)
 - no-go or unsupported change
   - the system should stop clearly rather than over-automate
   - examples:
-    - [issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md)
-    - [content-approval-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-unsupported-change-story.md)
-    - [todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md)
+    - [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md)
+    - [content-approval-unsupported-change-story.md](./content-approval-unsupported-change-story.md)
+    - [todo-project-owner-unsupported-change-story.md](./todo-project-owner-unsupported-change-story.md)
 
 This is the important maintained-app claim:
 
@@ -124,10 +124,10 @@ Use this as the quick seam-aware map for the maintained proof package:
 
 | Story | Seam | Output | Boundary |
 | --- | --- | --- | --- |
-| [issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md) | `seam_maintained_presenter_structure` | `maintained_app` | safe / review-required |
-| [content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md) | `seam_new_workflow_affordance_treatment` | `maintained_app` | guarded / manual-decision |
-| [issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md) | `seam_owner_visibility_semantics_must_not_drift` | `maintained_app` | no-go |
-| [todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md) | `seam_ownership_retargeting_remains_manual` | `maintained_app` | no-go |
+| [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md) | `seam_maintained_presenter_structure` | `maintained_app` | safe / review-required |
+| [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md) | `seam_new_workflow_affordance_treatment` | `maintained_app` | guarded / manual-decision |
+| [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md) | `seam_owner_visibility_semantics_must_not_drift` | `maintained_app` | no-go |
+| [todo-project-owner-unsupported-change-story.md](./todo-project-owner-unsupported-change-story.md) | `seam_ownership_retargeting_remains_manual` | `maintained_app` | no-go |
 
 Example seam anatomy for the guarded Content Approval case:
 
@@ -154,7 +154,7 @@ Example seam anatomy for the guarded Content Approval case:
 
 For a human-auditable check outside the generated verification loop, use:
 
-- [maintained-contract-review.md](/Users/attebury/Documents/topogram/product/app/proof/maintained-contract-review.md)
+- [maintained-contract-review.md](./maintained-contract-review.md)
 
 That artifact is intentionally hand-written. It helps a reviewer compare emitted artifacts and maintained surfaces directly without relying only on generated verification.
 
@@ -193,10 +193,10 @@ The proof passes when:
 
 For the fuller DB-plus-maintained-app narrative, see:
 
-- [content-approval-db-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-db-change-story.md)
-- [content-approval-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-unsupported-change-story.md)
-- [content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md)
-- [issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md)
-- [issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md)
-- [maintained-contract-review.md](/Users/attebury/Documents/topogram/product/app/proof/maintained-contract-review.md)
-- [todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md)
+- [content-approval-db-change-story.md](./content-approval-db-change-story.md)
+- [content-approval-unsupported-change-story.md](./content-approval-unsupported-change-story.md)
+- [content-approval-workflow-decision-story.md](./content-approval-workflow-decision-story.md)
+- [issues-ownership-visibility-story.md](./issues-ownership-visibility-story.md)
+- [issues-ownership-visibility-drift-story.md](./issues-ownership-visibility-drift-story.md)
+- [maintained-contract-review.md](./maintained-contract-review.md)
+- [todo-project-owner-unsupported-change-story.md](./todo-project-owner-unsupported-change-story.md)

@@ -12,7 +12,7 @@ It answers three questions:
 
 Topogram is for technical teams already using coding agents who need stronger structure, review boundaries, and proof while evolving real software.
 
-For the fuller fit profile, see [design-partner-profile.md](/Users/attebury/Documents/topogram/docs/design-partner-profile.md).
+For the fuller fit profile, see [design-partner-profile.md](./design-partner-profile.md).
 
 ## Current Contact Path
 

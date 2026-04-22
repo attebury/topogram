@@ -60,7 +60,7 @@ The engine suite includes explicit negative planner proofs for Content Approval:
 
 Those tests live in:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../../../engine/scripts/test.js)
 
 In all three cases, the generated migration plan must:
 
@@ -100,8 +100,8 @@ The point is to make agents safer and more truthful about what can be changed au
 
 These two documents should be read together:
 
-- [content-approval-db-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-db-change-story.md)
-- [content-approval-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-unsupported-change-story.md)
+- [content-approval-db-change-story.md](./content-approval-db-change-story.md)
+- [content-approval-unsupported-change-story.md](./content-approval-unsupported-change-story.md)
 
 Together they show:
 
@@ -114,7 +114,7 @@ That combination is a much stronger proof than either story alone.
 
 The stop behavior is covered by:
 
-- `cd /Users/attebury/Documents/topogram/engine && npm test`
+- `cd ./engine && npm test`
 
 The relevant assertions verify:
 

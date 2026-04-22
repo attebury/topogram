@@ -48,20 +48,20 @@ The maintained-app proof now covers three categories of change:
 
 - accepted change
   - a maintained surface should mirror the emitted Topogram artifact directly
-  - example: [proof/issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md)
+  - example: [proof/issues-ownership-visibility-story.md](./proof/issues-ownership-visibility-story.md)
 - guarded/manual-decision change
   - Topogram identifies the impacted maintained surface, but the final product or UX treatment should remain human-owned
-  - example: [proof/content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md)
+  - example: [proof/content-approval-workflow-decision-story.md](./proof/content-approval-workflow-decision-story.md)
 - no-go or unsupported change
   - the system should fail clearly rather than over-automate
   - examples:
-    - [proof/issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md)
-    - [proof/content-approval-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-unsupported-change-story.md)
-    - [proof/todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md)
+    - [proof/issues-ownership-visibility-drift-story.md](./proof/issues-ownership-visibility-drift-story.md)
+    - [proof/content-approval-unsupported-change-story.md](./proof/content-approval-unsupported-change-story.md)
+    - [proof/todo-project-owner-unsupported-change-story.md](./proof/todo-project-owner-unsupported-change-story.md)
 
 ## Commands
 
-Run these from `/Users/attebury/Documents/topogram/product/app`.
+Run these from `./product/app`.
 
 ```bash
 npm run verify
@@ -123,29 +123,29 @@ This is the current maintained-app proof boundary:
 
 The runtime proof is intentionally split into small layers:
 
-- [scripts/emitted-contracts.mjs](/Users/attebury/Documents/topogram/product/app/scripts/emitted-contracts.mjs): emitted artifact loading and lookup helpers
-- [scripts/proof-scenarios.mjs](/Users/attebury/Documents/topogram/product/app/scripts/proof-scenarios.mjs): reusable maintained-proof assertions for Todo and Content Approval
-- [scripts/runtime-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/runtime-check.mjs): the composed runtime gate that runs those assertions together
+- [scripts/emitted-contracts.mjs](./scripts/emitted-contracts.mjs): emitted artifact loading and lookup helpers
+- [scripts/proof-scenarios.mjs](./scripts/proof-scenarios.mjs): reusable maintained-proof assertions for Todo and Content Approval
+- [scripts/runtime-check.mjs](./scripts/runtime-check.mjs): the composed runtime gate that runs those assertions together
 
 For an evaluator-facing review artifact outside the generated verification loop, see:
 
-- [proof/maintained-contract-review.md](/Users/attebury/Documents/topogram/product/app/proof/maintained-contract-review.md)
+- [proof/maintained-contract-review.md](./proof/maintained-contract-review.md)
 
 ## Files
 
-- [src/content-approval.js](/Users/attebury/Documents/topogram/product/app/src/content-approval.js): hand-maintained content-approval presenter and route metadata
-- [src/content-approval-ui.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-ui.js): hand-maintained Content Approval detail page and form-model logic
-- [src/content-approval-actions.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-actions.js): hand-maintained request-revision and resubmission action builders
-- [src/todo.js](/Users/attebury/Documents/topogram/product/app/src/todo.js): hand-maintained Todo presenter and route metadata
-- [proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md): the documented Topogram-to-app edit proof
-- [proof/content-approval-db-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-db-change-story.md): the end-to-end model, migration, maintained-app, and verification story for `needs_revision`
-- [proof/content-approval-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-unsupported-change-story.md): the matching no-go story for unsafe enum changes that require manual DB intervention
-- [proof/content-approval-workflow-decision-story.md](/Users/attebury/Documents/topogram/product/app/proof/content-approval-workflow-decision-story.md): the maintained-app no-go story for ambiguous workflow/UI decisions
-- [proof/issues-ownership-visibility-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-story.md): the passing maintained-app proof for owner-or-admin detail visibility and compact issue-card/list alignment
-- [proof/issues-ownership-visibility-drift-story.md](/Users/attebury/Documents/topogram/product/app/proof/issues-ownership-visibility-drift-story.md): the maintained-app drift story for owner-only issue detail actions
-- [proof/maintained-contract-review.md](/Users/attebury/Documents/topogram/product/app/proof/maintained-contract-review.md): a hand-written contract review artifact for auditors and skeptical evaluators
-- [proof/maintained-proof-checklist.md](/Users/attebury/Documents/topogram/product/app/proof/maintained-proof-checklist.md): the reusable checklist for adding the next hand-maintained proof
-- [proof/todo-project-owner-unsupported-change-story.md](/Users/attebury/Documents/topogram/product/app/proof/todo-project-owner-unsupported-change-story.md): the matching no-go story for unsafe Todo foreign-key retargeting
-- [scripts](/Users/attebury/Documents/topogram/product/app/scripts): local proof checks
-- [scripts/emitted-contracts.mjs](/Users/attebury/Documents/topogram/product/app/scripts/emitted-contracts.mjs): shared helpers for reading emitted Topogram artifacts used by the maintained-proof runtime gate
-- [scripts/proof-scenarios.mjs](/Users/attebury/Documents/topogram/product/app/scripts/proof-scenarios.mjs): shared proof assertions that keep emitted-artifact checks and maintained-app behavior checks reusable
+- [src/content-approval.js](./src/content-approval.js): hand-maintained content-approval presenter and route metadata
+- [src/content-approval-ui.js](./src/content-approval-ui.js): hand-maintained Content Approval detail page and form-model logic
+- [src/content-approval-actions.js](./src/content-approval-actions.js): hand-maintained request-revision and resubmission action builders
+- [src/todo.js](./src/todo.js): hand-maintained Todo presenter and route metadata
+- [proof/edit-existing-app.md](./proof/edit-existing-app.md): the documented Topogram-to-app edit proof
+- [proof/content-approval-db-change-story.md](./proof/content-approval-db-change-story.md): the end-to-end model, migration, maintained-app, and verification story for `needs_revision`
+- [proof/content-approval-unsupported-change-story.md](./proof/content-approval-unsupported-change-story.md): the matching no-go story for unsafe enum changes that require manual DB intervention
+- [proof/content-approval-workflow-decision-story.md](./proof/content-approval-workflow-decision-story.md): the maintained-app no-go story for ambiguous workflow/UI decisions
+- [proof/issues-ownership-visibility-story.md](./proof/issues-ownership-visibility-story.md): the passing maintained-app proof for owner-or-admin detail visibility and compact issue-card/list alignment
+- [proof/issues-ownership-visibility-drift-story.md](./proof/issues-ownership-visibility-drift-story.md): the maintained-app drift story for owner-only issue detail actions
+- [proof/maintained-contract-review.md](./proof/maintained-contract-review.md): a hand-written contract review artifact for auditors and skeptical evaluators
+- [proof/maintained-proof-checklist.md](./proof/maintained-proof-checklist.md): the reusable checklist for adding the next hand-maintained proof
+- [proof/todo-project-owner-unsupported-change-story.md](./proof/todo-project-owner-unsupported-change-story.md): the matching no-go story for unsafe Todo foreign-key retargeting
+- [scripts](./scripts): local proof checks
+- [scripts/emitted-contracts.mjs](./scripts/emitted-contracts.mjs): shared helpers for reading emitted Topogram artifacts used by the maintained-proof runtime gate
+- [scripts/proof-scenarios.mjs](./scripts/proof-scenarios.mjs): shared proof assertions that keep emitted-artifact checks and maintained-app behavior checks reusable

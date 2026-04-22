@@ -15,7 +15,7 @@ It is not yet a claim that broad backend/runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/content-approval/topogram](/Users/attebury/Documents/topogram/examples/content-approval/topogram)
+- [examples/content-approval/topogram](../examples/content-approval/topogram)
 
 That single package drives:
 
@@ -33,11 +33,11 @@ The current proof uses two backend targets for the same `content-approval` model
 Relevant generated outputs:
 
 - Hono server fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/hono-server](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/hono-server)
+  [examples/content-approval/topogram/tests/fixtures/expected/hono-server](../examples/content-approval/topogram/tests/fixtures/expected/hono-server)
 - Express server fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/express-server](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/express-server)
+  [examples/content-approval/topogram/tests/fixtures/expected/express-server](../examples/content-approval/topogram/tests/fixtures/expected/express-server)
 - Shared emitted server contract:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What Must Stay The Same
 
@@ -69,6 +69,6 @@ It does not yet prove:
 
 The parity contract is locked in the engine regression suite:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../engine/scripts/test.js)
 
 That suite checks that the `content-approval` Hono and Express bundles both build successfully and preserve the same generated `server-contract` semantics, while still remaining visibly different runtime targets.

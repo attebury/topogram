@@ -35,7 +35,7 @@ Emitted evidence:
 
 Maintained surface:
 
-- [product/app/src/issues.js](/Users/attebury/Documents/topogram/product/app/src/issues.js)
+- [product/app/src/issues.js](../src/issues.js)
 
 Reviewer should confirm:
 
@@ -51,7 +51,7 @@ Emitted evidence:
 
 Maintained surface:
 
-- [product/app/src/content-approval-change-guards.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-change-guards.js)
+- [product/app/src/content-approval-change-guards.js](../src/content-approval-change-guards.js)
 
 Reviewer should confirm:
 
@@ -66,7 +66,7 @@ Emitted evidence:
 
 Maintained surface:
 
-- [product/app/src/todo-change-guards.js](/Users/attebury/Documents/topogram/product/app/src/todo-change-guards.js)
+- [product/app/src/todo-change-guards.js](../src/todo-change-guards.js)
 
 Reviewer should confirm:
 

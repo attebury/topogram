@@ -34,7 +34,7 @@ Examples:
 
 Use helpers in:
 
-- [product/app/scripts/emitted-contracts.mjs](/Users/attebury/Documents/topogram/product/app/scripts/emitted-contracts.mjs)
+- [product/app/scripts/emitted-contracts.mjs](../scripts/emitted-contracts.mjs)
 
 Prefer emitted artifacts over raw `.tg` source text when the emitted artifact already expresses the same meaning more cleanly.
 
@@ -42,7 +42,7 @@ Prefer emitted artifacts over raw `.tg` source text when the emitted artifact al
 
 Put reusable scenario assertions in:
 
-- [product/app/scripts/proof-scenarios.mjs](/Users/attebury/Documents/topogram/product/app/scripts/proof-scenarios.mjs)
+- [product/app/scripts/proof-scenarios.mjs](../scripts/proof-scenarios.mjs)
 
 The maintained assertions should answer:
 
@@ -53,9 +53,9 @@ The maintained assertions should answer:
 
 Use:
 
-- [product/app/scripts/compile-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/compile-check.mjs)
-- [product/app/scripts/smoke.mjs](/Users/attebury/Documents/topogram/product/app/scripts/smoke.mjs)
-- [product/app/scripts/runtime-check.mjs](/Users/attebury/Documents/topogram/product/app/scripts/runtime-check.mjs)
+- [product/app/scripts/compile-check.mjs](../scripts/compile-check.mjs)
+- [product/app/scripts/smoke.mjs](../scripts/smoke.mjs)
+- [product/app/scripts/runtime-check.mjs](../scripts/runtime-check.mjs)
 
 Typical split:
 
@@ -73,14 +73,14 @@ Examples:
 
 Use a proof note under:
 
-- [product/app/proof](/Users/attebury/Documents/topogram/product/app/proof)
+- [product/app/proof](./)
 
 7. Update the written proof story.
 
 At minimum, update:
 
-- [product/app/README.md](/Users/attebury/Documents/topogram/product/app/README.md)
-- [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
+- [product/app/README.md](../README.md)
+- [product/app/proof/edit-existing-app.md](./edit-existing-app.md)
 
 ## Current Pattern
 

@@ -10,25 +10,25 @@ It is not a roadmap. It is the shortest answer to:
 ## Core Story
 
 - [x] README states the wedge as controlled software evolution for humans and agents
-- [x] [evaluator-path.md](/Users/attebury/Documents/topogram/docs/evaluator-path.md) is the canonical evaluator flow
-- [x] [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md) is the public claim boundary
-- [x] [skeptical-evaluator.md](/Users/attebury/Documents/topogram/docs/skeptical-evaluator.md) answers the strongest fair objections
+- [x] [evaluator-path.md](./evaluator-path.md) is the canonical evaluator flow
+- [x] [proof-points-and-limits.md](./proof-points-and-limits.md) is the public claim boundary
+- [x] [skeptical-evaluator.md](./skeptical-evaluator.md) answers the strongest fair objections
 
 ## Proof Surfaces
 
-- [x] maintained-app proof is present and easy to navigate through [product/app/proof/edit-existing-app.md](/Users/attebury/Documents/topogram/product/app/proof/edit-existing-app.md)
+- [x] maintained-app proof is present and easy to navigate through [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
 - [x] safe, guarded, and no-go change stories are explicitly documented
 - [x] maintained-app proof now names the governed seam, output, emitted dependencies, and review class for the primary safe / guarded / no-go stories
-- [x] brownfield breadth is visible in [confirmed-proof-matrix.md](/Users/attebury/Documents/topogram/docs/confirmed-proof-matrix.md)
+- [x] brownfield breadth is visible in [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 - [x] generated example proof remains visible through `todo`, `issues`, and `content-approval`
 
 ## Verification
 
-- [x] top-level verification entrypoints are documented in [README.md](/Users/attebury/Documents/topogram/README.md)
-- [x] verification strategy is documented in [testing-strategy.md](/Users/attebury/Documents/topogram/docs/testing-strategy.md)
+- [x] top-level verification entrypoints are documented in [README.md](../README.md)
+- [x] verification strategy is documented in [testing-strategy.md](./testing-strategy.md)
 - [x] the repo explains the current trust boundary between generated verification and independent trust anchors
 - [x] seam-aware maintained queries are documented and demoable through `maintained-boundary`, `maintained-drift`, `maintained-conformance`, and `seam-check`
-- [x] one deterministic import/adopt fixture path exists for base and non-empty staged proposal demos through [build-adoption-plan-fixture.mjs](/Users/attebury/Documents/topogram/engine/scripts/build-adoption-plan-fixture.mjs)
+- [x] one deterministic import/adopt fixture path exists for base and non-empty staged proposal demos through [build-adoption-plan-fixture.mjs](../engine/scripts/build-adoption-plan-fixture.mjs)
 
 Current closeout command set:
 
@@ -46,16 +46,16 @@ Alpha closeout expectation:
 
 ## Auth
 
-- [x] signed JWT is the primary alpha auth profile in [auth-profile-bearer-jwt-hs256.md](/Users/attebury/Documents/topogram/docs/auth-profile-bearer-jwt-hs256.md)
-- [x] the modeled auth surface is explicit in [auth-modeling.md](/Users/attebury/Documents/topogram/docs/auth-modeling.md)
-- [x] auth has a dedicated evaluator path in [auth-evaluator-path.md](/Users/attebury/Documents/topogram/docs/auth-evaluator-path.md)
-- [x] auth remains explicitly non-production in [proof-points-and-limits.md](/Users/attebury/Documents/topogram/docs/proof-points-and-limits.md)
+- [x] signed JWT is the primary alpha auth profile in [auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md)
+- [x] the modeled auth surface is explicit in [auth-modeling.md](./auth-modeling.md)
+- [x] auth has a dedicated evaluator path in [auth-evaluator-path.md](./auth-evaluator-path.md)
+- [x] auth remains explicitly non-production in [proof-points-and-limits.md](./proof-points-and-limits.md)
 
 ## Invite-Led Readiness
 
-- [x] one-sentence fit is stated in [README.md](/Users/attebury/Documents/topogram/README.md)
-- [x] design-partner profile is documented in [design-partner-profile.md](/Users/attebury/Documents/topogram/docs/design-partner-profile.md)
-- [x] invite/contact path is documented in [invite-led-alpha.md](/Users/attebury/Documents/topogram/docs/invite-led-alpha.md)
+- [x] one-sentence fit is stated in [README.md](../README.md)
+- [x] design-partner profile is documented in [design-partner-profile.md](./design-partner-profile.md)
+- [x] invite/contact path is documented in [invite-led-alpha.md](./invite-led-alpha.md)
 
 ## Explicitly Out Of Scope
 
@@ -70,8 +70,8 @@ Alpha closeout expectation:
 
 The first concrete post-alpha trust-building proof is now:
 
-- [multi-target-proof-issues.md](/Users/attebury/Documents/topogram/docs/multi-target-proof-issues.md)
-- [parity-proof-matrix.md](/Users/attebury/Documents/topogram/docs/parity-proof-matrix.md)
+- [multi-target-proof-issues.md](./multi-target-proof-issues.md)
+- [parity-proof-matrix.md](./parity-proof-matrix.md)
 
 The clearest next trust-building target after that remains:
 

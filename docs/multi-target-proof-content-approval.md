@@ -15,7 +15,7 @@ It is not yet a claim that broad multi-target generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/content-approval/topogram](/Users/attebury/Documents/topogram/examples/content-approval/topogram)
+- [examples/content-approval/topogram](../examples/content-approval/topogram)
 
 That single package drives:
 
@@ -33,13 +33,13 @@ The current proof uses two web targets for the same `content-approval` model:
 Relevant outputs:
 
 - React UI contract:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
 - React app fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/react-app](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/react-app)
+  [examples/content-approval/topogram/tests/fixtures/expected/react-app](../examples/content-approval/topogram/tests/fixtures/expected/react-app)
 - SvelteKit app fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/sveltekit-app](/Users/attebury/Documents/topogram/examples/content-approval/topogram/tests/fixtures/expected/sveltekit-app)
+  [examples/content-approval/topogram/tests/fixtures/expected/sveltekit-app](../examples/content-approval/topogram/tests/fixtures/expected/sveltekit-app)
 
 ## What Must Stay The Same
 
@@ -73,6 +73,6 @@ It does not yet prove:
 
 The parity contract is locked in the engine regression suite:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../engine/scripts/test.js)
 
 That suite compares the emitted React and SvelteKit `content-approval` UI contracts directly, rather than comparing generated framework source code.

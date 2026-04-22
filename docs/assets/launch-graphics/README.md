@@ -4,7 +4,7 @@ These are the first polished static graphics for Topogram's alpha story.
 
 They are derived from the Mermaid diagrams in:
 
-- [docs/visual-explanation-path.md](/Users/attebury/Documents/topogram/docs/visual-explanation-path.md)
+- [docs/visual-explanation-path.md](../../visual-explanation-path.md)
 
 Working rule:
 
@@ -13,9 +13,9 @@ Working rule:
 
 Current set:
 
-- [hero-wedge.svg](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/hero-wedge.svg)
-- [change-boundary.svg](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/change-boundary.svg)
-- [brownfield-reconcile-flow.svg](/Users/attebury/Documents/topogram/docs/assets/launch-graphics/brownfield-reconcile-flow.svg)
+- [hero-wedge.svg](./hero-wedge.svg)
+- [change-boundary.svg](./change-boundary.svg)
+- [brownfield-reconcile-flow.svg](./brownfield-reconcile-flow.svg)
 
 Style rules for future additions:
 

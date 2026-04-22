@@ -6,7 +6,7 @@ Source repo basis:
 
 Local trial workspace:
 
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app)
+- [./trials/rails-realworld-example-app](../trials/rails-realworld-example-app)
 
 ## Goal
 
@@ -38,10 +38,10 @@ Rails-specific extraction and enrichment now includes:
 
 Relevant implementation:
 
-- [engine/src/import/extractors/db/rails-schema.js](/Users/attebury/Documents/topogram/engine/src/import/extractors/db/rails-schema.js)
-- [engine/src/import/extractors/api/rails-routes.js](/Users/attebury/Documents/topogram/engine/src/import/extractors/api/rails-routes.js)
-- [engine/src/import/enrichers/rails-models.js](/Users/attebury/Documents/topogram/engine/src/import/enrichers/rails-models.js)
-- [engine/src/import/enrichers/rails-controllers.js](/Users/attebury/Documents/topogram/engine/src/import/enrichers/rails-controllers.js)
+- [engine/src/import/extractors/db/rails-schema.js](../engine/src/import/extractors/db/rails-schema.js)
+- [engine/src/import/extractors/api/rails-routes.js](../engine/src/import/extractors/api/rails-routes.js)
+- [engine/src/import/enrichers/rails-models.js](../engine/src/import/enrichers/rails-models.js)
+- [engine/src/import/enrichers/rails-controllers.js](../engine/src/import/enrichers/rails-controllers.js)
 
 ## Trial Result
 
@@ -75,11 +75,11 @@ The curated canonical surface adopted for this trial is:
 
 Canonical outputs now live under:
 
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/entities](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/entities)
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/capabilities](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/capabilities)
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/shapes](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/shapes)
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/decisions](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/decisions)
-- [/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/docs/workflows](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/docs/workflows)
+- [./trials/rails-realworld-example-app/topogram/entities](../trials/rails-realworld-example-app/topogram/entities)
+- [./trials/rails-realworld-example-app/topogram/capabilities](../trials/rails-realworld-example-app/topogram/capabilities)
+- [./trials/rails-realworld-example-app/topogram/shapes](../trials/rails-realworld-example-app/topogram/shapes)
+- [./trials/rails-realworld-example-app/topogram/decisions](../trials/rails-realworld-example-app/topogram/decisions)
+- [./trials/rails-realworld-example-app/topogram/docs/workflows](../trials/rails-realworld-example-app/topogram/docs/workflows)
 
 ## Curated Suppression
 
@@ -120,6 +120,6 @@ Still intentionally out of scope for this milestone:
 
 ## Useful Artifacts
 
-- [App import report](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/candidates/app/report.md)
-- [Reconcile report](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/candidates/reconcile/report.md)
-- [Adoption status](/Users/attebury/Documents/topogram/trials/rails-realworld-example-app/topogram/candidates/reconcile/adoption-status.md)
+- [App import report](../trials/rails-realworld-example-app/topogram/candidates/app/report.md)
+- [Reconcile report](../trials/rails-realworld-example-app/topogram/candidates/reconcile/report.md)
+- [Adoption status](../trials/rails-realworld-example-app/topogram/candidates/reconcile/adoption-status.md)

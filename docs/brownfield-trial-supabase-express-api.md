@@ -16,7 +16,7 @@ Why this trial matters:
 
 ## Golden Path
 
-Run these from [engine](/Users/attebury/Documents/topogram/engine) against [trials/supabase-express-api](/Users/attebury/Documents/topogram/trials/supabase-express-api):
+Run these from [engine](../engine) against [trials/supabase-express-api](../trials/supabase-express-api):
 
 ```bash
 node ./src/cli.js import app ../trials/supabase-express-api --from db,api,ui,workflows
@@ -51,16 +51,16 @@ Current expected signals from the live CLI:
 
 Saved proof artifacts for this walkthrough:
 
-- [App import report](/Users/attebury/Documents/topogram/trials/supabase-express-api/topogram/candidates/app/report.md)
-- [Gap report](/Users/attebury/Documents/topogram/trials/supabase-express-api/topogram/candidates/reports/gap-report.md)
-- [Reconcile report](/Users/attebury/Documents/topogram/trials/supabase-express-api/topogram/candidates/reconcile/report.md)
-- [Adoption status](/Users/attebury/Documents/topogram/trials/supabase-express-api/topogram/candidates/reconcile/adoption-status.md)
+- [App import report](../trials/supabase-express-api/topogram/candidates/app/report.md)
+- [Gap report](../trials/supabase-express-api/topogram/candidates/reports/gap-report.md)
+- [Reconcile report](../trials/supabase-express-api/topogram/candidates/reconcile/report.md)
+- [Adoption status](../trials/supabase-express-api/topogram/candidates/reconcile/adoption-status.md)
 
 ## Closure Criteria
 
 Treat this proof as closed when all of the following are true:
 
-- canonical files exist under [trials/supabase-express-api/topogram](/Users/attebury/Documents/topogram/trials/supabase-express-api/topogram)
+- canonical files exist under [trials/supabase-express-api/topogram](../trials/supabase-express-api/topogram)
 - reconcile reports `blocked items: 0`
 - adoption status reports `Next Bundle: None`
 - workflow review groups are present only as already approved/applied history, not as pending blockers

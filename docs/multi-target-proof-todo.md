@@ -15,7 +15,7 @@ It is not yet a claim that broad multi-target generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/todo/topogram](/Users/attebury/Documents/topogram/examples/todo/topogram)
+- [examples/todo/topogram](../examples/todo/topogram)
 
 That single package drives:
 
@@ -33,9 +33,9 @@ The current proof uses two web targets for the same `todo` model:
 Relevant outputs:
 
 - React UI contract:
-  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json)
+  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](/Users/attebury/Documents/topogram/examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
 
 This proof is intentionally anchored at the emitted UI-contract seam. It does not yet claim a committed second Todo app bundle beside the current SvelteKit-first app surface.
 
@@ -70,6 +70,6 @@ It does not yet prove:
 
 The parity contract is locked in the engine regression suite:
 
-- [engine/scripts/test.js](/Users/attebury/Documents/topogram/engine/scripts/test.js)
+- [engine/scripts/test.js](../engine/scripts/test.js)
 
 That suite compares the emitted React and SvelteKit `todo` UI contracts directly, rather than comparing generated framework source code.

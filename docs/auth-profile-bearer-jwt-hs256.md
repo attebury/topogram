@@ -36,11 +36,11 @@ The current alpha auth proof loop uses signed JWTs to prove:
 
 ## Current Example Proof Matrix
 
-- `permission`: [examples/issues](/Users/attebury/Documents/topogram/examples/issues)
+- `permission`: [examples/issues](../examples/issues)
   Issues proves permission-gated create/read/update/close behavior with signed tokens, plus `401` invalid-signature and expired-token failures.
-- `ownership`: [examples/issues](/Users/attebury/Documents/topogram/examples/issues)
+- `ownership`: [examples/issues](../examples/issues)
   Issues proves owner-or-admin behavior and `403` forbidden access against a seeded issue owned by another user.
-- `claim`: [examples/content-approval](/Users/attebury/Documents/topogram/examples/content-approval)
+- `claim`: [examples/content-approval](../examples/content-approval)
   Content Approval proves reviewer-claim enforcement through both backend authorization and generated UI visibility, including `403` when a valid token lacks the reviewer claim.
 
 ## Alpha Boundary

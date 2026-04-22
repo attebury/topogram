@@ -37,7 +37,7 @@ Those are product and UX decisions, not just structural consequences.
 
 The maintained proof app now models that boundary in:
 
-- [src/content-approval-change-guards.js](/Users/attebury/Documents/topogram/product/app/src/content-approval-change-guards.js)
+- [src/content-approval-change-guards.js](../src/content-approval-change-guards.js)
 
 That guard treats a newly added workflow affordance as:
 
@@ -67,9 +67,9 @@ That is closer to the real thesis than “generate a page” or even “patch a 
 
 The maintained proof checks now cover this decision boundary:
 
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/compile-check.mjs`
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/smoke.mjs`
-- `cd /Users/attebury/Documents/topogram/product/app && node ./scripts/runtime-check.mjs`
+- `cd ./product/app && node ./scripts/compile-check.mjs`
+- `cd ./product/app && node ./scripts/smoke.mjs`
+- `cd ./product/app && node ./scripts/runtime-check.mjs`
 
 Those assertions prove that the maintained app:
 

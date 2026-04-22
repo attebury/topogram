@@ -567,7 +567,7 @@ The current focus is functional correctness. That is the right priority, but it 
 As of April 20, 2026, the current baseline command for broad engine confidence is:
 
 ```bash
-cd /Users/attebury/Documents/topogram/engine
+cd ./engine
 npm test
 ```
 
@@ -576,7 +576,7 @@ That is the repo's core regression entry point and should remain healthy, fast e
 For CI and shared local usage, prefer the repo-level entrypoints:
 
 ```bash
-bash /Users/attebury/Documents/topogram/scripts/verify-engine.sh
-bash /Users/attebury/Documents/topogram/scripts/verify-product-app.sh
-bash /Users/attebury/Documents/topogram/scripts/verify-generated-example.sh todo compile-smoke
+bash ./scripts/verify-engine.sh
+bash ./scripts/verify-product-app.sh
+bash ./scripts/verify-generated-example.sh todo compile-smoke
 ```

@@ -2,7 +2,7 @@
 
 ## Repo
 
-- Trial repo: `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui`
+- Trial repo: `./trials/clean-architecture-swiftui`
 - Source: `nalexn/clean-architecture-swiftui`
 
 ## What This Trial Proved
@@ -57,12 +57,12 @@ The strongest canonical proof is the `country` bundle, which groups:
 
 Canonical outputs now exist under:
 
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/entities`
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/capabilities`
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/shapes`
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/decisions`
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/docs/workflows`
-- `/Users/attebury/Documents/topogram/trials/clean-architecture-swiftui/topogram/docs/reports`
+- `./trials/clean-architecture-swiftui/topogram/entities`
+- `./trials/clean-architecture-swiftui/topogram/capabilities`
+- `./trials/clean-architecture-swiftui/topogram/shapes`
+- `./trials/clean-architecture-swiftui/topogram/decisions`
+- `./trials/clean-architecture-swiftui/topogram/docs/workflows`
+- `./trials/clean-architecture-swiftui/topogram/docs/reports`
 
 Representative promoted files include:
 
