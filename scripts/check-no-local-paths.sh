@@ -21,6 +21,12 @@ collect_files() {
   local head_ref="${2:-HEAD}"
 
   if [[ -z "$base_ref" || "$base_ref" == "$zero_sha" ]]; then
+    if git rev-parse --verify origin/main >/dev/null 2>&1; then
+      local merge_base
+      merge_base="$(git merge-base origin/main "$head_ref")"
+      git diff --diff-filter=ACMR --name-only "$merge_base" "$head_ref"
+      return
+    fi
     git ls-tree -r --name-only "$head_ref"
     return
   fi
@@ -46,7 +52,7 @@ main() {
   fi
 
   local matches
-  matches="$(rg -n --no-heading -e '/Users/' -e 'file:///Users/' -- "${files_to_check[@]}" || true)"
+  matches="$(rg -n --no-heading -e '/Users/[[:alnum:]_.-]+' -e 'file:///Users/[[:alnum:]_.-]+' -- "${files_to_check[@]}" || true)"
 
   if [[ -n "$matches" ]]; then
     echo "Refusing push because changed files contain machine-specific absolute paths." >&2
