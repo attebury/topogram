@@ -1,8 +1,14 @@
 # Brownfield Trial: Clean Architecture SwiftUI
 
+> Historical note
+>
+> The active imported proof home for this target is now [`topogram-demo/examples/imported/clean-architecture-swiftui`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/clean-architecture-swiftui).
+> This page is kept as a migration-era local summary. Any local `trials/clean-architecture-swiftui` copy should be treated as optional repo state, not as the public proof source of truth.
+
 ## Repo
 
-- Trial repo: `./trials/clean-architecture-swiftui`
+- Active imported proof: [`topogram-demo/examples/imported/clean-architecture-swiftui`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/clean-architecture-swiftui)
+- Migration-era local mirror: `./trials/clean-architecture-swiftui`
 - Source: `nalexn/clean-architecture-swiftui`
 
 ## What This Trial Proved
@@ -55,14 +61,9 @@ The strongest canonical proof is the `country` bundle, which groups:
 
 ## Canonical Outputs
 
-Canonical outputs now exist under:
+Canonical outputs now exist publicly under:
 
-- `./trials/clean-architecture-swiftui/topogram/entities`
-- `./trials/clean-architecture-swiftui/topogram/capabilities`
-- `./trials/clean-architecture-swiftui/topogram/shapes`
-- `./trials/clean-architecture-swiftui/topogram/decisions`
-- `./trials/clean-architecture-swiftui/topogram/docs/workflows`
-- `./trials/clean-architecture-swiftui/topogram/docs/reports`
+- [`topogram-demo/examples/imported/clean-architecture-swiftui/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/clean-architecture-swiftui/topogram)
 
 Representative promoted files include:
 

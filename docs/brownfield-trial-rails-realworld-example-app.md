@@ -1,10 +1,19 @@
 # Brownfield Trial: Rails RealWorld Example App
 
+> Historical note
+>
+> The active imported proof home for this target is now [`topogram-demo/examples/imported/rails-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/rails-realworld-example-app).
+> This page is kept as a migration-era local summary. Any local `trials/rails-realworld-example-app` copy should be treated as optional repo state, not as the public proof source of truth.
+
 Source repo basis:
 
 - [`alexeymezenin/ruby-on-rails-realworld-example-app`](https://github.com/alexeymezenin/ruby-on-rails-realworld-example-app)
 
-Local trial workspace:
+Active imported proof:
+
+- [`topogram-demo/examples/imported/rails-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/rails-realworld-example-app)
+
+Migration-era local mirror:
 
 - [./trials/rails-realworld-example-app](../trials/rails-realworld-example-app)
 
@@ -73,13 +82,9 @@ The curated canonical surface adopted for this trial is:
   - `tag`
   - `user`
 
-Canonical outputs now live under:
+Canonical outputs now live publicly under:
 
-- [./trials/rails-realworld-example-app/topogram/entities](../trials/rails-realworld-example-app/topogram/entities)
-- [./trials/rails-realworld-example-app/topogram/capabilities](../trials/rails-realworld-example-app/topogram/capabilities)
-- [./trials/rails-realworld-example-app/topogram/shapes](../trials/rails-realworld-example-app/topogram/shapes)
-- [./trials/rails-realworld-example-app/topogram/decisions](../trials/rails-realworld-example-app/topogram/decisions)
-- [./trials/rails-realworld-example-app/topogram/docs/workflows](../trials/rails-realworld-example-app/topogram/docs/workflows)
+- [`topogram-demo/examples/imported/rails-realworld-example-app/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/rails-realworld-example-app/topogram)
 
 ## Curated Suppression
 
@@ -120,6 +125,5 @@ Still intentionally out of scope for this milestone:
 
 ## Useful Artifacts
 
-- [App import report](../trials/rails-realworld-example-app/topogram/candidates/app/report.md)
-- [Reconcile report](../trials/rails-realworld-example-app/topogram/candidates/reconcile/report.md)
-- [Adoption status](../trials/rails-realworld-example-app/topogram/candidates/reconcile/adoption-status.md)
+- [`topogram-demo/examples/imported/rails-realworld-example-app/README.md`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/rails-realworld-example-app/README.md)
+- [`proof-status.json`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/rails-realworld-example-app/proof-status.json)

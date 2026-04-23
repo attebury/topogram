@@ -1,10 +1,19 @@
 # Brownfield Trial: Django RealWorld Example App
 
+> Historical note
+>
+> The active imported proof home for this target is now [`topogram-demo/examples/imported/django-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/django-realworld-example-app).
+> This page is kept as a migration-era local summary. Any local `trials/django-realworld-example-app` copy should be treated as optional repo state, not as the public proof source of truth.
+
 Source repo basis:
 
 - [`gothinkster/django-realworld-example-app`](https://github.com/gothinkster/django-realworld-example-app)
 
-Local trial workspace:
+Active imported proof:
+
+- [`topogram-demo/examples/imported/django-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/django-realworld-example-app)
+
+Migration-era local mirror:
 
 - [./trials/django-realworld-example-app](../trials/django-realworld-example-app)
 
@@ -79,13 +88,9 @@ The curated canonical surface is now fully adopted for:
   - `tag`
   - `user`
 
-Canonical outputs now exist under:
+Canonical outputs now exist publicly under:
 
-- [./trials/django-realworld-example-app/topogram/entities](../trials/django-realworld-example-app/topogram/entities)
-- [./trials/django-realworld-example-app/topogram/capabilities](../trials/django-realworld-example-app/topogram/capabilities)
-- [./trials/django-realworld-example-app/topogram/shapes](../trials/django-realworld-example-app/topogram/shapes)
-- [./trials/django-realworld-example-app/topogram/decisions](../trials/django-realworld-example-app/topogram/decisions)
-- [./trials/django-realworld-example-app/topogram/docs/workflows](../trials/django-realworld-example-app/topogram/docs/workflows)
+- [`topogram-demo/examples/imported/django-realworld-example-app/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/django-realworld-example-app/topogram)
 
 ## Why This Matters
 
@@ -121,7 +126,7 @@ The curated Django queue is complete:
 
 Current status artifact:
 
-- [Adoption status](../trials/django-realworld-example-app/topogram/candidates/reconcile/adoption-status.md)
+- [`proof-status.json`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/django-realworld-example-app/proof-status.json)
 
 Completion signal:
 
@@ -138,11 +143,8 @@ Still intentionally out of scope for this milestone:
 
 ## Useful Artifacts
 
-- [App import report](../trials/django-realworld-example-app/topogram/candidates/app/report.md)
-- [Reconcile report](../trials/django-realworld-example-app/topogram/candidates/reconcile/report.md)
-- [Adoption status](../trials/django-realworld-example-app/topogram/candidates/reconcile/adoption-status.md)
-- [Canonical entities](../trials/django-realworld-example-app/topogram/entities)
-- [Canonical capabilities](../trials/django-realworld-example-app/topogram/capabilities)
+- [`topogram-demo/examples/imported/django-realworld-example-app/README.md`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/django-realworld-example-app/README.md)
+- [`topogram-demo/examples/imported/django-realworld-example-app/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/django-realworld-example-app/topogram)
 
 ## Journey Draft Proof
 
@@ -158,6 +160,10 @@ The supported order is:
 
 Example commands from [engine](../engine):
 
+For the current supported rerun path, prefer the imported target README in `topogram-demo`.
+
+The older local commands are preserved below only as migration-era reference:
+
 ```bash
 node ./src/cli.js import app ../trials/django-realworld-example-app --from db,api,ui,workflows --write
 node ./src/cli.js reconcile ../trials/django-realworld-example-app
@@ -167,11 +173,10 @@ node ./src/cli.js reconcile adopt journeys ../trials/django-realworld-example-ap
 What this proves:
 
 - `reconcile` now emits review-required candidate journey drafts inside bundle outputs such as:
-  - [./trials/django-realworld-example-app/topogram/candidates/reconcile/model/bundles/article/docs/journeys/article_journey.md](../trials/django-realworld-example-app/topogram/candidates/reconcile/model/bundles/article/docs/journeys/article_journey.md)
-  - [./trials/django-realworld-example-app/topogram/candidates/reconcile/model/bundles/account/docs/journeys/account_journey.md](../trials/django-realworld-example-app/topogram/candidates/reconcile/model/bundles/account/docs/journeys/account_journey.md)
+  - article and account journey draft examples are preserved in the committed `topogram-demo` snapshot
 - `reconcile adopt journeys --write` promotes only journey docs, not workflow docs or structural artifacts
 - canonical journey outputs land under:
-  - [./trials/django-realworld-example-app/topogram/docs/journeys](../trials/django-realworld-example-app/topogram/docs/journeys)
+  - the committed imported proof snapshot in `topogram-demo`
 
 Current boundary:
 
