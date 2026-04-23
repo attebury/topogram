@@ -141,3 +141,35 @@ No change that broadens alpha claims should land without checking:
 - `README.md`
 - `docs/proof-points-and-limits.md`
 - `docs/alpha-ready-checklist.md`
+
+## 2026-04-22 - Formalize a moderate branch workflow and keep operator memory local-only
+
+Status: active development direction
+
+Topogram now needs a clearer day-to-day workflow for the maintainer plus Codex.
+
+Working rules:
+
+- keep `main` as the best public-ready line
+- use `codex/*` as the default branch family for bounded task work
+- reserve `alpha/*` for launch-critical closeout and `post-alpha/*` for shaping work
+- prefer squash-by-branch history for most completed task branches
+- split branches whenever the goal, launch classification, or risk class changes
+
+Local operator memory should live in `.ops/`, not in tracked docs or disposable temp folders.
+
+`.ops/` is for:
+
+- branch handoff notes
+- launch rehearsal notes
+- parking-lot items
+- workflow reminders and "next session" context
+
+But `.ops/` must not become the only home for:
+
+- public claim boundaries
+- canonical workflow rules for users
+- source-of-truth product decisions
+- anything a collaborator would need from origin to work correctly
+
+The tracked policy summary for this workflow lives in [shared-development-workflow.md](./shared-development-workflow.md).
