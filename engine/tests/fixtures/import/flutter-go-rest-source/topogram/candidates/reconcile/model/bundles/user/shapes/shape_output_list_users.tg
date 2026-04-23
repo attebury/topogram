@@ -1,0 +1,10 @@
+shape shape_output_list_users {
+  name "List Users Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    users string optional
+  }
+
+  status active
+}

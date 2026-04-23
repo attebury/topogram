@@ -1,0 +1,10 @@
+shape shape_input_create_post {
+  name "Create Post Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    post string optional
+  }
+
+  status active
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "kind": "graphql_operations",
+    "files": [
+      "orm/graphql-sdl-first/src/schema.ts"
+    ],
+    "operation_count": 9
+  }
+]

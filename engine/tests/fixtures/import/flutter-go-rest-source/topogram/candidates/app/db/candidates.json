@@ -1,0 +1,279 @@
+{
+  "entities": [
+    {
+      "kind": "entity",
+      "id_hint": "entity_comment",
+      "label": "Comment",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/domain/entities/comment_entity.dart"
+      ],
+      "track": "db",
+      "model_name": "CommentEntity",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "postId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "name",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "body",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_post",
+      "label": "Post",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/domain/entities/post_entity.dart"
+      ],
+      "track": "db",
+      "model_name": "PostEntity",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "userId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "title",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "body",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_todo",
+      "label": "Todo",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/domain/entities/todo_entity.dart"
+      ],
+      "track": "db",
+      "model_name": "TodoEntity",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "int",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "userId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "title",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "dueOn",
+          "field_type": "datetime",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "status",
+          "field_type": "todostatus",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "value",
+          "field_type": "boolean",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_user",
+      "label": "User",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/domain/entities/user_entity.dart"
+      ],
+      "track": "db",
+      "model_name": "UserEntity",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "int",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "gender",
+          "field_type": "gender",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "status",
+          "field_type": "userstatus",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "kind": "enum",
+      "id_hint": "enum_todo_todo-status",
+      "label": "Todo Status",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/domain/entities/todo_entity.dart"
+      ],
+      "track": "db",
+      "values": [
+        "completed",
+        "pending",
+        "all(false);\n\n  final bool value;\n\n  const TodoStatus"
+      ]
+    },
+    {
+      "kind": "enum",
+      "id_hint": "enum_user_gender",
+      "label": "Gender",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/domain/entities/user_entity.dart"
+      ],
+      "track": "db",
+      "values": [
+        "male",
+        "female",
+        "all"
+      ]
+    },
+    {
+      "kind": "enum",
+      "id_hint": "enum_user_user-status",
+      "label": "User Status",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/domain/entities/user_entity.dart"
+      ],
+      "track": "db",
+      "values": [
+        "inactive",
+        "active",
+        "all"
+      ]
+    }
+  ],
+  "relations": [],
+  "indexes": []
+}

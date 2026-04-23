@@ -1,0 +1,9 @@
+[
+  {
+    "kind": "graphql_code_first_operations",
+    "files": [
+      "engine/tests/fixtures/import/nextjs-graphql-source/pages/api/graphql.ts"
+    ],
+    "operation_count": 8
+  }
+]

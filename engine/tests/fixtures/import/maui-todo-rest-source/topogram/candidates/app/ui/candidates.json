@@ -1,0 +1,143 @@
+{
+  "screens": [
+    {
+      "kind": "screen",
+      "id_hint": "todo_item",
+      "label": "Todo Item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+      ],
+      "track": "ui",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "screen_kind": "flow",
+      "route_path": "/todo-item"
+    },
+    {
+      "kind": "screen",
+      "id_hint": "todo_list",
+      "label": "Home",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+      ],
+      "track": "ui",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "screen_kind": "flow",
+      "route_path": "/MainPage"
+    }
+  ],
+  "routes": [
+    {
+      "kind": "ui_route",
+      "id_hint": "todo_item_route",
+      "label": "/todo-item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_item",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "path": "/todo-item"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "todo_list_route",
+      "label": "/MainPage",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_list",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "path": "/MainPage"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "ui_action",
+      "id_hint": "todo_item_onsavebuttonclicked",
+      "label": "OnSaveButtonClicked",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_item",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "capability_hint": "cap_update_todo-item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "todo_item_ondeletebuttonclicked",
+      "label": "OnDeleteButtonClicked",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_item",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "capability_hint": "cap_delete_todo-item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "todo_item_oncancelbuttonclicked",
+      "label": "OnCancelButtonClicked",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_item",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "capability_hint": null,
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "todo_list_onadditemclicked",
+      "label": "OnAddItemClicked",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+      ],
+      "track": "ui",
+      "screen_id": "todo_list",
+      "entity_id": "entity_todo-item",
+      "concept_id": "entity_todo-item",
+      "capability_hint": "cap_create_todo-list",
+      "prominence": "primary"
+    }
+  ],
+  "stacks": [
+    "maui_xaml"
+  ]
+}

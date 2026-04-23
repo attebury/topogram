@@ -1,0 +1,10 @@
+[
+  {
+    "kind": "graphql_code_first_operations",
+    "files": [
+      "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts",
+      "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts"
+    ],
+    "operation_count": 9
+  }
+]

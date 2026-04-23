@@ -1,0 +1,20 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: orm/graphql-sdl-first/prisma/schema.prisma
+entity entity_user {
+  name "User"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id int required
+    email string required
+    name string optional
+  }
+
+  keys {
+    primary [id]
+    unique [email]
+  }
+
+  status active
+}

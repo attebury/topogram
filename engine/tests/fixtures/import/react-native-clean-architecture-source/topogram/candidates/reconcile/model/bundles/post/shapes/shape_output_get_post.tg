@@ -1,0 +1,12 @@
+shape shape_output_get_post {
+  name "Get Post Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    id string optional
+    title string optional
+    body string optional
+  }
+
+  status active
+}

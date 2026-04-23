@@ -1,0 +1,54 @@
+{
+  "entities": [
+    {
+      "kind": "entity",
+      "id_hint": "entity_post",
+      "label": "Post",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/domain/entities/PostEntity.ts"
+      ],
+      "track": "db",
+      "model_name": "PostEntity",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "userId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "title",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "body",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "relations": [],
+  "indexes": []
+}

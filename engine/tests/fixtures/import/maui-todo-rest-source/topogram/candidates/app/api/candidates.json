@@ -1,0 +1,173 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_todo_items",
+      "label": "List Todo Items",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo-item",
+      "controller": "TodoItemsController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_todo_item",
+      "label": "Create Todo Item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo-item",
+      "controller": "TodoItemsController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_todo_item",
+      "label": "Update Todo Item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#PUT /"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "todoItem",
+        "iD",
+        "name",
+        "notes",
+        "done"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo-item",
+      "controller": "TodoItemsController",
+      "return_type": "IActionResult",
+      "body_type": "TodoItem",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_todo_item",
+      "label": "Delete Todo Item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo-item",
+      "controller": "TodoItemsController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+      ]
+    },
+    {
+      "path": "/",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+      ]
+    },
+    {
+      "path": "/",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#PUT /"
+      ]
+    },
+    {
+      "path": "/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+      ]
+    }
+  ],
+  "stacks": [
+    "aspnet_core"
+  ]
+}

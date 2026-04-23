@@ -1,0 +1,20 @@
+[
+  {
+    "file": "engine/tests/fixtures/import/graphql-sdl-first-source/README.md",
+    "relative_path": "orm/graphql-sdl-first/README.md",
+    "term_candidates": [
+      "prisma",
+      "database",
+      "graphql",
+      "profile",
+      "user",
+      "post",
+      "create",
+      "new"
+    ],
+    "title": "GraphQL Server Example with GraphQL Yoga & Prisma Postgres (SDL-first)",
+    "workflow_signals": [
+      "lifecycle_flow"
+    ]
+  }
+]

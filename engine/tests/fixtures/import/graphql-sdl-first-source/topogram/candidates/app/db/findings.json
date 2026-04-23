@@ -1,0 +1,8 @@
+[
+  {
+    "kind": "prisma_schema",
+    "file": "orm/graphql-sdl-first/prisma/schema.prisma",
+    "entity_count": 2,
+    "enum_count": 0
+  }
+]

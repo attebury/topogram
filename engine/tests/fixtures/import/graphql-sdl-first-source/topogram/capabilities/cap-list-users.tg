@@ -1,0 +1,12 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: orm/graphql-sdl-first/src/schema.ts#Query.allUsers
+capability cap_list_users {
+  name "List Users"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_user]
+  output [shape_output_list_users]
+
+  status active
+}

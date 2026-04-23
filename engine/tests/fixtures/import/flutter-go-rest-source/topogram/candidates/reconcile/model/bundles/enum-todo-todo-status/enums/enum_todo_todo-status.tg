@@ -1,0 +1,10 @@
+# imported confidence: medium
+# imported source_kind: schema
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/domain/entities/todo_entity.dart
+enum enum_todo_todo-status {
+  values [completed, pending, all(false);
+
+  final bool value;
+
+  const TodoStatus]
+}

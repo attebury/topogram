@@ -1,0 +1,25 @@
+{
+  "bootstrapped_topogram_root": false,
+  "imported": {
+    "api": {
+      "capability_count": 8,
+      "route_count": 2
+    },
+    "db": {
+      "entity_count": 2,
+      "enum_count": 0,
+      "relation_count": 1
+    },
+    "ui": {
+      "route_count": 0,
+      "screen_count": 0
+    },
+    "workflows": {
+      "transition_count": 4,
+      "workflow_count": 2
+    }
+  },
+  "topogram_available": false,
+  "type": "gap_report",
+  "workspace": "engine/tests/fixtures/import/graphql-sdl-first-source"
+}

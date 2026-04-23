@@ -1,0 +1,441 @@
+{
+  "db": {
+    "entities": [
+      {
+        "kind": "entity",
+        "id_hint": "entity_todo-item",
+        "label": "Todo Item",
+        "confidence": "medium",
+        "source_kind": "schema",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Models/TodoItem.cs",
+          "10.0/WebServices/TodoREST/TodoREST/Models/TodoItem.cs"
+        ],
+        "track": "db",
+        "model_name": "TodoItem",
+        "fields": [
+          {
+            "name": "id",
+            "field_type": "string",
+            "required": true,
+            "list": false,
+            "unique": false,
+            "primary_key": true
+          },
+          {
+            "name": "name",
+            "field_type": "string",
+            "required": true,
+            "list": false,
+            "unique": false,
+            "primary_key": false
+          },
+          {
+            "name": "notes",
+            "field_type": "string",
+            "required": true,
+            "list": false,
+            "unique": false,
+            "primary_key": false
+          },
+          {
+            "name": "done",
+            "field_type": "boolean",
+            "required": true,
+            "list": false,
+            "unique": false,
+            "primary_key": false
+          }
+        ]
+      }
+    ],
+    "enums": [],
+    "relations": [],
+    "indexes": []
+  },
+  "api": {
+    "capabilities": [
+      {
+        "kind": "capability",
+        "id_hint": "cap_list_todo_items",
+        "label": "List Todo Items",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+        ],
+        "track": "api",
+        "endpoint": {
+          "method": "GET",
+          "path": "/"
+        },
+        "path_params": [],
+        "query_params": [],
+        "header_params": [],
+        "input_fields": [],
+        "output_fields": [],
+        "auth_hint": "public",
+        "entity_id": "entity_todo-item",
+        "controller": "TodoItemsController",
+        "return_type": "IActionResult",
+        "body_type": null,
+        "actor_hints": [
+          "anonymous"
+        ]
+      },
+      {
+        "kind": "capability",
+        "id_hint": "cap_create_todo_item",
+        "label": "Create Todo Item",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+        ],
+        "track": "api",
+        "endpoint": {
+          "method": "POST",
+          "path": "/"
+        },
+        "path_params": [],
+        "query_params": [],
+        "header_params": [],
+        "input_fields": [],
+        "output_fields": [],
+        "auth_hint": "public",
+        "entity_id": "entity_todo-item",
+        "controller": "TodoItemsController",
+        "return_type": "IActionResult",
+        "body_type": null,
+        "actor_hints": [
+          "anonymous"
+        ]
+      },
+      {
+        "kind": "capability",
+        "id_hint": "cap_update_todo_item",
+        "label": "Update Todo Item",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#PUT /"
+        ],
+        "track": "api",
+        "endpoint": {
+          "method": "PUT",
+          "path": "/"
+        },
+        "path_params": [],
+        "query_params": [],
+        "header_params": [],
+        "input_fields": [
+          "todoItem",
+          "iD",
+          "name",
+          "notes",
+          "done"
+        ],
+        "output_fields": [],
+        "auth_hint": "public",
+        "entity_id": "entity_todo-item",
+        "controller": "TodoItemsController",
+        "return_type": "IActionResult",
+        "body_type": "TodoItem",
+        "actor_hints": [
+          "anonymous"
+        ]
+      },
+      {
+        "kind": "capability",
+        "id_hint": "cap_delete_todo_item",
+        "label": "Delete Todo Item",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+        ],
+        "track": "api",
+        "endpoint": {
+          "method": "DELETE",
+          "path": "/{id}"
+        },
+        "path_params": [
+          {
+            "name": "id",
+            "required": true,
+            "type": null
+          }
+        ],
+        "query_params": [],
+        "header_params": [],
+        "input_fields": [],
+        "output_fields": [],
+        "auth_hint": "public",
+        "entity_id": "entity_todo-item",
+        "controller": "TodoItemsController",
+        "return_type": "IActionResult",
+        "body_type": null,
+        "actor_hints": [
+          "anonymous"
+        ]
+      }
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "method": "GET",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+        ]
+      },
+      {
+        "path": "/",
+        "method": "POST",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+        ]
+      },
+      {
+        "path": "/",
+        "method": "PUT",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#PUT /"
+        ]
+      },
+      {
+        "path": "/{id}",
+        "method": "DELETE",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+        ]
+      }
+    ],
+    "stacks": [
+      "aspnet_core"
+    ]
+  },
+  "ui": {
+    "screens": [
+      {
+        "kind": "screen",
+        "id_hint": "todo_item",
+        "label": "Todo Item",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+        ],
+        "track": "ui",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "screen_kind": "flow",
+        "route_path": "/todo-item"
+      },
+      {
+        "kind": "screen",
+        "id_hint": "todo_list",
+        "label": "Home",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+        ],
+        "track": "ui",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "screen_kind": "flow",
+        "route_path": "/MainPage"
+      }
+    ],
+    "routes": [
+      {
+        "kind": "ui_route",
+        "id_hint": "todo_item_route",
+        "label": "/todo-item",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_item",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "path": "/todo-item"
+      },
+      {
+        "kind": "ui_route",
+        "id_hint": "todo_list_route",
+        "label": "/MainPage",
+        "confidence": "high",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_list",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "path": "/MainPage"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "ui_action",
+        "id_hint": "todo_item_onsavebuttonclicked",
+        "label": "OnSaveButtonClicked",
+        "confidence": "medium",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_item",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "capability_hint": "cap_update_todo-item",
+        "prominence": "primary"
+      },
+      {
+        "kind": "ui_action",
+        "id_hint": "todo_item_ondeletebuttonclicked",
+        "label": "OnDeleteButtonClicked",
+        "confidence": "medium",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_item",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "capability_hint": "cap_delete_todo-item",
+        "prominence": "primary"
+      },
+      {
+        "kind": "ui_action",
+        "id_hint": "todo_item_oncancelbuttonclicked",
+        "label": "OnCancelButtonClicked",
+        "confidence": "medium",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml#TodoItemPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_item",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "capability_hint": null,
+        "prominence": "primary"
+      },
+      {
+        "kind": "ui_action",
+        "id_hint": "todo_list_onadditemclicked",
+        "label": "OnAddItemClicked",
+        "confidence": "medium",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml#TodoListPage"
+        ],
+        "track": "ui",
+        "screen_id": "todo_list",
+        "entity_id": "entity_todo-item",
+        "concept_id": "entity_todo-item",
+        "capability_hint": "cap_create_todo-list",
+        "prominence": "primary"
+      }
+    ],
+    "stacks": [
+      "maui_xaml"
+    ]
+  },
+  "workflows": {
+    "workflows": [
+      {
+        "kind": "workflow",
+        "id_hint": "workflow_todo-item",
+        "label": "Todo Item Workflow",
+        "confidence": "medium",
+        "source_kind": "generated_artifact",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+        ],
+        "track": "workflows",
+        "entity_id": "entity_todo-item",
+        "actor_hints": [
+          "anonymous"
+        ],
+        "related_capabilities": [
+          "cap_create_todo_item",
+          "cap_delete_todo_item",
+          "cap_list_todo_items",
+          "cap_update_todo_item"
+        ],
+        "documented": false
+      }
+    ],
+    "workflow_states": [],
+    "workflow_transitions": [
+      {
+        "kind": "workflow_transition",
+        "id_hint": "workflow_todo-item_cap_create_todo_item",
+        "label": "Create Todo Item",
+        "confidence": "low",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+        ],
+        "track": "workflows",
+        "workflow_id": "workflow_todo-item",
+        "entity_id": "entity_todo-item",
+        "capability_id": "cap_create_todo_item",
+        "actor_hints": [
+          "anonymous"
+        ],
+        "to_state": "created"
+      },
+      {
+        "kind": "workflow_transition",
+        "id_hint": "workflow_todo-item_cap_delete_todo_item",
+        "label": "Delete Todo Item",
+        "confidence": "low",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "provenance": [
+          "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+        ],
+        "track": "workflows",
+        "workflow_id": "workflow_todo-item",
+        "entity_id": "entity_todo-item",
+        "capability_id": "cap_delete_todo_item",
+        "actor_hints": [
+          "anonymous"
+        ],
+        "to_state": "deleted"
+      }
+    ]
+  }
+}

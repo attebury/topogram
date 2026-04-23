@@ -5,6 +5,7 @@ import path from "node:path";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
 const defaultSurveyRoot = path.join(repoRoot, "trials", "ui-survey");
+const fixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "ui-survey");
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -16,6 +17,17 @@ function readText(filePath) {
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function seedSurveyRoot(surveyRoot) {
+  if (fs.existsSync(path.join(surveyRoot, "manifest.json"))) return;
+  ensureDir(surveyRoot);
+  for (const fileName of ["manifest.json", "concept-taxonomy.json"]) {
+    const sourcePath = path.join(fixtureRoot, fileName);
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, path.join(surveyRoot, fileName));
+    }
+  }
 }
 
 function countBy(values) {
@@ -698,6 +710,7 @@ function buildMasterReport(findings) {
 }
 
 export function analyzeSurveyAtRoot(surveyRoot = defaultSurveyRoot) {
+  seedSurveyRoot(surveyRoot);
   const manifestPath = path.join(surveyRoot, "manifest.json");
   const manifest = readJson(manifestPath);
   validateManifest(manifest);

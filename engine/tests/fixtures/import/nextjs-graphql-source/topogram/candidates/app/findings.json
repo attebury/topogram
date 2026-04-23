@@ -1,0 +1,27 @@
+{
+  "db": [
+    {
+      "kind": "prisma_schema",
+      "file": "engine/tests/fixtures/import/nextjs-graphql-source/prisma/schema.prisma",
+      "entity_count": 2,
+      "enum_count": 0
+    }
+  ],
+  "api": [
+    {
+      "kind": "graphql_code_first_operations",
+      "files": [
+        "engine/tests/fixtures/import/nextjs-graphql-source/pages/api/graphql.ts"
+      ],
+      "operation_count": 8
+    }
+  ],
+  "ui": [],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 2,
+      "workflow_doc_signals": []
+    }
+  ]
+}

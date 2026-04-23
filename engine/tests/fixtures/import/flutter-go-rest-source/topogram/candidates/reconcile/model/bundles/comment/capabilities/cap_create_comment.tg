@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#createComment
+capability cap_create_comment {
+  name "Create Comment"
+  description "Candidate capability imported from brownfield API evidence"
+
+  creates [entity_comment]
+
+  input [shape_input_create_comment]
+
+  status active
+}

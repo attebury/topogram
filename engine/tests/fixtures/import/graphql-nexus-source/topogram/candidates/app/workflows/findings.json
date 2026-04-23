@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "workflow_inference",
+    "workflow_count": 2,
+    "workflow_doc_signals": [
+      "create-post",
+      "update-post-view-count",
+      "delete-post",
+      "lifecycle-flow"
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: orm/graphql-nexus/schema.graphql#Query.postById
+capability cap_get_post {
+  name "Get Post"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_post]
+
+  input [shape_input_get_post]
+  output [shape_output_get_post]
+
+  status active
+}

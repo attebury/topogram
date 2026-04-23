@@ -1,0 +1,10 @@
+shape shape_input_create_todo {
+  name "Create Todo Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    todo string optional
+  }
+
+  status active
+}

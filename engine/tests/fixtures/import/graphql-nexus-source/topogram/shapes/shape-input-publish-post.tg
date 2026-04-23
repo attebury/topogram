@@ -1,0 +1,10 @@
+shape shape_input_publish_post {
+  name "Publish Post Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    id string optional
+  }
+
+  status active
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "flutter_domain_entity",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/domain/entities/comment_entity.dart",
+    "entity_id": "entity_comment"
+  },
+  {
+    "kind": "flutter_domain_entity",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/domain/entities/post_entity.dart",
+    "entity_id": "entity_post"
+  },
+  {
+    "kind": "flutter_domain_entity",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/domain/entities/todo_entity.dart",
+    "entity_id": "entity_todo"
+  },
+  {
+    "kind": "flutter_domain_entity",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/domain/entities/user_entity.dart",
+    "entity_id": "entity_user"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "kind": "flutter_screen",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/presentation/screens/create_post_screen.dart",
+    "screen_id": "create_post"
+  },
+  {
+    "kind": "flutter_screen",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/presentation/screens/post_detail_screen.dart",
+    "screen_id": "post_detail"
+  },
+  {
+    "kind": "flutter_screen",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/presentation/screens/post_list_screen.dart",
+    "screen_id": "post_list"
+  },
+  {
+    "kind": "flutter_screen",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/presentation/screens/todo_list_screen.dart",
+    "screen_id": "todo_list"
+  },
+  {
+    "kind": "flutter_screen",
+    "file": "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/presentation/screens/user_list_screen.dart",
+    "screen_id": "user_list"
+  }
+]

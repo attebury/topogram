@@ -1,0 +1,14 @@
+shape shape_input_update_todo_item {
+  name "Update Todo Item Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    todoItem string optional
+    iD string optional
+    name string optional
+    notes string optional
+    done string optional
+  }
+
+  status active
+}

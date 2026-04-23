@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#createUser
+capability cap_create_user {
+  name "Create User"
+  description "Candidate capability imported from brownfield API evidence"
+
+  creates [entity_user]
+
+  input [shape_input_create_user]
+
+  status active
+}

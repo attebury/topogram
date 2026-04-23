@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "maui_xaml_view",
+    "file": "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml",
+    "screen_id": "todo_item"
+  },
+  {
+    "kind": "maui_xaml_view",
+    "file": "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml",
+    "screen_id": "todo_list"
+  }
+]
