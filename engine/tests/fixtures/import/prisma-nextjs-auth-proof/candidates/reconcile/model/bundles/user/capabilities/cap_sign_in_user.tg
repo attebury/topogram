@@ -1,0 +1,14 @@
+# imported confidence: medium
+# imported source_kind: route_code
+# imported provenance: app/login/page.tsx
+# imported provenance: auth.ts
+capability cap_sign_in_user {
+  name "Sign In User"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_user]
+
+  input [shape_input_sign_in_user]
+
+  status active
+}

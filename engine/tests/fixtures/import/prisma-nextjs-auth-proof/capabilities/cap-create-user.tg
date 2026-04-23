@@ -1,0 +1,13 @@
+# imported confidence: medium
+# imported source_kind: route_code
+# imported provenance: app/users/new/page.tsx#createUser
+capability cap_create_user {
+  name "Create User"
+  description "Candidate capability imported from brownfield API evidence"
+
+  creates [entity_user]
+
+  input [shape_input_create_user]
+
+  status active
+}

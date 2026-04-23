@@ -1,0 +1,26 @@
+[
+  {
+    "files": [
+      "app/api/posts/route.ts"
+    ],
+    "kind": "route_inventory",
+    "route_count": 1
+  },
+  {
+    "action_count": 2,
+    "files": [
+      "app/posts/new/actions.ts",
+      "app/users/new/page.tsx"
+    ],
+    "kind": "next_server_actions"
+  },
+  {
+    "capability_count": 2,
+    "files": [
+      "app/register/page.tsx",
+      "auth.ts",
+      "app/login/page.tsx"
+    ],
+    "kind": "next_auth_flows"
+  }
+]

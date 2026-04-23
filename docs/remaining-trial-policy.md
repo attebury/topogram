@@ -39,7 +39,6 @@ These remain in `topogram` because the opt-in `npm run test:proof-corpus` lane s
 - `trials/realworld-backend-micronaut`
 - `trials/jakartaee-rest-sample`
 - `trials/aspnetcore-realworld-example-app`
-- `trials/prisma-nextjs-auth-starter`
 
 Policy:
 
@@ -75,6 +74,12 @@ Policy:
 - the product repo keeps the smaller curated fixture at `engine/tests/fixtures/import/clean-architecture-swiftui-source`
 - the public imported proof source of truth remains `topogram-demo/examples/imported/clean-architecture-swiftui`
 - the larger local `trials/clean-architecture-swiftui` copy should not be treated as required repo state anymore
+
+`prisma-nextjs-auth-starter` now follows the same rule for proof-only corpus coverage:
+
+- the product repo keeps the smaller proof snapshot fixture at `engine/tests/fixtures/import/prisma-nextjs-auth-proof`
+- the optional corpus lane uses that extracted `topogram/` snapshot directly for confirmed-proof coverage
+- the larger local `trials/prisma-nextjs-auth-starter` copy should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 

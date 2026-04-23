@@ -1,0 +1,8 @@
+[
+  {
+    "entity_count": 2,
+    "enum_count": 0,
+    "file": "prisma/schema.prisma",
+    "kind": "prisma_schema"
+  }
+]

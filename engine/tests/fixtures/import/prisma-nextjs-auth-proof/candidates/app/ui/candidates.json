@@ -1,0 +1,409 @@
+{
+  "screens": [
+    {
+      "kind": "screen",
+      "id_hint": "home",
+      "label": "Home",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/page.tsx#/"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_home",
+      "screen_kind": "list",
+      "route_path": "/",
+      "capability_hints": {
+        "load": null,
+        "submit": null,
+        "primary_action": null
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "login",
+      "label": "Login",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/login/page.tsx#/login"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "flow_login",
+      "screen_kind": "flow",
+      "route_path": "/login",
+      "capability_hints": {
+        "load": null,
+        "submit": "cap_sign_in_user",
+        "primary_action": "cap_sign_in_user"
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "post_list",
+      "label": "Post List",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/page.tsx#/posts"
+      ],
+      "track": "ui",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "screen_kind": "list",
+      "route_path": "/posts",
+      "capability_hints": {
+        "load": "cap_list_posts",
+        "submit": null,
+        "primary_action": "cap_create_post"
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "post_detail",
+      "label": "Post Detail",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/[id]/page.tsx#/posts/:id"
+      ],
+      "track": "ui",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "screen_kind": "detail",
+      "route_path": "/posts/:id",
+      "capability_hints": {
+        "load": "cap_get_post",
+        "submit": null,
+        "primary_action": "cap_update_post"
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "post_create",
+      "label": "Post Create",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/new/page.tsx#/posts/new"
+      ],
+      "track": "ui",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "screen_kind": "form",
+      "route_path": "/posts/new",
+      "capability_hints": {
+        "load": null,
+        "submit": "cap_create_post",
+        "primary_action": "cap_create_post"
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "register",
+      "label": "Register",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/register/page.tsx#/register"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "flow_register",
+      "screen_kind": "flow",
+      "route_path": "/register",
+      "capability_hints": {
+        "load": null,
+        "submit": "cap_register_user",
+        "primary_action": "cap_register_user"
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "setup",
+      "label": "Setup",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/setup/page.tsx#/setup"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "flow_setup",
+      "screen_kind": "flow",
+      "route_path": "/setup",
+      "capability_hints": {
+        "load": null,
+        "submit": null,
+        "primary_action": null
+      }
+    },
+    {
+      "kind": "screen",
+      "id_hint": "user_create",
+      "label": "User Create",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#/users/new"
+      ],
+      "track": "ui",
+      "entity_id": "entity_user",
+      "concept_id": "entity_user",
+      "screen_kind": "form",
+      "route_path": "/users/new",
+      "capability_hints": {
+        "load": null,
+        "submit": "cap_create_user",
+        "primary_action": "cap_create_user"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "kind": "ui_route",
+      "id_hint": "home_route",
+      "label": "/",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/page.tsx#/"
+      ],
+      "track": "ui",
+      "screen_id": "home",
+      "entity_id": null,
+      "concept_id": "surface_home",
+      "path": "/"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "login_route",
+      "label": "/login",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/login/page.tsx#/login"
+      ],
+      "track": "ui",
+      "screen_id": "login",
+      "entity_id": null,
+      "concept_id": "flow_login",
+      "path": "/login"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "post_list_route",
+      "label": "/posts",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/page.tsx#/posts"
+      ],
+      "track": "ui",
+      "screen_id": "post_list",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "path": "/posts"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "post_detail_route",
+      "label": "/posts/:id",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/[id]/page.tsx#/posts/:id"
+      ],
+      "track": "ui",
+      "screen_id": "post_detail",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "path": "/posts/:id"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "post_create_route",
+      "label": "/posts/new",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/new/page.tsx#/posts/new"
+      ],
+      "track": "ui",
+      "screen_id": "post_create",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "path": "/posts/new"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "register_route",
+      "label": "/register",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/register/page.tsx#/register"
+      ],
+      "track": "ui",
+      "screen_id": "register",
+      "entity_id": null,
+      "concept_id": "flow_register",
+      "path": "/register"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "setup_route",
+      "label": "/setup",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/setup/page.tsx#/setup"
+      ],
+      "track": "ui",
+      "screen_id": "setup",
+      "entity_id": null,
+      "concept_id": "flow_setup",
+      "path": "/setup"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "user_create_route",
+      "label": "/users/new",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#/users/new"
+      ],
+      "track": "ui",
+      "screen_id": "user_create",
+      "entity_id": "entity_user",
+      "concept_id": "entity_user",
+      "path": "/users/new"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "ui_action",
+      "id_hint": "login_cap_sign_in_user",
+      "label": "cap_sign_in_user",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/login/page.tsx#/login"
+      ],
+      "track": "ui",
+      "screen_id": "login",
+      "entity_id": null,
+      "concept_id": "flow_login",
+      "capability_hint": "cap_sign_in_user",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "post_list_cap_create_post",
+      "label": "cap_create_post",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/page.tsx#/posts"
+      ],
+      "track": "ui",
+      "screen_id": "post_list",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "capability_hint": "cap_create_post",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "post_detail_cap_update_post",
+      "label": "cap_update_post",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/[id]/page.tsx#/posts/:id"
+      ],
+      "track": "ui",
+      "screen_id": "post_detail",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "capability_hint": "cap_update_post",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "post_create_cap_create_post",
+      "label": "cap_create_post",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/new/page.tsx#/posts/new"
+      ],
+      "track": "ui",
+      "screen_id": "post_create",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "capability_hint": "cap_create_post",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "register_cap_register_user",
+      "label": "cap_register_user",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/register/page.tsx#/register"
+      ],
+      "track": "ui",
+      "screen_id": "register",
+      "entity_id": null,
+      "concept_id": "flow_register",
+      "capability_hint": "cap_register_user",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "user_create_cap_create_user",
+      "label": "cap_create_user",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#/users/new"
+      ],
+      "track": "ui",
+      "screen_id": "user_create",
+      "entity_id": "entity_user",
+      "concept_id": "entity_user",
+      "capability_hint": "cap_create_user",
+      "prominence": "secondary"
+    }
+  ],
+  "stacks": [
+    "next_app_router"
+  ]
+}

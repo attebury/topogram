@@ -1,0 +1,126 @@
+{
+  "workflows": [
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_post",
+      "label": "Post Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/api/posts/route.ts#GET /posts"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_post",
+        "cap_list_posts"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_user",
+      "label": "User Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#createUser"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_create_user",
+        "cap_register_user",
+        "cap_sign_in_user"
+      ],
+      "documented": false
+    }
+  ],
+  "workflow_states": [],
+  "workflow_transitions": [
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_post_cap_create_post",
+      "label": "Create Post",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/new/actions.ts#createPost"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_post",
+      "entity_id": "entity_post",
+      "capability_id": "cap_create_post",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_user_cap_create_user",
+      "label": "Create User",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#createUser"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_user",
+      "entity_id": "entity_user",
+      "capability_id": "cap_create_user",
+      "actor_hints": [],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_user_cap_register_user",
+      "label": "Register User",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/register/page.tsx",
+        "auth.ts"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_user",
+      "entity_id": "entity_user",
+      "capability_id": "cap_register_user",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "registered"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_user_cap_sign_in_user",
+      "label": "Sign In User",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/login/page.tsx",
+        "auth.ts"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_user",
+      "entity_id": "entity_user",
+      "capability_id": "cap_sign_in_user",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "authenticated"
+    }
+  ]
+}
