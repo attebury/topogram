@@ -146,6 +146,8 @@ Current auth support should be treated as alpha-complete and proof-oriented, not
 
 Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
 
+The remaining local `trials/` directories are migration-era product fixtures or temporary local mirrors, not the public source of truth for imported proof claims. See [docs/remaining-trial-policy.md](./docs/remaining-trial-policy.md).
+
 ## FAQ
 
 ### Can an agent generate an app from a correct Topogram without the engine?
