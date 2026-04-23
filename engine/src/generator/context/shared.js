@@ -212,10 +212,22 @@ export function graphCounts(graph) {
   );
 }
 
+function groupBy(items, keyFn) {
+  const grouped = {};
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!Object.hasOwn(grouped, key)) {
+      grouped[key] = [];
+    }
+    grouped[key].push(item);
+  }
+  return grouped;
+}
+
 export function buildIndexes(graph) {
   const statementById = new Map((graph.statements || []).map((statement) => [statement.id, statement]));
   const docsById = new Map((graph.docs || []).map((doc) => [doc.id, doc]));
-  const docsByKind = Object.groupBy(graph.docs || [], (doc) => doc.kind || "unknown");
+  const docsByKind = groupBy(graph.docs || [], (doc) => doc.kind || "unknown");
 
   return {
     statementById,
