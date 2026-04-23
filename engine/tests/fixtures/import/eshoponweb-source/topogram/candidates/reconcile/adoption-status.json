@@ -1,0 +1,298 @@
+{
+  "adoption_plan_path": "candidates/reconcile/adoption-plan.json",
+  "applied_item_count": 37,
+  "approved_item_count": 0,
+  "approved_review_groups": [
+    "workflow_review:item"
+  ],
+  "blocked_item_count": 0,
+  "bootstrapped_topogram_root": false,
+  "bundle_blockers": [
+    {
+      "applied_items": [
+        "ui_basket",
+        "ui_basket_checkout",
+        "ui_basket_success"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "basket",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_catalog_item_admin",
+        "ui_catalog_item_admin_edit",
+        "ui_catalog_item_create",
+        "ui_catalog_item_delete",
+        "ui_catalog_item_detail",
+        "ui_catalog_item_edit",
+        "ui_catalog_item_list"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "catalog-item",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "cap_create_item",
+        "cap_get_item",
+        "cap_list_items",
+        "dec_item",
+        "ui_catalog_home",
+        "workflow_item"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "item",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_order_detail",
+        "ui_order_list"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_account_confirm_email",
+        "ui_account_login",
+        "ui_account_logout",
+        "ui_account_logout_page",
+        "ui_account_register",
+        "ui_change_password",
+        "ui_disable2fa",
+        "ui_enable_authenticator",
+        "ui_external_login",
+        "ui_generate_recovery_code",
+        "ui_lockout",
+        "ui_login_with2fa",
+        "ui_my_account",
+        "ui_reset_authenticator",
+        "ui_set_password",
+        "ui_show_recover_code",
+        "ui_two_factor_authentication"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-account",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_error",
+        "ui_privacy"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-app",
+      "pending_items": [],
+      "skipped_items": []
+    }
+  ],
+  "bundle_priorities": [
+    {
+      "applied_items": 6,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "item",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 3,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 1
+      },
+      "evidence_score": 24,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 17,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-account",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 17,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 17,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 7,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "catalog-item",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 7,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 7,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 3,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "basket",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 3,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 3,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 2,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "order",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 2,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 2,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 2,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-app",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 2,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 2,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    }
+  ],
+  "next_bundle": null,
+  "projection_review_groups": [],
+  "type": "adoption_status",
+  "ui_review_groups": [],
+  "workflow_review_groups": [
+    {
+      "id": "workflow_review:item",
+      "items": [
+        {
+          "bundle": "item",
+          "item": "dec_item",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "item",
+          "item": "workflow_item",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for item need canonical review before promotion."
+    }
+  ],
+  "workspace": "engine/tests/fixtures/import/eshoponweb-source/topogram"
+}

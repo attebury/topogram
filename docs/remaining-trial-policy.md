@@ -15,7 +15,6 @@ The short version:
 These are the active imported proof targets whose public source of truth is now `topogram-demo`:
 
 - `trials/supabase-express-api`
-- `trials/eShopOnWeb`
 - `trials/clean-architecture-swiftui`
 - `trials/rails-realworld-example-app`
 - `trials/django-realworld-example-app`
@@ -56,6 +55,12 @@ Policy:
 
 - the product repo keeps the smaller curated fixture at `engine/tests/fixtures/import/pokedex-compose-source`
 - the larger local `trials/pokedex-compose` copy should not be treated as required repo state anymore
+
+`eShopOnWeb` now follows the same rule on the product side:
+
+- the product repo keeps the smaller curated fixture at `engine/tests/fixtures/import/eshoponweb-source`
+- the public imported proof source of truth remains `topogram-demo/examples/imported/eshoponweb`
+- the larger local `trials/eShopOnWeb` copy should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 

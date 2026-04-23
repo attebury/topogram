@@ -1,0 +1,94 @@
+projection proj_ui_web_imported_eshoponweb {
+  name "Imported Web UI Draft"
+  description "Drafted from imported UI candidates. Review and adapt before adoption."
+
+  platform ui_web
+  realizes [
+    proj_ui_shared_imported_eshoponweb,
+    cap_cancel_order,
+    cap_checkout_basket,
+    cap_create_catalog_item,
+    cap_delete_catalog_item,
+    cap_get_catalog_item,
+    cap_get_order,
+    cap_list_catalog_items,
+    cap_register_account,
+    cap_sign_in_account,
+    cap_sign_out_account,
+    cap_update_basket,
+    cap_update_catalog_item
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen basket path {handler?}
+    screen catalog_home path /
+    screen account_confirm_email path /account/confirm-email
+    screen lockout path /account/lockout
+    screen account_login path /account/login
+    screen login_with2fa path /account/login-with2fa
+    screen account_logout_page path /account/logout
+    screen account_register path /account/register
+    screen catalog_item_admin path /admin
+    screen catalog_item_list path /admin
+    screen catalog_item_detail path /admin/catalog-items/:id
+    screen catalog_item_delete path /admin/catalog-items/:id/delete
+    screen catalog_item_edit path /admin/catalog-items/:id/edit
+    screen catalog_item_create path /admin/catalog-items/create
+    screen catalog_item_admin_edit path /admin/edit-catalog-item
+    screen basket_checkout path /basket/checkout
+    screen basket_success path /basket/success
+    screen error path /error
+    screen account_logout path /logout
+    screen change_password path /manage/change-password
+    screen disable2fa path /manage/disable2fa
+    screen enable_authenticator path /manage/enable-authenticator
+    screen external_login path /manage/external-login
+    screen generate_recovery_code path /manage/generate-recovery-code
+    screen my_account path /manage/my-account
+    screen reset_authenticator path /manage/reset-authenticator
+    screen set_password path /manage/set-password
+    screen show_recover_code path /manage/show-recover-code
+    screen two_factor_authentication path /manage/two-factor-authentication
+    screen order_detail path /order/detail
+    screen order_list path /order/my-orders
+    screen privacy path /privacy
+  }
+
+  ui_web {
+    screen basket shell authenticated_app
+    screen basket collection list
+    screen catalog_home collection list
+    screen catalog_item_admin collection list
+    screen catalog_item_list collection list
+    screen order_list collection list
+    action cap_create_catalog_item present button
+    action cap_get_catalog_item present button
+    action cap_delete_catalog_item present button
+    action cap_get_catalog_item present button
+    action cap_get_catalog_item present button
+    action cap_update_catalog_item present button
+    action cap_list_catalog_items present button
+    action cap_sign_out_account present button
+    action cap_sign_in_account present button
+    action cap_register_account present button
+    action cap_update_catalog_item present button
+    action cap_list_catalog_items present button
+    action cap_checkout_basket present button
+    action cap_update_basket present button
+    action cap_checkout_basket present button
+    action cap_checkout_basket present button
+    action cap_sign_in_account present button
+    action cap_sign_in_account present button
+    action cap_get_order present button
+    action cap_cancel_order present button
+  }
+
+  generator_defaults {
+    profile react
+    language typescript
+    styling css
+  }
+
+  status proposed
+}
