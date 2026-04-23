@@ -1,0 +1,891 @@
+{
+  "api": {
+    "capabilities": [
+      {
+        "auth_hint": "unknown",
+        "confidence": "medium",
+        "endpoint": {
+          "method": "GET",
+          "path": "/posts"
+        },
+        "header_params": [],
+        "id_hint": "cap_list_posts",
+        "input_fields": [],
+        "kind": "capability",
+        "label": "GET /posts",
+        "output_fields": [
+          "posts"
+        ],
+        "path_params": [],
+        "provenance": [
+          "app/api/posts/route.ts#GET /posts"
+        ],
+        "query_params": [
+          {
+            "name": "page",
+            "required": false,
+            "type": null
+          }
+        ],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "api"
+      },
+      {
+        "auth_hint": "secured",
+        "confidence": "medium",
+        "endpoint": {
+          "method": "POST",
+          "path": "/posts/new"
+        },
+        "header_params": [],
+        "id_hint": "cap_create_post",
+        "input_fields": [
+          "content",
+          "title"
+        ],
+        "kind": "capability",
+        "label": "Create Post",
+        "output_fields": [],
+        "path_params": [],
+        "provenance": [
+          "app/posts/new/actions.ts#createPost"
+        ],
+        "query_params": [],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "api"
+      },
+      {
+        "auth_hint": "unknown",
+        "confidence": "medium",
+        "endpoint": {
+          "method": "POST",
+          "path": "/users/new"
+        },
+        "header_params": [],
+        "id_hint": "cap_create_user",
+        "input_fields": [
+          "email",
+          "name"
+        ],
+        "kind": "capability",
+        "label": "Create User",
+        "output_fields": [],
+        "path_params": [],
+        "provenance": [
+          "app/users/new/page.tsx#createUser"
+        ],
+        "query_params": [],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "api"
+      },
+      {
+        "auth_hint": "public",
+        "confidence": "medium",
+        "endpoint": {
+          "method": "POST",
+          "path": "/register"
+        },
+        "entity_id": "entity_user",
+        "header_params": [],
+        "id_hint": "cap_register_user",
+        "input_fields": [
+          "email",
+          "name",
+          "password"
+        ],
+        "kind": "capability",
+        "label": "Register User",
+        "output_fields": [],
+        "path_params": [],
+        "provenance": [
+          "app/register/page.tsx",
+          "auth.ts"
+        ],
+        "query_params": [],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "target_state": "registered",
+        "track": "api"
+      },
+      {
+        "auth_hint": "public",
+        "confidence": "medium",
+        "endpoint": {
+          "method": "POST",
+          "path": "/login"
+        },
+        "entity_id": "entity_user",
+        "header_params": [],
+        "id_hint": "cap_sign_in_user",
+        "input_fields": [
+          "email",
+          "password"
+        ],
+        "kind": "capability",
+        "label": "Sign In User",
+        "output_fields": [],
+        "path_params": [],
+        "provenance": [
+          "app/login/page.tsx",
+          "auth.ts"
+        ],
+        "query_params": [],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "target_state": "authenticated",
+        "track": "api"
+      }
+    ],
+    "routes": [
+      {
+        "confidence": "medium",
+        "method": "GET",
+        "path": "/posts",
+        "provenance": [
+          "app/api/posts/route.ts#GET /posts"
+        ],
+        "source_kind": "route_code"
+      },
+      {
+        "confidence": "medium",
+        "method": "POST",
+        "path": "/posts/new",
+        "provenance": [
+          "app/posts/new/actions.ts#createPost"
+        ],
+        "source_kind": "route_code"
+      },
+      {
+        "confidence": "medium",
+        "method": "POST",
+        "path": "/users/new",
+        "provenance": [
+          "app/users/new/page.tsx#createUser"
+        ],
+        "source_kind": "route_code"
+      },
+      {
+        "confidence": "medium",
+        "method": "POST",
+        "path": "/register",
+        "provenance": [
+          "app/register/page.tsx",
+          "auth.ts"
+        ],
+        "source_kind": "route_code"
+      },
+      {
+        "confidence": "medium",
+        "method": "POST",
+        "path": "/login",
+        "provenance": [
+          "app/login/page.tsx",
+          "auth.ts"
+        ],
+        "source_kind": "route_code"
+      }
+    ],
+    "stacks": []
+  },
+  "db": {
+    "entities": [
+      {
+        "confidence": "high",
+        "fields": [
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "id",
+            "primary_key": true,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "name",
+            "primary_key": false,
+            "required": false,
+            "unique": false
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "email",
+            "primary_key": false,
+            "required": true,
+            "unique": true
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "password",
+            "primary_key": false,
+            "required": true,
+            "unique": false
+          }
+        ],
+        "id_hint": "entity_user",
+        "kind": "entity",
+        "label": "User",
+        "provenance": [
+          "prisma/schema.prisma"
+        ],
+        "source_kind": "schema",
+        "source_of_truth": "imported",
+        "table_name": "user",
+        "track": "db"
+      },
+      {
+        "confidence": "high",
+        "fields": [
+          {
+            "field_type": "int",
+            "list": false,
+            "name": "id",
+            "primary_key": true,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "datetime",
+            "list": false,
+            "name": "createdAt",
+            "primary_key": false,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "datetime",
+            "list": false,
+            "name": "updatedAt",
+            "primary_key": false,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "title",
+            "primary_key": false,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "content",
+            "primary_key": false,
+            "required": false,
+            "unique": false
+          },
+          {
+            "field_type": "boolean",
+            "list": false,
+            "name": "published",
+            "primary_key": false,
+            "required": true,
+            "unique": false
+          },
+          {
+            "field_type": "string",
+            "list": false,
+            "name": "authorId",
+            "primary_key": false,
+            "required": false,
+            "unique": false
+          }
+        ],
+        "id_hint": "entity_post",
+        "kind": "entity",
+        "label": "Post",
+        "provenance": [
+          "prisma/schema.prisma"
+        ],
+        "source_kind": "schema",
+        "source_of_truth": "imported",
+        "table_name": "post",
+        "track": "db"
+      }
+    ],
+    "enums": [],
+    "indexes": [
+      {
+        "confidence": "medium",
+        "entity": "entity_user",
+        "fields": [
+          "email"
+        ],
+        "id_hint": "index_user-email-unique",
+        "kind": "index",
+        "label": "User Email Unique",
+        "provenance": [
+          "prisma/schema.prisma"
+        ],
+        "source_kind": "schema",
+        "source_of_truth": "imported",
+        "track": "db",
+        "unique": true
+      }
+    ],
+    "relations": [
+      {
+        "confidence": "high",
+        "fields": [
+          "authorId"
+        ],
+        "from_entity": "entity_post",
+        "id_hint": "entity-post-author-entity-user",
+        "kind": "relation",
+        "label": "entity_post -> entity_user",
+        "provenance": [
+          "prisma/schema.prisma"
+        ],
+        "references": [
+          "id"
+        ],
+        "relation_field": "author",
+        "source_kind": "schema",
+        "source_of_truth": "imported",
+        "to_entity": "entity_user",
+        "track": "db"
+      }
+    ]
+  },
+  "ui": {
+    "actions": [
+      {
+        "capability_hint": "cap_sign_in_user",
+        "concept_id": "flow_login",
+        "confidence": "low",
+        "entity_id": null,
+        "id_hint": "login_cap_sign_in_user",
+        "kind": "ui_action",
+        "label": "cap_sign_in_user",
+        "prominence": "secondary",
+        "provenance": [
+          "app/login/page.tsx#/login"
+        ],
+        "screen_id": "login",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hint": "cap_create_post",
+        "concept_id": "entity_post",
+        "confidence": "low",
+        "entity_id": "entity_post",
+        "id_hint": "post_list_cap_create_post",
+        "kind": "ui_action",
+        "label": "cap_create_post",
+        "prominence": "primary",
+        "provenance": [
+          "app/posts/page.tsx#/posts"
+        ],
+        "screen_id": "post_list",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hint": "cap_update_post",
+        "concept_id": "entity_post",
+        "confidence": "low",
+        "entity_id": "entity_post",
+        "id_hint": "post_detail_cap_update_post",
+        "kind": "ui_action",
+        "label": "cap_update_post",
+        "prominence": "secondary",
+        "provenance": [
+          "app/posts/[id]/page.tsx#/posts/:id"
+        ],
+        "screen_id": "post_detail",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hint": "cap_create_post",
+        "concept_id": "entity_post",
+        "confidence": "low",
+        "entity_id": "entity_post",
+        "id_hint": "post_create_cap_create_post",
+        "kind": "ui_action",
+        "label": "cap_create_post",
+        "prominence": "secondary",
+        "provenance": [
+          "app/posts/new/page.tsx#/posts/new"
+        ],
+        "screen_id": "post_create",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hint": "cap_register_user",
+        "concept_id": "flow_register",
+        "confidence": "low",
+        "entity_id": null,
+        "id_hint": "register_cap_register_user",
+        "kind": "ui_action",
+        "label": "cap_register_user",
+        "prominence": "secondary",
+        "provenance": [
+          "app/register/page.tsx#/register"
+        ],
+        "screen_id": "register",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hint": "cap_create_user",
+        "concept_id": "entity_user",
+        "confidence": "low",
+        "entity_id": "entity_user",
+        "id_hint": "user_create_cap_create_user",
+        "kind": "ui_action",
+        "label": "cap_create_user",
+        "prominence": "secondary",
+        "provenance": [
+          "app/users/new/page.tsx#/users/new"
+        ],
+        "screen_id": "user_create",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      }
+    ],
+    "routes": [
+      {
+        "concept_id": "surface_home",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "home_route",
+        "kind": "ui_route",
+        "label": "/",
+        "path": "/",
+        "provenance": [
+          "app/page.tsx#/"
+        ],
+        "screen_id": "home",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "flow_login",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "login_route",
+        "kind": "ui_route",
+        "label": "/login",
+        "path": "/login",
+        "provenance": [
+          "app/login/page.tsx#/login"
+        ],
+        "screen_id": "login",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_list_route",
+        "kind": "ui_route",
+        "label": "/posts",
+        "path": "/posts",
+        "provenance": [
+          "app/posts/page.tsx#/posts"
+        ],
+        "screen_id": "post_list",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_detail_route",
+        "kind": "ui_route",
+        "label": "/posts/:id",
+        "path": "/posts/:id",
+        "provenance": [
+          "app/posts/[id]/page.tsx#/posts/:id"
+        ],
+        "screen_id": "post_detail",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_create_route",
+        "kind": "ui_route",
+        "label": "/posts/new",
+        "path": "/posts/new",
+        "provenance": [
+          "app/posts/new/page.tsx#/posts/new"
+        ],
+        "screen_id": "post_create",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "flow_register",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "register_route",
+        "kind": "ui_route",
+        "label": "/register",
+        "path": "/register",
+        "provenance": [
+          "app/register/page.tsx#/register"
+        ],
+        "screen_id": "register",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "flow_setup",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "setup_route",
+        "kind": "ui_route",
+        "label": "/setup",
+        "path": "/setup",
+        "provenance": [
+          "app/setup/page.tsx#/setup"
+        ],
+        "screen_id": "setup",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "concept_id": "entity_user",
+        "confidence": "medium",
+        "entity_id": "entity_user",
+        "id_hint": "user_create_route",
+        "kind": "ui_route",
+        "label": "/users/new",
+        "path": "/users/new",
+        "provenance": [
+          "app/users/new/page.tsx#/users/new"
+        ],
+        "screen_id": "user_create",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      }
+    ],
+    "screens": [
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": null,
+          "submit": null
+        },
+        "concept_id": "surface_home",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "home",
+        "kind": "screen",
+        "label": "Home",
+        "provenance": [
+          "app/page.tsx#/"
+        ],
+        "route_path": "/",
+        "screen_kind": "list",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": "cap_sign_in_user",
+          "submit": "cap_sign_in_user"
+        },
+        "concept_id": "flow_login",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "login",
+        "kind": "screen",
+        "label": "Login",
+        "provenance": [
+          "app/login/page.tsx#/login"
+        ],
+        "route_path": "/login",
+        "screen_kind": "flow",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": "cap_list_posts",
+          "primary_action": "cap_create_post",
+          "submit": null
+        },
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_list",
+        "kind": "screen",
+        "label": "Post List",
+        "provenance": [
+          "app/posts/page.tsx#/posts"
+        ],
+        "route_path": "/posts",
+        "screen_kind": "list",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": "cap_get_post",
+          "primary_action": "cap_update_post",
+          "submit": null
+        },
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_detail",
+        "kind": "screen",
+        "label": "Post Detail",
+        "provenance": [
+          "app/posts/[id]/page.tsx#/posts/:id"
+        ],
+        "route_path": "/posts/:id",
+        "screen_kind": "detail",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": "cap_create_post",
+          "submit": "cap_create_post"
+        },
+        "concept_id": "entity_post",
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "post_create",
+        "kind": "screen",
+        "label": "Post Create",
+        "provenance": [
+          "app/posts/new/page.tsx#/posts/new"
+        ],
+        "route_path": "/posts/new",
+        "screen_kind": "form",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": "cap_register_user",
+          "submit": "cap_register_user"
+        },
+        "concept_id": "flow_register",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "register",
+        "kind": "screen",
+        "label": "Register",
+        "provenance": [
+          "app/register/page.tsx#/register"
+        ],
+        "route_path": "/register",
+        "screen_kind": "flow",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": null,
+          "submit": null
+        },
+        "concept_id": "flow_setup",
+        "confidence": "medium",
+        "entity_id": null,
+        "id_hint": "setup",
+        "kind": "screen",
+        "label": "Setup",
+        "provenance": [
+          "app/setup/page.tsx#/setup"
+        ],
+        "route_path": "/setup",
+        "screen_kind": "flow",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      },
+      {
+        "capability_hints": {
+          "load": null,
+          "primary_action": "cap_create_user",
+          "submit": "cap_create_user"
+        },
+        "concept_id": "entity_user",
+        "confidence": "medium",
+        "entity_id": "entity_user",
+        "id_hint": "user_create",
+        "kind": "screen",
+        "label": "User Create",
+        "provenance": [
+          "app/users/new/page.tsx#/users/new"
+        ],
+        "route_path": "/users/new",
+        "screen_kind": "form",
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "track": "ui"
+      }
+    ],
+    "stacks": [
+      "next_app_router"
+    ]
+  },
+  "workflows": {
+    "workflow_states": [],
+    "workflow_transitions": [
+      {
+        "actor_hints": [
+          "user"
+        ],
+        "capability_id": "cap_create_post",
+        "confidence": "low",
+        "entity_id": "entity_post",
+        "id_hint": "workflow_post_cap_create_post",
+        "kind": "workflow_transition",
+        "label": "Create Post",
+        "provenance": [
+          "app/posts/new/actions.ts#createPost"
+        ],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "to_state": "created",
+        "track": "workflows",
+        "workflow_id": "workflow_post"
+      },
+      {
+        "actor_hints": [],
+        "capability_id": "cap_create_user",
+        "confidence": "low",
+        "entity_id": "entity_user",
+        "id_hint": "workflow_user_cap_create_user",
+        "kind": "workflow_transition",
+        "label": "Create User",
+        "provenance": [
+          "app/users/new/page.tsx#createUser"
+        ],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "to_state": "created",
+        "track": "workflows",
+        "workflow_id": "workflow_user"
+      },
+      {
+        "actor_hints": [
+          "anonymous"
+        ],
+        "capability_id": "cap_register_user",
+        "confidence": "low",
+        "entity_id": "entity_user",
+        "id_hint": "workflow_user_cap_register_user",
+        "kind": "workflow_transition",
+        "label": "Register User",
+        "provenance": [
+          "app/register/page.tsx",
+          "auth.ts"
+        ],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "to_state": "registered",
+        "track": "workflows",
+        "workflow_id": "workflow_user"
+      },
+      {
+        "actor_hints": [
+          "anonymous"
+        ],
+        "capability_id": "cap_sign_in_user",
+        "confidence": "low",
+        "entity_id": "entity_user",
+        "id_hint": "workflow_user_cap_sign_in_user",
+        "kind": "workflow_transition",
+        "label": "Sign In User",
+        "provenance": [
+          "app/login/page.tsx",
+          "auth.ts"
+        ],
+        "source_kind": "route_code",
+        "source_of_truth": "imported",
+        "to_state": "authenticated",
+        "track": "workflows",
+        "workflow_id": "workflow_user"
+      }
+    ],
+    "workflows": [
+      {
+        "actor_hints": [
+          "user"
+        ],
+        "confidence": "medium",
+        "entity_id": "entity_post",
+        "id_hint": "workflow_post",
+        "kind": "workflow",
+        "label": "Post Workflow",
+        "provenance": [
+          "app/api/posts/route.ts#GET /posts"
+        ],
+        "related_capabilities": [
+          "cap_create_post",
+          "cap_list_posts"
+        ],
+        "source_kind": "generated_artifact",
+        "source_of_truth": "imported",
+        "track": "workflows"
+      },
+      {
+        "actor_hints": [
+          "anonymous"
+        ],
+        "confidence": "medium",
+        "entity_id": "entity_user",
+        "id_hint": "workflow_user",
+        "kind": "workflow",
+        "label": "User Workflow",
+        "provenance": [
+          "app/users/new/page.tsx#createUser"
+        ],
+        "related_capabilities": [
+          "cap_create_user",
+          "cap_register_user",
+          "cap_sign_in_user"
+        ],
+        "source_kind": "generated_artifact",
+        "source_of_truth": "imported",
+        "track": "workflows"
+      }
+    ]
+  }
+}

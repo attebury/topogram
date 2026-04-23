@@ -1,0 +1,20 @@
+[
+  {
+    "file": "README.md",
+    "relative_path": "README.md",
+    "term_candidates": [
+      "prisma",
+      "database",
+      "bun",
+      "code",
+      "pnpm",
+      "yarn",
+      "postgres",
+      "next"
+    ],
+    "title": "Next.js & Prisma Postgres Auth Starter",
+    "workflow_signals": [
+      "lifecycle_flow"
+    ]
+  }
+]

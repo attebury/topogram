@@ -1,0 +1,12 @@
+# imported confidence: medium
+# imported source_kind: route_code
+# imported provenance: app/api/posts/route.ts#GET /posts
+capability cap_list_posts {
+  name "GET /posts"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_post]
+  output [shape_output_list_posts]
+
+  status active
+}

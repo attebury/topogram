@@ -1,0 +1,63 @@
+{
+  "api": [
+    {
+      "files": [
+        "app/api/posts/route.ts"
+      ],
+      "kind": "route_inventory",
+      "route_count": 1
+    },
+    {
+      "action_count": 2,
+      "files": [
+        "app/posts/new/actions.ts",
+        "app/users/new/page.tsx"
+      ],
+      "kind": "next_server_actions"
+    },
+    {
+      "capability_count": 2,
+      "files": [
+        "app/register/page.tsx",
+        "auth.ts",
+        "app/login/page.tsx"
+      ],
+      "kind": "next_auth_flows"
+    }
+  ],
+  "db": [
+    {
+      "entity_count": 2,
+      "enum_count": 0,
+      "file": "prisma/schema.prisma",
+      "kind": "prisma_schema"
+    }
+  ],
+  "ui": [
+    {
+      "file": "app",
+      "kind": "next_app_routes",
+      "routes": [
+        "/",
+        "/api/auth/:nextauth*",
+        "/api/posts",
+        "/login",
+        "/posts",
+        "/posts/:id",
+        "/posts/new",
+        "/register",
+        "/setup",
+        "/users/new"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 2,
+      "workflow_doc_signals": [
+        "lifecycle-flow"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_posts",
+      "label": "GET /posts",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/api/posts/route.ts#GET /posts"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/posts"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "page",
+          "required": false,
+          "type": null
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "posts"
+      ],
+      "auth_hint": "unknown",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_post",
+      "label": "Create Post",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/posts/new/actions.ts#createPost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/posts/new"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "content",
+        "title"
+      ],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_user",
+      "label": "Create User",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/users/new/page.tsx#createUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/users/new"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "email",
+        "name"
+      ],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_user",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_register_user",
+      "label": "Register User",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/register/page.tsx",
+        "auth.ts"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/register"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "email",
+        "name",
+        "password"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "target_state": "registered",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_sign_in_user",
+      "label": "Sign In User",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/login/page.tsx",
+        "auth.ts"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/login"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "email",
+        "password"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "target_state": "authenticated",
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/posts",
+      "method": "GET",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "provenance": [
+        "app/api/posts/route.ts#GET /posts"
+      ]
+    },
+    {
+      "path": "/posts/new",
+      "method": "POST",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "provenance": [
+        "app/posts/new/actions.ts#createPost"
+      ]
+    },
+    {
+      "path": "/users/new",
+      "method": "POST",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "provenance": [
+        "app/users/new/page.tsx#createUser"
+      ]
+    },
+    {
+      "path": "/register",
+      "method": "POST",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "provenance": [
+        "app/register/page.tsx",
+        "auth.ts"
+      ]
+    },
+    {
+      "path": "/login",
+      "method": "POST",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "provenance": [
+        "app/login/page.tsx",
+        "auth.ts"
+      ]
+    }
+  ],
+  "stacks": [
+    "next_app_router",
+    "nextauth"
+  ]
+}

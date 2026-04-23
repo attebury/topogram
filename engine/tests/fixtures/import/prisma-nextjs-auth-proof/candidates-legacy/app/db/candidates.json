@@ -1,0 +1,165 @@
+{
+  "entities": [
+    {
+      "confidence": "high",
+      "fields": [
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "id",
+          "primary_key": true,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "name",
+          "primary_key": false,
+          "required": false,
+          "unique": false
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "email",
+          "primary_key": false,
+          "required": true,
+          "unique": true
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "password",
+          "primary_key": false,
+          "required": true,
+          "unique": false
+        }
+      ],
+      "id_hint": "entity_user",
+      "kind": "entity",
+      "label": "User",
+      "provenance": [
+        "prisma/schema.prisma"
+      ],
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "table_name": "user",
+      "track": "db"
+    },
+    {
+      "confidence": "high",
+      "fields": [
+        {
+          "field_type": "int",
+          "list": false,
+          "name": "id",
+          "primary_key": true,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "datetime",
+          "list": false,
+          "name": "createdAt",
+          "primary_key": false,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "datetime",
+          "list": false,
+          "name": "updatedAt",
+          "primary_key": false,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "title",
+          "primary_key": false,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "content",
+          "primary_key": false,
+          "required": false,
+          "unique": false
+        },
+        {
+          "field_type": "boolean",
+          "list": false,
+          "name": "published",
+          "primary_key": false,
+          "required": true,
+          "unique": false
+        },
+        {
+          "field_type": "string",
+          "list": false,
+          "name": "authorId",
+          "primary_key": false,
+          "required": false,
+          "unique": false
+        }
+      ],
+      "id_hint": "entity_post",
+      "kind": "entity",
+      "label": "Post",
+      "provenance": [
+        "prisma/schema.prisma"
+      ],
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "table_name": "post",
+      "track": "db"
+    }
+  ],
+  "enums": [],
+  "indexes": [
+    {
+      "confidence": "medium",
+      "entity": "entity_user",
+      "fields": [
+        "email"
+      ],
+      "id_hint": "index_user-email-unique",
+      "kind": "index",
+      "label": "User Email Unique",
+      "provenance": [
+        "prisma/schema.prisma"
+      ],
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "track": "db",
+      "unique": true
+    }
+  ],
+  "relations": [
+    {
+      "confidence": "high",
+      "fields": [
+        "authorId"
+      ],
+      "from_entity": "entity_post",
+      "id_hint": "entity-post-author-entity-user",
+      "kind": "relation",
+      "label": "entity_post -> entity_user",
+      "provenance": [
+        "prisma/schema.prisma"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_field": "author",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "to_entity": "entity_user",
+      "track": "db"
+    }
+  ]
+}

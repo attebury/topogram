@@ -1,0 +1,101 @@
+{
+  "api_vs_topogram": {
+    "capabilities_missing_in_topogram": [],
+    "endpoints_without_matching_capabilities": [],
+    "field_mismatches": [
+      {
+        "capability": "cap_list_posts",
+        "imported_capability": "cap_list_posts",
+        "method": "GET",
+        "missing_input_fields_in_topogram": [],
+        "missing_output_fields_in_topogram": [],
+        "missing_path_params_in_topogram": [],
+        "missing_query_params_in_topogram": [
+          "page"
+        ],
+        "path": "/posts"
+      }
+    ],
+    "topogram_capabilities_without_imported_endpoint_evidence": []
+  },
+  "bootstrapped_topogram_root": false,
+  "db_vs_topogram": {
+    "entities_missing_in_topogram": [
+      "user"
+    ],
+    "enum_value_mismatches": [],
+    "enums_missing_in_topogram": [],
+    "field_mismatches": [
+      {
+        "entity": "post",
+        "missing_fields_in_topogram": [],
+        "required_mismatches": [
+          {
+            "field": "id",
+            "imported": true,
+            "topogram": false
+          },
+          {
+            "field": "createdAt",
+            "imported": true,
+            "topogram": false
+          },
+          {
+            "field": "updatedAt",
+            "imported": true,
+            "topogram": false
+          },
+          {
+            "field": "title",
+            "imported": true,
+            "topogram": false
+          },
+          {
+            "field": "published",
+            "imported": true,
+            "topogram": false
+          }
+        ],
+        "type_mismatches": []
+      }
+    ]
+  },
+  "docs_vs_topogram": {
+    "missing_glossary_docs": [
+      "post"
+    ],
+    "missing_workflow_docs": [],
+    "scanned_terms_missing_in_glossary": [
+      "post"
+    ]
+  },
+  "topogram_available": true,
+  "type": "gap_report",
+  "ui_vs_topogram": {
+    "routes_missing_in_topogram": [
+      "/",
+      "/login",
+      "/posts",
+      "/posts/:id",
+      "/posts/new",
+      "/register",
+      "/setup",
+      "/users/new"
+    ],
+    "screens_missing_in_topogram": [
+      "home",
+      "login",
+      "post_list",
+      "post_detail",
+      "post_create",
+      "register",
+      "setup",
+      "user_create"
+    ]
+  },
+  "workflows_vs_topogram": {
+    "transitions_without_canonical_workflow_representation": [],
+    "workflows_missing_in_topogram": []
+  },
+  "workspace": "engine/tests/fixtures/import/prisma-nextjs-auth-proof"
+}
