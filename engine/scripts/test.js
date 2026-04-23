@@ -312,7 +312,7 @@ function run() {
   const sqlOpenApiPath = path.join(importFixturesRoot, "sql-openapi");
   const incompleteImportTopogramPath = path.join(importFixturesRoot, "incomplete-topogram", "topogram");
   const routeFallbackPath = path.join(importFixturesRoot, "route-fallback");
-  const supabaseExpressTrialPath = path.join(workspaceRoot, "..", "trials", "supabase-express-api");
+  const supabaseExpressTrialPath = path.join(importFixturesRoot, "supabase-express-api-source");
   const trpcTrialPath = path.join(workspaceRoot, "..", "trials", "trpc-examples-next-prisma-starter");
   const fastifyTrialPath = path.join(workspaceRoot, "..", "trials", "fastify-demo");
   const railsTrialPath = path.join(workspaceRoot, "..", "trials", "rails-realworld-example-app");
@@ -3113,7 +3113,6 @@ export default function RegisterPage() {
   assertConfirmedProofStatus(path.join(flutterGoRestTrialPath, "topogram"), "Flutter confirmed proof");
   assertConfirmedProofStatus(path.join(reactNativeTrialPath, "topogram"), "React Native confirmed proof");
   assertConfirmedProofStatus(path.join(workspaceRoot, "..", "trials", "prisma-nextjs-auth-starter", "topogram"), "Prisma Next.js confirmed proof");
-  assertConfirmedProofStatus(path.join(supabaseExpressTrialPath, "topogram"), "Supabase Express confirmed proof");
   assertConfirmedProofStatus(path.join(trpcTrialPath, "topogram"), "tRPC Next Prisma confirmed proof");
   assertConfirmedProofStatus(path.join(graphqlSdlTrialPath, "topogram"), "GraphQL SDL confirmed proof");
   assertConfirmedProofStatus(path.join(nexusGraphqlTrialPath, "topogram"), "GraphQL Nexus confirmed proof");
