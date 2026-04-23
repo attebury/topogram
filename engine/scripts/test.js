@@ -319,7 +319,7 @@ function run() {
   const railsTrialPath = path.join(importFixturesRoot, "rails-realworld-example-app-source");
   const djangoTrialPath = path.join(importFixturesRoot, "django-realworld-example-app-source");
   const springTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-spring");
-  const springBootRealworldTrialPath = path.join(workspaceRoot, "..", "trials", "spring-boot-realworld-example-app");
+  const springBootRealworldTrialPath = path.join(importFixturesRoot, "spring-boot-realworld-example-app-fixture");
   const cleanArchitectureDeliveryTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-delivery-example");
   const quarkusTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-api-quarkus");
   const micronautTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-micronaut");

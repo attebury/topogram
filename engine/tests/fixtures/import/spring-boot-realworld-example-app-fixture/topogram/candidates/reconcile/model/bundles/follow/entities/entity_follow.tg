@@ -1,0 +1,14 @@
+# imported confidence: medium
+# imported source_kind: migration
+# imported provenance: src/main/resources/db/migration/V1__create_tables.sql
+entity entity_follow {
+  name "Follow"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    user_id varchar_255 required
+    follow_id varchar_255 required
+  }
+
+  status active
+}

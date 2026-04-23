@@ -33,7 +33,6 @@ These remain in `topogram` because the opt-in `npm run test:proof-corpus` lane s
 - `trials/trpc-examples-next-prisma-starter`
 - `trials/fastify-demo`
 - `trials/realworld-backend-spring`
-- `trials/spring-boot-realworld-example-app`
 - `trials/clean-architecture-delivery-example`
 - `trials/realworld-api-quarkus`
 - `trials/realworld-backend-micronaut`
@@ -80,6 +79,12 @@ Policy:
 - the product repo keeps the smaller proof snapshot fixture at `engine/tests/fixtures/import/prisma-nextjs-auth-proof`
 - the optional corpus lane uses that extracted `topogram/` snapshot directly for confirmed-proof coverage
 - the larger local `trials/prisma-nextjs-auth-starter` copy should not be treated as required repo state anymore
+
+`spring-boot-realworld-example-app` now follows the standard source-plus-proof fixture rule:
+
+- the product repo keeps the extracted fixture at `engine/tests/fixtures/import/spring-boot-realworld-example-app-fixture`
+- the optional corpus lane uses that fixture for both import coverage and confirmed-proof coverage
+- the larger local `trials/spring-boot-realworld-example-app` copy should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 

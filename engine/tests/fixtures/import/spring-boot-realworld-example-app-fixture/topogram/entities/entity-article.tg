@@ -1,0 +1,25 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/main/resources/db/migration/V1__create_tables.sql
+entity entity_article {
+  name "Article"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id varchar_255 required
+    user_id varchar_255 optional
+    slug varchar_255 optional
+    title varchar_255 optional
+    description text optional
+    body text optional
+    created_at timestamp required
+    updated_at timestamp required
+  }
+
+  keys {
+    primary [id]
+    unique [slug]
+  }
+
+  status active
+}

@@ -1,0 +1,12 @@
+# imported confidence: medium
+# imported source_kind: mapper_code
+# imported provenance: src/main/resources/mapper/ArticleMapper.xml
+entity entity_id {
+  name "Article"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+  }
+
+  status active
+}

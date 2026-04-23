@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "spring_web",
+    "route_count": 19,
+    "files": [
+      "src/main/java/io/spring/api/ArticleApi.java",
+      "src/main/java/io/spring/api/ArticleFavoriteApi.java",
+      "src/main/java/io/spring/api/ArticlesApi.java",
+      "src/main/java/io/spring/api/CommentsApi.java",
+      "src/main/java/io/spring/api/CurrentUserApi.java",
+      "src/main/java/io/spring/api/ProfileApi.java",
+      "src/main/java/io/spring/api/TagsApi.java",
+      "src/main/java/io/spring/api/UsersApi.java"
+    ]
+  }
+]

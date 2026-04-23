@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/io/spring/api/ArticleApi.java#DELETE /articles/{slug}
+capability cap_delete_article {
+  name "Delete Article"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  deletes [entity_article]
+  output [shape_output_delete_article]
+
+  status active
+}

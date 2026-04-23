@@ -1,0 +1,10 @@
+shape shape_output_delete_comment {
+  name "Delete Comment Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    comment string optional
+  }
+
+  status active
+}
