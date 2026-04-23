@@ -173,3 +173,20 @@ But `.ops/` must not become the only home for:
 - anything a collaborator would need from origin to work correctly
 
 The tracked policy summary for this workflow lives in [shared-development-workflow.md](./shared-development-workflow.md).
+
+## 2026-04-23 - Treat remaining local trials as a shrinking migration layer
+
+Status: active development direction
+
+After splitting imported proof claims into `topogram-demo`, the remaining local `trials/` directories in `topogram` should be treated as a migration layer, not as an open-ended proof corpus.
+
+Working rules:
+
+- active imported proof claims live publicly in `topogram-demo`
+- product-repo `trials/` directories are allowed only while they still serve a concrete product-side regression or migration need
+- curated fixtures under `engine/tests/fixtures/import` are preferred over keeping large upstream repos in `trials/`
+- historical docs should stop implying that local `trials/` paths are the primary public proof home
+
+This keeps the product repo small and product-shaped while preserving a deliberate path for the remaining optional proof-corpus lane.
+
+The current operational policy summary lives in [remaining-trial-policy.md](./remaining-trial-policy.md).

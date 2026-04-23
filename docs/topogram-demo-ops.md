@@ -81,3 +81,10 @@ npm run test:proof-corpus
 ```
 
 Treat that as migration-era proof ops, not as the default CI lane for the product repo.
+
+The remaining local `trials/` directories in `topogram` should be treated the same way:
+
+- some are temporary local mirrors of imported proof targets whose public home is now `topogram-demo`
+- others are still local regression inputs for the migration-era proof-corpus lane
+
+See [remaining-trial-policy.md](./remaining-trial-policy.md) for the current keep/move/delete rules.
