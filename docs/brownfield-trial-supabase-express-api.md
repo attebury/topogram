@@ -1,10 +1,19 @@
 # Brownfield Trial: Supabase Express API
 
+> Historical note
+>
+> The active imported proof home for this target is now [`topogram-demo/examples/imported/supabase-express-api`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/supabase-express-api).
+> This page is kept as a migration-era local summary. Any local `trials/supabase-express-api` copy should be treated as optional repo state, not as the public proof source of truth.
+
 ## Trial Target
 
-Repository:
+Active imported proof:
 
-- `trials/supabase-express-api`
+- [`topogram-demo/examples/imported/supabase-express-api`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/supabase-express-api)
+
+Migration-era local mirror:
+
+- `trials/supabase-express-api` if present locally
 
 Why this trial matters:
 
@@ -16,7 +25,11 @@ Why this trial matters:
 
 ## Golden Path
 
-Run these from [engine](../engine) against [trials/supabase-express-api](../trials/supabase-express-api):
+For the current rerun path and saved imported proof snapshot, use the imported target README in `topogram-demo`:
+
+- [`topogram-demo/examples/imported/supabase-express-api/README.md`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/supabase-express-api/README.md)
+
+The older local `trials/supabase-express-api` flow below is preserved only as migration-era reference:
 
 ```bash
 node ./src/cli.js import app ../trials/supabase-express-api --from db,api,ui,workflows
@@ -51,16 +64,14 @@ Current expected signals from the live CLI:
 
 Saved proof artifacts for this walkthrough:
 
-- [App import report](../trials/supabase-express-api/topogram/candidates/app/report.md)
-- [Gap report](../trials/supabase-express-api/topogram/candidates/reports/gap-report.md)
-- [Reconcile report](../trials/supabase-express-api/topogram/candidates/reconcile/report.md)
-- [Adoption status](../trials/supabase-express-api/topogram/candidates/reconcile/adoption-status.md)
+- [`topogram-demo/examples/imported/supabase-express-api/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/supabase-express-api/topogram)
+- [`proof-status.json`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/supabase-express-api/proof-status.json)
 
 ## Closure Criteria
 
 Treat this proof as closed when all of the following are true:
 
-- canonical files exist under [trials/supabase-express-api/topogram](../trials/supabase-express-api/topogram)
+- canonical files exist under the committed imported proof snapshot in `topogram-demo`
 - reconcile reports `blocked items: 0`
 - adoption status reports `Next Bundle: None`
 - workflow review groups are present only as already approved/applied history, not as pending blockers

@@ -1,8 +1,14 @@
 # Brownfield Trial: eShopOnWeb Razor Pages MVC
 
+> Historical note
+>
+> The active imported proof home for this target is now [`topogram-demo/examples/imported/eshoponweb`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/eshoponweb).
+> This page is kept as a migration-era local summary. The local `trials/eShopOnWeb` mirror has already been removed from the product repo.
+
 ## Repo
 
-- Trial repo: `./trials/eShopOnWeb`
+- Active imported proof: [`topogram-demo/examples/imported/eshoponweb`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/eshoponweb)
+- Migration-era local mirror: removed from `topogram`
 - Source: `dotnet-architecture/eShopOnWeb`
 
 ## What This Trial Proved
@@ -64,31 +70,19 @@ Recovered meaningful server-rendered bundles include:
 
 ## Canonical Outputs
 
-Canonical outputs now exist under:
+Canonical outputs now exist publicly under:
 
-- `./trials/eShopOnWeb/topogram/docs/reports`
-- `./trials/eShopOnWeb/topogram/capabilities`
-- `./trials/eShopOnWeb/topogram/decisions`
-- `./trials/eShopOnWeb/topogram/docs/workflows`
+- [`topogram-demo/examples/imported/eshoponweb/topogram`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/eshoponweb/topogram)
 
 Representative server-rendered UI outputs:
 
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket_checkout.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-basket_success.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-order_list.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-order_detail.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-account_login.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-account_register.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-catalog_home.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-privacy.md`
-- `./trials/eShopOnWeb/topogram/docs/reports/ui-error.md`
+- basket, order, account, catalog, privacy, and error UI reports are preserved in the committed `topogram-demo` snapshot
 
 ## Queue State
 
 The saved queue is here:
 
-- `./trials/eShopOnWeb/topogram/candidates/reconcile/adoption-status.md`
+- [`proof-status.json`](https://github.com/attebury/topogram-demo/blob/main/examples/imported/eshoponweb/proof-status.json)
 
 Current state:
 
