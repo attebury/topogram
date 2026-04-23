@@ -324,7 +324,7 @@ function run() {
   const micronautTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-micronaut");
   const jakartaEeTrialPath = path.join(workspaceRoot, "..", "trials", "jakartaee-rest-sample");
   const aspnetCoreTrialPath = path.join(workspaceRoot, "..", "trials", "aspnetcore-realworld-example-app");
-  const eShopOnWebTrialPath = path.join(workspaceRoot, "..", "trials", "eShopOnWeb");
+  const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
   const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");
   const swiftUiTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-swiftui");
   const uiKitTrialPath = path.join(importFixturesRoot, "focus-ios-source");

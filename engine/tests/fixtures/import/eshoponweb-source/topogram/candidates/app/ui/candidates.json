@@ -1,0 +1,1546 @@
+{
+  "screens": [
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_create",
+      "label": "Catalog Item Create",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Create.razor"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "screen_kind": "form",
+      "route_path": "/admin/catalog-items/create",
+      "capability_hints": [
+        "cap_create_catalog_item"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_delete",
+      "label": "Catalog Item Delete",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Delete.razor"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "screen_kind": "form",
+      "route_path": "/admin/catalog-items/:id/delete",
+      "capability_hints": [
+        "cap_get_catalog_item",
+        "cap_delete_catalog_item"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_detail",
+      "label": "Catalog Item Detail",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Details.razor"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "screen_kind": "detail",
+      "route_path": "/admin/catalog-items/:id",
+      "capability_hints": [
+        "cap_get_catalog_item"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_edit",
+      "label": "Catalog Item Edit",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Edit.razor"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "screen_kind": "form",
+      "route_path": "/admin/catalog-items/:id/edit",
+      "capability_hints": [
+        "cap_get_catalog_item",
+        "cap_update_catalog_item"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_list",
+      "label": "Catalog Item List",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/List.razor"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "screen_kind": "list",
+      "route_path": "/admin",
+      "capability_hints": [
+        "cap_list_catalog_items"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "account_logout",
+      "label": "Account Logout",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/Logout.razor"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/logout",
+      "capability_hints": [
+        "cap_sign_out_account"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "account_confirm_email",
+      "label": "Account Confirm Email",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/ConfirmEmail.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/confirm-email",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "account_login",
+      "label": "Account Login",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Login.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/login",
+      "capability_hints": [
+        "cap_sign_in_account"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "account_logout_page",
+      "label": "Account Logout Page",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Logout.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/logout",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "account_register",
+      "label": "Account Register",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Register.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/register",
+      "capability_hints": [
+        "cap_register_account"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_admin_edit",
+      "label": "Catalog Item Admin Edit",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/EditCatalogItem.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "screen_kind": "form",
+      "route_path": "/admin/edit-catalog-item",
+      "capability_hints": [
+        "cap_update_catalog_item",
+        "cap_list_catalog_items"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_item_admin",
+      "label": "Catalog Item Admin",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/Index.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "screen_kind": "list",
+      "route_path": "/admin",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "basket_checkout",
+      "label": "Basket Checkout",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Checkout.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "screen_kind": "form",
+      "route_path": "/basket/checkout",
+      "capability_hints": [
+        "cap_checkout_basket"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "basket",
+      "label": "Basket",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Index.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "screen_kind": "list",
+      "route_path": "{handler?}",
+      "capability_hints": [
+        "cap_update_basket",
+        "cap_checkout_basket"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "basket_success",
+      "label": "Basket Success",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Success.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "screen_kind": "detail",
+      "route_path": "/basket/success",
+      "capability_hints": [
+        "cap_checkout_basket"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "error",
+      "label": "Error",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Error.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_app",
+      "screen_kind": "detail",
+      "route_path": "/error",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "catalog_home",
+      "label": "Catalog Home",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Index.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_item",
+      "concept_id": "surface_catalog",
+      "screen_kind": "list",
+      "route_path": "/",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "privacy",
+      "label": "Privacy",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Privacy.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_app",
+      "screen_kind": "detail",
+      "route_path": "/privacy",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "lockout",
+      "label": "Lockout",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Account/Lockout.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/lockout",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "login_with2fa",
+      "label": "Login With2fa",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Account/LoginWith2fa.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "auth",
+      "route_path": "/account/login-with2fa",
+      "capability_hints": [
+        "cap_sign_in_account"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "change_password",
+      "label": "Change Password",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ChangePassword.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/change-password",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "disable2fa",
+      "label": "Disable2fa",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/Disable2fa.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/disable2fa",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "enable_authenticator",
+      "label": "Enable Authenticator",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/EnableAuthenticator.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/enable-authenticator",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "external_login",
+      "label": "External Login",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ExternalLogins.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/external-login",
+      "capability_hints": [
+        "cap_sign_in_account"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "generate_recovery_code",
+      "label": "Generate Recovery Code",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/GenerateRecoveryCodes.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/generate-recovery-code",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "my_account",
+      "label": "My Account",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/MyAccount.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/my-account",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "reset_authenticator",
+      "label": "Reset Authenticator",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ResetAuthenticator.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/reset-authenticator",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "set_password",
+      "label": "Set Password",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/SetPassword.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/set-password",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "show_recover_code",
+      "label": "Show Recover Code",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ShowRecoverCodes.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/show-recover-code",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "two_factor_authentication",
+      "label": "Two Factor Authentication",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/TwoFactorAuthentication.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "screen_kind": "settings",
+      "route_path": "/manage/two-factor-authentication",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "order_detail",
+      "label": "Order Detail",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/Detail.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "screen_kind": "detail",
+      "route_path": "/order/detail",
+      "capability_hints": []
+    },
+    {
+      "kind": "screen",
+      "id_hint": "order_list",
+      "label": "Order List",
+      "confidence": "high",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/MyOrders.cshtml"
+      ],
+      "track": "ui",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "screen_kind": "list",
+      "route_path": "/order/my-orders",
+      "capability_hints": [
+        "cap_get_order",
+        "cap_cancel_order"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_create_route",
+      "label": "/admin/catalog-items/create",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Create.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_create",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "path": "/admin/catalog-items/create"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_delete_route",
+      "label": "/admin/catalog-items/:id/delete",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Delete.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_delete",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "path": "/admin/catalog-items/:id/delete"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_detail_route",
+      "label": "/admin/catalog-items/:id",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Details.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_detail",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "path": "/admin/catalog-items/:id"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_edit_route",
+      "label": "/admin/catalog-items/:id/edit",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Edit.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "path": "/admin/catalog-items/:id/edit"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_list_route",
+      "label": "/admin",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/List.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_list",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "path": "/admin"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "account_logout_route",
+      "label": "/logout",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/Logout.razor"
+      ],
+      "track": "ui",
+      "screen_id": "account_logout",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/logout"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "account_confirm_email_route",
+      "label": "/account/confirm-email",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/ConfirmEmail.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_confirm_email",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/confirm-email"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "account_login_route",
+      "label": "/account/login",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Login.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_login",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/login"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "account_logout_page_route",
+      "label": "/account/logout",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Logout.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_logout_page",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/logout"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "account_register_route",
+      "label": "/account/register",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Register.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_register",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/register"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_admin_edit_route",
+      "label": "/admin/edit-catalog-item",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/EditCatalogItem.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_admin_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "path": "/admin/edit-catalog-item"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_item_admin_route",
+      "label": "/admin",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/Index.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_admin",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "path": "/admin"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "basket_checkout_route",
+      "label": "/basket/checkout",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Checkout.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket_checkout",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "path": "/basket/checkout"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "basket_route",
+      "label": "{handler?}",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Index.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "path": "{handler?}"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "basket_success_route",
+      "label": "/basket/success",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Success.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket_success",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "path": "/basket/success"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "error_route",
+      "label": "/error",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Error.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "error",
+      "entity_id": null,
+      "concept_id": "surface_app",
+      "path": "/error"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "catalog_home_route",
+      "label": "/",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Index.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_home",
+      "entity_id": "entity_item",
+      "concept_id": "surface_catalog",
+      "path": "/"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "privacy_route",
+      "label": "/privacy",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Privacy.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "privacy",
+      "entity_id": null,
+      "concept_id": "surface_app",
+      "path": "/privacy"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "lockout_route",
+      "label": "/account/lockout",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Account/Lockout.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "lockout",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/lockout"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "login_with2fa_route",
+      "label": "/account/login-with2fa",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Account/LoginWith2fa.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "login_with2fa",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/account/login-with2fa"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "change_password_route",
+      "label": "/manage/change-password",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ChangePassword.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "change_password",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/change-password"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "disable2fa_route",
+      "label": "/manage/disable2fa",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/Disable2fa.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "disable2fa",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/disable2fa"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "enable_authenticator_route",
+      "label": "/manage/enable-authenticator",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/EnableAuthenticator.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "enable_authenticator",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/enable-authenticator"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "external_login_route",
+      "label": "/manage/external-login",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ExternalLogins.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "external_login",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/external-login"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "generate_recovery_code_route",
+      "label": "/manage/generate-recovery-code",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/GenerateRecoveryCodes.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "generate_recovery_code",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/generate-recovery-code"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "my_account_route",
+      "label": "/manage/my-account",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/MyAccount.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "my_account",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/my-account"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "reset_authenticator_route",
+      "label": "/manage/reset-authenticator",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ResetAuthenticator.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "reset_authenticator",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/reset-authenticator"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "set_password_route",
+      "label": "/manage/set-password",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/SetPassword.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "set_password",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/set-password"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "show_recover_code_route",
+      "label": "/manage/show-recover-code",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ShowRecoverCodes.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "show_recover_code",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/show-recover-code"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "two_factor_authentication_route",
+      "label": "/manage/two-factor-authentication",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/TwoFactorAuthentication.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "two_factor_authentication",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "path": "/manage/two-factor-authentication"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "order_detail_route",
+      "label": "/order/detail",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/Detail.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "order_detail",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "path": "/order/detail"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "order_list_route",
+      "label": "/order/my-orders",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/MyOrders.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "order_list",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "path": "/order/my-orders"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "ui_shell",
+      "id_hint": "blazor_authenticated_app_shell",
+      "label": "Authenticated App",
+      "confidence": "medium",
+      "source_kind": "layout_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/App.razor"
+      ],
+      "track": "ui",
+      "shell_kind": "authenticated_app"
+    },
+    {
+      "kind": "ui_navigation",
+      "id_hint": "blazor_route_table",
+      "label": "route_table",
+      "confidence": "medium",
+      "source_kind": "layout_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/App.razor"
+      ],
+      "track": "ui",
+      "navigation_pattern": "route_table"
+    },
+    {
+      "kind": "ui_navigation",
+      "id_hint": "blazor_authenticated_routes",
+      "label": "authenticated_routes",
+      "confidence": "medium",
+      "source_kind": "layout_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/App.razor"
+      ],
+      "track": "ui",
+      "navigation_pattern": "authenticated_routes"
+    },
+    {
+      "kind": "ui_navigation",
+      "id_hint": "blazor_auth_state",
+      "label": "auth_state",
+      "confidence": "medium",
+      "source_kind": "layout_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/App.razor"
+      ],
+      "track": "ui",
+      "navigation_pattern": "auth_state"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_create_cap_create_catalog_item",
+      "label": "cap_create_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Create.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_create",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_create_catalog_item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_delete_cap_get_catalog_item",
+      "label": "cap_get_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Delete.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_delete",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_get_catalog_item",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_delete_cap_delete_catalog_item",
+      "label": "cap_delete_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Delete.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_delete",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_delete_catalog_item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_detail_cap_get_catalog_item",
+      "label": "cap_get_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Details.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_detail",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_get_catalog_item",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_edit_cap_get_catalog_item",
+      "label": "cap_get_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Edit.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_get_catalog_item",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_edit_cap_update_catalog_item",
+      "label": "cap_update_catalog_item",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/Edit.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_update_catalog_item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_list_cap_list_catalog_items",
+      "label": "cap_list_catalog_items",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/CatalogItemPage/List.razor"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_list",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item",
+      "capability_hint": "cap_list_catalog_items",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "account_logout_cap_sign_out_account",
+      "label": "cap_sign_out_account",
+      "confidence": "medium",
+      "source_kind": "component_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/BlazorAdmin/Pages/Logout.razor"
+      ],
+      "track": "ui",
+      "screen_id": "account_logout",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "capability_hint": "cap_sign_out_account",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "account_login_cap_sign_in_account",
+      "label": "cap_sign_in_account",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Login.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_login",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "capability_hint": "cap_sign_in_account",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_navigation",
+      "id_hint": "razor_form_post",
+      "label": "form_post",
+      "confidence": "low",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Login.cshtml",
+        "src/Web/Areas/Identity/Pages/Account/Register.cshtml",
+        "src/Web/Pages/Admin/EditCatalogItem.cshtml",
+        "src/Web/Pages/Basket/Checkout.cshtml",
+        "src/Web/Pages/Basket/Index.cshtml",
+        "src/Web/Pages/Index.cshtml",
+        "src/Web/Views/Account/LoginWith2fa.cshtml",
+        "src/Web/Views/Manage/ChangePassword.cshtml",
+        "src/Web/Views/Manage/Disable2fa.cshtml",
+        "src/Web/Views/Manage/EnableAuthenticator.cshtml",
+        "src/Web/Views/Manage/ExternalLogins.cshtml",
+        "src/Web/Views/Manage/GenerateRecoveryCodes.cshtml",
+        "src/Web/Views/Manage/MyAccount.cshtml",
+        "src/Web/Views/Manage/ResetAuthenticator.cshtml",
+        "src/Web/Views/Manage/SetPassword.cshtml"
+      ],
+      "track": "ui",
+      "navigation_pattern": "form_post"
+    },
+    {
+      "kind": "ui_navigation",
+      "id_hint": "razor_server_navigation",
+      "label": "server_navigation",
+      "confidence": "low",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Login.cshtml",
+        "src/Web/Pages/Basket/Checkout.cshtml",
+        "src/Web/Pages/Basket/Index.cshtml",
+        "src/Web/Pages/Basket/Success.cshtml",
+        "src/Web/Views/Account/LoginWith2fa.cshtml",
+        "src/Web/Views/Manage/Disable2fa.cshtml",
+        "src/Web/Views/Manage/ExternalLogins.cshtml",
+        "src/Web/Views/Manage/GenerateRecoveryCodes.cshtml",
+        "src/Web/Views/Manage/MyAccount.cshtml",
+        "src/Web/Views/Manage/ResetAuthenticator.cshtml",
+        "src/Web/Views/Manage/TwoFactorAuthentication.cshtml",
+        "src/Web/Views/Order/MyOrders.cshtml"
+      ],
+      "track": "ui",
+      "navigation_pattern": "server_navigation"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "account_register_cap_register_account",
+      "label": "cap_register_account",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Areas/Identity/Pages/Account/Register.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "account_register",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "capability_hint": "cap_register_account",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_admin_edit_cap_update_catalog_item",
+      "label": "cap_update_catalog_item",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/EditCatalogItem.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_admin_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "capability_hint": "cap_update_catalog_item",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "catalog_item_admin_edit_cap_list_catalog_items",
+      "label": "cap_list_catalog_items",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Admin/EditCatalogItem.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "catalog_item_admin_edit",
+      "entity_id": "entity_catalog-item",
+      "concept_id": "surface_catalog_item_admin",
+      "capability_hint": "cap_list_catalog_items",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "basket_checkout_cap_checkout_basket",
+      "label": "cap_checkout_basket",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Checkout.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket_checkout",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "capability_hint": "cap_checkout_basket",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "basket_cap_update_basket",
+      "label": "cap_update_basket",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Index.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "capability_hint": "cap_update_basket",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "basket_cap_checkout_basket",
+      "label": "cap_checkout_basket",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Index.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "capability_hint": "cap_checkout_basket",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "basket_success_cap_checkout_basket",
+      "label": "cap_checkout_basket",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Pages/Basket/Success.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "basket_success",
+      "entity_id": "entity_basket",
+      "concept_id": "surface_basket",
+      "capability_hint": "cap_checkout_basket",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "login_with2fa_cap_sign_in_account",
+      "label": "cap_sign_in_account",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Account/LoginWith2fa.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "login_with2fa",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "capability_hint": "cap_sign_in_account",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "external_login_cap_sign_in_account",
+      "label": "cap_sign_in_account",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Manage/ExternalLogins.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "external_login",
+      "entity_id": null,
+      "concept_id": "surface_account",
+      "capability_hint": "cap_sign_in_account",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "order_list_cap_get_order",
+      "label": "cap_get_order",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/MyOrders.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "order_list",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "capability_hint": "cap_get_order",
+      "prominence": "secondary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "order_list_cap_cancel_order",
+      "label": "cap_cancel_order",
+      "confidence": "medium",
+      "source_kind": "view_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Views/Order/MyOrders.cshtml"
+      ],
+      "track": "ui",
+      "screen_id": "order_list",
+      "entity_id": "entity_order",
+      "concept_id": "surface_order",
+      "capability_hint": "cap_cancel_order",
+      "prominence": "primary"
+    }
+  ],
+  "stacks": [
+    "blazor",
+    "razor_pages"
+  ]
+}

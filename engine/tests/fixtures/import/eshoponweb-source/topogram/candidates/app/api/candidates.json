@@ -1,0 +1,135 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_items",
+      "label": "GET /",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Controllers/ManageController.cs#GET /",
+        "src/Web/Controllers/OrderController.cs#GET /",
+        "src/Web/Controllers/UserController.cs#GET /"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_item",
+      "controller": "ManageController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_item",
+      "label": "POST /",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Controllers/ManageController.cs#POST /",
+        "src/Web/Controllers/UserController.cs#POST /"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_item",
+      "controller": "ManageController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_item",
+      "label": "GET /{orderId}",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Web/Controllers/OrderController.cs#GET /{orderId}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/{orderId}"
+      },
+      "path_params": [
+        {
+          "name": "orderId",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_item",
+      "controller": "OrderController",
+      "return_type": "IActionResult",
+      "body_type": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/Web/Controllers/ManageController.cs#GET /",
+        "src/Web/Controllers/OrderController.cs#GET /",
+        "src/Web/Controllers/UserController.cs#GET /"
+      ]
+    },
+    {
+      "path": "/",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/Web/Controllers/ManageController.cs#POST /",
+        "src/Web/Controllers/UserController.cs#POST /"
+      ]
+    },
+    {
+      "path": "/{orderId}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/Web/Controllers/OrderController.cs#GET /{orderId}"
+      ]
+    }
+  ],
+  "stacks": [
+    "aspnet_core"
+  ]
+}
