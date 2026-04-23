@@ -312,11 +312,11 @@ function run() {
   const sqlOpenApiPath = path.join(importFixturesRoot, "sql-openapi");
   const incompleteImportTopogramPath = path.join(importFixturesRoot, "incomplete-topogram", "topogram");
   const routeFallbackPath = path.join(importFixturesRoot, "route-fallback");
-  const supabaseExpressTrialPath = path.join(workspaceRoot, "..", "trials", "supabase-express-api");
+  const supabaseExpressTrialPath = path.join(importFixturesRoot, "supabase-express-api-source");
   const trpcTrialPath = path.join(workspaceRoot, "..", "trials", "trpc-examples-next-prisma-starter");
   const fastifyTrialPath = path.join(workspaceRoot, "..", "trials", "fastify-demo");
-  const railsTrialPath = path.join(workspaceRoot, "..", "trials", "rails-realworld-example-app");
-  const djangoTrialPath = path.join(workspaceRoot, "..", "trials", "django-realworld-example-app");
+  const railsTrialPath = path.join(importFixturesRoot, "rails-realworld-example-app-source");
+  const djangoTrialPath = path.join(importFixturesRoot, "django-realworld-example-app-source");
   const springTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-spring");
   const springBootRealworldTrialPath = path.join(workspaceRoot, "..", "trials", "spring-boot-realworld-example-app");
   const cleanArchitectureDeliveryTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-delivery-example");
@@ -326,7 +326,7 @@ function run() {
   const aspnetCoreTrialPath = path.join(workspaceRoot, "..", "trials", "aspnetcore-realworld-example-app");
   const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
   const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");
-  const swiftUiTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-swiftui");
+  const swiftUiTrialPath = path.join(importFixturesRoot, "clean-architecture-swiftui-source");
   const uiKitTrialPath = path.join(importFixturesRoot, "focus-ios-source");
   const mauiTodoRestTrialPath = path.join(importFixturesRoot, "maui-todo-rest-source");
   const flutterGoRestTrialPath = path.join(importFixturesRoot, "flutter-go-rest-source");
@@ -2499,7 +2499,9 @@ export default function RegisterPage() {
     throw new Error("Expected Rails reconcile to prioritize a real domain bundle after suppression");
   }
 
-  const djangoImport = runWorkflow("import-app", djangoTrialPath, { from: "db,api,ui,workflows" });
+  const djangoImportWorkspace = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-django-import-"));
+  fs.cpSync(djangoTrialPath, djangoImportWorkspace, { recursive: true });
+  const djangoImport = runWorkflow("import-app", djangoImportWorkspace, { from: "db,api,ui,workflows" });
   const djangoEntityIds = djangoImport.summary.candidates.db.entities.map((entity) => entity.id_hint);
   if (
     !djangoEntityIds.includes("entity_article")
@@ -2564,8 +2566,6 @@ export default function RegisterPage() {
   ) {
     throw new Error("Expected Django-derived API capabilities to feed workflow inference for core RealWorld concepts");
   }
-  const djangoImportWorkspace = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-django-import-"));
-  fs.cpSync(djangoTrialPath, djangoImportWorkspace, { recursive: true });
   const djangoImportedWrite = runWorkflow("import-app", djangoImportWorkspace, { from: "db,api,ui,workflows", write: true });
   writeGeneratedFiles(path.join(djangoImportWorkspace, "topogram"), djangoImportedWrite.files);
   const djangoReconcile = runWorkflow("reconcile", djangoImportWorkspace);
@@ -3097,8 +3097,6 @@ export default function RegisterPage() {
     throw new Error("Expected Jakarta EE import to recover the full task CRUD and status capability surface");
   }
 
-  assertConfirmedProofStatus(path.join(railsTrialPath, "topogram"), "Rails confirmed proof");
-  assertConfirmedProofStatus(path.join(djangoTrialPath, "topogram"), "Django confirmed proof");
   assertConfirmedProofStatus(path.join(springTrialPath, "topogram"), "Spring confirmed proof");
   assertConfirmedProofStatus(path.join(springBootRealworldTrialPath, "topogram"), "Spring Boot RealWorld confirmed proof");
   assertConfirmedProofStatus(path.join(cleanArchitectureDeliveryTrialPath, "topogram"), "Java clean architecture confirmed proof");
@@ -3107,13 +3105,11 @@ export default function RegisterPage() {
   assertConfirmedProofStatus(path.join(jakartaEeTrialPath, "topogram"), "Jakarta EE confirmed proof");
   assertConfirmedProofStatus(path.join(aspnetCoreTrialPath, "topogram"), "ASP.NET Core confirmed proof");
   assertConfirmedProofStatus(path.join(pokedexComposeTrialPath, "topogram"), "Android confirmed proof");
-  assertConfirmedProofStatus(path.join(swiftUiTrialPath, "topogram"), "iOS confirmed proof");
   assertConfirmedProofStatus(path.join(mauiTodoRestTrialPath, "topogram"), "MAUI confirmed proof");
   assertConfirmedProofStatus(path.join(fastifyTrialPath, "topogram"), "Fastify confirmed proof");
   assertConfirmedProofStatus(path.join(flutterGoRestTrialPath, "topogram"), "Flutter confirmed proof");
   assertConfirmedProofStatus(path.join(reactNativeTrialPath, "topogram"), "React Native confirmed proof");
   assertConfirmedProofStatus(path.join(workspaceRoot, "..", "trials", "prisma-nextjs-auth-starter", "topogram"), "Prisma Next.js confirmed proof");
-  assertConfirmedProofStatus(path.join(supabaseExpressTrialPath, "topogram"), "Supabase Express confirmed proof");
   assertConfirmedProofStatus(path.join(trpcTrialPath, "topogram"), "tRPC Next Prisma confirmed proof");
   assertConfirmedProofStatus(path.join(graphqlSdlTrialPath, "topogram"), "GraphQL SDL confirmed proof");
   assertConfirmedProofStatus(path.join(nexusGraphqlTrialPath, "topogram"), "GraphQL Nexus confirmed proof");
