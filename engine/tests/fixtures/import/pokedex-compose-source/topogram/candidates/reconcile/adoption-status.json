@@ -1,0 +1,138 @@
+{
+  "adoption_plan_path": "candidates/reconcile/adoption-plan.json",
+  "applied_item_count": 6,
+  "approved_item_count": 0,
+  "approved_review_groups": [
+    "workflow_review:pokemon"
+  ],
+  "blocked_item_count": 0,
+  "bootstrapped_topogram_root": false,
+  "bundle_blockers": [
+    {
+      "applied_items": [
+        "dec_pokemon",
+        "ui_pokemon_detail",
+        "ui_pokemon_list",
+        "workflow_pokemon"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "pokemon",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "entity_pokemon_info"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "pokemon-info",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_settings"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-settings",
+      "pending_items": [],
+      "skipped_items": []
+    }
+  ],
+  "bundle_priorities": [
+    {
+      "applied_items": 4,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "pokemon",
+      "evidence": {
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "screens": 2,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 2,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false
+    },
+    {
+      "applied_items": 1,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-settings",
+      "evidence": {
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false
+    },
+    {
+      "applied_items": 1,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "pokemon-info",
+      "evidence": {
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "screens": 0,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 0,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false
+    }
+  ],
+  "next_bundle": null,
+  "projection_review_groups": [],
+  "type": "adoption_status",
+  "ui_review_groups": [],
+  "workflow_review_groups": [
+    {
+      "id": "workflow_review:pokemon",
+      "items": [
+        {
+          "bundle": "pokemon",
+          "item": "dec_pokemon",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "pokemon",
+          "item": "workflow_pokemon",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for pokemon need canonical review before promotion."
+    }
+  ],
+  "workspace": "engine/tests/fixtures/import/pokedex-compose-source/topogram"
+}

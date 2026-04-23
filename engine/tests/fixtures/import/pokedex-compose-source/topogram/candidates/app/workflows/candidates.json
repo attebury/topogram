@@ -1,0 +1,27 @@
+{
+  "workflows": [
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_pokemon",
+      "label": "Pokemon Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "core/network/src/main/kotlin/com/skydoves/pokedex/compose/core/network/service/PokedexService.kt#GET /pokemon"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_pokemon",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_get_pokemon",
+        "cap_list_pokemons"
+      ],
+      "documented": false
+    }
+  ],
+  "workflow_states": [],
+  "workflow_transitions": []
+}

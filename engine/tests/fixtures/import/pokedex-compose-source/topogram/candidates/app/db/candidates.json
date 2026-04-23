@@ -1,0 +1,155 @@
+{
+  "entities": [
+    {
+      "kind": "entity",
+      "id_hint": "entity_pokemon",
+      "label": "Pokemon",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "core/database/src/main/kotlin/com/skydoves/pokedex/compose/core/database/entitiy/PokemonEntity.kt"
+      ],
+      "track": "db",
+      "model_name": "PokemonEntity",
+      "fields": [
+        {
+          "name": "page",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "url",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        }
+      ]
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_pokemon_info",
+      "label": "Pokemon Info",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "core/database/src/main/kotlin/com/skydoves/pokedex/compose/core/database/entitiy/PokemonInfoEntity.kt"
+      ],
+      "track": "db",
+      "model_name": "PokemonInfoEntity",
+      "fields": [
+        {
+          "name": "name",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "height",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "weight",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "experience",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "types",
+          "field_type": "json",
+          "required": true,
+          "list": true,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "exp",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "stats",
+          "field_type": "json",
+          "required": true,
+          "list": true,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "relations": [],
+  "indexes": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_pokemons",
+      "label": "List Pokemons",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "core/database/src/main/kotlin/com/skydoves/pokedex/compose/core/database/PokemonDao.kt"
+      ],
+      "track": "db",
+      "entity_id": "entity_pokemon",
+      "dao_name": "PokemonDao",
+      "dao_method": "getPokemonList",
+      "query": "SELECT * FROM PokemonEntity WHERE page = :page_",
+      "input_fields": [
+        "page_"
+      ],
+      "output_fields": [
+        "pokemon",
+        "pokemons"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_pokemon_info",
+      "label": "Get Pokemon Info",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "core/database/src/main/kotlin/com/skydoves/pokedex/compose/core/database/PokemonInfoDao.kt"
+      ],
+      "track": "db",
+      "entity_id": "entity_pokemon-info",
+      "dao_name": "PokemonInfoDao",
+      "dao_method": "getPokemonInfo",
+      "query": "SELECT * FROM PokemonInfoEntity WHERE name = :name_",
+      "input_fields": [
+        "name_"
+      ],
+      "output_fields": [
+        "pokemon-info"
+      ]
+    }
+  ]
+}

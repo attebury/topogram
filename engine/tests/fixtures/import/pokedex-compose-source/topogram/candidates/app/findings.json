@@ -1,0 +1,35 @@
+{
+  "db": [
+    {
+      "kind": "android_room",
+      "entities": 2,
+      "dao_capabilities": 3
+    }
+  ],
+  "api": [
+    {
+      "kind": "android_retrofit",
+      "files": [
+        "core/network/src/main/kotlin/com/skydoves/pokedex/compose/core/network/service/PokedexService.kt"
+      ],
+      "capability_count": 2
+    }
+  ],
+  "ui": [
+    {
+      "kind": "android_compose_navigation",
+      "screen_count": 3,
+      "route_count": 3
+    }
+  ],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 1,
+      "workflow_doc_signals": [
+        "review-workflow",
+        "lifecycle-flow"
+      ]
+    }
+  ]
+}

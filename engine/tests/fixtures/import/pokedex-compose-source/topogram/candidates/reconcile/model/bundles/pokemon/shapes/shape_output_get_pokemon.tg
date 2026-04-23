@@ -1,0 +1,10 @@
+shape shape_output_get_pokemon {
+  name "Get Pokemon Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    pokemoninfo string optional
+  }
+
+  status active
+}
