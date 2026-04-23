@@ -65,7 +65,7 @@ These are human-owned code surfaces that may consume generated artifacts without
 
 Typical layout:
 
-- `product/app/**`
+- `examples/maintained/proof-app/**`
 - maintained code under example apps when explicitly kept outside generator ownership
 - hand-maintained adapters, presenters, routes, or UI glue around emitted contracts
 

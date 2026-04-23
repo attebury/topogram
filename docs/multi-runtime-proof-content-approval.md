@@ -15,7 +15,7 @@ It is not yet a claim that broad backend/runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/content-approval/topogram](../examples/content-approval/topogram)
+- [examples/generated/content-approval/topogram](../examples/generated/content-approval/topogram)
 
 That single package drives:
 
@@ -33,11 +33,11 @@ The current proof uses two backend targets for the same `content-approval` model
 Relevant generated outputs:
 
 - Hono server fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/hono-server](../examples/content-approval/topogram/tests/fixtures/expected/hono-server)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/hono-server](../examples/generated/content-approval/topogram/tests/fixtures/expected/hono-server)
 - Express server fixture:
-  [examples/content-approval/topogram/tests/fixtures/expected/express-server](../examples/content-approval/topogram/tests/fixtures/expected/express-server)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/express-server](../examples/generated/content-approval/topogram/tests/fixtures/expected/express-server)
 - Shared emitted server contract:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What Must Stay The Same
 

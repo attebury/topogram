@@ -224,7 +224,7 @@ Backed by `candidates/reconcile/adoption-plan.agent.json`.
 
 If a workspace does not already have staged reconcile artifacts, a deterministic local fixture can be built with:
 
-`node ./engine/scripts/build-adoption-plan-fixture.mjs ./examples/content-approval/topogram --json`
+`node ./engine/scripts/build-adoption-plan-fixture.mjs ./examples/generated/content-approval/topogram --json`
 
 For a fixture that also produces non-empty staged proposal surfaces, use:
 

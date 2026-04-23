@@ -1,0 +1,659 @@
+{
+  "projection": {
+    "id": "proj_ui_web_sveltekit",
+    "name": "Content Approval Web UI (SvelteKit)",
+    "platform": "ui_web"
+  },
+  "sharedProjection": {
+    "id": "proj_ui_shared",
+    "name": "Content Approval Shared UI"
+  },
+  "generatorDefaults": {
+    "profile": "sveltekit",
+    "language": "typescript",
+    "styling": "css"
+  },
+  "outputs": [
+    "ui_contract",
+    "web_app"
+  ],
+  "appShell": {
+    "brand": "Topogram Content Approval",
+    "shell": "sidebar",
+    "primaryNav": "primary",
+    "secondaryNav": "secondary",
+    "utilityNav": "utility",
+    "footer": "legal",
+    "globalSearch": true,
+    "notifications": true,
+    "accountMenu": true,
+    "workspaceSwitcher": false,
+    "windowing": "single_window"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "id": "editorial",
+        "label": "Editorial",
+        "placement": "primary",
+        "pattern": "navigation_rail",
+        "icon": null,
+        "order": null
+      }
+    ],
+    "patterns": [
+      "navigation_rail",
+      "tabs"
+    ],
+    "defaultScreenId": "article_list",
+    "items": [
+      {
+        "screenId": "article_list",
+        "route": "/articles",
+        "label": "Articles",
+        "groupId": "editorial",
+        "placement": "primary",
+        "pattern": null,
+        "visible": true,
+        "default": true,
+        "breadcrumb": null,
+        "sitemap": "include",
+        "order": "10"
+      },
+      {
+        "screenId": "article_detail",
+        "route": "/articles/:id",
+        "label": "Article Details",
+        "groupId": "editorial",
+        "placement": "primary",
+        "pattern": null,
+        "visible": false,
+        "default": false,
+        "breadcrumb": "article_list",
+        "sitemap": "exclude",
+        "order": null
+      },
+      {
+        "screenId": "article_create",
+        "route": "/articles/new",
+        "label": "Create Article",
+        "groupId": "editorial",
+        "placement": "primary",
+        "pattern": null,
+        "visible": false,
+        "default": false,
+        "breadcrumb": "article_list",
+        "sitemap": "exclude",
+        "order": null
+      },
+      {
+        "screenId": "article_edit",
+        "route": "/articles/:id/edit",
+        "label": "Edit Article",
+        "groupId": null,
+        "placement": "primary",
+        "pattern": null,
+        "visible": false,
+        "default": false,
+        "breadcrumb": null,
+        "sitemap": "include",
+        "order": null
+      },
+      {
+        "screenId": "editorial_settings",
+        "route": "/settings",
+        "label": "Settings",
+        "groupId": "editorial",
+        "placement": "primary",
+        "pattern": "tabs",
+        "visible": true,
+        "default": false,
+        "breadcrumb": null,
+        "sitemap": "include",
+        "order": "20"
+      }
+    ]
+  },
+  "screens": [
+    {
+      "type": "ui_screen_contract",
+      "id": "article_list",
+      "kind": "list",
+      "title": "Articles",
+      "loadCapability": {
+        "id": "cap_list_articles",
+        "kind": "capability"
+      },
+      "submitCapability": null,
+      "detailCapability": {
+        "id": "cap_get_article",
+        "kind": "capability"
+      },
+      "inputShape": null,
+      "viewShape": null,
+      "itemShape": {
+        "id": "shape_output_article_card",
+        "kind": "shape"
+      },
+      "emptyState": {
+        "title": "No articles yet",
+        "body": "Create an article to start the review workflow"
+      },
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "states": {
+        "loading": "skeleton",
+        "empty": "empty_state_panel",
+        "error": "inline",
+        "unauthorized": "auto",
+        "notFound": "auto",
+        "success": "auto"
+      },
+      "actions": {
+        "primary": {
+          "id": "cap_create_article",
+          "kind": "capability"
+        },
+        "secondary": null,
+        "destructive": null,
+        "terminal": null,
+        "screen": []
+      },
+      "collection": {
+        "filters": [
+          "publication_id",
+          "reviewer_id",
+          "status"
+        ],
+        "search": [],
+        "pagination": null,
+        "views": [
+          "table"
+        ],
+        "refresh": "manual",
+        "groupBy": [
+          "status"
+        ],
+        "sort": [
+          {
+            "field": "created_at",
+            "direction": "desc"
+          }
+        ]
+      },
+      "visibility": [],
+      "lookups": [
+        {
+          "field": "publication_id",
+          "entity": {
+            "id": "entity_publication",
+            "kind": "entity"
+          },
+          "labelField": "name",
+          "emptyLabel": "All publications"
+        },
+        {
+          "field": "reviewer_id",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "labelField": "display_name",
+          "emptyLabel": "All reviewers"
+        }
+      ],
+      "regions": [
+        {
+          "region": "toolbar",
+          "pattern": "action_bar",
+          "placement": "primary",
+          "title": null,
+          "state": null,
+          "variant": null
+        },
+        {
+          "region": "results",
+          "pattern": "resource_table",
+          "placement": "primary",
+          "title": null,
+          "state": null,
+          "variant": null
+        },
+        {
+          "region": "results",
+          "pattern": "empty_state_panel",
+          "placement": "supporting",
+          "title": null,
+          "state": "empty",
+          "variant": null
+        }
+      ],
+      "patterns": [
+        "action_bar",
+        "resource_table",
+        "empty_state_panel"
+      ],
+      "route": "/articles",
+      "web": {
+        "shell": "sidebar",
+        "layout": "responsive_collection",
+        "desktop_variant": "table",
+        "mobile_variant": "cards",
+        "collection": "table"
+      },
+      "actionWeb": {
+        "cap_create_article": {}
+      }
+    },
+    {
+      "type": "ui_screen_contract",
+      "id": "article_detail",
+      "kind": "detail",
+      "title": "Article Details",
+      "loadCapability": {
+        "id": "cap_get_article",
+        "kind": "capability"
+      },
+      "submitCapability": null,
+      "detailCapability": null,
+      "inputShape": null,
+      "viewShape": {
+        "id": "shape_output_article_detail",
+        "kind": "shape"
+      },
+      "itemShape": null,
+      "emptyState": null,
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "states": {
+        "loading": "skeleton",
+        "empty": "auto",
+        "error": "auto",
+        "unauthorized": "auto",
+        "notFound": "auto",
+        "success": "auto"
+      },
+      "actions": {
+        "primary": {
+          "id": "cap_update_article",
+          "kind": "capability"
+        },
+        "secondary": {
+          "id": "cap_approve_article",
+          "kind": "capability"
+        },
+        "destructive": {
+          "id": "cap_request_article_revision",
+          "kind": "capability"
+        },
+        "terminal": null,
+        "screen": [
+          {
+            "capability": {
+              "id": "cap_approve_article",
+              "kind": "capability"
+            },
+            "prominence": "primary",
+            "placement": "footer"
+          },
+          {
+            "capability": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            },
+            "prominence": "secondary",
+            "placement": "toolbar"
+          },
+          {
+            "capability": {
+              "id": "cap_reject_article",
+              "kind": "capability"
+            },
+            "prominence": "destructive",
+            "placement": "footer"
+          }
+        ]
+      },
+      "collection": {
+        "filters": [],
+        "search": [],
+        "pagination": null,
+        "views": [],
+        "refresh": "manual",
+        "groupBy": [],
+        "sort": []
+      },
+      "visibility": [
+        {
+          "capability": {
+            "id": "cap_update_article",
+            "kind": "capability"
+          },
+          "predicate": "ownership",
+          "value": "owner_or_admin",
+          "claimValue": null,
+          "ownershipField": null
+        },
+        {
+          "capability": {
+            "id": "cap_request_article_revision",
+            "kind": "capability"
+          },
+          "predicate": "claim",
+          "value": "reviewer",
+          "claimValue": "true",
+          "ownershipField": null
+        },
+        {
+          "capability": {
+            "id": "cap_approve_article",
+            "kind": "capability"
+          },
+          "predicate": "claim",
+          "value": "reviewer",
+          "claimValue": "true",
+          "ownershipField": null
+        },
+        {
+          "capability": {
+            "id": "cap_reject_article",
+            "kind": "capability"
+          },
+          "predicate": "claim",
+          "value": "reviewer",
+          "claimValue": "true",
+          "ownershipField": null
+        }
+      ],
+      "lookups": [],
+      "regions": [
+        {
+          "region": "summary",
+          "pattern": "detail_panel",
+          "placement": "primary",
+          "title": null,
+          "state": null,
+          "variant": null
+        },
+        {
+          "region": "activity",
+          "pattern": "activity_feed",
+          "placement": "supporting",
+          "title": null,
+          "state": null,
+          "variant": null
+        }
+      ],
+      "patterns": [
+        "detail_panel",
+        "activity_feed"
+      ],
+      "route": "/articles/:id",
+      "web": {
+        "breadcrumbs": "visible",
+        "layout": "detail_page"
+      },
+      "actionWeb": {
+        "cap_approve_article": {},
+        "cap_request_article_revision": {
+          "placement": "toolbar",
+          "present": "popover"
+        },
+        "cap_reject_article": {},
+        "cap_update_article": {}
+      }
+    },
+    {
+      "type": "ui_screen_contract",
+      "id": "article_create",
+      "kind": "form",
+      "title": "Create Article",
+      "loadCapability": null,
+      "submitCapability": {
+        "id": "cap_create_article",
+        "kind": "capability"
+      },
+      "detailCapability": null,
+      "inputShape": {
+        "id": "shape_input_create_article",
+        "kind": "shape"
+      },
+      "viewShape": null,
+      "itemShape": null,
+      "emptyState": null,
+      "navigation": {
+        "successNavigate": "article_detail",
+        "successRefresh": null
+      },
+      "states": {
+        "loading": "auto",
+        "empty": "auto",
+        "error": "auto",
+        "unauthorized": "auto",
+        "notFound": "auto",
+        "success": "banner"
+      },
+      "actions": {
+        "primary": null,
+        "secondary": null,
+        "destructive": null,
+        "terminal": null,
+        "screen": []
+      },
+      "collection": {
+        "filters": [],
+        "search": [],
+        "pagination": null,
+        "views": [],
+        "refresh": "manual",
+        "groupBy": [],
+        "sort": []
+      },
+      "visibility": [],
+      "lookups": [
+        {
+          "field": "publication_id",
+          "entity": {
+            "id": "entity_publication",
+            "kind": "entity"
+          },
+          "labelField": "name",
+          "emptyLabel": null
+        },
+        {
+          "field": "reviewer_id",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "labelField": "display_name",
+          "emptyLabel": "Unassigned"
+        }
+      ],
+      "regions": [],
+      "patterns": [
+        "edit_form"
+      ],
+      "route": "/articles/new",
+      "web": {
+        "present": "drawer"
+      },
+      "actionWeb": {}
+    },
+    {
+      "type": "ui_screen_contract",
+      "id": "article_edit",
+      "kind": "form",
+      "title": "Edit Article",
+      "loadCapability": null,
+      "submitCapability": {
+        "id": "cap_update_article",
+        "kind": "capability"
+      },
+      "detailCapability": null,
+      "inputShape": {
+        "id": "shape_input_update_article",
+        "kind": "shape"
+      },
+      "viewShape": null,
+      "itemShape": null,
+      "emptyState": null,
+      "navigation": {
+        "successNavigate": "article_detail",
+        "successRefresh": null
+      },
+      "states": {
+        "loading": "auto",
+        "empty": "auto",
+        "error": "auto",
+        "unauthorized": "auto",
+        "notFound": "auto",
+        "success": "banner"
+      },
+      "actions": {
+        "primary": null,
+        "secondary": null,
+        "destructive": null,
+        "terminal": null,
+        "screen": []
+      },
+      "collection": {
+        "filters": [],
+        "search": [],
+        "pagination": null,
+        "views": [],
+        "refresh": "manual",
+        "groupBy": [],
+        "sort": []
+      },
+      "visibility": [],
+      "lookups": [
+        {
+          "field": "reviewer_id",
+          "entity": {
+            "id": "entity_user",
+            "kind": "entity"
+          },
+          "labelField": "display_name",
+          "emptyLabel": "Unassigned"
+        }
+      ],
+      "regions": [],
+      "patterns": [
+        "edit_form"
+      ],
+      "route": "/articles/:id/edit",
+      "web": {
+        "present": "page"
+      },
+      "actionWeb": {}
+    },
+    {
+      "type": "ui_screen_contract",
+      "id": "editorial_settings",
+      "kind": "settings",
+      "title": "Editorial Settings",
+      "loadCapability": null,
+      "submitCapability": null,
+      "detailCapability": null,
+      "inputShape": null,
+      "viewShape": null,
+      "itemShape": null,
+      "emptyState": null,
+      "navigation": {
+        "successNavigate": null,
+        "successRefresh": null
+      },
+      "states": {
+        "loading": "auto",
+        "empty": "auto",
+        "error": "auto",
+        "unauthorized": "auto",
+        "notFound": "auto",
+        "success": "auto"
+      },
+      "actions": {
+        "primary": null,
+        "secondary": null,
+        "destructive": null,
+        "terminal": null,
+        "screen": []
+      },
+      "collection": {
+        "filters": [],
+        "search": [],
+        "pagination": null,
+        "views": [],
+        "refresh": "manual",
+        "groupBy": [],
+        "sort": []
+      },
+      "visibility": [],
+      "lookups": [],
+      "regions": [
+        {
+          "region": "tabs",
+          "pattern": "settings_section",
+          "placement": "primary",
+          "title": null,
+          "state": null,
+          "variant": null
+        },
+        {
+          "region": "summary",
+          "pattern": "settings_section",
+          "placement": "primary",
+          "title": null,
+          "state": null,
+          "variant": null
+        }
+      ],
+      "patterns": [
+        "settings_section"
+      ],
+      "route": "/settings",
+      "web": {
+        "shell": "topbar",
+        "layout": "detail_page"
+      },
+      "actionWeb": {}
+    }
+  ],
+  "sitemap": [
+    {
+      "screenId": "article_list",
+      "label": "Articles",
+      "route": "/articles",
+      "include": true
+    },
+    {
+      "screenId": "article_detail",
+      "label": "Article Details",
+      "route": "/articles/:id",
+      "include": false
+    },
+    {
+      "screenId": "article_create",
+      "label": "Create Article",
+      "route": "/articles/new",
+      "include": false
+    },
+    {
+      "screenId": "article_edit",
+      "label": "Edit Article",
+      "route": "/articles/:id/edit",
+      "include": true
+    },
+    {
+      "screenId": "editorial_settings",
+      "label": "Settings",
+      "route": "/settings",
+      "include": true
+    }
+  ],
+  "graphRoot": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram"
+}

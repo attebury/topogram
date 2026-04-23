@@ -6416,7 +6416,7 @@ function collectUiImport(paths) {
 
   const reactRoots = [
     path.join(paths.workspaceRoot, "apps", "web"),
-    path.join(paths.workspaceRoot, "product", "app")
+    path.join(paths.workspaceRoot, "examples", "maintained", "proof-app")
   ];
   const svelteRoots = [
     path.join(paths.workspaceRoot, "apps", "web-sveltekit"),

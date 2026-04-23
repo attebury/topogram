@@ -26,7 +26,7 @@ These are the launch-critical surfaces that should stay coherent together:
 - [proof-points-and-limits.md](./proof-points-and-limits.md)
 - [alpha-ready-checklist.md](./alpha-ready-checklist.md)
 - [alpha-launch-tracker.md](./alpha-launch-tracker.md)
-- maintained proof package under [product/app/proof](../product/app/proof)
+- maintained proof package under [examples/maintained/proof-app/proof](../examples/maintained/proof-app/proof)
 - brownfield proof inventory through [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 
 Launch-ready means:

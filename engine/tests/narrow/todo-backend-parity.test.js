@@ -7,7 +7,7 @@ import { resolveWorkspace } from "../../src/resolver.js";
 import { buildBackendParityEvidence } from "../../src/proofs/backend-parity.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
-const todoPath = path.join(repoRoot, "examples", "todo", "topogram");
+const todoPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
 
 test("todo backend parity keeps hono and express seams aligned", () => {
   const ast = parsePath(todoPath);

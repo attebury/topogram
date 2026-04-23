@@ -25,7 +25,7 @@
       {
         "output_id": "maintained_app",
         "kind": "maintained_runtime",
-        "root_paths": ["product/app/src/pages/orders/**"],
+        "root_paths": ["examples/maintained/proof-app/src/pages/orders/**"],
         "seams": [
           { "seam_id": "seam_order_summary_presenter" },
           { "seam_id": "seam_order_history_presenter" }
@@ -41,7 +41,7 @@
         "ownership_class": "contract_bound",
         "status": "review_required",
         "maintained_modules": [
-          "product/app/src/pages/orders/OrderSummaryPage.tsx"
+          "examples/maintained/proof-app/src/pages/orders/OrderSummaryPage.tsx"
         ],
         "emitted_dependencies": ["cap_get_order_summary"],
         "allowed_change_classes": ["review_required"],
@@ -55,7 +55,7 @@
         "ownership_class": "contract_bound",
         "status": "review_required",
         "maintained_modules": [
-          "product/app/src/pages/orders/OrderHistoryPage.tsx"
+          "examples/maintained/proof-app/src/pages/orders/OrderHistoryPage.tsx"
         ],
         "emitted_dependencies": ["cap_list_order_history"],
         "allowed_change_classes": ["review_required"],

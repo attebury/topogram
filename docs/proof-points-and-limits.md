@@ -55,17 +55,21 @@ Topogram is most credible today when framed as a system that helps teams:
 
 ### Greenfield and generated proof
 
-- [examples/todo](../examples/todo)
-- [examples/issues](../examples/issues)
-- [examples/content-approval](../examples/content-approval)
+- [examples/generated/todo](../examples/generated/todo)
+- [examples/generated/issues](../examples/generated/issues)
+- [examples/generated/content-approval](../examples/generated/content-approval)
 
 These establish that Topogram can model, generate, and verify multiple domains and stacks from shared semantics.
 
 ### Brownfield proof
 
+- [examples/imported/README.md](../examples/imported/README.md)
 - [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+- [docs/topogram-demo-ops.md](./topogram-demo-ops.md)
 
 This is the strongest current evidence that Topogram is not only a greenfield reference-app story.
+
+The product repo now treats imported brownfield proofs as a separate proof-ops concern instead of keeping a giant live corpus in the normal product tree. The imported claim set stays intentionally small, and the full proof ownership model is documented in `topogram-demo` ops rather than implied by `trials/` paths.
 
 The current import/adopt operator proof is also more explicit now:
 
@@ -88,12 +92,12 @@ They do not establish a live scheduler or autonomous orchestration runtime.
 
 ### Hand-maintained app evolution proof
 
-- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
-- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
-- [product/app/proof/issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
-- [product/app/proof/issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
-- [product/app/proof/content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
-- [product/app/proof/todo-project-owner-unsupported-change-story.md](../product/app/proof/todo-project-owner-unsupported-change-story.md)
+- [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
+- [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md)
+- [examples/maintained/proof-app/proof/issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
+- [examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
+- [examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
+- [examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md](../examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md)
 
 These establish that Topogram’s value is not only “generate an app.” It can also help decide:
 

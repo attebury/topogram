@@ -12,13 +12,13 @@ import { generateSqlitePrismaSchema } from "./sqlite/prisma.js";
 
 function defaultInputPathForGraph(graph) {
   const root = graph.root || "";
-  if (root.includes("/examples/content-approval/topogram")) {
-    return "./examples/content-approval/topogram";
+  if (root.includes("/examples/generated/content-approval/topogram")) {
+    return "./examples/generated/content-approval/topogram";
   }
-  if (root.includes("/examples/issues/topogram")) {
-    return "./examples/issues/topogram";
+  if (root.includes("/examples/generated/issues/topogram")) {
+    return "./examples/generated/issues/topogram";
   }
-  return "./examples/todo/topogram";
+  return "./examples/generated/todo/topogram";
 }
 
 function dbLifecyclePlan(graph, projection) {
@@ -104,10 +104,10 @@ function renderDbLifecycleEnvExample(projection) {
   const engine = projection.platform === "db_sqlite" ? "sqlite" : "postgres";
   const projectionName = `${projection.id} ${projection.name || ""}`.toLowerCase();
   const inputPath = projectionName.includes("content approval")
-    ? "./examples/content-approval/topogram"
+    ? "./examples/generated/content-approval/topogram"
     : projectionName.includes("issues")
-      ? "./examples/issues/topogram"
-      : "./examples/todo/topogram";
+      ? "./examples/generated/issues/topogram"
+      : "./examples/generated/todo/topogram";
   if (engine === "sqlite") {
     return `DATABASE_URL=file:./var/${projection.id}.sqlite\nTOPOGRAM_REPO_ROOT=../..\nTOPOGRAM_INPUT_PATH=${inputPath}\n`;
   }

@@ -104,11 +104,12 @@ For the fuller collaboration and workspace-boundary guidance, see [docs/human-ag
 
 This repo is grounded in working proofs, not just concept demos:
 
-- [examples/todo](./examples/todo): the smallest end-to-end reference example
-- [examples/issues](./examples/issues): a multi-frontend issue-tracker proof
-- [examples/content-approval](./examples/content-approval): a workflow-heavy proof that pressures non-Todo abstractions
-- [product/app](./product/app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances
-- [docs/confirmed-proof-matrix.md](./docs/confirmed-proof-matrix.md): closed brownfield proofs across a broad set of real stacks
+- [examples/generated/todo](./examples/generated/todo): the smallest end-to-end reference example
+- [examples/generated/issues](./examples/generated/issues): a multi-frontend issue-tracker proof
+- [examples/generated/content-approval](./examples/generated/content-approval): a workflow-heavy proof that pressures non-Todo abstractions
+- [examples/maintained/proof-app](./examples/maintained/proof-app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances
+- [examples/imported](./examples/imported): the imported-proof bridge and brownfield claim index for the separate [topogram-demo](https://github.com/attebury/topogram-demo) proof repo
+- [docs/topogram-demo-ops.md](./docs/topogram-demo-ops.md): the ops contract for keeping imported proof claims fresh in [topogram-demo](https://github.com/attebury/topogram-demo)
 - [docs/testing-strategy.md](./docs/testing-strategy.md): the verification philosophy and current regression layers
 - [docs/proof-points-and-limits.md](./docs/proof-points-and-limits.md): the current claim boundary, proof matrix, and known limits
 - [docs/alpha-overview.md](./docs/alpha-overview.md): the short visual walkthrough for evaluators and design partners
@@ -143,7 +144,7 @@ Topogram is still an early system. It should not be presented as:
 
 Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Start with [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md) and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
 
-Topogram generality is also still under active proof. The current repo has meaningful evidence across examples and brownfield trials, but it should not yet be presented as fully proven across all domain shapes or stack combinations.
+Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
 
 ## FAQ
 
@@ -210,8 +211,8 @@ bash ./scripts/audit-issues-contract-diff.sh
 
 Use them like this:
 
-- `verify-engine.sh`: fast engine-only semantic regression, including the narrow non-golden test layer
-- `verify-product-app.sh`: required maintained-proof gate for `product/app`
+- `verify-engine.sh`: fast curated engine regression, including narrow engine tests plus generated-example validation
+- `verify-product-app.sh`: required maintained-proof gate for `examples/maintained/proof-app`
 - `verify-generated-example.sh <example> compile-smoke`: compile plus smoke verification for one generated example
 - `verify-generated-example.sh <example> full`: compile, runtime-check, and smoke verification for one generated example
 - `verify-issues-parity.sh`: the shortest evaluator-facing proof for `issues` web and backend parity
@@ -245,13 +246,20 @@ Copyright is documented in [NOTICE](./NOTICE).
 
 ## Repo Layout
 
-This repo is organized around a clean separation between the engine, example Topogram packages, generated artifacts and runtimes, and maintained proof code.
+This repo is organized around three example relationships to Topogram:
+
+- `examples/generated/<app>`: Topogram-owned generated reference apps
+- `examples/maintained/<app>`: Topogram-owned maintained proof apps
+- `examples/imported/<app>`: imported proof targets that belong in the separate [topogram-demo](https://github.com/attebury/topogram-demo) proof repo
+
+Within this product repo, imported examples are represented only by bridge docs and ops contracts so the product surface stays smaller and clearer.
 
 - [engine](./engine): the actual Topogram implementation
-- [examples/todo](./examples/todo): the Todo Topogram package, generated artifacts, apps, and fixtures
-- [examples/issues](./examples/issues): the issue-tracker proof example
-- [examples/content-approval](./examples/content-approval): the workflow-heavy proof example
-- [product/app](./product/app): the maintained proof app
+- [examples/generated/todo](./examples/generated/todo): the Todo Topogram package, generated artifacts, apps, and fixtures
+- [examples/generated/issues](./examples/generated/issues): the issue-tracker proof example
+- [examples/generated/content-approval](./examples/generated/content-approval): the workflow-heavy proof example
+- [examples/maintained/proof-app](./examples/maintained/proof-app): the maintained proof app
+- [examples/imported](./examples/imported): imported brownfield proof index and demo-repo bridge
 - [docs](./docs): planning notes, proof summaries, and architecture/reference docs
 
 Within each Topogram workspace, the intended split is:
@@ -268,4 +276,4 @@ The intended workflow in this repo is:
 2. Update one of the example Topogram packages under [examples](./examples) when a domain changes.
 3. Regenerate example artifacts and runtimes under each example's `artifacts/` and `apps/` folders.
 4. Use those outputs as contracts, references, and runnable proofs.
-5. Build or evolve hand-maintained code in [product/app](./product/app).
+5. Build or evolve hand-maintained code in [examples/maintained/proof-app](./examples/maintained/proof-app).

@@ -291,11 +291,11 @@ function run() {
   runNodeTests(workspaceRoot, "tests/narrow");
 
   const repoRoot = path.resolve(workspaceRoot, "..");
-  const todoRoot = path.join(repoRoot, "examples", "todo");
+  const todoRoot = path.join(repoRoot, "examples", "generated", "todo");
   const todoPath = path.join(todoRoot, "topogram");
-  const issuesRoot = path.join(repoRoot, "examples", "issues");
+  const issuesRoot = path.join(repoRoot, "examples", "generated", "issues");
   const issuesPath = path.join(issuesRoot, "topogram");
-  const contentApprovalRoot = path.join(repoRoot, "examples", "content-approval");
+  const contentApprovalRoot = path.join(repoRoot, "examples", "generated", "content-approval");
   const contentApprovalPath = path.join(contentApprovalRoot, "topogram");
   const invalidPath = path.join(workspaceRoot, "tests", "fixtures", "invalid", "missing-reference");
   const invalidShapePath = path.join(workspaceRoot, "tests", "fixtures", "invalid", "shape-transform");
@@ -2324,17 +2324,17 @@ export default function RegisterPage() {
 
   const issuesImport = runWorkflow("import-app", issuesPath, { from: "db,api" });
   const issuesEntity = issuesImport.summary.candidates.db.entities.find((entity) => entity.id_hint === "entity_issue");
-  if (!issuesEntity || issuesEntity.provenance.length !== 1 || !issuesEntity.provenance[0].includes("examples/issues/apps/backend/prisma/schema.prisma")) {
+  if (!issuesEntity || issuesEntity.provenance.length !== 1 || !issuesEntity.provenance[0].includes("examples/generated/issues/apps/backend/prisma/schema.prisma")) {
     throw new Error("Expected Issues import to prefer the backend Prisma schema");
   }
 
   const todoImport = runWorkflow("import-app", todoPath, { from: "db,api" });
   const todoTask = todoImport.summary.candidates.db.entities.find((entity) => entity.id_hint === "entity_task");
-  if (!todoTask || todoTask.provenance.length !== 1 || !todoTask.provenance[0].includes("examples/todo/apps/backend/prisma/schema.prisma")) {
+  if (!todoTask || todoTask.provenance.length !== 1 || !todoTask.provenance[0].includes("examples/generated/todo/apps/backend/prisma/schema.prisma")) {
     throw new Error("Expected Todo import to prefer the backend Prisma schema");
   }
   const todoExportCapability = todoImport.summary.candidates.api.capabilities.find((capability) => capability.id_hint === "cap_export_tasks");
-  if (!todoExportCapability || todoExportCapability.provenance.length !== 1 || !todoExportCapability.provenance[0].includes("examples/todo/artifacts/openapi/openapi.json")) {
+  if (!todoExportCapability || todoExportCapability.provenance.length !== 1 || !todoExportCapability.provenance[0].includes("examples/generated/todo/artifacts/openapi/openapi.json")) {
     throw new Error("Expected Todo API import to prefer the canonical OpenAPI artifact");
   }
 
@@ -6342,7 +6342,7 @@ Canonical journey fixture.
     [
       "infer_current_snapshot_from_live_tables",
       "reconcile_existing_database_snapshot",
-      "examples/content-approval/topogram"
+      "examples/generated/content-approval/topogram"
     ],
     "SQLite lifecycle bundle"
   );
@@ -6770,7 +6770,7 @@ Canonical journey fixture.
   );
 
   if (process.env.TOPOGRAM_SKIP_PRODUCT_APP_TESTS !== "1") {
-    const productAppRoot = path.join(repoRoot, "product", "app");
+    const productAppRoot = path.join(repoRoot, "examples", "maintained", "proof-app");
     runNodeScript(productAppRoot, "scripts/compile-check.mjs");
     runNodeScript(productAppRoot, "scripts/smoke.mjs");
     runNodeScript(productAppRoot, "scripts/runtime-check.mjs");

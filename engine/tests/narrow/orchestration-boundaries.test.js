@@ -10,8 +10,8 @@ import { buildLocalMaintainedBoundaryArtifact } from "../../src/generator/contex
 import { runWorkflow } from "../../src/workflows.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const todoTopogramPath = path.join(repoRoot, "examples", "todo", "topogram");
-const issuesTopogramPath = path.join(repoRoot, "examples", "issues", "topogram");
+const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
+const issuesTopogramPath = path.join(repoRoot, "examples", "generated", "issues", "topogram");
 const supabaseTrialPath = path.join(repoRoot, "trials", "supabase-express-api");
 const eShopOnWebTrialPath = path.join(repoRoot, "trials", "eShopOnWeb");
 

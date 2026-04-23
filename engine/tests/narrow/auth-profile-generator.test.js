@@ -11,8 +11,8 @@ import { validateWorkspace } from "../../src/validator.js";
 import { generateRuntimeCheckPlan } from "../../src/generator/runtime/runtime-check.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const issuesTopogramPath = path.join(repoRoot, "examples", "issues", "topogram");
-const contentApprovalTopogramPath = path.join(repoRoot, "examples", "content-approval", "topogram");
+const issuesTopogramPath = path.join(repoRoot, "examples", "generated", "issues", "topogram");
+const contentApprovalTopogramPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
 
 function issuesGraph() {
   const parsed = parsePath(issuesTopogramPath);
@@ -366,7 +366,7 @@ test("generated UI contracts and pages carry explicit ownership visibility", () 
   assert.match(issuesReactBundle.artifact["src/pages/IssueDetailPage.tsx"], /topogram_auth_user_id/);
   assert.match(issuesReactBundle.artifact["src/lib/auth/visibility.ts"], /ownerIdFromResource/);
 
-  const todoTopogramPath = path.join(repoRoot, "examples", "todo", "topogram");
+  const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
   const todoSvelteBundle = generateWorkspace(parsePath(todoTopogramPath), {
     target: "sveltekit-app",
     projectionId: "proj_ui_web"

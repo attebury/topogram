@@ -15,7 +15,7 @@ It is not yet a claim that broad multi-runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/issues/topogram](../examples/issues/topogram)
+- [examples/generated/issues/topogram](../examples/generated/issues/topogram)
 
 That single package drives:
 
@@ -34,13 +34,13 @@ The current proof uses two existing web targets for the same `issues` model:
 Relevant outputs:
 
 - React UI contract:
-  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
 - React app:
-  [examples/issues/apps/web](../examples/issues/apps/web)
+  [examples/generated/issues/apps/web](../examples/generated/issues/apps/web)
 - SvelteKit app:
-  [examples/issues/apps/web-sveltekit](../examples/issues/apps/web-sveltekit)
+  [examples/generated/issues/apps/web-sveltekit](../examples/generated/issues/apps/web-sveltekit)
 
 ## What Must Stay The Same
 

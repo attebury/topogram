@@ -204,15 +204,15 @@ Suggested additive shape:
     "focus": "Maintained-app files, emitted constraints, and explicit review boundaries"
   },
   "maintained_files_in_scope": [
-    "product/app/src/issues.js"
+    "examples/maintained/proof-app/src/issues.js"
   ],
   "outputs": [
     {
       "output_id": "maintained_app",
       "kind": "maintained_runtime",
-      "root_paths": ["product/app/**"],
+      "root_paths": ["examples/maintained/proof-app/**"],
       "maintained_files_in_scope": [
-        "product/app/src/issues.js"
+        "examples/maintained/proof-app/src/issues.js"
       ],
       "seams": [
         {
@@ -241,7 +241,7 @@ Suggested additive shape:
         "journey_issue_resolution_and_closure"
       ],
       "maintained_modules": [
-        "product/app/src/issues.js"
+        "examples/maintained/proof-app/src/issues.js"
       ],
       "human_owned_aspects": [
         "detail/list rendering treatment"
@@ -255,7 +255,7 @@ Suggested additive shape:
         "visibility_or_policy_changed"
       ],
       "proof_stories": [
-        "product/app/proof/issues-ownership-visibility-story.md"
+        "examples/maintained/proof-app/proof/issues-ownership-visibility-story.md"
       ]
     }
   ]

@@ -29,7 +29,7 @@ Topogram does generate artifacts and runtimes. The stronger claim is that it als
 - verification intent
 - maintained-app change boundaries
 
-The maintained-app proof package and brownfield proof matrix are the best current evidence that Topogram is broader than a reference-app generator.
+The maintained-app proof package and imported-proof matrix are the best current evidence that Topogram is broader than a reference-app generator.
 
 ## “Is Topogram too example-shaped?”
 

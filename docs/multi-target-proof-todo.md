@@ -15,7 +15,7 @@ It is not yet a claim that broad multi-target generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/todo/topogram](../examples/todo/topogram)
+- [examples/generated/todo/topogram](../examples/generated/todo/topogram)
 
 That single package drives:
 
@@ -33,9 +33,9 @@ The current proof uses two web targets for the same `todo` model:
 Relevant outputs:
 
 - React UI contract:
-  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json)
+  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
 
 This proof is intentionally anchored at the emitted UI-contract seam. It does not yet claim a committed second Todo app bundle beside the current SvelteKit-first app surface.
 

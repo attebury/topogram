@@ -1194,12 +1194,12 @@ function normalizeSeamSummary(seam, proofStoryMapper = normalizeProofStorySummar
 
 function maintainedOutputRecordFromFiles(files = []) {
   const normalizedFiles = stableSortedStrings(files);
-  if (normalizedFiles.some((entry) => String(entry).startsWith("product/app/"))) {
+  if (normalizedFiles.some((entry) => String(entry).startsWith("examples/maintained/proof-app/"))) {
     return {
       output_id: "maintained_app",
       label: "Maintained App",
       kind: "maintained_runtime",
-      root_paths: ["product/app/**"]
+      root_paths: ["examples/maintained/proof-app/**"]
     };
   }
 

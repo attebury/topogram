@@ -420,12 +420,15 @@ export function getStatement(graph, kind, id) {
 export function repoRootFromGraph(graph) {
   let current = path.resolve(graph.root);
   while (true) {
-    if (fs.existsSync(path.join(current, "product", "app")) && fs.existsSync(path.join(current, "engine"))) {
+    if (fs.existsSync(path.join(current, "examples", "maintained", "proof-app")) && fs.existsSync(path.join(current, "engine"))) {
       return current;
     }
     const parent = path.dirname(current);
     if (parent === current) {
-      if (fs.existsSync(path.join(bundledRepoRoot, "product", "app")) && fs.existsSync(path.join(bundledRepoRoot, "engine"))) {
+      if (
+        fs.existsSync(path.join(bundledRepoRoot, "examples", "maintained", "proof-app")) &&
+        fs.existsSync(path.join(bundledRepoRoot, "engine"))
+      ) {
         return bundledRepoRoot;
       }
       return path.resolve(graph.root, "..", "..");
@@ -572,15 +575,15 @@ export function maintainedProofMetadata(graph) {
   const staticFiles = [
     {
       classification: "accepted_change",
-      path: "product/app/proof/issues-ownership-visibility-story.md",
-      maintainedFiles: ["product/app/src/issues.js"],
+      path: "examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/issues.js"],
       emittedDependencies: ["proj_web", "proj_api", "journey_issue_resolution_and_closure"],
       humanOwnedSeams: ["maintained presenter structure", "detail/list rendering treatment"]
     },
     {
       classification: "accepted_change",
-      path: "product/app/proof/issues-cross-surface-alignment-story.md",
-      maintainedFiles: ["product/app/src/issues.js"],
+      path: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/issues.js"],
       emittedDependencies: ["proj_web", "proj_api", "journey_issue_creation_and_assignment", "journey_issue_resolution_and_closure"],
       humanOwnedSeams: [
         "issues detail action state",
@@ -592,54 +595,54 @@ export function maintainedProofMetadata(graph) {
     },
     {
       classification: "guarded_manual_decision",
-      path: "product/app/proof/content-approval-workflow-decision-story.md",
-      maintainedFiles: ["product/app/src/content-approval-change-guards.js"],
+      path: "examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/content-approval-change-guards.js"],
       emittedDependencies: ["cap_request_article_revision", "journey_editorial_review_and_revision"],
       humanOwnedSeams: ["new workflow affordance treatment", "action placement and copy"]
     },
     {
       classification: "no_go",
-      path: "product/app/proof/issues-ownership-visibility-drift-story.md",
-      maintainedFiles: ["product/app/src/issues.js"],
+      path: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/issues.js"],
       emittedDependencies: ["proj_web", "journey_issue_resolution_and_closure"],
       humanOwnedSeams: ["owner visibility semantics must not drift"]
     },
     {
       classification: "no_go",
-      path: "product/app/proof/content-approval-unsupported-change-story.md",
-      maintainedFiles: ["product/app/src/content-approval.js", "product/app/src/content-approval-change-guards.js"],
+      path: "examples/maintained/proof-app/proof/content-approval-unsupported-change-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/content-approval.js", "examples/maintained/proof-app/src/content-approval-change-guards.js"],
       emittedDependencies: ["proj_web", "proj_api", "proj_db"],
       humanOwnedSeams: ["unsupported relation and workflow meaning changes"]
     },
     {
       classification: "no_go",
-      path: "product/app/proof/todo-project-owner-unsupported-change-story.md",
-      maintainedFiles: ["product/app/src/todo-change-guards.js"],
+      path: "examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md",
+      maintainedFiles: ["examples/maintained/proof-app/src/todo-change-guards.js"],
       emittedDependencies: ["entity_project", "proj_web", "proj_api"],
       humanOwnedSeams: ["ownership retargeting remains manual"]
     },
     {
       classification: "independent_review",
-      path: "product/app/proof/maintained-contract-review.md",
+      path: "examples/maintained/proof-app/proof/maintained-contract-review.md",
       maintainedFiles: [
-        "product/app/src/issues.js",
-        "product/app/src/content-approval-change-guards.js",
-        "product/app/src/todo-change-guards.js"
+        "examples/maintained/proof-app/src/issues.js",
+        "examples/maintained/proof-app/src/content-approval-change-guards.js",
+        "examples/maintained/proof-app/src/todo-change-guards.js"
       ],
       emittedDependencies: ["maintained-proof-package"],
       humanOwnedSeams: ["human audit of emitted contracts vs maintained code"]
     },
     {
       classification: "accepted_change",
-      path: "examples/content-approval/implementation/proof/web-reference-seam-story.md",
-      maintainedFiles: ["examples/content-approval/implementation/web/reference.js"],
+      path: "examples/generated/content-approval/implementation/proof/web-reference-seam-story.md",
+      maintainedFiles: ["examples/generated/content-approval/implementation/web/reference.js"],
       emittedDependencies: ["proj_web", "journey_editorial_review_and_revision"],
       humanOwnedSeams: ["example web reference composition"]
     },
     {
       classification: "accepted_change",
-      path: "examples/content-approval/implementation/proof/backend-reference-seam-story.md",
-      maintainedFiles: ["examples/content-approval/implementation/backend/reference.js"],
+      path: "examples/generated/content-approval/implementation/proof/backend-reference-seam-story.md",
+      maintainedFiles: ["examples/generated/content-approval/implementation/backend/reference.js"],
       emittedDependencies: ["proj_api", "proj_db"],
       humanOwnedSeams: ["example backend reference integration"]
     }
@@ -746,21 +749,22 @@ function maintainedSeamDriftSignals(emittedDependencies = []) {
 
 function maintainedOutputDescriptor(filePaths = []) {
   const files = stableSortedStrings(filePaths);
-  if (files.some((file) => String(file).startsWith("product/app/"))) {
+  if (files.some((file) => String(file).startsWith("examples/maintained/proof-app/"))) {
     return {
       output_id: "maintained_app",
       label: "Maintained App",
       kind: "maintained_runtime",
-      root_paths: ["product/app/**"]
+      root_paths: ["examples/maintained/proof-app/**"]
     };
   }
   const exampleImplementationMatch = files
-    .map((file) => String(file).match(/^examples\/([^/]+)\/implementation\/(web|backend|runtime)\//))
+    .map((file) => String(file).match(/^examples\/(?:(generated)\/)?([^/]+)\/implementation\/(web|backend|runtime)\//))
     .find(Boolean);
   if (exampleImplementationMatch) {
-    const [, slug, outputKind] = exampleImplementationMatch;
+    const [, category, slug, outputKind] = exampleImplementationMatch;
     const outputId = `output_${seamIdHint(`examples_${slug}_${outputKind}`)}`;
-    const root = `examples/${slug}/implementation/${outputKind}`;
+    const rootPrefix = category ? `examples/${category}/${slug}` : `examples/${slug}`;
+    const root = `${rootPrefix}/implementation/${outputKind}`;
     return {
       output_id: outputId,
       label: `${titleCaseWords(slug)} ${titleCaseWords(outputKind)} Reference`,
@@ -1008,7 +1012,7 @@ export function buildDefaultWriteScope() {
   return {
     safe_to_edit: ["topogram/**", "candidates/**"],
     generator_owned: ["artifacts/**", "apps/**"],
-    human_owned_review_required: ["product/app/**"],
+    human_owned_review_required: ["examples/maintained/proof-app/**"],
     out_of_bounds: [".git/**", "node_modules/**"]
   };
 }
@@ -1019,7 +1023,7 @@ export function buildMaintainedWriteScope(graph, maintainedFiles = []) {
     generator_owned: ["artifacts/**", "apps/**"],
     human_owned_review_required: stableSortedStrings([
       ...maintainedFiles,
-      "product/app/**"
+      "examples/maintained/proof-app/**"
     ]),
     out_of_bounds: ["topogram/**"]
   };
@@ -1036,9 +1040,9 @@ export function recommendedVerificationTargets(graph, targetIds = [], options = 
 
   if (options.includeMaintainedApp) {
     base.maintained_app_checks = [
-      "product/app/scripts/compile-check.mjs",
-      "product/app/scripts/smoke.mjs",
-      "product/app/scripts/runtime-check.mjs"
+      "examples/maintained/proof-app/scripts/compile-check.mjs",
+      "examples/maintained/proof-app/scripts/smoke.mjs",
+      "examples/maintained/proof-app/scripts/runtime-check.mjs"
     ];
   }
 

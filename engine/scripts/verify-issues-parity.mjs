@@ -9,7 +9,7 @@ import { stableStringify } from "../src/format.js";
 
 const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const repoRoot = path.resolve(workspaceRoot, "..");
-const issuesPath = path.join(repoRoot, "examples", "issues", "topogram");
+const issuesPath = path.join(repoRoot, "examples", "generated", "issues", "topogram");
 
 const issuesAst = parsePath(issuesPath);
 const resolved = resolveWorkspace(issuesAst);

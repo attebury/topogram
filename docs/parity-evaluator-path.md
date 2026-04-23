@@ -36,15 +36,15 @@ The seams that matter are:
 Representative emitted artifacts:
 
 - `issues` web:
-  [examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
   and
-  [examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
 - `issues` backend:
-  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 - `content-approval` backend:
-  [examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 - `todo` backend:
-  [examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/generated/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What To Run
 

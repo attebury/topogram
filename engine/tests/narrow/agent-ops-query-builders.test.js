@@ -241,15 +241,15 @@ function makeChangePlanGraph() {
 
 function makeRootedGraphWithMaintainedFiles() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-seam-probes-"));
-  fs.mkdirSync(path.join(root, "product", "app", "src"), { recursive: true });
-  fs.mkdirSync(path.join(root, "product", "app", "proof"), { recursive: true });
+  fs.mkdirSync(path.join(root, "examples", "maintained", "proof-app", "src"), { recursive: true });
+  fs.mkdirSync(path.join(root, "examples", "maintained", "proof-app", "proof"), { recursive: true });
   fs.writeFileSync(
-    path.join(root, "product", "app", "src", "content-approval-change-guards.js"),
+    path.join(root, "examples", "maintained", "proof-app", "src", "content-approval-change-guards.js"),
     "export const requestRevisionRoute = '/articles/request-revision';\nexport const workflowSummary = 'article revision review';\n",
     "utf8"
   );
   fs.writeFileSync(
-    path.join(root, "product", "app", "proof", "content-approval-workflow-decision-story.md"),
+    path.join(root, "examples", "maintained", "proof-app", "proof", "content-approval-workflow-decision-story.md"),
     "# Content Approval Workflow Decision Story\n",
     "utf8"
   );
@@ -261,10 +261,10 @@ function makeRootedGraphWithMaintainedFiles() {
 
 function makeIssuesCrossSurfaceGraph() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-issues-cross-surface-"));
-  fs.mkdirSync(path.join(root, "product", "app", "src"), { recursive: true });
-  fs.mkdirSync(path.join(root, "product", "app", "proof"), { recursive: true });
+  fs.mkdirSync(path.join(root, "examples", "maintained", "proof-app", "src"), { recursive: true });
+  fs.mkdirSync(path.join(root, "examples", "maintained", "proof-app", "proof"), { recursive: true });
   fs.writeFileSync(
-    path.join(root, "product", "app", "src", "issues.js"),
+    path.join(root, "examples", "maintained", "proof-app", "src", "issues.js"),
     [
       "export const issueDetailSurface = 'issue_detail';",
       "export const issueListSurface = 'issue_list';",
@@ -274,7 +274,7 @@ function makeIssuesCrossSurfaceGraph() {
     "utf8"
   );
   fs.writeFileSync(
-    path.join(root, "product", "app", "proof", "issues-cross-surface-alignment-story.md"),
+    path.join(root, "examples", "maintained", "proof-app", "proof", "issues-cross-surface-alignment-story.md"),
     "# Issues Cross-Surface Alignment Story\n",
     "utf8"
   );
@@ -301,7 +301,7 @@ test("classifyRisk escalates seam-aware maintained no-go and review-boundary cha
               ownership_class: "out_of_bounds"
             }
           ],
-          maintained_files_in_scope: ["product/app/src/issues.js"],
+          maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
           verification_targets: { maintained_app_checks: ["runtime-check"] }
         }
       ],
@@ -314,13 +314,13 @@ test("classifyRisk escalates seam-aware maintained no-go and review-boundary cha
           ownership_class: "out_of_bounds"
         }
       ],
-      maintained_files_in_scope: ["product/app/src/issues.js"]
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"]
     },
     diffSummary: { affected_output_count: 1, affected_seam_count: 1, highest_maintained_severity: "no_go" }
   });
   const noGoRisk = classifyRisk({
     reviewBoundary: { automation_class: "no_go" },
-    maintainedBoundary: { summary: { no_go_count: 1 }, maintained_files_in_scope: ["product/app/src/issues.js"] },
+    maintainedBoundary: { summary: { no_go_count: 1 }, maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"] },
     diffSummary: { review_boundary_change_count: 2, maintained_file_count: 1 },
     verificationTargets: { maintained_app_checks: ["runtime-check"] },
     maintainedRisk
@@ -343,7 +343,7 @@ test("classifyRisk uses seam severity and does not escalate on maintained files 
       status_counts: { aligned: 0, review_required: 0, manual_decision: 1, no_go: 0 },
       affected_outputs: [{ output_id: "web_app", kind: "web_app", highest_severity: "manual_decision", affected_seam_count: 1, maintained_file_count: 2, verification_targets: null }],
       affected_seams: [{ seam_id: "seam_copy", output_id: "web_app", kind: "ui_presenter", status: "manual_decision", ownership_class: "contract_bound" }],
-      maintained_files_in_scope: ["product/app/src/a.js", "product/app/src/b.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/a.js", "examples/maintained/proof-app/src/b.js"],
       output_verification_targets: []
     }
   });
@@ -357,7 +357,7 @@ test("classifyRisk uses seam severity and does not escalate on maintained files 
       status_counts: { aligned: 0, review_required: 0, manual_decision: 0, no_go: 0 },
       affected_outputs: [],
       affected_seams: [],
-      maintained_files_in_scope: ["product/app/src/a.js", "product/app/src/b.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/a.js", "examples/maintained/proof-app/src/b.js"],
       output_verification_targets: []
     }
   });
@@ -370,7 +370,7 @@ test("classifyRisk uses seam severity and does not escalate on maintained files 
       status_counts: { aligned: 0, review_required: 1, manual_decision: 0, no_go: 0 },
       affected_outputs: [{ output_id: "web_app", kind: "web_app", highest_severity: "review_required", affected_seam_count: 1, maintained_file_count: 1, verification_targets: null }],
       affected_seams: [{ seam_id: "seam_detail", output_id: "web_app", kind: "ui_presenter", status: "review_required", ownership_class: "contract_bound" }],
-      maintained_files_in_scope: ["product/app/src/a.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/a.js"],
       output_verification_targets: []
     }
   });
@@ -402,7 +402,7 @@ test("proceedDecisionFromRisk maps risk classes into operator decisions", () => 
       status_counts: { aligned: 0, review_required: 0, manual_decision: 1, no_go: 0 },
       affected_outputs: [{ output_id: "maintained_app", kind: "maintained_runtime", highest_severity: "manual_decision", affected_seam_count: 1, maintained_file_count: 1, verification_targets: { maintained_app_checks: ["runtime-check"] } }],
       affected_seams: [{ seam_id: "seam_copy", output_id: "maintained_app", kind: "ui_presenter", status: "manual_decision", ownership_class: "contract_bound" }],
-      maintained_files_in_scope: ["product/app/src/issues.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
       output_verification_targets: [{ output_id: "maintained_app", verification_targets: { maintained_app_checks: ["runtime-check"] } }]
     }
   );
@@ -440,7 +440,7 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
             kind: "ui_presenter",
             ownership_class: "contract_bound",
             status: "manual_decision",
-            maintained_modules: ["product/app/src/content-approval.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/content-approval.js"],
             emitted_dependencies: ["cap_non_matching"],
             allowed_change_classes: ["manual_decision"],
             drift_signals: ["workflow_state_changed"],
@@ -460,14 +460,14 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
       {
         output_id: "maintained_app",
         kind: "maintained_runtime",
-        maintained_files_in_scope: ["product/app/src/issues.js"],
+        maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
         verification_targets: { maintained_app_checks: ["runtime-check"] },
         seams: [{ seam_id: "seam_issues_detail_presenter" }]
       },
       {
         output_id: "maintained_app",
         kind: "maintained_runtime",
-        maintained_files_in_scope: ["product/app/src/content-approval.js"],
+        maintained_files_in_scope: ["examples/maintained/proof-app/src/content-approval.js"],
         verification_targets: { maintained_app_checks: ["runtime-check"] },
         seams: [{ seam_id: "seam_explicit_mapping" }]
       }
@@ -480,7 +480,7 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
         kind: "ui_presenter",
         ownership_class: "contract_bound",
         status: "review_required",
-        maintained_modules: ["product/app/src/issues.js"],
+        maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
         emitted_dependencies: ["cap_update_article", "proj_api"],
         proof_stories: []
       },
@@ -491,7 +491,7 @@ test("buildImportPlanPayload and import review packet keep staged proposal metad
         kind: "ui_presenter",
         ownership_class: "contract_bound",
         status: "manual_decision",
-        maintained_modules: ["product/app/src/content-approval.js"],
+        maintained_modules: ["examples/maintained/proof-app/src/content-approval.js"],
         emitted_dependencies: ["cap_non_matching"],
         proof_stories: []
       }
@@ -1083,7 +1083,7 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
   const diffArtifact = {
     baseline_root: "/tmp/baseline",
     review_boundary_changes: [{ kind: "capability", id: "cap_request_article_revision" }],
-    affected_maintained_surfaces: { maintained_files_in_scope: ["product/app/src/issues.js"] },
+    affected_maintained_surfaces: { maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"] },
     affected_verifications: [{ id: "ver_article_review_flow" }],
     entities: [{ id: "entity_article" }],
     capabilities: [{ id: "cap_update_article" }],
@@ -1111,7 +1111,7 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
     diffArtifact,
     maintainedBoundaryArtifact: {
       summary: { no_go_count: 0 },
-      maintained_files_in_scope: ["product/app/src/issues.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
       seams: [
         {
           seam_id: "seam_issues_detail_presenter",
@@ -1119,14 +1119,14 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
           kind: "ui_presenter",
           ownership_class: "contract_bound",
           status: "review_required",
-          maintained_modules: ["product/app/src/issues.js"],
+          maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
           emitted_dependencies: ["proj_ui_web"],
           allowed_change_classes: ["safe", "review_required"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
             {
               classification: "accepted_change",
-              relativePath: "product/app/proof/issues-ownership-visibility-story.md",
+              relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
               review_boundary: { automation_class: "safe" }
             }
           ]
@@ -1135,8 +1135,8 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
       proof_stories: [
         {
           classification: "accepted_change",
-          relativePath: "product/app/proof/issues-ownership-visibility-story.md",
-          maintained_files: ["product/app/src/issues.js"],
+          relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
+          maintained_files: ["examples/maintained/proof-app/src/issues.js"],
           review_boundary: { automation_class: "safe" }
         }
       ]
@@ -1176,7 +1176,7 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
   assert.match(JSON.stringify(changePlan.generator_targets), /db-contract-graph/);
   assert.match(JSON.stringify(changePlan.generator_targets), /sveltekit-app/);
   assert.equal(changePlan.maintained_impacts.maintained_code_likely_impacted, true);
-  assert.equal(changePlan.maintained_impacts.maintained_files_in_scope[0], "product/app/src/issues.js");
+  assert.equal(changePlan.maintained_impacts.maintained_files_in_scope[0], "examples/maintained/proof-app/src/issues.js");
   assert.equal(changePlan.change_summary.affected_output_count, 1);
   assert.equal(changePlan.change_summary.affected_seam_count, 1);
   assert.equal(changePlan.maintained_impacts.affected_outputs[0].output_id, "maintained_app");
@@ -1256,7 +1256,7 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
           maintained_code_impact: true,
           human_review_required_impact: true
         },
-        maintained_files_in_scope: ["product/app/src/issues.js"],
+        maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
         affected_seams: [
           {
             seam_id: "seam_visibility_guard",
@@ -1264,14 +1264,14 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
             kind: "policy_interpretation",
             ownership_class: "out_of_bounds",
             status: "no_go",
-            maintained_modules: ["product/app/src/issues.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
             emitted_dependencies: ["proj_ui_web", "journey_article_editing"],
             allowed_change_classes: ["no_go"],
             drift_signals: ["emitted_contract_changed", "workflow_state_changed"],
             proof_stories: [
               {
                 classification: "no_go",
-                relativePath: "product/app/proof/issues-ownership-visibility-drift-story.md",
+                relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
                 review_boundary: { automation_class: "no_go" }
               }
             ]
@@ -1280,8 +1280,8 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
         proof_stories: [
           {
             classification: "no_go",
-            relativePath: "product/app/proof/issues-ownership-visibility-drift-story.md",
-            maintained_files: ["product/app/src/issues.js"],
+            relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
+            maintained_files: ["examples/maintained/proof-app/src/issues.js"],
             review_boundary: { automation_class: "no_go" }
           }
         ]
@@ -1297,7 +1297,7 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
     },
     maintainedBoundaryArtifact: {
       summary: { no_go_count: 1 },
-      maintained_files_in_scope: ["product/app/src/issues.js", "product/app/src/content-approval.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js", "examples/maintained/proof-app/src/content-approval.js"],
       seams: [
         {
           seam_id: "seam_unrelated_boundary_entry",
@@ -1305,7 +1305,7 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
           kind: "ui_presenter",
           ownership_class: "contract_bound",
           status: "review_required",
-          maintained_modules: ["product/app/src/content-approval.js"],
+          maintained_modules: ["examples/maintained/proof-app/src/content-approval.js"],
           emitted_dependencies: ["proj_ui_web"],
           allowed_change_classes: ["review_required"],
           drift_signals: ["emitted_contract_changed"],
@@ -1336,7 +1336,7 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
           maintained_code_impact: true,
           human_review_required_impact: true
         },
-        maintained_files_in_scope: ["product/app/src/issues.js"],
+        maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
         affected_seams: [
           {
             seam_id: "seam_visibility_guard",
@@ -1344,14 +1344,14 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
             kind: "policy_interpretation",
             ownership_class: "out_of_bounds",
             status: "no_go",
-            maintained_modules: ["product/app/src/issues.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
             emitted_dependencies: ["proj_ui_web"],
             allowed_change_classes: ["no_go"],
             drift_signals: ["emitted_contract_changed"],
             proof_stories: [
               {
                 classification: "no_go",
-                relativePath: "product/app/proof/issues-ownership-visibility-drift-story.md",
+                relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
                 review_boundary: { automation_class: "no_go" }
               }
             ]
@@ -1362,7 +1362,7 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
             kind: "ui_presenter",
             ownership_class: "contract_bound",
             status: "review_required",
-            maintained_modules: ["product/app/src/issues.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
             emitted_dependencies: ["proj_ui_web"],
             allowed_change_classes: ["safe", "review_required"],
             drift_signals: ["emitted_contract_changed"],
@@ -1372,8 +1372,8 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
         proof_stories: [
           {
             classification: "no_go",
-            relativePath: "product/app/proof/issues-ownership-visibility-drift-story.md",
-            maintained_files: ["product/app/src/issues.js"],
+            relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
+            maintained_files: ["examples/maintained/proof-app/src/issues.js"],
             review_boundary: { automation_class: "no_go" }
           }
         ]
@@ -1381,10 +1381,10 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
     },
     maintainedBoundaryArtifact: {
       human_owned_seams: ["visibility guard", "detail presenter"],
-      maintained_files_in_scope: ["product/app/src/issues.js"]
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"]
     },
     verificationTargets: {
-      maintained_app_checks: ["product/app/scripts/runtime-check.mjs"]
+      maintained_app_checks: ["examples/maintained/proof-app/scripts/runtime-check.mjs"]
     },
     nextAction: { kind: "inspect_maintained_drift" }
   });
@@ -1396,9 +1396,9 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
   assert.equal(payload.summary.status_counts.no_go, 1);
   assert.equal(payload.outputs[0].output_id, "maintained_app");
   assert.equal(payload.outputs[0].summary.affected_seam_count, 2);
-  assert.equal(payload.outputs[0].verification_targets.maintained_app_checks[0], "product/app/scripts/runtime-check.mjs");
+  assert.equal(payload.outputs[0].verification_targets.maintained_app_checks[0], "examples/maintained/proof-app/scripts/runtime-check.mjs");
   assert.equal(payload.affected_seams[0].seam_id, "seam_visibility_guard");
-  assert.equal(payload.verification_targets.maintained_app_checks[0], "product/app/scripts/runtime-check.mjs");
+  assert.equal(payload.verification_targets.maintained_app_checks[0], "examples/maintained/proof-app/scripts/runtime-check.mjs");
   assert.equal(payload.recommended_next_action.kind, "inspect_maintained_drift");
 });
 
@@ -1414,14 +1414,14 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
           kind: "ui_presenter",
           ownership_class: "contract_bound",
           status: "review_required",
-          maintained_modules: ["product/app/src/issues.js"],
+          maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
           emitted_dependencies: ["proj_ui_web"],
           allowed_change_classes: ["safe", "review_required"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
             {
               classification: "accepted_change",
-              relativePath: "product/app/proof/issues-ownership-visibility-story.md",
+              relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
               review_boundary: { automation_class: "review_required" }
             }
           ]
@@ -1432,14 +1432,14 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
           kind: "policy_interpretation",
           ownership_class: "out_of_bounds",
           status: "no_go",
-          maintained_modules: ["product/app/src/issues.js"],
+          maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
           emitted_dependencies: ["proj_ui_web"],
           allowed_change_classes: ["no_go"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
             {
               classification: "no_go",
-              relativePath: "product/app/proof/issues-ownership-visibility-drift-story.md",
+              relativePath: "examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
               review_boundary: { automation_class: "no_go" }
             }
           ]
@@ -1460,7 +1460,7 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
     },
     verificationTargets: {
       generated_checks: ["compile-check"],
-      maintained_app_checks: ["product/app/scripts/runtime-check.mjs"],
+      maintained_app_checks: ["examples/maintained/proof-app/scripts/runtime-check.mjs"],
       verification_ids: ["ver_article_review_flow"]
     },
     nextAction: { kind: "inspect_verification_targets" }
@@ -1474,7 +1474,7 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
   assert.equal(payload.summary.unverifiable_count, 1);
   assert.equal(payload.outputs[0].output_id, "maintained_app");
   assert.equal(payload.outputs[0].conformance_status, "no_go");
-  assert.equal(payload.outputs[0].verification_targets.maintained_app_checks[0], "product/app/scripts/runtime-check.mjs");
+  assert.equal(payload.outputs[0].verification_targets.maintained_app_checks[0], "examples/maintained/proof-app/scripts/runtime-check.mjs");
   assert.equal(payload.seams[0].conformance_state, "no_go");
   assert.equal(payload.seams[2].conformance_state, "unverifiable");
   assert.equal(payload.recommended_next_action.kind, "inspect_verification_targets");
@@ -1495,14 +1495,14 @@ test("buildMaintainedConformancePayload marks diff-backed governed seams as drif
             kind: "workflow_affordance",
             ownership_class: "advisory_only",
             status: "manual_decision",
-            maintained_modules: ["product/app/src/content-approval-change-guards.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/content-approval-change-guards.js"],
             emitted_dependencies: ["cap_request_article_revision"],
             allowed_change_classes: ["manual_decision"],
             drift_signals: ["workflow_state_changed"],
             proof_stories: [
               {
                 classification: "guarded_manual_decision",
-                relativePath: "product/app/proof/content-approval-workflow-decision-story.md",
+                relativePath: "examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
                 review_boundary: { automation_class: "manual_decision" }
               }
             ]
@@ -1539,13 +1539,13 @@ test("buildSeamCheckPayload reports seam probes and stale diff pressure", () => 
             kind: "ui_presenter",
             ownership_class: "contract_bound",
             status: "review_required",
-            maintained_modules: ["product/app/src/content-approval-change-guards.js"],
+            maintained_modules: ["examples/maintained/proof-app/src/content-approval-change-guards.js"],
             emitted_dependencies: ["cap_request_article_revision", "journey_editorial_review_and_revision"],
             proof_stories: [
               {
                 classification: "accepted_change",
-                relativePath: "product/app/proof/content-approval-workflow-decision-story.md",
-                maintained_files: ["product/app/src/content-approval-change-guards.js"],
+                relativePath: "examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
+                maintained_files: ["examples/maintained/proof-app/src/content-approval-change-guards.js"],
                 review_boundary: { automation_class: "review_required" }
               }
             ]
@@ -1593,7 +1593,7 @@ test("maintained proof metadata includes the issues cross-surface alignment stor
   });
 
   const crossSurfaceStory = boundary.proof_stories.find(
-    (story) => story.relativePath === "product/app/proof/issues-cross-surface-alignment-story.md"
+    (story) => story.relativePath === "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md"
   );
   const crossSurfaceSeams = boundary.seams.filter((seam) => seam.seam_family_id === "issues_cross_surface_alignment");
 
@@ -1619,13 +1619,13 @@ test("maintained payloads group cross-surface issues seams under one family", ()
       kind: "ui_presenter",
       ownership_class: "contract_bound",
       status: "review_required",
-      maintained_modules: ["product/app/src/issues.js"],
+      maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
       emitted_dependencies: ["proj_web", "journey_issue_resolution_and_closure"],
       proof_stories: [
         {
           classification: "accepted_change",
-          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
-          maintained_files: ["product/app/src/issues.js"],
+          relativePath: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["examples/maintained/proof-app/src/issues.js"],
           seam_family_id: "issues_cross_surface_alignment",
           seam_family_label: "issues cross-surface ownership alignment",
           review_boundary: { automation_class: "review_required" }
@@ -1641,13 +1641,13 @@ test("maintained payloads group cross-surface issues seams under one family", ()
       kind: "ui_presenter",
       ownership_class: "contract_bound",
       status: "review_required",
-      maintained_modules: ["product/app/src/issues.js"],
+      maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
       emitted_dependencies: ["proj_web", "journey_issue_creation_and_assignment"],
       proof_stories: [
         {
           classification: "accepted_change",
-          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
-          maintained_files: ["product/app/src/issues.js"],
+          relativePath: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["examples/maintained/proof-app/src/issues.js"],
           seam_family_id: "issues_cross_surface_alignment",
           seam_family_label: "issues cross-surface ownership alignment",
           review_boundary: { automation_class: "review_required" }
@@ -1663,13 +1663,13 @@ test("maintained payloads group cross-surface issues seams under one family", ()
       kind: "route_glue",
       ownership_class: "contract_bound",
       status: "review_required",
-      maintained_modules: ["product/app/src/issues.js"],
+      maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
       emitted_dependencies: ["proj_api", "proj_web", "journey_issue_resolution_and_closure"],
       proof_stories: [
         {
           classification: "accepted_change",
-          relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
-          maintained_files: ["product/app/src/issues.js"],
+          relativePath: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+          maintained_files: ["examples/maintained/proof-app/src/issues.js"],
           seam_family_id: "issues_cross_surface_alignment",
           seam_family_label: "issues cross-surface ownership alignment",
           review_boundary: { automation_class: "review_required" }
@@ -1679,20 +1679,20 @@ test("maintained payloads group cross-surface issues seams under one family", ()
   ];
 
   const maintainedBoundaryArtifact = {
-    maintained_files_in_scope: ["product/app/src/issues.js"],
+    maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
     outputs: [
       {
         output_id: "maintained_app",
         label: "Maintained App",
         kind: "maintained_runtime",
-        root_paths: ["product/app/**"],
-        maintained_files_in_scope: ["product/app/src/issues.js"],
+        root_paths: ["examples/maintained/proof-app/**"],
+        maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
         seams: affectedSeams.map((seam) => ({ seam_id: seam.seam_id })),
         proof_stories: [
           {
             classification: "accepted_change",
-            relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
-            maintained_files: ["product/app/src/issues.js"],
+            relativePath: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+            maintained_files: ["examples/maintained/proof-app/src/issues.js"],
             seam_family_id: "issues_cross_surface_alignment",
             seam_family_label: "issues cross-surface ownership alignment",
             review_boundary: { automation_class: "review_required" }
@@ -1704,8 +1704,8 @@ test("maintained payloads group cross-surface issues seams under one family", ()
     proof_stories: [
       {
         classification: "accepted_change",
-        relativePath: "product/app/proof/issues-cross-surface-alignment-story.md",
-        maintained_files: ["product/app/src/issues.js"],
+        relativePath: "examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+        maintained_files: ["examples/maintained/proof-app/src/issues.js"],
         seam_family_id: "issues_cross_surface_alignment",
         seam_family_label: "issues cross-surface ownership alignment",
         review_boundary: { automation_class: "review_required" }
@@ -1717,14 +1717,14 @@ test("maintained payloads group cross-surface issues seams under one family", ()
     review_boundary_changes: [],
     affected_verifications: [],
     affected_maintained_surfaces: {
-      maintained_files_in_scope: ["product/app/src/issues.js"],
+      maintained_files_in_scope: ["examples/maintained/proof-app/src/issues.js"],
       affected_seams: affectedSeams,
       proof_stories: maintainedBoundaryArtifact.proof_stories
     }
   };
   const verificationTargets = {
     generated_checks: ["compile-check"],
-    maintained_app_checks: ["product/app/scripts/runtime-check.mjs"]
+    maintained_app_checks: ["examples/maintained/proof-app/scripts/runtime-check.mjs"]
   };
 
   const driftPayload = buildMaintainedDriftPayload({
@@ -2138,7 +2138,7 @@ test("buildSingleAgentPlanPayload produces a maintained-app-edit plan without im
       maintained_code: "human_owned"
     },
     write_scope: {
-      safe_to_edit: ["product/app/**"]
+      safe_to_edit: ["examples/maintained/proof-app/**"]
     },
     verification_targets: {
       maintained_app_checks: ["verify-product-app.sh"]

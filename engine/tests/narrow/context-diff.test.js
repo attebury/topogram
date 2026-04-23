@@ -8,7 +8,7 @@ import { parsePath } from "../../src/parser.js";
 import { generateWorkspace } from "../../src/generator.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const contentApprovalTopogramPath = path.join(repoRoot, "examples", "content-approval", "topogram");
+const contentApprovalTopogramPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
 
 function writeWorkspace(root, files) {
   for (const [relativePath, contents] of Object.entries(files)) {

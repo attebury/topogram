@@ -31,7 +31,7 @@ if [[ "$MODE" != "compile-smoke" && "$MODE" != "full" ]]; then
   exit 1
 fi
 
-EXAMPLE_ROOT="$ROOT_DIR/examples/$EXAMPLE_NAME/apps/local-stack"
+EXAMPLE_ROOT="$ROOT_DIR/examples/generated/$EXAMPLE_NAME/apps/local-stack"
 if [[ ! -d "$EXAMPLE_ROOT" ]]; then
   echo "Missing generated app bundle at $EXAMPLE_ROOT" >&2
   exit 1

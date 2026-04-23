@@ -268,7 +268,7 @@ test("buildAgentAdoptionPlan infers maintained seam candidates from proposal dep
         kind: "ui_presenter",
         ownership_class: "contract_bound",
         status: "review_required",
-        maintained_modules: ["product/app/src/issues.js"],
+        maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
         emitted_dependencies: ["cap_update_issue", "workflow_issue_review"],
         allowed_change_classes: ["safe", "review_required"],
         drift_signals: ["emitted_contract_changed"]
@@ -277,7 +277,7 @@ test("buildAgentAdoptionPlan infers maintained seam candidates from proposal dep
     outputs: [
       {
         output_id: "maintained_app",
-        root_paths: ["product/app/**"]
+        root_paths: ["examples/maintained/proof-app/**"]
       }
     ]
   });
@@ -333,7 +333,7 @@ test("buildAgentAdoptionPlan keeps dependency-only overlap below threshold when 
         kind: "api_adapter",
         ownership_class: "contract_bound",
         status: "review_required",
-        maintained_modules: ["product/app/src/routes/admin/issues-handler.ts"],
+        maintained_modules: ["examples/maintained/proof-app/src/routes/admin/issues-handler.ts"],
         emitted_dependencies: ["cap_update_issue", "cap_list_issue_comments", "workflow_issue_review"],
         allowed_change_classes: ["review_required"],
         drift_signals: ["emitted_contract_changed"]
@@ -342,7 +342,7 @@ test("buildAgentAdoptionPlan keeps dependency-only overlap below threshold when 
     outputs: [
       {
         output_id: "maintained_app",
-        root_paths: ["product/app/src/routes/admin/**"]
+        root_paths: ["examples/maintained/proof-app/src/routes/admin/**"]
       }
     ]
   });

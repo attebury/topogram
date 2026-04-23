@@ -9,7 +9,7 @@ import { parsePath } from "../../src/parser.js";
 import { generateWorkspace } from "../../src/generator.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const contentApprovalTopogramPath = path.join(repoRoot, "examples", "content-approval", "topogram");
+const contentApprovalTopogramPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
 const cliPath = path.join(repoRoot, "engine", "src", "cli.js");
 const adoptionPlanFixtureScriptPath = path.join(repoRoot, "engine", "scripts", "build-adoption-plan-fixture.mjs");
 
@@ -86,7 +86,7 @@ test("context task mode modeling recommends diff review first when baseline impa
     target: "context-task-mode",
     modeId: "modeling",
     capabilityId: "cap_request_article_revision",
-    fromTopogramPath: path.join(repoRoot, "examples", "todo", "topogram")
+    fromTopogramPath: path.join(repoRoot, "examples", "generated", "todo", "topogram")
   });
 
   assert.equal(result.ok, true);
@@ -106,7 +106,7 @@ test("context task mode maintained-app-edit exposes maintained file scope and pr
   assert.equal(result.ok, true);
   assert.equal(result.artifact.mode, "maintained-app-edit");
   assert.match(JSON.stringify(result.artifact.preferred_context_artifacts), /maintained-boundary/);
-  assert.match(JSON.stringify(result.artifact.write_scope.safe_to_edit), /product\/app\/src\/issues.js/);
+  assert.match(JSON.stringify(result.artifact.write_scope.safe_to_edit), /examples\/maintained\/proof-app\/src\/issues.js/);
   assert.match(JSON.stringify(result.artifact.verification_targets.maintained_app_checks), /runtime-check/);
 });
 
@@ -116,7 +116,7 @@ test("context task mode diff-review recommends maintained impact review when dif
     target: "context-task-mode",
     modeId: "diff-review",
     capabilityId: "cap_request_article_revision",
-    fromTopogramPath: path.join(repoRoot, "examples", "todo", "topogram")
+    fromTopogramPath: path.join(repoRoot, "examples", "generated", "todo", "topogram")
   });
 
   assert.equal(result.ok, true);
@@ -297,7 +297,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "maintained-drift",
     topogramRoot,
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ], { encoding: "utf8" });
   assert.equal(maintainedDriftRun.status, 0, maintainedDriftRun.stderr);
   assert.match(maintainedDriftRun.stdout, /"type": "maintained_drift_query"/);
@@ -322,7 +322,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "maintained-conformance",
     topogramRoot,
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ]);
   assert.equal(maintainedConformanceDiffRun.status, 0, maintainedConformanceDiffRun.stderr);
   assert.match(maintainedConformanceDiffRun.stdout, /"type": "maintained_conformance_query"/);
@@ -335,7 +335,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "diff",
     topogramRoot,
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ], { encoding: "utf8" });
   assert.equal(diffRun.status, 0, diffRun.stderr);
   assert.match(diffRun.stdout, /"affected_generated_surfaces"/);
@@ -419,7 +419,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "verification-targets",
     topogramRoot,
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ], { encoding: "utf8" });
   assert.equal(diffVerificationTargetsRun.status, 0, diffVerificationTargetsRun.stderr);
   assert.match(diffVerificationTargetsRun.stdout, /"source": "context-diff"/);
@@ -449,7 +449,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "--capability",
     "cap_request_article_revision",
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ]);
   assert.equal(changePlanRun.status, 0, changePlanRun.stderr);
   assert.match(changePlanRun.stdout, /"type": "change_plan_query"/);
@@ -504,7 +504,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "--capability",
     "cap_request_article_revision",
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ]);
   assert.equal(riskSummaryRun.status, 0, riskSummaryRun.stderr);
   assert.match(riskSummaryRun.stdout, /"type": "risk_summary_query"/);
@@ -539,7 +539,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "--capability",
     "cap_request_article_revision",
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ], { encoding: "utf8" });
   assert.equal(proceedDecisionRun.status, 0, proceedDecisionRun.stderr);
   assert.match(proceedDecisionRun.stdout, /"type": "proceed_decision_query"/);
@@ -559,7 +559,7 @@ test("query cli can return task-mode, adoption-plan, maintained-boundary, mainta
     "--capability",
     "cap_request_article_revision",
     "--from-topogram",
-    path.join(repoRoot, "examples", "todo", "topogram")
+    path.join(repoRoot, "examples", "generated", "todo", "topogram")
   ]);
   assert.equal(reviewPacketRun.status, 0, reviewPacketRun.stderr);
   assert.match(reviewPacketRun.stdout, /"type": "review_packet_query"/);

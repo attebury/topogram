@@ -44,8 +44,8 @@ The intended answer is:
 
 Inspect:
 
-- [examples/issues](../examples/issues)
-- [examples/content-approval](../examples/content-approval)
+- [examples/generated/issues](../examples/generated/issues)
+- [examples/generated/content-approval](../examples/generated/content-approval)
 
 Use this proof mapping:
 
