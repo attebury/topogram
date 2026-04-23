@@ -44,7 +44,6 @@ These remain in `topogram` because the opt-in `npm run test:proof-corpus` lane s
 - `trials/realworld-backend-micronaut`
 - `trials/jakartaee-rest-sample`
 - `trials/aspnetcore-realworld-example-app`
-- `trials/pokedex-compose`
 - `trials/prisma-nextjs-auth-starter`
 
 Policy:
@@ -52,6 +51,11 @@ Policy:
 - these are local regression assets, not public evaluator-facing proof claims
 - keep them only while they provide coverage that has not yet been extracted into curated fixtures
 - prefer extracting the smallest stable source fixture into `engine/tests/fixtures/import` and then deleting the larger local trial
+
+`pokedex-compose` is now the model for this extraction path:
+
+- the product repo keeps the smaller curated fixture at `engine/tests/fixtures/import/pokedex-compose-source`
+- the larger local `trials/pokedex-compose` copy should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 
@@ -81,6 +85,6 @@ Bias:
 
 The next reduction targets are:
 
-1. extract or replace the remaining local trial users in `engine/scripts/test.js`
+1. keep extracting the remaining local trial users in `engine/scripts/test.js` into curated fixtures where the source tree is small enough to carry cleanly
 2. remove local mirrors of the five active imported proof targets once the optional corpus lane no longer needs them
 3. move historical brownfield-trial docs toward `topogram-demo` links or archive framing so local `trials/` paths stop reading like the active public proof home

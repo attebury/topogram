@@ -1,0 +1,158 @@
+{
+  "screens": [
+    {
+      "kind": "screen",
+      "id_hint": "pokemon_list",
+      "label": "Pokemon List",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Home"
+      ],
+      "track": "ui",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "screen_kind": "list",
+      "route_path": "/pokemon"
+    },
+    {
+      "kind": "screen",
+      "id_hint": "pokemon_detail",
+      "label": "Pokemon Detail",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Details"
+      ],
+      "track": "ui",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "screen_kind": "detail",
+      "route_path": "/pokemon/:name"
+    },
+    {
+      "kind": "screen",
+      "id_hint": "settings",
+      "label": "Settings",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Settings"
+      ],
+      "track": "ui",
+      "entity_id": null,
+      "concept_id": "surface_settings",
+      "screen_kind": "settings",
+      "route_path": "/settings"
+    }
+  ],
+  "routes": [
+    {
+      "kind": "ui_route",
+      "id_hint": "pokemon_list_route",
+      "label": "/pokemon",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Home"
+      ],
+      "track": "ui",
+      "screen_id": "pokemon_list",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "path": "/pokemon"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "pokemon_detail_route",
+      "label": "/pokemon/:name",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Details"
+      ],
+      "track": "ui",
+      "screen_id": "pokemon_detail",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "path": "/pokemon/:name"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "settings_route",
+      "label": "/settings",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "app/src/main/kotlin/com/skydoves/pokedex/compose/navigation/PokedexNavHost.kt#Settings"
+      ],
+      "track": "ui",
+      "screen_id": "settings",
+      "entity_id": null,
+      "concept_id": "surface_settings",
+      "path": "/settings"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "ui_action",
+      "id_hint": "pokemon_list_cap_get_pokemon",
+      "label": "cap_get_pokemon",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "feature/home/src/main/kotlin/com/skydoves/pokedex/compose/feature/home/PokedexHome.kt#PokedexHome"
+      ],
+      "track": "ui",
+      "screen_id": "pokemon_list",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "capability_hint": "cap_get_pokemon",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "pokemon_detail_cap_list_pokemons",
+      "label": "cap_list_pokemons",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "feature/details/src/main/kotlin/com/skydoves/pokedex/compose/feature/details/PokedexDetails.kt#PokedexDetails"
+      ],
+      "track": "ui",
+      "screen_id": "pokemon_detail",
+      "entity_id": "entity_pokemon",
+      "concept_id": "entity_pokemon",
+      "capability_hint": "cap_list_pokemons",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "settings_cap_list_pokemons",
+      "label": "cap_list_pokemons",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "feature/settings/src/main/kotlin/com/skydoves/pokedex/compose/feature/settings/PokedexSettings.kt#PokedexSettings"
+      ],
+      "track": "ui",
+      "screen_id": "settings",
+      "entity_id": null,
+      "concept_id": "surface_settings",
+      "capability_hint": "cap_list_pokemons",
+      "prominence": "primary"
+    }
+  ],
+  "stacks": [
+    "android_compose"
+  ]
+}

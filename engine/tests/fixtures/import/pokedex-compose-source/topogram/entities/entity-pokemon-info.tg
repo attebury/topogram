@@ -1,0 +1,23 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: core/database/src/main/kotlin/com/skydoves/pokedex/compose/core/database/entitiy/PokemonInfoEntity.kt
+entity entity_pokemon_info {
+  name "Pokemon Info"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    name string required
+    height int required
+    weight int required
+    experience int required
+    types json required
+    exp int required
+    stats json required
+  }
+
+  keys {
+    primary [name]
+  }
+
+  status active
+}

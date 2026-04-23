@@ -1,0 +1,7 @@
+[
+  {
+    "kind": "android_room",
+    "entities": 2,
+    "dao_capabilities": 3
+  }
+]

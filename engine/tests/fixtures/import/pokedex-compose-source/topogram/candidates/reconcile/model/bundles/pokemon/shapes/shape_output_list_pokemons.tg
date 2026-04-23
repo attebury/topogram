@@ -1,0 +1,10 @@
+shape shape_output_list_pokemons {
+  name "List Pokemons Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    pokemonresponse string optional
+  }
+
+  status active
+}
