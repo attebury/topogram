@@ -26,6 +26,8 @@ Current docs:
 - [Evaluator Path](./evaluator-path.md)
 - [Testing Strategy](./testing-strategy.md)
 - [Topogram Product Glossary](./topogram-product-glossary.md)
+- [Topogram Demo Bootstrap](./topogram-demo-bootstrap.md)
+- [Shared Development Workflow](./shared-development-workflow.md)
 - [Steady-State Development Loop](./steady-state-development-loop.md)
 - [Maintained-App Boundary Mechanics](./maintained-app-boundary-mechanics.md)
 - [Bearer JWT HS256 Auth Profile](./auth-profile-bearer-jwt-hs256.md)
@@ -53,6 +55,7 @@ These docs focus on:
 - brownfield import architecture
 - development-time product and modeling decisions
 - workflow and adoption planning
+- maintainer and Codex operating workflow
 - agent-queryable context and adoption surfaces
 - real-trial findings and next steps
 
