@@ -1,0 +1,369 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_post",
+      "label": "Get Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Query.postById"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "id"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Query",
+        "field": "postById"
+      },
+      "target_state": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_posts",
+      "label": "List Posts",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Query.feed",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Query.draftsByUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "searchString",
+        "skip",
+        "take",
+        "updatedAt"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Query",
+        "field": "feed"
+      },
+      "target_state": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_post",
+      "label": "Create Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.createDraft"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "authorEmail",
+        "content",
+        "title"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Mutation",
+        "field": "createDraft"
+      },
+      "target_state": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_post_view_count",
+      "label": "Update Post View Count",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.incrementPostViewCount"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "id"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Mutation",
+        "field": "incrementPostViewCount"
+      },
+      "target_state": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_publish_post",
+      "label": "Publish Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.togglePublishPost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "id"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Mutation",
+        "field": "togglePublishPost"
+      },
+      "target_state": "published",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_post",
+      "label": "Delete Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.deletePost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "id"
+      ],
+      "output_fields": [
+        "author",
+        "content",
+        "createdAt",
+        "id",
+        "published",
+        "title",
+        "updatedAt",
+        "viewCount"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "graphql_operation": {
+        "root_type": "Mutation",
+        "field": "deletePost"
+      },
+      "target_state": "deleted",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_register_user",
+      "label": "Register User",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Mutation.signupUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "content",
+        "email",
+        "name",
+        "title"
+      ],
+      "output_fields": [
+        "email",
+        "id",
+        "name",
+        "posts"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "graphql_operation": {
+        "root_type": "Mutation",
+        "field": "signupUser"
+      },
+      "target_state": "registered",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_users",
+      "label": "List Users",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Query.allUsers"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/graphql"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "email",
+        "id",
+        "name",
+        "posts"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "graphql_operation": {
+        "root_type": "Query",
+        "field": "allUsers"
+      },
+      "target_state": null,
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/graphql",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Query.postById",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Query.feed",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Query.allUsers",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Query.draftsByUser"
+      ]
+    },
+    {
+      "path": "/graphql",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.createDraft",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.incrementPostViewCount",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.togglePublishPost",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.deletePost",
+        "engine/tests/fixtures/import/nest-graphql-source/src/resolvers.user.ts#Mutation.signupUser"
+      ]
+    }
+  ],
+  "stacks": [
+    "graphql_code_first"
+  ]
+}

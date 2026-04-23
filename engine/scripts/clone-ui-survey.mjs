@@ -6,6 +6,7 @@ import path from "node:path";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
 const surveyRoot = path.join(repoRoot, "trials", "ui-survey");
+const fixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "ui-survey");
 const manifestPath = path.join(surveyRoot, "manifest.json");
 const cloneStatusPath = path.join(surveyRoot, "analysis", "clone-status.json");
 
@@ -36,6 +37,17 @@ function readJson(filePath, fallback) {
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function seedSurveyRoot() {
+  ensureDir(surveyRoot);
+  for (const fileName of ["manifest.json", "concept-taxonomy.json"]) {
+    const sourcePath = path.join(fixtureRoot, fileName);
+    const destinationPath = path.join(surveyRoot, fileName);
+    if (!fs.existsSync(destinationPath) && fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, destinationPath);
+    }
+  }
 }
 
 function removeIfEmpty(dirPath) {
@@ -92,6 +104,7 @@ function cloneRepo(url, destination, strategy) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
+  seedSurveyRoot();
   const manifest = readJson(manifestPath, null);
   if (!manifest || !Array.isArray(manifest.repos)) {
     throw new Error(`Expected valid survey manifest at ${manifestPath}`);

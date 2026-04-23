@@ -1,0 +1,115 @@
+{
+  "screens": [
+    {
+      "kind": "screen",
+      "id_hint": "post_detail",
+      "label": "Post Detail",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostScreen.tsx#PostScreen"
+      ],
+      "track": "ui",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "screen_kind": "detail",
+      "route_path": "/posts/:id",
+      "capability_hints": [
+        "cap_get_post"
+      ]
+    },
+    {
+      "kind": "screen",
+      "id_hint": "post_list",
+      "label": "Post List",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostsScreen.tsx#PostsScreen"
+      ],
+      "track": "ui",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "screen_kind": "list",
+      "route_path": "/posts",
+      "capability_hints": [
+        "cap_list_posts"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "kind": "ui_route",
+      "id_hint": "post_detail_route",
+      "label": "/posts/:id",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostScreen.tsx#PostScreen"
+      ],
+      "track": "ui",
+      "screen_id": "post_detail",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "path": "/posts/:id"
+    },
+    {
+      "kind": "ui_route",
+      "id_hint": "post_list_route",
+      "label": "/posts",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostsScreen.tsx#PostsScreen"
+      ],
+      "track": "ui",
+      "screen_id": "post_list",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "path": "/posts"
+    }
+  ],
+  "actions": [
+    {
+      "kind": "ui_action",
+      "id_hint": "post_detail_cap_get_post",
+      "label": "cap_get_post",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostScreen.tsx#PostScreen"
+      ],
+      "track": "ui",
+      "screen_id": "post_detail",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "capability_hint": "cap_get_post",
+      "prominence": "primary"
+    },
+    {
+      "kind": "ui_action",
+      "id_hint": "post_list_cap_list_posts",
+      "label": "cap_list_posts",
+      "confidence": "medium",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/post/presentation/screens/PostsScreen.tsx#PostsScreen"
+      ],
+      "track": "ui",
+      "screen_id": "post_list",
+      "entity_id": "entity_post",
+      "concept_id": "entity_post",
+      "capability_hint": "cap_list_posts",
+      "prominence": "primary"
+    }
+  ],
+  "stacks": [
+    "react_native"
+  ]
+}

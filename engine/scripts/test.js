@@ -327,14 +327,14 @@ function run() {
   const eShopOnWebTrialPath = path.join(workspaceRoot, "..", "trials", "eShopOnWeb");
   const pokedexComposeTrialPath = path.join(workspaceRoot, "..", "trials", "pokedex-compose");
   const swiftUiTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-swiftui");
-  const uiKitTrialPath = path.join(workspaceRoot, "..", "trials", "ui-survey", "ios", "firefox-ios", "focus-ios");
-  const mauiTodoRestTrialPath = path.join(workspaceRoot, "..", "trials", "maui-samples", "10.0", "WebServices", "TodoREST");
-  const flutterGoRestTrialPath = path.join(workspaceRoot, "..", "trials", "flutter_go_rest_app", "#10 - Clean Architecture Version (RxDart + Provider)");
-  const reactNativeTrialPath = path.join(workspaceRoot, "..", "trials", "react-native-clean-architecture");
-  const graphqlSdlTrialPath = path.join(workspaceRoot, "..", "trials", "prisma-examples", "orm", "graphql-sdl-first");
-  const nestGraphqlTrialPath = path.join(workspaceRoot, "..", "trials", "prisma-examples", "orm", "nest-graphql");
-  const nextGraphqlTrialPath = path.join(workspaceRoot, "..", "trials", "prisma-examples", "orm", "nextjs-graphql");
-  const nexusGraphqlTrialPath = path.join(workspaceRoot, "..", "trials", "prisma-examples", "orm", "graphql-nexus");
+  const uiKitTrialPath = path.join(importFixturesRoot, "focus-ios-source");
+  const mauiTodoRestTrialPath = path.join(importFixturesRoot, "maui-todo-rest-source");
+  const flutterGoRestTrialPath = path.join(importFixturesRoot, "flutter-go-rest-source");
+  const reactNativeTrialPath = path.join(importFixturesRoot, "react-native-clean-architecture-source");
+  const graphqlSdlTrialPath = path.join(importFixturesRoot, "graphql-sdl-first-source");
+  const nestGraphqlTrialPath = path.join(importFixturesRoot, "nest-graphql-source");
+  const nextGraphqlTrialPath = path.join(importFixturesRoot, "nextjs-graphql-source");
+  const nexusGraphqlTrialPath = path.join(importFixturesRoot, "graphql-nexus-source");
   const migrationsDir = path.join(todoRoot, "topogram", "tests", "fixtures", "migrations");
   const contentApprovalMigrationsDir = path.join(contentApprovalRoot, "topogram", "tests", "fixtures", "migrations");
   const expectedDir = path.join(todoRoot, "topogram", "tests", "fixtures", "expected");
@@ -3117,9 +3117,9 @@ export default function RegisterPage() {
   assertConfirmedProofStatus(path.join(trpcTrialPath, "topogram"), "tRPC Next Prisma confirmed proof");
   assertConfirmedProofStatus(path.join(graphqlSdlTrialPath, "topogram"), "GraphQL SDL confirmed proof");
   assertConfirmedProofStatus(path.join(nexusGraphqlTrialPath, "topogram"), "GraphQL Nexus confirmed proof");
-  assertConfirmedProofStatus(path.join(workspaceRoot, "..", "trials", "nest-graphql-source-only", "topogram"), "Nest GraphQL source-only confirmed proof");
-  assertConfirmedProofStatus(path.join(workspaceRoot, "..", "trials", "nextjs-graphql-source-only", "topogram"), "Next.js GraphQL source-only confirmed proof");
-  assertConfirmedProofStatus(path.join(workspaceRoot, "..", "trials", "graphql-nexus-source-only", "topogram"), "GraphQL Nexus source-only confirmed proof");
+  assertConfirmedProofStatus(path.join(nestGraphqlTrialPath, "topogram"), "Nest GraphQL source-only confirmed proof");
+  assertConfirmedProofStatus(path.join(nextGraphqlTrialPath, "topogram"), "Next.js GraphQL source-only confirmed proof");
+  assertConfirmedProofStatus(path.join(nexusGraphqlTrialPath, "topogram"), "GraphQL Nexus source-only confirmed proof");
 
   const flutterImport = runWorkflow("import-app", flutterGoRestTrialPath, { from: "db,api,ui,workflows" });
   const flutterEntityIds = flutterImport.summary.candidates.db.entities.map((entity) => entity.id_hint);

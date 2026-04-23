@@ -1,0 +1,8 @@
+[
+  {
+    "kind": "prisma_schema",
+    "file": "engine/tests/fixtures/import/nextjs-graphql-source/prisma/schema.prisma",
+    "entity_count": 2,
+    "enum_count": 0
+  }
+]

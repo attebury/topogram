@@ -1,0 +1,7 @@
+[
+  {
+    "kind": "backend_only_project",
+    "file": "engine/tests/fixtures/import/nest-graphql-source/package.json",
+    "message": "No supported frontend stack detected in this workspace"
+  }
+]

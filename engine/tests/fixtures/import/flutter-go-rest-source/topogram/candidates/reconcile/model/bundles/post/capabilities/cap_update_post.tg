@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#updatePost
+capability cap_update_post {
+  name "Update Post"
+  description "Candidate capability imported from brownfield API evidence"
+
+  updates [entity_post]
+
+  input [shape_input_update_post]
+
+  status active
+}

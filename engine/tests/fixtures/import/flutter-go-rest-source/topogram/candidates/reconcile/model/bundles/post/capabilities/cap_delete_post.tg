@@ -1,0 +1,11 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#deletePost
+capability cap_delete_post {
+  name "Delete Post"
+  description "Candidate capability imported from brownfield API evidence"
+
+  deletes [entity_post]
+
+  status active
+}

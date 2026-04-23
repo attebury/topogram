@@ -256,7 +256,7 @@ When `maintained_seam_candidates` are present, treat them as conservative, revie
 - semantic overlap is the primary signal
 - path and output corroboration can raise confidence
 - ambiguous or weak evidence should produce no candidate rather than a speculative best guess
-- the current live proof bar is one real positive trial (`trials/supabase-express-api`) plus one real negative/no-guessing trial (`trials/eShopOnWeb`)
+- the current live proof bar is one real positive imported proof (`topogram-demo/examples/imported/supabase-express-api`) plus one real negative/no-guessing imported proof (`topogram-demo/examples/imported/eshoponweb`)
 
 `maintained_seam_review_summary` is the compact operator read for that inference:
 

@@ -1,0 +1,32 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "./generated"
+  importFileExtension = "ts"
+}
+
+generator pothos {
+  provider          = "prisma-pothos-types"
+  clientOutput      = "../prisma/generated/"
+  output            = "../lib/pothos-prisma-types.ts"
+  generateDatamodel = "true"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  email String  @unique
+  id    Int     @id @default(autoincrement())
+  name  String?
+  posts Post[]
+}
+
+model Post {
+  authorId  Int?
+  content   String?
+  id        Int     @id @default(autoincrement())
+  published Boolean @default(false)
+  title     String
+  author    User?   @relation(fields: [authorId], references: [id])
+}

@@ -1,0 +1,21 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: engine/tests/fixtures/import/nextjs-graphql-source/prisma/schema.prisma
+entity entity_post {
+  name "Post"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    authorId int optional
+    content string optional
+    id int required
+    published boolean required
+    title string required
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

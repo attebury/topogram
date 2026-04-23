@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "dotnet_model",
+    "file": "10.0/WebServices/TodoREST/TodoAPI/Models/TodoItem.cs",
+    "entity_id": "entity_todo-item"
+  },
+  {
+    "kind": "dotnet_model",
+    "file": "10.0/WebServices/TodoREST/TodoREST/Models/TodoItem.cs",
+    "entity_id": "entity_todo-item"
+  }
+]

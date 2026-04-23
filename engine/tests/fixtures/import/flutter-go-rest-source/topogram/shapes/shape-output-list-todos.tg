@@ -1,0 +1,10 @@
+shape shape_output_list_todos {
+  name "List Todos Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    todos string optional
+  }
+
+  status active
+}

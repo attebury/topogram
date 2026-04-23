@@ -1,0 +1,11 @@
+{
+  "app_shell": ["topbar", "sidebar", "dual_nav", "workspace", "wizard", "bottom_tabs", "split_view", "menu_bar"],
+  "navigation": ["primary", "secondary", "utility", "breadcrumbs", "tabs", "hidden_route", "default_route", "sitemap", "stack_navigation", "navigation_rail", "bottom_tabs", "segmented_control", "command_palette"],
+  "screen_kinds": ["list", "detail", "form", "dashboard", "job_status", "board", "calendar", "feed", "inbox", "settings", "wizard", "report", "analytics"],
+  "regions": ["hero", "toolbar", "filters", "search", "results", "summary", "metadata", "aside", "related", "activity", "comments", "timeline", "tabs", "bulk_actions", "footer_actions"],
+  "patterns": ["resource_table", "data_grid_view", "resource_cards", "detail_panel", "edit_form", "lookup_select", "action_bar", "status_badge", "summary_stats", "activity_feed", "comment_thread", "timeline_view", "board_view", "calendar_view", "settings_section", "wizard_stepper", "audit_log", "search_results", "empty_state_panel", "navigation_split_view", "inspector_pane", "multi_pane_workspace"],
+  "collection_presentations": ["table", "data_grid", "cards", "list", "board", "calendar", "gallery"],
+  "action_presentations": ["button", "menu_item", "split_button", "bulk_action", "modal", "drawer", "inline_confirm", "sheet", "bottom_sheet", "fab", "popover"],
+  "states": ["loading", "empty", "error", "unauthorized", "not_found", "success", "pull_to_refresh"],
+  "platform_patterns": ["bottom_tabs", "stack_navigation", "split_view", "master_detail", "navigation_rail", "fab", "sheet", "bottom_sheet", "pull_to_refresh", "segmented_control", "command_palette", "inspector_pane", "multi_pane_layout", "resizable_split", "menu_bar", "multi_window"]
+}

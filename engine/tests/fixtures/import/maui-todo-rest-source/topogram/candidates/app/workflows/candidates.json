@@ -1,0 +1,68 @@
+{
+  "workflows": [
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_todo-item",
+      "label": "Todo Item Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#GET /"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_todo-item",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_create_todo_item",
+        "cap_delete_todo_item",
+        "cap_list_todo_items",
+        "cap_update_todo_item"
+      ],
+      "documented": false
+    }
+  ],
+  "workflow_states": [],
+  "workflow_transitions": [
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_todo-item_cap_create_todo_item",
+      "label": "Create Todo Item",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#POST /"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_todo-item",
+      "entity_id": "entity_todo-item",
+      "capability_id": "cap_create_todo_item",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_todo-item_cap_delete_todo_item",
+      "label": "Delete Todo Item",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs#DELETE /{id}"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_todo-item",
+      "entity_id": "entity_todo-item",
+      "capability_id": "cap_delete_todo_item",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "deleted"
+    }
+  ]
+}

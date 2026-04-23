@@ -175,8 +175,8 @@ Those should be surfaced as impacts, patches, and review groups instead.
 - add projection patch planning as a stronger review surface
 - run more real brownfield trials outside the curated examples
 - harden maintained seam candidate inference with conservative scoring and trial-derived regression fixtures so import/adopt review stays precise on real brownfield structures
-- keep one positive live maintained-boundary trial proof (`supabase-express-api`) and one negative/no-guessing live proof (`eShopOnWeb`) green as the current alpha bar
-- keep one server-rendered UI flow proof (`eShopOnWeb` basket) and one mobile UI flow proof (`clean-architecture-swiftui` country) green as supporting regression evidence, not as launch-gating alpha scope by default
+- keep one positive imported maintained-boundary proof (`supabase-express-api`) and one negative/no-guessing imported proof (`eShopOnWeb`) green in `topogram-demo` as the current alpha bar
+- keep one server-rendered UI flow proof (`eShopOnWeb` basket) and one mobile UI flow proof (`clean-architecture-swiftui` country) green in `topogram-demo` as supporting regression evidence, not as launch-gating alpha scope by default
 
 ## Brownfield journey drafts
 

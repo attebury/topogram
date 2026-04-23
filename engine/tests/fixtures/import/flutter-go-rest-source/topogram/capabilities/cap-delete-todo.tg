@@ -1,0 +1,11 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#deleteTodo
+capability cap_delete_todo {
+  name "Delete Todo"
+  description "Candidate capability imported from brownfield API evidence"
+
+  deletes [entity_todo]
+
+  status active
+}

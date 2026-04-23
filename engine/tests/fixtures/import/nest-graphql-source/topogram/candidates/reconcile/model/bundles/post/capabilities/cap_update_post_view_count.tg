@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: engine/tests/fixtures/import/nest-graphql-source/src/resolvers.post.ts#Mutation.incrementPostViewCount
+capability cap_update_post_view_count {
+  name "Update Post View Count"
+  description "Candidate capability imported from brownfield API evidence"
+
+  updates [entity_post]
+
+  input [shape_input_update_post_view_count]
+  output [shape_output_update_post_view_count]
+
+  status active
+}

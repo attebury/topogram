@@ -1,0 +1,55 @@
+{
+  "entities": [
+    {
+      "kind": "entity",
+      "id_hint": "entity_todo-item",
+      "label": "Todo Item",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "10.0/WebServices/TodoREST/TodoAPI/Models/TodoItem.cs",
+        "10.0/WebServices/TodoREST/TodoREST/Models/TodoItem.cs"
+      ],
+      "track": "db",
+      "model_name": "TodoItem",
+      "fields": [
+        {
+          "name": "id",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "notes",
+          "field_type": "string",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "done",
+          "field_type": "boolean",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "relations": [],
+  "indexes": []
+}

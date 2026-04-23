@@ -1,0 +1,108 @@
+{
+  "api_vs_topogram": {
+    "capabilities_missing_in_topogram": [
+      "cap_get_post",
+      "cap_list_posts",
+      "cap_create_post",
+      "cap_update_post_view_count",
+      "cap_publish_post",
+      "cap_delete_post",
+      "cap_register_user",
+      "cap_list_users"
+    ],
+    "endpoints_without_matching_capabilities": [
+      {
+        "capability": "cap_get_post",
+        "method": "GET",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_list_posts",
+        "method": "GET",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_create_post",
+        "method": "POST",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_update_post_view_count",
+        "method": "POST",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_publish_post",
+        "method": "POST",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_delete_post",
+        "method": "POST",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_register_user",
+        "method": "POST",
+        "path": "/graphql"
+      },
+      {
+        "capability": "cap_list_users",
+        "method": "GET",
+        "path": "/graphql"
+      }
+    ],
+    "field_mismatches": [],
+    "topogram_capabilities_without_imported_endpoint_evidence": []
+  },
+  "bootstrapped_topogram_root": false,
+  "db_vs_topogram": {
+    "entities_missing_in_topogram": [
+      "user",
+      "post"
+    ],
+    "enum_value_mismatches": [],
+    "enums_missing_in_topogram": [],
+    "field_mismatches": []
+  },
+  "docs_vs_topogram": {
+    "missing_glossary_docs": [],
+    "missing_workflow_docs": [],
+    "scanned_terms_missing_in_glossary": []
+  },
+  "topogram_available": true,
+  "type": "gap_report",
+  "ui_vs_topogram": {
+    "routes_missing_in_topogram": [],
+    "screens_missing_in_topogram": []
+  },
+  "workflows_vs_topogram": {
+    "transitions_without_canonical_workflow_representation": [
+      {
+        "capability": "cap_create_post",
+        "to_state": "created",
+        "workflow": "workflow_post"
+      },
+      {
+        "capability": "cap_publish_post",
+        "to_state": "published",
+        "workflow": "workflow_post"
+      },
+      {
+        "capability": "cap_delete_post",
+        "to_state": "deleted",
+        "workflow": "workflow_post"
+      },
+      {
+        "capability": "cap_register_user",
+        "to_state": "registered",
+        "workflow": "workflow_user"
+      }
+    ],
+    "workflows_missing_in_topogram": [
+      "workflow_post",
+      "workflow_user"
+    ]
+  },
+  "workspace": "engine/tests/fixtures/import/nest-graphql-source"
+}

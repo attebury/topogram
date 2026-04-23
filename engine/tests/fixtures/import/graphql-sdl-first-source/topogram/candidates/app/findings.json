@@ -1,0 +1,29 @@
+{
+  "db": [
+    {
+      "kind": "prisma_schema",
+      "file": "orm/graphql-sdl-first/prisma/schema.prisma",
+      "entity_count": 2,
+      "enum_count": 0
+    }
+  ],
+  "api": [
+    {
+      "kind": "graphql_operations",
+      "files": [
+        "orm/graphql-sdl-first/src/schema.ts"
+      ],
+      "operation_count": 9
+    }
+  ],
+  "ui": [],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 2,
+      "workflow_doc_signals": [
+        "lifecycle-flow"
+      ]
+    }
+  ]
+}

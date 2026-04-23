@@ -1,0 +1,3406 @@
+{
+  "adopt_selector": null,
+  "adoption_plan_items": [
+    {
+      "bundle": "surface-app-color",
+      "confidence": null,
+      "item": "ui_app_color",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-app-font",
+      "confidence": null,
+      "item": "ui_app_font",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-app-image",
+      "confidence": null,
+      "item": "ui_app_image",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-attributed-link-text",
+      "confidence": null,
+      "item": "ui_attributed_link_text",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-browser",
+      "confidence": null,
+      "item": "ui_browser",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-browser",
+      "confidence": null,
+      "item": "ui_home",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-card-banner",
+      "confidence": null,
+      "item": "ui_card_banner",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-default-browser-onboarding",
+      "confidence": null,
+      "item": "ui_default_browser_onboarding",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-focus-widgets-entry",
+      "confidence": null,
+      "item": "ui_focus_widgets_entry",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-get-started-onboarding",
+      "confidence": null,
+      "item": "ui_get_started_onboarding",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-internal-crash-reporting-setting",
+      "confidence": null,
+      "item": "ui_internal_crash_reporting_setting",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-internal-setting",
+      "confidence": null,
+      "item": "ui_internal_setting",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-legacy-web",
+      "confidence": null,
+      "item": "ui_legacy_web",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-license-list",
+      "confidence": null,
+      "item": "ui_license_list",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-onboarding",
+      "confidence": null,
+      "item": "ui_onboarding",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-onboarding",
+      "confidence": null,
+      "item": "ui_tooltip",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-onboarding-instruction-label",
+      "confidence": null,
+      "item": "ui_onboarding_instruction_label",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-onboarding-preview",
+      "confidence": null,
+      "item": "ui_onboarding_preview",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-onboarding-search-widget",
+      "confidence": null,
+      "item": "ui_onboarding_search_widget",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-photon-action-sheet",
+      "confidence": null,
+      "item": "ui_photon_action_sheet",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-privacy-policy",
+      "confidence": null,
+      "item": "ui_privacy_policy",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-search-widget",
+      "confidence": null,
+      "item": "ui_search_widget",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_about",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_add_custom_domain",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_add_search_engine",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_autocomplete_custom_url",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_autocomplete_setting",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_safari_instruction",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_search_setting",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_setting",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_settings_content",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_siri_favorite",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_theme",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-settings",
+      "confidence": null,
+      "item": "ui_tracking_protection",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "applied"
+    },
+    {
+      "bundle": "surface-share-tracker",
+      "confidence": null,
+      "item": "ui_share_tracker",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-sheet-modal",
+      "confidence": null,
+      "item": "ui_sheet_modal",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-show-me-how-onboarding",
+      "confidence": null,
+      "item": "ui_show_me_how_onboarding",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-splash",
+      "confidence": null,
+      "item": "ui_splash",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-terms-of-service",
+      "confidence": null,
+      "item": "ui_terms_of_service",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-tip",
+      "confidence": null,
+      "item": "ui_tip",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    },
+    {
+      "bundle": "surface-tips-page",
+      "confidence": null,
+      "item": "ui_tips_page",
+      "kind": "ui",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "related_rules": [],
+      "related_workflows": [],
+      "status": "pending"
+    }
+  ],
+  "adoption_plan_path": "candidates/reconcile/adoption-plan.json",
+  "applied_items": [
+    "ui_about",
+    "ui_add_custom_domain",
+    "ui_add_search_engine",
+    "ui_autocomplete_custom_url",
+    "ui_autocomplete_setting",
+    "ui_browser",
+    "ui_home",
+    "ui_onboarding",
+    "ui_safari_instruction",
+    "ui_search_setting",
+    "ui_setting",
+    "ui_settings_content",
+    "ui_siri_favorite",
+    "ui_theme",
+    "ui_tooltip",
+    "ui_tracking_protection"
+  ],
+  "approved_items": [],
+  "approved_review_groups": [],
+  "blocked_items": [],
+  "bootstrapped_topogram_root": false,
+  "bundle_blockers": [
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-app-color",
+      "pending_items": [
+        "ui_app_color"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-app-font",
+      "pending_items": [
+        "ui_app_font"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-app-image",
+      "pending_items": [
+        "ui_app_image"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-attributed-link-text",
+      "pending_items": [
+        "ui_attributed_link_text"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_browser",
+        "ui_home"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-browser",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-card-banner",
+      "pending_items": [
+        "ui_card_banner"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-default-browser-onboarding",
+      "pending_items": [
+        "ui_default_browser_onboarding"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-focus-widgets-entry",
+      "pending_items": [
+        "ui_focus_widgets_entry"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-get-started-onboarding",
+      "pending_items": [
+        "ui_get_started_onboarding"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-internal-crash-reporting-setting",
+      "pending_items": [
+        "ui_internal_crash_reporting_setting"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-internal-setting",
+      "pending_items": [
+        "ui_internal_setting"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-legacy-web",
+      "pending_items": [
+        "ui_legacy_web"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-license-list",
+      "pending_items": [
+        "ui_license_list"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_onboarding",
+        "ui_tooltip"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-onboarding",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-onboarding-instruction-label",
+      "pending_items": [
+        "ui_onboarding_instruction_label"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-onboarding-preview",
+      "pending_items": [
+        "ui_onboarding_preview"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-onboarding-search-widget",
+      "pending_items": [
+        "ui_onboarding_search_widget"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-photon-action-sheet",
+      "pending_items": [
+        "ui_photon_action_sheet"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-privacy-policy",
+      "pending_items": [
+        "ui_privacy_policy"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-search-widget",
+      "pending_items": [
+        "ui_search_widget"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [
+        "ui_about",
+        "ui_add_custom_domain",
+        "ui_add_search_engine",
+        "ui_autocomplete_custom_url",
+        "ui_autocomplete_setting",
+        "ui_safari_instruction",
+        "ui_search_setting",
+        "ui_setting",
+        "ui_settings_content",
+        "ui_siri_favorite",
+        "ui_theme",
+        "ui_tracking_protection"
+      ],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-settings",
+      "pending_items": [],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-share-tracker",
+      "pending_items": [
+        "ui_share_tracker"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-sheet-modal",
+      "pending_items": [
+        "ui_sheet_modal"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-show-me-how-onboarding",
+      "pending_items": [
+        "ui_show_me_how_onboarding"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-splash",
+      "pending_items": [
+        "ui_splash"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-terms-of-service",
+      "pending_items": [
+        "ui_terms_of_service"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-tip",
+      "pending_items": [
+        "ui_tip"
+      ],
+      "skipped_items": []
+    },
+    {
+      "applied_items": [],
+      "approved_items": [],
+      "blocked_items": [],
+      "blocking_dependencies": [],
+      "bundle": "surface-tips-page",
+      "pending_items": [
+        "ui_tips_page"
+      ],
+      "skipped_items": []
+    }
+  ],
+  "bundle_priorities": [
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-app-color",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-app-font",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-app-image",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-attributed-link-text",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-card-banner",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-default-browser-onboarding",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-focus-widgets-entry",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-get-started-onboarding",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-internal-crash-reporting-setting",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-internal-setting",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-legacy-web",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-license-list",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-onboarding-instruction-label",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-onboarding-preview",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-onboarding-search-widget",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-photon-action-sheet",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-privacy-policy",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-search-widget",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-share-tracker",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-sheet-modal",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-show-me-how-onboarding",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-splash",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-terms-of-service",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-tip",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 0,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-tips-page",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 1,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 1,
+      "is_complete": false,
+      "next_review_groups": [],
+      "pending_items": 1,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": true,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 12,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-settings",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 12,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 12,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 2,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-browser",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 2,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 2,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    },
+    {
+      "applied_items": 2,
+      "approved_items": 0,
+      "blocked_items": 0,
+      "bundle": "surface-onboarding",
+      "evidence": {
+        "actors": 0,
+        "capabilities": 0,
+        "docs": 0,
+        "entities": 0,
+        "enums": 0,
+        "roles": 0,
+        "screens": 2,
+        "shapes": 0,
+        "workflows": 0
+      },
+      "evidence_score": 2,
+      "is_complete": true,
+      "next_review_groups": [],
+      "pending_items": 0,
+      "recommend_bundle_review_selector": null,
+      "recommend_from_plan": false,
+      "recommended_actor_role_actions": [],
+      "recommended_doc_drift_actions": [],
+      "recommended_doc_link_actions": [],
+      "recommended_doc_metadata_patch_actions": []
+    }
+  ],
+  "candidate_model_bundles": [
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_bottom-tabs-shell",
+      "label": "Bottom Tabs Shell",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "bottom-tabs-shell",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-app_color.md",
+          "item": "ui_app_color",
+          "source_path": "candidates/reconcile/model/bundles/surface-app-color/docs/reports/ui-app_color.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_app_color",
+      "label": "App Color",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "app_color"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "app_color"
+      ],
+      "shapes": [],
+      "slug": "surface-app-color",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-app_font.md",
+          "item": "ui_app_font",
+          "source_path": "candidates/reconcile/model/bundles/surface-app-font/docs/reports/ui-app_font.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_app_font",
+      "label": "App Font",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "app_font"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "app_font"
+      ],
+      "shapes": [],
+      "slug": "surface-app-font",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-app_image.md",
+          "item": "ui_app_image",
+          "source_path": "candidates/reconcile/model/bundles/surface-app-image/docs/reports/ui-app_image.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_app_image",
+      "label": "App Image",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "app_image"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "app_image"
+      ],
+      "shapes": [],
+      "slug": "surface-app-image",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-attributed_link_text.md",
+          "item": "ui_attributed_link_text",
+          "source_path": "candidates/reconcile/model/bundles/surface-attributed-link-text/docs/reports/ui-attributed_link_text.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_attributed_link_text",
+      "label": "Attributed Link Text",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "attributed_link_text"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "attributed_link_text"
+      ],
+      "shapes": [],
+      "slug": "surface-attributed-link-text",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-browser.md",
+          "item": "ui_browser",
+          "source_path": "candidates/reconcile/model/bundles/surface-browser/docs/reports/ui-browser.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-home.md",
+          "item": "ui_home",
+          "source_path": "candidates/reconcile/model/bundles/surface-browser/docs/reports/ui-home.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_browser",
+      "label": "Browser",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "browser",
+          "home"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "browser",
+        "home"
+      ],
+      "shapes": [],
+      "slug": "surface-browser",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-card_banner.md",
+          "item": "ui_card_banner",
+          "source_path": "candidates/reconcile/model/bundles/surface-card-banner/docs/reports/ui-card_banner.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_card_banner",
+      "label": "Card Banner",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "card_banner"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "card_banner"
+      ],
+      "shapes": [],
+      "slug": "surface-card-banner",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-default_browser_onboarding.md",
+          "item": "ui_default_browser_onboarding",
+          "source_path": "candidates/reconcile/model/bundles/surface-default-browser-onboarding/docs/reports/ui-default_browser_onboarding.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_default_browser_onboarding",
+      "label": "Default Browser Onboarding",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "default_browser_onboarding"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "default_browser_onboarding"
+      ],
+      "shapes": [],
+      "slug": "surface-default-browser-onboarding",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-focus_widgets_entry.md",
+          "item": "ui_focus_widgets_entry",
+          "source_path": "candidates/reconcile/model/bundles/surface-focus-widgets-entry/docs/reports/ui-focus_widgets_entry.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_focus_widgets_entry",
+      "label": "Focus Widgets Entry",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "focus_widgets_entry"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "focus_widgets_entry"
+      ],
+      "shapes": [],
+      "slug": "surface-focus-widgets-entry",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-get_started_onboarding.md",
+          "item": "ui_get_started_onboarding",
+          "source_path": "candidates/reconcile/model/bundles/surface-get-started-onboarding/docs/reports/ui-get_started_onboarding.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_get_started_onboarding",
+      "label": "Get Started Onboarding",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "get_started_onboarding"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "get_started_onboarding"
+      ],
+      "shapes": [],
+      "slug": "surface-get-started-onboarding",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-internal_crash_reporting_setting.md",
+          "item": "ui_internal_crash_reporting_setting",
+          "source_path": "candidates/reconcile/model/bundles/surface-internal-crash-reporting-setting/docs/reports/ui-internal_crash_reporting_setting.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_internal_crash_reporting_setting",
+      "label": "Internal Crash Reporting Setting",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "internal_crash_reporting_setting"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "internal_crash_reporting_setting"
+      ],
+      "shapes": [],
+      "slug": "surface-internal-crash-reporting-setting",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-internal_setting.md",
+          "item": "ui_internal_setting",
+          "source_path": "candidates/reconcile/model/bundles/surface-internal-setting/docs/reports/ui-internal_setting.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_internal_setting",
+      "label": "Internal Setting",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "internal_setting"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "internal_setting"
+      ],
+      "shapes": [],
+      "slug": "surface-internal-setting",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-legacy_web.md",
+          "item": "ui_legacy_web",
+          "source_path": "candidates/reconcile/model/bundles/surface-legacy-web/docs/reports/ui-legacy_web.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_legacy_web",
+      "label": "Legacy Web",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "legacy_web"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "legacy_web"
+      ],
+      "shapes": [],
+      "slug": "surface-legacy-web",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-license_list.md",
+          "item": "ui_license_list",
+          "source_path": "candidates/reconcile/model/bundles/surface-license-list/docs/reports/ui-license_list.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_license_list",
+      "label": "License List",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "license_list"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "license_list"
+      ],
+      "shapes": [],
+      "slug": "surface-license-list",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-onboarding.md",
+          "item": "ui_onboarding",
+          "source_path": "candidates/reconcile/model/bundles/surface-onboarding/docs/reports/ui-onboarding.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-tooltip.md",
+          "item": "ui_tooltip",
+          "source_path": "candidates/reconcile/model/bundles/surface-onboarding/docs/reports/ui-tooltip.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_onboarding",
+      "label": "Onboarding",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "onboarding",
+          "tooltip"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "onboarding",
+        "tooltip"
+      ],
+      "shapes": [],
+      "slug": "surface-onboarding",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-onboarding_instruction_label.md",
+          "item": "ui_onboarding_instruction_label",
+          "source_path": "candidates/reconcile/model/bundles/surface-onboarding-instruction-label/docs/reports/ui-onboarding_instruction_label.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_onboarding_instruction_label",
+      "label": "Onboarding Instruction Label",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "onboarding_instruction_label"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "onboarding_instruction_label"
+      ],
+      "shapes": [],
+      "slug": "surface-onboarding-instruction-label",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-onboarding_preview.md",
+          "item": "ui_onboarding_preview",
+          "source_path": "candidates/reconcile/model/bundles/surface-onboarding-preview/docs/reports/ui-onboarding_preview.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_onboarding_preview",
+      "label": "Onboarding Preview",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "onboarding_preview"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "onboarding_preview"
+      ],
+      "shapes": [],
+      "slug": "surface-onboarding-preview",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-onboarding_search_widget.md",
+          "item": "ui_onboarding_search_widget",
+          "source_path": "candidates/reconcile/model/bundles/surface-onboarding-search-widget/docs/reports/ui-onboarding_search_widget.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_onboarding_search_widget",
+      "label": "Onboarding Search Widget",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "onboarding_search_widget"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "onboarding_search_widget"
+      ],
+      "shapes": [],
+      "slug": "surface-onboarding-search-widget",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-photon_action_sheet.md",
+          "item": "ui_photon_action_sheet",
+          "source_path": "candidates/reconcile/model/bundles/surface-photon-action-sheet/docs/reports/ui-photon_action_sheet.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_photon_action_sheet",
+      "label": "Photon Action Sheet",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "photon_action_sheet"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "photon_action_sheet"
+      ],
+      "shapes": [],
+      "slug": "surface-photon-action-sheet",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-privacy_policy.md",
+          "item": "ui_privacy_policy",
+          "source_path": "candidates/reconcile/model/bundles/surface-privacy-policy/docs/reports/ui-privacy_policy.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_privacy_policy",
+      "label": "Privacy Policy",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "privacy_policy"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "privacy_policy"
+      ],
+      "shapes": [],
+      "slug": "surface-privacy-policy",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-search_widget.md",
+          "item": "ui_search_widget",
+          "source_path": "candidates/reconcile/model/bundles/surface-search-widget/docs/reports/ui-search_widget.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_search_widget",
+      "label": "Search Widget",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "search_widget"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "search_widget"
+      ],
+      "shapes": [],
+      "slug": "surface-search-widget",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-about.md",
+          "item": "ui_about",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-about.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-add_custom_domain.md",
+          "item": "ui_add_custom_domain",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-add_custom_domain.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-add_search_engine.md",
+          "item": "ui_add_search_engine",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-add_search_engine.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-autocomplete_custom_url.md",
+          "item": "ui_autocomplete_custom_url",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-autocomplete_custom_url.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-autocomplete_setting.md",
+          "item": "ui_autocomplete_setting",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-autocomplete_setting.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-safari_instruction.md",
+          "item": "ui_safari_instruction",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-safari_instruction.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-search_setting.md",
+          "item": "ui_search_setting",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-search_setting.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-setting.md",
+          "item": "ui_setting",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-setting.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-settings_content.md",
+          "item": "ui_settings_content",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-settings_content.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-siri_favorite.md",
+          "item": "ui_siri_favorite",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-siri_favorite.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-theme.md",
+          "item": "ui_theme",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-theme.md",
+          "target": null
+        },
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-tracking_protection.md",
+          "item": "ui_tracking_protection",
+          "source_path": "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-tracking_protection.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_settings",
+      "label": "Settings",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "about",
+          "add_custom_domain",
+          "add_search_engine",
+          "autocomplete_custom_url",
+          "autocomplete_setting",
+          "safari_instruction",
+          "search_setting",
+          "setting",
+          "settings_content",
+          "siri_favorite",
+          "theme",
+          "tracking_protection"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "about",
+        "add_custom_domain",
+        "add_search_engine",
+        "autocomplete_custom_url",
+        "autocomplete_setting",
+        "safari_instruction",
+        "search_setting",
+        "setting",
+        "settings_content",
+        "siri_favorite",
+        "theme",
+        "tracking_protection"
+      ],
+      "shapes": [],
+      "slug": "surface-settings",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-share_tracker.md",
+          "item": "ui_share_tracker",
+          "source_path": "candidates/reconcile/model/bundles/surface-share-tracker/docs/reports/ui-share_tracker.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_share_tracker",
+      "label": "Share Tracker",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "share_tracker"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "share_tracker"
+      ],
+      "shapes": [],
+      "slug": "surface-share-tracker",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-sheet_modal.md",
+          "item": "ui_sheet_modal",
+          "source_path": "candidates/reconcile/model/bundles/surface-sheet-modal/docs/reports/ui-sheet_modal.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_sheet_modal",
+      "label": "Sheet Modal",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "sheet_modal"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "sheet_modal"
+      ],
+      "shapes": [],
+      "slug": "surface-sheet-modal",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-show_me_how_onboarding.md",
+          "item": "ui_show_me_how_onboarding",
+          "source_path": "candidates/reconcile/model/bundles/surface-show-me-how-onboarding/docs/reports/ui-show_me_how_onboarding.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_show_me_how_onboarding",
+      "label": "Show Me How Onboarding",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "show_me_how_onboarding"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "show_me_how_onboarding"
+      ],
+      "shapes": [],
+      "slug": "surface-show-me-how-onboarding",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-splash.md",
+          "item": "ui_splash",
+          "source_path": "candidates/reconcile/model/bundles/surface-splash/docs/reports/ui-splash.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_splash",
+      "label": "Splash",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "splash"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "splash"
+      ],
+      "shapes": [],
+      "slug": "surface-splash",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-terms_of_service.md",
+          "item": "ui_terms_of_service",
+          "source_path": "candidates/reconcile/model/bundles/surface-terms-of-service/docs/reports/ui-terms_of_service.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_terms_of_service",
+      "label": "Terms Of Service",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "terms_of_service"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "terms_of_service"
+      ],
+      "shapes": [],
+      "slug": "surface-terms-of-service",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-tip.md",
+          "item": "ui_tip",
+          "source_path": "candidates/reconcile/model/bundles/surface-tip/docs/reports/ui-tip.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_tip",
+      "label": "Tip",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "tip"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "tip"
+      ],
+      "shapes": [],
+      "slug": "surface-tip",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [
+        {
+          "action": "promote_ui_report",
+          "canonical_rel_path": "docs/reports/ui-tips_page.md",
+          "item": "ui_tips_page",
+          "source_path": "candidates/reconcile/model/bundles/surface-tips-page/docs/reports/ui-tips_page.md",
+          "target": null
+        }
+      ],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "surface_tips_page",
+      "label": "Tips Page",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [
+          "tips_page"
+        ],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [
+        "tips_page"
+      ],
+      "shapes": [],
+      "slug": "surface-tips-page",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_swiftui-bottom-tab",
+      "label": "Swiftui Bottom Tab",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "swiftui-bottom-tab",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_swiftui-sheet",
+      "label": "Swiftui Sheet",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "swiftui-sheet",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_swiftui-stack-navigation",
+      "label": "Swiftui Stack Navigation",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "swiftui-stack-navigation",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_topbar-shell",
+      "label": "Topbar Shell",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "topbar-shell",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_uikit-navigation-shell",
+      "label": "Uikit Navigation Shell",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "uikit-navigation-shell",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    },
+    {
+      "actor_details": [],
+      "actors": [],
+      "adoption_plan": [],
+      "capabilities": [],
+      "doc_drift_summaries": [],
+      "doc_link_suggestions": [],
+      "doc_metadata_patches": [],
+      "docs": [],
+      "entities": [],
+      "enums": [],
+      "id": "entity_uikit-stack-navigation",
+      "label": "Uikit Stack Navigation",
+      "merge_hints": {
+        "action": "promote_as_candidate_concept",
+        "canonicalEntityTarget": null,
+        "promoteActors": [],
+        "promoteCapabilities": [],
+        "promoteDocs": [],
+        "promoteEnums": [],
+        "promoteRoles": [],
+        "promoteScreens": [],
+        "promoteShapes": [],
+        "promoteWorkflows": []
+      },
+      "projection_impacts": [],
+      "projection_patches": [],
+      "role_details": [],
+      "roles": [],
+      "screens": [],
+      "shapes": [],
+      "slug": "uikit-stack-navigation",
+      "ui_impacts": [],
+      "workflow_impacts": [],
+      "workflows": []
+    }
+  ],
+  "candidate_model_files": [
+    "candidates/reconcile/model/bundles/bottom-tabs-shell/README.md",
+    "candidates/reconcile/model/bundles/surface-app-color/README.md",
+    "candidates/reconcile/model/bundles/surface-app-color/docs/reports/ui-app_color.md",
+    "candidates/reconcile/model/bundles/surface-app-font/README.md",
+    "candidates/reconcile/model/bundles/surface-app-font/docs/reports/ui-app_font.md",
+    "candidates/reconcile/model/bundles/surface-app-image/README.md",
+    "candidates/reconcile/model/bundles/surface-app-image/docs/reports/ui-app_image.md",
+    "candidates/reconcile/model/bundles/surface-attributed-link-text/README.md",
+    "candidates/reconcile/model/bundles/surface-attributed-link-text/docs/reports/ui-attributed_link_text.md",
+    "candidates/reconcile/model/bundles/surface-browser/README.md",
+    "candidates/reconcile/model/bundles/surface-browser/docs/reports/ui-browser.md",
+    "candidates/reconcile/model/bundles/surface-browser/docs/reports/ui-home.md",
+    "candidates/reconcile/model/bundles/surface-card-banner/README.md",
+    "candidates/reconcile/model/bundles/surface-card-banner/docs/reports/ui-card_banner.md",
+    "candidates/reconcile/model/bundles/surface-default-browser-onboarding/README.md",
+    "candidates/reconcile/model/bundles/surface-default-browser-onboarding/docs/reports/ui-default_browser_onboarding.md",
+    "candidates/reconcile/model/bundles/surface-focus-widgets-entry/README.md",
+    "candidates/reconcile/model/bundles/surface-focus-widgets-entry/docs/reports/ui-focus_widgets_entry.md",
+    "candidates/reconcile/model/bundles/surface-get-started-onboarding/README.md",
+    "candidates/reconcile/model/bundles/surface-get-started-onboarding/docs/reports/ui-get_started_onboarding.md",
+    "candidates/reconcile/model/bundles/surface-internal-crash-reporting-setting/README.md",
+    "candidates/reconcile/model/bundles/surface-internal-crash-reporting-setting/docs/reports/ui-internal_crash_reporting_setting.md",
+    "candidates/reconcile/model/bundles/surface-internal-setting/README.md",
+    "candidates/reconcile/model/bundles/surface-internal-setting/docs/reports/ui-internal_setting.md",
+    "candidates/reconcile/model/bundles/surface-legacy-web/README.md",
+    "candidates/reconcile/model/bundles/surface-legacy-web/docs/reports/ui-legacy_web.md",
+    "candidates/reconcile/model/bundles/surface-license-list/README.md",
+    "candidates/reconcile/model/bundles/surface-license-list/docs/reports/ui-license_list.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-instruction-label/README.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-instruction-label/docs/reports/ui-onboarding_instruction_label.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-preview/README.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-preview/docs/reports/ui-onboarding_preview.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-search-widget/README.md",
+    "candidates/reconcile/model/bundles/surface-onboarding-search-widget/docs/reports/ui-onboarding_search_widget.md",
+    "candidates/reconcile/model/bundles/surface-onboarding/README.md",
+    "candidates/reconcile/model/bundles/surface-onboarding/docs/reports/ui-onboarding.md",
+    "candidates/reconcile/model/bundles/surface-onboarding/docs/reports/ui-tooltip.md",
+    "candidates/reconcile/model/bundles/surface-photon-action-sheet/README.md",
+    "candidates/reconcile/model/bundles/surface-photon-action-sheet/docs/reports/ui-photon_action_sheet.md",
+    "candidates/reconcile/model/bundles/surface-privacy-policy/README.md",
+    "candidates/reconcile/model/bundles/surface-privacy-policy/docs/reports/ui-privacy_policy.md",
+    "candidates/reconcile/model/bundles/surface-search-widget/README.md",
+    "candidates/reconcile/model/bundles/surface-search-widget/docs/reports/ui-search_widget.md",
+    "candidates/reconcile/model/bundles/surface-settings/README.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-about.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-add_custom_domain.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-add_search_engine.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-autocomplete_custom_url.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-autocomplete_setting.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-safari_instruction.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-search_setting.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-setting.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-settings_content.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-siri_favorite.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-theme.md",
+    "candidates/reconcile/model/bundles/surface-settings/docs/reports/ui-tracking_protection.md",
+    "candidates/reconcile/model/bundles/surface-share-tracker/README.md",
+    "candidates/reconcile/model/bundles/surface-share-tracker/docs/reports/ui-share_tracker.md",
+    "candidates/reconcile/model/bundles/surface-sheet-modal/README.md",
+    "candidates/reconcile/model/bundles/surface-sheet-modal/docs/reports/ui-sheet_modal.md",
+    "candidates/reconcile/model/bundles/surface-show-me-how-onboarding/README.md",
+    "candidates/reconcile/model/bundles/surface-show-me-how-onboarding/docs/reports/ui-show_me_how_onboarding.md",
+    "candidates/reconcile/model/bundles/surface-splash/README.md",
+    "candidates/reconcile/model/bundles/surface-splash/docs/reports/ui-splash.md",
+    "candidates/reconcile/model/bundles/surface-terms-of-service/README.md",
+    "candidates/reconcile/model/bundles/surface-terms-of-service/docs/reports/ui-terms_of_service.md",
+    "candidates/reconcile/model/bundles/surface-tip/README.md",
+    "candidates/reconcile/model/bundles/surface-tip/docs/reports/ui-tip.md",
+    "candidates/reconcile/model/bundles/surface-tips-page/README.md",
+    "candidates/reconcile/model/bundles/surface-tips-page/docs/reports/ui-tips_page.md",
+    "candidates/reconcile/model/bundles/swiftui-bottom-tab/README.md",
+    "candidates/reconcile/model/bundles/swiftui-sheet/README.md",
+    "candidates/reconcile/model/bundles/swiftui-stack-navigation/README.md",
+    "candidates/reconcile/model/bundles/topbar-shell/README.md",
+    "candidates/reconcile/model/bundles/uikit-navigation-shell/README.md",
+    "candidates/reconcile/model/bundles/uikit-stack-navigation/README.md"
+  ],
+  "projection_dependent_items": [],
+  "projection_review_groups": [],
+  "promoted": [],
+  "refreshed_canonical_files": [],
+  "skipped": [],
+  "skipped_items": [],
+  "suppressed_noise_bundles": [],
+  "type": "reconcile_report",
+  "ui_review_groups": [],
+  "workflow_review_groups": [],
+  "workspace": "engine/tests/fixtures/import/focus-ios-source/topogram",
+  "written_canonical_files": []
+}

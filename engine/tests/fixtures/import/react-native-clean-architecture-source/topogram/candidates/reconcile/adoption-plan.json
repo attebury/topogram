@@ -1,0 +1,214 @@
+{
+  "approved_review_groups": [
+    "workflow_review:post"
+  ],
+  "items": [
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/docs/reports/ui-post_detail.md",
+      "canonical_rel_path": "docs/reports/ui-post_detail.md",
+      "item": "ui_post_detail",
+      "kind": "ui",
+      "projection_impacts": [],
+      "reason": "Promote this imported UI review report into canonical Topogram docs.",
+      "source_path": "candidates/reconcile/model/bundles/post/docs/reports/ui-post_detail.md",
+      "status": "applied",
+      "suggested_action": "promote_ui_report",
+      "target": null,
+      "track": "ui",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/docs/reports/ui-post_list.md",
+      "canonical_rel_path": "docs/reports/ui-post_list.md",
+      "item": "ui_post_list",
+      "kind": "ui",
+      "projection_impacts": [],
+      "reason": "Promote this imported UI review report into canonical Topogram docs.",
+      "source_path": "candidates/reconcile/model/bundles/post/docs/reports/ui-post_list.md",
+      "status": "applied",
+      "suggested_action": "promote_ui_report",
+      "target": null,
+      "track": "ui",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/capabilities/cap-get-post.tg",
+      "canonical_rel_path": "capabilities/cap-get-post.tg",
+      "item": "cap_get_post",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "source_path": "candidates/reconcile/model/bundles/post/capabilities/cap_get_post.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/capabilities/cap-list-posts.tg",
+      "canonical_rel_path": "capabilities/cap-list-posts.tg",
+      "item": "cap_list_posts",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "source_path": "candidates/reconcile/model/bundles/post/capabilities/cap_list_posts.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:post",
+          "reason": "Workflow semantics for post need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "post",
+      "canonical_path": "topogram/decisions/decision-post.tg",
+      "canonical_rel_path": "decisions/decision-post.tg",
+      "item": "dec_post",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "source_path": "candidates/reconcile/model/bundles/post/decisions/dec_post.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_post"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for post need canonical review before promotion.",
+          "review_group_id": "workflow_review:post"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:post",
+          "reason": "Workflow semantics for post need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "post",
+      "canonical_path": "topogram/docs/workflows/workflow_post.md",
+      "canonical_rel_path": "docs/workflows/workflow_post.md",
+      "item": "workflow_post",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "source_path": "candidates/reconcile/model/bundles/post/docs/workflows/workflow_post.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_post"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for post need canonical review before promotion.",
+          "review_group_id": "workflow_review:post"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/entities/entity-post.tg",
+      "canonical_rel_path": "entities/entity-post.tg",
+      "item": "entity_post",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "source_path": "candidates/reconcile/model/bundles/post/entities/entity_post.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/shapes/shape-output-get-post.tg",
+      "canonical_rel_path": "shapes/shape-output-get-post.tg",
+      "item": "shape_output_get_post",
+      "kind": "shape",
+      "projection_impacts": [],
+      "reason": "Promote this imported shape into canonical Topogram.",
+      "source_path": "candidates/reconcile/model/bundles/post/shapes/shape_output_get_post.tg",
+      "status": "applied",
+      "suggested_action": "promote_shape",
+      "target": null,
+      "track": "shape",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "post",
+      "canonical_path": "topogram/shapes/shape-output-list-posts.tg",
+      "canonical_rel_path": "shapes/shape-output-list-posts.tg",
+      "item": "shape_output_list_posts",
+      "kind": "shape",
+      "projection_impacts": [],
+      "reason": "Promote this imported shape into canonical Topogram.",
+      "source_path": "candidates/reconcile/model/bundles/post/shapes/shape_output_list_posts.tg",
+      "status": "applied",
+      "suggested_action": "promote_shape",
+      "target": null,
+      "track": "shape",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    }
+  ],
+  "projection_review_groups": [],
+  "type": "reconcile_adoption_plan",
+  "ui_review_groups": [],
+  "workflow_review_groups": [
+    {
+      "id": "workflow_review:post",
+      "items": [
+        {
+          "bundle": "post",
+          "item": "dec_post",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "post",
+          "item": "workflow_post",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for post need canonical review before promotion."
+    }
+  ],
+  "workspace": "engine/tests/fixtures/import/react-native-clean-architecture-source/topogram"
+}

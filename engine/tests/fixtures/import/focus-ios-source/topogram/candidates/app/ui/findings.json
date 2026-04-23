@@ -1,0 +1,207 @@
+[
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/BrowserViewController.swift",
+    "screen_id": "browser"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/HomeViewController.swift",
+    "screen_id": "home"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Menu/Old/PhotonActionSheet.swift",
+    "screen_id": "photon_action_sheet"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Modules/WebView/LegacyWebViewController.swift",
+    "screen_id": "legacy_web"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Pro Tips/ShareTrackersViewController.swift",
+    "screen_id": "share_tracker"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Pro Tips/TipViewController.swift",
+    "screen_id": "tip"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Pro Tips/TipsPageViewController.swift",
+    "screen_id": "tips_page"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/AboutViewController.swift",
+    "screen_id": "about"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/AddCustomDomainViewController.swift",
+    "screen_id": "add_custom_domain"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/AddSearchEngineViewController.swift",
+    "screen_id": "add_search_engine"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/AutocompleteCustomUrlViewController.swift",
+    "screen_id": "autocomplete_custom_url"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/AutocompleteSettingViewController.swift",
+    "screen_id": "autocomplete_setting"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/SafariInstructionsViewController.swift",
+    "screen_id": "safari_instruction"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/SearchSettingsViewController.swift",
+    "screen_id": "search_setting"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/SettingsContentViewController.swift",
+    "screen_id": "settings_content"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Settings/Controller/SettingsViewController.swift",
+    "screen_id": "setting"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Siri/SiriFavoriteViewController.swift",
+    "screen_id": "siri_favorite"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Theme/ThemeViewController.swift",
+    "screen_id": "theme"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Tracking Protection/Presentation/SheetModalViewController.swift",
+    "screen_id": "sheet_modal"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/Tracking Protection/TrackingProtectionViewController.swift",
+    "screen_id": "tracking_protection"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/UIComponents/SplashViewController.swift",
+    "screen_id": "splash"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/OnboardingViewController.swift",
+    "screen_id": "onboarding"
+  },
+  {
+    "kind": "uikit_controller",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/Tooltip/TooltipViewController.swift",
+    "screen_id": "tooltip"
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/InternalSettings/InternalCrashReportingSettingsView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Blockzilla/InternalSettings/InternalSettingsView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/DesignSystem/Preview Files/AppColorsView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/DesignSystem/Preview Files/AppFontsView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/DesignSystem/Preview Files/AppImagesView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Licenses/LicenseListView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/Preview Files/OnboardingPreview.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/CardBannerView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/DefaultBrowserOnboardingView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/GetStartedOnboardingView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/OnboardingSearchWidgetView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/OnboardingView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/ShowMeHowOnboardingView.swift",
+    "screen_count": 2
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/TermsOfServiceView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/UI Components/AttributedLinkText.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/BlockzillaPackage/Sources/Onboarding/SwiftUI Onboarding/UI Components/WebView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Widgets/SearchWidgetView.swift",
+    "screen_count": 1
+  },
+  {
+    "kind": "swiftui_views",
+    "file": "engine/tests/fixtures/import/focus-ios-source/Widgets/Widgets.swift",
+    "screen_count": 1
+  }
+]

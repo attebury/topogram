@@ -358,7 +358,7 @@ This keeps maintained boundaries aligned with the broader Topogram import/adopt 
 - brownfield/import should infer candidate seam mappings on proposal surfaces and carry them through reconcile review and `import-plan`
 - those mappings should stay review-only and non-canonical until humans adopt them explicitly
 - the scorer should favor precision over recall and be locked against real brownfield-derived regression fixtures, not only toy cases
-- live proof now includes one positive brownfield trial case in `trials/supabase-express-api` alongside the negative/no-guessing eShopOnWeb case
+- live proof now includes one positive imported proof case in `topogram-demo/examples/imported/supabase-express-api` alongside the negative/no-guessing `eshoponweb` imported proof
 
 ## Non-goals
 

@@ -1,0 +1,632 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_comment",
+      "label": "Create Comment",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#createComment"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/comments"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "comment"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_comment",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_comment",
+      "label": "Delete Comment",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#deleteComment"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/comments/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_comment",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_comments",
+      "label": "List Comments",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#getComments"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/comments"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "post_id",
+          "required": false,
+          "type": null
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "comments"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_comment",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_post",
+      "label": "Create Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#createPost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/posts"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "post"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_post",
+      "label": "Update Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#updatePost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/posts/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "post"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_post",
+      "label": "Delete Post",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#deletePost"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/posts/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_posts",
+      "label": "List Posts",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#getUsers"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/posts"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "user_id",
+          "required": false,
+          "type": null
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "posts"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_post",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_todo",
+      "label": "Create Todo",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#createTodo"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/todos"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "todo"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_todo",
+      "label": "Update Todo",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#updateTodo"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/todos/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "todo"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_todo",
+      "label": "Delete Todo",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#deleteTodo"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/todos/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_todo",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_todos",
+      "label": "List Todos",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#getTodos"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/todos"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "user_id",
+          "required": false,
+          "type": null
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": null
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "todos"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_todo",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_user",
+      "label": "Create User",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#createUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/users"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "user"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_user",
+      "label": "Update User",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#updateUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/users/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "user"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_user",
+      "label": "Delete User",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#deleteUser"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/users/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": null
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_users",
+      "label": "List Users",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#getUsers"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/users"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "gender",
+          "required": false,
+          "type": null
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": null
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "users"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/comments",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#createComment"
+      ]
+    },
+    {
+      "path": "/comments/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#deleteComment"
+      ]
+    },
+    {
+      "path": "/comments",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/comment/data/datasources/comment_remote_data_source.dart#getComments"
+      ]
+    },
+    {
+      "path": "/posts",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#createPost"
+      ]
+    },
+    {
+      "path": "/posts/{id}",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#updatePost"
+      ]
+    },
+    {
+      "path": "/posts/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#deletePost"
+      ]
+    },
+    {
+      "path": "/posts",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/post/data/datasources/post_remote_data_source.dart#getUsers"
+      ]
+    },
+    {
+      "path": "/todos",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#createTodo"
+      ]
+    },
+    {
+      "path": "/todos/{id}",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#updateTodo"
+      ]
+    },
+    {
+      "path": "/todos/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#deleteTodo"
+      ]
+    },
+    {
+      "path": "/todos",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/todo/data/datasources/todo_remote_data_source.dart#getTodos"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#createUser"
+      ]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#updateUser"
+      ]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#deleteUser"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "#10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/data/datasources/user_remote_data_source.dart#getUsers"
+      ]
+    }
+  ],
+  "stacks": [
+    "flutter_dio"
+  ]
+}

@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: engine/tests/fixtures/import/nextjs-graphql-source/pages/api/graphql.ts#Mutation.signupUser
+capability cap_register_user {
+  name "Register User"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_user]
+
+  input [shape_input_register_user]
+  output [shape_output_register_user]
+
+  status active
+}

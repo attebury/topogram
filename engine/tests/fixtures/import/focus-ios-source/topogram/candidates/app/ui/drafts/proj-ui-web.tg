@@ -1,0 +1,91 @@
+projection proj_ui_web_imported_focus_ios {
+  name "Imported Web UI Draft"
+  description "Drafted from imported UI candidates. Review and adapt before adoption."
+
+  platform ui_web
+  realizes [
+    proj_ui_shared_imported_focus_ios,
+    // add capability ids
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen home path /
+    screen about path /about
+    screen add_custom_domain path /add-custom-domain
+    screen add_search_engine path /add-search-engine
+    screen app_color path /app-color
+    screen app_font path /app-font
+    screen app_image path /app-image
+    screen attributed_link_text path /attributed-link-text
+    screen autocomplete_custom_url path /autocomplete-custom-url
+    screen autocomplete_setting path /autocomplete-setting
+    screen browser path /browser
+    screen card_banner path /card-banner
+    screen default_browser_onboarding path /default-browser-onboarding
+    screen focus_widgets_entry path /focus-widgets-entry
+    screen get_started_onboarding path /get-started-onboarding
+    screen internal_crash_reporting_setting path /internal-crash-reporting-setting
+    screen internal_setting path /internal-setting
+    screen legacy_web path /legacy-web
+    screen license_list path /license-list
+    screen onboarding path /onboarding
+    screen onboarding_instruction_label path /onboarding-instruction-label
+    screen onboarding_preview path /onboarding-preview
+    screen onboarding_search_widget path /onboarding-search-widget
+    screen photon_action_sheet path /photon-action-sheet
+    screen privacy_policy path /privacy-policy
+    screen safari_instruction path /safari-instruction
+    screen search_setting path /search-setting
+    screen search_widget path /search-widget
+    screen setting path /setting
+    screen settings_content path /settings-content
+    screen share_tracker path /share-tracker
+    screen sheet_modal path /sheet-modal
+    screen show_me_how_onboarding path /show-me-how-onboarding
+    screen siri_favorite path /siri-favorite
+    screen splash path /splash
+    screen terms_of_service path /terms-of-service
+    screen theme path /theme
+    screen tip path /tip
+    screen tips_page path /tips-page
+    screen tooltip path /tooltip
+    screen tracking_protection path /tracking-protection
+  }
+
+  ui_web {
+    screen about present sheet
+    screen app_color shell topbar
+    screen app_color collection list
+    screen app_font collection list
+    screen app_image collection list
+    screen attributed_link_text collection list
+    screen card_banner collection list
+    screen default_browser_onboarding collection list
+    screen focus_widgets_entry collection list
+    screen get_started_onboarding collection list
+    screen internal_crash_reporting_setting collection list
+    screen internal_setting collection list
+    screen license_list collection list
+    screen onboarding_instruction_label collection list
+    screen onboarding_preview collection list
+    screen onboarding_search_widget collection list
+    screen privacy_policy collection list
+    screen search_widget collection list
+    screen show_me_how_onboarding collection list
+    screen siri_favorite present sheet
+    screen terms_of_service collection list
+    screen tip present sheet
+    screen tips_page present sheet
+    screen tooltip present sheet
+    screen tracking_protection present sheet
+  }
+
+  generator_defaults {
+    profile react
+    language typescript
+    styling css
+  }
+
+  status proposed
+}

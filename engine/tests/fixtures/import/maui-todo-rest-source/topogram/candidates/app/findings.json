@@ -1,0 +1,42 @@
+{
+  "db": [
+    {
+      "kind": "dotnet_model",
+      "file": "10.0/WebServices/TodoREST/TodoAPI/Models/TodoItem.cs",
+      "entity_id": "entity_todo-item"
+    },
+    {
+      "kind": "dotnet_model",
+      "file": "10.0/WebServices/TodoREST/TodoREST/Models/TodoItem.cs",
+      "entity_id": "entity_todo-item"
+    }
+  ],
+  "api": [
+    {
+      "kind": "aspnet_controller",
+      "file": "10.0/WebServices/TodoREST/TodoAPI/Controllers/TodoItemsController.cs",
+      "route_count": 4
+    }
+  ],
+  "ui": [
+    {
+      "kind": "maui_xaml_view",
+      "file": "10.0/WebServices/TodoREST/TodoREST/Views/TodoItemPage.xaml",
+      "screen_id": "todo_item"
+    },
+    {
+      "kind": "maui_xaml_view",
+      "file": "10.0/WebServices/TodoREST/TodoREST/Views/TodoListPage.xaml",
+      "screen_id": "todo_list"
+    }
+  ],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 1,
+      "workflow_doc_signals": [
+        "lifecycle-flow"
+      ]
+    }
+  ]
+}
