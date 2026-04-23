@@ -326,7 +326,7 @@ function run() {
   const aspnetCoreTrialPath = path.join(workspaceRoot, "..", "trials", "aspnetcore-realworld-example-app");
   const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
   const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");
-  const swiftUiTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-swiftui");
+  const swiftUiTrialPath = path.join(importFixturesRoot, "clean-architecture-swiftui-source");
   const uiKitTrialPath = path.join(importFixturesRoot, "focus-ios-source");
   const mauiTodoRestTrialPath = path.join(importFixturesRoot, "maui-todo-rest-source");
   const flutterGoRestTrialPath = path.join(importFixturesRoot, "flutter-go-rest-source");
@@ -3105,7 +3105,6 @@ export default function RegisterPage() {
   assertConfirmedProofStatus(path.join(jakartaEeTrialPath, "topogram"), "Jakarta EE confirmed proof");
   assertConfirmedProofStatus(path.join(aspnetCoreTrialPath, "topogram"), "ASP.NET Core confirmed proof");
   assertConfirmedProofStatus(path.join(pokedexComposeTrialPath, "topogram"), "Android confirmed proof");
-  assertConfirmedProofStatus(path.join(swiftUiTrialPath, "topogram"), "iOS confirmed proof");
   assertConfirmedProofStatus(path.join(mauiTodoRestTrialPath, "topogram"), "MAUI confirmed proof");
   assertConfirmedProofStatus(path.join(fastifyTrialPath, "topogram"), "Fastify confirmed proof");
   assertConfirmedProofStatus(path.join(flutterGoRestTrialPath, "topogram"), "Flutter confirmed proof");

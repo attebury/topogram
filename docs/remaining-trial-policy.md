@@ -14,7 +14,6 @@ The short version:
 
 These are the active imported proof targets whose public source of truth is now `topogram-demo`:
 
-- `trials/clean-architecture-swiftui`
 
 Why they still exist locally:
 
@@ -70,6 +69,12 @@ Policy:
 - the product repo keeps the smaller curated fixtures at `engine/tests/fixtures/import/rails-realworld-example-app-source` and `engine/tests/fixtures/import/django-realworld-example-app-source`
 - the public imported proof source of truth remains `topogram-demo/examples/imported/rails-realworld-example-app` and `topogram-demo/examples/imported/django-realworld-example-app`
 - the larger local `trials/rails-realworld-example-app` and `trials/django-realworld-example-app` copies should not be treated as required repo state anymore
+
+`clean-architecture-swiftui` now follows the same rule on the product side:
+
+- the product repo keeps the smaller curated fixture at `engine/tests/fixtures/import/clean-architecture-swiftui-source`
+- the public imported proof source of truth remains `topogram-demo/examples/imported/clean-architecture-swiftui`
+- the larger local `trials/clean-architecture-swiftui` copy should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 
