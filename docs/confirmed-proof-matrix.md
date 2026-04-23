@@ -1,50 +1,54 @@
-# Confirmed Proof Matrix
+# Confirmed Imported Proof Matrix
 
-This matrix tracks which brownfield stacks are fully closed proofs versus still-open baselines or partial proofs.
+This page is now the product-repo index for imported brownfield proof claims.
 
-## Closed Proofs
+The actual imported proof targets belong in the separate [topogram-demo](https://github.com/attebury/topogram-demo) repo. The product repo keeps only the claim contract, the active claim set, and the operating rules for staying honest about proof freshness.
 
-These trials currently have:
+Use these alongside:
+
+- [examples/imported/README.md](../examples/imported/README.md)
+- [topogram-demo-ops.md](./topogram-demo-ops.md)
+- [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported)
+
+## Active Imported Claims
+
+These are the imported proof targets that should stay evaluator-visible:
+
+- `supabase-express-api`
+- `eShopOnWeb`
+- `clean-architecture-swiftui`
+- `rails-realworld-example-app`
+- `django-realworld-example-app`
+
+Everything else should be treated as either archived, experimental, or migration-era corpus material until it is explicitly promoted.
+
+## Imported Proof Contract
+
+Every active imported proof target must publish:
 
 - real imported brownfield evidence
 - adopted canonical Topogram outputs
-- saved `adoption-status` with `Next Bundle: None`
-- no blocked adoption items
+- saved `adoption-status.json`
+- explicit proof status metadata
+- the Topogram commit used for the run
+- exact rerun commands
 
-- Rails: `./trials/rails-realworld-example-app`
-- Django: `./trials/django-realworld-example-app`
-- Prisma Next.js Auth Starter: `./trials/prisma-nextjs-auth-starter`
-- Supabase Express API: `./trials/supabase-express-api`
-- tRPC Next Prisma Starter: `./trials/trpc-examples-next-prisma-starter`
-- Prisma GraphQL SDL First: `./trials/prisma-examples/orm/graphql-sdl-first`
-- Prisma GraphQL Nexus: `./trials/prisma-examples/orm/graphql-nexus`
-- Nest GraphQL Source Only: `./trials/nest-graphql-source-only`
-- Next.js GraphQL Source Only: `./trials/nextjs-graphql-source-only`
-- GraphQL Nexus Source Only: `./trials/graphql-nexus-source-only`
-- ASP.NET Core: `./trials/aspnetcore-realworld-example-app`
-- Android: `./trials/pokedex-compose`
-- iOS: `./trials/clean-architecture-swiftui`
-- MAUI: `./trials/maui-samples/10.0/WebServices/TodoREST`
-- Fastify: `./trials/fastify-demo`
-- Flutter: `./trials/flutter_go_rest_app/#10 - Clean Architecture Version (RxDart + Provider)`
-- React Native: `./trials/react-native-clean-architecture`
-- RealWorld Backend Spring: `./trials/realworld-backend-spring`
-- Spring Boot RealWorld Example App: `./trials/spring-boot-realworld-example-app`
-- Clean Architecture Delivery Example: `./trials/clean-architecture-delivery-example`
-- RealWorld API Quarkus: `./trials/realworld-api-quarkus`
-- RealWorld Backend Micronaut: `./trials/realworld-backend-micronaut`
-- Jakarta EE REST Sample: `./trials/jakartaee-rest-sample`
+For a proof to count as `closed`, it must satisfy:
 
-## Partial Or Open Proofs
-
-There are currently no non-GraphQL app-stack proofs sitting in the partial/open bucket.
-## Current Regression Contract
-
-The cross-proof regression suite currently locks the closed-proof set above into a shared contract:
-
-- saved `adoption-status.json` exists
 - `next_bundle === null`
 - `blocked_item_count === 0`
 - `applied_item_count > 0`
 
-As more partial proofs are cleaned up, they should move into the closed-proof set and be added to the same regression contract.
+## Ops Rule
+
+Do not leave imported proofs in an ambiguous state.
+
+Each active imported target should be marked as one of:
+
+- `closed`
+- `partial`
+- `drifting`
+- `broken`
+- `archived`
+
+If a proof stops passing, update the status instead of letting the public claim silently drift.

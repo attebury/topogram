@@ -1,0 +1,33 @@
+{
+  "engine": "postgres",
+  "from": {
+    "snapshotPath": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram/tests/fixtures/migrations/proj_db_postgres.needs-revision-from.snapshot.json",
+    "tableCount": 3
+  },
+  "manual": [],
+  "manualInterventionRequired": false,
+  "operations": [
+    {
+      "after": null,
+      "before": "approved",
+      "enum": "article_status",
+      "type": "add_enum_value",
+      "value": "needs_revision"
+    },
+    {
+      "column": "revision_requested_at",
+      "table": "articles",
+      "type": "add_column"
+    }
+  ],
+  "projection": {
+    "id": "proj_db_postgres",
+    "name": "Content Approval Postgres DB",
+    "platform": "db_postgres"
+  },
+  "supported": true,
+  "to": {
+    "tableCount": 3
+  },
+  "type": "db_migration_plan"
+}

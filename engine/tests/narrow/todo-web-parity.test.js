@@ -7,7 +7,7 @@ import { resolveWorkspace } from "../../src/resolver.js";
 import { buildWebParityEvidence } from "../../src/proofs/web-parity.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
-const todoPath = path.join(repoRoot, "examples", "todo", "topogram");
+const todoPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
 
 test("todo web parity keeps react and sveltekit seams aligned", () => {
   const ast = parsePath(todoPath);

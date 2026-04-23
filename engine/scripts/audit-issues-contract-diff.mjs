@@ -9,10 +9,10 @@ import { auditServerContractModules, auditUiContractPair } from "../src/proofs/c
 const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const repoRoot = path.resolve(workspaceRoot, "..");
 
-const reactUiPath = path.join(repoRoot, "examples", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web.ui-web-contract.json");
-const svelteUiPath = path.join(repoRoot, "examples", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web_sveltekit.ui-web-contract.json");
-const honoServerPath = path.join(repoRoot, "examples", "issues", "topogram", "tests", "fixtures", "expected", "hono-server", "src", "lib", "topogram", "server-contract.ts");
-const expressServerPath = path.join(repoRoot, "examples", "issues", "topogram", "tests", "fixtures", "expected", "express-server", "src", "lib", "topogram", "server-contract.ts");
+const reactUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web.ui-web-contract.json");
+const svelteUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web_sveltekit.ui-web-contract.json");
+const honoServerPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "hono-server", "src", "lib", "topogram", "server-contract.ts");
+const expressServerPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "express-server", "src", "lib", "topogram", "server-contract.ts");
 
 const uiAudit = auditUiContractPair(
   JSON.parse(fs.readFileSync(reactUiPath, "utf8")),
@@ -26,7 +26,7 @@ const serverAudit = auditServerContractModules(
 console.log(
   stableStringify({
     type: "issues_contract_audit",
-    workspace: path.join(repoRoot, "examples", "issues", "topogram"),
+    workspace: path.join(repoRoot, "examples", "generated", "issues", "topogram"),
     seams: {
       ui_web_contract: {
         files: [reactUiPath, svelteUiPath],

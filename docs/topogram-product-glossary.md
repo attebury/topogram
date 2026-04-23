@@ -124,7 +124,7 @@ Maintained code may be edited by agents within explicit review boundaries, but i
 
 Examples:
 
-- `product/app/**`
+- `examples/maintained/proof-app/**`
 - hand-maintained presenters
 - route glue
 - adapters around emitted contracts

@@ -22,7 +22,7 @@ export const reactRouterUiExtractor = {
   detect(context) {
     const roots = [
       path.join(context.paths.workspaceRoot, "apps", "web"),
-      path.join(context.paths.workspaceRoot, "product", "app")
+      path.join(context.paths.workspaceRoot, "examples", "maintained", "proof-app")
     ];
     const count = roots.reduce((total, rootDir) => total + inferReactRoutes(rootDir, context.helpers).length, 0);
     return { score: count > 0 ? 70 : 0, reasons: count > 0 ? ["Found React Router UI routes"] : [] };
@@ -32,7 +32,7 @@ export const reactRouterUiExtractor = {
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };
     const roots = [
       path.join(context.paths.workspaceRoot, "apps", "web"),
-      path.join(context.paths.workspaceRoot, "product", "app")
+      path.join(context.paths.workspaceRoot, "examples", "maintained", "proof-app")
     ];
     for (const rootDir of roots) {
       const routes = inferReactRoutes(rootDir, context.helpers);

@@ -11,13 +11,13 @@ It is narrower than the full parity proof path. Its job is not to prove every ge
 The auditor reads emitted files on disk:
 
 - UI seam:
-  [examples/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
   and
-  [examples/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
 - Backend seam:
-  [examples/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts](../examples/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts)
+  [examples/generated/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts](../examples/generated/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts)
   and
-  [examples/issues/topogram/tests/fixtures/expected/express-server/src/lib/topogram/server-contract.ts](../examples/issues/topogram/tests/fixtures/expected/express-server/src/lib/topogram/server-contract.ts)
+  [examples/generated/issues/topogram/tests/fixtures/expected/express-server/src/lib/topogram/server-contract.ts](../examples/generated/issues/topogram/tests/fixtures/expected/express-server/src/lib/topogram/server-contract.ts)
 
 ## What To Run
 

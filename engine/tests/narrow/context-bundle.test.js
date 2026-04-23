@@ -6,7 +6,7 @@ import { parsePath } from "../../src/parser.js";
 import { generateWorkspace } from "../../src/generator.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const contentApprovalTopogramPath = path.join(repoRoot, "examples", "content-approval", "topogram");
+const contentApprovalTopogramPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
 
 test("context bundle api includes API-relevant surfaces only", () => {
   const parsed = parsePath(contentApprovalTopogramPath);
@@ -50,9 +50,9 @@ test("context bundle maintained-app exposes explicit proof boundaries", () => {
   assert.match(JSON.stringify(result.artifact.maintained_boundary.seams), /seam_maintained_presenter_structure/);
   assert.match(JSON.stringify(result.artifact.maintained_boundary.seams), /seam_example_web_reference_composition/);
   assert.match(JSON.stringify(result.artifact.maintained_boundary.seams), /seam_example_backend_reference_integration/);
-  assert.match(JSON.stringify(result.artifact.maintained_boundary), /product\/app\/src\/issues.js/);
-  assert.match(JSON.stringify(result.artifact.maintained_boundary), /examples\/content-approval\/implementation\/web\/reference.js/);
-  assert.match(JSON.stringify(result.artifact.maintained_boundary), /examples\/content-approval\/implementation\/backend\/reference.js/);
+  assert.match(JSON.stringify(result.artifact.maintained_boundary), /examples\/maintained\/proof-app\/src\/issues.js/);
+  assert.match(JSON.stringify(result.artifact.maintained_boundary), /examples\/generated\/content-approval\/implementation\/web\/reference.js/);
+  assert.match(JSON.stringify(result.artifact.maintained_boundary), /examples\/generated\/content-approval\/implementation\/backend\/reference.js/);
   assert.ok(Array.isArray(result.artifact.write_scope.safe_to_edit));
   assert.match(JSON.stringify(result.artifact.verification_targets.maintained_app_checks), /runtime-check/);
 });

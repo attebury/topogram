@@ -10,7 +10,7 @@ import { formatValidationErrors, validateWorkspace } from "../src/validator.js";
 
 const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const repoRoot = path.resolve(workspaceRoot, "..");
-const todoRoot = path.join(repoRoot, "examples", "todo");
+const todoRoot = path.join(repoRoot, "examples", "generated", "todo");
 const todoPath = path.join(todoRoot, "topogram");
 const expectedRoot = path.join(todoRoot, "topogram", "tests", "fixtures", "expected");
 const migrationsRoot = path.join(todoRoot, "topogram", "tests", "fixtures", "migrations");

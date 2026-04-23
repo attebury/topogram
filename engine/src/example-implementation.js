@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 import { EXAMPLE_IMPLEMENTATIONS } from "../../examples/registry.js";
 
 function normalizeRoot(root) {
@@ -6,7 +8,16 @@ function normalizeRoot(root) {
 
 export function getExampleImplementation(graph) {
   const root = normalizeRoot(graph?.root);
-  const matched = EXAMPLE_IMPLEMENTATIONS.find((implementation) => root.includes(implementation.exampleRoot));
+  const realRoot = (() => {
+    try {
+      return normalizeRoot(fs.realpathSync(graph?.root));
+    } catch {
+      return root;
+    }
+  })();
+  const matched = EXAMPLE_IMPLEMENTATIONS.find(
+    (implementation) => root.includes(implementation.exampleRoot) || realRoot.includes(implementation.exampleRoot)
+  );
   if (matched) {
     return matched;
   }

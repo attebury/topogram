@@ -49,8 +49,8 @@ Renderers should consume these contracts instead of rediscovering domain meaning
 
 The repo now uses three example shapes to pressure-test the architecture:
 
-- `examples/todo`: Postgres + SvelteKit reference app
-- `examples/issues`: multi-frontend proof with React and SvelteKit from one Topogram
-- `examples/content-approval`: workflow-heavy review domain
+- `examples/generated/todo`: Postgres + SvelteKit reference app
+- `examples/generated/issues`: multi-frontend proof with React and SvelteKit from one Topogram
+- `examples/generated/content-approval`: workflow-heavy review domain
 
 These examples are regression oracles. They are not part of the engine itself.

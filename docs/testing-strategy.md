@@ -54,7 +54,7 @@ Use resolved workspace outputs as a stable contract for meaning, not just syntax
 
 Current example:
 
-- `examples/todo/topogram/tests/fixtures/expected/todo.resolve.json`
+- `examples/generated/todo/topogram/tests/fixtures/expected/todo.resolve.json`
 
 This layer is especially important when parser, validator, or resolver logic changes. A model can still parse while meaning something different.
 
@@ -64,9 +64,9 @@ Use golden expected outputs for generated artifacts and bundles.
 
 Current examples include expected fixtures under:
 
-- `examples/todo/topogram/tests/fixtures/expected`
-- `examples/issues/topogram/tests/fixtures/expected`
-- `examples/content-approval/topogram/tests/fixtures/expected`
+- `examples/generated/todo/topogram/tests/fixtures/expected`
+- `examples/generated/issues/topogram/tests/fixtures/expected`
+- `examples/generated/content-approval/topogram/tests/fixtures/expected`
 
 These fixtures currently cover outputs such as:
 
@@ -88,9 +88,9 @@ Topogram expresses important checks as canonical `verification` definitions insi
 
 Current examples:
 
-- `examples/todo/topogram/verifications/verification-runtime-smoke.tg`
-- `examples/todo/topogram/verifications/verification-task-runtime-flow.tg`
-- `examples/todo/topogram/verifications/verification-create-task-policy.tg`
+- `examples/generated/todo/topogram/verifications/verification-runtime-smoke.tg`
+- `examples/generated/todo/topogram/verifications/verification-task-runtime-flow.tg`
+- `examples/generated/todo/topogram/verifications/verification-create-task-policy.tg`
 
 This is one of Topogram's strongest ideas.
 
@@ -157,9 +157,9 @@ Topogram should never rely on a single example as its only proof.
 
 Current proof examples:
 
-- `examples/todo`
-- `examples/issues`
-- `examples/content-approval`
+- `examples/generated/todo`
+- `examples/generated/issues`
+- `examples/generated/content-approval`
 
 These examples act as a compatibility and abstraction pressure matrix. They matter because a regression that does not break Todo may still break a different domain or target stack.
 
@@ -357,7 +357,7 @@ Short version:
 
 ### Product app changes
 
-Changes under `product/app` should get their own explicit verification path as the app becomes more central.
+Changes under `examples/maintained/proof-app` should get their own explicit verification path as the app becomes more central.
 
 Right now, generated examples have the strongest verification story in the repo. The hand-maintained product app should not quietly become the least protected surface.
 
@@ -374,7 +374,7 @@ Use three small layers instead of putting all logic into one long script:
 - one composed runtime gate
   - keep `runtime-check` as the entrypoint that runs the relevant scenario assertions together
 
-This separation matters because `product/app` is proving a different claim than generated examples.
+This separation matters because `examples/maintained/proof-app` is proving a different claim than generated examples.
 
 Generated example verification answers:
 
@@ -387,7 +387,7 @@ Maintained-app verification answers:
 - does the hand-maintained app still honor those emitted contracts and user-flow expectations?
 - do unsafe or ambiguous changes still stop at a human-decision boundary instead of silently auto-updating?
 
-When adding a new maintained proof under `product/app`, prefer this shape:
+When adding a new maintained proof under `examples/maintained/proof-app`, prefer this shape:
 
 1. choose one emitted artifact seam
 2. choose one maintained surface that mirrors it
@@ -400,7 +400,7 @@ Good maintained-proof seams include:
 - emitted UI contract surfaces
 - emitted canonical journey expectations
 
-Do not treat `product/app` as a second generated example.
+Do not treat `examples/maintained/proof-app` as a second generated example.
 
 It should remain hand-maintained code whose verification is driven by Topogram artifacts, not replaced by them.
 
@@ -537,7 +537,7 @@ Recommendation:
 
 ### 3. Product app coverage
 
-`product/app` is less protected than generated examples.
+`examples/maintained/proof-app` is less protected than generated examples.
 
 Recommendation:
 

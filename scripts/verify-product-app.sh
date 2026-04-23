@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-cd "$ROOT_DIR/product/app"
+cd "$ROOT_DIR/examples/maintained/proof-app"
 npm run compile-check
 npm run smoke
 npm run runtime-check

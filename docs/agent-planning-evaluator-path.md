@@ -37,6 +37,27 @@ Use an import-adopt fixture with staged reconcile artifacts:
 node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json
 ```
 
+If you want the shortest one-command local walkthrough, run:
+
+```bash
+bash ./scripts/run-brownfield-rehearsal.sh
+```
+
+That will build the staged fixture, print the staged workspace root, and run the canonical brownfield review loop.
+
+If you want to inspect the steps manually, start from:
+
+```bash
+node ./engine/src/cli.js query import-plan ./engine/tests/fixtures/import/incomplete-topogram/topogram
+node ./engine/src/cli.js query review-packet ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
+node ./engine/src/cli.js query proceed-decision ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
+```
+
+For this fixture, the important operator takeaway is:
+
+- `review-packet` should stay sourced from `import-plan`
+- `proceed-decision` should stay conservative and stop on the maintained no-go seams already in scope
+
 Then inspect the planning surfaces:
 
 ```bash
@@ -52,6 +73,7 @@ For the shortest evaluator-facing verification path, run:
 
 ```bash
 bash ./scripts/verify-agent-planning.sh
+bash ./scripts/verify-brownfield-rehearsal.sh
 ```
 
 ## What The Planning Surface Proves

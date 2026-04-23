@@ -1,0 +1,77 @@
+{
+  "mode": "maintained-app-edit",
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "explicit_boundary_required",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "preferred_context_artifacts": [
+    "context-bundle.maintained-app.json",
+    "maintained-boundary.json"
+  ],
+  "review_emphasis": [
+    "accepted_vs_guarded_vs_no_go",
+    "human_owned_seams",
+    "maintained_surface_boundaries"
+  ],
+  "summary": {
+    "focus": "Human-owned maintained code changes constrained by emitted Topogram artifacts",
+    "preferred_start": "context-bundle maintained-app"
+  },
+  "type": "context_task_mode",
+  "verification_targets": {
+    "generated_checks": [
+      "compile-check",
+      "runtime-check"
+    ],
+    "maintained_app_checks": [
+      "examples/maintained/proof-app/scripts/compile-check.mjs",
+      "examples/maintained/proof-app/scripts/smoke.mjs",
+      "examples/maintained/proof-app/scripts/runtime-check.mjs"
+    ],
+    "rationale": "Maintained-app bundle should point agents at both generated verification and maintained proof gates.",
+    "verification_ids": [
+      "ver_article_review_flow"
+    ]
+  },
+  "version": 1,
+  "write_scope": {
+    "generator_owned": [
+      "artifacts/**",
+      "apps/**"
+    ],
+    "human_owned_review_required": [
+      "examples/generated/content-approval/implementation/backend/reference.js",
+      "examples/generated/content-approval/implementation/web/reference.js",
+      "examples/maintained/proof-app/**",
+      "examples/maintained/proof-app/src/content-approval-change-guards.js",
+      "examples/maintained/proof-app/src/content-approval.js",
+      "examples/maintained/proof-app/src/issues.js",
+      "examples/maintained/proof-app/src/todo-change-guards.js"
+    ],
+    "out_of_bounds": [
+      "topogram/**"
+    ],
+    "safe_to_edit": [
+      "examples/generated/content-approval/implementation/backend/reference.js",
+      "examples/generated/content-approval/implementation/web/reference.js",
+      "examples/maintained/proof-app/src/content-approval-change-guards.js",
+      "examples/maintained/proof-app/src/content-approval.js",
+      "examples/maintained/proof-app/src/issues.js",
+      "examples/maintained/proof-app/src/todo-change-guards.js"
+    ]
+  }
+}

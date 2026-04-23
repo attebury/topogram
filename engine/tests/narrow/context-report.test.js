@@ -6,8 +6,8 @@ import { parsePath } from "../../src/parser.js";
 import { generateWorkspace } from "../../src/generator.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const contentApprovalTopogramPath = path.join(repoRoot, "examples", "content-approval", "topogram");
-const todoTopogramPath = path.join(repoRoot, "examples", "todo", "topogram");
+const contentApprovalTopogramPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
+const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
 
 test("context report measures slices and bundles against resolved graph size", () => {
   const parsed = parsePath(contentApprovalTopogramPath);

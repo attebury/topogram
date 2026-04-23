@@ -75,9 +75,9 @@ Review emphasis:
 
 Verification emphasis:
 
-- `product/app/scripts/compile-check.mjs`
-- `product/app/scripts/smoke.mjs`
-- `product/app/scripts/runtime-check.mjs`
+- `examples/maintained/proof-app/scripts/compile-check.mjs`
+- `examples/maintained/proof-app/scripts/smoke.mjs`
+- `examples/maintained/proof-app/scripts/runtime-check.mjs`
 
 ### 3. Import/adopt mode
 

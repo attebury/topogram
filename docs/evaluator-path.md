@@ -32,8 +32,8 @@ The intended answer is:
 
 Read:
 
-- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
-- [product/app/README.md](../product/app/README.md)
+- [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
+- [examples/maintained/proof-app/README.md](../examples/maintained/proof-app/README.md)
 
 The key question here is:
 
@@ -47,7 +47,7 @@ The current maintained-app proof is stronger than a single accepted example. It 
 
 Use this story as the clearest maintained-depth proof:
 
-- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
+- [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md)
 
 Before moving on, make one seam-aware check explicit:
 
@@ -58,9 +58,9 @@ Before moving on, make one seam-aware check explicit:
 
 The shortest live path is:
 
-1. `node ./engine/src/cli.js query maintained-boundary ./examples/content-approval/topogram`
-2. `node ./engine/src/cli.js query maintained-drift ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
-3. `node ./engine/src/cli.js query seam-check ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
+1. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+2. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+3. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 
 Presenter notes for this stop:
 
@@ -77,12 +77,12 @@ If you want the fuller objection-handling version of this stop, see [skeptical-e
 Read these together:
 
 - safe accepted change:
-  - [product/app/proof/issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
+  - [examples/maintained/proof-app/proof/issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
 - guarded/manual-decision change:
-  - [product/app/proof/content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
+  - [examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
 - clearly rejected or unsupported change:
-  - [product/app/proof/issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
-  - [product/app/proof/todo-project-owner-unsupported-change-story.md](../product/app/proof/todo-project-owner-unsupported-change-story.md)
+  - [examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
+  - [examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md](../examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md)
 
 The key question here is:
 
@@ -99,6 +99,7 @@ flowchart LR
 Read:
 
 - [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+- [topogram-demo-ops.md](./topogram-demo-ops.md)
 - [agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md)
 
 The key question here is:
@@ -111,6 +112,7 @@ The current brownfield/operator proof is also easier to explain now:
 - import/adopt surfaces carry conservative maintained seam-review summaries
 - `review-packet` and `proceed-decision` expose the recommended query family and compact operator loop
 - the shortest operator path is now visible in the artifact payloads themselves rather than only in surrounding docs
+- the active imported proof targets now live in [topogram-demo](https://github.com/attebury/topogram-demo), while this repo keeps only the product-side claim contract and ops boundary
 
 ## 5. Check verification and limits
 
@@ -140,9 +142,9 @@ The key questions here are:
 | Claim | Status | Best evidence |
 | --- | --- | --- |
 | Topogram can model, generate, and verify multiple example domains | Proven now | [README.md](../README.md), [testing-strategy.md](./testing-strategy.md) |
-| Topogram can recover structure from brownfield systems | Proven now | [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) |
-| Topogram can guide change in hand-maintained app surfaces | Proven now | [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md) |
-| Topogram can distinguish safe, guarded, and no-go change boundaries | Proven now | maintained-app proof stories under [product/app/proof](../product/app/proof) |
+| Topogram can recover structure from brownfield systems | Proven now | [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), [topogram-demo-ops.md](./topogram-demo-ops.md) |
+| Topogram can guide change in hand-maintained app surfaces | Proven now | [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) |
+| Topogram can distinguish safe, guarded, and no-go change boundaries | Proven now | maintained-app proof stories under [examples/maintained/proof-app/proof](../examples/maintained/proof-app/proof) |
 | Topogram is already proven across all domain shapes | Partially proven | current examples are meaningful but not exhaustive |
 | Topogram verification is fully independent of generated outputs | Partially proven | evaluator-facing maintained-app contract review exists, but deeper independence is still needed |
 | Topogram proves alpha-complete modeled auth with signed tokens, but not production auth readiness | Proven now | [auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md) |
@@ -153,20 +155,25 @@ The key questions here are:
 Use this short path for a live demo:
 
 1. Open [README.md](../README.md) and state the wedge in one sentence.
-2. Show [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md) as the “Topogram touches maintained code” proof.
-3. Show [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md) as the clearest “one semantic change, multiple maintained surfaces” proof.
+2. Show [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) as the “Topogram touches maintained code” proof.
+3. Show [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md) as the clearest “one semantic change, multiple maintained surfaces” proof.
 4. Show one seam-aware maintained query sequence:
    - `query maintained-boundary`
    - `query maintained-drift`
    - `query seam-check` or `query maintained-conformance`
 5. Show the three boundary categories:
-   - [issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
-   - [content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
-   - [issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
-6. Show [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) as the brownfield breadth proof.
+   - [issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
+   - [content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
+   - [issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
+6. Show [examples/imported/README.md](../examples/imported/README.md), [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), and [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported) as the brownfield proof boundary and active imported claim set.
 7. For import/adopt rehearsal, use:
+   - `bash ./scripts/run-brownfield-rehearsal.sh`
+   - or, if you want the manual steps:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
    - then `query import-plan` against the generated staged workspace
+   - then `query review-packet --mode import-adopt`
+   - then `query proceed-decision --mode import-adopt`
+   - on this fixture, expect the conservative stop because maintained no-go seams are already in scope
 8. For planning rehearsal, use:
    - `query next-action`
    - `query single-agent-plan`
@@ -175,4 +182,5 @@ Use this short path for a live demo:
    - `query multi-agent-plan --mode import-adopt`
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`
+   - and `bash ./scripts/verify-brownfield-rehearsal.sh`
 9. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.

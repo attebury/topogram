@@ -15,7 +15,7 @@ It is not yet a claim that broad backend/runtime generality is solved.
 
 The proof starts from one canonical model:
 
-- [examples/issues/topogram](../examples/issues/topogram)
+- [examples/generated/issues/topogram](../examples/generated/issues/topogram)
 
 That single package drives:
 
@@ -34,11 +34,11 @@ The current proof uses two backend targets for the same `issues` model:
 Relevant generated outputs:
 
 - Hono server fixture:
-  [examples/issues/topogram/tests/fixtures/expected/hono-server](../examples/issues/topogram/tests/fixtures/expected/hono-server)
+  [examples/generated/issues/topogram/tests/fixtures/expected/hono-server](../examples/generated/issues/topogram/tests/fixtures/expected/hono-server)
 - Express server fixture:
-  [examples/issues/topogram/tests/fixtures/expected/express-server](../examples/issues/topogram/tests/fixtures/expected/express-server)
+  [examples/generated/issues/topogram/tests/fixtures/expected/express-server](../examples/generated/issues/topogram/tests/fixtures/expected/express-server)
 - Shared emitted server contract:
-  [examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What Must Stay The Same
 

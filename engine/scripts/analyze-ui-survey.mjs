@@ -434,12 +434,12 @@ function buildCoverageMatrix(findings) {
     "engine/src/generator/apps/web/sveltekit.js"
   ]);
   const proofExampleText = repoTextAny([
-    "examples/todo/topogram/projections/proj-ui-shared.tg",
-    "examples/todo/topogram/projections/proj-ui-web.tg",
-    "examples/issues/topogram/projections/proj-ui-shared.tg",
-    "examples/issues/topogram/projections/proj-ui-web.tg",
-    "examples/content-approval/topogram/projections/proj-ui-shared.tg",
-    "examples/content-approval/topogram/projections/proj-ui-web.tg"
+    "examples/generated/todo/topogram/projections/proj-ui-shared.tg",
+    "examples/generated/todo/topogram/projections/proj-ui-web.tg",
+    "examples/generated/issues/topogram/projections/proj-ui-shared.tg",
+    "examples/generated/issues/topogram/projections/proj-ui-web.tg",
+    "examples/generated/content-approval/topogram/projections/proj-ui-shared.tg",
+    "examples/generated/content-approval/topogram/projections/proj-ui-web.tg"
   ]);
 
   const modeledByDsl = new Set([

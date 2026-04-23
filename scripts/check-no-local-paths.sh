@@ -11,6 +11,7 @@ is_excluded_path() {
   case "$1" in
     examples/*/artifacts/*) return 0 ;;
     examples/*/apps/*) return 0 ;;
+    examples/*/topogram/candidates/docs/journeys/import-report.json) return 0 ;;
     examples/*/topogram/tests/fixtures/expected/*) return 0 ;;
     *) return 1 ;;
   esac

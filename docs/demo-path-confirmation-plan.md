@@ -39,7 +39,7 @@ All variants should share one evidence spine. They should not become separate pr
 The canonical sequence should be:
 
 1. [README.md](../README.md) for the wedge
-2. [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md) for maintained-app proof
+2. [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) for maintained-app proof
 3. one seam-aware maintained query sequence showing boundary, drift, and seam interpretation
 4. one safe accepted change story
 5. one guarded/manual-decision story
@@ -138,7 +138,7 @@ Target time:
 
 Open:
 
-- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
 
 Say:
 
@@ -153,9 +153,9 @@ Target time:
 
 Run:
 
-1. `node ./engine/src/cli.js query maintained-boundary ./examples/content-approval/topogram`
-2. `node ./engine/src/cli.js query maintained-drift ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
-3. `node ./engine/src/cli.js query seam-check ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
+1. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+2. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+3. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 
 Call out:
 
@@ -171,9 +171,9 @@ Target time:
 
 Open:
 
-- [issues-ownership-visibility-story.md](../product/app/proof/issues-ownership-visibility-story.md)
-- [content-approval-workflow-decision-story.md](../product/app/proof/content-approval-workflow-decision-story.md)
-- [issues-ownership-visibility-drift-story.md](../product/app/proof/issues-ownership-visibility-drift-story.md)
+- [issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
+- [content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
+- [issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
 
 Say:
 

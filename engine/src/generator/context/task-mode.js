@@ -384,7 +384,7 @@ function diffReviewMode(graph, options = {}) {
     write_scope: {
       safe_to_edit: [],
       generator_owned: ["artifacts/**", "apps/**"],
-      human_owned_review_required: ["topogram/**", "product/app/**"],
+      human_owned_review_required: ["topogram/**", "examples/maintained/proof-app/**"],
       out_of_bounds: [".git/**", "node_modules/**"]
     },
     verification_targets: slice?.verification_targets || recommendedVerificationTargets(graph, [], {
@@ -431,7 +431,7 @@ function verificationMode(graph, options = {}) {
     write_scope: {
       safe_to_edit: [],
       generator_owned: ["artifacts/**", "apps/**"],
-      human_owned_review_required: maintainedFiles.length > 0 ? ["product/app/**"] : [],
+      human_owned_review_required: maintainedFiles.length > 0 ? ["examples/maintained/proof-app/**"] : [],
       out_of_bounds: [".git/**", "node_modules/**"]
     },
     verification_targets: verificationTargets,

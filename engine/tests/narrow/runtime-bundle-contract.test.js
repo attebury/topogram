@@ -7,7 +7,7 @@ import { generateCompileCheckPlan } from "../../src/generator/runtime/compile-ch
 import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "../../src/generator/runtime/smoke.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const todoTopogramPath = path.join(repoRoot, "examples", "todo", "topogram");
+const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
 
 function todoGraph() {
   const parsed = parsePath(todoTopogramPath);

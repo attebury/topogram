@@ -7,7 +7,7 @@ import { resolveWorkspace } from "../../src/resolver.js";
 import { buildIssuesParityEvidence } from "../../src/proofs/issues-parity.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
-const issuesPath = path.join(repoRoot, "examples", "issues", "topogram");
+const issuesPath = path.join(repoRoot, "examples", "generated", "issues", "topogram");
 
 test("issues parity proof keeps web and runtime seams aligned", () => {
   const ast = parsePath(issuesPath);

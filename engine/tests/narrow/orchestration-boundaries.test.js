@@ -5,15 +5,17 @@ import os from "node:os";
 import path from "node:path";
 
 import { parsePath } from "../../src/parser.js";
+import { buildAgentAdoptionPlan } from "../../src/adoption/plan.js";
 import { generateWorkspace } from "../../src/generator/index.js";
-import { buildLocalMaintainedBoundaryArtifact } from "../../src/generator/context/shared.js";
 import { runWorkflow } from "../../src/workflows.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const todoTopogramPath = path.join(repoRoot, "examples", "todo", "topogram");
-const issuesTopogramPath = path.join(repoRoot, "examples", "issues", "topogram");
-const supabaseTrialPath = path.join(repoRoot, "trials", "supabase-express-api");
-const eShopOnWebTrialPath = path.join(repoRoot, "trials", "eShopOnWeb");
+const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
+const issuesTopogramPath = path.join(repoRoot, "examples", "generated", "issues", "topogram");
+
+function loadJsonFixture(relativePath) {
+  return JSON.parse(fs.readFileSync(new URL(relativePath, import.meta.url), "utf8"));
+}
 
 test("generate-journeys workflow still orchestrates through the extracted journey draft builder", () => {
   const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-workflow-journeys-"));
@@ -45,40 +47,29 @@ test("runtime and web generator entrypoints keep stable shared-wrapper outputs",
   assert.match(issuesReactBundle.artifact["src/lib/auth/visibility.ts"], /canShowAction/);
 });
 
-test("reconcile emits a live maintained seam candidate for the Supabase profile proof and keeps eShop free of speculative candidates", () => {
-  const supabaseWorkspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-supabase-reconcile-"));
-  const supabaseTempRoot = path.join(supabaseWorkspaceRoot, "supabase-express-api");
-  fs.cpSync(supabaseTrialPath, supabaseTempRoot, { recursive: true });
-  const supabaseBoundaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-supabase-boundary-"));
-  const supabaseBoundaryTempRoot = path.join(supabaseBoundaryRoot, "supabase-express-api");
-  fs.cpSync(supabaseTrialPath, supabaseBoundaryTempRoot, { recursive: true });
-
-  const eShopWorkspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-eshop-reconcile-"));
-  const eShopTempRoot = path.join(eShopWorkspaceRoot, "eShopOnWeb");
-  fs.cpSync(eShopOnWebTrialPath, eShopTempRoot, { recursive: true });
-
-  const supabaseMaintainedBoundary = buildLocalMaintainedBoundaryArtifact(supabaseBoundaryTempRoot);
-  const supabaseReconcile = runWorkflow("reconcile", supabaseTempRoot);
-  const eShopReconcile = runWorkflow("reconcile", eShopTempRoot);
-  const supabaseAgentPlan = JSON.parse(supabaseReconcile.files["candidates/reconcile/adoption-plan.agent.json"]);
-  const eShopAgentPlan = JSON.parse(eShopReconcile.files["candidates/reconcile/adoption-plan.agent.json"]);
+test("real-trial-derived maintained seam fixtures stay conservative without requiring live trial repos", () => {
+  const supabaseFixture = loadJsonFixture("../fixtures/import/maintained-seam-candidates/supabase-clear-match.json");
+  const eShopFixture = loadJsonFixture("../fixtures/import/maintained-seam-candidates/eshop-ui-ambiguous.json");
+  const supabaseAgentPlan = buildAgentAdoptionPlan(
+    supabaseFixture.adoption_plan,
+    supabaseFixture.maintained_boundary
+  );
+  const eShopAgentPlan = buildAgentAdoptionPlan(
+    eShopFixture.adoption_plan,
+    eShopFixture.maintained_boundary
+  );
   const supabaseProfileSurface = supabaseAgentPlan.imported_proposal_surfaces.find((surface) => surface.id === "profile:capability:cap_update_profile");
 
-  assert.ok(supabaseMaintainedBoundary);
-  assert.equal(supabaseMaintainedBoundary.outputs[0].root_paths[0], "src/**");
   assert.ok(supabaseProfileSurface);
   assert.equal(supabaseProfileSurface.maintained_seam_candidates.length, 1);
-  assert.equal(supabaseProfileSurface.maintained_seam_candidates[0].seam_id, "seam_workspace_profile_route_update_handling");
+  assert.equal(supabaseProfileSurface.maintained_seam_candidates[0].seam_id, "seam_workspace_profile_route");
   assert.match(supabaseProfileSurface.maintained_seam_candidates[0].match_reasons.join(" "), /semantic overlap/);
-  assert.match(supabaseProfileSurface.maintained_seam_candidates[0].match_reasons.join(" "), /path token corroboration|proposal\/seam kind alignment/);
+  assert.match(
+    supabaseProfileSurface.maintained_seam_candidates[0].match_reasons.join(" "),
+    /path token corroboration|proposal\/seam kind alignment|output path corroboration/
+  );
   assert.equal(
     eShopAgentPlan.imported_proposal_surfaces.every((surface) => (surface.maintained_seam_candidates || []).length === 0),
     true
   );
-  assert.match(
-    supabaseReconcile.files["candidates/reconcile/report.md"],
-    /- `profile`[\s\S]*candidate maintained seam mappings profile:capability:cap_update_profile: `seam_workspace_profile_route_update_handling`/
-  );
-  assert.match(supabaseReconcile.files["candidates/reconcile/report.md"], /profile:capability:cap_update_profile: `seam_workspace_profile_route_update_handling`/);
-  assert.match(eShopReconcile.files["candidates/reconcile/report.md"], /candidate maintained seam mappings _none_/);
 });

@@ -11,12 +11,13 @@ Topogram reads `.tg` files, validates them, resolves them into a semantic graph,
 - [REALIZATION-CONTRACTS.md](./REALIZATION-CONTRACTS.md): frozen realization interfaces and invariants
 - [scripts/test.js](./scripts/test.js): dependency-free regression runner
 - [tests/fixtures/invalid](./tests/fixtures/invalid): engine-specific invalid model cases
-- [../examples/todo/topogram](../examples/todo/topogram): the current reference Topogram package
-- [../examples/todo/topogram/tests/fixtures](../examples/todo/topogram/tests/fixtures): Todo-specific expected outputs and migration snapshots
-- [../examples/todo/artifacts](../examples/todo/artifacts): generated contracts, docs, and runtime bundles for the Todo example
-- [../examples/todo/apps](../examples/todo/apps): runnable generated runtimes for the Todo example
-- [../examples/issues](../examples/issues): multi-frontend proof example
-- [../examples/content-approval](../examples/content-approval): workflow-heavy proof example
+- [../examples/generated/todo/topogram](../examples/generated/todo/topogram): the current reference Topogram package
+- [../examples/generated/todo/topogram/tests/fixtures](../examples/generated/todo/topogram/tests/fixtures): Todo-specific expected outputs and migration snapshots
+- [../examples/generated/todo/artifacts](../examples/generated/todo/artifacts): generated contracts, docs, and runtime bundles for the Todo example
+- [../examples/generated/todo/apps](../examples/generated/todo/apps): runnable generated runtimes for the Todo example
+- [../examples/generated/issues](../examples/generated/issues): multi-frontend proof example
+- [../examples/generated/content-approval](../examples/generated/content-approval): workflow-heavy proof example
+- [../examples/imported](../examples/imported): imported-proof bridge for the separate demo/proof repo
 
 ## Architecture
 
@@ -50,7 +51,7 @@ This keeps source-of-truth semantics separate from draft and generated surfaces,
 ## Working Agreement
 
 - Treat `engine/` as Topogram itself.
-- Treat `examples/todo/` as an example consumer of the engine.
+- Treat `examples/generated/todo/` as an example consumer of the engine.
 - Keep engine-specific invalid test cases under `engine/tests/fixtures/invalid`.
 - Keep Todo-specific fixtures with the Todo Topogram package.
 - Keep Todo artifacts and runnable apps alongside the Todo example, not inside `engine/`.
@@ -68,7 +69,10 @@ npm run generate:docs:write
 npm run generate:missing-journeys
 npm run generate:app-bundle
 npm test
+npm run test:proof-corpus
 ```
+
+`npm test` is the fast curated product-repo lane. `npm run test:proof-corpus` keeps the larger imported proof corpus available as an explicit proof-ops check while that work migrates out of the main repo.
 
 Useful brownfield / journey commands:
 
@@ -88,32 +92,32 @@ node ./src/cli.js reconcile /path/to/workspace --adopt from-plan --write
 Useful context-serving commands:
 
 ```bash
-node ./src/cli.js ../examples/content-approval/topogram --generate context-digest --write --out-dir ../examples/content-approval/artifacts/context-digest
-node ./src/cli.js ../examples/content-approval/topogram --generate context-slice --capability cap_request_article_revision
-node ./src/cli.js ../examples/content-approval/topogram --generate context-bundle --task maintained-app
-node ./src/cli.js ../examples/content-approval/topogram --generate context-diff --from-topogram ../examples/todo/topogram
-node ./src/cli.js ../examples/content-approval/topogram --generate context-report --from-topogram ../examples/todo/topogram
-node ./src/cli.js ../examples/content-approval/topogram --generate context-task-mode --mode maintained-app-edit
-node ./src/cli.js query slice ../examples/content-approval/topogram --capability cap_request_article_revision
-node ./src/cli.js query review-boundary ../examples/content-approval/topogram --capability cap_request_article_revision
-node ./src/cli.js query write-scope ../examples/content-approval/topogram --capability cap_request_article_revision
-node ./src/cli.js query verification-targets ../examples/content-approval/topogram --capability cap_request_article_revision
-node ./src/cli.js query change-plan ../examples/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/todo/topogram
-node ./src/cli.js query import-plan ../examples/content-approval/topogram
-node ./src/cli.js query risk-summary ../examples/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/todo/topogram
-node ./src/cli.js query canonical-writes ../examples/content-approval/topogram
-node ./src/cli.js query proceed-decision ../examples/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/todo/topogram
-node ./src/cli.js query review-packet ../examples/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/todo/topogram
-node ./src/cli.js query next-action ../examples/content-approval/topogram --mode import-adopt
-node ./src/cli.js query single-agent-plan ../examples/content-approval/topogram --mode import-adopt
-node ./src/cli.js query multi-agent-plan ../examples/content-approval/topogram --mode import-adopt
-node ./src/cli.js query work-packet ../examples/content-approval/topogram --mode import-adopt --lane auth_reviewer.article
-node ./src/cli.js query lane-status ../examples/content-approval/topogram --mode import-adopt
-node ./src/cli.js query handoff-status ../examples/content-approval/topogram --mode import-adopt
-node ./src/cli.js query auth-hints ../examples/content-approval/topogram
-node ./src/cli.js query auth-review-packet ../examples/content-approval/topogram --bundle article
-node ./src/cli.js query maintained-boundary ../examples/content-approval/topogram
-node ./src/cli.js query diff ../examples/content-approval/topogram --from-topogram ../examples/todo/topogram
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-digest --write --out-dir ../examples/generated/content-approval/artifacts/context-digest
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-slice --capability cap_request_article_revision
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-bundle --task maintained-app
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-diff --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-report --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js ../examples/generated/content-approval/topogram --generate context-task-mode --mode maintained-app-edit
+node ./src/cli.js query slice ../examples/generated/content-approval/topogram --capability cap_request_article_revision
+node ./src/cli.js query review-boundary ../examples/generated/content-approval/topogram --capability cap_request_article_revision
+node ./src/cli.js query write-scope ../examples/generated/content-approval/topogram --capability cap_request_article_revision
+node ./src/cli.js query verification-targets ../examples/generated/content-approval/topogram --capability cap_request_article_revision
+node ./src/cli.js query change-plan ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js query import-plan ../examples/generated/content-approval/topogram
+node ./src/cli.js query risk-summary ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js query canonical-writes ../examples/generated/content-approval/topogram
+node ./src/cli.js query proceed-decision ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js query review-packet ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
+node ./src/cli.js query next-action ../examples/generated/content-approval/topogram --mode import-adopt
+node ./src/cli.js query single-agent-plan ../examples/generated/content-approval/topogram --mode import-adopt
+node ./src/cli.js query multi-agent-plan ../examples/generated/content-approval/topogram --mode import-adopt
+node ./src/cli.js query work-packet ../examples/generated/content-approval/topogram --mode import-adopt --lane auth_reviewer.article
+node ./src/cli.js query lane-status ../examples/generated/content-approval/topogram --mode import-adopt
+node ./src/cli.js query handoff-status ../examples/generated/content-approval/topogram --mode import-adopt
+node ./src/cli.js query auth-hints ../examples/generated/content-approval/topogram
+node ./src/cli.js query auth-review-packet ../examples/generated/content-approval/topogram --bundle article
+node ./src/cli.js query maintained-boundary ../examples/generated/content-approval/topogram
+node ./src/cli.js query diff ../examples/generated/content-approval/topogram --from-topogram ../examples/generated/todo/topogram
 ```
 
 These targets are for agent-facing structured context, not a replacement for docs or runtime verification:
@@ -193,9 +197,9 @@ Examples may also provide proof-specific tokens such as:
 
 The current example proof matrix is:
 
-- `permission`: [../examples/issues](../examples/issues)
-- `ownership`: [../examples/issues](../examples/issues)
-- `claim`: [../examples/content-approval](../examples/content-approval)
+- `permission`: [../examples/generated/issues](../examples/generated/issues)
+- `ownership`: [../examples/generated/issues](../examples/generated/issues)
+- `claim`: [../examples/generated/content-approval](../examples/generated/content-approval)
 
 Generated web clients attach `PUBLIC_TOPOGRAM_AUTH_TOKEN` automatically on secured requests, and generated smoke/runtime-check bundles use `TOPOGRAM_AUTH_TOKEN` when present.
 

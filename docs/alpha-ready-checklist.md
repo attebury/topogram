@@ -16,7 +16,7 @@ It is not a roadmap. It is the shortest answer to:
 
 ## Proof Surfaces
 
-- [x] maintained-app proof is present and easy to navigate through [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+- [x] maintained-app proof is present and easy to navigate through [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
 - [x] safe, guarded, and no-go change stories are explicitly documented
 - [x] maintained-app proof now names the governed seam, output, emitted dependencies, and review class for the primary safe / guarded / no-go stories
 - [x] brownfield breadth is visible in [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
@@ -32,9 +32,9 @@ It is not a roadmap. It is the shortest answer to:
 
 Current closeout command set:
 
-- `node ./engine/src/cli.js query maintained-boundary ./examples/content-approval/topogram`
-- `node ./engine/src/cli.js query maintained-drift ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
-- `node ./engine/src/cli.js query seam-check ./examples/content-approval/topogram --from-topogram ./examples/todo/topogram`
+- `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+- `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+- `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
 - `node ./engine/src/cli.js query import-plan <staged_topogram_root>`
 

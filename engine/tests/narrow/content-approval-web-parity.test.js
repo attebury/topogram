@@ -7,7 +7,7 @@ import { resolveWorkspace } from "../../src/resolver.js";
 import { buildWebParityEvidence } from "../../src/proofs/web-parity.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
-const contentApprovalPath = path.join(repoRoot, "examples", "content-approval", "topogram");
+const contentApprovalPath = path.join(repoRoot, "examples", "generated", "content-approval", "topogram");
 
 test("content approval web parity keeps react and sveltekit seams aligned", () => {
   const ast = parsePath(contentApprovalPath);

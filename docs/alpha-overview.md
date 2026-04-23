@@ -34,8 +34,8 @@ That is the core alpha trust story:
 
 For the deeper maintained-app proof, see:
 
-- [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
-- [product/app/proof/issues-cross-surface-alignment-story.md](../product/app/proof/issues-cross-surface-alignment-story.md)
+- [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
+- [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md)
 
 ## 3. Why Brownfield Matters
 
@@ -56,6 +56,7 @@ For the fuller brownfield flow, see:
 
 - [docs/brownfield-import-roadmap.md](./brownfield-import-roadmap.md)
 - [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+- [docs/topogram-demo-ops.md](./topogram-demo-ops.md)
 
 ## 4. Current Boundary
 
@@ -81,6 +82,6 @@ For the current public claim boundary, see:
 If this overview feels credible, read these next:
 
 1. [docs/evaluator-path.md](./evaluator-path.md)
-2. [product/app/proof/edit-existing-app.md](../product/app/proof/edit-existing-app.md)
+2. [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
 3. [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
 4. [docs/proof-points-and-limits.md](./proof-points-and-limits.md)

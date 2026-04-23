@@ -10,6 +10,18 @@ import {
   valueAsArray
 } from "./validator.js";
 
+function groupBy(items, keyFn) {
+  const grouped = {};
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!Object.hasOwn(grouped, key)) {
+      grouped[key] = [];
+    }
+    grouped[key].push(item);
+  }
+  return grouped;
+}
+
 function resolveReference(registry, id) {
   return registry.get(id) || null;
 }
@@ -1704,7 +1716,7 @@ export function resolveWorkspace(workspaceAst) {
         return statement;
     }
   });
-  const byKind = Object.groupBy(enrichedStatements, (statement) => statement.kind);
+  const byKind = groupBy(enrichedStatements, (statement) => statement.kind);
   const finalStatements = enrichedStatements.map((statement) => {
     if (statement.kind !== "shape") {
       return statement;
@@ -1715,7 +1727,7 @@ export function resolveWorkspace(workspaceAst) {
       transformGraph: buildShapeTransformGraph(statement, byId)
     };
   });
-  const finalByKind = Object.groupBy(finalStatements, (statement) => statement.kind);
+  const finalByKind = groupBy(finalStatements, (statement) => statement.kind);
 
   return {
     ok: true,

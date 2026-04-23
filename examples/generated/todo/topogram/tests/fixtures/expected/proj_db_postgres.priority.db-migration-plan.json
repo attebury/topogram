@@ -1,0 +1,59 @@
+{
+  "engine": "postgres",
+  "from": {
+    "snapshotPath": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram/tests/fixtures/migrations/proj_db_postgres.priority-from.snapshot.json",
+    "tableCount": 3
+  },
+  "manual": [],
+  "manualInterventionRequired": false,
+  "operations": [
+    {
+      "enum": "task_priority",
+      "type": "create_enum",
+      "values": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "column": "owner_id",
+      "table": "projects",
+      "type": "add_column"
+    },
+    {
+      "fields": [
+        "owner_id",
+        "status"
+      ],
+      "table": "projects",
+      "type": "add_index"
+    },
+    {
+      "field": "owner_id",
+      "onDelete": "set_null",
+      "table": "projects",
+      "target": {
+        "field": "id",
+        "id": "entity_user",
+        "kind": "entity"
+      },
+      "type": "add_foreign_key"
+    },
+    {
+      "column": "priority",
+      "table": "tasks",
+      "type": "add_column"
+    }
+  ],
+  "projection": {
+    "id": "proj_db_postgres",
+    "name": "Todo Postgres DB",
+    "platform": "db_postgres"
+  },
+  "supported": true,
+  "to": {
+    "tableCount": 3
+  },
+  "type": "db_migration_plan"
+}

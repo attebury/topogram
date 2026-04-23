@@ -23,6 +23,17 @@ async function loadImplementations() {
     const implementation = await loadImplementation(entry.name);
     if (implementation) {
       implementations.push(implementation);
+      continue;
+    }
+    const nestedDir = path.join(examplesDir, entry.name);
+    for (const nestedEntry of fs.readdirSync(nestedDir, { withFileTypes: true })) {
+      if (!nestedEntry.isDirectory()) {
+        continue;
+      }
+      const nestedImplementation = await loadImplementation(path.join(entry.name, nestedEntry.name));
+      if (nestedImplementation) {
+        implementations.push(nestedImplementation);
+      }
     }
   }
   return implementations.sort((left, right) => String(left.exampleId).localeCompare(String(right.exampleId)));
