@@ -1,0 +1,19 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: service/src/main/resources/db/changelog/01-schema.xml
+entity entity_tbl-comment {
+  name "Tbl Comment"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id number optional
+    created_at timestamp_with_time_zone optional
+    article_id uuid optional
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

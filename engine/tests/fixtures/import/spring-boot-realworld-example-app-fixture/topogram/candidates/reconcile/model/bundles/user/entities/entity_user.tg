@@ -1,0 +1,23 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/main/resources/db/migration/V1__create_tables.sql
+entity entity_user {
+  name "User"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id varchar_255 required
+    username varchar_255 optional
+    password varchar_255 optional
+    email varchar_255 optional
+    bio text optional
+    image varchar_511 optional
+  }
+
+  keys {
+    primary [id]
+    unique [username, email]
+  }
+
+  status active
+}

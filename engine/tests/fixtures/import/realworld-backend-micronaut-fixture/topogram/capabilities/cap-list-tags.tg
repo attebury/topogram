@@ -1,0 +1,12 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: service-api/src/main/java/com/github/al/realworld/api/operation/TagOperations.java#GET /tags
+capability cap_list_tags {
+  name "List Tags"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_tag]
+  output [shape_output_list_tags]
+
+  status active
+}

@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/io/spring/api/ArticleApi.java#GET /articles/{slug}
+capability cap_get_article {
+  name "Get Article"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  reads [entity_article]
+
+  status active
+}

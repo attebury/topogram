@@ -1,0 +1,14 @@
+# imported confidence: medium
+# imported source_kind: migration
+# imported provenance: src/main/resources/db/migration/V1__create_tables.sql
+entity entity_article-tag {
+  name "Article Tag"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    article_id varchar_255 required
+    tag_id varchar_255 required
+  }
+
+  status active
+}

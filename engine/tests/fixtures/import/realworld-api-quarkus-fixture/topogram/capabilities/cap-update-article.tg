@@ -1,0 +1,15 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/org/example/realworldapi/application/web/resource/ArticlesResource.java#PUT /articles/{slug}
+capability cap_update_article {
+  name "Update Article"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  updates [entity_article]
+
+  input [shape_input_update_article]
+
+  status active
+}

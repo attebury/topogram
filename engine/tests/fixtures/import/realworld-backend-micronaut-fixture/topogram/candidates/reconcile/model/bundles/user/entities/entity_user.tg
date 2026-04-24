@@ -1,0 +1,22 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: service/src/main/resources/db/changelog/01-schema.xml
+entity entity_user {
+  name "User"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id uuid optional
+    username varchar_100 optional
+    email varchar_100 optional
+    password varchar_100 optional
+    bio varchar_200 optional
+    image varchar_200 optional
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

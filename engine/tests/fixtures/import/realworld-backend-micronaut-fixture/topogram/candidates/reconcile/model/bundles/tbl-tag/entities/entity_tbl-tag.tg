@@ -1,0 +1,18 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: service/src/main/resources/db/changelog/01-schema.xml
+entity entity_tbl-tag {
+  name "Tbl Tag"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id number optional
+    name varchar_200 optional
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

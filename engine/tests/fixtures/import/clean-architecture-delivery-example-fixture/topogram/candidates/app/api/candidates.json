@@ -1,0 +1,641 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_stores",
+      "label": "List Stores",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine/{id}/stores",
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Cousine/{id}/stores"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_store",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_cousines",
+      "label": "List Cousines",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Cousine"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_cousine",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_search_cousines",
+      "label": "Search Cousines",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine/search/{text}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Cousine/search/{text}"
+      },
+      "path_params": [
+        {
+          "name": "text",
+          "required": true,
+          "type": "String"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_cousine",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_customer",
+      "label": "Create Customer",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/Customer"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_customer",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_sign_in_account",
+      "label": "Sign In Account",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer/auth"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/Customer/auth"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [
+        "token"
+      ],
+      "auth_hint": "public",
+      "entity_id": "entity_account",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_order",
+      "label": "Create Order",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/Order"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_order",
+      "label": "Get Order",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#GET /Order/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Order/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_customer",
+      "label": "Get Customer",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#GET /Order/{id}/customer"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Order/{id}/customer"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_customer",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_order",
+      "label": "Delete Order",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#DELETE /Order/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/Order/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_pay_order",
+      "label": "Pay Order",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order/{id}/payment"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/Order/{id}/payment"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delivery_order",
+      "label": "Delivery Order",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order/{id}/delivery"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/Order/{id}/delivery"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "secured",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_products",
+      "label": "List Products",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product",
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}/products"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Product"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_product",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_product",
+      "label": "Get Product",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Product/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_product",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_search_products",
+      "label": "Search Products",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product/search/{text}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Product/search/{text}"
+      },
+      "path_params": [
+        {
+          "name": "text",
+          "required": true,
+          "type": "String"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_product",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_search_stores",
+      "label": "Search Stores",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/search/{text}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Store/search/{text}"
+      },
+      "path_params": [
+        {
+          "name": "text",
+          "required": true,
+          "type": "String"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_store",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_store",
+      "label": "Get Store",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/Store/{id}"
+      },
+      "path_params": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "Long"
+        }
+      ],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_store",
+      "actor_hints": []
+    }
+  ],
+  "routes": [
+    {
+      "path": "/Cousine/{id}/stores",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine/{id}/stores"
+      ]
+    },
+    {
+      "path": "/Cousine",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine"
+      ]
+    },
+    {
+      "path": "/Cousine/search/{text}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine/search/{text}"
+      ]
+    },
+    {
+      "path": "/Customer",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer"
+      ]
+    },
+    {
+      "path": "/Customer/auth",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer/auth"
+      ]
+    },
+    {
+      "path": "/Order",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order"
+      ]
+    },
+    {
+      "path": "/Order/{id}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#GET /Order/{id}"
+      ]
+    },
+    {
+      "path": "/Order/{id}/customer",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#GET /Order/{id}/customer"
+      ]
+    },
+    {
+      "path": "/Order/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#DELETE /Order/{id}"
+      ]
+    },
+    {
+      "path": "/Order/{id}/payment",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order/{id}/payment"
+      ]
+    },
+    {
+      "path": "/Order/{id}/delivery",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order/{id}/delivery"
+      ]
+    },
+    {
+      "path": "/Product",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product"
+      ]
+    },
+    {
+      "path": "/Product/{id}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product/{id}"
+      ]
+    },
+    {
+      "path": "/Product/search/{text}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product/search/{text}"
+      ]
+    },
+    {
+      "path": "/Store",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store"
+      ]
+    },
+    {
+      "path": "/Store/search/{text}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/search/{text}"
+      ]
+    },
+    {
+      "path": "/Store/{id}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}"
+      ]
+    },
+    {
+      "path": "/Store/{id}/products",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}/products"
+      ]
+    }
+  ],
+  "stacks": [
+    "spring"
+  ]
+}

@@ -1,0 +1,12 @@
+shape shape_input_update_article {
+  name "Update Article Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    currentUsername string optional
+    slug string optional
+    article string optional
+  }
+
+  status active
+}

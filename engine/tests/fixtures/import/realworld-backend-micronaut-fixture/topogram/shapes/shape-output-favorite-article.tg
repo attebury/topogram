@@ -1,0 +1,10 @@
+shape shape_output_favorite_article {
+  name "Favorite Article Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    article string optional
+  }
+
+  status active
+}

@@ -1,0 +1,11 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/example/interfaces/task/TaskResource.java#DELETE /tasks/{id}
+capability cap_delete_task {
+  name "Delete Task"
+  description "Candidate capability imported from brownfield API evidence"
+
+  deletes [entity_task]
+
+  status active
+}

@@ -1,0 +1,12 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer/auth
+capability cap_sign_in_account {
+  name "Sign In Account"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_account]
+  output [shape_output_sign_in_account]
+
+  status active
+}

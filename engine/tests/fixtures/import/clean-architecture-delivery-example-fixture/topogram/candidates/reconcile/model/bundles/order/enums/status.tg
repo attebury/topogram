@@ -1,0 +1,6 @@
+# imported confidence: medium
+# imported source_kind: schema
+# imported provenance: src/main/java/com/delivery/data/db/jpa/entities/OrderData.java
+enum status {
+  values []
+}

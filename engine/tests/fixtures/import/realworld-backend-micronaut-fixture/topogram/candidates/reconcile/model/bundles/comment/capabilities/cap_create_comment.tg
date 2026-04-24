@@ -1,0 +1,16 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#POST /articles/{slug}/comments
+capability cap_create_comment {
+  name "Create Comment"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  creates [entity_comment]
+
+  input [shape_input_create_comment]
+  output [shape_output_create_comment]
+
+  status active
+}

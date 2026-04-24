@@ -1,0 +1,33 @@
+{
+  "db": [
+    {
+      "kind": "liquibase_schema",
+      "file": "service/src/main/resources/db/changelog/changes/01-schema.xml",
+      "entity_count": 7,
+      "relation_count": 9
+    }
+  ],
+  "api": [
+    {
+      "kind": "spring_web",
+      "route_count": 19,
+      "files": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java",
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ProfileOperations.java",
+        "service-api/src/main/java/com/github/al/realworld/api/operation/TagOperations.java",
+        "service-api/src/main/java/com/github/al/realworld/api/operation/UserOperations.java"
+      ]
+    }
+  ],
+  "ui": [],
+  "workflows": [
+    {
+      "kind": "workflow_inference",
+      "workflow_count": 6,
+      "workflow_doc_signals": [
+        "review-workflow",
+        "lifecycle-flow"
+      ]
+    }
+  ]
+}

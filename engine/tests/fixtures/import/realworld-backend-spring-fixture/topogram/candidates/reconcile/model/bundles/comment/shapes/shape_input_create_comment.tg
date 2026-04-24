@@ -1,0 +1,11 @@
+shape shape_input_create_comment {
+  name "Create Comment Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    slug string optional
+    body string optional
+  }
+
+  status active
+}

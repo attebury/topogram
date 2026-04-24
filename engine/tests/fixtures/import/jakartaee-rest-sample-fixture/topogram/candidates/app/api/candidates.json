@@ -1,0 +1,230 @@
+{
+  "capabilities": [
+    {
+      "kind": "capability",
+      "id_hint": "cap_get_task",
+      "label": "Get Task",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#GET /tasks/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/tasks/{id}"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_task",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_task",
+      "label": "Update Task",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#PUT /tasks/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/tasks/{id}"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "name",
+        "description"
+      ],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_task",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_update_task_status",
+      "label": "Update Task Status",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#PUT /tasks/{id}/status"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "PUT",
+        "path": "/tasks/{id}/status"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "status"
+      ],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_task",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_delete_task",
+      "label": "Delete Task",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#DELETE /tasks/{id}"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "DELETE",
+        "path": "/tasks/{id}"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "unknown",
+      "entity_id": "entity_task",
+      "actor_hints": []
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_list_tasks",
+      "label": "List Tasks",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResources.java#GET /tasks"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "GET",
+        "path": "/tasks"
+      },
+      "path_params": [],
+      "query_params": [
+        {
+          "name": "q",
+          "required": false,
+          "type": "String"
+        },
+        {
+          "name": "status",
+          "required": false,
+          "type": "String"
+        }
+      ],
+      "header_params": [],
+      "input_fields": [],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_task",
+      "actor_hints": [
+        "anonymous"
+      ]
+    },
+    {
+      "kind": "capability",
+      "id_hint": "cap_create_task",
+      "label": "Create Task",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResources.java#POST /tasks"
+      ],
+      "track": "api",
+      "endpoint": {
+        "method": "POST",
+        "path": "/tasks"
+      },
+      "path_params": [],
+      "query_params": [],
+      "header_params": [],
+      "input_fields": [
+        "name",
+        "description"
+      ],
+      "output_fields": [],
+      "auth_hint": "public",
+      "entity_id": "entity_task",
+      "actor_hints": [
+        "anonymous"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/tasks/{id}",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#GET /tasks/{id}"
+      ]
+    },
+    {
+      "path": "/tasks/{id}",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#PUT /tasks/{id}"
+      ]
+    },
+    {
+      "path": "/tasks/{id}/status",
+      "method": "PUT",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#PUT /tasks/{id}/status"
+      ]
+    },
+    {
+      "path": "/tasks/{id}",
+      "method": "DELETE",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResource.java#DELETE /tasks/{id}"
+      ]
+    },
+    {
+      "path": "/tasks",
+      "method": "GET",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResources.java#GET /tasks"
+      ]
+    },
+    {
+      "path": "/tasks",
+      "method": "POST",
+      "confidence": "high",
+      "source_kind": "route_code",
+      "provenance": [
+        "src/main/java/com/example/interfaces/task/TaskResources.java#POST /tasks"
+      ]
+    }
+  ],
+  "stacks": [
+    "jaxrs"
+  ]
+}

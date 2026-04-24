@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#GET /Order/{id}/customer
+capability cap_get_customer {
+  name "Get Customer"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  reads [entity_customer]
+
+  status active
+}

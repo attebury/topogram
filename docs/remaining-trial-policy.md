@@ -32,12 +32,6 @@ These remain in `topogram` because the opt-in `npm run test:proof-corpus` lane s
 
 - `trials/trpc-examples-next-prisma-starter`
 - `trials/fastify-demo`
-- `trials/realworld-backend-spring`
-- `trials/spring-boot-realworld-example-app`
-- `trials/clean-architecture-delivery-example`
-- `trials/realworld-api-quarkus`
-- `trials/realworld-backend-micronaut`
-- `trials/jakartaee-rest-sample`
 - `trials/aspnetcore-realworld-example-app`
 
 Policy:
@@ -80,6 +74,24 @@ Policy:
 - the product repo keeps the smaller proof snapshot fixture at `engine/tests/fixtures/import/prisma-nextjs-auth-proof`
 - the optional corpus lane uses that extracted `topogram/` snapshot directly for confirmed-proof coverage
 - the larger local `trials/prisma-nextjs-auth-starter` copy should not be treated as required repo state anymore
+
+`spring-boot-realworld-example-app` now follows the standard source-plus-proof fixture rule:
+
+- the product repo keeps the extracted fixture at `engine/tests/fixtures/import/spring-boot-realworld-example-app-fixture`
+- the optional corpus lane uses that fixture for both import coverage and confirmed-proof coverage
+- the larger local `trials/spring-boot-realworld-example-app` copy should not be treated as required repo state anymore
+
+`realworld-backend-spring` and `clean-architecture-delivery-example` now follow the same standard source-plus-proof fixture rule:
+
+- the product repo keeps the extracted fixtures at `engine/tests/fixtures/import/realworld-backend-spring-fixture` and `engine/tests/fixtures/import/clean-architecture-delivery-example-fixture`
+- the optional corpus lane uses those fixtures for both import coverage and confirmed-proof coverage
+- the larger local `trials/realworld-backend-spring` and `trials/clean-architecture-delivery-example` copies should not be treated as required repo state anymore
+
+`realworld-api-quarkus`, `realworld-backend-micronaut`, and `jakartaee-rest-sample` now follow the same standard source-plus-proof fixture rule:
+
+- the product repo keeps the extracted fixtures at `engine/tests/fixtures/import/realworld-api-quarkus-fixture`, `engine/tests/fixtures/import/realworld-backend-micronaut-fixture`, and `engine/tests/fixtures/import/jakartaee-rest-sample-fixture`
+- the optional corpus lane uses those fixtures for both import coverage and confirmed-proof coverage
+- the larger local `trials/realworld-api-quarkus`, `trials/realworld-backend-micronaut`, and `trials/jakartaee-rest-sample` copies should not be treated as required repo state anymore
 
 ### 3. Removed or no-longer-needed corpus material
 

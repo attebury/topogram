@@ -1,0 +1,258 @@
+{
+  "workflows": [
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_article",
+      "label": "Article Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#GET /articles"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_article",
+      "actor_hints": [
+        "anonymous",
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_article",
+        "cap_delete_article",
+        "cap_favorite_article",
+        "cap_feed_article",
+        "cap_get_article",
+        "cap_list_articles",
+        "cap_unfavorite_article",
+        "cap_update_article"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_comment",
+      "label": "Comment Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#GET /articles/{slug}/comments",
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#GET /articles/{slug}/comments/{id}"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_comment",
+      "actor_hints": [
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_comment",
+        "cap_delete_comment",
+        "cap_list_comments"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_profile",
+      "label": "Profile Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ProfileOperations.java#GET /profiles/{username}"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_profile",
+      "actor_hints": [
+        "anonymous",
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_follow_profile",
+        "cap_get_profile",
+        "cap_unfollow_profile"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_tag",
+      "label": "Tag Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/TagOperations.java#GET /tags"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_tag",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_list_tags"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_account",
+      "label": "Account Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/UserOperations.java#POST /users/login"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_account",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_sign_in_account"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_user",
+      "label": "User Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/UserOperations.java#POST /users"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_user",
+      "actor_hints": [
+        "anonymous",
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_user",
+        "cap_get_user",
+        "cap_update_user"
+      ],
+      "documented": false
+    }
+  ],
+  "workflow_states": [],
+  "workflow_transitions": [
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_article_cap_create_article",
+      "label": "Create Article",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#POST /articles"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_article",
+      "entity_id": "entity_article",
+      "capability_id": "cap_create_article",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_article_cap_delete_article",
+      "label": "Delete Article",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#DELETE /articles/{slug}"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_article",
+      "entity_id": "entity_article",
+      "capability_id": "cap_delete_article",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "deleted"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_comment_cap_create_comment",
+      "label": "Create Comment",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#POST /articles/{slug}/comments"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_comment",
+      "entity_id": "entity_comment",
+      "capability_id": "cap_create_comment",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_comment_cap_delete_comment",
+      "label": "Delete Comment",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/ArticleOperations.java#DELETE /articles/{slug}/comments/{id}"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_comment",
+      "entity_id": "entity_comment",
+      "capability_id": "cap_delete_comment",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "deleted"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_account_cap_sign_in_account",
+      "label": "Sign In Account",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/UserOperations.java#POST /users/login"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_account",
+      "entity_id": "entity_account",
+      "capability_id": "cap_sign_in_account",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "authenticated"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_user_cap_create_user",
+      "label": "Create User",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "service-api/src/main/java/com/github/al/realworld/api/operation/UserOperations.java#POST /users"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_user",
+      "entity_id": "entity_user",
+      "capability_id": "cap_create_user",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "created"
+    }
+  ]
+}
