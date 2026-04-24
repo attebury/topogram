@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/routes/api/tasks/index.ts#DELETE /tasks/{id}
+# imported provenance: src/routes/api/tasks/index.ts#DELETE /tasks/{filename}/image
+capability cap_delete_task {
+  name "Delete Task"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  deletes [entity_task]
+
+  status active
+}

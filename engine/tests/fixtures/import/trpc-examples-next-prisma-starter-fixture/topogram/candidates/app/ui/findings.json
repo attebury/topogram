@@ -1,0 +1,10 @@
+[
+  {
+    "kind": "next_pages_routes",
+    "file": "src/pages",
+    "routes": [
+      "/",
+      "/post/:id"
+    ]
+  }
+]

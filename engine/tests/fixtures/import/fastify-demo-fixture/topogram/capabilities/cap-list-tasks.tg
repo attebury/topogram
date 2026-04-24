@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/routes/api/tasks/index.ts#GET /tasks
+capability cap_list_tasks {
+  name "List Tasks"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  reads [entity_task]
+  output [shape_output_list_tasks]
+
+  status active
+}

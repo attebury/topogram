@@ -1,0 +1,25 @@
+{
+  "bootstrapped_topogram_root": false,
+  "imported": {
+    "api": {
+      "capability_count": 3,
+      "route_count": 3
+    },
+    "db": {
+      "entity_count": 1,
+      "enum_count": 0,
+      "relation_count": 0
+    },
+    "ui": {
+      "route_count": 2,
+      "screen_count": 2
+    },
+    "workflows": {
+      "transition_count": 1,
+      "workflow_count": 1
+    }
+  },
+  "topogram_available": false,
+  "type": "gap_report",
+  "workspace": "engine/tests/fixtures/import/trpc-examples-next-prisma-starter-fixture"
+}

@@ -1,0 +1,18 @@
+# imported confidence: medium
+# imported source_kind: migration
+# imported provenance: migrations/004.do.roles.sql
+entity entity_role {
+  name "Role"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id int required
+    name varchar_255 required
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

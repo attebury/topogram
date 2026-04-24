@@ -1,0 +1,10 @@
+[
+  {
+    "kind": "workflow_inference",
+    "workflow_count": 4,
+    "workflow_doc_signals": [
+      "review-workflow",
+      "lifecycle-flow"
+    ]
+  }
+]
