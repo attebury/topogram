@@ -95,6 +95,7 @@
     "refresh:content-approval-example": "node ./scripts/refresh-content-approval-example.mjs",
     "generate:missing-journeys": "node ./scripts/generate-missing-journeys.mjs",
     "test:narrow": "node --test ./tests/narrow/*.test.js",
+    "test:proof-corpus:list": "node ./scripts/list-proof-corpus-fixtures.mjs",
     "test:proof-corpus": "node ./scripts/test.js",
     "test": "npm run test:narrow"
   }

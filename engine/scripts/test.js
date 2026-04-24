@@ -22,6 +22,7 @@ import { buildBackendParityEvidence } from "../src/proofs/backend-parity.js";
 import { buildIssuesParityEvidence } from "../src/proofs/issues-parity.js";
 import { buildWebParityEvidence } from "../src/proofs/web-parity.js";
 import { analyzeSurveyAtRoot } from "./analyze-ui-survey.mjs";
+import { resolveImportFixturePaths } from "./proof-corpus-fixtures.mjs";
 
 const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 
@@ -308,34 +309,36 @@ function run() {
   const invalidDbPath = path.join(workspaceRoot, "tests", "fixtures", "invalid", "db");
   const invalidDocsPath = path.join(workspaceRoot, "tests", "fixtures", "invalid", "docs");
   const importFixturesRoot = path.join(workspaceRoot, "tests", "fixtures", "import");
-  const prismaOpenApiPath = path.join(importFixturesRoot, "prisma-openapi");
-  const sqlOpenApiPath = path.join(importFixturesRoot, "sql-openapi");
-  const incompleteImportTopogramPath = path.join(importFixturesRoot, "incomplete-topogram", "topogram");
-  const prismaNextjsAuthProofPath = path.join(importFixturesRoot, "prisma-nextjs-auth-proof");
-  const routeFallbackPath = path.join(importFixturesRoot, "route-fallback");
-  const supabaseExpressTrialPath = path.join(importFixturesRoot, "supabase-express-api-source");
-  const trpcTrialPath = path.join(importFixturesRoot, "trpc-examples-next-prisma-starter-fixture");
-  const fastifyTrialPath = path.join(importFixturesRoot, "fastify-demo-fixture");
-  const railsTrialPath = path.join(importFixturesRoot, "rails-realworld-example-app-source");
-  const djangoTrialPath = path.join(importFixturesRoot, "django-realworld-example-app-source");
-  const springTrialPath = path.join(importFixturesRoot, "realworld-backend-spring-fixture");
-  const springBootRealworldTrialPath = path.join(importFixturesRoot, "spring-boot-realworld-example-app-fixture");
-  const cleanArchitectureDeliveryTrialPath = path.join(importFixturesRoot, "clean-architecture-delivery-example-fixture");
-  const quarkusTrialPath = path.join(importFixturesRoot, "realworld-api-quarkus-fixture");
-  const micronautTrialPath = path.join(importFixturesRoot, "realworld-backend-micronaut-fixture");
-  const jakartaEeTrialPath = path.join(importFixturesRoot, "jakartaee-rest-sample-fixture");
-  const aspnetCoreTrialPath = path.join(importFixturesRoot, "aspnetcore-realworld-example-app-fixture");
-  const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
-  const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");
-  const swiftUiTrialPath = path.join(importFixturesRoot, "clean-architecture-swiftui-source");
-  const uiKitTrialPath = path.join(importFixturesRoot, "focus-ios-source");
-  const mauiTodoRestTrialPath = path.join(importFixturesRoot, "maui-todo-rest-source");
-  const flutterGoRestTrialPath = path.join(importFixturesRoot, "flutter-go-rest-source");
-  const reactNativeTrialPath = path.join(importFixturesRoot, "react-native-clean-architecture-source");
-  const graphqlSdlTrialPath = path.join(importFixturesRoot, "graphql-sdl-first-source");
-  const nestGraphqlTrialPath = path.join(importFixturesRoot, "nest-graphql-source");
-  const nextGraphqlTrialPath = path.join(importFixturesRoot, "nextjs-graphql-source");
-  const nexusGraphqlTrialPath = path.join(importFixturesRoot, "graphql-nexus-source");
+  const {
+    prismaOpenApiPath,
+    sqlOpenApiPath,
+    incompleteImportTopogramPath,
+    prismaNextjsAuthProofPath,
+    routeFallbackPath,
+    supabaseExpressTrialPath,
+    trpcTrialPath,
+    fastifyTrialPath,
+    railsTrialPath,
+    djangoTrialPath,
+    springTrialPath,
+    springBootRealworldTrialPath,
+    cleanArchitectureDeliveryTrialPath,
+    quarkusTrialPath,
+    micronautTrialPath,
+    jakartaEeTrialPath,
+    aspnetCoreTrialPath,
+    eShopOnWebTrialPath,
+    pokedexComposeTrialPath,
+    swiftUiTrialPath,
+    uiKitTrialPath,
+    mauiTodoRestTrialPath,
+    flutterGoRestTrialPath,
+    reactNativeTrialPath,
+    graphqlSdlTrialPath,
+    nestGraphqlTrialPath,
+    nextGraphqlTrialPath,
+    nexusGraphqlTrialPath
+  } = resolveImportFixturePaths(workspaceRoot);
   const migrationsDir = path.join(todoRoot, "topogram", "tests", "fixtures", "migrations");
   const contentApprovalMigrationsDir = path.join(contentApprovalRoot, "topogram", "tests", "fixtures", "migrations");
   const expectedDir = path.join(todoRoot, "topogram", "tests", "fixtures", "expected");

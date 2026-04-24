@@ -146,7 +146,7 @@ Current auth support should be treated as alpha-complete and proof-oriented, not
 
 Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
 
-The remaining local `trials/` directories are migration-era product fixtures or temporary local mirrors, not the public source of truth for imported proof claims. See [docs/remaining-trial-policy.md](./docs/remaining-trial-policy.md).
+The old `trials/` tree has been retired from the product repo. Product-side importer regression now runs from curated fixtures under `engine/tests/fixtures/import`; see [docs/import-fixtures-inventory.md](./docs/import-fixtures-inventory.md) and [docs/remaining-trial-policy.md](./docs/remaining-trial-policy.md).
 
 ## FAQ
 

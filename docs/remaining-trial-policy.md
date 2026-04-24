@@ -99,6 +99,8 @@ Policy:
 
 The proof-corpus inputs now live under `engine/tests/fixtures/import`, and any future corpus additions should default to curated fixtures instead of reintroducing a top-level checked-in `trials/` directory.
 
+For the current curated fixture catalog, see [import-fixtures-inventory.md](./import-fixtures-inventory.md).
+
 ## Rules For New Trial Additions
 
 Do not add a new top-level `trials/<name>` directory unless at least one of these is true:

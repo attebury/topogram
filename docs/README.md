@@ -37,6 +37,7 @@ Current docs:
 - [Graphify Optional Evidence Integration Plan](./graphify-optional-evidence-plan.md)
 - [Topogram + Agentic Stack Integration Sketch](./topogram-agentic-stack-integration-sketch.md)
 - [Brownfield Import Roadmap](./brownfield-import-roadmap.md)
+- [Import Fixtures Inventory](./import-fixtures-inventory.md)
 - [Remaining Trial Policy](./remaining-trial-policy.md)
 - [Confirmed Proof Matrix](./confirmed-proof-matrix.md)
 - [Development Decisions](./development-decisions.md)
@@ -58,7 +59,7 @@ These docs focus on:
 - workflow and adoption planning
 - maintainer and Codex operating workflow
 - agent-queryable context and adoption surfaces
-- real-trial findings, remaining local trial policy, and next steps
+- curated import fixtures, remaining-trial migration policy, and archived real-trial findings
 
 Notable current adoption behavior:
 
