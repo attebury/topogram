@@ -1,0 +1,12 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: service-api/src/main/java/com/github/al/realworld/api/operation/ProfileOperations.java#GET /profiles/{username}
+capability cap_get_profile {
+  name "Get Profile"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_profile]
+  output [shape_output_get_profile]
+
+  status active
+}

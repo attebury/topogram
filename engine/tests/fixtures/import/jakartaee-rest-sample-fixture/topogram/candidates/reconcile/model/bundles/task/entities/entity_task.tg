@@ -1,0 +1,21 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/main/java/com/example/domain/task/Task.java
+entity entity_task {
+  name "Task"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id long required
+    name string optional
+    description string optional
+    created_date localdatetime optional
+    last_modified_date localdatetime optional
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

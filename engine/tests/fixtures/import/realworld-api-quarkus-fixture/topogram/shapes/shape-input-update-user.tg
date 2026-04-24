@@ -1,0 +1,13 @@
+shape shape_input_update_user {
+  name "Update User Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    username string optional
+    bio string optional
+    image string optional
+    email string optional
+  }
+
+  status active
+}

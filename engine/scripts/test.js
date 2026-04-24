@@ -321,9 +321,9 @@ function run() {
   const springTrialPath = path.join(importFixturesRoot, "realworld-backend-spring-fixture");
   const springBootRealworldTrialPath = path.join(importFixturesRoot, "spring-boot-realworld-example-app-fixture");
   const cleanArchitectureDeliveryTrialPath = path.join(importFixturesRoot, "clean-architecture-delivery-example-fixture");
-  const quarkusTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-api-quarkus");
-  const micronautTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-micronaut");
-  const jakartaEeTrialPath = path.join(workspaceRoot, "..", "trials", "jakartaee-rest-sample");
+  const quarkusTrialPath = path.join(importFixturesRoot, "realworld-api-quarkus-fixture");
+  const micronautTrialPath = path.join(importFixturesRoot, "realworld-backend-micronaut-fixture");
+  const jakartaEeTrialPath = path.join(importFixturesRoot, "jakartaee-rest-sample-fixture");
   const aspnetCoreTrialPath = path.join(workspaceRoot, "..", "trials", "aspnetcore-realworld-example-app");
   const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
   const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");

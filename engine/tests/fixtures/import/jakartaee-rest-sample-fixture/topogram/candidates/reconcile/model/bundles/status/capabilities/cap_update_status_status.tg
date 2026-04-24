@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/example/interfaces/task/TaskResource.java#PUT /status
+capability cap_update_status_status {
+  name "PUT /status"
+  description "Candidate capability imported from brownfield API evidence"
+
+  updates [entity_status]
+
+  input [shape_input_update_status_status]
+
+  status active
+}

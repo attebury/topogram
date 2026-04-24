@@ -1,0 +1,10 @@
+shape shape_input_update_task_status {
+  name "Update Task Status Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    status string optional
+  }
+
+  status active
+}

@@ -1,0 +1,13 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/org/example/realworldapi/application/web/resource/ArticlesResource.java#GET /articles/{slug}/comments
+capability cap_list_comments {
+  name "List Comments"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  reads [entity_comment]
+
+  status active
+}

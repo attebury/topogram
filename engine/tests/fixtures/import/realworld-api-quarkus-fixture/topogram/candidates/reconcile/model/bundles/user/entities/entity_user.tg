@@ -1,0 +1,17 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/main/java/org/example/realworldapi/infrastructure/repository/hibernate/entity/UserEntity.java
+entity entity_user {
+  name "User"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id uuid required
+  }
+
+  keys {
+    primary [id]
+  }
+
+  status active
+}

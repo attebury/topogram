@@ -1,0 +1,10 @@
+shape shape_input_create_user {
+  name "Create User Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    user string optional
+  }
+
+  status active
+}
