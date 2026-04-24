@@ -1,0 +1,20 @@
+[
+  {
+    "file": "README.md",
+    "relative_path": "README.md",
+    "term_candidates": [
+      "pnpm",
+      "prisma",
+      "trpc",
+      "code",
+      "project",
+      "runs",
+      "e2e",
+      "setup"
+    ],
+    "title": "Prisma + tRPC",
+    "workflow_signals": [
+      "lifecycle_flow"
+    ]
+  }
+]

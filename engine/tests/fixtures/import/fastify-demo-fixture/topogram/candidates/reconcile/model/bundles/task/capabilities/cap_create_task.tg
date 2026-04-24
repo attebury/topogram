@@ -1,0 +1,18 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/routes/api/tasks/index.ts#POST /tasks
+# imported provenance: src/routes/api/tasks/index.ts#POST /tasks/{id}/assign
+# imported provenance: src/routes/api/tasks/index.ts#POST /tasks/{id}/upload
+capability cap_create_task {
+  name "Create Task"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  creates [entity_task]
+
+  input [shape_input_create_task]
+  output [shape_output_create_task]
+
+  status active
+}

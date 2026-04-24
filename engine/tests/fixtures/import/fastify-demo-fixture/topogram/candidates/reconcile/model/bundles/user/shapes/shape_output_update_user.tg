@@ -1,0 +1,10 @@
+shape shape_output_update_user {
+  name "Update User Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    message string optional
+  }
+
+  status active
+}

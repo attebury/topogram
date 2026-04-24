@@ -314,8 +314,8 @@ function run() {
   const prismaNextjsAuthProofPath = path.join(importFixturesRoot, "prisma-nextjs-auth-proof");
   const routeFallbackPath = path.join(importFixturesRoot, "route-fallback");
   const supabaseExpressTrialPath = path.join(importFixturesRoot, "supabase-express-api-source");
-  const trpcTrialPath = path.join(workspaceRoot, "..", "trials", "trpc-examples-next-prisma-starter");
-  const fastifyTrialPath = path.join(workspaceRoot, "..", "trials", "fastify-demo");
+  const trpcTrialPath = path.join(importFixturesRoot, "trpc-examples-next-prisma-starter-fixture");
+  const fastifyTrialPath = path.join(importFixturesRoot, "fastify-demo-fixture");
   const railsTrialPath = path.join(importFixturesRoot, "rails-realworld-example-app-source");
   const djangoTrialPath = path.join(importFixturesRoot, "django-realworld-example-app-source");
   const springTrialPath = path.join(importFixturesRoot, "realworld-backend-spring-fixture");

@@ -1,0 +1,11 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/server/routers/post.ts#post.list
+capability cap_list_posts {
+  name "List Posts"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_post]
+
+  status active
+}

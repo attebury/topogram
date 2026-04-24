@@ -1,43 +1,22 @@
 # Remaining Trial Policy
 
-This page defines what the remaining local `trials/` directories in the product repo mean after the split to [topogram-demo](https://github.com/attebury/topogram-demo).
+This page records the completed migration away from checked-in local `trials/` directories in the product repo after the split to [topogram-demo](https://github.com/attebury/topogram-demo).
 
 The short version:
 
 - `topogram-demo` is the public home for imported proof claims
-- `topogram` should keep only the smallest local trial set still needed for product-side regression or migration-era proof ops
-- a local `trials/` directory is not automatically an active public claim
+- `topogram` now keeps proof-corpus inputs under `engine/tests/fixtures/import`
+- the product repo no longer treats a top-level `trials/` tree as required checked-in state
 
-## Current Categories
+## Completed Migration
 
-### 1. Imported proof mirrors that now belong conceptually to `topogram-demo`
-
-These are the active imported proof targets whose public source of truth is now `topogram-demo`:
-
-
-Why they still exist locally:
-
-- migration-era historical brownfield docs still reference them
-- the opt-in legacy corpus check in `engine/scripts/test.js` still reads some of them directly
+Imported proof mirrors now live publicly in `topogram-demo/examples/imported/*`, and product-side proof-corpus coverage now runs from curated fixtures under `engine/tests/fixtures/import`.
 
 Policy:
 
 - treat `topogram-demo/examples/imported/*` as the public proof source of truth
-- do not describe the local `trials/` copies as the public proof home
-- remove these local mirrors once product-repo scripts no longer need them
-
-### 2. Local legacy proof-corpus fixtures still used by the optional corpus check
-
-These remain in `topogram` because the opt-in `npm run test:proof-corpus` lane still uses them as realistic importer inputs:
-
-- `trials/trpc-examples-next-prisma-starter`
-- `trials/fastify-demo`
-
-Policy:
-
-- these are local regression assets, not public evaluator-facing proof claims
-- keep them only while they provide coverage that has not yet been extracted into curated fixtures
-- prefer extracting the smallest stable source fixture into `engine/tests/fixtures/import` and then deleting the larger local trial
+- treat `engine/tests/fixtures/import/*` as the product repo's regression fixture source of truth
+- do not reintroduce local `trials/` copies when a curated fixture or `topogram-demo` target already exists
 
 `pokedex-compose` is now the model for this extraction path:
 
@@ -98,6 +77,12 @@ Policy:
 - the optional corpus lane uses that fixture for both import coverage and confirmed-proof coverage
 - the larger local `trials/aspnetcore-realworld-example-app` copy should not be treated as required repo state anymore
 
+`trpc-examples-next-prisma-starter` and `fastify-demo` now follow the same standard source-plus-proof fixture rule:
+
+- the product repo keeps the extracted fixtures at `engine/tests/fixtures/import/trpc-examples-next-prisma-starter-fixture` and `engine/tests/fixtures/import/fastify-demo-fixture`
+- the optional corpus lane uses those fixtures for both import and confirmed-proof coverage, including verification import coverage for the tRPC example
+- the larger local `trials/trpc-examples-next-prisma-starter` and `trials/fastify-demo` copies should not be treated as required repo state anymore
+
 ### 3. Removed or no-longer-needed corpus material
 
 Large local corpora such as `ui-survey`, `maui-samples`, and `prisma-examples` have already been cut down or replaced with extracted fixtures.
@@ -107,6 +92,12 @@ Policy:
 - do not reintroduce large checked-in corpus trees just because a single subpath is useful
 - extract the smallest needed fixture instead
 - if a large upstream corpus is needed again, treat it as recloneable local data, not default checked-in repo content
+
+## Completed State
+
+`trials/` is no longer part of the required checked-in product repo layout.
+
+The proof-corpus inputs now live under `engine/tests/fixtures/import`, and any future corpus additions should default to curated fixtures instead of reintroducing a top-level checked-in `trials/` directory.
 
 ## Rules For New Trial Additions
 
@@ -120,12 +111,4 @@ Bias:
 
 - prefer `engine/tests/fixtures/import/*` for automated regression inputs
 - prefer `topogram-demo/examples/imported/*` for public imported proof claims
-- keep `trials/` as a shrinking migration-era compatibility layer, not as a growing corpus
-
-## Next Cleanup Steps
-
-The next reduction targets are:
-
-1. keep extracting the remaining local trial users in `engine/scripts/test.js` into curated fixtures where the source tree is small enough to carry cleanly
-2. remove local mirrors of the five active imported proof targets once the optional corpus lane no longer needs them
-3. move historical brownfield-trial docs toward `topogram-demo` links or archive framing so local `trials/` paths stop reading like the active public proof home
+- keep `trials/` out of the product repo rather than recreating it as a compatibility layer

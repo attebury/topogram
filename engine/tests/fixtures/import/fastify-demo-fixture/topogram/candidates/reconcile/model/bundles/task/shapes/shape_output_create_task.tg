@@ -1,0 +1,10 @@
+shape shape_output_create_task {
+  name "Create Task Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    id string optional
+  }
+
+  status active
+}

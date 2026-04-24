@@ -1,0 +1,84 @@
+{
+  "bootstrapped_topogram_root": false,
+  "candidate_docs": [
+    {
+      "confidence": "low",
+      "id": "application",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/application.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Application"
+    },
+    {
+      "confidence": "low",
+      "id": "database",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/database.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Database"
+    },
+    {
+      "confidence": "low",
+      "id": "review-workflow",
+      "kind": "workflow",
+      "path": "candidates/docs/workflows/review-workflow.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Review Workflow"
+    },
+    {
+      "confidence": "low",
+      "id": "lifecycle-flow",
+      "kind": "workflow",
+      "path": "candidates/docs/workflows/lifecycle-flow.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Lifecycle Flow"
+    }
+  ],
+  "findings": [
+    {
+      "file": "README.md",
+      "relative_path": "README.md",
+      "term_candidates": [
+        "database",
+        "fastify",
+        "application",
+        "demo",
+        "linting",
+        "standalone",
+        "start",
+        "create"
+      ],
+      "title": "Fastify Official Demo",
+      "workflow_signals": [
+        "review_workflow",
+        "lifecycle_flow"
+      ]
+    }
+  ],
+  "source_count": 1,
+  "sources": [
+    "README.md"
+  ],
+  "type": "scan_docs_report",
+  "workspace": "engine/tests/fixtures/import/fastify-demo-fixture/topogram"
+}
