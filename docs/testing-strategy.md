@@ -212,6 +212,19 @@ Best candidates:
 
 These tests should exist to improve failure localization, not to replace the golden and end-to-end layers.
 
+### Sidecar layer: curated import fixtures
+
+Topogram also keeps a curated import-fixture lane under `engine/tests/fixtures/import`.
+
+That lane exists so importer and brownfield-adoption regression coverage can stay realistic without keeping a large checked-in `trials/` corpus in the product repo.
+
+Use:
+
+- `npm run test:proof-corpus` for the optional broad proof-corpus lane
+- `npm run test:proof-corpus:list` to inspect the shared fixture catalog and understand what that lane is actually using
+
+The fixture inventory and governance rules live in [import-fixtures-inventory.md](./import-fixtures-inventory.md).
+
 ## What To Run For Each Kind Of Change
 
 ### Parser, validator, or resolver changes
