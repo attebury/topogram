@@ -324,7 +324,7 @@ function run() {
   const quarkusTrialPath = path.join(importFixturesRoot, "realworld-api-quarkus-fixture");
   const micronautTrialPath = path.join(importFixturesRoot, "realworld-backend-micronaut-fixture");
   const jakartaEeTrialPath = path.join(importFixturesRoot, "jakartaee-rest-sample-fixture");
-  const aspnetCoreTrialPath = path.join(workspaceRoot, "..", "trials", "aspnetcore-realworld-example-app");
+  const aspnetCoreTrialPath = path.join(importFixturesRoot, "aspnetcore-realworld-example-app-fixture");
   const eShopOnWebTrialPath = path.join(importFixturesRoot, "eshoponweb-source");
   const pokedexComposeTrialPath = path.join(importFixturesRoot, "pokedex-compose-source");
   const swiftUiTrialPath = path.join(importFixturesRoot, "clean-architecture-swiftui-source");

@@ -1,0 +1,37 @@
+[
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/Article.cs",
+    "entity": "entity_article"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/ArticleFavorite.cs",
+    "entity": "entity_articlefavorite"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/ArticleTag.cs",
+    "entity": "entity_articletag"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/Comment.cs",
+    "entity": "entity_comment"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/FollowedPeople.cs",
+    "entity": "entity_followedpeople"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/Person.cs",
+    "entity": "entity_user"
+  },
+  {
+    "kind": "ef_core_entity",
+    "file": "src/Conduit/Domain/Tag.cs",
+    "entity": "entity_tag"
+  }
+]

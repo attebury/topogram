@@ -1,0 +1,16 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/Conduit/Features/Users/UserController.cs#PUT /user
+capability cap_update_user {
+  name "Update User"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  updates [entity_user]
+
+  input [shape_input_update_user]
+  output [shape_output_update_user]
+
+  status active
+}

@@ -53,7 +53,10 @@ main() {
   fi
 
   local matches
-  matches="$(rg -n --no-heading -e '/Users/[[:alnum:]_.-]+' -e 'file:///Users/[[:alnum:]_.-]+' -- "${files_to_check[@]}" || true)"
+  matches="$(rg -n --no-heading \
+    -e '(^|[[:space:]"'"'"'=:,(])/Users/[[:alnum:]_.-]+' \
+    -e 'file:///Users/[[:alnum:]_.-]+' \
+    -- "${files_to_check[@]}" || true)"
 
   if [[ -n "$matches" ]]; then
     echo "Refusing push because changed files contain machine-specific absolute paths." >&2

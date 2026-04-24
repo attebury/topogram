@@ -1,0 +1,110 @@
+{
+  "bootstrapped_topogram_root": true,
+  "candidate_docs": [
+    {
+      "confidence": "low",
+      "id": "asp",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/asp.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Asp"
+    },
+    {
+      "confidence": "low",
+      "id": "build",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/build.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Build"
+    },
+    {
+      "confidence": "low",
+      "id": "core",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/core.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Core"
+    },
+    {
+      "confidence": "low",
+      "id": "net",
+      "kind": "glossary",
+      "path": "candidates/docs/glossary/net.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Net"
+    },
+    {
+      "confidence": "low",
+      "id": "review-workflow",
+      "kind": "workflow",
+      "path": "candidates/docs/workflows/review-workflow.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Review Workflow"
+    },
+    {
+      "confidence": "low",
+      "id": "lifecycle-flow",
+      "kind": "workflow",
+      "path": "candidates/docs/workflows/lifecycle-flow.md",
+      "provenance": [
+        "README.md"
+      ],
+      "related_capabilities": [],
+      "related_entities": [],
+      "source_of_truth": "imported",
+      "title": "Lifecycle Flow"
+    }
+  ],
+  "findings": [
+    {
+      "file": "README.md",
+      "relative_path": "README.md",
+      "term_candidates": [
+        "build",
+        "core",
+        "net",
+        "asp",
+        "authentication",
+        "building",
+        "codebase",
+        "crud"
+      ],
+      "title": "![RealWorld Example App](logo.png)",
+      "workflow_signals": [
+        "review_workflow",
+        "lifecycle_flow"
+      ]
+    }
+  ],
+  "source_count": 1,
+  "sources": [
+    "README.md"
+  ],
+  "type": "scan_docs_report",
+  "workspace": "engine/tests/fixtures/import/aspnetcore-realworld-example-app-fixture/topogram"
+}
