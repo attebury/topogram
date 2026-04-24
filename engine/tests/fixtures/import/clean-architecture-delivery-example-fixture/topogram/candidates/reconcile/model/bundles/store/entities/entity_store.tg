@@ -1,0 +1,21 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/main/java/com/delivery/data/db/jpa/entities/StoreData.java
+entity entity_store {
+  name "Store"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    id long required
+    name string required
+    address string required
+    cousine_id cousinedata required
+  }
+
+  keys {
+    primary [id]
+    unique [name]
+  }
+
+  status active
+}

@@ -1,0 +1,10 @@
+shape shape_output_sign_in_account {
+  name "Sign In Account Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    token string optional
+  }
+
+  status active
+}

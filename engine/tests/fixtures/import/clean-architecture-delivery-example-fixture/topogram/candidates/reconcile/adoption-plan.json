@@ -1,0 +1,1076 @@
+{
+  "approved_review_groups": [
+    "workflow_review:order",
+    "workflow_review:product",
+    "workflow_review:store",
+    "workflow_review:cousine",
+    "workflow_review:customer",
+    "workflow_review:account"
+  ],
+  "items": [
+    {
+      "blocking_dependencies": [],
+      "bundle": "account",
+      "canonical_path": "topogram/capabilities/cap-sign-in-account.tg",
+      "canonical_rel_path": "capabilities/cap-sign-in-account.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_sign_in_account",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/account/capabilities/cap_sign_in_account.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:account",
+          "reason": "Workflow semantics for account need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "account",
+      "canonical_path": "topogram/decisions/decision-account.tg",
+      "canonical_rel_path": "decisions/decision-account.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_account",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/account/decisions/dec_account.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_account"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for account need canonical review before promotion.",
+          "review_group_id": "workflow_review:account"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:account",
+          "reason": "Workflow semantics for account need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "account",
+      "canonical_path": "topogram/docs/workflows/workflow_account.md",
+      "canonical_rel_path": "docs/workflows/workflow_account.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_account",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/account/docs/workflows/workflow_account.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_account"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for account need canonical review before promotion.",
+          "review_group_id": "workflow_review:account"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "account",
+      "canonical_path": "topogram/shapes/shape-output-sign-in-account.tg",
+      "canonical_rel_path": "shapes/shape-output-sign-in-account.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "shape_output_sign_in_account",
+      "kind": "shape",
+      "projection_impacts": [],
+      "reason": "Promote this imported shape into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/account/shapes/shape_output_sign_in_account.tg",
+      "status": "applied",
+      "suggested_action": "promote_shape",
+      "target": null,
+      "track": "shape",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "cousine",
+      "canonical_path": "topogram/capabilities/cap-list-cousines.tg",
+      "canonical_rel_path": "capabilities/cap-list-cousines.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_list_cousines",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/cousine/capabilities/cap_list_cousines.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "cousine",
+      "canonical_path": "topogram/capabilities/cap-search-cousines.tg",
+      "canonical_rel_path": "capabilities/cap-search-cousines.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_search_cousines",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/cousine/capabilities/cap_search_cousines.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:cousine",
+          "reason": "Workflow semantics for cousine need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "cousine",
+      "canonical_path": "topogram/decisions/decision-cousine.tg",
+      "canonical_rel_path": "decisions/decision-cousine.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_cousine",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/cousine/decisions/dec_cousine.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_cousine"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for cousine need canonical review before promotion.",
+          "review_group_id": "workflow_review:cousine"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:cousine",
+          "reason": "Workflow semantics for cousine need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "cousine",
+      "canonical_path": "topogram/docs/workflows/workflow_cousine.md",
+      "canonical_rel_path": "docs/workflows/workflow_cousine.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_cousine",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/cousine/docs/workflows/workflow_cousine.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_cousine"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for cousine need canonical review before promotion.",
+          "review_group_id": "workflow_review:cousine"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "cousine",
+      "canonical_path": "topogram/entities/entity-cousine.tg",
+      "canonical_rel_path": "entities/entity-cousine.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "entity_cousine",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/cousine/entities/entity_cousine.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "customer",
+      "canonical_path": "topogram/capabilities/cap-create-customer.tg",
+      "canonical_rel_path": "capabilities/cap-create-customer.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_create_customer",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/customer/capabilities/cap_create_customer.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "customer",
+      "canonical_path": "topogram/capabilities/cap-get-customer.tg",
+      "canonical_rel_path": "capabilities/cap-get-customer.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_get_customer",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/customer/capabilities/cap_get_customer.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:customer",
+          "reason": "Workflow semantics for customer need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "customer",
+      "canonical_path": "topogram/decisions/decision-customer.tg",
+      "canonical_rel_path": "decisions/decision-customer.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_customer",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/customer/decisions/dec_customer.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_customer"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for customer need canonical review before promotion.",
+          "review_group_id": "workflow_review:customer"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:customer",
+          "reason": "Workflow semantics for customer need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "customer",
+      "canonical_path": "topogram/docs/workflows/workflow_customer.md",
+      "canonical_rel_path": "docs/workflows/workflow_customer.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_customer",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/customer/docs/workflows/workflow_customer.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_customer"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for customer need canonical review before promotion.",
+          "review_group_id": "workflow_review:customer"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "customer",
+      "canonical_path": "topogram/entities/entity-customer.tg",
+      "canonical_rel_path": "entities/entity-customer.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "entity_customer",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/customer/entities/entity_customer.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/capabilities/cap-create-order.tg",
+      "canonical_rel_path": "capabilities/cap-create-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_create_order",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/capabilities/cap_create_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/capabilities/cap-delete-order.tg",
+      "canonical_rel_path": "capabilities/cap-delete-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_delete_order",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/capabilities/cap_delete_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/capabilities/cap-delivery-order.tg",
+      "canonical_rel_path": "capabilities/cap-delivery-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_delivery_order",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/capabilities/cap_delivery_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/capabilities/cap-get-order.tg",
+      "canonical_rel_path": "capabilities/cap-get-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_get_order",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/capabilities/cap_get_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/capabilities/cap-pay-order.tg",
+      "canonical_rel_path": "capabilities/cap-pay-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_pay_order",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/capabilities/cap_pay_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:order",
+          "reason": "Workflow semantics for order need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "order",
+      "canonical_path": "topogram/decisions/decision-order.tg",
+      "canonical_rel_path": "decisions/decision-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_order",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/decisions/dec_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_order"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for order need canonical review before promotion.",
+          "review_group_id": "workflow_review:order"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:order",
+          "reason": "Workflow semantics for order need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "order",
+      "canonical_path": "topogram/docs/workflows/workflow_order.md",
+      "canonical_rel_path": "docs/workflows/workflow_order.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_order",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/docs/workflows/workflow_order.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_order"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for order need canonical review before promotion.",
+          "review_group_id": "workflow_review:order"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/entities/entity-order.tg",
+      "canonical_rel_path": "entities/entity-order.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "entity_order",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/entities/entity_order.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "order",
+      "canonical_path": "topogram/enums/enum-status.tg",
+      "canonical_rel_path": "enums/enum-status.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "status",
+      "kind": "enum",
+      "projection_impacts": [],
+      "reason": "Promote this imported enum into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/order/enums/status.tg",
+      "status": "applied",
+      "suggested_action": "promote_enum",
+      "target": null,
+      "track": "enum",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "product",
+      "canonical_path": "topogram/capabilities/cap-get-product.tg",
+      "canonical_rel_path": "capabilities/cap-get-product.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_get_product",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/capabilities/cap_get_product.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "product",
+      "canonical_path": "topogram/capabilities/cap-list-products.tg",
+      "canonical_rel_path": "capabilities/cap-list-products.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_list_products",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/capabilities/cap_list_products.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "product",
+      "canonical_path": "topogram/capabilities/cap-search-products.tg",
+      "canonical_rel_path": "capabilities/cap-search-products.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_search_products",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/capabilities/cap_search_products.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:product",
+          "reason": "Workflow semantics for product need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "product",
+      "canonical_path": "topogram/decisions/decision-product.tg",
+      "canonical_rel_path": "decisions/decision-product.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_product",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/decisions/dec_product.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_product"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for product need canonical review before promotion.",
+          "review_group_id": "workflow_review:product"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:product",
+          "reason": "Workflow semantics for product need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "product",
+      "canonical_path": "topogram/docs/workflows/workflow_product.md",
+      "canonical_rel_path": "docs/workflows/workflow_product.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_product",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/docs/workflows/workflow_product.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_product"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for product need canonical review before promotion.",
+          "review_group_id": "workflow_review:product"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "product",
+      "canonical_path": "topogram/entities/entity-product.tg",
+      "canonical_rel_path": "entities/entity-product.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "entity_product",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/product/entities/entity_product.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "store",
+      "canonical_path": "topogram/capabilities/cap-get-store.tg",
+      "canonical_rel_path": "capabilities/cap-get-store.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_get_store",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/capabilities/cap_get_store.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "store",
+      "canonical_path": "topogram/capabilities/cap-list-stores.tg",
+      "canonical_rel_path": "capabilities/cap-list-stores.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_list_stores",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/capabilities/cap_list_stores.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "store",
+      "canonical_path": "topogram/capabilities/cap-search-stores.tg",
+      "canonical_rel_path": "capabilities/cap-search-stores.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "cap_search_stores",
+      "kind": "capability",
+      "projection_impacts": [],
+      "reason": "Promote this imported capability into canonical Topogram.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/capabilities/cap_search_stores.tg",
+      "status": "applied",
+      "suggested_action": "promote_capability",
+      "target": null,
+      "track": "capability",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:store",
+          "reason": "Workflow semantics for store need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "store",
+      "canonical_path": "topogram/decisions/decision-store.tg",
+      "canonical_rel_path": "decisions/decision-store.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "dec_store",
+      "kind": "decision",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow decision into canonical Topogram decisions.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/decisions/dec_store.tg",
+      "status": "applied",
+      "suggested_action": "promote_workflow_decision",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_store"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for store need canonical review before promotion.",
+          "review_group_id": "workflow_review:store"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [
+        {
+          "id": "workflow_review:store",
+          "reason": "Workflow semantics for store need canonical review before promotion.",
+          "type": "workflow_review"
+        }
+      ],
+      "bundle": "store",
+      "canonical_path": "topogram/docs/workflows/workflow_store.md",
+      "canonical_rel_path": "docs/workflows/workflow_store.md",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "workflow_store",
+      "kind": "doc",
+      "projection_impacts": [],
+      "reason": "Promote this imported workflow doc into canonical Topogram workflow docs.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/docs/workflows/workflow_store.md",
+      "status": "applied",
+      "suggested_action": "promote_workflow_doc",
+      "target": null,
+      "track": "workflows",
+      "ui_impacts": [],
+      "workflow_impacts": [
+        {
+          "items": [
+            "workflow_store"
+          ],
+          "kind": "workflow",
+          "reason": "Workflow semantics for store need canonical review before promotion.",
+          "review_group_id": "workflow_review:store"
+        }
+      ]
+    },
+    {
+      "blocking_dependencies": [],
+      "bundle": "store",
+      "canonical_path": "topogram/entities/entity-store.tg",
+      "canonical_rel_path": "entities/entity-store.tg",
+      "confidence": null,
+      "inference_summary": null,
+      "item": "entity_store",
+      "kind": "entity",
+      "projection_impacts": [],
+      "reason": "No canonical entity exists for this imported concept.",
+      "recommendation": null,
+      "related_capabilities": [],
+      "related_docs": [],
+      "source_path": "candidates/reconcile/model/bundles/store/entities/entity_store.tg",
+      "status": "applied",
+      "suggested_action": "promote_entity",
+      "target": null,
+      "track": "entity",
+      "ui_impacts": [],
+      "workflow_impacts": []
+    }
+  ],
+  "projection_review_groups": [],
+  "type": "reconcile_adoption_plan",
+  "ui_review_groups": [],
+  "workflow_review_groups": [
+    {
+      "id": "workflow_review:account",
+      "items": [
+        {
+          "bundle": "account",
+          "item": "dec_account",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "account",
+          "item": "workflow_account",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for account need canonical review before promotion."
+    },
+    {
+      "id": "workflow_review:cousine",
+      "items": [
+        {
+          "bundle": "cousine",
+          "item": "dec_cousine",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "cousine",
+          "item": "workflow_cousine",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for cousine need canonical review before promotion."
+    },
+    {
+      "id": "workflow_review:customer",
+      "items": [
+        {
+          "bundle": "customer",
+          "item": "dec_customer",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "customer",
+          "item": "workflow_customer",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for customer need canonical review before promotion."
+    },
+    {
+      "id": "workflow_review:order",
+      "items": [
+        {
+          "bundle": "order",
+          "item": "dec_order",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "order",
+          "item": "workflow_order",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for order need canonical review before promotion."
+    },
+    {
+      "id": "workflow_review:product",
+      "items": [
+        {
+          "bundle": "product",
+          "item": "dec_product",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "product",
+          "item": "workflow_product",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for product need canonical review before promotion."
+    },
+    {
+      "id": "workflow_review:store",
+      "items": [
+        {
+          "bundle": "store",
+          "item": "dec_store",
+          "kind": "decision",
+          "status": "applied"
+        },
+        {
+          "bundle": "store",
+          "item": "workflow_store",
+          "kind": "doc",
+          "status": "applied"
+        }
+      ],
+      "reason": "Workflow semantics for store need canonical review before promotion."
+    }
+  ],
+  "workspace": "engine/tests/fixtures/import/clean-architecture-delivery-example-fixture/topogram"
+}

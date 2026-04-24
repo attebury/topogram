@@ -1,0 +1,12 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product
+# imported provenance: src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}/products
+capability cap_list_products {
+  name "List Products"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_product]
+
+  status active
+}

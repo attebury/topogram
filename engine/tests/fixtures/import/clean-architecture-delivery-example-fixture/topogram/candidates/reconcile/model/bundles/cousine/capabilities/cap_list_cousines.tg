@@ -1,0 +1,11 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine
+capability cap_list_cousines {
+  name "List Cousines"
+  description "Candidate capability imported from brownfield API evidence"
+
+  reads [entity_cousine]
+
+  status active
+}

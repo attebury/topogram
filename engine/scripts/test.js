@@ -318,9 +318,9 @@ function run() {
   const fastifyTrialPath = path.join(workspaceRoot, "..", "trials", "fastify-demo");
   const railsTrialPath = path.join(importFixturesRoot, "rails-realworld-example-app-source");
   const djangoTrialPath = path.join(importFixturesRoot, "django-realworld-example-app-source");
-  const springTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-spring");
+  const springTrialPath = path.join(importFixturesRoot, "realworld-backend-spring-fixture");
   const springBootRealworldTrialPath = path.join(importFixturesRoot, "spring-boot-realworld-example-app-fixture");
-  const cleanArchitectureDeliveryTrialPath = path.join(workspaceRoot, "..", "trials", "clean-architecture-delivery-example");
+  const cleanArchitectureDeliveryTrialPath = path.join(importFixturesRoot, "clean-architecture-delivery-example-fixture");
   const quarkusTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-api-quarkus");
   const micronautTrialPath = path.join(workspaceRoot, "..", "trials", "realworld-backend-micronaut");
   const jakartaEeTrialPath = path.join(workspaceRoot, "..", "trials", "jakartaee-rest-sample");

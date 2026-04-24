@@ -1,0 +1,16 @@
+{
+  "adoption_plan_path": "candidates/reconcile/adoption-plan.json",
+  "applied_item_count": 0,
+  "approved_item_count": 0,
+  "approved_review_groups": [],
+  "blocked_item_count": 0,
+  "bootstrapped_topogram_root": true,
+  "bundle_blockers": [],
+  "bundle_priorities": [],
+  "next_bundle": null,
+  "projection_review_groups": [],
+  "type": "adoption_status",
+  "ui_review_groups": [],
+  "workflow_review_groups": [],
+  "workspace": "engine/tests/fixtures/import/realworld-backend-spring-fixture/topogram/topogram"
+}

@@ -1,0 +1,210 @@
+{
+  "workflows": [
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_store",
+      "label": "Store Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine/{id}/stores",
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_store",
+      "actor_hints": [],
+      "related_capabilities": [
+        "cap_get_store",
+        "cap_list_stores",
+        "cap_search_stores"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_cousine",
+      "label": "Cousine Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/cousine/CousineResource.java#GET /Cousine"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_cousine",
+      "actor_hints": [],
+      "related_capabilities": [
+        "cap_list_cousines",
+        "cap_search_cousines"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_customer",
+      "label": "Customer Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_customer",
+      "actor_hints": [
+        "anonymous",
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_customer",
+        "cap_get_customer"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_account",
+      "label": "Account Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer/auth"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_account",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "related_capabilities": [
+        "cap_sign_in_account"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_order",
+      "label": "Order Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_order",
+      "actor_hints": [
+        "user"
+      ],
+      "related_capabilities": [
+        "cap_create_order",
+        "cap_delete_order",
+        "cap_delivery_order",
+        "cap_get_order",
+        "cap_pay_order"
+      ],
+      "documented": false
+    },
+    {
+      "kind": "workflow",
+      "id_hint": "workflow_product",
+      "label": "Product Workflow",
+      "confidence": "medium",
+      "source_kind": "generated_artifact",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/product/ProductResource.java#GET /Product",
+        "src/main/java/com/delivery/presenter/rest/api/store/StoreResource.java#GET /Store/{id}/products"
+      ],
+      "track": "workflows",
+      "entity_id": "entity_product",
+      "actor_hints": [],
+      "related_capabilities": [
+        "cap_get_product",
+        "cap_list_products",
+        "cap_search_products"
+      ],
+      "documented": false
+    }
+  ],
+  "workflow_states": [],
+  "workflow_transitions": [
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_customer_cap_create_customer",
+      "label": "Create Customer",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_customer",
+      "entity_id": "entity_customer",
+      "capability_id": "cap_create_customer",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_account_cap_sign_in_account",
+      "label": "Sign In Account",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/customer/CustomerResource.java#POST /Customer/auth"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_account",
+      "entity_id": "entity_account",
+      "capability_id": "cap_sign_in_account",
+      "actor_hints": [
+        "anonymous"
+      ],
+      "to_state": "authenticated"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_order_cap_create_order",
+      "label": "Create Order",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#POST /Order"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_order",
+      "entity_id": "entity_order",
+      "capability_id": "cap_create_order",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "created"
+    },
+    {
+      "kind": "workflow_transition",
+      "id_hint": "workflow_order_cap_delete_order",
+      "label": "Delete Order",
+      "confidence": "low",
+      "source_kind": "route_code",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/main/java/com/delivery/presenter/rest/api/order/OrderResource.java#DELETE /Order/{id}"
+      ],
+      "track": "workflows",
+      "workflow_id": "workflow_order",
+      "entity_id": "entity_order",
+      "capability_id": "cap_delete_order",
+      "actor_hints": [
+        "user"
+      ],
+      "to_state": "deleted"
+    }
+  ]
+}
