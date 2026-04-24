@@ -1,0 +1,21 @@
+[
+  {
+    "file": "README.md",
+    "relative_path": "README.md",
+    "term_candidates": [
+      "build",
+      "core",
+      "net",
+      "asp",
+      "authentication",
+      "building",
+      "codebase",
+      "crud"
+    ],
+    "title": "![RealWorld Example App](logo.png)",
+    "workflow_signals": [
+      "review_workflow",
+      "lifecycle_flow"
+    ]
+  }
+]

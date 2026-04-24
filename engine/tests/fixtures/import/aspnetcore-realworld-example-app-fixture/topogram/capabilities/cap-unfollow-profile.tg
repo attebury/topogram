@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/Conduit/Features/Followers/FollowersController.cs#DELETE /profiles/{username}/follow
+capability cap_unfollow_profile {
+  name "Unfollow Profile"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  deletes [entity_profile]
+  output [shape_output_unfollow_profile]
+
+  status active
+}

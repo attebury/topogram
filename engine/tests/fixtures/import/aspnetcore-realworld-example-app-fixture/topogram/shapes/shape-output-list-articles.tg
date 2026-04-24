@@ -1,0 +1,12 @@
+shape shape_output_list_articles {
+  name "List Articles Output"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    articlesEnvelope string optional
+    articles string optional
+    articlesCount string optional
+  }
+
+  status active
+}

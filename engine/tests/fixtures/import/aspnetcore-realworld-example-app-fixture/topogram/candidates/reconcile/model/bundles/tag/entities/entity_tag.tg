@@ -1,0 +1,17 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/Conduit/Domain/Tag.cs
+entity entity_tag {
+  name "Tag"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    tagId string optional
+  }
+
+  keys {
+    primary [tagId]
+  }
+
+  status active
+}

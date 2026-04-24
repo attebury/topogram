@@ -1,0 +1,14 @@
+shape shape_input_create_article {
+  name "Create Article Input"
+  description "Candidate shape imported from brownfield API evidence"
+
+  fields {
+    articleData string optional
+    title string optional
+    description string optional
+    body string optional
+    tagList string optional
+  }
+
+  status active
+}

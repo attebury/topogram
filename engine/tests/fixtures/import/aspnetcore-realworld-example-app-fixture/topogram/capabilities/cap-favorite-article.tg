@@ -1,0 +1,14 @@
+# imported confidence: high
+# imported source_kind: route_code
+# imported provenance: src/Conduit/Features/Favorites/FavoritesController.cs#POST /articles/{slug}/favorite
+capability cap_favorite_article {
+  name "Favorite Article"
+  description "Candidate capability imported from brownfield API evidence"
+
+  actors [user]
+
+  reads [entity_article]
+  output [shape_output_favorite_article]
+
+  status active
+}

@@ -1,0 +1,24 @@
+# imported confidence: high
+# imported source_kind: schema
+# imported provenance: src/Conduit/Domain/Article.cs
+entity entity_article {
+  name "Article"
+  description "Candidate entity imported from brownfield schema evidence"
+
+  fields {
+    articleId int required
+    slug string optional
+    title string optional
+    description string optional
+    body string optional
+    createdAt datetime required
+    updatedAt datetime required
+  }
+
+  keys {
+    primary [articleId]
+    unique [slug]
+  }
+
+  status active
+}

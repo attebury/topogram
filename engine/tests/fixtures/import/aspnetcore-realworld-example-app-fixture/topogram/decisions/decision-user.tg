@@ -1,0 +1,12 @@
+# imported confidence: medium
+# imported source_kind: generated_artifact
+# imported provenance: src/Conduit/Features/Users/UserController.cs#GET /user
+decision dec_user {
+  name "User Workflow"
+  description "Candidate workflow decision imported from brownfield evidence"
+
+  context [cap_create_user]
+  consequences [created]
+
+  status proposed
+}

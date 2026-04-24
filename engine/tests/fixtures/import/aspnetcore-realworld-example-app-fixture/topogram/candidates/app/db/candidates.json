@@ -1,0 +1,657 @@
+{
+  "entities": [
+    {
+      "kind": "entity",
+      "id_hint": "entity_article",
+      "label": "Article",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Article.cs"
+      ],
+      "track": "db",
+      "model_name": "Article",
+      "fields": [
+        {
+          "name": "articleId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "slug",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": true,
+          "primary_key": false
+        },
+        {
+          "name": "title",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "description",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "body",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "createdAt",
+          "field_type": "datetime",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "updatedAt",
+          "field_type": "datetime",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ],
+      "noise_candidate": false,
+      "noise_reason": null
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_articlefavorite",
+      "label": "Articlefavorite",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleFavorite.cs"
+      ],
+      "track": "db",
+      "model_name": "ArticleFavorite",
+      "fields": [
+        {
+          "name": "articleId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "personId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ],
+      "noise_candidate": true,
+      "noise_reason": "EF Core relationship-link entity inferred as implementation noise."
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_articletag",
+      "label": "Articletag",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleTag.cs"
+      ],
+      "track": "db",
+      "model_name": "ArticleTag",
+      "fields": [
+        {
+          "name": "articleId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "tagId",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": true,
+          "primary_key": true
+        }
+      ],
+      "noise_candidate": true,
+      "noise_reason": "EF Core relationship-link entity inferred as implementation noise."
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_comment",
+      "label": "Comment",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Comment.cs"
+      ],
+      "track": "db",
+      "model_name": "Comment",
+      "fields": [
+        {
+          "name": "commentId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "body",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "authorId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "articleId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "createdAt",
+          "field_type": "datetime",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "updatedAt",
+          "field_type": "datetime",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ],
+      "noise_candidate": false,
+      "noise_reason": null
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_followedpeople",
+      "label": "Followedpeople",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/FollowedPeople.cs"
+      ],
+      "track": "db",
+      "model_name": "FollowedPeople",
+      "fields": [
+        {
+          "name": "observerId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "targetId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ],
+      "noise_candidate": true,
+      "noise_reason": "EF Core relationship-link entity inferred as implementation noise."
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_user",
+      "label": "User",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Person.cs"
+      ],
+      "track": "db",
+      "model_name": "Person",
+      "fields": [
+        {
+          "name": "personId",
+          "field_type": "int",
+          "required": true,
+          "list": false,
+          "unique": false,
+          "primary_key": true
+        },
+        {
+          "name": "username",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": true,
+          "primary_key": false
+        },
+        {
+          "name": "email",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": true,
+          "primary_key": false
+        },
+        {
+          "name": "bio",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        },
+        {
+          "name": "image",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": false,
+          "primary_key": false
+        }
+      ],
+      "noise_candidate": false,
+      "noise_reason": null
+    },
+    {
+      "kind": "entity",
+      "id_hint": "entity_tag",
+      "label": "Tag",
+      "confidence": "high",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Tag.cs"
+      ],
+      "track": "db",
+      "model_name": "Tag",
+      "fields": [
+        {
+          "name": "tagId",
+          "field_type": "string",
+          "required": false,
+          "list": false,
+          "unique": true,
+          "primary_key": true
+        }
+      ],
+      "noise_candidate": false,
+      "noise_reason": null
+    }
+  ],
+  "enums": [],
+  "relations": [
+    {
+      "kind": "relation",
+      "id_hint": "entity_article_author_entity_user",
+      "label": "entity_article -> entity_user",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Article.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_article",
+      "to_entity": "entity_user",
+      "relation_field": "author",
+      "fields": [
+        "author"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_article_comments_entity_comment",
+      "label": "entity_article -> entity_comment",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Article.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_article",
+      "to_entity": "entity_comment",
+      "relation_field": "comments",
+      "fields": [
+        "comments"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_article_articlefavorites_entity_articlefavorite",
+      "label": "entity_article -> entity_articlefavorite",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Article.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_article",
+      "to_entity": "entity_articlefavorite",
+      "relation_field": "articleFavorites",
+      "fields": [
+        "articleFavorites"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_articlefavorite_article_entity_article",
+      "label": "entity_articlefavorite -> entity_article",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleFavorite.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_articlefavorite",
+      "to_entity": "entity_article",
+      "relation_field": "article",
+      "fields": [
+        "article"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_articlefavorite_person_entity_user",
+      "label": "entity_articlefavorite -> entity_user",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleFavorite.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_articlefavorite",
+      "to_entity": "entity_user",
+      "relation_field": "person",
+      "fields": [
+        "person"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_articletag_article_entity_article",
+      "label": "entity_articletag -> entity_article",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleTag.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_articletag",
+      "to_entity": "entity_article",
+      "relation_field": "article",
+      "fields": [
+        "article"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_articletag_tag_entity_tag",
+      "label": "entity_articletag -> entity_tag",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/ArticleTag.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_articletag",
+      "to_entity": "entity_tag",
+      "relation_field": "tag",
+      "fields": [
+        "tag"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_comment_author_entity_user",
+      "label": "entity_comment -> entity_user",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Comment.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_comment",
+      "to_entity": "entity_user",
+      "relation_field": "author",
+      "fields": [
+        "author"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_comment_article_entity_article",
+      "label": "entity_comment -> entity_article",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Comment.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_comment",
+      "to_entity": "entity_article",
+      "relation_field": "article",
+      "fields": [
+        "article"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_followedpeople_observer_entity_user",
+      "label": "entity_followedpeople -> entity_user",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/FollowedPeople.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_followedpeople",
+      "to_entity": "entity_user",
+      "relation_field": "observer",
+      "fields": [
+        "observer"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_followedpeople_target_entity_user",
+      "label": "entity_followedpeople -> entity_user",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/FollowedPeople.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_followedpeople",
+      "to_entity": "entity_user",
+      "relation_field": "target",
+      "fields": [
+        "target"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "reference"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_user_articlefavorites_entity_articlefavorite",
+      "label": "entity_user -> entity_articlefavorite",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Person.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_user",
+      "to_entity": "entity_articlefavorite",
+      "relation_field": "articleFavorites",
+      "fields": [
+        "articleFavorites"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_user_following_entity_followedpeople",
+      "label": "entity_user -> entity_followedpeople",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Person.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_user",
+      "to_entity": "entity_followedpeople",
+      "relation_field": "following",
+      "fields": [
+        "following"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_user_followers_entity_followedpeople",
+      "label": "entity_user -> entity_followedpeople",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Person.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_user",
+      "to_entity": "entity_followedpeople",
+      "relation_field": "followers",
+      "fields": [
+        "followers"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    },
+    {
+      "kind": "relation",
+      "id_hint": "entity_tag_articletags_entity_articletag",
+      "label": "entity_tag -> entity_articletag",
+      "confidence": "medium",
+      "source_kind": "schema",
+      "source_of_truth": "imported",
+      "provenance": [
+        "src/Conduit/Domain/Tag.cs"
+      ],
+      "track": "db",
+      "from_entity": "entity_tag",
+      "to_entity": "entity_articletag",
+      "relation_field": "articleTags",
+      "fields": [
+        "articleTags"
+      ],
+      "references": [
+        "id"
+      ],
+      "relation_type": "collection"
+    }
+  ],
+  "indexes": []
+}
