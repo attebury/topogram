@@ -511,7 +511,7 @@ export function applyAdoptionSelector(adoptionPlan, selector, writeMode) {
   if (selector === "from-plan") {
     const initiallySelected = [];
     for (const item of updatedItems) {
-      if (item.status === "approved") {
+      if (item.status === "approved" || item.status === "pending") {
         initiallySelected.push(adoptionItemKey(item));
       } else if (item.status === "skipped") {
         skippedItems.push(item.item);

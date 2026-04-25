@@ -173,6 +173,42 @@ test("applyAdoptionSelector from-plan expands dependent shapes and summarizes re
   );
 });
 
+test("applyAdoptionSelector from-plan also adopts pending items with no blockers", () => {
+  const capability = {
+    bundle: "account",
+    kind: "capability",
+    item: "cap_create_account",
+    status: "pending",
+    blocking_dependencies: []
+  };
+  const entity = {
+    bundle: "account",
+    kind: "entity",
+    item: "entity_account",
+    status: "pending",
+    blocking_dependencies: []
+  };
+  const blocked = {
+    bundle: "account",
+    kind: "capability",
+    item: "cap_update_account",
+    status: "needs_projection_review",
+    blocking_dependencies: [{ id: "projection_review:proj_api", type: "projection_review" }]
+  };
+
+  const result = applyAdoptionSelector({
+    approved_review_groups: [],
+    items: [capability, entity, blocked]
+  }, "from-plan", false);
+
+  assert.deepEqual(
+    result.selectedItems.sort(),
+    [adoptionItemKey(capability), adoptionItemKey(entity)].sort()
+  );
+  assert.deepEqual(result.appliedItems.sort(), ["cap_create_account", "entity_account"]);
+  assert.deepEqual(result.blockedItems, ["cap_update_account"]);
+});
+
 test("applyAdoptionSelector previews review-group approvals without requiring write mode", () => {
   const result = applyAdoptionSelector({
     approved_review_groups: [],
