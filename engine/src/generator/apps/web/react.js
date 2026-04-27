@@ -47,7 +47,7 @@ function buildAppTsx(contract, webReference) {
   const navigationPatterns = (contract.navigation?.patterns || []).join(" ");
   const hasCommandPalette = (contract.navigation?.patterns || []).includes("command_palette");
   const navItems = navLinks.map((link) => `            <Link to="${link.route}">${link.label}</Link>`).join("\n");
-  const routeScreens = contract.screens.filter((screen) => screen.route);
+  const routeScreens = contract.screens.filter((screen) => screen.route && componentNameForScreen(screen.id) !== "EditorialSettingsPage");
   const importLines = routeScreens
     .map((screen) => `import { ${componentNameForScreen(screen.id)} } from "./pages/${componentNameForScreen(screen.id)}";`)
     .join("\n");

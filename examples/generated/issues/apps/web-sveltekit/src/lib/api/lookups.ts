@@ -9,6 +9,10 @@ function apiBase() {
   return publicEnv.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:3001";
 }
 
+function authToken() {
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
+}
+
 export async function listLookupOptions(fetcher: typeof fetch, route: string): Promise<LookupOption[]> {
   const headers = new Headers();
   if (authToken()) {

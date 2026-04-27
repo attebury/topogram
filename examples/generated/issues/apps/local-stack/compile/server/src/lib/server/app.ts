@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { Context } from "hono";
 import { serverContract } from "../topogram/server-contract";
-import { HttpError, coerceValue, jsonError, requireHeaders, requireRequestFields } from "./helpers";
+import { HttpError, coerceValue, contentDisposition, jsonError, requireHeaders, requireRequestFields } from "./helpers";
 import type { ServerDependencies } from "./context";
 import type { CloseIssueInput, CloseIssueResult, CreateIssueInput, CreateIssueResult, GetIssueInput, GetIssueResult, ListIssuesInput, ListIssuesResult, ListIssuesResultItem, UpdateIssueInput, UpdateIssueResult } from "../persistence/types";
 
@@ -24,10 +24,16 @@ function buildInput(c: Context, route: any, body: Record<string, unknown>) {
   return input;
 }
 
+function corsOrigin(origin: string) {
+  const configured = process.env.TOPOGRAM_CORS_ORIGINS || "http://localhost:5174,http://127.0.0.1:5174";
+  const allowed = new Set(configured.split(",").map((entry) => entry.trim()).filter(Boolean));
+  return allowed.has(origin) ? origin : "";
+}
+
 export function createApp(deps: ServerDependencies) {
   const app = new Hono();
   app.use("*", cors({
-    origin: "*",
+    origin: corsOrigin,
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "If-Match", "If-None-Match", "Idempotency-Key", "Authorization"],
     exposeHeaders: ["ETag", "Location", "Retry-After", "Content-Disposition"]
@@ -70,7 +76,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = await c.req.json().catch(() => ({}));
       const input = buildInput(c, route0, body);
-      await deps.authorize?.(c, route0.endpoint.authz, { capabilityId: route0.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(c, route0.endpoint.authz, { capabilityId: route0.capabilityId, input, loadResource: undefined });
       requireHeaders(c, [...route0.endpoint.preconditions, ...route0.endpoint.idempotency]);
       requireRequestFields(route0, input);
       const result = await deps.issueRepository.createIssue(input as unknown as CreateIssueInput);
@@ -87,7 +94,8 @@ export function createApp(deps: ServerDependencies) {
       const body = {};
       const input = buildInput(c, route1, body);
       const loadAuthorizationResource1 = async () => await deps.issueRepository.getIssue(input as unknown as GetIssueInput) as unknown as Record<string, unknown>;
-      await deps.authorize?.(c, route1.endpoint.authz, { capabilityId: route1.capabilityId, input, loadResource: typeof loadAuthorizationResource1 === "function" ? loadAuthorizationResource1 : undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(c, route1.endpoint.authz, { capabilityId: route1.capabilityId, input, loadResource: typeof loadAuthorizationResource1 === "function" ? loadAuthorizationResource1 : undefined });
       requireRequestFields(route1, input);
       const result = await deps.issueRepository.getIssue(input as unknown as GetIssueInput);
       const etag = (result as unknown as Record<string, unknown>)["updated_at"];
@@ -108,7 +116,8 @@ export function createApp(deps: ServerDependencies) {
       const body = await c.req.json().catch(() => ({}));
       const input = buildInput(c, route2, body);
       const loadAuthorizationResource2 = async () => await deps.issueRepository.getIssue({ issue_id: String(input.issue_id || "") } as unknown as GetIssueInput) as unknown as Record<string, unknown>;
-      await deps.authorize?.(c, route2.endpoint.authz, { capabilityId: route2.capabilityId, input, loadResource: typeof loadAuthorizationResource2 === "function" ? loadAuthorizationResource2 : undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(c, route2.endpoint.authz, { capabilityId: route2.capabilityId, input, loadResource: typeof loadAuthorizationResource2 === "function" ? loadAuthorizationResource2 : undefined });
       requireHeaders(c, [...route2.endpoint.preconditions, ...route2.endpoint.idempotency]);
       requireRequestFields(route2, input);
       const ifMatch = c.req.header("If-Match");
@@ -132,7 +141,8 @@ export function createApp(deps: ServerDependencies) {
       const body = await c.req.json().catch(() => ({}));
       const input = buildInput(c, route3, body);
       const loadAuthorizationResource3 = async () => await deps.issueRepository.getIssue({ issue_id: String(input.issue_id || "") } as unknown as GetIssueInput) as unknown as Record<string, unknown>;
-      await deps.authorize?.(c, route3.endpoint.authz, { capabilityId: route3.capabilityId, input, loadResource: typeof loadAuthorizationResource3 === "function" ? loadAuthorizationResource3 : undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(c, route3.endpoint.authz, { capabilityId: route3.capabilityId, input, loadResource: typeof loadAuthorizationResource3 === "function" ? loadAuthorizationResource3 : undefined });
       requireHeaders(c, [...route3.endpoint.preconditions, ...route3.endpoint.idempotency]);
       requireRequestFields(route3, input);
       const ifMatch = c.req.header("If-Match");
@@ -155,7 +165,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = {};
       const input = buildInput(c, route4, body);
-      await deps.authorize?.(c, route4.endpoint.authz, { capabilityId: route4.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(c, route4.endpoint.authz, { capabilityId: route4.capabilityId, input, loadResource: undefined });
       requireRequestFields(route4, input);
       const result = await deps.issueRepository.listIssues(input as unknown as ListIssuesInput);
       return c.json(result as ListIssuesResult, 200 as any);

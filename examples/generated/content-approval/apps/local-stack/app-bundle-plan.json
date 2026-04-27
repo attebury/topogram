@@ -17,7 +17,7 @@
     "environment": {
       "name": "Content Approval Local Runtime Stack",
       "databaseName": "topogram_content_approval",
-      "envExample": "TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256\nTOPOGRAM_AUTH_JWT_SECRET=topogram-content-approval-jwt-secret\nTOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nTOPOGRAM_AUTH_TOKEN_NO_REVIEWER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOmZhbHNlfQ.pOaYZU9DX1_F84ZKJg_7b_QmtHjvHo7sIao-Nfwg5Js\nPUBLIC_TOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nPUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nPUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222\nTOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nTOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222"
+      "envExample": "# Demo-only credentials. Do not reuse these fixture secrets or tokens outside local/generated verification.\nTOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256\nTOPOGRAM_AUTH_JWT_SECRET=topogram-content-approval-jwt-secret\nTOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nTOPOGRAM_AUTH_TOKEN_NO_REVIEWER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOmZhbHNlfQ.pOaYZU9DX1_F84ZKJg_7b_QmtHjvHo7sIao-Nfwg5Js\nPUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE\nPUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nPUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222\nTOPOGRAM_DEMO_PRIMARY_ID=53333333-3333-4333-8333-333333333333\nTOPOGRAM_DEMO_CONTAINER_ID=52222222-2222-4222-8222-222222222222"
     },
     "compileCheck": {
       "name": "Content Approval Generated Compile Checks"
@@ -27,7 +27,7 @@
       "bundleTitle": "Content Approval Runtime Smoke Bundle",
       "defaultContainerEnvVar": "TOPOGRAM_DEMO_CONTAINER_ID",
       "webPath": "/articles",
-      "expectText": "Articles",
+      "expectText": "Content Approval",
       "createPath": "/articles",
       "getPathPrefix": "/articles/",
       "listPath": "/articles",
@@ -35,6 +35,7 @@
         "title": "Smoke Test Article",
         "containerField": "publication_id",
         "extraFields": {
+          "reviewer_id": "__DEMO_USER_ID__",
           "category": "smoke"
         }
       },

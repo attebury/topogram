@@ -16,13 +16,15 @@ Use it when you want the strongest current generated auth story:
 - `TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256`
 - `TOPOGRAM_AUTH_JWT_SECRET`
 - `TOPOGRAM_AUTH_TOKEN`
-- `PUBLIC_TOPOGRAM_AUTH_TOKEN`
+- `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`
 
 Examples may also expose proof-specific tokens such as:
 
 - `TOPOGRAM_AUTH_TOKEN_EXPIRED`
 - `TOPOGRAM_AUTH_TOKEN_INVALID`
 - `TOPOGRAM_AUTH_TOKEN_NO_REVIEWER`
+
+`PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` is a browser-visible demo token for generated examples. It is not a secret, and it is not a production auth boundary.
 
 ## What It Proves Today
 

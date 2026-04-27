@@ -68,10 +68,10 @@ The default operating model is:
 
 The current planning boundary is now explicit too:
 
-- `query next-action` is the minimal pointer
-- `query single-agent-plan` is the default operating loop for one agent or operator
-- `query multi-agent-plan --mode import-adopt` is the optional decomposition for more complex brownfield work
-- `query work-packet --mode import-adopt --lane <id>` is the bounded assignment surface for one worker
+- `node ./src/cli.js query next-action <topogram-path> --mode <mode>` is the minimal pointer
+- `node ./src/cli.js query single-agent-plan <topogram-path> --mode <mode>` is the default operating loop for one agent or operator
+- `node ./src/cli.js query multi-agent-plan <topogram-path> --mode import-adopt` is the optional decomposition for more complex brownfield work
+- `node ./src/cli.js query work-packet <topogram-path> --mode import-adopt --lane <id>` is the bounded assignment surface for one worker
 - `review-packet` and `proceed-decision` now carry the compact operator loop, recommended query family, and first artifacts to inspect
 
 That planning stack is artifact-backed and alpha-complete for guidance. It is not yet a built-in scheduler or hosted orchestration runtime.
@@ -142,7 +142,7 @@ Topogram is still an early system. It should not be presented as:
 - a magic prompt-to-product box
 - a replacement for engineering judgment
 
-Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Start with [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md) and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
+Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Generated browser examples use `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`, which is intentionally public and only suitable for local/demo verification. Generated API CORS defaults are local-origin only and should be configured through `TOPOGRAM_CORS_ORIGINS` before exposing a generated stack beyond localhost. Start with [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md) and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
 
 Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
 
@@ -185,7 +185,7 @@ The current agent-facing contract also includes:
 
 ## Getting Started
 
-The fastest way to get oriented is to validate the core examples and generate one runnable bundle.
+The fastest way to get oriented is to validate the core examples and generate one runnable bundle. Use Node 20+; CI currently runs Node 20.
 
 ```bash
 cd ./engine

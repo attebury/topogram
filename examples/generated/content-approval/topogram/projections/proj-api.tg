@@ -80,8 +80,8 @@ projection proj_api {
 
   http_authz {
     cap_create_article permission articles.create
-    cap_get_article ownership owner_or_admin
-    cap_update_article ownership owner_or_admin permission articles.submit
+    cap_get_article ownership owner_or_admin ownership_field reviewer_id
+    cap_update_article ownership owner_or_admin ownership_field reviewer_id permission articles.submit
     cap_request_article_revision permission articles.request_revision claim reviewer claim_value true
     cap_approve_article permission articles.approve claim reviewer claim_value true
     cap_reject_article permission articles.reject claim reviewer claim_value true

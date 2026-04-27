@@ -131,12 +131,18 @@ test("generated auth helper keeps bearer demo and JWT contracts stable", () => {
   assert.match(helpers, /bearer_jwt_hs256/);
   assert.match(helpers, /TOPOGRAM_AUTH_JWT_SECRET/);
   assert.match(helpers, /missing_bearer_token/);
+  assert.match(helpers, /missing_auth_profile/);
+  assert.match(helpers, /unsupported_auth_profile/);
+  assert.match(helpers, /missing_auth_demo_token/);
   assert.match(helpers, /invalid_bearer_signature/);
   assert.match(helpers, /expired_bearer_token/);
   assert.match(helpers, /forbidden/);
+  assert.match(helpers, /Internal server error/);
+  assert.doesNotMatch(helpers, /error instanceof Error \? error\.message/);
   assert.match(helpers, /claims: Record<string, unknown>/);
   assert.match(helpers, /TOPOGRAM_AUTH_CLAIMS/);
   assert.match(helpers, /function hasClaim/);
+  assert.match(helpers, /contentDisposition/);
   assert.match(helpers, /ownershipField\?: string \| null/);
   assert.match(helpers, /owner_id", "assignee_id", "author_id", "user_id", "created_by_user_id/);
 });
@@ -348,11 +354,31 @@ test("issues generated web clients keep bearer token injection stable", () => {
   assert.equal(svelteBundle.ok, true);
 
   assert.match(reactBundle.artifact["src/lib/api/client.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
+  assert.match(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
+  assert.doesNotMatch(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_AUTH_TOKEN/);
   assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /function authToken\(\)/);
+  assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
   assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
 
   assert.match(svelteBundle.artifact["src/lib/api/client.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
+  assert.match(svelteBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
   assert.match(svelteBundle.artifact["src/lib/api/lookups.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
+});
+
+test("generated backend CORS and authorization wiring fail closed", () => {
+  const honoBundle = generateWorkspace(parsePath(issuesTopogramPath), {
+    target: "hono-server",
+    projectionId: "proj_api"
+  });
+  assert.equal(honoBundle.ok, true);
+
+  const app = honoBundle.artifact["src/lib/server/app.ts"];
+  assert.match(app, /TOPOGRAM_CORS_ORIGINS/);
+  assert.match(app, /origin: corsOrigin/);
+  assert.match(app, /authorization_handler_missing/);
+  assert.match(app, /await deps\.authorize\(/);
+  assert.doesNotMatch(app, /origin: "\*"/);
+  assert.doesNotMatch(app, /deps\.authorize\?\./);
 });
 
 test("generated UI contracts and pages carry explicit ownership visibility", () => {

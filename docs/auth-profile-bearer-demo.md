@@ -14,7 +14,7 @@ For the main signed-token auth proof surface, see [Bearer JWT HS256 Auth Profile
 - role checks through `TOPOGRAM_AUTH_ROLES`
 - ownership checks when the generated route can load the target resource before the handler runs
 - optional admin bypass through `TOPOGRAM_AUTH_ADMIN`
-- automatic bearer header attachment from generated web clients when `PUBLIC_TOPOGRAM_AUTH_TOKEN` is present
+- automatic bearer header attachment from generated web clients when `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` is present
 - generated smoke and runtime-check bundles that can exercise secured routes with the configured token
 
 ## Current Environment Surface
@@ -25,9 +25,11 @@ For the main signed-token auth proof surface, see [Bearer JWT HS256 Auth Profile
 - `TOPOGRAM_AUTH_PERMISSIONS`
 - `TOPOGRAM_AUTH_ROLES`
 - `TOPOGRAM_AUTH_ADMIN`
-- `PUBLIC_TOPOGRAM_AUTH_TOKEN`
+- `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`
 
 Generated local examples commonly also set `TOPOGRAM_DEMO_USER_ID` so seeded data and the auth principal stay aligned.
+
+`PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` is deliberately named as a public demo credential. It is bundled into generated browser code and must not be treated as a secret or as a production trust boundary.
 
 ## Ownership Behavior
 

@@ -20,6 +20,7 @@ function renderServerAppTs(realization) {
   const lines = [];
   const typeImportNames = routeTypeNames(contract);
   const serviceName = realization.backendReference.serviceName;
+  const defaultWebPort = realization.runtimeReference?.ports?.web || 5173;
   const repositoryReference = realization.repositoryReference;
   const dependencyName = repositoryReference.dependencyName;
   const preconditionCapabilityIds = repositoryReference.preconditionCapabilityIds;
@@ -31,7 +32,7 @@ function renderServerAppTs(realization) {
   lines.push('import { cors } from "hono/cors";');
   lines.push('import type { Context } from "hono";');
   lines.push('import { serverContract } from "../topogram/server-contract";');
-  lines.push('import { HttpError, coerceValue, jsonError, requireHeaders, requireRequestFields } from "./helpers";');
+  lines.push('import { HttpError, coerceValue, contentDisposition, jsonError, requireHeaders, requireRequestFields } from "./helpers";');
   lines.push('import type { ServerDependencies } from "./context";');
   lines.push(`import type { ${typeImportNames.join(", ")} } from "../persistence/types";`);
   lines.push("");
@@ -53,10 +54,16 @@ function renderServerAppTs(realization) {
   lines.push("  return input;");
   lines.push("}");
   lines.push("");
+  lines.push("function corsOrigin(origin: string) {");
+  lines.push(`  const configured = process.env.TOPOGRAM_CORS_ORIGINS || "http://localhost:${defaultWebPort},http://127.0.0.1:${defaultWebPort}";`);
+  lines.push("  const allowed = new Set(configured.split(\",\").map((entry) => entry.trim()).filter(Boolean));");
+  lines.push("  return allowed.has(origin) ? origin : \"\";");
+  lines.push("}");
+  lines.push("");
   lines.push("export function createApp(deps: ServerDependencies) {");
   lines.push("  const app = new Hono();");
   lines.push('  app.use("*", cors({');
-  lines.push('    origin: "*",');
+  lines.push("    origin: corsOrigin,");
   lines.push('    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],');
   lines.push('    allowHeaders: ["Content-Type", "If-Match", "If-None-Match", "Idempotency-Key", "Authorization"],');
   lines.push('    exposeHeaders: ["ETag", "Location", "Retry-After", "Content-Disposition"]');
@@ -115,7 +122,8 @@ function renderServerAppTs(realization) {
           lines.push(`      const ${authLoaderVar} = undefined;`);
         }
       }
-      lines.push(`      await deps.authorize?.(c, ${routeVar}.endpoint.authz, { capabilityId: ${routeVar}.capabilityId, input, ${hasOwnershipAuthz ? `loadResource: typeof ${authLoaderVar} === "function" ? ${authLoaderVar} : undefined` : "loadResource: undefined"} });`);
+      lines.push('      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");');
+      lines.push(`      await deps.authorize(c, ${routeVar}.endpoint.authz, { capabilityId: ${routeVar}.capabilityId, input, ${hasOwnershipAuthz ? `loadResource: typeof ${authLoaderVar} === "function" ? ${authLoaderVar} : undefined` : "loadResource: undefined"} });`);
     }
     if ((route.endpoint.preconditions || []).length > 0 || (route.endpoint.idempotency || []).length > 0) {
       lines.push(`      requireHeaders(c, [...${routeVar}.endpoint.preconditions, ...${routeVar}.endpoint.idempotency]);`);
@@ -135,7 +143,7 @@ function renderServerAppTs(realization) {
       lines.push(`      const artifact = await deps.${dependencyName}.${methodName}(input as unknown as ${toPascalCase(methodName)}Input);`);
       lines.push("      const responseHeaders = new Headers();");
       lines.push(`      responseHeaders.set("Content-Type", artifact.contentType || "${route.endpoint.download?.[0]?.media || "application/octet-stream"}");`);
-      lines.push(`      responseHeaders.set("Content-Disposition", \`${route.endpoint.download?.[0]?.disposition || "attachment"}; filename=\"\${artifact.filename || "${route.endpoint.download?.[0]?.filename || "download.bin"}"}\"\`);`);
+      lines.push(`      responseHeaders.set("Content-Disposition", contentDisposition("${route.endpoint.download?.[0]?.disposition || "attachment"}", artifact.filename || "${route.endpoint.download?.[0]?.filename || "download.bin"}"));`);
       lines.push(`      return new Response(artifact.body as BodyInit | null, { status: ${route.successStatus}, headers: responseHeaders });`);
     } else {
       lines.push(`      const result = await deps.${dependencyName}.${methodName}(input as unknown as ${toPascalCase(methodName)}Input);`);

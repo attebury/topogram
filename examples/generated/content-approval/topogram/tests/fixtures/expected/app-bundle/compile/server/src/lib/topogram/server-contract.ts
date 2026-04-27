@@ -1235,7 +1235,7 @@ export const serverContract = {
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
-            "ownershipField": null
+            "ownershipField": "reviewer_id"
           }
         ],
         "preconditions": [],
@@ -1964,7 +1964,7 @@ export const serverContract = {
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
-            "ownershipField": null
+            "ownershipField": "reviewer_id"
           }
         ],
         "preconditions": [

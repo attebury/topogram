@@ -336,7 +336,7 @@
           "predicate": "ownership",
           "value": "owner_or_admin",
           "claimValue": null,
-          "ownershipField": null
+          "ownershipField": "reviewer_id"
         },
         {
           "capability": {
@@ -655,5 +655,5 @@
       "include": true
     }
   ],
-  "graphRoot": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram"
+  "graphRoot": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram"
 }

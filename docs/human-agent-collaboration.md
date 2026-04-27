@@ -130,9 +130,9 @@ This is the collaboration model Topogram should optimize for, both in the local 
 
 The default machine-readable operating surface should mirror that same loop:
 
-- `query next-action` stays the minimal pointer
-- `query single-agent-plan` is the explicit default operating plan for one agent or operator
+- `query next-action --mode <mode>` stays the minimal pointer
+- `query single-agent-plan --mode <mode>` is the explicit default operating plan for one agent or operator
 - future multi-agent planning should be derived by decomposing that same single-agent plan, not by introducing a separate collaboration philosophy
 - `query multi-agent-plan --mode import-adopt` should coordinate through structured lane ownership, handoff packets, overlap rules, and serialized gates rather than freeform agent messaging
 - `query work-packet --mode import-adopt --lane <id>` is the bounded assignment surface for one worker, and should remain the preferred handoff boundary for external agent systems
-- `query lane-status` and `query handoff-status` are the read-only visibility surfaces that let humans and agents see which lanes are blocked, ready, complete, or still waiting on handoffs
+- `query lane-status --mode import-adopt` and `query handoff-status --mode import-adopt` are the read-only visibility surfaces that let humans and agents see which lanes are blocked, ready, complete, or still waiting on handoffs

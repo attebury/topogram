@@ -25,7 +25,7 @@ interface AuthPrincipal {
 }
 
 function authToken() {
-  return publicEnv.PUBLIC_TOPOGRAM_AUTH_TOKEN || "";
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function csvValues(value: string) {
@@ -76,8 +76,8 @@ function principalFromJwt(token: string): AuthPrincipal | null {
   if (!payload || typeof payload !== "object") return null;
   return {
     userId: typeof payload.sub === "string" ? payload.sub : "",
-    permissions: new Set(Array.isArray(payload.permissions) ? payload.permissions.filter((value) => typeof value === "string") : []),
-    roles: new Set(Array.isArray(payload.roles) ? payload.roles.filter((value) => typeof value === "string") : []),
+    permissions: new Set(Array.isArray(payload.permissions) ? payload.permissions.filter((value: unknown) => typeof value === "string") : []),
+    roles: new Set(Array.isArray(payload.roles) ? payload.roles.filter((value: unknown) => typeof value === "string") : []),
     claims: payload as Record<string, unknown>,
     isAdmin: payload.admin === true
   };

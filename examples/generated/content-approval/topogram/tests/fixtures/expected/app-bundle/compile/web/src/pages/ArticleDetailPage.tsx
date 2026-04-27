@@ -87,7 +87,7 @@ export function ArticleDetailPage() {
     };
   }, [id]);
 
-  async function approveArticle() {
+  async function approveCurrentArticle() {
     if (!article?.updated_at) {
       setError("updated_at is required to approve this article.");
       return;
@@ -95,7 +95,8 @@ export function ArticleDetailPage() {
     setApproving(true);
     setError("");
     try {
-      await approveArticle(fetch, id, { reviewer_notes: "Approved from the generated article detail page." }, {
+      await approveArticle(fetch, id, {
+        reviewer_notes: "Approved from the generated article detail page.",
         headers: {
           "If-Match": String(article.updated_at),
           "Idempotency-Key": crypto.randomUUID()
@@ -210,7 +211,7 @@ export function ArticleDetailPage() {
           {String(article.status) === "submitted" ? (
             <>
               {canApproveArticle ? (
-                <button type="button" onClick={() => void approveArticle()} disabled={approving}>
+                <button type="button" onClick={() => void approveCurrentArticle()} disabled={approving}>
                   {approving ? "Approving..." : "Approve Article"}
                 </button>
               ) : null}

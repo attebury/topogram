@@ -113,6 +113,7 @@ WEB_PORT=${plan.ports.web}
 # Local SQLite defaults
 DATABASE_URL=file:./var/${databaseName}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
+TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}
 PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
 TOPOGRAM_DEMO_USER_ID=${demo.userId}
 ${plan.runtimeReference.environment.envExample || ""}
@@ -137,6 +138,7 @@ POSTGRES_PASSWORD=postgres
 DATABASE_URL=postgresql://\${POSTGRES_USER}@localhost:5432/${databaseName}?schema=public
 DATABASE_ADMIN_URL=postgresql://\${POSTGRES_USER}@localhost:5432/postgres
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
+TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}
 PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
 TOPOGRAM_DEMO_USER_ID=${demo.userId}
 ${plan.runtimeReference.environment.envExample || ""}
@@ -227,7 +229,7 @@ function renderEnvironmentBootstrapDbScript(plan) {
     "fi",
     '(cd "$ROOT_DIR/db" && bash ./scripts/db-bootstrap-or-migrate.sh)',
     'if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then',
-    '(cd "$ROOT_DIR/server" && npm install && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)',
+    '(cd "$ROOT_DIR/server" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)',
     "fi"
   ]);
 }
@@ -237,6 +239,7 @@ function renderEnvironmentServerDevScript(plan) {
     'node "$SCRIPT_DIR/guard-ports.mjs" server',
     "",
     `export PORT="\${SERVER_PORT:-${plan.ports.server}}"`,
+    `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${WEB_PORT:-${plan.ports.web}},http://127.0.0.1:\${WEB_PORT:-${plan.ports.web}}}"`,
     "",
     'cd "$ROOT_DIR/server"',
     "npm install",
@@ -250,10 +253,11 @@ function renderEnvironmentWebDevScript(plan) {
     'node "$SCRIPT_DIR/guard-ports.mjs" web',
     "",
     `export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${SERVER_PORT:-${plan.ports.server}}}"`,
+    `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${WEB_PORT:-${plan.ports.web}},http://127.0.0.1:\${WEB_PORT:-${plan.ports.web}}}"`,
     "",
     'cd "$ROOT_DIR/web"',
     "npm install",
-    `npm run dev -- --host 0.0.0.0 --port "\${WEB_PORT:-${plan.ports.web}}"`,
+    `npm run dev -- --host "\${WEB_HOST:-127.0.0.1}" --port "\${WEB_PORT:-${plan.ports.web}}"`,
   ]);
 }
 
@@ -378,8 +382,9 @@ function renderEnvironmentDockerCompose(plan) {
     environment:
       DATABASE_URL: postgresql://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-${plan.runtimeReference.environment.databaseName || "topogram_app"}}?schema=public
       PORT: \${SERVER_PORT:-${plan.ports.server}}
+      TOPOGRAM_CORS_ORIGINS: http://localhost:\${WEB_PORT:-${plan.ports.web}},http://127.0.0.1:\${WEB_PORT:-${plan.ports.web}}
     ports:
-      - "\${SERVER_PORT:-${plan.ports.server}}:\${SERVER_PORT:-${plan.ports.server}}"
+      - "127.0.0.1:\${SERVER_PORT:-${plan.ports.server}}:\${SERVER_PORT:-${plan.ports.server}}"
     volumes:
       - ./server:/app
     command: >
@@ -395,7 +400,7 @@ function renderEnvironmentDockerCompose(plan) {
     environment:
       PUBLIC_TOPOGRAM_API_BASE_URL: http://localhost:\${SERVER_PORT:-${plan.ports.server}}
     ports:
-      - "\${WEB_PORT:-${plan.ports.web}}:\${WEB_PORT:-${plan.ports.web}}"
+      - "127.0.0.1:\${WEB_PORT:-${plan.ports.web}}:\${WEB_PORT:-${plan.ports.web}}"
     volumes:
       - ./web:/app
     command: >

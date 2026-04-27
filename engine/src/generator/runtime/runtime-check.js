@@ -159,9 +159,7 @@ function envValue(name) {
     ${runtimeReference.runtimeCheck.demoContainerEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID || process.env.PUBLIC_TOPOGRAM_DEMO_PROJECT_ID || "",
     ${runtimeReference.runtimeCheck.demoPrimaryEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID || process.env.PUBLIC_TOPOGRAM_DEMO_TASK_ID || process.env.PUBLIC_TOPOGRAM_DEMO_ISSUE_ID || "",
     TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
-    TOPOGRAM_AUTH_PROFILE: process.env.PUBLIC_TOPOGRAM_AUTH_PROFILE || "",
-    TOPOGRAM_AUTH_TOKEN: process.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || "",
-    TOPOGRAM_AUTH_USER_ID: process.env.PUBLIC_TOPOGRAM_AUTH_USER_ID || process.env.TOPOGRAM_DEMO_USER_ID || ""
+    TOPOGRAM_AUTH_USER_ID: process.env.TOPOGRAM_DEMO_USER_ID || ""
   };
 
   return fallbackMap[name] || "";

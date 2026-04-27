@@ -575,7 +575,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "issues.create",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -1037,7 +1040,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": null,
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "assignee_id"
           }
         ],
         "preconditions": [],
@@ -1664,7 +1670,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "issues.update",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "assignee_id"
           }
         ],
         "preconditions": [
@@ -2164,7 +2173,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "issues.close",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "assignee_id"
           }
         ],
         "preconditions": [
@@ -2864,7 +2876,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "issues.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],

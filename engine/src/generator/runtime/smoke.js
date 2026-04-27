@@ -95,12 +95,16 @@ function renderRuntimeSmokeModule(graph) {
     if (value === "__DEMO_CONTAINER_ID__") {
       return `    ${key}: demoContainerId`;
     }
+    if (value === "__DEMO_USER_ID__") {
+      return `    ${key}: demoUserId`;
+    }
     return `    ${key}: ${JSON.stringify(value)}`;
   }).join(",\n");
   return `const apiBase = process.env.TOPOGRAM_API_BASE_URL || "";
 const webBase = process.env.TOPOGRAM_WEB_BASE_URL || "";
 const demoContainerId = process.env.${runtimeReference.smoke.defaultContainerEnvVar} || "${runtimeReference.demoEnv.containerId}";
-const authToken = process.env.TOPOGRAM_AUTH_TOKEN || process.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || "";
+const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "${runtimeReference.demoEnv.userId}";
+const authToken = process.env.TOPOGRAM_AUTH_TOKEN || "";
 
 if (!apiBase || !webBase) {
   throw new Error("TOPOGRAM_API_BASE_URL and TOPOGRAM_WEB_BASE_URL are required");

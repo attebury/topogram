@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { serverContract } from "../topogram/server-contract";
-import { HttpError, coerceValue, jsonError, requireHeaders, requireRequestFields } from "./helpers";
+import { HttpError, coerceValue, contentDisposition, jsonError, requireHeaders, requireRequestFields } from "./helpers";
 import type { ServerDependencies } from "./context";
 import type { ApproveArticleInput, ApproveArticleResult, CreateArticleInput, CreateArticleResult, GetArticleInput, GetArticleResult, ListArticlesInput, ListArticlesResult, ListArticlesResultItem, RejectArticleInput, RejectArticleResult, RequestArticleRevisionInput, RequestArticleRevisionResult, UpdateArticleInput, UpdateArticleResult } from "../persistence/types";
 
@@ -28,11 +28,20 @@ function buildInput(req: Request, route: any, body: Record<string, unknown>) {
   return input;
 }
 
+function corsOrigin(req: Request) {
+  const configured = process.env.TOPOGRAM_CORS_ORIGINS || "http://localhost:5175,http://127.0.0.1:5175";
+  const allowed = new Set(configured.split(",").map((entry) => entry.trim()).filter(Boolean));
+  const origin = req.get("Origin") || "";
+  return allowed.has(origin) ? origin : "";
+}
+
 export function createApp(deps: ServerDependencies) {
   const app = express();
   app.use(express.json());
   app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
+    const allowedOrigin = corsOrigin(req);
+    if (allowedOrigin) res.header("Access-Control-Allow-Origin", allowedOrigin);
+    res.header("Vary", "Origin");
     res.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type,If-Match,If-None-Match,Idempotency-Key,Authorization");
     res.header("Access-Control-Expose-Headers", "ETag,Location,Retry-After,Content-Disposition");
@@ -80,7 +89,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route0, body);
-      await deps.authorize?.(req, route0.endpoint.authz, { capabilityId: route0.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route0.endpoint.authz, { capabilityId: route0.capabilityId, input, loadResource: undefined });
       requireHeaders(req, [...route0.endpoint.preconditions, ...route0.endpoint.idempotency]);
       requireRequestFields(route0, input);
       const result = await deps.articleRepository.createArticle(input as unknown as CreateArticleInput);
@@ -97,7 +107,8 @@ export function createApp(deps: ServerDependencies) {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route1, body);
       const loadAuthorizationResource1 = async () => await deps.articleRepository.getArticle(input as unknown as GetArticleInput) as unknown as Record<string, unknown>;
-      await deps.authorize?.(req, route1.endpoint.authz, { capabilityId: route1.capabilityId, input, loadResource: typeof loadAuthorizationResource1 === "function" ? loadAuthorizationResource1 : undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route1.endpoint.authz, { capabilityId: route1.capabilityId, input, loadResource: typeof loadAuthorizationResource1 === "function" ? loadAuthorizationResource1 : undefined });
       requireRequestFields(route1, input);
       const result = await deps.articleRepository.getArticle(input as unknown as GetArticleInput);
       const etag = (result as unknown as Record<string, unknown>)["updated_at"];
@@ -118,7 +129,8 @@ export function createApp(deps: ServerDependencies) {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route2, body);
       const loadAuthorizationResource2 = async () => await deps.articleRepository.getArticle({ article_id: String(input.article_id || "") } as unknown as GetArticleInput) as unknown as Record<string, unknown>;
-      await deps.authorize?.(req, route2.endpoint.authz, { capabilityId: route2.capabilityId, input, loadResource: typeof loadAuthorizationResource2 === "function" ? loadAuthorizationResource2 : undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route2.endpoint.authz, { capabilityId: route2.capabilityId, input, loadResource: typeof loadAuthorizationResource2 === "function" ? loadAuthorizationResource2 : undefined });
       requireHeaders(req, [...route2.endpoint.preconditions, ...route2.endpoint.idempotency]);
       requireRequestFields(route2, input);
       const ifMatch = req.get("If-Match");
@@ -141,7 +153,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route3, body);
-      await deps.authorize?.(req, route3.endpoint.authz, { capabilityId: route3.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route3.endpoint.authz, { capabilityId: route3.capabilityId, input, loadResource: undefined });
       requireHeaders(req, [...route3.endpoint.preconditions, ...route3.endpoint.idempotency]);
       requireRequestFields(route3, input);
       const ifMatch = req.get("If-Match");
@@ -164,7 +177,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route4, body);
-      await deps.authorize?.(req, route4.endpoint.authz, { capabilityId: route4.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route4.endpoint.authz, { capabilityId: route4.capabilityId, input, loadResource: undefined });
       requireHeaders(req, [...route4.endpoint.preconditions, ...route4.endpoint.idempotency]);
       requireRequestFields(route4, input);
       const ifMatch = req.get("If-Match");
@@ -187,7 +201,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route5, body);
-      await deps.authorize?.(req, route5.endpoint.authz, { capabilityId: route5.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route5.endpoint.authz, { capabilityId: route5.capabilityId, input, loadResource: undefined });
       requireHeaders(req, [...route5.endpoint.preconditions, ...route5.endpoint.idempotency]);
       requireRequestFields(route5, input);
       const ifMatch = req.get("If-Match");
@@ -210,7 +225,8 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
       const input = buildInput(req, route6, body);
-      await deps.authorize?.(req, route6.endpoint.authz, { capabilityId: route6.capabilityId, input, loadResource: undefined });
+      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
+      await deps.authorize(req, route6.endpoint.authz, { capabilityId: route6.capabilityId, input, loadResource: undefined });
       requireRequestFields(route6, input);
       const result = await deps.articleRepository.listArticles(input as unknown as ListArticlesInput);
       return res.status(200).json(result as ListArticlesResult);

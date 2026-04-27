@@ -10,11 +10,12 @@ export const TODO_RUNTIME_REFERENCE = {
   environment: {
     name: "Todo Local Runtime Stack",
     databaseName: "topogram_todo",
-    envExample: `TOPOGRAM_AUTH_PROFILE=bearer_demo
+    envExample: `# Demo-only credentials. Do not reuse these values outside local/generated verification.
+TOPOGRAM_AUTH_PROFILE=bearer_demo
 TOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token
 TOPOGRAM_AUTH_USER_ID=${TODO_BACKEND_REFERENCE.demo.userId}
 TOPOGRAM_AUTH_PERMISSIONS=*
-PUBLIC_TOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token
+PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN=topogram-todo-demo-token
 PUBLIC_TOPOGRAM_AUTH_USER_ID=${TODO_BACKEND_REFERENCE.demo.userId}
 PUBLIC_TOPOGRAM_AUTH_PERMISSIONS=*
 PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=${TODO_BACKEND_REFERENCE.demo.taskId}
@@ -36,7 +37,10 @@ TOPOGRAM_DEMO_CONTAINER_ID=${TODO_BACKEND_REFERENCE.demo.projectId}`
     listPath: "/tasks",
     createPayload: {
       title: "Smoke Test Task",
-      containerField: "project_id"
+      containerField: "project_id",
+      extraFields: {
+        owner_id: "__DEMO_USER_ID__"
+      }
     }
   },
   runtimeCheck: {

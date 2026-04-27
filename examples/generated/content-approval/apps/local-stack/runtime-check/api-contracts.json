@@ -1467,7 +1467,7 @@
           "claim": null,
           "claimValue": null,
           "ownership": "owner_or_admin",
-          "ownershipField": null
+          "ownershipField": "reviewer_id"
         }
       ],
       "callbacks": [],
@@ -4199,7 +4199,7 @@
           "claim": null,
           "claimValue": null,
           "ownership": "owner_or_admin",
-          "ownershipField": null
+          "ownershipField": "reviewer_id"
         }
       ],
       "callbacks": [],

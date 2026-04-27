@@ -4,7 +4,6 @@ import { ArticleListPage } from "./pages/ArticleListPage";
 import { ArticleDetailPage } from "./pages/ArticleDetailPage";
 import { ArticleCreatePage } from "./pages/ArticleCreatePage";
 import { ArticleEditPage } from "./pages/ArticleEditPage";
-import { EditorialSettingsPage } from "./pages/EditorialSettingsPage";
 
 export default function App() {
   return (
@@ -25,7 +24,6 @@ export default function App() {
             <Route path="/articles/:id" element={<ArticleDetailPage />} />
             <Route path="/articles/new" element={<ArticleCreatePage />} />
             <Route path="/articles/:id/edit" element={<ArticleEditPage />} />
-            <Route path="/settings" element={<EditorialSettingsPage />} />
           </Routes>
         </main>
         <footer className="app-footer">

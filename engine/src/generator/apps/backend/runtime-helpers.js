@@ -53,7 +53,7 @@ export function jsonError(error: unknown) {
     body: {
       error: {
         code: "internal_server_error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: "Internal server error"
       }
     }
   };
@@ -68,7 +68,13 @@ export function coerceValue(raw: string | undefined, schema: { type?: string; fo
   }
   if (schema.type === "integer" || schema.type === "number") {
     const parsed = Number(raw);
-    return Number.isNaN(parsed) ? raw : parsed;
+    if (Number.isNaN(parsed)) {
+      throw new HttpError(400, "invalid_number", \`Invalid numeric value: \${raw}\`);
+    }
+    if (schema.type === "integer" && !Number.isInteger(parsed)) {
+      throw new HttpError(400, "invalid_integer", \`Invalid integer value: \${raw}\`);
+    }
+    return parsed;
   }
   if (schema.type === "boolean") {
     return raw === "true";
@@ -159,6 +165,15 @@ function parseJsonSegment(segment: string, code: string) {
 
 function readHs256Secret() {
   return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+}
+
+export function contentDisposition(disposition: string, filename: string) {
+  const safeDisposition = disposition === "inline" ? "inline" : "attachment";
+  const safeFilename = filename
+    .replace(/[\\r\\n"]/g, "")
+    .replace(/[\\\\/]/g, "_")
+    .trim() || "download.bin";
+  return \`\${safeDisposition}; filename="\${safeFilename}"\`;
 }
 
 function parsePrincipalClaims(payload: Record<string, unknown>): AuthPrincipal {
@@ -351,7 +366,7 @@ export async function authorizeWithBearerDemoProfile(
 ) {
   const envPrincipal = principalFromEnv();
   if (!envPrincipal) {
-    return;
+    throw new HttpError(500, "missing_auth_demo_token", "Missing TOPOGRAM_AUTH_TOKEN for bearer_demo auth profile");
   }
 
   const token = readBearerToken(c);
@@ -370,10 +385,6 @@ export async function authorizeWithBearerJwtHs256Profile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
-  if ((process.env.TOPOGRAM_AUTH_PROFILE || "") !== "bearer_jwt_hs256") {
-    return;
-  }
-
   const token = readBearerToken(c);
   if (!token) {
     throw new HttpError(401, "missing_bearer_token", "Missing bearer token");
@@ -381,7 +392,7 @@ export async function authorizeWithBearerJwtHs256Profile(
 
   const principal = principalFromJwtHs256(token);
   if (!principal) {
-    return;
+    throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
   await authorizeWithPrincipal(principal, authz, authorizationContext);
@@ -392,6 +403,10 @@ export async function authorizeWithGeneratedAuthProfile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
+  if (!authz || authz.length === 0) {
+    return;
+  }
+
   const profile = process.env.TOPOGRAM_AUTH_PROFILE || "";
   if (profile === "bearer_demo") {
     await authorizeWithBearerDemoProfile(c, authz, authorizationContext);
@@ -399,7 +414,13 @@ export async function authorizeWithGeneratedAuthProfile(
   }
   if (profile === "bearer_jwt_hs256") {
     await authorizeWithBearerJwtHs256Profile(c, authz, authorizationContext);
+    return;
   }
+  throw new HttpError(
+    500,
+    profile ? "unsupported_auth_profile" : "missing_auth_profile",
+    profile ? \`Unsupported TOPOGRAM_AUTH_PROFILE: \${profile}\` : "Missing TOPOGRAM_AUTH_PROFILE for protected route"
+  );
 }
 `;
 }
