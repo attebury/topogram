@@ -119,10 +119,11 @@ The key question here is:
 
 The current brownfield/operator proof is also easier to explain now:
 
+- the canonical local brownfield rehearsal lives in `topogram` through the staged import-plan fixture and the planning/operator query family
 - import/adopt surfaces carry conservative maintained seam-review summaries
 - `review-packet` and `proceed-decision` expose the recommended query family and compact operator loop
 - the shortest operator path is now visible in the artifact payloads themselves rather than only in surrounding docs
-- the active imported proof targets now live in [topogram-demo](https://github.com/attebury/topogram-demo), while this repo keeps only the product-side claim contract and ops boundary
+- the active imported proof targets now live in [topogram-demo](https://github.com/attebury/topogram-demo), while this repo keeps only the product-side claim contract, local rehearsal path, and ops boundary
 
 ## 5. Check verification and limits
 
@@ -177,8 +178,12 @@ Use this short path for a live demo:
    - [issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
    - [content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
    - [issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
-7. Show [examples/imported/README.md](../examples/imported/README.md), [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), and [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported) as the brownfield proof boundary and active imported claim set.
-8. For import/adopt rehearsal, use:
+7. Show the local brownfield rehearsal path:
+   - `bash ./scripts/run-brownfield-rehearsal.sh`
+   - `bash ./scripts/verify-brownfield-rehearsal.sh`
+   - `bash ./scripts/verify-agent-planning.sh`
+8. Show [examples/imported/README.md](../examples/imported/README.md), [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), and [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported) as the imported breadth boundary and active imported claim set.
+9. For import/adopt rehearsal, use:
    - `bash ./scripts/run-brownfield-rehearsal.sh`
    - or, if you want the manual steps:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
@@ -186,7 +191,7 @@ Use this short path for a live demo:
    - then `query review-packet --mode import-adopt`
    - then `query proceed-decision --mode import-adopt`
    - on this fixture, expect the conservative stop because maintained no-go seams are already in scope
-9. For planning rehearsal, use:
+10. For planning rehearsal, use:
    - `query next-action --mode import-adopt`
    - `query single-agent-plan --mode import-adopt`
    - `query review-packet --mode import-adopt`
@@ -195,4 +200,4 @@ Use this short path for a live demo:
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`
    - and `bash ./scripts/verify-brownfield-rehearsal.sh`
-10. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.
+11. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.

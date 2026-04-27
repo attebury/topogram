@@ -22,6 +22,21 @@ The desired loop is:
 4. reconcile candidates into reviewable concept bundles
 5. selectively adopt approved candidates into canonical `topogram/` files
 
+## Alpha Bar
+
+For alpha, the brownfield story has two distinct proof surfaces:
+
+- `topogram` proves the deterministic staged import/adopt rehearsal and the planning/operator loop on the canonical local fixture
+- `topogram-demo` proves active imported breadth on real external systems
+
+The local alpha rehearsal inside `topogram` is:
+
+1. `bash ./scripts/run-brownfield-rehearsal.sh`
+2. `bash ./scripts/verify-brownfield-rehearsal.sh`
+3. `bash ./scripts/verify-agent-planning.sh`
+
+The active imported breadth bar remains the current 5-target set in [topogram-demo](https://github.com/attebury/topogram-demo).
+
 ## Core Workflows
 
 ### Import
@@ -175,8 +190,8 @@ Those should be surfaced as impacts, patches, and review groups instead.
 - add projection patch planning as a stronger review surface
 - run more real brownfield trials outside the curated examples
 - harden maintained seam candidate inference with conservative scoring and trial-derived regression fixtures so import/adopt review stays precise on real brownfield structures
-- keep one positive imported maintained-boundary proof (`supabase-express-api`) and one negative/no-guessing imported proof (`eShopOnWeb`) green in `topogram-demo` as the current alpha bar
-- keep one server-rendered UI flow proof (`eShopOnWeb` basket) and one mobile UI flow proof (`clean-architecture-swiftui` country) green in `topogram-demo` as supporting regression evidence, not as launch-gating alpha scope by default
+- keep one positive imported maintained-boundary proof (`supabase-express-api`) and one negative/no-guessing imported proof (`eShopOnWeb`) green in `topogram-demo` as part of the current active imported claim set
+- keep one server-rendered UI flow proof (`eShopOnWeb` basket) and one mobile UI flow proof (`clean-architecture-swiftui` country) green in `topogram-demo` as supporting regression evidence, not as a reason to widen the product-repo local rehearsal scope
 
 ## Brownfield journey drafts
 

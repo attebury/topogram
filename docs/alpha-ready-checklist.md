@@ -33,6 +33,9 @@ It is not a roadmap. It is the shortest answer to:
 Current closeout command set:
 
 - `bash ./scripts/verify-product-app.sh`
+- `bash ./scripts/run-brownfield-rehearsal.sh`
+- `bash ./scripts/verify-brownfield-rehearsal.sh`
+- `bash ./scripts/verify-agent-planning.sh`
 - `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
 - `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 - `node ./engine/src/cli.js query maintained-conformance ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
@@ -43,6 +46,7 @@ Current closeout command set:
 Alpha closeout expectation:
 
 - the maintained proof gate and maintained query sequence still run exactly as written
+- the brownfield rehearsal path runs exactly as written and stays split cleanly from imported breadth in `topogram-demo`
 - the import/adopt fixture path still produces a non-empty staged proposal demo
 - the operator can explain governed seam evidence versus lightweight implementation corroboration without overclaiming deeper maintained-code understanding
 

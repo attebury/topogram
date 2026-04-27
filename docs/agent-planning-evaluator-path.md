@@ -1,6 +1,6 @@
 # Agent Planning Evaluator Path
 
-This is the shortest evaluator-facing path for Topogram's current planning surface.
+This is the canonical local evaluator and rehearsal path for Topogram's current brownfield planning surface.
 
 The claim boundary is intentionally narrow:
 
@@ -29,21 +29,32 @@ That progression should answer four different questions cleanly:
 - which lanes are still blocked or ready?
 - which handoffs are still pending?
 
-## Fast Local Path
+## Canonical Local Brownfield Path
 
-Use an import-adopt fixture with staged reconcile artifacts:
+Use the staged import/adopt fixture under `engine/tests/fixtures/import/incomplete-topogram/topogram`.
 
-```bash
-node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json
-```
-
-If you want the shortest one-command local walkthrough, run:
+For the shortest one-command local walkthrough, run:
 
 ```bash
 bash ./scripts/run-brownfield-rehearsal.sh
 ```
 
-That will build the staged fixture, print the staged workspace root, and run the canonical brownfield review loop.
+That command is the canonical brownfield evaluator start inside `topogram`.
+It should print:
+
+- the staged workspace root
+- `import-plan`
+- `review-packet`
+- `proceed-decision`
+- `next-action`
+
+Then use the same staged workspace for the planning surfaces below.
+
+If you want to build the staged workspace manually, start with:
+
+```bash
+node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json
+```
 
 If you want to inspect the steps manually, first copy the `staged_topogram_root` returned by the fixture builder. Then run:
 
@@ -75,6 +86,8 @@ For the shortest evaluator-facing verification path, run:
 bash ./scripts/verify-agent-planning.sh
 bash ./scripts/verify-brownfield-rehearsal.sh
 ```
+
+These are the acceptance gates for the local brownfield evaluator path.
 
 ## What The Planning Surface Proves
 
@@ -134,6 +147,15 @@ Planning is alpha-complete when framed as:
 - explicit review boundaries
 - explicit serialized adoption and proof gates
 - bounded worker assignments for external agent systems
+
+The brownfield evaluator path is alpha-complete only when all of these stay true together:
+
+- the staged fixture stays non-empty
+- `review-packet` stays sourced from `import-plan`
+- `proceed-decision` stays conservative and returns `stop_no_go`
+- `next-action` stays `review_staged`
+- the planning surfaces remain available on that same staged workspace after the conservative stop
+- imported breadth stays delegated to [topogram-demo](https://github.com/attebury/topogram-demo) rather than drifting back into the product repo
 
 Planning is not yet a claim about:
 
