@@ -4,7 +4,7 @@ Topogram helps humans and agents evolve software safely.
 
 It keeps intent, generated outputs, and verification aligned so software changes stay structured, explainable, and provable instead of drifting across prompts, code, and docs.
 
-Topogram is a controlled software evolution system. More specifically, it acts as a software-intent operating model and spec-and-proof layer: it models the parts that should stay durable, generates contracts and runnable artifacts from that model, and keeps verification attached to the same source of truth.
+Topogram acts as a software-intent operating model and spec-and-proof layer: it models the parts that should stay durable, generates contracts and runnable artifacts from that model, and keeps verification attached to the same source of truth.
 
 ```mermaid
 flowchart LR
@@ -26,11 +26,11 @@ Topogram gives humans and agents a system to work within:
 - verification that stays attached to the modeled intent
 - a clear boundary between modeled surfaces and hand-maintained code
 
-The goal is not to replace engineering judgment. The goal is to give judgment a durable home, so agents can help evolve software without turning the system into prompt-shaped drift.
+Topogram keeps judgment in a durable home, so agents can help evolve software without turning the system into prompt-shaped drift.
 
 ## Why Now
 
-Agent use is increasing, but prompt-driven software work tends to scatter intent across chats, generated diffs, and partial runtime checks.
+Agent use is increasing, but prompt-driven software work tends to scatter intent across requirements, chats, generated diffs, and partial runtime checks.
 
 Topogram exists for teams that want:
 
@@ -41,7 +41,7 @@ Topogram exists for teams that want:
 
 ## What It Is
 
-Topogram is not just a schema tool and not just an app generator.
+Topogram is not just a **schema tool** and not just an **app generator**.
 
 It is a way to capture durable software intent so humans and agents can:
 
@@ -53,7 +53,7 @@ It is a way to capture durable software intent so humans and agents can:
 
 ## Human And Agent Workflow
 
-Topogram works best when the collaboration layers stay clear:
+### Clear Collaboration Layers
 
 - humans own durable intent such as entities, capabilities, rules, workflows, journeys, and adoption decisions
 - agents work from scoped context, candidate imports, draft docs, reconcile reports, and adoption plans
