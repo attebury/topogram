@@ -27,7 +27,11 @@ function writeJson(filePath, value) {
 
 function writeText(filePath, value) {
   ensureDir(filePath);
-  fs.writeFileSync(filePath, value.endsWith("\n") ? value : `${value}\n`, "utf8");
+  if (value === "" || value.endsWith("\n")) {
+    fs.writeFileSync(filePath, value, "utf8");
+  } else {
+    fs.writeFileSync(filePath, `${value}\n`, "utf8");
+  }
 }
 
 function writeBundle(dirPath, files) {
@@ -102,26 +106,8 @@ for (const [[dirName], options] of bundleTargets) {
 }
 
 const localStackBundle = assertOk(generateWorkspace(exampleAst, { target: "app-bundle" }), "apps/local-stack");
-writeText(path.join(exampleAppsRoot, "app-bundle-plan.json"), localStackBundle["app-bundle-plan.json"]);
-writeText(path.join(exampleAppsRoot, "README.md"), localStackBundle["README.md"]);
-writeText(path.join(exampleAppsRoot, "package.json"), localStackBundle["package.json"]);
-writeText(path.join(exampleAppsRoot, "scripts", "runtime-check.sh"), localStackBundle["scripts/runtime-check.sh"]);
-writeText(path.join(exampleAppsRoot, "scripts", "smoke.sh"), localStackBundle["scripts/smoke.sh"]);
-writeBundle(
-  path.join(exampleAppsRoot, "runtime-check"),
-  Object.fromEntries(
-    Object.entries(localStackBundle)
-      .filter(([relativePath]) => relativePath.startsWith("runtime-check/"))
-      .map(([relativePath, contents]) => [relativePath.replace(/^runtime-check\//, ""), contents])
-  )
-);
-writeBundle(
-  path.join(exampleAppsRoot, "smoke"),
-  Object.fromEntries(
-    Object.entries(localStackBundle)
-      .filter(([relativePath]) => relativePath.startsWith("smoke/"))
-      .map(([relativePath, contents]) => [relativePath.replace(/^smoke\//, ""), contents])
-  )
-);
+for (const [relativePath, contents] of Object.entries(localStackBundle)) {
+  writeText(path.join(exampleAppsRoot, relativePath), contents);
+}
 
 console.log("Refreshed Content Approval example expected fixtures.");

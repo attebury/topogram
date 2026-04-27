@@ -38,7 +38,13 @@ test("auth alpha-complete claim has structural runtime proof coverage", () => {
 
   assert.deepEqual(
     issuesPlan.env.required.filter((name) => name.startsWith("TOPOGRAM_AUTH_")),
-    ["TOPOGRAM_AUTH_PROFILE", "TOPOGRAM_AUTH_JWT_SECRET", "TOPOGRAM_AUTH_TOKEN"]
+    [
+      "TOPOGRAM_AUTH_PROFILE",
+      "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_JWT_ISSUER",
+      "TOPOGRAM_AUTH_JWT_AUDIENCE",
+      "TOPOGRAM_AUTH_TOKEN"
+    ]
   );
   assert.deepEqual(
     contentApprovalPlan.env.required.filter((name) => name.startsWith("TOPOGRAM_AUTH_")),
@@ -59,6 +65,16 @@ test("auth alpha-complete claim has structural runtime proof coverage", () => {
     capabilityId: "cap_list_issues",
     expectStatus: 401,
     expectErrorCode: "expired_bearer_token"
+  });
+  assertNegativeCheck(issuesPlan, "list_issues_invalid_issuer", {
+    capabilityId: "cap_list_issues",
+    expectStatus: 401,
+    expectErrorCode: "invalid_bearer_issuer"
+  });
+  assertNegativeCheck(issuesPlan, "list_issues_invalid_audience", {
+    capabilityId: "cap_list_issues",
+    expectStatus: 401,
+    expectErrorCode: "invalid_bearer_audience"
   });
   assertNegativeCheck(issuesPlan, "get_forbidden_issue", {
     capabilityId: "cap_get_issue",
@@ -94,6 +110,17 @@ test("generated JWT helper does not use heuristic ownership fallback", () => {
   assert.match(helpers, /authorizeWithPrincipal\(envPrincipal\.principal, authz, authorizationContext, \{ allowHeuristicOwnership: true \}\)/);
   assert.match(helpers, /authorizeWithPrincipal\(principal, authz, authorizationContext\)/);
   assert.doesNotMatch(helpers, /authorizeWithPrincipal\(principal, authz, authorizationContext, \{ allowHeuristicOwnership: true \}\)/);
+});
+
+test("generated JWT helper validates issuer and audience when configured", () => {
+  const helpers = renderServerHelpers();
+
+  assert.match(helpers, /TOPOGRAM_AUTH_JWT_ISSUER/);
+  assert.match(helpers, /TOPOGRAM_AUTH_JWT_AUDIENCE/);
+  assert.match(helpers, /invalid_bearer_issuer/);
+  assert.match(helpers, /invalid_bearer_audience/);
+  assert.match(helpers, /Bearer token issuer is not trusted/);
+  assert.match(helpers, /Bearer token audience does not match/);
 });
 
 test("example runtime references declare the JWT auth profile", () => {
