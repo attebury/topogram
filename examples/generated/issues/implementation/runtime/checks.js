@@ -71,6 +71,8 @@ export const ISSUES_RUNTIME_CHECKS = {
       { id: "list_issues_unauthorized", kind: "api_negative", capabilityId: "cap_list_issues", expectStatus: 401, expectErrorCode: "missing_bearer_token", mandatory: true, mutating: false },
       { id: "list_issues_invalid_signature", kind: "api_negative", capabilityId: "cap_list_issues", expectStatus: 401, expectErrorCode: "invalid_bearer_signature", mandatory: true, mutating: false },
       { id: "list_issues_expired_token", kind: "api_negative", capabilityId: "cap_list_issues", expectStatus: 401, expectErrorCode: "expired_bearer_token", mandatory: true, mutating: false },
+      { id: "list_issues_invalid_issuer", kind: "api_negative", capabilityId: "cap_list_issues", expectStatus: 401, expectErrorCode: "invalid_bearer_issuer", mandatory: true, mutating: false },
+      { id: "list_issues_invalid_audience", kind: "api_negative", capabilityId: "cap_list_issues", expectStatus: 401, expectErrorCode: "invalid_bearer_audience", mandatory: true, mutating: false },
       { id: "get_forbidden_issue", kind: "api_negative", capabilityId: "cap_get_issue", expectStatus: 403, expectErrorCode: "forbidden", mandatory: true, mutating: false },
       { id: "get_created_issue", kind: "api_contract", capabilityId: "cap_get_issue", mutating: false, mandatory: true },
       { id: "list_issues", kind: "api_contract", capabilityId: "cap_list_issues", mutating: false, mandatory: true },

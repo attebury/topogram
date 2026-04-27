@@ -312,6 +312,22 @@ async function runCheck(definition) {
       });
       assertCondition(response.status === definition.expectStatus, `list issues expired token expected ${definition.expectStatus}, got ${response.status}`);
       assertErrorResponse(responseBody, definition.expectErrorCode, "list issues expired token");
+    } else if (definition.id === "list_issues_invalid_issuer") {
+      const { response, responseBody } = await requestContract(definition.capabilityId, {
+        headers: {
+          Authorization: `Bearer ${envValue("TOPOGRAM_AUTH_TOKEN_WRONG_ISSUER")}`
+        }
+      });
+      assertCondition(response.status === definition.expectStatus, `list issues invalid issuer expected ${definition.expectStatus}, got ${response.status}`);
+      assertErrorResponse(responseBody, definition.expectErrorCode, "list issues invalid issuer");
+    } else if (definition.id === "list_issues_invalid_audience") {
+      const { response, responseBody } = await requestContract(definition.capabilityId, {
+        headers: {
+          Authorization: `Bearer ${envValue("TOPOGRAM_AUTH_TOKEN_WRONG_AUDIENCE")}`
+        }
+      });
+      assertCondition(response.status === definition.expectStatus, `list issues invalid audience expected ${definition.expectStatus}, got ${response.status}`);
+      assertErrorResponse(responseBody, definition.expectErrorCode, "list issues invalid audience");
     } else if (definition.id === "get_forbidden_issue") {
       const { response, responseBody } = await requestContract(definition.capabilityId, {
         pathParams: inferPathParams(contractFor(definition.capabilityId), {

@@ -20,7 +20,7 @@ Use it when you want more than a quick smoke test. It goes beyond the lightweigh
 - This example uses the generated bearer_jwt_hs256 auth profile for secured API checks.
 - Browser checks drive the live React/Vite detail page through Safari to prove visible and hidden issue actions.
 - The forbidden-path proof uses a seeded issue that belongs to a different user.
-- Runtime checks also verify invalid-signature and expired-token failures.
+- Runtime checks also verify invalid-signature, expired-token, untrusted-issuer, and untrusted-audience failures.
 - Mutating checks create, update, and close a runtime-check issue.
 - Runtime checks also verify the generated board and user lookup endpoints.
 - Later stages are skipped if environment readiness fails.

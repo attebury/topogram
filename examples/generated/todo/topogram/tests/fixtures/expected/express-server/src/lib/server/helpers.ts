@@ -163,6 +163,24 @@ function readHs256Secret() {
   return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
 }
 
+function readExpectedIssuer() {
+  return process.env.TOPOGRAM_AUTH_JWT_ISSUER || "";
+}
+
+function readExpectedAudience() {
+  return process.env.TOPOGRAM_AUTH_JWT_AUDIENCE || "";
+}
+
+function audienceMatches(claim: unknown, expected: string) {
+  if (typeof claim === "string") {
+    return claim === expected;
+  }
+  if (Array.isArray(claim)) {
+    return claim.some((value) => typeof value === "string" && value === expected);
+  }
+  return false;
+}
+
 export function contentDisposition(disposition: string, filename: string) {
   const safeDisposition = disposition === "inline" ? "inline" : "attachment";
   const safeFilename = filename
@@ -250,6 +268,16 @@ function principalFromJwtHs256(token: string): AuthPrincipal | null {
 
   if (typeof payload?.exp === "number" && payload.exp <= Math.floor(Date.now() / 1000)) {
     throw new HttpError(401, "expired_bearer_token", "Bearer token has expired");
+  }
+
+  const expectedIssuer = readExpectedIssuer();
+  if (expectedIssuer && payload?.iss !== expectedIssuer) {
+    throw new HttpError(401, "invalid_bearer_issuer", "Bearer token issuer is not trusted");
+  }
+
+  const expectedAudience = readExpectedAudience();
+  if (expectedAudience && !audienceMatches(payload?.aud, expectedAudience)) {
+    throw new HttpError(401, "invalid_bearer_audience", "Bearer token audience does not match");
   }
 
   return parsePrincipalClaims(payload);

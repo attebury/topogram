@@ -27,8 +27,11 @@ function writeJson(filePath, value) {
 
 function writeText(filePath, value) {
   ensureDir(filePath);
-  const text = value.endsWith("\n") ? value : `${value}\n`;
-  fs.writeFileSync(filePath, text, "utf8");
+  if (value === "" || value.endsWith("\n")) {
+    fs.writeFileSync(filePath, value, "utf8");
+  } else {
+    fs.writeFileSync(filePath, `${value}\n`, "utf8");
+  }
 }
 
 function writeBundle(dirPath, files) {
@@ -156,27 +159,9 @@ function refreshExpectedFixtures() {
   }
 
   const localStackBundle = assertOk(generateWorkspace(todoAst, { target: "app-bundle" }), "apps/local-stack");
-  writeText(path.join(todoAppsRoot, "app-bundle-plan.json"), localStackBundle["app-bundle-plan.json"]);
-  writeText(path.join(todoAppsRoot, "README.md"), localStackBundle["README.md"]);
-  writeText(path.join(todoAppsRoot, "package.json"), localStackBundle["package.json"]);
-  writeText(path.join(todoAppsRoot, "scripts", "runtime-check.sh"), localStackBundle["scripts/runtime-check.sh"]);
-  writeText(path.join(todoAppsRoot, "scripts", "smoke.sh"), localStackBundle["scripts/smoke.sh"]);
-  writeBundle(
-    path.join(todoAppsRoot, "runtime-check"),
-    Object.fromEntries(
-      Object.entries(localStackBundle)
-        .filter(([relativePath]) => relativePath.startsWith("runtime-check/"))
-        .map(([relativePath, contents]) => [relativePath.replace(/^runtime-check\//, ""), contents])
-    )
-  );
-  writeBundle(
-    path.join(todoAppsRoot, "smoke"),
-    Object.fromEntries(
-      Object.entries(localStackBundle)
-        .filter(([relativePath]) => relativePath.startsWith("smoke/"))
-        .map(([relativePath, contents]) => [relativePath.replace(/^smoke\//, ""), contents])
-    )
-  );
+  for (const [relativePath, contents] of Object.entries(localStackBundle)) {
+    writeText(path.join(todoAppsRoot, relativePath), contents);
+  }
 }
 
 refreshExpectedFixtures();

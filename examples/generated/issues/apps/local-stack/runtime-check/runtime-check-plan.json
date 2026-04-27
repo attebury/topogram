@@ -12,6 +12,8 @@
       "TOPOGRAM_WEB_BASE_URL",
       "TOPOGRAM_AUTH_PROFILE",
       "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_JWT_ISSUER",
+      "TOPOGRAM_AUTH_JWT_AUDIENCE",
       "TOPOGRAM_AUTH_TOKEN",
       "TOPOGRAM_DEMO_CONTAINER_ID",
       "TOPOGRAM_DEMO_PRIMARY_ID",
@@ -131,6 +133,24 @@
           "capabilityId": "cap_list_issues",
           "expectStatus": 401,
           "expectErrorCode": "expired_bearer_token",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "id": "list_issues_invalid_issuer",
+          "kind": "api_negative",
+          "capabilityId": "cap_list_issues",
+          "expectStatus": 401,
+          "expectErrorCode": "invalid_bearer_issuer",
+          "mandatory": true,
+          "mutating": false
+        },
+        {
+          "id": "list_issues_invalid_audience",
+          "kind": "api_negative",
+          "capabilityId": "cap_list_issues",
+          "expectStatus": 401,
+          "expectErrorCode": "invalid_bearer_audience",
           "mandatory": true,
           "mutating": false
         },
