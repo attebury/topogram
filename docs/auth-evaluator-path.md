@@ -12,6 +12,7 @@ Use it when the question is not "does Topogram have auth at all?" but:
 
 Read:
 
+- [auth-alpha-complete.md](./auth-alpha-complete.md)
 - [auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md)
 - [proof-points-and-limits.md](./proof-points-and-limits.md)
 
@@ -23,6 +24,7 @@ The intended answer is:
 
 - Topogram is alpha-complete for modeled auth semantics with signed bearer tokens.
 - Topogram is not claiming production auth readiness.
+- The canonical criteria and evidence are in [auth-alpha-complete.md](./auth-alpha-complete.md).
 
 ## 2. Check The Modeled Auth Surface
 
@@ -89,6 +91,7 @@ The intended answer is:
 
 Read:
 
+- [auth-profile-bearer-jwt-hs256-launch-checklist.md](./auth-profile-bearer-jwt-hs256-launch-checklist.md)
 - [auth-profile-bearer-demo.md](./auth-profile-bearer-demo.md)
 - [bearer-demo-launch-checklist.md](./bearer-demo-launch-checklist.md)
 
@@ -113,3 +116,5 @@ Topogram auth is alpha-complete when evaluated this way:
 - one generated proof loop for those auth shapes
 - one brownfield review and adoption loop for the same auth shapes
 - one explicit boundary that stops short of production auth claims
+
+For the auditable checklist behind that summary, use [auth-alpha-complete.md](./auth-alpha-complete.md).

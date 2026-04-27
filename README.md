@@ -148,7 +148,7 @@ Topogram is still an early system. It should not be presented as:
 - a magic prompt-to-product box
 - a replacement for engineering judgment
 
-Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Generated browser examples use `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`, which is intentionally public and only suitable for local/demo verification. Generated API CORS defaults are local-origin only and should be configured through `TOPOGRAM_CORS_ORIGINS` before exposing a generated stack beyond localhost. Start with [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md) and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
+Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Generated browser examples use `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`, which is intentionally public and only suitable for local/demo verification. Generated API CORS defaults are local-origin only and should be configured through `TOPOGRAM_CORS_ORIGINS` before exposing a generated stack beyond localhost. Start with [docs/auth-alpha-complete.md](./docs/auth-alpha-complete.md), [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md), and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
 
 Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
 

@@ -145,6 +145,10 @@ test("generated auth helper keeps bearer demo and JWT contracts stable", () => {
   assert.match(helpers, /contentDisposition/);
   assert.match(helpers, /ownershipField\?: string \| null/);
   assert.match(helpers, /owner_id", "assignee_id", "author_id", "user_id", "created_by_user_id/);
+  assert.match(helpers, /allowHeuristicOwnership/);
+  assert.match(helpers, /authorizeWithPrincipal\(envPrincipal\.principal, authz, authorizationContext, \{ allowHeuristicOwnership: true \}\)/);
+  assert.match(helpers, /authorizeWithPrincipal\(principal, authz, authorizationContext\)/);
+  assert.doesNotMatch(helpers, /authorizeWithPrincipal\(principal, authz, authorizationContext, \{ allowHeuristicOwnership: true \}\)/);
 });
 
 test("claim-aware auth rules resolve into API and UI contracts", () => {

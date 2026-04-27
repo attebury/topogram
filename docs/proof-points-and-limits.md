@@ -203,11 +203,13 @@ This is the third explicit proof that the same backend parity seam also holds in
 
 ### Auth limitation boundary
 
+- [docs/auth-alpha-complete.md](./auth-alpha-complete.md)
 - [docs/auth-profile-bearer-jwt-hs256.md](./auth-profile-bearer-jwt-hs256.md)
+- [docs/auth-profile-bearer-jwt-hs256-launch-checklist.md](./auth-profile-bearer-jwt-hs256-launch-checklist.md)
 - [docs/auth-profile-bearer-demo.md](./auth-profile-bearer-demo.md)
 - [docs/bearer-demo-launch-checklist.md](./bearer-demo-launch-checklist.md)
 
-Use these as the authority for what Topogram does and does not prove today on auth.
+Use `auth-alpha-complete.md` as the authority for what Topogram does and does not prove today on auth. Use the launch checklists to see what still blocks production auth readiness.
 
 ## Known Limits
 
