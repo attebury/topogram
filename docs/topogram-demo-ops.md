@@ -24,6 +24,8 @@ This tier is **orthogonal** to [`examples/imported`](https://github.com/attebury
 | `examples/imported/<target>/` | Brownfield **import**, reconcile, adopt into canonical Topogram |
 | `examples/native/<target>/` | **Generated or hand-placed** native workspaces that prove “builds on pinned iOS/Android SDK” against a documented Topogram commit |
 
+**Engine targets:** In `topogram`, the **`native-parity-plan`** and **`native-parity-bundle`** generator targets emit minimal pinned-toolchain Android (Gradle/Kotlin) and iOS (Swift Package / SwiftUI) scaffolding wired to workspace runtime URLs. After verification, copy or adapt that output into **`topogram-demo`** under `examples/native/<slug>/` as the promoted parity proof.
+
 **Verification boundary:** native parity checks run in **topogram-demo** (`node ./ops/verify-native-targets.mjs`, optional `node ./ops/native-claim-freshness.mjs`). They are **not** part of default `verify-engine.sh` or everyday `npm test` in the product repo.
 
 **Release handshake:** Before claiming **native/mobile parity** in public-facing alpha material (blog, landing copy), confirm `topogram-demo` native targets are freshness-current or explicitly marked `archived`, analogous to imported-proof freshness discipline — **separate checkbox** from imported-proof freshness.

@@ -4,6 +4,7 @@ import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "./smoke.js
 import { generateRuntimeCheckBundle, generateRuntimeCheckPlan } from "./runtime-check.js";
 import { generateCompileCheckBundle, generateCompileCheckPlan } from "./compile-check.js";
 import { generateAppBundle, generateAppBundlePlan } from "./app-bundle.js";
+import { generateNativeParityBundle, generateNativeParityPlan } from "../native/parity-bundle.js";
 
 const RUNTIME_TARGETS = {
   "environment-plan": generateEnvironmentPlan,
@@ -17,7 +18,9 @@ const RUNTIME_TARGETS = {
   "compile-check-plan": generateCompileCheckPlan,
   "compile-check-bundle": generateCompileCheckBundle,
   "app-bundle-plan": generateAppBundlePlan,
-  "app-bundle": generateAppBundle
+  "app-bundle": generateAppBundle,
+  "native-parity-plan": generateNativeParityPlan,
+  "native-parity-bundle": generateNativeParityBundle
 };
 
 export function generateRuntimeTarget(target, graph, options = {}) {

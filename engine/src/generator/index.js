@@ -120,7 +120,9 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "compile-check-plan" ||
     target === "compile-check-bundle" ||
     target === "app-bundle-plan" ||
-    target === "app-bundle"
+    target === "app-bundle" ||
+    target === "native-parity-plan" ||
+    target === "native-parity-bundle"
   ) {
     return okResult(target, generateRuntimeTarget(target, graph, options));
   }
