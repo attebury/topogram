@@ -109,7 +109,7 @@ This repo is grounded in working proofs, not just concept demos:
 - [examples/generated/content-approval](./examples/generated/content-approval): a workflow-heavy proof that pressures non-Todo abstractions
 - [examples/maintained/proof-app](./examples/maintained/proof-app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances
 - [examples/imported](./examples/imported): the imported-proof bridge and brownfield claim index for the separate [topogram-demo](https://github.com/attebury/topogram-demo) proof repo
-- [docs/topogram-demo-ops.md](./docs/topogram-demo-ops.md): the ops contract for keeping imported proof claims fresh in [topogram-demo](https://github.com/attebury/topogram-demo)
+- [docs/topogram-demo-ops.md](./docs/topogram-demo-ops.md): the ops contract for keeping imported proof claims fresh in [topogram-demo](https://github.com/attebury/topogram-demo), including the release handshake between `topogram` merges and imported-proof refreshes
 - [docs/testing-strategy.md](./docs/testing-strategy.md): the verification philosophy and current regression layers
 - [docs/proof-points-and-limits.md](./docs/proof-points-and-limits.md): the current claim boundary, proof matrix, and known limits
 - [docs/alpha-overview.md](./docs/alpha-overview.md): the short visual walkthrough for evaluators and design partners

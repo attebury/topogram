@@ -88,3 +88,20 @@ Use:
 
 - [remaining-trial-policy.md](./remaining-trial-policy.md) for the completed migration record
 - [import-fixtures-inventory.md](./import-fixtures-inventory.md) for the current curated fixture catalog that still feeds the optional proof-corpus lane
+
+## Release Handshake
+
+`topogram` release and merge confidence now depends on `topogram-demo` claim freshness, not on a local imported corpus.
+
+Use this operating rule:
+
+- after merging a `topogram` change that could affect imported claims, run or inspect the `topogram-demo` imported proof freshness workflow
+- before treating a `topogram` `main` commit as release-ready, confirm the active imported claims in `topogram-demo` are still freshness-current against that exact `topogram` commit
+- if `topogram-demo` reports stale imported claims, treat that as release-ops work, not as a reason to rebuild local proof mirrors in the product repo
+
+Practical sequence:
+
+1. Merge the `topogram` change.
+2. Let `topogram-demo` compare its active imported claims against the new `topogram` `main`.
+3. If freshness drift appears, rerun and refresh the affected imported targets in `topogram-demo`.
+4. Only use imported-proof claims in release or evaluator material after that refresh path is green again.
