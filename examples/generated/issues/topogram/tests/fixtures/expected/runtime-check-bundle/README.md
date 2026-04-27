@@ -21,6 +21,7 @@ Use it when you want more than a quick smoke test. It goes beyond the lightweigh
 - Browser checks drive the live React/Vite detail page through Safari to prove visible and hidden issue actions.
 - The forbidden-path proof uses a seeded issue that belongs to a different user.
 - Runtime checks also verify invalid-signature, expired-token, untrusted-issuer, and untrusted-audience failures.
+- Runtime checks also verify a token signed with a secondary rotation key when TOPOGRAM_AUTH_JWT_SECRETS lists multiple keys.
 - Mutating checks create, update, and close a runtime-check issue.
 - Runtime checks also verify the generated board and user lookup endpoints.
 - Later stages are skipped if environment readiness fails.

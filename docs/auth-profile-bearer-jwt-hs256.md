@@ -14,7 +14,8 @@ Use it when you want the strongest current generated auth story:
 ## Current Environment Surface
 
 - `TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256`
-- `TOPOGRAM_AUTH_JWT_SECRET`
+- `TOPOGRAM_AUTH_JWT_SECRET` (single-secret shorthand; ignored when `TOPOGRAM_AUTH_JWT_SECRETS` is set)
+- `TOPOGRAM_AUTH_JWT_SECRETS` (comma-separated list of HS256 secrets; verifier accepts a token signed by any entry — see [auth-secret-rotation.md](./auth-secret-rotation.md))
 - `TOPOGRAM_AUTH_JWT_ISSUER` (optional; when set, tokens whose `iss` claim does not match are rejected with `invalid_bearer_issuer`)
 - `TOPOGRAM_AUTH_JWT_AUDIENCE` (optional; when set, tokens whose `aud` claim does not match are rejected with `invalid_bearer_audience`)
 - `TOPOGRAM_AUTH_TOKEN`
@@ -27,6 +28,7 @@ Examples may also expose proof-specific tokens such as:
 - `TOPOGRAM_AUTH_TOKEN_NO_REVIEWER`
 - `TOPOGRAM_AUTH_TOKEN_WRONG_ISSUER`
 - `TOPOGRAM_AUTH_TOKEN_WRONG_AUDIENCE`
+- `TOPOGRAM_AUTH_TOKEN_ROTATING` (signed with the secondary entry in `TOPOGRAM_AUTH_JWT_SECRETS`)
 
 `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` is a browser-visible demo token for generated examples. It is not a secret, and it is not a production auth boundary.
 
@@ -40,6 +42,7 @@ The current alpha auth proof loop uses signed JWTs to prove:
 - `401` for invalid signatures or malformed tokens
 - `401` for expired tokens
 - `401` for tokens whose issuer or audience does not match the configured value
+- `200` for tokens signed with any active rotation key listed in `TOPOGRAM_AUTH_JWT_SECRETS`
 - `403` for authenticated identities that still fail a modeled auth rule
 - generated claim-aware authorization and UI visibility
 

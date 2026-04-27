@@ -13,6 +13,7 @@ export const ISSUES_RUNTIME_REFERENCE = {
     envExample: `# Demo-only credentials. Do not reuse these fixture secrets or tokens outside local/generated verification.
 TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256
 TOPOGRAM_AUTH_JWT_SECRET=topogram-issues-jwt-secret
+TOPOGRAM_AUTH_JWT_SECRETS=topogram-issues-jwt-secret,topogram-issues-jwt-secret-secondary
 TOPOGRAM_AUTH_JWT_ISSUER=topogram-issues-runtime-check
 TOPOGRAM_AUTH_JWT_AUDIENCE=topogram-issues-api
 TOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InRvcG9ncmFtLWlzc3Vlcy1ydW50aW1lLWNoZWNrIiwiYXVkIjoidG9wb2dyYW0taXNzdWVzLWFwaSJ9.4vAeqg8vFGP4CQDT7lbMkWYdyvyRrNzRrcfJggPMkFM
@@ -20,6 +21,7 @@ TOPOGRAM_AUTH_TOKEN_EXPIRED=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTE
 TOPOGRAM_AUTH_TOKEN_INVALID=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InRvcG9ncmFtLWlzc3Vlcy1ydW50aW1lLWNoZWNrIiwiYXVkIjoidG9wb2dyYW0taXNzdWVzLWFwaSJ9.4vAeqg8vFGP4CQDT7lbMkWYdyvyRrNzRrcfJggPMkFa
 TOPOGRAM_AUTH_TOKEN_WRONG_ISSUER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InVudHJ1c3RlZC1pc3N1ZXIiLCJhdWQiOiJ0b3BvZ3JhbS1pc3N1ZXMtYXBpIn0.EcZb7nnOV3ldtLWUghAZTeSK3CEvLtA0-QK3DOVUfaA
 TOPOGRAM_AUTH_TOKEN_WRONG_AUDIENCE=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InRvcG9ncmFtLWlzc3Vlcy1ydW50aW1lLWNoZWNrIiwiYXVkIjoidW50cnVzdGVkLWF1ZGllbmNlIn0.bey4zigo8kapZunxL_v-NpiKs-mKPinKgrrrQ2Z29nw
+TOPOGRAM_AUTH_TOKEN_ROTATING=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InRvcG9ncmFtLWlzc3Vlcy1ydW50aW1lLWNoZWNrIiwiYXVkIjoidG9wb2dyYW0taXNzdWVzLWFwaSJ9.ef6J0qhYQK0cX_N8dugsuFuuOwkRfzFUKPJmrENOV-0
 PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJpc3N1ZXMuY3JlYXRlIiwiaXNzdWVzLnJlYWQiLCJpc3N1ZXMudXBkYXRlIiwiaXNzdWVzLmNsb3NlIl0sInJvbGVzIjpbXSwiYWRtaW4iOmZhbHNlLCJleHAiOjQxMDI0NDQ4MDAsImlzcyI6InRvcG9ncmFtLWlzc3Vlcy1ydW50aW1lLWNoZWNrIiwiYXVkIjoidG9wb2dyYW0taXNzdWVzLWFwaSJ9.4vAeqg8vFGP4CQDT7lbMkWYdyvyRrNzRrcfJggPMkFM
 PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=${ISSUES_BACKEND_REFERENCE.demo.issueId}
 PUBLIC_TOPOGRAM_FORBIDDEN_PRIMARY_ID=${ISSUES_BACKEND_REFERENCE.demo.forbiddenIssueId}
@@ -57,10 +59,11 @@ TOPOGRAM_DEMO_CONTAINER_ID=${ISSUES_BACKEND_REFERENCE.demo.boardId}`
       "TOPOGRAM_API_BASE_URL",
       "TOPOGRAM_WEB_BASE_URL",
       "TOPOGRAM_AUTH_PROFILE",
-      "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_JWT_SECRETS",
       "TOPOGRAM_AUTH_JWT_ISSUER",
       "TOPOGRAM_AUTH_JWT_AUDIENCE",
       "TOPOGRAM_AUTH_TOKEN",
+      "TOPOGRAM_AUTH_TOKEN_ROTATING",
       "TOPOGRAM_DEMO_CONTAINER_ID",
       "TOPOGRAM_DEMO_PRIMARY_ID",
       "TOPOGRAM_FORBIDDEN_USER_ID"
@@ -86,6 +89,7 @@ TOPOGRAM_DEMO_CONTAINER_ID=${ISSUES_BACKEND_REFERENCE.demo.boardId}`
       "Browser checks drive the live React/Vite detail page through Safari to prove visible and hidden issue actions.",
       "The forbidden-path proof uses a seeded issue that belongs to a different user.",
       "Runtime checks also verify invalid-signature, expired-token, untrusted-issuer, and untrusted-audience failures.",
+      "Runtime checks also verify a token signed with a secondary rotation key when TOPOGRAM_AUTH_JWT_SECRETS lists multiple keys.",
       "Mutating checks create, update, and close a runtime-check issue.",
       "Runtime checks also verify the generated board and user lookup endpoints.",
       "Later stages are skipped if environment readiness fails.",

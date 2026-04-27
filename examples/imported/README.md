@@ -16,6 +16,8 @@ Imported examples do not belong in the normal product-repo test path. Their long
 - rerun commands
 - known blockers or manual boundaries
 
+**Not brownfield:** **[Native / full-stack parity](https://github.com/attebury/topogram-demo/tree/main/examples/native)** proofs (pinned iOS/Android SDK builds) live alongside imports in **topogram-demo** under `examples/native/`, not under `examples/imported`. See [docs/topogram-demo-ops.md](../../docs/topogram-demo-ops.md).
+
 ## Active Imported Claim Set
 
 The intended active imported claim set stays intentionally small:

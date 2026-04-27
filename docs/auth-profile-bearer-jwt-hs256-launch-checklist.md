@@ -11,11 +11,12 @@ What is already true:
 - generated Hono and Express backends can verify HS256 signed bearer tokens
 - generated backends reject missing tokens, malformed tokens, invalid signatures, and expired tokens with `401`
 - generated backends reject tokens with the wrong issuer or audience with `401` when `TOPOGRAM_AUTH_JWT_ISSUER` or `TOPOGRAM_AUTH_JWT_AUDIENCE` are configured
+- generated backends accept tokens signed by any active key listed in `TOPOGRAM_AUTH_JWT_SECRETS`, supporting zero-downtime key rotation (see [auth-secret-rotation.md](./auth-secret-rotation.md))
 - generated backends reject authenticated principals that fail modeled auth rules with `403`
 - generated backends enforce `permission`, explicit `ownership_field`, and `claim` rules from `.tg`
 - generated web clients attach the browser-visible demo token for local proof flows
 - generated UI visibility can follow the same modeled auth rules as the backend
-- runtime-check bundles prove `401` and `403` behavior in the `issues` and `content-approval` examples, including invalid-issuer and invalid-audience rejection in `issues`
+- runtime-check bundles prove `401` and `403` behavior in the `issues` and `content-approval` examples, including invalid-issuer, invalid-audience, and rotating-key cases in `issues`
 
 What is not true yet:
 
@@ -44,10 +45,8 @@ These are the concrete gaps that still block production launch claims:
 - no login or logout flow
 - no refresh-token lifecycle
 - no token revocation behavior
-- no key rotation procedure
 - no asymmetric-key profile such as RS256 or ES256
 - no external identity provider integration
-- no deployment-provider guidance for secret storage
 - no rate limiting or abuse controls around protected routes
 - no auth audit log or incident response playbook
 - no production deployment proof for an auth-enabled generated stack
@@ -56,11 +55,10 @@ These are the concrete gaps that still block production launch claims:
 
 The smallest useful order is:
 
-1. Add key rotation guidance and a secret-storage policy per deployment target.
-2. Add an asymmetric JWT profile for external IdP integration.
-3. Add revocation or short-lived-token guidance.
-4. Add an auth-enabled deployment proof with generated runtime checks.
-5. Add operational guidance for auth failures, audit logging, and credential rollover.
+1. Add an asymmetric JWT profile for external IdP integration.
+2. Add revocation or short-lived-token guidance.
+3. Add an auth-enabled deployment proof with generated runtime checks.
+4. Add operational guidance for auth failures, audit logging, and credential rollover.
 
 ## Non-Goals For This Profile
 

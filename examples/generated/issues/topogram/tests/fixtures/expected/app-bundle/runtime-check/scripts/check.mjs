@@ -328,6 +328,14 @@ async function runCheck(definition) {
       });
       assertCondition(response.status === definition.expectStatus, `list issues invalid audience expected ${definition.expectStatus}, got ${response.status}`);
       assertErrorResponse(responseBody, definition.expectErrorCode, "list issues invalid audience");
+    } else if (definition.id === "list_issues_rotating_token") {
+      const { contract, response, responseBody } = await requestContract(definition.capabilityId, {
+        headers: {
+          Authorization: `Bearer ${envValue("TOPOGRAM_AUTH_TOKEN_ROTATING")}`
+        }
+      });
+      assertCondition(response.status === contract.endpoint.successStatus, `list issues with rotating token expected ${contract.endpoint.successStatus}, got ${response.status}`);
+      assertCondition(Array.isArray(responseBody?.items), "list issues with rotating token did not return an items array");
     } else if (definition.id === "get_forbidden_issue") {
       const { response, responseBody } = await requestContract(definition.capabilityId, {
         pathParams: inferPathParams(contractFor(definition.capabilityId), {
