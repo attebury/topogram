@@ -137,7 +137,7 @@ Topogram is a strong fit for:
 
 Topogram is for technical teams already using coding agents who need stronger structure, review boundaries, and proof while evolving real software.
 
-For the design-partner profile and current invite path, see [docs/design-partner-profile.md](./docs/design-partner-profile.md) and [docs/invite-led-alpha.md](./docs/invite-led-alpha.md).
+For the design-partner profile and current invite path, see [docs/internal/design-partner-profile.md](./docs/internal/design-partner-profile.md) and [docs/internal/invite-led-alpha.md](./docs/internal/invite-led-alpha.md).
 
 ## Current Limits
 

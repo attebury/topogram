@@ -19,6 +19,7 @@ Start here if you want to decide whether Topogram is real, useful, and trustwort
 
 Start here if you care about modeled meaning, surfaces, and review boundaries.
 
+- [Topogram for designers and product](./topogram-for-designers.md) — 5-minute orientation, what is and isn't real today
 - [Topogram Workspace Layout](./topogram-workspace-layout.md) — canonical, candidate, generated, and maintained surfaces
 - [Topogram Product Glossary](./topogram-product-glossary.md) — durable product vocabulary
 - [Maintained-App Boundary Mechanics](./maintained-app-boundary-mechanics.md) — how Topogram describes change in human-owned code
@@ -77,15 +78,15 @@ Cross-domain and cross-target evidence for the current claim boundary.
 
 These are working notes for the alpha launch, not external documentation. They are kept in the repo for transparency but are not first-read material.
 
-- [Alpha Plan](./alpha-plan.md)
-- [Alpha Ready Checklist](./alpha-ready-checklist.md)
-- [Alpha Launch Tracker](./alpha-launch-tracker.md)
-- [Alpha Launch And Repo Shaping Plan](./alpha-launch-and-repo-shaping-plan.md)
-- [Alpha Interest Triage Rubric](./alpha-interest-triage-rubric.md)
-- [Alpha First-Call Guide](./alpha-first-call-guide.md)
-- [Invite-Led Alpha](./invite-led-alpha.md)
-- [Design Partner Profile](./design-partner-profile.md)
-- [Partner Feedback Template](./partner-feedback-template.md)
-- [Demo Path Confirmation Plan](./demo-path-confirmation-plan.md)
-- [Dev.to Limited Partner Review Draft](./devto-limited-partner-review.md)
-- [Development Decisions](./development-decisions.md)
+- [Alpha Plan](./internal/alpha-plan.md)
+- [Alpha Ready Checklist](./internal/alpha-ready-checklist.md)
+- [Alpha Launch Tracker](./internal/alpha-launch-tracker.md)
+- [Alpha Launch And Repo Shaping Plan](./internal/alpha-launch-and-repo-shaping-plan.md)
+- [Alpha Interest Triage Rubric](./internal/alpha-interest-triage-rubric.md)
+- [Alpha First-Call Guide](./internal/alpha-first-call-guide.md)
+- [Invite-Led Alpha](./internal/invite-led-alpha.md)
+- [Design Partner Profile](./internal/design-partner-profile.md)
+- [Partner Feedback Template](./internal/partner-feedback-template.md)
+- [Demo Path Confirmation Plan](./internal/demo-path-confirmation-plan.md)
+- [Dev.to Limited Partner Review Draft](./internal/devto-limited-partner-review.md)
+- [Development Decisions](./internal/development-decisions.md)
