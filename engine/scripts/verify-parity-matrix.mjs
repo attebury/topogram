@@ -13,7 +13,7 @@ const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathnam
 const repoRoot = path.resolve(workspaceRoot, "..");
 
 function resolveExample(exampleName) {
-  const workspacePath = path.join(repoRoot, "examples", exampleName, "topogram");
+  const workspacePath = path.join(repoRoot, "examples", "generated", exampleName, "topogram");
   const ast = parsePath(workspacePath);
   const resolved = resolveWorkspace(ast);
   if (!resolved.ok) {
@@ -75,13 +75,13 @@ const webParity = [
     example: "issues",
     workspace: issues.workspacePath,
     seam: "ui_contract",
-    projections: ["proj_ui_web", "proj_ui_web_sveltekit"],
+    projections: ["proj_ui_web__react", "proj_ui_web__sveltekit"],
     profiles: [issuesEvidence.web.leftProfile, issuesEvidence.web.rightProfile],
     semantic_parity: issuesEvidence.web.semanticParity,
     screen_count: issuesEvidence.web.leftScreens.length
   },
-  verifyWebParity("content-approval", "proj_ui_web", "proj_ui_web_sveltekit"),
-  verifyWebParity("todo", "proj_ui_web_react", "proj_ui_web")
+  verifyWebParity("content-approval", "proj_ui_web__react", "proj_ui_web__sveltekit"),
+  verifyWebParity("todo", "proj_ui_web__react", "proj_ui_web__sveltekit")
 ];
 
 const backendParity = [

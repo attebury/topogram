@@ -92,7 +92,8 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "server-contract" ||
     target === "persistence-scaffold" ||
     target === "hono-server" ||
-    target === "express-server"
+    target === "express-server" ||
+    target === "swiftui-app"
   ) {
     return okResult(target, generateAppTarget(target, graph, options));
   }
@@ -120,7 +121,9 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "compile-check-plan" ||
     target === "compile-check-bundle" ||
     target === "app-bundle-plan" ||
-    target === "app-bundle"
+    target === "app-bundle" ||
+    target === "native-parity-plan" ||
+    target === "native-parity-bundle"
   ) {
     return okResult(target, generateRuntimeTarget(target, graph, options));
   }

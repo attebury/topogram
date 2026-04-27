@@ -23,7 +23,8 @@ related_rules:
 related_projections:
   - proj_api
   - proj_ui_shared
-  - proj_ui_web
+  - proj_ui_web__react
+  - proj_ui_web__sveltekit
 failure_signals:
   - The user can create an issue in an archived board.
   - The user can assign an issue to an inactive teammate.

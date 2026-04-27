@@ -144,6 +144,7 @@ export const FIELD_SPECS = {
       "ui_lookups",
       "ui_routes",
       "ui_web",
+      "ui_ios",
       "ui_app_shell",
       "ui_navigation",
       "ui_screen_regions",
@@ -361,7 +362,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_app_shell", "ui_navigation", "ui_screen_regions", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -389,6 +390,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_lookups", 8);
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_routes", 4);
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_web", 4);
+  validateBlockEntryLengths(errors, statement, fieldMap, "ui_ios", 4);
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_app_shell", 2);
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_navigation", 2);
   validateBlockEntryLengths(errors, statement, fieldMap, "ui_screen_regions", 4);
@@ -2602,6 +2604,7 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const seenPaths = new Set();
+  const platform = symbolValue(getFieldValue(statement, "platform"));
 
   for (const entry of routesField.value.entries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
@@ -2621,7 +2624,7 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
       pushError(errors, `Projection ${statement.id} ui_routes for '${screenId}' must include a path`, entry.loc);
       continue;
     }
-    if (symbolValue(getFieldValue(statement, "platform")) === "ui_web" && !routePath.startsWith("/")) {
+    if ((platform === "ui_web" || platform === "ui_ios") && !routePath.startsWith("/")) {
       pushError(errors, `Projection ${statement.id} ui_routes for '${screenId}' must use an absolute path`, entry.loc);
     }
     if (seenPaths.has(routePath)) {
@@ -2631,55 +2634,55 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
   }
 }
 
-function validateProjectionUiWeb(errors, statement, fieldMap, registry) {
+function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, surfaceBlockKey, expectedPlatform) {
   if (statement.kind !== "projection") {
     return;
   }
 
-  const uiWebField = fieldMap.get("ui_web")?.[0];
-  if (!uiWebField || uiWebField.value.type !== "block") {
+  const surfaceField = fieldMap.get(surfaceBlockKey)?.[0];
+  if (!surfaceField || surfaceField.value.type !== "block") {
     return;
   }
 
   const platform = symbolValue(getFieldValue(statement, "platform"));
-  if (platform !== "ui_web") {
-    pushError(errors, `Projection ${statement.id} may only use 'ui_web' when platform is 'ui_web'`, uiWebField.loc);
+  if (platform !== expectedPlatform) {
+    pushError(errors, `Projection ${statement.id} may only use '${surfaceBlockKey}' when platform is '${expectedPlatform}'`, surfaceField.loc);
     return;
   }
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const realized = new Set(symbolValues(getFieldValue(statement, "realizes")));
-  for (const entry of uiWebField.value.entries) {
+  for (const entry of surfaceField.value.entries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     const [targetKind, targetId, directive, value] = tokens;
 
     if (targetKind === "screen") {
       if (!availableScreens.has(targetId)) {
-        pushError(errors, `Projection ${statement.id} ui_web references unknown screen '${targetId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} references unknown screen '${targetId}'`, entry.loc);
       }
       if (!["layout", "desktop_variant", "mobile_variant", "present", "shell", "collection", "breadcrumbs", "state_style"].includes(directive || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has unknown directive '${directive}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has unknown directive '${directive}'`, entry.loc);
       }
       if (directive === "desktop_variant" && !UI_COLLECTION_PRESENTATIONS.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid desktop_variant '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid desktop_variant '${value}'`, entry.loc);
       }
       if (directive === "mobile_variant" && !UI_COLLECTION_PRESENTATIONS.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid mobile_variant '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid mobile_variant '${value}'`, entry.loc);
       }
       if (directive === "collection" && !UI_COLLECTION_PRESENTATIONS.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid collection '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid collection '${value}'`, entry.loc);
       }
       if (directive === "shell" && !["topbar", "sidebar", "dual_nav", "workspace", "wizard", "bottom_tabs", "split_view", "menu_bar"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid shell '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid shell '${value}'`, entry.loc);
       }
       if (directive === "present" && !["page", "modal", "drawer", "sheet", "bottom_sheet", "popover"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid present '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid present '${value}'`, entry.loc);
       }
       if (directive === "breadcrumbs" && !["visible", "hidden"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid breadcrumbs '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid breadcrumbs '${value}'`, entry.loc);
       }
       if (directive === "state_style" && !["inline", "panel", "full_page"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for screen '${targetId}' has invalid state_style '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for screen '${targetId}' has invalid state_style '${value}'`, entry.loc);
       }
       continue;
     }
@@ -2687,29 +2690,37 @@ function validateProjectionUiWeb(errors, statement, fieldMap, registry) {
     if (targetKind === "action") {
       const capability = registry.get(targetId);
       if (!capability) {
-        pushError(errors, `Projection ${statement.id} ui_web references missing capability '${targetId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} references missing capability '${targetId}'`, entry.loc);
       } else if (capability.kind !== "capability") {
-        pushError(errors, `Projection ${statement.id} ui_web must reference a capability for action '${targetId}', found ${capability.kind} '${capability.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} must reference a capability for action '${targetId}', found ${capability.kind} '${capability.id}'`, entry.loc);
       } else if (!realized.has(targetId)) {
-        pushError(errors, `Projection ${statement.id} ui_web action '${targetId}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} action '${targetId}' must also appear in 'realizes'`, entry.loc);
       }
       if (!["confirm", "present", "placement"].includes(directive || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for action '${targetId}' has unknown directive '${directive}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for action '${targetId}' has unknown directive '${directive}'`, entry.loc);
       }
       if (directive === "confirm" && !["modal", "inline", "sheet", "bottom_sheet", "popover"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for action '${targetId}' has invalid confirm mode '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for action '${targetId}' has invalid confirm mode '${value}'`, entry.loc);
       }
       if (directive === "present" && !["button", "menu_item", "split_button", "bulk_action", "drawer", "sheet", "bottom_sheet", "fab", "popover"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for action '${targetId}' has invalid present mode '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for action '${targetId}' has invalid present mode '${value}'`, entry.loc);
       }
       if (directive === "placement" && !["toolbar", "menu", "bulk", "inline", "footer"].includes(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_web for action '${targetId}' has invalid placement '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} for action '${targetId}' has invalid placement '${value}'`, entry.loc);
       }
       continue;
     }
 
-    pushError(errors, `Projection ${statement.id} ui_web entries must start with 'screen' or 'action'`, entry.loc);
+    pushError(errors, `Projection ${statement.id} ${surfaceBlockKey} entries must start with 'screen' or 'action'`, entry.loc);
   }
+}
+
+function validateProjectionUiWeb(errors, statement, fieldMap, registry) {
+  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "ui_web", "ui_web");
+}
+
+function validateProjectionUiIos(errors, statement, fieldMap, registry) {
+  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "ui_ios", "ui_ios");
 }
 
 function validateProjectionGeneratorDefaults(errors, statement, fieldMap) {
@@ -2733,10 +2744,10 @@ function validateProjectionGeneratorDefaults(errors, statement, fieldMap) {
       pushError(errors, `Projection ${statement.id} generator_defaults is missing a value for '${key}'`, entry.loc);
       continue;
     }
-    if (key === "profile" && !["sveltekit", "react", "postgres_sql", "sqlite_sql", "prisma", "drizzle"].includes(value)) {
+    if (key === "profile" && !["sveltekit", "react", "swiftui", "postgres_sql", "sqlite_sql", "prisma", "drizzle"].includes(value)) {
       pushError(errors, `Projection ${statement.id} generator_defaults has unsupported profile '${value}'`, entry.loc);
     }
-    if (key === "language" && !["typescript", "javascript", "sql"].includes(value)) {
+    if (key === "language" && !["typescript", "javascript", "swift", "sql"].includes(value)) {
       pushError(errors, `Projection ${statement.id} generator_defaults has unsupported language '${value}'`, entry.loc);
     }
     if (key === "styling" && !["tailwind", "css"].includes(value)) {
@@ -3224,6 +3235,7 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionUiNavigation(errors, statement, fieldMap, registry);
       validateProjectionUiScreenRegions(errors, statement, fieldMap, registry);
       validateProjectionUiWeb(errors, statement, fieldMap, registry);
+      validateProjectionUiIos(errors, statement, fieldMap, registry);
       validateProjectionDbTables(errors, statement, fieldMap, registry);
       validateProjectionDbColumns(errors, statement, fieldMap, registry);
       validateProjectionDbKeys(errors, statement, fieldMap, registry);

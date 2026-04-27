@@ -92,8 +92,8 @@ function injectProjectionImpactScenario(topogramRoot) {
     "utf8"
   );
   fs.writeFileSync(
-    path.join(projectionsRoot, "proj-ui-web.tg"),
-    `projection proj_ui_web {
+    path.join(projectionsRoot, "proj-ui-web--react.tg"),
+    `projection proj_ui_web__react {
   name "Web UI"
   description "Minimal web UI projection for projection impact tests"
   platform ui_web

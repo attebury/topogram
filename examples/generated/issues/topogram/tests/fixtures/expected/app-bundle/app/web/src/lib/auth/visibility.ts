@@ -1,3 +1,5 @@
+import { env as publicEnv } from "$env/dynamic/public";
+
 export interface VisibilityRule {
   predicate?: string | null;
   value?: string | null;
@@ -22,12 +24,8 @@ interface AuthPrincipal {
   isAdmin: boolean;
 }
 
-function readPublicEnv(name: string) {
-  return import.meta.env[name] || "";
-}
-
 function authToken() {
-  return readPublicEnv("PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN") || readPublicEnv("VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN");
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function csvValues(value: string) {
@@ -88,23 +86,23 @@ function principalFromJwt(token: string): AuthPrincipal | null {
 function currentPrincipal(overrides?: VisibilityPrincipalOverride | null): AuthPrincipal | null {
   const token = authToken();
   const jwtPrincipal = token ? principalFromJwt(token) : null;
-  const envClaims = parseClaimsJson(readPublicEnv("PUBLIC_TOPOGRAM_AUTH_CLAIMS"));
-  const userId = overrides?.userId || readPublicEnv("PUBLIC_TOPOGRAM_AUTH_USER_ID") || jwtPrincipal?.userId || "";
+  const envClaims = parseClaimsJson(publicEnv.PUBLIC_TOPOGRAM_AUTH_CLAIMS || "");
+  const userId = overrides?.userId || publicEnv.PUBLIC_TOPOGRAM_AUTH_USER_ID || jwtPrincipal?.userId || "";
   const permissions = new Set([
     ...normalizeOverrideList(overrides?.permissions),
-    ...csvValues(readPublicEnv("PUBLIC_TOPOGRAM_AUTH_PERMISSIONS")),
+    ...csvValues(publicEnv.PUBLIC_TOPOGRAM_AUTH_PERMISSIONS || ""),
     ...Array.from(jwtPrincipal?.permissions || [])
   ]);
   const roles = new Set([
     ...normalizeOverrideList(overrides?.roles),
-    ...csvValues(readPublicEnv("PUBLIC_TOPOGRAM_AUTH_ROLES") || readPublicEnv("PUBLIC_TOPOGRAM_AUTH_ROLE")),
+    ...csvValues(publicEnv.PUBLIC_TOPOGRAM_AUTH_ROLES || publicEnv.PUBLIC_TOPOGRAM_AUTH_ROLE || ""),
     ...Array.from(jwtPrincipal?.roles || [])
   ]);
   const isAdmin = (
     typeof overrides?.isAdmin === "boolean"
       ? overrides.isAdmin
       : readBoolean(String(overrides?.isAdmin || ""))
-  ) || readBoolean(readPublicEnv("PUBLIC_TOPOGRAM_AUTH_ADMIN")) || jwtPrincipal?.isAdmin === true;
+  ) || readBoolean(publicEnv.PUBLIC_TOPOGRAM_AUTH_ADMIN || "") || jwtPrincipal?.isAdmin === true;
 
   const claims = {
     ...(jwtPrincipal?.claims || {}),

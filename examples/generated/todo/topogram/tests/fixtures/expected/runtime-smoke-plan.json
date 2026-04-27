@@ -36,7 +36,7 @@
   "name": "Todo Runtime Smoke Plan",
   "projections": {
     "api": "proj_api",
-    "ui": "proj_ui_web"
+    "ui": "proj_ui_web__sveltekit"
   },
   "type": "runtime_smoke_plan",
   "verification": {

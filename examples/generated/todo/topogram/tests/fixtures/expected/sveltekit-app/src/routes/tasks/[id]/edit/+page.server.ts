@@ -9,6 +9,7 @@ export const actions: Actions = {
     const payload = {
       title: String(form.get("title") || "") || undefined,
       description: String(form.get("description") || "") || undefined,
+      priority: String(form.get("priority") || "") || undefined,
       owner_id: String(form.get("owner_id") || "") || undefined,
       due_at: String(form.get("due_at") || "") || undefined,
       status: String(form.get("status") || "") || undefined

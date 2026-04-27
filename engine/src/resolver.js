@@ -1042,6 +1042,25 @@ function parseProjectionUiRoutesBlock(statement) {
   }));
 }
 
+function parseProjectionUiIosBlock(statement, registry) {
+  return blockEntries(getFieldValue(statement, "ui_ios")).map((entry) => ({
+    type: "ui_ios_binding",
+    targetKind: tokenValue(entry.items[0]),
+    targetId: tokenValue(entry.items[1]),
+    capability:
+      tokenValue(entry.items[0]) === "action" && tokenValue(entry.items[1])
+        ? {
+            id: tokenValue(entry.items[1]),
+            kind: registry.get(tokenValue(entry.items[1]))?.kind || null
+          }
+        : null,
+    directive: tokenValue(entry.items[2]) || null,
+    value: tokenValue(entry.items[3]) || null,
+    raw: normalizeSequence(entry.items),
+    loc: entry.loc
+  }));
+}
+
 function parseProjectionUiWebBlock(statement, registry) {
   return blockEntries(getFieldValue(statement, "ui_web")).map((entry) => ({
     type: "ui_web_binding",
@@ -1575,6 +1594,7 @@ function normalizeStatement(statement, registry) {
         uiLookups: parseProjectionUiLookupsBlock(statement, registry),
         uiRoutes: parseProjectionUiRoutesBlock(statement),
         uiWeb: parseProjectionUiWebBlock(statement, registry),
+        uiIos: parseProjectionUiIosBlock(statement, registry),
         uiAppShell: parseProjectionUiAppShellBlock(statement),
         uiNavigation: parseProjectionUiNavigationBlock(statement),
         uiScreenRegions: parseProjectionUiScreenRegionsBlock(statement),

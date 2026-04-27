@@ -36,8 +36,8 @@
       "proj_db_postgres",
       "proj_db_sqlite",
       "proj_ui_shared",
-      "proj_ui_web",
-      "proj_ui_web_react"
+      "proj_ui_web__react",
+      "proj_ui_web__sveltekit"
     ],
     "verifications": [
       "ver_create_task_policy",
@@ -99,8 +99,8 @@
       "projections/proj_db_postgres.context-digest.json",
       "projections/proj_db_sqlite.context-digest.json",
       "projections/proj_ui_shared.context-digest.json",
-      "projections/proj_ui_web.context-digest.json",
-      "projections/proj_ui_web_react.context-digest.json"
+      "projections/proj_ui_web__react.context-digest.json",
+      "projections/proj_ui_web__sveltekit.context-digest.json"
     ],
     "workflows": []
   },
@@ -125,6 +125,6 @@
       "shape": 25,
       "verification": 3
     },
-    "root": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram"
+    "root": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram"
   }
 }

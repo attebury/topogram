@@ -9,6 +9,7 @@ export const actions: Actions = {
     const payload = {
       title: String(form.get("title") || ""),
       description: String(form.get("description") || "") || undefined,
+      priority: String(form.get("priority") || "") || undefined,
       owner_id: String(form.get("owner_id") || "") || undefined,
       project_id: String(form.get("project_id") || ""),
       due_at: String(form.get("due_at") || "") || undefined
@@ -19,6 +20,7 @@ export const actions: Actions = {
     }
 
     let created;
+
     try {
       created = await createTask(fetch, payload, {
         headers: {

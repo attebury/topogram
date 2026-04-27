@@ -56,7 +56,8 @@
       "related_projections": [
         "proj_api",
         "proj_ui_shared",
-        "proj_ui_web"
+        "proj_ui_web__sveltekit",
+        "proj_ui_web__react"
       ],
       "related_shapes": [],
       "relative_path": "docs/journeys/task-creation-and-ownership.md",

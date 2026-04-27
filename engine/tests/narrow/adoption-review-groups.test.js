@@ -28,7 +28,7 @@ test("review group builders aggregate dependencies and sort their items", () => 
       kind: "screen",
       item: "issue_detail",
       status: "needs_ui_review",
-      blocking_dependencies: [{ id: "ui_review:proj_ui_web", type: "ui_review", projection_id: "proj_ui_web", kind: "ui", platform: "ui_web", reason: "missing screen" }]
+      blocking_dependencies: [{ id: "ui_review:proj_ui_web__sveltekit", type: "ui_review", projection_id: "proj_ui_web__sveltekit", kind: "ui", platform: "ui_web", reason: "missing screen" }]
     },
     {
       bundle: "issue",
@@ -65,8 +65,8 @@ test("review group builders aggregate dependencies and sort their items", () => 
 
   assert.deepEqual(buildUiReviewGroups(items), [
     {
-      id: "ui_review:proj_ui_web",
-      projection_id: "proj_ui_web",
+      id: "ui_review:proj_ui_web__sveltekit",
+      projection_id: "proj_ui_web__sveltekit",
       kind: "ui",
       platform: "ui_web",
       reason: "missing screen",

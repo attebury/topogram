@@ -89,7 +89,7 @@ function makeChangePlanGraph() {
         generatorDefaults: []
       },
       {
-        id: "proj_ui_web",
+        id: "proj_ui_web__sveltekit",
         kind: "projection",
         name: "Web UI",
         platform: "ui_web",
@@ -179,7 +179,7 @@ function makeChangePlanGraph() {
           generatorDefaults: []
         },
         {
-          id: "proj_ui_web",
+          id: "proj_ui_web__sveltekit",
           kind: "projection",
           name: "Web UI",
           platform: "ui_web",
@@ -233,7 +233,7 @@ function makeChangePlanGraph() {
         title: "Article Editing",
         relatedCapabilities: ["cap_update_article"],
         relatedWorkflows: ["workflow_article_review"],
-        relatedProjections: ["proj_ui_web"]
+        relatedProjections: ["proj_ui_web__sveltekit"]
       }
     ]
   };
@@ -1120,7 +1120,7 @@ test("buildChangePlanPayload, diff summary, and change review packet stay compos
           ownership_class: "contract_bound",
           status: "review_required",
           maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-          emitted_dependencies: ["proj_ui_web"],
+          emitted_dependencies: ["proj_ui_web__sveltekit"],
           allowed_change_classes: ["safe", "review_required"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
@@ -1212,7 +1212,7 @@ test("buildChangePlanPayload derives a minimal projection closure without a diff
     },
     sliceArtifact: {
       focus: { kind: "capability", id: "cap_update_article" },
-      depends_on: { projections: ["proj_api", "proj_ui_shared", "proj_ui_web"] },
+      depends_on: { projections: ["proj_api", "proj_ui_shared", "proj_ui_web__sveltekit"] },
       review_boundary: { automation_class: "review_required" },
       ownership_boundary: { canonical_topogram: { owner: "human" } }
     },
@@ -1265,7 +1265,7 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
             ownership_class: "out_of_bounds",
             status: "no_go",
             maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-            emitted_dependencies: ["proj_ui_web", "journey_article_editing"],
+            emitted_dependencies: ["proj_ui_web__sveltekit", "journey_article_editing"],
             allowed_change_classes: ["no_go"],
             drift_signals: ["emitted_contract_changed", "workflow_state_changed"],
             proof_stories: [
@@ -1306,7 +1306,7 @@ test("buildChangePlanPayload prefers diff-driven affected seams when maintained 
           ownership_class: "contract_bound",
           status: "review_required",
           maintained_modules: ["examples/maintained/proof-app/src/content-approval.js"],
-          emitted_dependencies: ["proj_ui_web"],
+          emitted_dependencies: ["proj_ui_web__sveltekit"],
           allowed_change_classes: ["review_required"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: []
@@ -1345,7 +1345,7 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
             ownership_class: "out_of_bounds",
             status: "no_go",
             maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-            emitted_dependencies: ["proj_ui_web"],
+            emitted_dependencies: ["proj_ui_web__sveltekit"],
             allowed_change_classes: ["no_go"],
             drift_signals: ["emitted_contract_changed"],
             proof_stories: [
@@ -1363,7 +1363,7 @@ test("buildMaintainedDriftPayload summarizes seam severity and maintained follow
             ownership_class: "contract_bound",
             status: "review_required",
             maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-            emitted_dependencies: ["proj_ui_web"],
+            emitted_dependencies: ["proj_ui_web__sveltekit"],
             allowed_change_classes: ["safe", "review_required"],
             drift_signals: ["emitted_contract_changed"],
             proof_stories: []
@@ -1415,7 +1415,7 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
           ownership_class: "contract_bound",
           status: "review_required",
           maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-          emitted_dependencies: ["proj_ui_web"],
+          emitted_dependencies: ["proj_ui_web__sveltekit"],
           allowed_change_classes: ["safe", "review_required"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
@@ -1433,7 +1433,7 @@ test("buildMaintainedConformancePayload summarizes current seam posture conserva
           ownership_class: "out_of_bounds",
           status: "no_go",
           maintained_modules: ["examples/maintained/proof-app/src/issues.js"],
-          emitted_dependencies: ["proj_ui_web"],
+          emitted_dependencies: ["proj_ui_web__sveltekit"],
           allowed_change_classes: ["no_go"],
           drift_signals: ["emitted_contract_changed"],
           proof_stories: [
@@ -1770,13 +1770,13 @@ test("buildChangePlanPayload surfaces direct projection changes conservatively",
     taskModeArtifact: {
       mode: "modeling",
       summary: { focus: "Canonical Topogram meaning changes" },
-      preferred_context_artifacts: ["proj_ui_web.context-slice.json", "context-diff.json"],
+      preferred_context_artifacts: ["proj_ui_web__sveltekit.context-slice.json", "context-diff.json"],
       next_action: { kind: "inspect_projection" },
       write_scope: { safe_to_edit: ["topogram/**"] },
       verification_targets: { generated_checks: ["compile-check", "runtime-check"] }
     },
     sliceArtifact: {
-      focus: { kind: "projection", id: "proj_ui_web" },
+      focus: { kind: "projection", id: "proj_ui_web__sveltekit" },
       review_boundary: { automation_class: "review_required" },
       ownership_boundary: { canonical_topogram: { owner: "human" } }
     },
@@ -1791,18 +1791,18 @@ test("buildChangePlanPayload surfaces direct projection changes conservatively",
       workflows: [{ id: "workflow_article_review" }],
       journeys: [{ id: "journey_article_editing" }],
       shapes: [],
-      projections: [{ id: "proj_ui_web" }]
+      projections: [{ id: "proj_ui_web__sveltekit" }]
     },
     maintainedBoundaryArtifact: null
   });
 
-  const webImpact = changePlan.projection_impacts.find((impact) => impact.projection_id === "proj_ui_web");
+  const webImpact = changePlan.projection_impacts.find((impact) => impact.projection_id === "proj_ui_web__sveltekit");
   assert.equal(webImpact.impact_source, "direct_projection_change");
   assert.match(JSON.stringify(webImpact.impact_sources), /changed_workflow/);
   assert.match(JSON.stringify(webImpact.impact_sources), /changed_journey/);
   assert.deepEqual(
     changePlan.generator_targets
-      .filter((entry) => entry.projection_id === "proj_ui_web")
+      .filter((entry) => entry.projection_id === "proj_ui_web__sveltekit")
       .map((entry) => entry.target),
     ["sveltekit-app", "ui-web-contract", "ui-web-debug"]
   );

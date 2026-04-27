@@ -293,17 +293,17 @@ Platform: `ui_shared`
 Realizes: `cap_list_issues`, `cap_get_issue`, `cap_create_issue`, `cap_update_issue`, `cap_close_issue`
 Outputs: `ui_contract`
 
-### `proj_ui_web_sveltekit` - Issues Web UI (SvelteKit)
+### `proj_ui_web__react` - Issues Web UI
 
-Web realization for the shared Issues UI using a SvelteKit profile
+Web realization for the shared Issues UI using a React profile
 
 Platform: `ui_web`
 Realizes: `proj_ui_shared`, `cap_list_issues`, `cap_get_issue`, `cap_create_issue`, `cap_update_issue`, `cap_close_issue`
 Outputs: `ui_contract`, `web_app`
 
-### `proj_ui_web` - Issues Web UI
+### `proj_ui_web__sveltekit` - Issues Web UI (SvelteKit)
 
-Web realization for the shared Issues UI using a React profile
+Web realization for the shared Issues UI using a SvelteKit profile
 
 Platform: `ui_web`
 Realizes: `proj_ui_shared`, `cap_list_issues`, `cap_get_issue`, `cap_create_issue`, `cap_update_issue`, `cap_close_issue`

@@ -11,9 +11,9 @@ It is narrower than the full parity proof path. Its job is not to prove every ge
 The auditor reads emitted files on disk:
 
 - UI seam:
-  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json)
   and
-  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json)
 - Backend seam:
   [examples/generated/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts](../examples/generated/issues/topogram/tests/fixtures/expected/hono-server/src/lib/topogram/server-contract.ts)
   and

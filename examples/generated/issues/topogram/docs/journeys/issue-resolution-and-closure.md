@@ -21,7 +21,8 @@ related_rules:
 related_projections:
   - proj_api
   - proj_ui_shared
-  - proj_ui_web
+  - proj_ui_web__react
+  - proj_ui_web__sveltekit
 failure_signals:
   - A non-owner can update or close the issue from the normal detail flow.
   - The assignee cannot tell whether the issue is still active or already closed.

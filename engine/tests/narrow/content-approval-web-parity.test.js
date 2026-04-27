@@ -13,7 +13,7 @@ test("content approval web parity keeps react and sveltekit seams aligned", () =
   const ast = parsePath(contentApprovalPath);
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
-  const evidence = buildWebParityEvidence(resolved.graph, "proj_ui_web", "proj_ui_web_sveltekit");
+  const evidence = buildWebParityEvidence(resolved.graph, "proj_ui_web__react", "proj_ui_web__sveltekit");
 
   assert.equal(evidence.leftProfile, "react");
   assert.equal(evidence.rightProfile, "sveltekit");

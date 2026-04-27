@@ -3,7 +3,7 @@
 This bundle packages deployment helpers for the generated runtime.
 
 - `server/`: generated Hono + Prisma server scaffold
-- `web/`: generated Vite + React Router web scaffold
+- `web/`: generated SvelteKit web scaffold
 - platform deployment files for `fly_io`
 - a Vercel config for the web app
 

@@ -1,6 +1,6 @@
 {
   "projection": {
-    "id": "proj_ui_web",
+    "id": "proj_ui_web__react",
     "name": "Content Approval Web UI",
     "platform": "ui_web"
   },

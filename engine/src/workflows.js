@@ -2988,7 +2988,13 @@ function projectionKindForImpact(projection) {
   if ((projection.http || []).length > 0 || projection.platform === "dotnet") {
     return "api";
   }
-  if ((projection.uiRoutes || []).length > 0 || (projection.uiWeb || []).length > 0 || projection.platform === "ui_web") {
+  if (
+    (projection.uiRoutes || []).length > 0 ||
+    (projection.uiWeb || []).length > 0 ||
+    (projection.uiIos || []).length > 0 ||
+    projection.platform === "ui_web" ||
+    projection.platform === "ui_ios"
+  ) {
     return "ui";
   }
   if ((projection.dbTables || []).length > 0) {

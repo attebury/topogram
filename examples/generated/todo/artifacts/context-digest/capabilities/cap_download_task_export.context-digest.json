@@ -33,8 +33,8 @@
   "projections": [
     "proj_api",
     "proj_ui_shared",
-    "proj_ui_web",
-    "proj_ui_web_react"
+    "proj_ui_web__react",
+    "proj_ui_web__sveltekit"
   ],
   "summary": {
     "actors": [

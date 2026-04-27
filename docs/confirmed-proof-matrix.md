@@ -40,9 +40,11 @@ Both live in **[topogram-demo](https://github.com/attebury/topogram-demo)** but 
 | Claim type | Typical folder | What it proves |
 |------------|----------------|----------------|
 | **Imported brownfield** | [`examples/imported/<target>/`](https://github.com/attebury/topogram-demo/tree/main/examples/imported) | Real external app snapshot, reconcile/adopt path, `adoption-status.json`, imported freshness |
-| **Native full parity** | [`examples/native/<target>/`](https://github.com/attebury/topogram-demo/tree/main/examples/native) | Pinned Xcode/Gradle (or equivalent) **build** of generated or placed native workspaces vs documented Topogram commit; ops scripts `verify-native-targets` / `native-claim-freshness` |
+| **Native full parity** | [`examples/native/<target>/`](https://github.com/attebury/topogram-demo/tree/main/examples/native) | Pinned Xcode/Gradle (or equivalent) **build** of generated or placed native workspaces vs documented Topogram commit; ops scripts `verify-native-targets` / `native-claim-freshness`. Emission starts from engine targets **`native-parity-bundle`** / **`native-parity-plan`**, then promoted copies live here. |
 
 Neither replaces **thin** generator proofs in the **topogram** product repo. See [topogram-demo-ops.md](./topogram-demo-ops.md).
+
+For the **Todo** workspace, the **`swiftui-app`** generator emits an iOS SwiftUI package under [`examples/generated/todo/apps/ios-swiftui`](../examples/generated/todo/apps/ios-swiftui) from the same **`buildWebRealization`** contract as the web app (default **`proj_ui_web__sveltekit`**). Regenerate from `engine/` via `npm run generate:swiftui`.
 
 ## Brownfield Proof Split
 

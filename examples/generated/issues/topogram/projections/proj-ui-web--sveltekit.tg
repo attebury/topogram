@@ -1,0 +1,39 @@
+projection proj_ui_web__sveltekit {
+  name "Issues Web UI (SvelteKit)"
+  description "Web realization for the shared Issues UI using a SvelteKit profile"
+
+  platform ui_web
+  realizes [
+    proj_ui_shared,
+    cap_list_issues,
+    cap_get_issue,
+    cap_create_issue,
+    cap_update_issue,
+    cap_close_issue
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen issue_list path /issues
+    screen issue_detail path /issues/:id
+    screen issue_create path /issues/new
+    screen issue_edit path /issues/:id/edit
+  }
+
+  ui_web {
+    screen issue_list layout responsive_collection
+    screen issue_list desktop_variant table
+    screen issue_list mobile_variant cards
+    screen issue_detail layout detail_page
+    screen issue_create present page
+    screen issue_edit present page
+  }
+
+  generator_defaults {
+    profile sveltekit
+    language typescript
+    styling css
+  }
+
+  status active
+}

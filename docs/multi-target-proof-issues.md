@@ -28,15 +28,15 @@ That single package drives:
 
 The current proof uses two existing web targets for the same `issues` model:
 
-- React web via `proj_ui_web`
-- SvelteKit web via `proj_ui_web_sveltekit`
+- React web via `proj_ui_web__react`
+- SvelteKit web via `proj_ui_web__sveltekit`
 
 Relevant outputs:
 
 - React UI contract:
-  [examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web__react.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web__react.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/issues/artifacts/ui-web/proj_ui_web__sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web__sveltekit.ui-web-contract.json)
 - React app:
   [examples/generated/issues/apps/web](../examples/generated/issues/apps/web)
 - SvelteKit app:

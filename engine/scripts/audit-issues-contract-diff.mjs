@@ -9,8 +9,8 @@ import { auditServerContractModules, auditUiContractPair } from "../src/proofs/c
 const workspaceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const repoRoot = path.resolve(workspaceRoot, "..");
 
-const reactUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web.ui-web-contract.json");
-const svelteUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web_sveltekit.ui-web-contract.json");
+const reactUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web__react.ui-web-contract.json");
+const svelteUiPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web__sveltekit.ui-web-contract.json");
 const honoServerPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "hono-server", "src", "lib", "topogram", "server-contract.ts");
 const expressServerPath = path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "express-server", "src", "lib", "topogram", "server-contract.ts");
 

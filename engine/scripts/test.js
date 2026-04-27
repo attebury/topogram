@@ -35,7 +35,10 @@ function readText(filePath) {
 }
 
 function normalizeText(value) {
-  return `${value.replace(/\s+$/, "")}\n`;
+  if (value === undefined || value === null) {
+    throw new Error("normalizeText expected string content");
+  }
+  return `${String(value).replace(/\s+$/, "")}\n`;
 }
 
 function writeGeneratedFiles(rootDir, files) {
@@ -662,27 +665,27 @@ function run() {
 
   const generatedUiWebContract = generateWorkspace(todoAst, {
     target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!generatedUiWebContract.ok) {
     throw new Error(`Expected UI web contract generation to succeed:\n${formatValidationErrors(generatedUiWebContract.validation)}`);
   }
   assertDeepEqual(
     generatedUiWebContract.artifact,
-    readJson(path.join(expectedDir, "proj_ui_web.ui-web-contract.json")),
+    readJson(path.join(expectedDir, "proj_ui_web__sveltekit.ui-web-contract.json")),
     "UI web contract"
   );
 
   const generatedUiWebDebug = generateWorkspace(todoAst, {
     target: "ui-web-debug",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!generatedUiWebDebug.ok) {
     throw new Error(`Expected UI web debug generation to succeed:\n${formatValidationErrors(generatedUiWebDebug.validation)}`);
   }
   if (
     normalizeText(generatedUiWebDebug.artifact) !==
-    normalizeText(readText(path.join(expectedDir, "proj_ui_web.ui-web-debug.md")))
+    normalizeText(readText(path.join(expectedDir, "proj_ui_web__sveltekit.ui-web-debug.md")))
   ) {
     throw new Error("Generated UI web debug output did not match expected output");
   }
@@ -1455,7 +1458,7 @@ function run() {
 
   const generatedSvelteKitApp = generateWorkspace(todoAst, {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!generatedSvelteKitApp.ok) {
     throw new Error(`Expected SvelteKit generation to succeed:\n${formatValidationErrors(generatedSvelteKitApp.validation)}`);
@@ -1758,27 +1761,27 @@ function run() {
 
   const issuesUiWeb = generateWorkspace(issuesAst, {
     target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!issuesUiWeb.ok) {
     throw new Error(`Expected issues UI web contract generation to succeed:\n${formatValidationErrors(issuesUiWeb.validation)}`);
   }
   assertDeepEqual(
     issuesUiWeb.artifact,
-    readJson(path.join(issuesExpectedDir, "proj_ui_web.ui-web-contract.json")),
+    readJson(path.join(issuesExpectedDir, "proj_ui_web__sveltekit.ui-web-contract.json")),
     "Issues UI web contract"
   );
 
   const issuesUiWebSvelteKit = generateWorkspace(issuesAst, {
     target: "ui-web-contract",
-    projectionId: "proj_ui_web_sveltekit"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!issuesUiWebSvelteKit.ok) {
     throw new Error(`Expected issues SvelteKit UI web contract generation to succeed:\n${formatValidationErrors(issuesUiWebSvelteKit.validation)}`);
   }
   assertDeepEqual(
     issuesUiWebSvelteKit.artifact,
-    readJson(path.join(issuesExpectedDir, "proj_ui_web_sveltekit.ui-web-contract.json")),
+    readJson(path.join(issuesExpectedDir, "proj_ui_web__sveltekit.ui-web-contract.json")),
     "Issues SvelteKit UI web contract"
   );
 
@@ -1828,8 +1831,8 @@ function run() {
   const issuesBundleTargets = [
     ["hono-server", { target: "hono-server", projectionId: "proj_api" }],
     ["express-server", { target: "express-server", projectionId: "proj_api" }],
-    ["react-app", { target: "sveltekit-app", projectionId: "proj_ui_web" }],
-    ["sveltekit-app", { target: "sveltekit-app", projectionId: "proj_ui_web_sveltekit" }],
+    ["react-app", { target: "sveltekit-app", projectionId: "proj_ui_web__react" }],
+    ["sveltekit-app", { target: "sveltekit-app", projectionId: "proj_ui_web__sveltekit" }],
     ["runtime-check-bundle", { target: "runtime-check-bundle" }],
     ["app-bundle", { target: "app-bundle" }]
   ];
@@ -1864,7 +1867,7 @@ function run() {
 
   const generatedIssuesSvelteKitApp = generateWorkspace(issuesAst, {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web_sveltekit"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!generatedIssuesSvelteKitApp.ok) {
     throw new Error(
@@ -4909,7 +4912,7 @@ export default function RegisterPage() {
   );
   fs.writeFileSync(
     path.join(projectionImpactTopogramRoot, "projections", "proj-ui-web.tg"),
-    `projection proj_ui_web {
+    `projection proj_ui_web__sveltekit {
   name "Web UI"
   description "Minimal web UI projection for projection impact tests"
   platform ui_web
@@ -4937,13 +4940,13 @@ export default function RegisterPage() {
   const projectionImpactReconcile = runWorkflow("reconcile", projectionImpactTopogramRoot);
   assertIncludes(
     stableStringify(projectionImpactReconcile.summary.candidate_model_bundles),
-    ['"projection_impacts"', '"projection_patches"', '"proj_api"', '"proj_ui_web"', '"cap_update_task"'],
+    ['"projection_impacts"', '"projection_patches"', '"proj_api"', '"proj_ui_web__sveltekit"', '"cap_update_task"'],
     "Projection impact reporting"
   );
   if (!projectionImpactReconcile.files["candidates/reconcile/model/bundles/task/projection-patches/proj_api.md"]) {
     throw new Error("Expected reconcile to emit candidate projection patch docs for API projections");
   }
-  if (!projectionImpactReconcile.files["candidates/reconcile/model/bundles/task/projection-patches/proj_ui_web.md"]) {
+  if (!projectionImpactReconcile.files["candidates/reconcile/model/bundles/task/projection-patches/proj_ui_web__sveltekit.md"]) {
     throw new Error("Expected reconcile to emit candidate projection patch docs for UI projections");
   }
   assertIncludes(
@@ -4953,12 +4956,12 @@ export default function RegisterPage() {
   );
   assertIncludes(
     projectionImpactReconcile.files["candidates/reconcile/adoption-plan.json"],
-    ['"item": "cap_update_task"', '"item": "projection_patch:proj_api"', '"item": "projection_patch:proj_ui_web"', '"status": "needs_projection_review"', '"projection_impacts"', '"blocking_dependencies"', '"id": "projection_review:proj_api"', '"id": "projection_review:proj_ui_web"', '"projection_review_groups"', '"projection_id": "proj_api"', '"projection_id": "proj_ui_web"', '"suggested_action": "review_projection_patch"'],
+    ['"item": "cap_update_task"', '"item": "projection_patch:proj_api"', '"item": "projection_patch:proj_ui_web__sveltekit"', '"status": "needs_projection_review"', '"projection_impacts"', '"blocking_dependencies"', '"id": "projection_review:proj_api"', '"id": "projection_review:proj_ui_web__sveltekit"', '"projection_review_groups"', '"projection_id": "proj_api"', '"projection_id": "proj_ui_web__sveltekit"', '"suggested_action": "review_projection_patch"'],
     "Projection impacts in adoption plan"
   );
   assertIncludes(
     projectionImpactReconcile.files["candidates/reconcile/report.md"],
-    ["## Projection Review Groups", "`proj_api` (api) <- `cap_update_task`, `projection_patch:proj_api`", "`proj_ui_web` (ui) <- `cap_update_task`, `projection_patch:proj_ui_web`", "## Projection Dependencies", "`cap_update_task` -> `proj_api`, `proj_ui_web`"],
+    ["## Projection Review Groups", "`proj_api` (api) <- `cap_update_task`, `projection_patch:proj_api`", "`proj_ui_web__sveltekit` (ui) <- `cap_update_task`, `projection_patch:proj_ui_web__sveltekit`", "## Projection Dependencies", "`cap_update_task` -> `proj_api`, `proj_ui_web__sveltekit`"],
     "Projection dependency reporting"
   );
   const projectionImpactAdoptCapabilities = runWorkflow("reconcile", projectionImpactTopogramRoot, { adopt: "capabilities" });
@@ -4987,7 +4990,7 @@ export default function RegisterPage() {
   const projectionImpactPlanPath = path.join(projectionImpactTopogramRoot, "candidates", "reconcile", "adoption-plan.json");
   writeGeneratedFiles(projectionImpactTopogramRoot, projectionImpactReconcile.files);
   writeGeneratedFiles(projectionImpactTopogramRoot, projectionReviewApi.files);
-  const projectionReviewUi = runWorkflow("reconcile", projectionImpactTopogramRoot, { adopt: "projection-review:proj_ui_web", write: true });
+  const projectionReviewUi = runWorkflow("reconcile", projectionImpactTopogramRoot, { adopt: "projection-review:proj_ui_web__sveltekit", write: true });
   writeGeneratedFiles(projectionImpactTopogramRoot, projectionReviewUi.files);
   const projectionImpactPlanAfterReviews = readJson(projectionImpactPlanPath);
   const reviewedCapabilityItem = projectionImpactPlanAfterReviews.items.find((item) => item.item === "cap_update_task");
@@ -5037,7 +5040,7 @@ export default function RegisterPage() {
   );
   fs.writeFileSync(
     path.join(uiAdoptTopogramRoot, "projections", "proj-ui-web.tg"),
-    `projection proj_ui_web {
+    `projection proj_ui_web__sveltekit {
   name "Web UI"
   description "Minimal web UI projection for UI review tests"
   platform ui_web
@@ -5071,17 +5074,17 @@ export default function RegisterPage() {
   }
   assertIncludes(
     uiAdoptPreview.files["candidates/reconcile/adoption-plan.json"],
-    ['"status": "needs_ui_review"', '"ui_review_groups"', '"ui_review:proj_ui_web"'],
+    ['"status": "needs_ui_review"', '"ui_review_groups"', '"ui_review:proj_ui_web__sveltekit"'],
     "UI review grouping"
   );
   const uiReviewPreview = runWorkflow("reconcile", uiAdoptTopogramRoot);
   writeGeneratedFiles(uiAdoptTopogramRoot, uiReviewPreview.files);
   const uiReviewShared = runWorkflow("reconcile", uiAdoptTopogramRoot, { adopt: "ui-review:proj_ui_shared", write: true });
   writeGeneratedFiles(uiAdoptTopogramRoot, uiReviewShared.files);
-  const uiReviewGroup = runWorkflow("reconcile", uiAdoptTopogramRoot, { adopt: "ui-review:proj_ui_web", write: true });
+  const uiReviewGroup = runWorkflow("reconcile", uiAdoptTopogramRoot, { adopt: "ui-review:proj_ui_web__sveltekit", write: true });
   assertIncludes(
     uiReviewGroup.files["candidates/reconcile/adoption-plan.json"],
-    ['"approved_review_groups"', '"ui_review:proj_ui_shared"', '"ui_review:proj_ui_web"', '"item": "ui_task_list"', '"status": "approved"'],
+    ['"approved_review_groups"', '"ui_review:proj_ui_shared"', '"ui_review:proj_ui_web__sveltekit"', '"item": "ui_task_list"', '"status": "approved"'],
     "UI review group approval state"
   );
   writeGeneratedFiles(uiAdoptTopogramRoot, uiReviewGroup.files);
@@ -5291,7 +5294,7 @@ export default function RegisterPage() {
       "## Bundle Blockers",
       "`task`: blocked=",
       "`projection_review:proj_api`",
-      "`projection_review:proj_ui_web`",
+      "`projection_review:proj_ui_web__sveltekit`",
       "## Next Best Action",
       "- Bundle: `task`",
       "- Selector: `bundle-review:task`",
@@ -5347,7 +5350,7 @@ export default function RegisterPage() {
   );
   fs.writeFileSync(
     path.join(bundleReviewTopogramRoot, "projections", "proj-ui-web.tg"),
-    `projection proj_ui_web {
+    `projection proj_ui_web__sveltekit {
   name "Web UI"
   description "Minimal web UI projection for bundle review tests"
   platform ui_web
@@ -5580,14 +5583,14 @@ export default function RegisterPage() {
 
   const contentApprovalUiWeb = generateWorkspace(contentApprovalAst, {
     target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   if (!contentApprovalUiWeb.ok) {
     throw new Error(`Expected content-approval UI web contract generation to succeed:\n${formatValidationErrors(contentApprovalUiWeb.validation)}`);
   }
   assertDeepEqual(
     contentApprovalUiWeb.artifact,
-    readJson(path.join(contentApprovalExpectedDir, "proj_ui_web.ui-web-contract.json")),
+    readJson(path.join(contentApprovalExpectedDir, "proj_ui_web__sveltekit.ui-web-contract.json")),
     "Content-approval UI web contract"
   );
 
@@ -5680,7 +5683,7 @@ export default function RegisterPage() {
 
   const contentApprovalBundleTargets = [
     ["hono-server", { target: "hono-server", projectionId: "proj_api" }],
-    ["react-app", { target: "sveltekit-app", projectionId: "proj_ui_web" }],
+    ["react-app", { target: "sveltekit-app", projectionId: "proj_ui_web__react" }],
     ["runtime-check-bundle", { target: "runtime-check-bundle" }],
     ["app-bundle", { target: "app-bundle" }]
   ];
@@ -5735,8 +5738,8 @@ export default function RegisterPage() {
   }
   const contentApprovalWebParity = buildWebParityEvidence(
     contentApprovalResolved.graph,
-    "proj_ui_web",
-    "proj_ui_web_sveltekit"
+    "proj_ui_web__react",
+    "proj_ui_web__sveltekit"
   );
   if (!contentApprovalWebParity.semanticParity) {
     throw new Error("Expected React and SvelteKit Content Approval web realizations to preserve semantic UI-contract parity");
@@ -5754,8 +5757,8 @@ export default function RegisterPage() {
   }
   const todoWebParity = buildWebParityEvidence(
     resolved.graph,
-    "proj_ui_web_react",
-    "proj_ui_web"
+    "proj_ui_web__react",
+    "proj_ui_web__sveltekit"
   );
   if (!todoWebParity.semanticParity) {
     throw new Error("Expected React and SvelteKit Todo web realizations to preserve semantic UI-contract parity");

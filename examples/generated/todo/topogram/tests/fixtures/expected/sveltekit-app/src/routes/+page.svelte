@@ -1,11 +1,71 @@
 <script lang="ts">
-  import { PUBLIC_TOPOGRAM_DEMO_TASK_ID } from "$env/static/public";
+  import { PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID as DEMO_TASK_ID } from "$env/static/public";
 
   const screens = [
+  {
+    "id": "project_list",
+    "title": "Projects",
+    "route": "/projects",
+    "navigable": true
+  },
+  {
+    "id": "project_detail",
+    "title": "Project Details",
+    "route": "/projects/:id",
+    "navigable": false
+  },
+  {
+    "id": "project_create",
+    "title": "Create Project",
+    "route": "/projects/new",
+    "navigable": true
+  },
+  {
+    "id": "project_edit",
+    "title": "Edit Project",
+    "route": "/projects/:id/edit",
+    "navigable": false
+  },
+  {
+    "id": "user_list",
+    "title": "Users",
+    "route": "/users",
+    "navigable": true
+  },
+  {
+    "id": "user_detail",
+    "title": "User Details",
+    "route": "/users/:id",
+    "navigable": false
+  },
+  {
+    "id": "user_create",
+    "title": "Create User",
+    "route": "/users/new",
+    "navigable": true
+  },
+  {
+    "id": "user_edit",
+    "title": "Edit User",
+    "route": "/users/:id/edit",
+    "navigable": false
+  },
   {
     "id": "task_list",
     "title": "Tasks",
     "route": "/tasks",
+    "navigable": true
+  },
+  {
+    "id": "task_board",
+    "title": "Task Board",
+    "route": "/tasks/board",
+    "navigable": true
+  },
+  {
+    "id": "task_calendar",
+    "title": "Task Calendar",
+    "route": "/tasks/calendar",
     "navigable": true
   },
   {
@@ -33,7 +93,7 @@
     "navigable": false
   }
 ];
-  const demoTaskRoute = PUBLIC_TOPOGRAM_DEMO_TASK_ID ? `/tasks/${PUBLIC_TOPOGRAM_DEMO_TASK_ID}` : null;
+  const demoTaskRoute = DEMO_TASK_ID ? `/tasks/${DEMO_TASK_ID}` : null;
 </script>
 
 <main>
@@ -41,10 +101,10 @@
     <section class="card hero">
       <div>
         <h1>Todo Web UI</h1>
-        <p>Generated from Topogram via the `sveltekit` profile and wired to the generated API client.</p>
+        <p>Generated from Topogram via the `sveltekit` profile and wired to a multi-resource workspace for tasks, projects, and users.</p>
       </div>
       <div class="button-row">
-        <a class="button-link" href="/tasks">Browse Tasks</a>
+        <a class="button-link" href="/tasks">Tasks</a>
         <a class="button-link secondary" href="/tasks/new">Create Task</a>
         {#if demoTaskRoute}
           <a class="button-link secondary" href={demoTaskRoute}>Open Demo Task</a>

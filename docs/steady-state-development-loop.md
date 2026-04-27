@@ -147,7 +147,7 @@ Typical flow:
 Typical flow:
 
 - update UI projection semantics or rule/capability semantics
-- affect `proj_ui_shared`, `proj_ui_web`, and sometimes `proj_api`
+- affect `proj_ui_shared`, shipped web projections (`proj_ui_web__*`), and sometimes `proj_api`
 - regenerate UI contracts and related outputs
 - patch maintained presenters, view logic, routes, and tests
 - run UI-relevant compile, smoke, and maintained-app proof checks

@@ -1,6 +1,6 @@
 {
   "projection": {
-    "id": "proj_ui_web_sveltekit",
+    "id": "proj_ui_web__sveltekit",
     "name": "Content Approval Web UI (SvelteKit)",
     "platform": "ui_web"
   },

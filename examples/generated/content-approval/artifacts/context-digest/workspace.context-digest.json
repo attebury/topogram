@@ -26,8 +26,8 @@
       "proj_db_postgres",
       "proj_db_sqlite",
       "proj_ui_shared",
-      "proj_ui_web",
-      "proj_ui_web_sveltekit"
+      "proj_ui_web__react",
+      "proj_ui_web__sveltekit"
     ],
     "verifications": [
       "ver_article_review_flow",
@@ -80,8 +80,8 @@
       "projections/proj_db_postgres.context-digest.json",
       "projections/proj_db_sqlite.context-digest.json",
       "projections/proj_ui_shared.context-digest.json",
-      "projections/proj_ui_web.context-digest.json",
-      "projections/proj_ui_web_sveltekit.context-digest.json"
+      "projections/proj_ui_web__react.context-digest.json",
+      "projections/proj_ui_web__sveltekit.context-digest.json"
     ],
     "workflows": [
       "workflows/article_review.context-digest.json"
@@ -107,6 +107,6 @@
       "shape": 9,
       "verification": 2
     },
-    "root": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram"
+    "root": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram"
   }
 }

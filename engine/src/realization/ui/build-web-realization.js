@@ -20,10 +20,12 @@ function collectCapabilityIds(contract) {
 
 export function buildWebRealization(graph, options = {}) {
   if (!options.projectionId) {
-    throw new Error("Web realization requires --projection <id>");
+    throw new Error("Routed UI realization requires --projection <id>");
   }
 
   const projection = getProjection(graph, options.projectionId);
+  const surfaceHints =
+    projection.platform === "ui_ios" ? projection.uiIos || [] : projection.uiWeb || [];
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
   const sharedContract = sharedProjection
     ? buildUiSharedRealization(graph, { projectionId: sharedProjection.id })
@@ -38,7 +40,7 @@ export function buildWebRealization(graph, options = {}) {
   const uiWebByScreen = new Map();
   const uiWebByAction = new Map();
 
-  for (const entry of projection.uiWeb || []) {
+  for (const entry of surfaceHints) {
     if (entry.targetKind === "screen") {
       if (!uiWebByScreen.has(entry.targetId)) {
         uiWebByScreen.set(entry.targetId, []);
@@ -105,12 +107,14 @@ export function buildWebRealization(graph, options = {}) {
     apiContracts[capabilityId] = buildApiRealization(graph, { capabilityId });
   }
 
+  const isNativeUi = projection.platform === "ui_ios";
+
   return {
-    type: "web_app_realization",
+    type: isNativeUi ? "native_ui_realization" : "web_app_realization",
     app: {
       id: contract.projection.id,
-      family: "web",
-      target: contract.generatorDefaults.profile || "sveltekit",
+      family: isNativeUi ? "native" : "web",
+      target: contract.generatorDefaults.profile || (isNativeUi ? "swiftui" : "sveltekit"),
       name: contract.projection.name
     },
     contract,

@@ -12,6 +12,7 @@ export const actions: Actions = {
     };
 
     let job;
+
     try {
       job = await exportTasks(fetch, payload);
     } catch (error) {

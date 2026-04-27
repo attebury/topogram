@@ -82,7 +82,7 @@ export function readTodoUiWebContract() {
     "tests",
     "fixtures",
     "expected",
-    "proj_ui_web.ui-web-contract.json"
+    "proj_ui_web__sveltekit.ui-web-contract.json"
   ]);
 }
 
@@ -108,7 +108,7 @@ export function readIssuesUiWebContract() {
     "tests",
     "fixtures",
     "expected",
-    "proj_ui_web.ui-web-contract.json"
+    "proj_ui_web__react.ui-web-contract.json"
   ]);
 }
 
