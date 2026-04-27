@@ -103,21 +103,33 @@ node ./src/cli.js query review-boundary ../examples/generated/content-approval/t
 node ./src/cli.js query write-scope ../examples/generated/content-approval/topogram --capability cap_request_article_revision
 node ./src/cli.js query verification-targets ../examples/generated/content-approval/topogram --capability cap_request_article_revision
 node ./src/cli.js query change-plan ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
-node ./src/cli.js query import-plan ../examples/generated/content-approval/topogram
 node ./src/cli.js query risk-summary ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
 node ./src/cli.js query canonical-writes ../examples/generated/content-approval/topogram
 node ./src/cli.js query proceed-decision ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
 node ./src/cli.js query review-packet ../examples/generated/content-approval/topogram --mode modeling --capability cap_request_article_revision --from-topogram ../examples/generated/todo/topogram
-node ./src/cli.js query next-action ../examples/generated/content-approval/topogram --mode import-adopt
-node ./src/cli.js query single-agent-plan ../examples/generated/content-approval/topogram --mode import-adopt
-node ./src/cli.js query multi-agent-plan ../examples/generated/content-approval/topogram --mode import-adopt
-node ./src/cli.js query work-packet ../examples/generated/content-approval/topogram --mode import-adopt --lane auth_reviewer.article
-node ./src/cli.js query lane-status ../examples/generated/content-approval/topogram --mode import-adopt
-node ./src/cli.js query handoff-status ../examples/generated/content-approval/topogram --mode import-adopt
-node ./src/cli.js query auth-hints ../examples/generated/content-approval/topogram
-node ./src/cli.js query auth-review-packet ../examples/generated/content-approval/topogram --bundle article
 node ./src/cli.js query maintained-boundary ../examples/generated/content-approval/topogram
 node ./src/cli.js query diff ../examples/generated/content-approval/topogram --from-topogram ../examples/generated/todo/topogram
+```
+
+Import-adopt and auth-review packet queries require reconcile artifacts. For the maintained fixture path, run the verification scripts from the repo root:
+
+```bash
+bash ./scripts/verify-agent-planning.sh
+bash ./scripts/verify-brownfield-rehearsal.sh
+```
+
+If you build your own staged reconcile workspace first, the individual queries have this shape:
+
+```bash
+node ./engine/src/cli.js query import-plan <staged-topogram-root>
+node ./engine/src/cli.js query next-action <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query single-agent-plan <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query multi-agent-plan <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query work-packet <staged-topogram-root> --mode import-adopt --lane <lane-id>
+node ./engine/src/cli.js query lane-status <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query handoff-status <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query auth-hints <staged-topogram-root>
+node ./engine/src/cli.js query auth-review-packet <staged-topogram-root> --bundle <bundle-slug>
 ```
 
 These targets are for agent-facing structured context, not a replacement for docs or runtime verification:
@@ -156,7 +168,7 @@ The next operating layer is now visible in the context artifacts too:
 
 Together with future task modes, these should make agents more predictable in `modeling`, `maintained-app edit`, `import/adopt`, `diff review`, and `verification` work.
 
-`query next-action` remains the smallest “what should I do now?” pointer. `query single-agent-plan` is the fuller default operating loop for one agent or operator, combining next action, write scope, review boundaries, proof targets, and primary artifacts. `query multi-agent-plan --mode import-adopt` is the optional decomposition of that same baseline into explicit lanes, handoff packets, overlap rules, and serialized gates for more complex brownfield review/adoption work. `query work-packet --mode import-adopt --lane <id>` is the bounded assignment surface for one lane, including allowed inputs, owned targets, blockers, proof expectations, and the handoff packet that lane must publish. `query lane-status` and `query handoff-status` are the operator-visibility surfaces for which lanes are blocked, ready, or complete and which handoffs are still pending.
+`query next-action` remains the smallest “what should I do now?” pointer. `query single-agent-plan --mode <mode>` is the fuller default operating loop for one agent or operator, combining next action, write scope, review boundaries, proof targets, and primary artifacts. `query multi-agent-plan --mode import-adopt` is the optional decomposition of that same baseline into explicit lanes, handoff packets, overlap rules, and serialized gates for more complex brownfield review/adoption work. `query work-packet --mode import-adopt --lane <id>` is the bounded assignment surface for one lane, including allowed inputs, owned targets, blockers, proof expectations, and the handoff packet that lane must publish. `query lane-status --mode import-adopt` and `query handoff-status --mode import-adopt` are the operator-visibility surfaces for which lanes are blocked, ready, or complete and which handoffs are still pending.
 
 Taken together, these planning queries are the current alpha-complete planning boundary:
 
@@ -187,7 +199,7 @@ Set:
 - `TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256`
 - `TOPOGRAM_AUTH_JWT_SECRET`
 - `TOPOGRAM_AUTH_TOKEN`
-- `PUBLIC_TOPOGRAM_AUTH_TOKEN`
+- `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`
 
 Examples may also provide proof-specific tokens such as:
 
@@ -201,7 +213,9 @@ The current example proof matrix is:
 - `ownership`: [../examples/generated/issues](../examples/generated/issues)
 - `claim`: [../examples/generated/content-approval](../examples/generated/content-approval)
 
-Generated web clients attach `PUBLIC_TOPOGRAM_AUTH_TOKEN` automatically on secured requests, and generated smoke/runtime-check bundles use `TOPOGRAM_AUTH_TOKEN` when present.
+Generated web clients attach `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` automatically on secured requests, and generated smoke/runtime-check bundles use `TOPOGRAM_AUTH_TOKEN` when present. The public demo token is browser-visible by design; it is not a secret and must not be used as a production access-control boundary.
+
+Generated servers fail closed when a protected route has no supported auth profile, no auth handler, or a missing demo token. Generated CORS defaults allow only local web origins and can be overridden with `TOPOGRAM_CORS_ORIGINS`.
 
 The current auth proof boundary includes:
 

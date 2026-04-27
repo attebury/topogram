@@ -19,8 +19,9 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-topogram_todo}?schema=public
       PORT: ${SERVER_PORT:-3000}
+      TOPOGRAM_CORS_ORIGINS: http://localhost:${WEB_PORT:-5173},http://127.0.0.1:${WEB_PORT:-5173}
     ports:
-      - "${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"
+      - "127.0.0.1:${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"
     volumes:
       - ./server:/app
     command: >
@@ -36,7 +37,7 @@ services:
     environment:
       PUBLIC_TOPOGRAM_API_BASE_URL: http://localhost:${SERVER_PORT:-3000}
     ports:
-      - "${WEB_PORT:-5173}:${WEB_PORT:-5173}"
+      - "127.0.0.1:${WEB_PORT:-5173}:${WEB_PORT:-5173}"
     volumes:
       - ./web:/app
     command: >

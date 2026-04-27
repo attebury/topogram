@@ -8,7 +8,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 node "$SCRIPT_DIR/guard-ports.mjs" web
 
 export PUBLIC_TOPOGRAM_API_BASE_URL="${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:${SERVER_PORT:-3002}}"
+export TOPOGRAM_CORS_ORIGINS="${TOPOGRAM_CORS_ORIGINS:-http://localhost:${WEB_PORT:-5175},http://127.0.0.1:${WEB_PORT:-5175}}"
 
 cd "$ROOT_DIR/web"
 npm install
-npm run dev -- --host 0.0.0.0 --port "${WEB_PORT:-5175}"
+npm run dev -- --host "${WEB_HOST:-127.0.0.1}" --port "${WEB_PORT:-5175}"

@@ -1,6 +1,6 @@
 # Verification Checklist
 
-Generated from `/Users/attebury/Documents/topogram/examples/generated/todo/topogram`
+Generated from `/Users/attebury/topogram-cursor/examples/generated/todo/topogram`
 
 ## `ver_create_task_policy` - Create task policy
 

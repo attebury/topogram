@@ -27,6 +27,7 @@ interface AuthPrincipal {
   userId: string;
   permissions: Set<string>;
   roles: Set<string>;
+  claims: Record<string, unknown>;
   isAdmin: boolean;
 }
 
@@ -48,7 +49,7 @@ export function jsonError(error: unknown) {
     body: {
       error: {
         code: "internal_server_error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: "Internal server error"
       }
     }
   };
@@ -63,7 +64,13 @@ export function coerceValue(raw: string | undefined, schema: { type?: string; fo
   }
   if (schema.type === "integer" || schema.type === "number") {
     const parsed = Number(raw);
-    return Number.isNaN(parsed) ? raw : parsed;
+    if (Number.isNaN(parsed)) {
+      throw new HttpError(400, "invalid_number", `Invalid numeric value: ${raw}`);
+    }
+    if (schema.type === "integer" && !Number.isInteger(parsed)) {
+      throw new HttpError(400, "invalid_integer", `Invalid integer value: ${raw}`);
+    }
+    return parsed;
   }
   if (schema.type === "boolean") {
     return raw === "true";
@@ -120,6 +127,18 @@ function readBooleanEnv(name: string) {
   return ["1", "true", "yes", "on"].includes(String(process.env[name] || "").toLowerCase());
 }
 
+function parseClaimsJson(raw: string | undefined) {
+  if (!raw) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+  } catch {
+    return {};
+  }
+}
+
 function readBearerToken(c: Context) {
   const header = c.req.header("Authorization") || c.req.header("authorization") || "";
   const match = header.match(/^Bearer\s+(.+)$/i);
@@ -144,6 +163,15 @@ function readHs256Secret() {
   return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
 }
 
+export function contentDisposition(disposition: string, filename: string) {
+  const safeDisposition = disposition === "inline" ? "inline" : "attachment";
+  const safeFilename = filename
+    .replace(/[\r\n"]/g, "")
+    .replace(/[\\/]/g, "_")
+    .trim() || "download.bin";
+  return `${safeDisposition}; filename="${safeFilename}"`;
+}
+
 function parsePrincipalClaims(payload: Record<string, unknown>): AuthPrincipal {
   const permissions = Array.isArray(payload.permissions)
     ? payload.permissions.filter((value): value is string => typeof value === "string")
@@ -160,6 +188,7 @@ function parsePrincipalClaims(payload: Record<string, unknown>): AuthPrincipal {
     userId: typeof payload.sub === "string" ? payload.sub : "",
     permissions: new Set(permissions),
     roles: new Set(roles),
+    claims: payload,
     isAdmin: payload.admin === true
   };
 }
@@ -179,6 +208,7 @@ function principalFromEnv(): { token: string; principal: AuthPrincipal } | null 
       userId: process.env.TOPOGRAM_AUTH_USER_ID || process.env.TOPOGRAM_DEMO_USER_ID || "",
       permissions: csvValues(process.env.TOPOGRAM_AUTH_PERMISSIONS),
       roles: csvValues(process.env.TOPOGRAM_AUTH_ROLES || process.env.TOPOGRAM_AUTH_ROLE),
+      claims: parseClaimsJson(process.env.TOPOGRAM_AUTH_CLAIMS),
       isAdmin: readBooleanEnv("TOPOGRAM_AUTH_ADMIN")
     }
   };
@@ -239,8 +269,33 @@ function hasRole(principal: AuthPrincipal, role: string | null | undefined) {
   return principal.roles.has(role);
 }
 
-function ownerIdFromResource(resource: Record<string, unknown> | null | undefined) {
+function hasClaim(principal: AuthPrincipal, claim: string | null | undefined, claimValue: string | null | undefined) {
+  if (!claim) {
+    return true;
+  }
+  const value = principal.claims[claim];
+  if (value == null) {
+    return false;
+  }
+  if (!claimValue) {
+    return value !== false && value !== "";
+  }
+  return String(value) === claimValue;
+}
+
+function ownerIdFromResource(
+  resource: Record<string, unknown> | null | undefined,
+  ownershipField: string | null | undefined
+) {
   if (!resource || typeof resource !== "object") {
+    return "";
+  }
+
+  if (ownershipField) {
+    const explicitValue = resource[ownershipField];
+    if (typeof explicitValue === "string" && explicitValue.length > 0) {
+      return explicitValue;
+    }
     return "";
   }
 
@@ -257,6 +312,7 @@ function ownerIdFromResource(resource: Record<string, unknown> | null | undefine
 async function satisfiesOwnership(
   principal: AuthPrincipal,
   ownership: string | null | undefined,
+  ownershipField: string | null | undefined,
   authorizationContext: AuthorizationContext | undefined
 ) {
   if (!ownership || ownership === "none") {
@@ -274,12 +330,12 @@ async function satisfiesOwnership(
   }
 
   const resource = await authorizationContext.loadResource();
-  return ownerIdFromResource(resource) === principal.userId;
+  return ownerIdFromResource(resource, ownershipField) === principal.userId;
 }
 
 async function authorizeWithPrincipal(
   principal: AuthPrincipal,
-  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; ownership?: string | null }>,
+  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
   if (!authz || authz.length === 0) {
@@ -289,8 +345,9 @@ async function authorizeWithPrincipal(
   for (const rule of authz) {
     const roleOk = hasRole(principal, rule.role);
     const permissionOk = hasPermission(principal, rule.permission);
-    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, authorizationContext);
-    if (roleOk && permissionOk && ownershipOk) {
+    const claimOk = hasClaim(principal, rule.claim, rule.claimValue);
+    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, rule.ownershipField, authorizationContext);
+    if (roleOk && permissionOk && claimOk && ownershipOk) {
       return;
     }
   }
@@ -300,12 +357,12 @@ async function authorizeWithPrincipal(
 
 export async function authorizeWithBearerDemoProfile(
   c: Context,
-  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; ownership?: string | null }>,
+  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
   const envPrincipal = principalFromEnv();
   if (!envPrincipal) {
-    return;
+    throw new HttpError(500, "missing_auth_demo_token", "Missing TOPOGRAM_AUTH_TOKEN for bearer_demo auth profile");
   }
 
   const token = readBearerToken(c);
@@ -321,13 +378,9 @@ export async function authorizeWithBearerDemoProfile(
 
 export async function authorizeWithBearerJwtHs256Profile(
   c: Context,
-  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; ownership?: string | null }>,
+  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
-  if ((process.env.TOPOGRAM_AUTH_PROFILE || "") !== "bearer_jwt_hs256") {
-    return;
-  }
-
   const token = readBearerToken(c);
   if (!token) {
     throw new HttpError(401, "missing_bearer_token", "Missing bearer token");
@@ -335,7 +388,7 @@ export async function authorizeWithBearerJwtHs256Profile(
 
   const principal = principalFromJwtHs256(token);
   if (!principal) {
-    return;
+    throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
   await authorizeWithPrincipal(principal, authz, authorizationContext);
@@ -343,9 +396,13 @@ export async function authorizeWithBearerJwtHs256Profile(
 
 export async function authorizeWithGeneratedAuthProfile(
   c: Context,
-  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; ownership?: string | null }>,
+  authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
+  if (!authz || authz.length === 0) {
+    return;
+  }
+
   const profile = process.env.TOPOGRAM_AUTH_PROFILE || "";
   if (profile === "bearer_demo") {
     await authorizeWithBearerDemoProfile(c, authz, authorizationContext);
@@ -353,5 +410,11 @@ export async function authorizeWithGeneratedAuthProfile(
   }
   if (profile === "bearer_jwt_hs256") {
     await authorizeWithBearerJwtHs256Profile(c, authz, authorizationContext);
+    return;
   }
+  throw new HttpError(
+    500,
+    profile ? "unsupported_auth_profile" : "missing_auth_profile",
+    profile ? `Unsupported TOPOGRAM_AUTH_PROFILE: ${profile}` : "Missing TOPOGRAM_AUTH_PROFILE for protected route"
+  );
 }

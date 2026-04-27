@@ -13,8 +13,8 @@ The claim boundary is intentionally narrow:
 
 The planning stack should read in this order:
 
-1. `query next-action`
-2. `query single-agent-plan`
+1. `query next-action --mode <mode>`
+2. `query single-agent-plan --mode <mode>`
 3. `query multi-agent-plan --mode import-adopt`
 4. `query work-packet --mode import-adopt --lane <id>`
 5. `query lane-status --mode import-adopt`
@@ -45,12 +45,12 @@ bash ./scripts/run-brownfield-rehearsal.sh
 
 That will build the staged fixture, print the staged workspace root, and run the canonical brownfield review loop.
 
-If you want to inspect the steps manually, start from:
+If you want to inspect the steps manually, first copy the `staged_topogram_root` returned by the fixture builder. Then run:
 
 ```bash
-node ./engine/src/cli.js query import-plan ./engine/tests/fixtures/import/incomplete-topogram/topogram
-node ./engine/src/cli.js query review-packet ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
-node ./engine/src/cli.js query proceed-decision ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
+node ./engine/src/cli.js query import-plan <staged-topogram-root>
+node ./engine/src/cli.js query review-packet <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query proceed-decision <staged-topogram-root> --mode import-adopt
 ```
 
 For this fixture, the important operator takeaway is:
@@ -58,15 +58,15 @@ For this fixture, the important operator takeaway is:
 - `review-packet` should stay sourced from `import-plan`
 - `proceed-decision` should stay conservative and stop on the maintained no-go seams already in scope
 
-Then inspect the planning surfaces:
+Then inspect the planning surfaces. The raw fixture must be copied and staged with reconcile artifacts first; in the commands below, `<staged-topogram-root>` means that staged workspace, not `engine/tests/fixtures/import/incomplete-topogram/topogram` directly.
 
 ```bash
-node ./engine/src/cli.js query next-action ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
-node ./engine/src/cli.js query single-agent-plan ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
-node ./engine/src/cli.js query multi-agent-plan ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
-node ./engine/src/cli.js query work-packet ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt --lane bundle_reviewer.task
-node ./engine/src/cli.js query lane-status ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
-node ./engine/src/cli.js query handoff-status ./engine/tests/fixtures/import/incomplete-topogram/topogram --mode import-adopt
+node ./engine/src/cli.js query next-action <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query single-agent-plan <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query multi-agent-plan <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query work-packet <staged-topogram-root> --mode import-adopt --lane <lane-id>
+node ./engine/src/cli.js query lane-status <staged-topogram-root> --mode import-adopt
+node ./engine/src/cli.js query handoff-status <staged-topogram-root> --mode import-adopt
 ```
 
 For the shortest evaluator-facing verification path, run:

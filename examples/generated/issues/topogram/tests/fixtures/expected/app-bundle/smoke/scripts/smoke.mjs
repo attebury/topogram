@@ -1,7 +1,8 @@
 const apiBase = process.env.TOPOGRAM_API_BASE_URL || "";
 const webBase = process.env.TOPOGRAM_WEB_BASE_URL || "";
 const demoContainerId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "42222222-2222-4222-8222-222222222222";
-const authToken = process.env.TOPOGRAM_AUTH_TOKEN || process.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || "";
+const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "41111111-1111-4111-8111-111111111111";
+const authToken = process.env.TOPOGRAM_AUTH_TOKEN || "";
 
 if (!apiBase || !webBase) {
   throw new Error("TOPOGRAM_API_BASE_URL and TOPOGRAM_WEB_BASE_URL are required");
@@ -31,6 +32,7 @@ const createResponse = await fetch(new URL("/issues", apiBase), {
   body: JSON.stringify({
     title: "Smoke Test Issue",
     board_id: demoContainerId,
+    assignee_id: demoUserId,
     priority: "medium"
   })
 });

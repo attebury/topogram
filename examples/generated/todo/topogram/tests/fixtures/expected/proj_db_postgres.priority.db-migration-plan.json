@@ -1,7 +1,7 @@
 {
   "engine": "postgres",
   "from": {
-    "snapshotPath": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram/tests/fixtures/migrations/proj_db_postgres.priority-from.snapshot.json",
+    "snapshotPath": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/tests/fixtures/migrations/proj_db_postgres.priority-from.snapshot.json",
     "tableCount": 3
   },
   "manual": [],

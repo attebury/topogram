@@ -5,7 +5,7 @@
       "aliases": [],
       "body": "This journey captures the author-facing side of the editorial review loop.\n\nThe user intent is not simply to change an article status. The author needs to understand why a revision was requested, make the requested edits, and resubmit the same article back into review without starting over or losing context.\n\n## Happy Path\n\n1. A reviewer requests changes and the article moves to `needs_revision`.\n2. The author opens the article and can still see the outstanding review context.\n3. The author edits the draft and updates the article with `status=submitted`.\n4. The system returns the article to the normal review workflow.\n\n## Alternate Paths\n\n- If review context is no longer visible, the author should still receive enough guidance to understand what changed.\n- If the assigned reviewer is no longer active, the article should still remain recoverable within the editorial workflow rather than getting stranded in an ambiguous state.\n\n## Change Review Notes\n\nReview this journey when changing review status semantics, author editing flows, reviewer assignment rules, or the UI copy around revision requests.\n",
       "confidence": null,
-      "file": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram/docs/journeys/article-resubmission-after-review.md",
+      "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/docs/journeys/article-resubmission-after-review.md",
       "id": "article_resubmission_after_review",
       "kind": "journey",
       "provenance": [],
@@ -40,7 +40,7 @@
       "aliases": [],
       "body": "This report models the kind of uncertainty an import agent should surface instead of flattening it into fake certainty.\n\nOpen questions that would still merit review in a brownfield import:\n\n- Should \"Request Revision\" be presented as a warning action or a destructive action in the maintained UI?\n- Should reviewer notes remain visible to authors after resubmission, or be treated as historical review records?\n- Is `needs_revision` closer to a review decision or an editorial status in team language?\n\nThe underlying workflow is implemented clearly enough to support generation and runtime checks, but these presentation and naming decisions still benefit from human review.\n",
       "confidence": "medium",
-      "file": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram/docs/reports/import-gap-report.md",
+      "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/docs/reports/import-gap-report.md",
       "id": "import_gap_report",
       "kind": "report",
       "provenance": [
@@ -75,7 +75,7 @@
       "aliases": [],
       "body": "An article starts in `draft` and becomes `submitted` when an editor sends it for review.\n\nManagers can then make one of three decisions:\n\n- approve the article\n- reject the article\n- request revision\n\n`needs_revision` is not a terminal state. It means the article remains in editorial workflow, but the author must revise the draft before the article can return to `submitted`.\n\nResubmission intentionally reuses `cap_update_article` with `status=submitted` rather than introducing a separate resubmit capability. That keeps the workflow compact while still making the revision request explicit in the API and UI.\n",
       "confidence": null,
-      "file": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram/docs/workflows/article-review.md",
+      "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/docs/workflows/article-review.md",
       "id": "article_review",
       "kind": "workflow",
       "provenance": [],
@@ -108,6 +108,6 @@
       "title": "Article Review Workflow"
     }
   ],
-  "root": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram",
+  "root": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram",
   "type": "docs_index"
 }

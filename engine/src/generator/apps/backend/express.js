@@ -64,7 +64,7 @@ export function jsonError(error: unknown) {
     body: {
       error: {
         code: "internal_server_error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: "Internal server error"
       }
     }
   };
@@ -79,7 +79,13 @@ export function coerceValue(raw: string | undefined, schema: { type?: string; fo
   }
   if (schema.type === "integer" || schema.type === "number") {
     const parsed = Number(raw);
-    return Number.isNaN(parsed) ? raw : parsed;
+    if (Number.isNaN(parsed)) {
+      throw new HttpError(400, "invalid_number", \`Invalid numeric value: \${raw}\`);
+    }
+    if (schema.type === "integer" && !Number.isInteger(parsed)) {
+      throw new HttpError(400, "invalid_integer", \`Invalid integer value: \${raw}\`);
+    }
+    return parsed;
   }
   if (schema.type === "boolean") {
     return raw === "true";
@@ -170,6 +176,15 @@ function parseJsonSegment(segment: string, code: string) {
 
 function readHs256Secret() {
   return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+}
+
+export function contentDisposition(disposition: string, filename: string) {
+  const safeDisposition = disposition === "inline" ? "inline" : "attachment";
+  const safeFilename = filename
+    .replace(/[\\r\\n"]/g, "")
+    .replace(/[\\\\/]/g, "_")
+    .trim() || "download.bin";
+  return \`\${safeDisposition}; filename="\${safeFilename}"\`;
 }
 
 function parsePrincipalClaims(payload: Record<string, unknown>): AuthPrincipal {
@@ -362,7 +377,7 @@ export async function authorizeWithBearerDemoProfile(
 ) {
   const envPrincipal = principalFromEnv();
   if (!envPrincipal) {
-    return;
+    throw new HttpError(500, "missing_auth_demo_token", "Missing TOPOGRAM_AUTH_TOKEN for bearer_demo auth profile");
   }
 
   const token = readBearerToken(req);
@@ -381,10 +396,6 @@ export async function authorizeWithBearerJwtHs256Profile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
-  if ((process.env.TOPOGRAM_AUTH_PROFILE || "") !== "bearer_jwt_hs256") {
-    return;
-  }
-
   const token = readBearerToken(req);
   if (!token) {
     throw new HttpError(401, "missing_bearer_token", "Missing bearer token");
@@ -392,7 +403,7 @@ export async function authorizeWithBearerJwtHs256Profile(
 
   const principal = principalFromJwtHs256(token);
   if (!principal) {
-    return;
+    throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
   await authorizeWithPrincipal(principal, authz, authorizationContext);
@@ -403,6 +414,10 @@ export async function authorizeWithGeneratedAuthProfile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
+  if (!authz || authz.length === 0) {
+    return;
+  }
+
   const profile = process.env.TOPOGRAM_AUTH_PROFILE || "";
   if (profile === "bearer_demo") {
     await authorizeWithBearerDemoProfile(req, authz, authorizationContext);
@@ -410,7 +425,13 @@ export async function authorizeWithGeneratedAuthProfile(
   }
   if (profile === "bearer_jwt_hs256") {
     await authorizeWithBearerJwtHs256Profile(req, authz, authorizationContext);
+    return;
   }
+  throw new HttpError(
+    500,
+    profile ? "unsupported_auth_profile" : "missing_auth_profile",
+    profile ? \`Unsupported TOPOGRAM_AUTH_PROFILE: \${profile}\` : "Missing TOPOGRAM_AUTH_PROFILE for protected route"
+  );
 }
 `;
 }
@@ -505,6 +526,7 @@ function renderExpressServerAppTs(realization) {
   const lines = [];
   const typeImportNames = routeTypeNames(contract);
   const serviceName = realization.backendReference.serviceName;
+  const defaultWebPort = realization.runtimeReference?.ports?.web || 5173;
   const repositoryReference = realization.repositoryReference;
   const dependencyName = repositoryReference.dependencyName;
   const preconditionCapabilityIds = repositoryReference.preconditionCapabilityIds;
@@ -514,7 +536,7 @@ function renderExpressServerAppTs(realization) {
 
   lines.push('import express, { type Request, type Response } from "express";');
   lines.push('import { serverContract } from "../topogram/server-contract";');
-  lines.push('import { HttpError, coerceValue, jsonError, requireHeaders, requireRequestFields } from "./helpers";');
+  lines.push('import { HttpError, coerceValue, contentDisposition, jsonError, requireHeaders, requireRequestFields } from "./helpers";');
   lines.push('import type { ServerDependencies } from "./context";');
   lines.push(`import type { ${typeImportNames.join(", ")} } from "../persistence/types";`);
   lines.push("");
@@ -542,11 +564,20 @@ function renderExpressServerAppTs(realization) {
   lines.push("  return input;");
   lines.push("}");
   lines.push("");
+  lines.push("function corsOrigin(req: Request) {");
+  lines.push(`  const configured = process.env.TOPOGRAM_CORS_ORIGINS || "http://localhost:${defaultWebPort},http://127.0.0.1:${defaultWebPort}";`);
+  lines.push("  const allowed = new Set(configured.split(\",\").map((entry) => entry.trim()).filter(Boolean));");
+  lines.push('  const origin = req.get("Origin") || "";');
+  lines.push("  return allowed.has(origin) ? origin : \"\";");
+  lines.push("}");
+  lines.push("");
   lines.push("export function createApp(deps: ServerDependencies) {");
   lines.push("  const app = express();");
   lines.push("  app.use(express.json());");
   lines.push("  app.use((req, res, next) => {");
-  lines.push('    res.header("Access-Control-Allow-Origin", "*");');
+  lines.push('    const allowedOrigin = corsOrigin(req);');
+  lines.push('    if (allowedOrigin) res.header("Access-Control-Allow-Origin", allowedOrigin);');
+  lines.push('    res.header("Vary", "Origin");');
   lines.push('    res.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");');
   lines.push('    res.header("Access-Control-Allow-Headers", "Content-Type,If-Match,If-None-Match,Idempotency-Key,Authorization");');
   lines.push('    res.header("Access-Control-Expose-Headers", "ETag,Location,Retry-After,Content-Disposition");');
@@ -605,7 +636,8 @@ function renderExpressServerAppTs(realization) {
           lines.push(`      const ${authLoaderVar} = undefined;`);
         }
       }
-      lines.push(`      await deps.authorize?.(req, ${routeVar}.endpoint.authz, { capabilityId: ${routeVar}.capabilityId, input, ${hasOwnershipAuthz ? `loadResource: typeof ${authLoaderVar} === "function" ? ${authLoaderVar} : undefined` : "loadResource: undefined"} });`);
+      lines.push('      if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");');
+      lines.push(`      await deps.authorize(req, ${routeVar}.endpoint.authz, { capabilityId: ${routeVar}.capabilityId, input, ${hasOwnershipAuthz ? `loadResource: typeof ${authLoaderVar} === "function" ? ${authLoaderVar} : undefined` : "loadResource: undefined"} });`);
     }
     if ((route.endpoint.preconditions || []).length > 0 || (route.endpoint.idempotency || []).length > 0) {
       lines.push(`      requireHeaders(req, [...${routeVar}.endpoint.preconditions, ...${routeVar}.endpoint.idempotency]);`);
@@ -624,7 +656,7 @@ function renderExpressServerAppTs(realization) {
     if (route.capabilityId === downloadCapabilityId) {
       lines.push(`      const artifact = await deps.${dependencyName}.${methodName}(input as unknown as ${toPascalCase(methodName)}Input);`);
       lines.push(`      res.setHeader("Content-Type", artifact.contentType || "${route.endpoint.download?.[0]?.media || "application/octet-stream"}");`);
-      lines.push(`      res.setHeader("Content-Disposition", \`${route.endpoint.download?.[0]?.disposition || "attachment"}; filename=\"\${artifact.filename || "${route.endpoint.download?.[0]?.filename || "download.bin"}"}\"\`);`);
+      lines.push(`      res.setHeader("Content-Disposition", contentDisposition("${route.endpoint.download?.[0]?.disposition || "attachment"}", artifact.filename || "${route.endpoint.download?.[0]?.filename || "download.bin"}"));`);
       lines.push(`      return res.status(${route.successStatus}).send(artifact.body as any);`);
     } else {
       lines.push(`      const result = await deps.${dependencyName}.${methodName}(input as unknown as ${toPascalCase(methodName)}Input);`);

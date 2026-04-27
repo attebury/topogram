@@ -363,7 +363,7 @@
             "kind": "capability"
           },
           "claimValue": null,
-          "ownershipField": null,
+          "ownershipField": "reviewer_id",
           "predicate": "ownership",
           "value": "owner_or_admin"
         },

@@ -11,7 +11,7 @@ function apiBase() {
 }
 
 function authToken() {
-  return import.meta.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_AUTH_TOKEN || "";
+  return import.meta.env.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function buildPath(contract: ApiContract, input: Record<string, unknown>) {
@@ -100,3 +100,4 @@ export async function terminalPrimaryAction(fetcher: Fetcher, primary_id: string
 export async function approveArticle(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   return terminalPrimaryAction(fetcher, primary_id, input, options);
 }
+

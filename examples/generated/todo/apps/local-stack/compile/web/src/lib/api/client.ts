@@ -12,7 +12,7 @@ function apiBase() {
 }
 
 function authToken() {
-  return publicEnv.PUBLIC_TOPOGRAM_AUTH_TOKEN || "";
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function buildPath(contract: ApiContract, input: Record<string, unknown>) {
@@ -104,3 +104,16 @@ export async function terminalPrimaryAction(fetcher: Fetcher, primary_id: string
 export async function completeTask(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   return terminalPrimaryAction(fetcher, primary_id, input, options);
 }
+
+export async function deleteTask(fetcher: Fetcher, primary_id: string, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_delete_task", { task_id: primary_id }, options);
+}
+
+export async function exportTasks(fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_export_tasks", input, options);
+}
+
+export async function getTaskExportJob(fetcher: Fetcher, job_id: string) {
+  return requestCapability(fetcher, "cap_get_task_export_job", { job_id });
+}
+

@@ -8,6 +8,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 node "$SCRIPT_DIR/guard-ports.mjs" server
 
 export PORT="${SERVER_PORT:-3001}"
+export TOPOGRAM_CORS_ORIGINS="${TOPOGRAM_CORS_ORIGINS:-http://localhost:${WEB_PORT:-5174},http://127.0.0.1:${WEB_PORT:-5174}}"
 
 cd "$ROOT_DIR/server"
 npm install

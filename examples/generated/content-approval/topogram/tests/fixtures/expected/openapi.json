@@ -1008,7 +1008,8 @@
         "summary": "Get Article",
         "x-topogram-authorization": [
           {
-            "ownership": "owner_or_admin"
+            "ownership": "owner_or_admin",
+            "ownershipField": "reviewer_id"
           }
         ]
       },
@@ -1085,6 +1086,7 @@
         "x-topogram-authorization": [
           {
             "ownership": "owner_or_admin",
+            "ownershipField": "reviewer_id",
             "permission": "articles.submit"
           }
         ]

@@ -1,6 +1,6 @@
 # UI Web Debug
 
-Generated from `/Users/attebury/Documents/topogram/examples/generated/todo/topogram`
+Generated from `/Users/attebury/topogram-cursor/examples/generated/todo/topogram`
 
 ## `proj_ui_web` - Todo Web UI
 

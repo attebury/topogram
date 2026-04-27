@@ -1,6 +1,6 @@
 # Verification Checklist
 
-Generated from `/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram`
+Generated from `/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram`
 
 ## `ver_article_review_flow` - Article review flow
 

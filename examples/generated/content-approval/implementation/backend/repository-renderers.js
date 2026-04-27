@@ -81,7 +81,7 @@ export function renderContentApprovalPrismaRepositoryBody({
   lines.push("      take: take + 1");
   lines.push("    });");
   lines.push("    const page = articles.slice(0, take).map(mapArticleRecord);");
-  lines.push('    return { items: page, next_cursor: page.length > 0 ? page[page.length - 1]!.created_at : "" };');
+  lines.push('    return { items: page, next_cursor: page.length > 0 ? page[page.length - 1]!.created_at ?? "" : "" };');
   lines.push("  }");
   lines.push("");
   lines.push("  async createArticle(input: CreateArticleInput): Promise<CreateArticleResult> {");

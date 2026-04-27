@@ -9,7 +9,7 @@ It exists to answer one question clearly: what still blocks us from treating thi
 What is already true:
 
 - generated Hono backends can enforce bearer token auth for secured routes
-- generated web clients attach `PUBLIC_TOPOGRAM_AUTH_TOKEN` on secured requests
+- generated web clients attach `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` on secured requests
 - generated runtime bundles can prove both `401` and `403` behavior
 - the `issues` example now passes a real local end-to-end runtime-check with auth enabled
 
@@ -30,6 +30,7 @@ These are the concrete gaps that still block launch:
 - no external identity provider integration
 - no secure secret storage or rotation story
 - no production-grade credential transport policy beyond static bearer token env wiring
+- generated browser tokens are public demo credentials, not secrets
 - ownership enforcement still depends on field-name heuristics
 - only one generated auth profile is proven end to end
 - no production deployment proof for auth-enabled generated stacks

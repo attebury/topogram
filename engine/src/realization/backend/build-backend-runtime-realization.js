@@ -48,6 +48,7 @@ export function buildBackendRuntimeRealization(graph, options = {}) {
   const implementation = getExampleImplementation(graph);
   const repositoryReference = implementation.backend.repositoryReference;
   const backendReference = implementation.backend.reference;
+  const runtimeReference = implementation.runtime?.reference || null;
   const contract = generateServerContract(graph, { projectionId: options.projectionId });
   const db = buildDbRealization(graph, { projectionId: dbProjection.id });
   const lookupRoutes = Array.from(
@@ -71,6 +72,7 @@ export function buildBackendRuntimeRealization(graph, options = {}) {
     db,
     lookupRoutes,
     backendReference,
+    runtimeReference,
     repositoryReference,
     dbProjection: {
       id: dbProjection.id,

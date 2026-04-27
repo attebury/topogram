@@ -10,11 +10,12 @@ export const CONTENT_APPROVAL_RUNTIME_REFERENCE = {
   environment: {
     name: "Content Approval Local Runtime Stack",
     databaseName: "topogram_content_approval",
-    envExample: `TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256
+    envExample: `# Demo-only credentials. Do not reuse these fixture secrets or tokens outside local/generated verification.
+TOPOGRAM_AUTH_PROFILE=bearer_jwt_hs256
 TOPOGRAM_AUTH_JWT_SECRET=topogram-content-approval-jwt-secret
 TOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE
 TOPOGRAM_AUTH_TOKEN_NO_REVIEWER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOmZhbHNlfQ.pOaYZU9DX1_F84ZKJg_7b_QmtHjvHo7sIao-Nfwg5Js
-PUBLIC_TOPOGRAM_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE
+PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEiLCJwZXJtaXNzaW9ucyI6WyJhcnRpY2xlcy5jcmVhdGUiLCJhcnRpY2xlcy5yZWFkIiwiYXJ0aWNsZXMuc3VibWl0IiwiYXJ0aWNsZXMucmVxdWVzdF9yZXZpc2lvbiIsImFydGljbGVzLmFwcHJvdmUiLCJhcnRpY2xlcy5yZWplY3QiXSwicm9sZXMiOlsibWFuYWdlciJdLCJhZG1pbiI6ZmFsc2UsImV4cCI6NDEwMjQ0NDgwMCwicmV2aWV3ZXIiOnRydWV9.k5II38W2N9HaeoeegOZ0LQ8y2-mWABFtcUFFHoNgyLE
 PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=${CONTENT_APPROVAL_BACKEND_REFERENCE.demo.articleId}
 PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=${CONTENT_APPROVAL_BACKEND_REFERENCE.demo.publicationId}
 TOPOGRAM_DEMO_PRIMARY_ID=${CONTENT_APPROVAL_BACKEND_REFERENCE.demo.articleId}
@@ -28,7 +29,7 @@ TOPOGRAM_DEMO_CONTAINER_ID=${CONTENT_APPROVAL_BACKEND_REFERENCE.demo.publication
     bundleTitle: "Content Approval Runtime Smoke Bundle",
     defaultContainerEnvVar: "TOPOGRAM_DEMO_CONTAINER_ID",
     webPath: "/articles",
-    expectText: "Articles",
+    expectText: "Content Approval",
     createPath: "/articles",
     getPathPrefix: "/articles/",
     listPath: "/articles",
@@ -36,6 +37,7 @@ TOPOGRAM_DEMO_CONTAINER_ID=${CONTENT_APPROVAL_BACKEND_REFERENCE.demo.publication
       title: "Smoke Test Article",
       containerField: "publication_id",
       extraFields: {
+        reviewer_id: "__DEMO_USER_ID__",
         category: "smoke"
       }
     }

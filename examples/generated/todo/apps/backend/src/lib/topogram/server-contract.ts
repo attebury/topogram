@@ -675,7 +675,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.create",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -1187,7 +1190,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": null,
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
           }
         ],
         "preconditions": [],
@@ -1909,7 +1915,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.update",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
           }
         ],
         "preconditions": [
@@ -2459,7 +2468,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.complete",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
           }
         ],
         "preconditions": [
@@ -3220,7 +3232,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -3731,7 +3746,10 @@ export const serverContract = {
           {
             "role": "manager",
             "permission": "tasks.delete",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [
@@ -4089,7 +4107,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.export",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -4499,7 +4520,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.export.read",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
           }
         ],
         "preconditions": [],
@@ -4623,7 +4647,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "tasks.export.download",
-            "ownership": "owner_or_admin"
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
           }
         ],
         "preconditions": [],
@@ -5067,7 +5094,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "projects.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -5395,7 +5425,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "projects.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -5815,7 +5848,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "projects.create",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -6267,7 +6303,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "projects.update",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -6654,7 +6693,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "users.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -6942,7 +6984,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "users.read",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -7282,7 +7327,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "users.create",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],
@@ -7652,7 +7700,10 @@ export const serverContract = {
           {
             "role": null,
             "permission": "users.update",
-            "ownership": null
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
           }
         ],
         "preconditions": [],

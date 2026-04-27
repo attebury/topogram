@@ -336,7 +336,7 @@
           "predicate": "ownership",
           "value": "owner_or_admin",
           "claimValue": null,
-          "ownershipField": null
+          "ownershipField": "reviewer_id"
         },
         {
           "capability": {

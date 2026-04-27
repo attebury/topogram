@@ -8,7 +8,7 @@
       ],
       "body": "A user is a workspace member who can be assigned tasks and may own projects.\n\nLegacy product language sometimes says \"owner\" for both task assignment and project ownership, but the canonical Topogram term is `user`. The task and project models keep `owner_id` as the relationship field name because that reflects current product semantics, while the resource itself remains `entity_user`.\n",
       "confidence": null,
-      "file": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram/docs/glossary/user.md",
+      "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/docs/glossary/user.md",
       "id": "user",
       "kind": "glossary",
       "provenance": [],
@@ -37,7 +37,7 @@
       "aliases": [],
       "body": "This journey captures the most common Todo flow: turning a piece of work into a tracked task with clear ownership.\n\nThe user intent is not just to persist a row. The user needs confidence that the task belongs to the correct project, follows ownership rules, and shows up immediately in the standard list and detail views used to manage work.\n\n## Happy Path\n\n1. The user starts from an active project and opens the new-task flow.\n2. The user enters the task details, including priority and an optional owner.\n3. The system accepts the task only if the project can still receive new work and the owner is active.\n4. The user can immediately find the new task in task list and task detail surfaces.\n5. The user can keep the flow moving by updating the task as work progresses.\n\n## Alternate Paths\n\n- If the project has already been archived, task creation should stop before the new task is accepted.\n- If the chosen owner is inactive, the flow should block invalid assignment instead of creating ambiguous accountability.\n\n## Change Review Notes\n\nReview this journey when changing task creation rules, ownership semantics, project archival behavior, task list visibility, or the create/update task UI flow.\n",
       "confidence": null,
-      "file": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram/docs/journeys/task-creation-and-ownership.md",
+      "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/docs/journeys/task-creation-and-ownership.md",
       "id": "task_creation_and_ownership",
       "kind": "journey",
       "provenance": [],
@@ -72,6 +72,6 @@
       "title": "Task Creation And Ownership"
     }
   ],
-  "root": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram",
+  "root": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram",
   "type": "docs_index"
 }

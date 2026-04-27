@@ -7,14 +7,20 @@ export const TODO_WEB_REFERENCE = {
       get: "getTask",
       create: "createTask",
       update: "updateTask",
-      terminal: "completeTask"
+      terminal: "completeTask",
+      delete: "deleteTask",
+      export: "exportTasks",
+      getExportJob: "getTaskExportJob"
     },
     capabilityIds: {
       list: "cap_list_tasks",
       get: "cap_get_task",
       create: "cap_create_task",
       update: "cap_update_task",
-      terminal: "cap_complete_task"
+      terminal: "cap_complete_task",
+      delete: "cap_delete_task",
+      export: "cap_export_tasks",
+      getExportJob: "cap_get_task_export_job"
     }
   },
   nav: {

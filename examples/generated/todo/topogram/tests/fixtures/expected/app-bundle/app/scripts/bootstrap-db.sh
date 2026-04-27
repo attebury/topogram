@@ -15,5 +15,5 @@ if [[ "${TOPOGRAM_ENVIRONMENT_PROFILE:-local_process}" == "local_docker" ]]; the
 fi
 (cd "$ROOT_DIR/db" && bash ./scripts/db-bootstrap-or-migrate.sh)
 if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then
-(cd "$ROOT_DIR/server" && npm install && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)
+(cd "$ROOT_DIR/server" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)
 fi

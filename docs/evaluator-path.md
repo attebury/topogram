@@ -175,10 +175,10 @@ Use this short path for a live demo:
    - then `query proceed-decision --mode import-adopt`
    - on this fixture, expect the conservative stop because maintained no-go seams are already in scope
 8. For planning rehearsal, use:
-   - `query next-action`
-   - `query single-agent-plan`
-   - `query review-packet`
-   - `query proceed-decision`
+   - `query next-action --mode import-adopt`
+   - `query single-agent-plan --mode import-adopt`
+   - `query review-packet --mode import-adopt`
+   - `query proceed-decision --mode import-adopt`
    - `query multi-agent-plan --mode import-adopt`
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`

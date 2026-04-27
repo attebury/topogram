@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { PrismaClient } from "@prisma/client";
 import { createApp } from "./lib/server/app";
 import { PrismaTodoRepository } from "./lib/persistence/prisma/repositories";
-import { authorizeWithBearerDemoProfile } from "./lib/server/helpers";
+import { authorizeWithGeneratedAuthProfile } from "./lib/server/helpers";
 
 export function createServer() {
   const prisma = new PrismaClient();
@@ -13,7 +13,7 @@ export function createServer() {
       await prisma.$queryRaw`SELECT 1`;
     },
     authorize: async (ctx, authz, authorizationContext) => {
-      await authorizeWithBearerDemoProfile(ctx, authz, authorizationContext);
+      await authorizeWithGeneratedAuthProfile(ctx, authz, authorizationContext);
     }
   });
 }

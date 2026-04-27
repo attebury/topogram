@@ -97,7 +97,7 @@ export class PrismaArticleRepository implements ArticleRepository {
       take: take + 1
     });
     const page = articles.slice(0, take).map(mapArticleRecord);
-    return { items: page, next_cursor: page.length > 0 ? page[page.length - 1]!.created_at : "" };
+    return { items: page, next_cursor: page.length > 0 ? page[page.length - 1]!.created_at ?? "" : "" };
   }
 
   async createArticle(input: CreateArticleInput): Promise<CreateArticleResult> {

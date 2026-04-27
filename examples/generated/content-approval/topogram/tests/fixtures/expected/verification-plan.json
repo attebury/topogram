@@ -1,6 +1,6 @@
 {
   "name": "Topogram Verification Plan",
-  "root": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram",
+  "root": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram",
   "summary": {
     "methods": [
       "runtime",
