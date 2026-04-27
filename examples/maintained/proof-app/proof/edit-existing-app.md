@@ -167,12 +167,26 @@ That artifact is intentionally hand-written. It helps a reviewer compare emitted
 
 ## How To Inspect This In Queries
 
-The shortest seam-aware operator path for this proof is:
+The maintained proof app does not own a separate `topogram/` root.
 
-1. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
-2. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
-3. `node ./engine/src/cli.js query maintained-conformance ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
-4. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+Use two layers together:
+
+1. the maintained proof gate for the hand-maintained app itself
+2. the seam-aware query surfaces over the generated source workspaces whose emitted artifacts and proof stories that app mirrors
+
+The shortest verified operator path for this proof is:
+
+1. `bash ./scripts/verify-product-app.sh`
+2. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+3. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+4. `node ./engine/src/cli.js query maintained-conformance ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+5. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+
+Why these roots:
+
+- `examples/generated/content-approval/topogram` is the current maintained-boundary source for the guarded workflow-affordance proof
+- `examples/generated/todo/topogram` is the baseline used by the drift and conformance comparisons
+- `examples/maintained/proof-app/**` is the human-owned maintained runtime that those emitted artifacts and proof stories pressure
 
 Those seam-aware checks now corroborate the governed seam model with lightweight implementation evidence:
 

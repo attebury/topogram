@@ -40,7 +40,7 @@ The canonical sequence should be:
 
 1. [README.md](../README.md) for the wedge
 2. [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) for maintained-app proof
-3. one seam-aware maintained query sequence showing boundary, drift, and seam interpretation
+3. one seam-aware maintained query sequence over the generated source workspaces that feed the maintained proof package, showing boundary, drift, and seam interpretation
 4. one safe accepted change story
 5. one guarded/manual-decision story
 6. one no-go or rejected story
@@ -144,6 +144,7 @@ Say:
 
 - the maintained-app claim is seam-led, not just “some file changed”
 - the key questions are which seam moved, which output owns it, and whether the change is safe, guarded, or no-go
+- the maintained proof app is verified directly through `bash ./scripts/verify-product-app.sh`, while the query surfaces inspect the generated source workspaces whose emitted artifacts the maintained app mirrors
 
 ### 3. Seam-aware maintained query sequence
 
@@ -153,12 +154,15 @@ Target time:
 
 Run:
 
-1. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
-2. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
-3. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+1. `bash ./scripts/verify-product-app.sh`
+2. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+3. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+4. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 
 Call out:
 
+- the hand-maintained proof app is green on its own compile/smoke/runtime gates
+- the query surfaces are grounded in generated source workspaces, not a separate `examples/maintained/proof-app/topogram` root
 - outputs and seams are explicit
 - maintained drift is grouped by output and seam severity
 - seam checks include lightweight implementation corroboration, not only governed metadata
@@ -229,7 +233,7 @@ Say:
 The demo path is ready for alpha use when all of these are true:
 
 - [README.md](../README.md), [evaluator-path.md](./evaluator-path.md), and [proof-points-and-limits.md](./proof-points-and-limits.md) still tell the same wedge story
-- the maintained query sequence runs exactly as written
+- the maintained proof gate and maintained query sequence run exactly as written
 - the import/adopt fixture path runs exactly as written
 - the staged proposal demo remains non-empty
 - the presenter can explain the difference between governed seam evidence and lightweight implementation corroboration

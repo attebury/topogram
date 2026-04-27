@@ -49,6 +49,13 @@ Use this story as the clearest maintained-depth proof:
 
 - [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md)
 
+One boundary to keep explicit:
+
+- the maintained proof app does not own a separate `topogram/` root
+- the proof app is hand-maintained code under `examples/maintained/proof-app/**`
+- the seam-aware query surfaces operate on the generated source workspaces whose emitted artifacts and proof stories that maintained app mirrors
+- the maintained proof gate is `bash ./scripts/verify-product-app.sh`
+
 Before moving on, make one seam-aware check explicit:
 
 - which maintained seam moved?
@@ -58,12 +65,15 @@ Before moving on, make one seam-aware check explicit:
 
 The shortest live path is:
 
-1. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
-2. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
-3. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+1. `bash ./scripts/verify-product-app.sh`
+2. `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+3. `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+4. `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 
 Presenter notes for this stop:
 
+- `verify-product-app.sh` is the maintained-proof gate for the hand-maintained app itself
+- the query sequence is the operator-side seam map for the generated source workspaces that feed those maintained proof stories
 - seam-awareness is not just file tagging; it ties outputs, seams, emitted dependencies, proof stories, and verification targets together
 - the new `issues` cross-surface story shows one maintained semantic rule spanning detail, list, and route surfaces instead of one isolated presenter edit
 - the strongest current comparison direction is Topogram change to maintained drift and seam impact
@@ -157,16 +167,18 @@ Use this short path for a live demo:
 1. Open [README.md](../README.md) and state the wedge in one sentence.
 2. Show [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) as the “Topogram touches maintained code” proof.
 3. Show [examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md](../examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md) as the clearest “one semantic change, multiple maintained surfaces” proof.
-4. Show one seam-aware maintained query sequence:
-   - `query maintained-boundary`
-   - `query maintained-drift`
-   - `query seam-check` or `query maintained-conformance`
-5. Show the three boundary categories:
+4. Run `bash ./scripts/verify-product-app.sh` to show the maintained proof package is currently green.
+5. Show one seam-aware maintained query sequence on the generated source workspaces behind that proof:
+   - `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
+   - `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+   - `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+   - or `maintained-conformance` if you want the fuller corroboration pass
+6. Show the three boundary categories:
    - [issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
    - [content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
    - [issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
-6. Show [examples/imported/README.md](../examples/imported/README.md), [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), and [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported) as the brownfield proof boundary and active imported claim set.
-7. For import/adopt rehearsal, use:
+7. Show [examples/imported/README.md](../examples/imported/README.md), [confirmed-proof-matrix.md](./confirmed-proof-matrix.md), and [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported) as the brownfield proof boundary and active imported claim set.
+8. For import/adopt rehearsal, use:
    - `bash ./scripts/run-brownfield-rehearsal.sh`
    - or, if you want the manual steps:
    - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
@@ -174,7 +186,7 @@ Use this short path for a live demo:
    - then `query review-packet --mode import-adopt`
    - then `query proceed-decision --mode import-adopt`
    - on this fixture, expect the conservative stop because maintained no-go seams are already in scope
-8. For planning rehearsal, use:
+9. For planning rehearsal, use:
    - `query next-action --mode import-adopt`
    - `query single-agent-plan --mode import-adopt`
    - `query review-packet --mode import-adopt`
@@ -183,4 +195,4 @@ Use this short path for a live demo:
    - `query work-packet --mode import-adopt --lane <id>`
    - or just run `bash ./scripts/verify-agent-planning.sh`
    - and `bash ./scripts/verify-brownfield-rehearsal.sh`
-9. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.
+10. End on [proof-points-and-limits.md](./proof-points-and-limits.md) to keep claims honest.

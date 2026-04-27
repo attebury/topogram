@@ -32,15 +32,17 @@ It is not a roadmap. It is the shortest answer to:
 
 Current closeout command set:
 
+- `bash ./scripts/verify-product-app.sh`
 - `node ./engine/src/cli.js query maintained-boundary ./examples/generated/content-approval/topogram`
 - `node ./engine/src/cli.js query maintained-drift ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
+- `node ./engine/src/cli.js query maintained-conformance ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 - `node ./engine/src/cli.js query seam-check ./examples/generated/content-approval/topogram --from-topogram ./examples/generated/todo/topogram`
 - `node ./engine/scripts/build-adoption-plan-fixture.mjs ./engine/tests/fixtures/import/incomplete-topogram/topogram --scenario projection-impact --json`
 - `node ./engine/src/cli.js query import-plan <staged_topogram_root>`
 
 Alpha closeout expectation:
 
-- the maintained query sequence still runs exactly as written
+- the maintained proof gate and maintained query sequence still run exactly as written
 - the import/adopt fixture path still produces a non-empty staged proposal demo
 - the operator can explain governed seam evidence versus lightweight implementation corroboration without overclaiming deeper maintained-code understanding
 
