@@ -76,8 +76,8 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       (matrix.example == 'todo' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.todo_example == 'true')) ||
-      (matrix.example == 'issues' && needs.changes.outputs.issues_example == 'true') ||
-      (matrix.example == 'content-approval' && needs.changes.outputs.content_approval_example == 'true')
+      (matrix.example == 'issues' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.issues_example == 'true')) ||
+      (matrix.example == 'content-approval' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.content_approval_example == 'true'))
     strategy:
       fail-fast: false
       matrix:

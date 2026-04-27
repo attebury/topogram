@@ -39,6 +39,7 @@ main() {
   local base_ref="${1:-}"
   local head_ref="${2:-HEAD}"
   local -a files_to_check=()
+  local search_ref="$head_ref"
 
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
@@ -53,10 +54,10 @@ main() {
   fi
 
   local matches
-  matches="$(rg -n --no-heading \
+  matches="$(git grep -n -I -E \
     -e '(^|[[:space:]"'"'"'=:,(])/Users/[[:alnum:]_.-]+' \
     -e 'file:///Users/[[:alnum:]_.-]+' \
-    -- "${files_to_check[@]}" || true)"
+    "$search_ref" -- "${files_to_check[@]}" || true)"
 
   if [[ -n "$matches" ]]; then
     echo "Refusing push because changed files contain machine-specific absolute paths." >&2

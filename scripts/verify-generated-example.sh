@@ -50,6 +50,8 @@ if [[ -f "$ENV_FILE" ]]; then
   set +a
 fi
 
+export TOPOGRAM_REPO_ROOT="${TOPOGRAM_REPO_ROOT:-$ROOT_DIR}"
+
 if [[ "$EXAMPLE_NAME" == "todo" ]]; then
   export TOPOGRAM_ENVIRONMENT_PROFILE="${TOPOGRAM_ENVIRONMENT_PROFILE:-local_docker}"
 fi
