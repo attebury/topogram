@@ -285,7 +285,8 @@ function hasClaim(principal: AuthPrincipal, claim: string | null | undefined, cl
 
 function ownerIdFromResource(
   resource: Record<string, unknown> | null | undefined,
-  ownershipField: string | null | undefined
+  ownershipField: string | null | undefined,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!resource || typeof resource !== "object") {
     return "";
@@ -296,6 +297,10 @@ function ownerIdFromResource(
     if (typeof explicitValue === "string" && explicitValue.length > 0) {
       return explicitValue;
     }
+    return "";
+  }
+
+  if (!options.allowHeuristicOwnership) {
     return "";
   }
 
@@ -313,7 +318,8 @@ async function satisfiesOwnership(
   principal: AuthPrincipal,
   ownership: string | null | undefined,
   ownershipField: string | null | undefined,
-  authorizationContext: AuthorizationContext | undefined
+  authorizationContext: AuthorizationContext | undefined,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!ownership || ownership === "none") {
     return true;
@@ -330,13 +336,14 @@ async function satisfiesOwnership(
   }
 
   const resource = await authorizationContext.loadResource();
-  return ownerIdFromResource(resource, ownershipField) === principal.userId;
+  return ownerIdFromResource(resource, ownershipField, options) === principal.userId;
 }
 
 async function authorizeWithPrincipal(
   principal: AuthPrincipal,
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
-  authorizationContext?: AuthorizationContext
+  authorizationContext?: AuthorizationContext,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!authz || authz.length === 0) {
     return;
@@ -346,7 +353,7 @@ async function authorizeWithPrincipal(
     const roleOk = hasRole(principal, rule.role);
     const permissionOk = hasPermission(principal, rule.permission);
     const claimOk = hasClaim(principal, rule.claim, rule.claimValue);
-    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, rule.ownershipField, authorizationContext);
+    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, rule.ownershipField, authorizationContext, options);
     if (roleOk && permissionOk && claimOk && ownershipOk) {
       return;
     }
@@ -373,7 +380,7 @@ export async function authorizeWithBearerDemoProfile(
     throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
-  await authorizeWithPrincipal(envPrincipal.principal, authz, authorizationContext);
+  await authorizeWithPrincipal(envPrincipal.principal, authz, authorizationContext, { allowHeuristicOwnership: true });
 }
 
 export async function authorizeWithBearerJwtHs256Profile(

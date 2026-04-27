@@ -26,6 +26,8 @@ Examples may also expose proof-specific tokens such as:
 
 `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` is a browser-visible demo token for generated examples. It is not a secret, and it is not a production auth boundary.
 
+For the canonical alpha-complete auth claim, see [Auth Alpha Complete](./auth-alpha-complete.md). For the production-readiness boundary of this profile, see [Bearer JWT HS256 Launch Checklist](./auth-profile-bearer-jwt-hs256-launch-checklist.md).
+
 ## What It Proves Today
 
 The current alpha auth proof loop uses signed JWTs to prove:
@@ -53,6 +55,7 @@ This is the current Topogram auth claim for alpha:
 - generated backend enforcement
 - generated UI visibility
 - brownfield auth review and adoption guidance
+- explicit production-readiness limits
 
 It is not yet a claim of:
 

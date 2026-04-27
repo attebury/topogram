@@ -42,8 +42,10 @@ Start here if you are running Topogram, integrating an agent, or planning work.
 
 Topogram's auth surface is alpha-complete and proof-oriented, not production-ready.
 
+- [Auth Alpha Complete](./auth-alpha-complete.md) — canonical claim, criteria, and evidence
 - [Auth Evaluator Path](./auth-evaluator-path.md)
 - [Bearer JWT HS256 Auth Profile](./auth-profile-bearer-jwt-hs256.md) — primary alpha auth profile
+- [Bearer JWT HS256 Launch Checklist](./auth-profile-bearer-jwt-hs256-launch-checklist.md)
 - [Bearer Demo Auth Profile](./auth-profile-bearer-demo.md) — lighter demo/local profile
 - [Bearer Demo Launch Checklist](./bearer-demo-launch-checklist.md)
 - [Auth Modeling](./auth-modeling.md)
@@ -90,3 +92,4 @@ These are working notes for the alpha launch, not external documentation. They a
 - [Demo Path Confirmation Plan](./internal/demo-path-confirmation-plan.md)
 - [Dev.to Limited Partner Review Draft](./internal/devto-limited-partner-review.md)
 - [Development Decisions](./internal/development-decisions.md)
+
