@@ -107,7 +107,7 @@ This repo is grounded in working proofs, not just concept demos:
 - [examples/generated/todo](./examples/generated/todo): the smallest end-to-end reference example
 - [examples/generated/issues](./examples/generated/issues): a multi-frontend issue-tracker proof
 - [examples/generated/content-approval](./examples/generated/content-approval): a workflow-heavy proof that pressures non-Todo abstractions
-- [examples/maintained/proof-app](./examples/maintained/proof-app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances
+- [examples/maintained/proof-app](./examples/maintained/proof-app): a hand-maintained proof app showing how Topogram can guide edits to existing code, including cross-surface alignment across detail, list, and route affordances, with the maintained proof gated by `bash ./scripts/verify-product-app.sh` and inspected through seam-aware queries over the generated source workspaces it mirrors
 - [examples/imported](./examples/imported): the imported-proof bridge and brownfield claim index for the separate [topogram-demo](https://github.com/attebury/topogram-demo) proof repo
 - [docs/topogram-demo-ops.md](./docs/topogram-demo-ops.md): the ops contract for keeping imported proof claims fresh in [topogram-demo](https://github.com/attebury/topogram-demo), including the release handshake between `topogram` merges and imported-proof refreshes
 - [docs/testing-strategy.md](./docs/testing-strategy.md): the verification philosophy and current regression layers
