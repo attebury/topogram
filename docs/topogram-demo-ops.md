@@ -1,6 +1,6 @@
 # Topogram Demo Ops
 
-This page defines how imported brownfield proof targets are managed outside the main product repo.
+This page defines how **imported brownfield** proof targets and the **`examples/native/`** parity tier are managed outside the main product repo.
 
 The canonical imported-proof home is [topogram-demo](https://github.com/attebury/topogram-demo).
 
@@ -9,9 +9,24 @@ For the initial GitHub bootstrap and first-target migration order, see [Topogram
 ## Repo Split
 
 - `topogram`: product code, generated examples, maintained examples, curated fixtures, evaluator docs
-- `topogram-demo`: imported proof targets and brownfield credibility claims
+- `topogram-demo`: imported proof targets, **`examples/native/`** full-stack parity proofs, and brownfield credibility claims
 
 The goal is to keep the product repo small and product-shaped while making imported proof claims easier to inspect.
+
+## Native / full-stack parity tier (`examples/native/`)
+
+[`topogram-demo/examples/native`](https://github.com/attebury/topogram-demo/tree/main/examples/native) holds **full native parity** proofs: Xcode / Gradle (or equivalent) builds with **pinned toolchains**, rerun scripts, and `proof-status.json` metadata—without requiring the **topogram** product repo to run macOS CI on every PR.
+
+This tier is **orthogonal** to [`examples/imported`](https://github.com/attebury/topogram-demo/tree/main/examples/imported):
+
+| Folder | Proves |
+|--------|--------|
+| `examples/imported/<target>/` | Brownfield **import**, reconcile, adopt into canonical Topogram |
+| `examples/native/<target>/` | **Generated or hand-placed** native workspaces that prove “builds on pinned iOS/Android SDK” against a documented Topogram commit |
+
+**Verification boundary:** native parity checks run in **topogram-demo** (`node ./ops/verify-native-targets.mjs`, optional `node ./ops/native-claim-freshness.mjs`). They are **not** part of default `verify-engine.sh` or everyday `npm test` in the product repo.
+
+**Release handshake:** Before claiming **native/mobile parity** in public-facing alpha material (blog, landing copy), confirm `topogram-demo` native targets are freshness-current or explicitly marked `archived`, analogous to imported-proof freshness discipline — **separate checkbox** from imported-proof freshness.
 
 ## Imported Proof Taxonomy
 
@@ -24,7 +39,7 @@ The shared taxonomy is:
 In practice:
 
 - `topogram` owns `generated` and `maintained`
-- `topogram-demo` owns `imported`
+- `topogram-demo` owns `imported` and `examples/native`
 
 ## What Each Imported Proof Must Publish
 
@@ -107,6 +122,8 @@ Practical sequence:
 2. Let `topogram-demo` compare its active imported claims against the new `topogram` `main`.
 3. If freshness drift appears, rerun and refresh the affected imported targets in `topogram-demo`.
 4. Only use imported-proof claims in alpha release or evaluator material after that refresh path is green again.
+
+If the merge touched **engine native generators** or native golden fixtures (when they exist), optionally run **`node ./ops/native-claim-freshness.mjs`** in `topogram-demo` against [`examples/native`](https://github.com/attebury/topogram-demo/tree/main/examples/native) targets that are not `archived`.
 
 The green bar for that refresh path is:
 

@@ -163,8 +163,16 @@ function parseJsonSegment(segment: string, code: string) {
   }
 }
 
-function readHs256Secret() {
-  return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+function readHs256Secrets() {
+  const plural = process.env.TOPOGRAM_AUTH_JWT_SECRETS || "";
+  if (plural) {
+    const list = plural.split(",").map((value) => value.trim()).filter(Boolean);
+    if (list.length > 0) {
+      return list;
+    }
+  }
+  const singular = process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+  return singular ? [singular] : [];
 }
 
 function readExpectedIssuer() {
@@ -241,9 +249,9 @@ function principalFromJwtHs256(token: string): AuthPrincipal | null {
     return null;
   }
 
-  const secret = readHs256Secret();
-  if (!secret) {
-    throw new HttpError(500, "missing_auth_jwt_secret", "Missing TOPOGRAM_AUTH_JWT_SECRET");
+  const secrets = readHs256Secrets();
+  if (secrets.length === 0) {
+    throw new HttpError(500, "missing_auth_jwt_secret", "Missing TOPOGRAM_AUTH_JWT_SECRET or TOPOGRAM_AUTH_JWT_SECRETS");
   }
 
   const segments = token.split(".");
@@ -259,14 +267,21 @@ function principalFromJwtHs256(token: string): AuthPrincipal | null {
     throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
-  const expectedSignature = crypto
-    .createHmac("sha256", secret)
-    .update(encodedHeader + "." + encodedPayload)
-    .digest("base64url");
-
   const actualBytes = Buffer.from(signature);
-  const expectedBytes = Buffer.from(expectedSignature);
-  if (actualBytes.length !== expectedBytes.length || !crypto.timingSafeEqual(actualBytes, expectedBytes)) {
+  const signingInput = encodedHeader + "." + encodedPayload;
+  let signatureMatched = false;
+  for (const candidate of secrets) {
+    const expectedSignature = crypto
+      .createHmac("sha256", candidate)
+      .update(signingInput)
+      .digest("base64url");
+    const expectedBytes = Buffer.from(expectedSignature);
+    if (actualBytes.length === expectedBytes.length && crypto.timingSafeEqual(actualBytes, expectedBytes)) {
+      signatureMatched = true;
+      break;
+    }
+  }
+  if (!signatureMatched) {
     throw new HttpError(401, "invalid_bearer_signature", "Invalid bearer token signature");
   }
 

@@ -11,10 +11,11 @@
       "TOPOGRAM_API_BASE_URL",
       "TOPOGRAM_WEB_BASE_URL",
       "TOPOGRAM_AUTH_PROFILE",
-      "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_JWT_SECRETS",
       "TOPOGRAM_AUTH_JWT_ISSUER",
       "TOPOGRAM_AUTH_JWT_AUDIENCE",
       "TOPOGRAM_AUTH_TOKEN",
+      "TOPOGRAM_AUTH_TOKEN_ROTATING",
       "TOPOGRAM_DEMO_CONTAINER_ID",
       "TOPOGRAM_DEMO_PRIMARY_ID",
       "TOPOGRAM_FORBIDDEN_USER_ID"
@@ -153,6 +154,13 @@
           "expectErrorCode": "invalid_bearer_audience",
           "mandatory": true,
           "mutating": false
+        },
+        {
+          "id": "list_issues_rotating_token",
+          "kind": "api_contract",
+          "capabilityId": "cap_list_issues",
+          "mutating": false,
+          "mandatory": true
         },
         {
           "id": "get_forbidden_issue",

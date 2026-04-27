@@ -40,10 +40,11 @@ test("auth alpha-complete claim has structural runtime proof coverage", () => {
     issuesPlan.env.required.filter((name) => name.startsWith("TOPOGRAM_AUTH_")),
     [
       "TOPOGRAM_AUTH_PROFILE",
-      "TOPOGRAM_AUTH_JWT_SECRET",
+      "TOPOGRAM_AUTH_JWT_SECRETS",
       "TOPOGRAM_AUTH_JWT_ISSUER",
       "TOPOGRAM_AUTH_JWT_AUDIENCE",
-      "TOPOGRAM_AUTH_TOKEN"
+      "TOPOGRAM_AUTH_TOKEN",
+      "TOPOGRAM_AUTH_TOKEN_ROTATING"
     ]
   );
   assert.deepEqual(
@@ -76,6 +77,10 @@ test("auth alpha-complete claim has structural runtime proof coverage", () => {
     expectStatus: 401,
     expectErrorCode: "invalid_bearer_audience"
   });
+  const rotatingCheck = findCheck(issuesPlan, "list_issues_rotating_token");
+  assert.ok(rotatingCheck, "expected runtime-check plan to include list_issues_rotating_token");
+  assert.equal(rotatingCheck.kind, "api_contract");
+  assert.equal(rotatingCheck.capabilityId, "cap_list_issues");
   assertNegativeCheck(issuesPlan, "get_forbidden_issue", {
     capabilityId: "cap_get_issue",
     expectStatus: 403,
@@ -121,6 +126,15 @@ test("generated JWT helper validates issuer and audience when configured", () =>
   assert.match(helpers, /invalid_bearer_audience/);
   assert.match(helpers, /Bearer token issuer is not trusted/);
   assert.match(helpers, /Bearer token audience does not match/);
+});
+
+test("generated JWT helper accepts multiple rotation secrets", () => {
+  const helpers = renderServerHelpers();
+
+  assert.match(helpers, /TOPOGRAM_AUTH_JWT_SECRETS/);
+  assert.match(helpers, /readHs256Secrets/);
+  assert.match(helpers, /for \(const candidate of secrets\)/);
+  assert.doesNotMatch(helpers, /function readHs256Secret\(\)/);
 });
 
 test("example runtime references declare the JWT auth profile", () => {

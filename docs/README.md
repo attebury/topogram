@@ -4,10 +4,19 @@ Planning, architecture, and proof notes for Topogram outside the engine.
 
 If you are new, pick the path that matches your role.
 
+## Single spine
+
+Read the repository **[README](../README.md)** first for the **product workflow** (diagram, capability matrix, proof split).
+
+Then use **[Overview](./overview.md)** for full orientation (motivation, limits, FAQ, commands).
+
+Stable docs-page alias: [Product Workflow](./product-workflow.md).
+
 ## Evaluators
 
 Start here if you want to decide whether Topogram is real, useful, and trustworthy.
 
+- [Overview](./overview.md) — full orientation after [README](../README.md) (limits, proof list, FAQ, commands)
 - [Alpha Overview](./alpha-overview.md) — the shortest visual walkthrough
 - [Evaluator Path](./evaluator-path.md) — the canonical 5-stop tour
 - [Skeptical Evaluator Guide](./skeptical-evaluator.md) — direct answers to fair objections
@@ -19,6 +28,8 @@ Start here if you want to decide whether Topogram is real, useful, and trustwort
 
 Start here if you care about modeled meaning, surfaces, and review boundaries.
 
+- [Overview](./overview.md) — expanded README companion after you've seen [README](../README.md)
+- [Product Workflow](./product-workflow.md) — alias pointing at README + Overview
 - [Topogram for designers and product](./topogram-for-designers.md) — 5-minute orientation, what is and isn't real today
 - [Topogram Workspace Layout](./topogram-workspace-layout.md) — canonical, candidate, generated, and maintained surfaces
 - [Topogram Product Glossary](./topogram-product-glossary.md) — durable product vocabulary

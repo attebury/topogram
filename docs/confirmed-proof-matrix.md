@@ -10,6 +10,7 @@ Use these alongside:
 - [topogram-demo-ops.md](./topogram-demo-ops.md)
 - [agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md)
 - [topogram-demo/examples/imported](https://github.com/attebury/topogram-demo/tree/main/examples/imported)
+- [topogram-demo/examples/native](https://github.com/attebury/topogram-demo/tree/main/examples/native) — full-stack native parity (separate from imported brownfield)
 
 This page is not the local brownfield rehearsal guide.
 
@@ -31,6 +32,17 @@ These are the imported proof targets that should stay evaluator-visible:
 - `django-realworld-example-app`
 
 Everything else should be treated as either archived, experimental, or migration-era corpus material until it is explicitly promoted.
+
+## Native parity vs imported (both in topogram-demo)
+
+Both live in **[topogram-demo](https://github.com/attebury/topogram-demo)** but prove different things:
+
+| Claim type | Typical folder | What it proves |
+|------------|----------------|----------------|
+| **Imported brownfield** | [`examples/imported/<target>/`](https://github.com/attebury/topogram-demo/tree/main/examples/imported) | Real external app snapshot, reconcile/adopt path, `adoption-status.json`, imported freshness |
+| **Native full parity** | [`examples/native/<target>/`](https://github.com/attebury/topogram-demo/tree/main/examples/native) | Pinned Xcode/Gradle (or equivalent) **build** of generated or placed native workspaces vs documented Topogram commit; ops scripts `verify-native-targets` / `native-claim-freshness` |
+
+Neither replaces **thin** generator proofs in the **topogram** product repo. See [topogram-demo-ops.md](./topogram-demo-ops.md).
 
 ## Brownfield Proof Split
 
