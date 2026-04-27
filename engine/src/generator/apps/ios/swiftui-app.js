@@ -3,15 +3,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildWebRealization } from "../../../realization/ui/build-web-realization.js";
-import { pickDefaultUiWebProjection } from "../../runtime/shared.js";
+import { pickDefaultIosUiProjection, pickDefaultUiWebProjection } from "../../runtime/shared.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Emits a SwiftPM iOS SwiftUI app driven by the same web realization contract as SvelteKit/React (default: first `proj_ui_web__*` projection).
+ * Emits a SwiftPM iOS SwiftUI app driven by the routed UI contract (default: `proj_ui_native__ios` when present, else first `proj_ui_web__*` projection).
  */
 export function generateSwiftUiApp(graph, options = {}) {
-  const fallbackId = pickDefaultUiWebProjection(graph)?.id || "proj_ui_web__sveltekit";
+  const fallbackId =
+    pickDefaultIosUiProjection(graph)?.id ||
+    pickDefaultUiWebProjection(graph)?.id ||
+    "proj_ui_web__sveltekit";
   const projectionId = options.projectionId || fallbackId;
   const realization = buildWebRealization(graph, { projectionId });
   const apiContracts = realization.apiContracts;

@@ -31,7 +31,7 @@
     "generate:ui-web-contract": "node ./src/cli.js ../examples/generated/todo/topogram --generate ui-web-contract --projection proj_ui_web__sveltekit",
     "generate:ui-web-debug": "node ./src/cli.js ../examples/generated/todo/topogram --generate ui-web-debug --projection proj_ui_web__sveltekit",
     "generate:sveltekit": "node ./src/cli.js ../examples/generated/todo/topogram --generate sveltekit-app --projection proj_ui_web__sveltekit --write --out-dir ../examples/generated/todo/apps/web",
-    "generate:swiftui": "node ./src/cli.js ../examples/generated/todo/topogram --generate swiftui-app --projection proj_ui_web__sveltekit --write --out-dir ../examples/generated/todo/apps/ios-swiftui",
+    "generate:swiftui": "node ./src/cli.js ../examples/generated/todo/topogram --generate swiftui-app --projection proj_ui_native__ios --write --out-dir ../examples/generated/todo/apps/ios-swiftui",
     "generate:db-contract-pg": "node ./src/cli.js ../examples/generated/todo/topogram --generate db-contract-graph --projection proj_db_postgres",
     "generate:db-contract-sqlite": "node ./src/cli.js ../examples/generated/todo/topogram --generate db-contract-graph --projection proj_db_sqlite",
     "generate:db-debug-pg": "node ./src/cli.js ../examples/generated/todo/topogram --generate db-contract-debug --projection proj_db_postgres",

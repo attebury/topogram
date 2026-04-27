@@ -1288,8 +1288,10 @@ function projectionKindForImpact(projection) {
   if (
     (projection.uiRoutes || []).length > 0 ||
     (projection.uiWeb || []).length > 0 ||
+    (projection.uiIos || []).length > 0 ||
     (projection.uiScreens || []).length > 0 ||
     projection.platform === "ui_web" ||
+    projection.platform === "ui_ios" ||
     projection.platform === "ui_shared"
   ) {
     return "ui";
@@ -1648,6 +1650,15 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
           reason: `Projection ${impact.projection_id} emits a web app with SvelteKit profile, so the app scaffold may need regeneration.`
         });
       }
+    }
+
+    if (projection.platform === "ui_ios") {
+      addTarget({
+        target: "swiftui-app",
+        projection_id: impact.projection_id,
+        required: false,
+        reason: `Projection ${impact.projection_id} is a native iOS UI surface, so the SwiftUI client scaffold may need regeneration.`
+      });
     }
 
     if (String(projection.platform || "").startsWith("db_")) {

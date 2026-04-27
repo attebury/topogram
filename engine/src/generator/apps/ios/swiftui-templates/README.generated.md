@@ -1,6 +1,6 @@
 # Todo SwiftUI (generated)
 
-Apple SwiftUI client generated from the same **`buildWebRealization`** contract as the SvelteKit / React web apps (typically **`proj_ui_web__sveltekit`**).
+Apple SwiftUI client generated from the same **`buildWebRealization`** routed UI contract as the web stacks. Prefer the **`proj_ui_native__ios`** projection when present; otherwise the generator falls back to a **`proj_ui_web__*`** projection (often **`proj_ui_web__sveltekit`**).
 
 ## Bundle inputs
 
@@ -22,5 +22,5 @@ Configure the API base URL and demo auth token via scheme environment variables 
 From `engine/`:
 
 ```bash
-node ./src/cli.js ../examples/generated/todo/topogram --generate swiftui-app --write --out-dir ../examples/generated/todo/apps/ios-swiftui
+node ./src/cli.js ../examples/generated/todo/topogram --generate swiftui-app --projection proj_ui_native__ios --write --out-dir ../examples/generated/todo/apps/ios-swiftui
 ```

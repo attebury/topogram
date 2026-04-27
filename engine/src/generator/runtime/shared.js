@@ -128,9 +128,34 @@ function uiWebProjectionCandidates(graph) {
 }
 
 const WEB_UI_FAMILY_PREFIX = "proj_ui_web__";
+const NATIVE_UI_FAMILY_PREFIX = "proj_ui_native__";
 
 /** Prefer canonical ids when multiple shipped web stacks exist (deterministic, not lexicographic). */
 const DEFAULT_WEB_UI_STACK_ORDER = ["proj_ui_web__sveltekit", "proj_ui_web__react"];
+
+const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ui_native__ios"];
+
+function uiIosProjectionCandidates(graph) {
+  return (graph.byKind.projection || []).filter(
+    (projection) => projection.platform === "ui_ios" && (projection.uiRoutes || []).length > 0
+  );
+}
+
+/** Prefer canonical native projections (`proj_ui_native__{platform}`); otherwise first routed ui_ios projection. */
+export function pickDefaultIosUiProjection(graph) {
+  const candidates = uiIosProjectionCandidates(graph);
+  const hierarchical = candidates.filter((projection) => projection.id.startsWith(NATIVE_UI_FAMILY_PREFIX));
+  if (hierarchical.length > 0) {
+    for (const id of DEFAULT_NATIVE_UI_PLATFORM_ORDER) {
+      const match = hierarchical.find((projection) => projection.id === id);
+      if (match) {
+        return match;
+      }
+    }
+    return hierarchical.sort((a, b) => a.id.localeCompare(b.id))[0];
+  }
+  return candidates[0];
+}
 
 /**
  * Prefer canonical shipped web projections (`proj_ui_web__{stack}`); otherwise first routed ui_web projection.
