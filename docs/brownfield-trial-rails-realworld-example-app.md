@@ -13,10 +13,6 @@ Active imported proof:
 
 - [`topogram-demo/examples/imported/rails-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/rails-realworld-example-app)
 
-Migration-era local mirror:
-
-- [./trials/rails-realworld-example-app](../trials/rails-realworld-example-app)
-
 ## Goal
 
 Prove that Topogram can import, reconcile, and selectively adopt a convention-heavy Rails API app as a curated domain proof rather than a raw schema dump.

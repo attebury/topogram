@@ -39,11 +39,11 @@ Representative emitted artifacts:
   [examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
   and
   [examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
-- `issues` backend:
-  [examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
-- `content-approval` backend:
-  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_api.server-contract.json)
-- `todo` backend:
+- `issues` backend (OpenAPI):
+  [examples/generated/issues/topogram/tests/fixtures/expected/openapi.json](../examples/generated/issues/topogram/tests/fixtures/expected/openapi.json)
+- `content-approval` backend (OpenAPI):
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/openapi.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/openapi.json)
+- `todo` backend (server contract):
   [examples/generated/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_api.server-contract.json)
 
 ## What To Run

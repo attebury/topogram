@@ -33,11 +33,11 @@ The strongest present proof for that story is:
 
 The canonical evaluator path should remain:
 
-1. state the wedge from [README.md](../README.md)
-2. show maintained-app evolution proof in [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
+1. state the wedge from [README.md](../../README.md)
+2. show maintained-app evolution proof in [examples/maintained/proof-app/proof/edit-existing-app.md](../../examples/maintained/proof-app/proof/edit-existing-app.md)
 3. show one safe, one guarded, and one no-go change
-4. show brownfield breadth through [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
-5. close on [proof-points-and-limits.md](./proof-points-and-limits.md)
+4. show brownfield breadth through [confirmed-proof-matrix.md](../confirmed-proof-matrix.md)
+5. close on [proof-points-and-limits.md](../proof-points-and-limits.md)
 
 The alpha is not primarily a "generate an app from scratch" story, even though generated examples remain an important proof surface.
 

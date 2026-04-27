@@ -7,14 +7,14 @@ It is also the second explicit multi-target proof for the same domain across two
 - React via `proj_ui_web`
 - SvelteKit via `proj_ui_web_sveltekit`
 
-That proof is documented in [docs/multi-target-proof-content-approval.md](../../docs/multi-target-proof-content-approval.md).
+That proof is documented in [docs/multi-target-proof-content-approval.md](../../../docs/multi-target-proof-content-approval.md).
 
 It now also carries the second explicit multi-runtime proof for the same domain across two backend realizations:
 
 - Hono via `hono-server`
 - Express via `express-server`
 
-That proof is documented in [docs/multi-runtime-proof-content-approval.md](../../docs/multi-runtime-proof-content-approval.md).
+That proof is documented in [docs/multi-runtime-proof-content-approval.md](../../../docs/multi-runtime-proof-content-approval.md).
 
 ## Layout
 

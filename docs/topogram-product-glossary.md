@@ -278,8 +278,6 @@ Examples:
 - reviewer
 - project owner
 
-See also [Actors And Roles](./actors-and-roles.md).
-
 ## Rule
 
 `Rule` means a durable business or system constraint that limits or explains allowed behavior.
@@ -291,8 +289,6 @@ Rules are part of canonical meaning and should be reviewed carefully because the
 `Shared Topogram` means a reusable Topogram package or export intended for use outside its original workspace.
 
 Shared Topograms should be treated as untrusted semantic imports by default and should land in candidate space first.
-
-See also [Shared Topogram Security Plan](./shared-topogram-security-plan.md).
 
 ## Slice
 
@@ -350,8 +346,6 @@ Examples:
 - `detail_panel`
 - `activity_feed`
 - `empty_state_panel`
-
-See also [UI Patterns Plan](./ui-patterns-plan.md).
 
 ## Verification Targets
 

@@ -21,13 +21,13 @@ The public alpha should let a new evaluator understand, in one pass:
 
 These are the launch-critical surfaces that should stay coherent together:
 
-- [README.md](../README.md)
-- [evaluator-path.md](./evaluator-path.md)
-- [proof-points-and-limits.md](./proof-points-and-limits.md)
+- [README.md](../../README.md)
+- [evaluator-path.md](../evaluator-path.md)
+- [proof-points-and-limits.md](../proof-points-and-limits.md)
 - [alpha-ready-checklist.md](./alpha-ready-checklist.md)
 - [alpha-launch-tracker.md](./alpha-launch-tracker.md)
-- maintained proof package under [examples/maintained/proof-app/proof](../examples/maintained/proof-app/proof)
-- brownfield proof inventory through [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+- maintained proof package under [examples/maintained/proof-app/proof](../../examples/maintained/proof-app/proof)
+- brownfield proof inventory through [confirmed-proof-matrix.md](../confirmed-proof-matrix.md)
 
 Launch-ready means:
 
@@ -70,8 +70,8 @@ Recommended handling:
 - `alpha/*` branches are for launch-closeout work only
 - `post-alpha/*` branches are for shaping work
 - no change that broadens claims lands without checking:
-  - [README.md](../README.md)
-  - [proof-points-and-limits.md](./proof-points-and-limits.md)
+  - [README.md](../../README.md)
+  - [proof-points-and-limits.md](../proof-points-and-limits.md)
   - [alpha-ready-checklist.md](./alpha-ready-checklist.md)
   - [alpha-launch-tracker.md](./alpha-launch-tracker.md)
 

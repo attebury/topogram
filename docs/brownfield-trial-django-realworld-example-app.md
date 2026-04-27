@@ -13,10 +13,6 @@ Active imported proof:
 
 - [`topogram-demo/examples/imported/django-realworld-example-app`](https://github.com/attebury/topogram-demo/tree/main/examples/imported/django-realworld-example-app)
 
-Migration-era local mirror:
-
-- [./trials/django-realworld-example-app](../trials/django-realworld-example-app)
-
 ## Goal
 
 Pressure the extractor-registry architecture against a Django + Django REST Framework codebase with:

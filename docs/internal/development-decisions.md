@@ -180,7 +180,7 @@ But `.ops/` must not become the only home for:
 - source-of-truth product decisions
 - anything a collaborator would need from origin to work correctly
 
-The tracked policy summary for this workflow lives in [shared-development-workflow.md](./shared-development-workflow.md).
+The tracked policy summary for this workflow lives in [shared-development-workflow.md](../shared-development-workflow.md).
 
 ## 2026-04-23 - Treat remaining local trials as a shrinking migration layer
 
@@ -197,4 +197,4 @@ Working rules:
 
 This keeps the product repo small and product-shaped while preserving a deliberate path for the remaining optional proof-corpus lane.
 
-The current operational policy summary lives in [remaining-trial-policy.md](./remaining-trial-policy.md).
+The current operational policy summary lives in [remaining-trial-policy.md](../remaining-trial-policy.md).

@@ -7,14 +7,14 @@ It is also the third explicit multi-target proof for the same domain across two 
 - React via `proj_ui_web_react`
 - SvelteKit via `proj_ui_web`
 
-That proof is documented in [docs/multi-target-proof-todo.md](../../docs/multi-target-proof-todo.md).
+That proof is documented in [docs/multi-target-proof-todo.md](../../../docs/multi-target-proof-todo.md).
 
 It is also now the third explicit multi-runtime proof for the same domain across two backend realizations at the emitted server-contract seam:
 
 - Hono via `hono-server`
 - Express via `express-server`
 
-That proof is documented in [docs/multi-runtime-proof-todo.md](../../docs/multi-runtime-proof-todo.md).
+That proof is documented in [docs/multi-runtime-proof-todo.md](../../../docs/multi-runtime-proof-todo.md).
 
 ## Layout
 

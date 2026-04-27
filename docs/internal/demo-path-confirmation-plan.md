@@ -6,7 +6,7 @@ This note captures how Topogram should confirm its alpha demo path or paths with
 
 Confirm one canonical alpha demo path optimized for a skeptical technical evaluator, then derive two lightweight variants for adjacent audiences without changing the underlying proof story.
 
-The primary path should remain the current evaluator spine already reflected in [evaluator-path.md](./evaluator-path.md) and [alpha-plan.md](./alpha-plan.md):
+The primary path should remain the current evaluator spine already reflected in [evaluator-path.md](../evaluator-path.md) and [alpha-plan.md](./alpha-plan.md):
 
 - wedge
 - maintained-app proof
@@ -38,15 +38,15 @@ All variants should share one evidence spine. They should not become separate pr
 
 The canonical sequence should be:
 
-1. [README.md](../README.md) for the wedge
-2. [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md) for maintained-app proof
+1. [README.md](../../README.md) for the wedge
+2. [examples/maintained/proof-app/proof/edit-existing-app.md](../../examples/maintained/proof-app/proof/edit-existing-app.md) for maintained-app proof
 3. one seam-aware maintained query sequence over the generated source workspaces that feed the maintained proof package, showing boundary, drift, and seam interpretation
 4. one safe accepted change story
 5. one guarded/manual-decision story
 6. one no-go or rejected story
-7. [confirmed-proof-matrix.md](./confirmed-proof-matrix.md) for brownfield breadth
+7. [confirmed-proof-matrix.md](../confirmed-proof-matrix.md) for brownfield breadth
 8. one deterministic import/adopt fixture example with staged proposal surfaces
-9. [proof-points-and-limits.md](./proof-points-and-limits.md) for the close
+9. [proof-points-and-limits.md](../proof-points-and-limits.md) for the close
 
 Treat this path as the only canonical evidence spine.
 
@@ -124,7 +124,7 @@ Target time:
 
 Open:
 
-- [README.md](../README.md)
+- [README.md](../../README.md)
 
 Say:
 
@@ -138,7 +138,7 @@ Target time:
 
 Open:
 
-- [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
+- [examples/maintained/proof-app/proof/edit-existing-app.md](../../examples/maintained/proof-app/proof/edit-existing-app.md)
 
 Say:
 
@@ -175,9 +175,9 @@ Target time:
 
 Open:
 
-- [issues-ownership-visibility-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
-- [content-approval-workflow-decision-story.md](../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
-- [issues-ownership-visibility-drift-story.md](../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
+- [issues-ownership-visibility-story.md](../../examples/maintained/proof-app/proof/issues-ownership-visibility-story.md)
+- [content-approval-workflow-decision-story.md](../../examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md)
+- [issues-ownership-visibility-drift-story.md](../../examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md)
 
 Say:
 
@@ -193,7 +193,7 @@ Target time:
 
 Open:
 
-- [confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+- [confirmed-proof-matrix.md](../confirmed-proof-matrix.md)
 
 ### 6. Import/adopt staged proposal demo
 
@@ -221,7 +221,7 @@ Target time:
 
 Open:
 
-- [proof-points-and-limits.md](./proof-points-and-limits.md)
+- [proof-points-and-limits.md](../proof-points-and-limits.md)
 
 Say:
 
@@ -232,7 +232,7 @@ Say:
 
 The demo path is ready for alpha use when all of these are true:
 
-- [README.md](../README.md), [evaluator-path.md](./evaluator-path.md), and [proof-points-and-limits.md](./proof-points-and-limits.md) still tell the same wedge story
+- [README.md](../../README.md), [evaluator-path.md](../evaluator-path.md), and [proof-points-and-limits.md](../proof-points-and-limits.md) still tell the same wedge story
 - the maintained proof gate and maintained query sequence run exactly as written
 - the import/adopt fixture path runs exactly as written
 - the staged proposal demo remains non-empty
