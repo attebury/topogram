@@ -70,6 +70,7 @@ const jsonTargets = [
   [["verification-plan.json"], { target: "verification-plan" }],
   [["proj_ui_web__react.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__react" }],
   [["proj_ui_web__sveltekit.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__sveltekit" }],
+  [["proj_ui_native__ios.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_native__ios" }],
   [["proj_db_postgres.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_postgres" }],
   [["proj_db_sqlite.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_sqlite" }],
   [["proj_db_postgres.needs-revision.db-migration-plan.json"], { target: "db-migration-plan", projectionId: "proj_db_postgres", fromSnapshot: needsRevisionSnapshot, fromSnapshotPath: path.join(migrationsRoot, "proj_db_postgres.needs-revision-from.snapshot.json") }],

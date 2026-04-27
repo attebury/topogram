@@ -65,6 +65,7 @@ const jsonTargets = [
   [["verification-plan.json"], { target: "verification-plan" }],
   [["proj_ui_web__react.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__react" }],
   [["proj_ui_web__sveltekit.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__sveltekit" }],
+  [["proj_ui_native__ios.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_native__ios" }],
   [["proj_db_sqlite.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_sqlite" }],
   [["runtime-check-plan.json"], { target: "runtime-check-plan" }],
   [["app-bundle-plan.json"], { target: "app-bundle-plan" }],

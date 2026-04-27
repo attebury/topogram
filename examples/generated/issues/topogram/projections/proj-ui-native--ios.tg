@@ -1,0 +1,38 @@
+projection proj_ui_native__ios {
+  name "Issues Native iOS UI"
+  description "Native SwiftUI realization sharing routes and UI hints with the web stacks"
+
+  platform ui_ios
+  realizes [
+    proj_ui_shared,
+    cap_list_issues,
+    cap_get_issue,
+    cap_create_issue,
+    cap_update_issue,
+    cap_close_issue
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen issue_list path /issues
+    screen issue_detail path /issues/:id
+    screen issue_create path /issues/new
+    screen issue_edit path /issues/:id/edit
+  }
+
+  ui_ios {
+    screen issue_list layout responsive_collection
+    screen issue_list desktop_variant table
+    screen issue_list mobile_variant cards
+    screen issue_detail layout detail_page
+    screen issue_create present page
+    screen issue_edit present page
+  }
+
+  generator_defaults {
+    profile swiftui
+    language swift
+  }
+
+  status active
+}
