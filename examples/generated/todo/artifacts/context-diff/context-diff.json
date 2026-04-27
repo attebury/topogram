@@ -829,7 +829,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [
           "article_review"
@@ -874,7 +875,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [],
         "reviewBoundary": {
@@ -1136,11 +1138,11 @@
       },
       {
         "dbTables": [],
-        "description": "Web realization for the shared Todo UI using a SvelteKit profile",
+        "description": "Web realization for the shared Todo UI using a React profile",
         "httpCapabilities": [],
-        "id": "proj_ui_web",
+        "id": "proj_ui_web__react",
         "kind": "projection",
-        "name": "Todo Web UI",
+        "name": "Todo Web UI (React)",
         "outputs": [
           "ui_contract",
           "web_app"
@@ -1194,11 +1196,11 @@
       },
       {
         "dbTables": [],
-        "description": "Web realization for the shared Todo UI using a React profile",
+        "description": "Web realization for the shared Todo UI using a SvelteKit profile",
         "httpCapabilities": [],
-        "id": "proj_ui_web_react",
+        "id": "proj_ui_web__sveltekit",
         "kind": "projection",
-        "name": "Todo Web UI (React)",
+        "name": "Todo Web UI",
         "outputs": [
           "ui_contract",
           "web_app"
@@ -1283,7 +1285,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [],
         "reviewBoundary": {
@@ -1813,7 +1816,7 @@
         },
         "proof_stories": [
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
             "classification": "accepted_change",
             "emittedDependencies": [
               "proj_web",
@@ -1857,7 +1860,7 @@
             }
           },
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
             "classification": "accepted_change",
             "emittedDependencies": [
               "proj_web",
@@ -1905,7 +1908,7 @@
             "seamFamilyLabel": "issues cross-surface ownership alignment"
           },
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
             "classification": "guarded_manual_decision",
             "emittedDependencies": [
               "cap_request_article_revision",
@@ -1948,7 +1951,7 @@
             }
           },
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/content-approval-unsupported-change-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/content-approval-unsupported-change-story.md",
             "classification": "no_go",
             "emittedDependencies": [
               "proj_web",
@@ -1992,7 +1995,7 @@
             }
           },
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md",
             "classification": "no_go",
             "emittedDependencies": [
               "entity_project",
@@ -2035,7 +2038,7 @@
             }
           },
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/maintained-contract-review.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/maintained-contract-review.md",
             "classification": "independent_review",
             "emittedDependencies": [
               "maintained-proof-package"
@@ -2569,7 +2572,7 @@
         },
         "proof_stories": [
           {
-            "absolutePath": "/Users/attebury/Documents/topogram/examples/generated/content-approval/implementation/proof/backend-reference-seam-story.md",
+            "absolutePath": "/Users/attebury/topogram-cursor/examples/generated/content-approval/implementation/proof/backend-reference-seam-story.md",
             "classification": "accepted_change",
             "emittedDependencies": [
               "proj_api",
@@ -2952,7 +2955,7 @@
       ]
     }
   ],
-  "baseline_root": "/Users/attebury/Documents/topogram/examples/generated/content-approval/topogram",
+  "baseline_root": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram",
   "capabilities": [
     {
       "baseline": {
@@ -4184,7 +4187,7 @@
       "id": "cap_update_user"
     }
   ],
-  "current_root": "/Users/attebury/Documents/topogram/examples/generated/todo/topogram",
+  "current_root": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram",
   "entities": [
     {
       "baseline": {
@@ -4943,7 +4946,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [
           "article_review"
@@ -4993,7 +4997,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [],
         "reviewBoundary": {
@@ -5499,7 +5504,7 @@
         "dbTables": [],
         "description": "Web realization for the shared Content Approval UI using a React profile",
         "httpCapabilities": [],
-        "id": "proj_ui_web",
+        "id": "proj_ui_web__react",
         "kind": "projection",
         "name": "Content Approval Web UI",
         "outputs": [
@@ -5546,71 +5551,9 @@
       "classification": "modified",
       "current": {
         "dbTables": [],
-        "description": "Web realization for the shared Todo UI using a SvelteKit profile",
-        "httpCapabilities": [],
-        "id": "proj_ui_web",
-        "kind": "projection",
-        "name": "Todo Web UI",
-        "outputs": [
-          "ui_contract",
-          "web_app"
-        ],
-        "ownership_boundary": {
-          "canonical_topogram": {
-            "agent_mode": "propose_review_adopt",
-            "owner": "human"
-          },
-          "generated_artifacts": {
-            "agent_mode": "regenerate_or_compare",
-            "owner": "engine"
-          },
-          "maintained_code": {
-            "agent_mode": "bounded_edit_only",
-            "owner": "human"
-          },
-          "proposal_surfaces": {
-            "agent_mode": "stage_map_customize_reject",
-            "owner": "human"
-          }
-        },
-        "platform": "ui_web",
-        "realizes": [
-          "cap_complete_task",
-          "cap_create_project",
-          "cap_create_task",
-          "cap_create_user",
-          "cap_delete_task",
-          "cap_download_task_export",
-          "cap_export_tasks",
-          "cap_get_project",
-          "cap_get_task",
-          "cap_get_task_export_job",
-          "cap_get_user",
-          "cap_list_projects",
-          "cap_list_tasks",
-          "cap_list_users",
-          "cap_update_project",
-          "cap_update_task",
-          "cap_update_user",
-          "proj_ui_shared"
-        ],
-        "reviewBoundary": {
-          "automation_class": "safe",
-          "reasons": [
-            "metadata_only"
-          ]
-        },
-        "uiScreens": []
-      },
-      "id": "proj_ui_web"
-    },
-    {
-      "classification": "additive",
-      "current": {
-        "dbTables": [],
         "description": "Web realization for the shared Todo UI using a React profile",
         "httpCapabilities": [],
-        "id": "proj_ui_web_react",
+        "id": "proj_ui_web__react",
         "kind": "projection",
         "name": "Todo Web UI (React)",
         "outputs": [
@@ -5664,14 +5607,14 @@
         },
         "uiScreens": []
       },
-      "id": "proj_ui_web_react"
+      "id": "proj_ui_web__react"
     },
     {
       "baseline": {
         "dbTables": [],
         "description": "Web realization for the shared Content Approval UI using a SvelteKit profile",
         "httpCapabilities": [],
-        "id": "proj_ui_web_sveltekit",
+        "id": "proj_ui_web__sveltekit",
         "kind": "projection",
         "name": "Content Approval Web UI (SvelteKit)",
         "outputs": [
@@ -5715,8 +5658,66 @@
         },
         "uiScreens": []
       },
-      "classification": "removed",
-      "id": "proj_ui_web_sveltekit"
+      "classification": "modified",
+      "current": {
+        "dbTables": [],
+        "description": "Web realization for the shared Todo UI using a SvelteKit profile",
+        "httpCapabilities": [],
+        "id": "proj_ui_web__sveltekit",
+        "kind": "projection",
+        "name": "Todo Web UI",
+        "outputs": [
+          "ui_contract",
+          "web_app"
+        ],
+        "ownership_boundary": {
+          "canonical_topogram": {
+            "agent_mode": "propose_review_adopt",
+            "owner": "human"
+          },
+          "generated_artifacts": {
+            "agent_mode": "regenerate_or_compare",
+            "owner": "engine"
+          },
+          "maintained_code": {
+            "agent_mode": "bounded_edit_only",
+            "owner": "human"
+          },
+          "proposal_surfaces": {
+            "agent_mode": "stage_map_customize_reject",
+            "owner": "human"
+          }
+        },
+        "platform": "ui_web",
+        "realizes": [
+          "cap_complete_task",
+          "cap_create_project",
+          "cap_create_task",
+          "cap_create_user",
+          "cap_delete_task",
+          "cap_download_task_export",
+          "cap_export_tasks",
+          "cap_get_project",
+          "cap_get_task",
+          "cap_get_task_export_job",
+          "cap_get_user",
+          "cap_list_projects",
+          "cap_list_tasks",
+          "cap_list_users",
+          "cap_update_project",
+          "cap_update_task",
+          "cap_update_user",
+          "proj_ui_shared"
+        ],
+        "reviewBoundary": {
+          "automation_class": "safe",
+          "reasons": [
+            "metadata_only"
+          ]
+        },
+        "uiScreens": []
+      },
+      "id": "proj_ui_web__sveltekit"
     }
   ],
   "review_boundary_changes": [],
@@ -8193,7 +8194,8 @@
         "relatedProjections": [
           "proj_api",
           "proj_ui_shared",
-          "proj_ui_web"
+          "proj_ui_web__react",
+          "proj_ui_web__sveltekit"
         ],
         "relatedWorkflows": [],
         "reviewBoundary": {

@@ -16,6 +16,14 @@
         <label>Title <input name="title" value={values.title ?? ""} /></label>
         <label>Description <textarea name="description">{values.description ?? ""}</textarea></label>
         <label>
+          Priority
+          <select name="priority">
+            <option value="low" selected={(values.priority ?? "") === "low"}>low</option>
+            <option value="medium" selected={(values.priority ?? "") === "medium"}>medium</option>
+            <option value="high" selected={(values.priority ?? "") === "high"}>high</option>
+          </select>
+        </label>
+        <label>
           Owner
           <select name="owner_id">
             <option value="">Unassigned</option>

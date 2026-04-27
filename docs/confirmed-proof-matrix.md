@@ -44,6 +44,8 @@ Both live in **[topogram-demo](https://github.com/attebury/topogram-demo)** but 
 
 Neither replaces **thin** generator proofs in the **topogram** product repo. See [topogram-demo-ops.md](./topogram-demo-ops.md).
 
+For the **Todo** workspace, the **`swiftui-app`** generator emits an iOS SwiftUI package under [`examples/generated/todo/apps/ios-swiftui`](../examples/generated/todo/apps/ios-swiftui) from the same **`buildWebRealization`** contract as the web app (default **`proj_ui_web__sveltekit`**). Regenerate from `engine/` via `npm run generate:swiftui`.
+
 ## Brownfield Proof Split
 
 Keep this proof split explicit:

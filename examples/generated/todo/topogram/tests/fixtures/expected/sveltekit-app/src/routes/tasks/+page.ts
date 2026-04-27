@@ -26,7 +26,14 @@ export const load: PageLoad = async ({ fetch, url }) => {
       "status"
     ],
     "search": [],
-    "pagination": "cursor",
+    "pagination": null,
+    "views": [
+      "table"
+    ],
+    "refresh": "manual",
+    "groupBy": [
+      "status"
+    ],
     "sort": [
       {
         "field": "created_at",
@@ -35,9 +42,11 @@ export const load: PageLoad = async ({ fetch, url }) => {
     ]
   },
   "web": {
+    "shell": "bottom_tabs",
     "layout": "responsive_collection",
     "desktop_variant": "table",
-    "mobile_variant": "cards"
+    "mobile_variant": "cards",
+    "collection": "table"
   }
 },
     filters: {

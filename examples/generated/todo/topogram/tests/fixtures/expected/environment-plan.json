@@ -12,7 +12,7 @@
     "web": "web"
   },
   "environment": {
-    "id": "proj_api__proj_ui_web__proj_db_postgres",
+    "id": "proj_api__proj_ui_web__sveltekit__proj_db_postgres",
     "mode": "local_dev",
     "name": "Todo Local Runtime Stack",
     "profile": "local_docker"
@@ -48,7 +48,7 @@
       "profile": null
     },
     "ui": {
-      "id": "proj_ui_web",
+      "id": "proj_ui_web__sveltekit",
       "platform": "ui_web"
     }
   },

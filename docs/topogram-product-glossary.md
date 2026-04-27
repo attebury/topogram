@@ -155,7 +155,8 @@ Examples:
 
 - `proj_api`
 - `proj_ui_shared`
-- `proj_ui_web`
+- `proj_ui_web__sveltekit`
+- `proj_ui_web__react`
 - `proj_db_postgres`
 
 ## Proof

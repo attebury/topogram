@@ -1,7 +1,7 @@
 {
   "stories": [
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/issues-ownership-visibility-story.md",
       "classification": "accepted_change",
       "emittedDependencies": [
         "proj_web",
@@ -45,7 +45,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/issues-cross-surface-alignment-story.md",
       "classification": "accepted_change",
       "emittedDependencies": [
         "proj_web",
@@ -93,7 +93,7 @@
       "seamFamilyLabel": "issues cross-surface ownership alignment"
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/content-approval-workflow-decision-story.md",
       "classification": "guarded_manual_decision",
       "emittedDependencies": [
         "cap_request_article_revision",
@@ -136,7 +136,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/issues-ownership-visibility-drift-story.md",
       "classification": "no_go",
       "emittedDependencies": [
         "proj_web",
@@ -178,7 +178,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/content-approval-unsupported-change-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/content-approval-unsupported-change-story.md",
       "classification": "no_go",
       "emittedDependencies": [
         "proj_web",
@@ -222,7 +222,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/todo-project-owner-unsupported-change-story.md",
       "classification": "no_go",
       "emittedDependencies": [
         "entity_project",
@@ -265,7 +265,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/maintained/proof-app/proof/maintained-contract-review.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/maintained/proof-app/proof/maintained-contract-review.md",
       "classification": "independent_review",
       "emittedDependencies": [
         "maintained-proof-package"
@@ -307,7 +307,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/generated/content-approval/implementation/proof/web-reference-seam-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/generated/content-approval/implementation/proof/web-reference-seam-story.md",
       "classification": "accepted_change",
       "emittedDependencies": [
         "proj_web",
@@ -349,7 +349,7 @@
       }
     },
     {
-      "absolutePath": "/Users/attebury/Documents/topogram/examples/generated/content-approval/implementation/proof/backend-reference-seam-story.md",
+      "absolutePath": "/Users/attebury/topogram-cursor/examples/generated/content-approval/implementation/proof/backend-reference-seam-story.md",
       "classification": "accepted_change",
       "emittedDependencies": [
         "proj_api",

@@ -13,7 +13,7 @@ test("todo web parity keeps react and sveltekit seams aligned", () => {
   const ast = parsePath(todoPath);
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
-  const evidence = buildWebParityEvidence(resolved.graph, "proj_ui_web_react", "proj_ui_web");
+  const evidence = buildWebParityEvidence(resolved.graph, "proj_ui_web__react", "proj_ui_web__sveltekit");
 
   assert.equal(evidence.leftProfile, "react");
   assert.equal(evidence.rightProfile, "sveltekit");

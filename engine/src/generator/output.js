@@ -102,6 +102,7 @@ export function buildOutputFiles(result, options = {}) {
 
   if (
     result.target === "sveltekit-app" ||
+    result.target === "swiftui-app" ||
     result.target === "db-lifecycle-bundle" ||
     result.target === "environment-bundle" ||
     result.target === "deployment-bundle" ||

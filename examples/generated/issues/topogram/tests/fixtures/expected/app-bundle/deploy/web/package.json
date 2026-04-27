@@ -1,5 +1,5 @@
 {
-  "name": "proj_ui_web",
+  "name": "proj_ui_web__sveltekit",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -7,18 +7,15 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.1"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "@types/node": "^22.10.2",
+    "svelte-check": "^4.0.0",
+    "svelte": "^5.0.0",
     "typescript": "^5.6.3",
-    "vite": "^7.1.11"
+    "vite": "^8.0.0"
   }
 }

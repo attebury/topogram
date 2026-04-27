@@ -26,7 +26,8 @@ related_workflows:
 related_projections:
   - proj_api
   - proj_ui_shared
-  - proj_ui_web
+  - proj_ui_web__react
+  - proj_ui_web__sveltekit
 failure_signals:
   - Requested revision feedback is missing when the article returns to the author.
   - The author cannot tell whether the article is still in review or back in drafting.

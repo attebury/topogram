@@ -40,7 +40,7 @@ test("runtime and web generator entrypoints keep stable shared-wrapper outputs",
 
   const issuesReactBundle = generateWorkspace(parsePath(issuesTopogramPath), {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   assert.equal(issuesReactBundle.ok, true);
   assert.match(issuesReactBundle.artifact["src/lib/api/client.ts"], /Authorization/);

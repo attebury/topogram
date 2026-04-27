@@ -3,7 +3,7 @@
 This bundle packages the generated runtime into one local environment:
 
 - `server/`: generated Hono + Prisma server scaffold
-- `web/`: generated Vite + React Router web scaffold
+- `web/`: generated SvelteKit web scaffold
 - `db/`: generated DB lifecycle bundle
 - local SQLite file orchestration (no Docker files generated)
 

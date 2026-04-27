@@ -1,0 +1,89 @@
+{
+  "focus": {
+    "id": "proj_ui_web__react",
+    "kind": "projection"
+  },
+  "ownership_boundary": {
+    "canonical_topogram": {
+      "agent_mode": "propose_review_adopt",
+      "owner": "human"
+    },
+    "generated_artifacts": {
+      "agent_mode": "regenerate_or_compare",
+      "owner": "engine"
+    },
+    "maintained_code": {
+      "agent_mode": "bounded_edit_only",
+      "owner": "human"
+    },
+    "proposal_surfaces": {
+      "agent_mode": "stage_map_customize_reject",
+      "owner": "human"
+    }
+  },
+  "summary": {
+    "dbTables": [],
+    "description": "Web realization for the shared Todo UI using a React profile",
+    "httpCapabilities": [],
+    "id": "proj_ui_web__react",
+    "kind": "projection",
+    "name": "Todo Web UI (React)",
+    "outputs": [
+      "ui_contract",
+      "web_app"
+    ],
+    "ownership_boundary": {
+      "canonical_topogram": {
+        "agent_mode": "propose_review_adopt",
+        "owner": "human"
+      },
+      "generated_artifacts": {
+        "agent_mode": "regenerate_or_compare",
+        "owner": "engine"
+      },
+      "maintained_code": {
+        "agent_mode": "bounded_edit_only",
+        "owner": "human"
+      },
+      "proposal_surfaces": {
+        "agent_mode": "stage_map_customize_reject",
+        "owner": "human"
+      }
+    },
+    "platform": "ui_web",
+    "realizes": [
+      "cap_complete_task",
+      "cap_create_project",
+      "cap_create_task",
+      "cap_create_user",
+      "cap_delete_task",
+      "cap_download_task_export",
+      "cap_export_tasks",
+      "cap_get_project",
+      "cap_get_task",
+      "cap_get_task_export_job",
+      "cap_get_user",
+      "cap_list_projects",
+      "cap_list_tasks",
+      "cap_list_users",
+      "cap_update_project",
+      "cap_update_task",
+      "cap_update_user",
+      "proj_ui_shared"
+    ],
+    "reviewBoundary": {
+      "automation_class": "safe",
+      "reasons": [
+        "metadata_only"
+      ]
+    },
+    "uiScreens": []
+  },
+  "type": "context_digest",
+  "verifications": [
+    "ver_create_task_policy",
+    "ver_runtime_smoke",
+    "ver_task_runtime_flow"
+  ],
+  "version": 1
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PUBLIC_TOPOGRAM_DEMO_PROJECT_ID, PUBLIC_TOPOGRAM_DEMO_USER_ID } from "$env/static/public";
+  import { PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID as DEMO_PROJECT_ID, PUBLIC_TOPOGRAM_DEMO_USER_ID as DEMO_USER_ID } from "$env/static/public";
 
   export let data;
   export let form;
@@ -7,8 +7,9 @@
   const values = {
     title: form?.values?.title ?? "",
     description: form?.values?.description ?? "",
-    owner_id: form?.values?.owner_id ?? PUBLIC_TOPOGRAM_DEMO_USER_ID ?? "",
-    project_id: form?.values?.project_id ?? PUBLIC_TOPOGRAM_DEMO_PROJECT_ID ?? "",
+    priority: form?.values?.priority ?? "medium",
+    owner_id: form?.values?.owner_id ?? DEMO_USER_ID ?? "",
+    project_id: form?.values?.project_id ?? DEMO_PROJECT_ID ?? "",
     due_at: form?.values?.due_at ?? ""
   };
 </script>
@@ -17,12 +18,20 @@
   <div class="stack">
     <section class="card">
       <h1>Create Task</h1>
-      <p>This form screen was generated from `task_create`.</p>
+      <p>This wizard screen was generated from `task_create`.</p>
       <p class="muted">A project is required to create a task. Owner is optional.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
         <label>Title <input name="title" required value={values.title} /></label>
         <label>Description <textarea name="description">{values.description}</textarea></label>
+        <label>
+          Priority
+          <select name="priority">
+            <option value="low" selected={values.priority === "low"}>low</option>
+            <option value="medium" selected={values.priority === "medium"}>medium</option>
+            <option value="high" selected={values.priority === "high"}>high</option>
+          </select>
+        </label>
         <label>
           Owner
           <select name="owner_id">

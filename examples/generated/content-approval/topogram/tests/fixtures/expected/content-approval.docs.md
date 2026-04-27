@@ -365,17 +365,17 @@ Platform: `ui_shared`
 Realizes: `cap_list_articles`, `cap_get_article`, `cap_create_article`, `cap_update_article`, `cap_request_article_revision`, `cap_approve_article`, `cap_reject_article`
 Outputs: `ui_contract`
 
-### `proj_ui_web_sveltekit` - Content Approval Web UI (SvelteKit)
+### `proj_ui_web__react` - Content Approval Web UI
 
-Web realization for the shared Content Approval UI using a SvelteKit profile
+Web realization for the shared Content Approval UI using a React profile
 
 Platform: `ui_web`
 Realizes: `proj_ui_shared`, `cap_list_articles`, `cap_get_article`, `cap_create_article`, `cap_update_article`, `cap_request_article_revision`, `cap_approve_article`, `cap_reject_article`
 Outputs: `ui_contract`, `web_app`
 
-### `proj_ui_web` - Content Approval Web UI
+### `proj_ui_web__sveltekit` - Content Approval Web UI (SvelteKit)
 
-Web realization for the shared Content Approval UI using a React profile
+Web realization for the shared Content Approval UI using a SvelteKit profile
 
 Platform: `ui_web`
 Realizes: `proj_ui_shared`, `cap_list_articles`, `cap_get_article`, `cap_create_article`, `cap_update_article`, `cap_request_article_revision`, `cap_approve_article`, `cap_reject_article`

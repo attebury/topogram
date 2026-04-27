@@ -8999,846 +8999,6 @@
         "dbLifecycle": [],
         "dbRelations": [],
         "dbTables": [],
-        "description": "Web realization for the shared Issues UI using a SvelteKit profile",
-        "from": null,
-        "generatorDefaults": [
-          {
-            "key": "profile",
-            "loc": {
-              "end": {
-                "column": 22,
-                "line": 33,
-                "offset": 840
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 33,
-                "offset": 823
-              }
-            },
-            "raw": [
-              "profile",
-              "sveltekit"
-            ],
-            "type": "generator_default",
-            "value": "sveltekit"
-          },
-          {
-            "key": "language",
-            "loc": {
-              "end": {
-                "column": 24,
-                "line": 34,
-                "offset": 864
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 34,
-                "offset": 845
-              }
-            },
-            "raw": [
-              "language",
-              "typescript"
-            ],
-            "type": "generator_default",
-            "value": "typescript"
-          },
-          {
-            "key": "styling",
-            "loc": {
-              "end": {
-                "column": 16,
-                "line": 35,
-                "offset": 880
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 35,
-                "offset": 869
-              }
-            },
-            "raw": [
-              "styling",
-              "css"
-            ],
-            "type": "generator_default",
-            "value": "css"
-          }
-        ],
-        "http": [],
-        "httpAsync": [],
-        "httpAuthz": [],
-        "httpCache": [],
-        "httpCallbacks": [],
-        "httpDelete": [],
-        "httpDownload": [],
-        "httpErrors": [],
-        "httpFields": [],
-        "httpIdempotency": [],
-        "httpPreconditions": [],
-        "httpResponses": [],
-        "httpStatus": [],
-        "id": "proj_ui_web_sveltekit",
-        "kind": "projection",
-        "loc": {
-          "end": {
-            "column": 2,
-            "line": 39,
-            "offset": 903
-          },
-          "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-          "start": {
-            "column": 1,
-            "line": 1,
-            "offset": 0
-          }
-        },
-        "name": "Issues Web UI (SvelteKit)",
-        "outputs": [
-          "ui_contract",
-          "web_app"
-        ],
-        "plan": {
-          "dbColumns": [],
-          "dbIndexes": [],
-          "dbKeys": [],
-          "dbLifecycle": [],
-          "dbRelations": [],
-          "dbTables": [],
-          "generatorDefaults": [
-            {
-              "key": "profile",
-              "loc": {
-                "end": {
-                  "column": 22,
-                  "line": 33,
-                  "offset": 840
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 33,
-                  "offset": 823
-                }
-              },
-              "raw": [
-                "profile",
-                "sveltekit"
-              ],
-              "type": "generator_default",
-              "value": "sveltekit"
-            },
-            {
-              "key": "language",
-              "loc": {
-                "end": {
-                  "column": 24,
-                  "line": 34,
-                  "offset": 864
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 34,
-                  "offset": 845
-                }
-              },
-              "raw": [
-                "language",
-                "typescript"
-              ],
-              "type": "generator_default",
-              "value": "typescript"
-            },
-            {
-              "key": "styling",
-              "loc": {
-                "end": {
-                  "column": 16,
-                  "line": 35,
-                  "offset": 880
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 35,
-                  "offset": 869
-                }
-              },
-              "raw": [
-                "styling",
-                "css"
-              ],
-              "type": "generator_default",
-              "value": "css"
-            }
-          ],
-          "http": [],
-          "httpAsync": [],
-          "httpAuthz": [],
-          "httpCache": [],
-          "httpCallbacks": [],
-          "httpDelete": [],
-          "httpDownload": [],
-          "httpErrors": [],
-          "httpFields": [],
-          "httpIdempotency": [],
-          "httpPreconditions": [],
-          "httpResponses": [],
-          "httpStatus": [],
-          "outputs": [
-            {
-              "id": "ui_contract",
-              "order": 0,
-              "type": "symbol"
-            },
-            {
-              "id": "web_app",
-              "order": 1,
-              "type": "symbol"
-            }
-          ],
-          "platform": "ui_web",
-          "realizes": [
-            {
-              "order": 0,
-              "target": {
-                "id": "proj_ui_shared",
-                "kind": "projection"
-              }
-            },
-            {
-              "order": 1,
-              "target": {
-                "id": "cap_list_issues",
-                "kind": "capability"
-              }
-            },
-            {
-              "order": 2,
-              "target": {
-                "id": "cap_get_issue",
-                "kind": "capability"
-              }
-            },
-            {
-              "order": 3,
-              "target": {
-                "id": "cap_create_issue",
-                "kind": "capability"
-              }
-            },
-            {
-              "order": 4,
-              "target": {
-                "id": "cap_update_issue",
-                "kind": "capability"
-              }
-            },
-            {
-              "order": 5,
-              "target": {
-                "id": "cap_close_issue",
-                "kind": "capability"
-              }
-            }
-          ],
-          "type": "projection_plan",
-          "uiActions": [],
-          "uiCollections": [],
-          "uiRoutes": [
-            {
-              "loc": {
-                "end": {
-                  "column": 35,
-                  "line": 17,
-                  "offset": 395
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 17,
-                  "offset": 365
-                }
-              },
-              "path": "/issues",
-              "raw": [
-                "screen",
-                "issue_list",
-                "path",
-                "/issues"
-              ],
-              "screenId": "issue_list",
-              "type": "ui_route"
-            },
-            {
-              "loc": {
-                "end": {
-                  "column": 41,
-                  "line": 18,
-                  "offset": 436
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 18,
-                  "offset": 400
-                }
-              },
-              "path": "/issues/:id",
-              "raw": [
-                "screen",
-                "issue_detail",
-                "path",
-                "/issues/:id"
-              ],
-              "screenId": "issue_detail",
-              "type": "ui_route"
-            },
-            {
-              "loc": {
-                "end": {
-                  "column": 41,
-                  "line": 19,
-                  "offset": 477
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 19,
-                  "offset": 441
-                }
-              },
-              "path": "/issues/new",
-              "raw": [
-                "screen",
-                "issue_create",
-                "path",
-                "/issues/new"
-              ],
-              "screenId": "issue_create",
-              "type": "ui_route"
-            },
-            {
-              "loc": {
-                "end": {
-                  "column": 44,
-                  "line": 20,
-                  "offset": 521
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 20,
-                  "offset": 482
-                }
-              },
-              "path": "/issues/:id/edit",
-              "raw": [
-                "screen",
-                "issue_edit",
-                "path",
-                "/issues/:id/edit"
-              ],
-              "screenId": "issue_edit",
-              "type": "ui_route"
-            }
-          ],
-          "uiScreens": [],
-          "uiVisibility": [],
-          "uiWeb": [
-            {
-              "capability": null,
-              "directive": "layout",
-              "loc": {
-                "end": {
-                  "column": 51,
-                  "line": 24,
-                  "offset": 588
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 24,
-                  "offset": 542
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_list",
-                "layout",
-                "responsive_collection"
-              ],
-              "targetId": "issue_list",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "responsive_collection"
-            },
-            {
-              "capability": null,
-              "directive": "desktop_variant",
-              "loc": {
-                "end": {
-                  "column": 44,
-                  "line": 25,
-                  "offset": 632
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 25,
-                  "offset": 593
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_list",
-                "desktop_variant",
-                "table"
-              ],
-              "targetId": "issue_list",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "table"
-            },
-            {
-              "capability": null,
-              "directive": "mobile_variant",
-              "loc": {
-                "end": {
-                  "column": 43,
-                  "line": 26,
-                  "offset": 675
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 26,
-                  "offset": 637
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_list",
-                "mobile_variant",
-                "cards"
-              ],
-              "targetId": "issue_list",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "cards"
-            },
-            {
-              "capability": null,
-              "directive": "layout",
-              "loc": {
-                "end": {
-                  "column": 43,
-                  "line": 27,
-                  "offset": 718
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 27,
-                  "offset": 680
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_detail",
-                "layout",
-                "detail_page"
-              ],
-              "targetId": "issue_detail",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "detail_page"
-            },
-            {
-              "capability": null,
-              "directive": "present",
-              "loc": {
-                "end": {
-                  "column": 37,
-                  "line": 28,
-                  "offset": 755
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 28,
-                  "offset": 723
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_create",
-                "present",
-                "page"
-              ],
-              "targetId": "issue_create",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "page"
-            },
-            {
-              "capability": null,
-              "directive": "present",
-              "loc": {
-                "end": {
-                  "column": 35,
-                  "line": 29,
-                  "offset": 790
-                },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-                "start": {
-                  "column": 5,
-                  "line": 29,
-                  "offset": 760
-                }
-              },
-              "raw": [
-                "screen",
-                "issue_edit",
-                "present",
-                "page"
-              ],
-              "targetId": "issue_edit",
-              "targetKind": "screen",
-              "type": "ui_web_binding",
-              "value": "page"
-            }
-          ]
-        },
-        "platform": "ui_web",
-        "realizes": [
-          {
-            "id": "proj_ui_shared",
-            "target": {
-              "id": "proj_ui_shared",
-              "kind": "projection"
-            }
-          },
-          {
-            "id": "cap_list_issues",
-            "target": {
-              "id": "cap_list_issues",
-              "kind": "capability"
-            }
-          },
-          {
-            "id": "cap_get_issue",
-            "target": {
-              "id": "cap_get_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "id": "cap_create_issue",
-            "target": {
-              "id": "cap_create_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "id": "cap_update_issue",
-            "target": {
-              "id": "cap_update_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "id": "cap_close_issue",
-            "target": {
-              "id": "cap_close_issue",
-              "kind": "capability"
-            }
-          }
-        ],
-        "status": "active",
-        "uiActions": [],
-        "uiAppShell": [],
-        "uiCollections": [],
-        "uiLookups": [],
-        "uiNavigation": [],
-        "uiRoutes": [
-          {
-            "loc": {
-              "end": {
-                "column": 35,
-                "line": 17,
-                "offset": 395
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 17,
-                "offset": 365
-              }
-            },
-            "path": "/issues",
-            "raw": [
-              "screen",
-              "issue_list",
-              "path",
-              "/issues"
-            ],
-            "screenId": "issue_list",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 41,
-                "line": 18,
-                "offset": 436
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 18,
-                "offset": 400
-              }
-            },
-            "path": "/issues/:id",
-            "raw": [
-              "screen",
-              "issue_detail",
-              "path",
-              "/issues/:id"
-            ],
-            "screenId": "issue_detail",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 41,
-                "line": 19,
-                "offset": 477
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 19,
-                "offset": 441
-              }
-            },
-            "path": "/issues/new",
-            "raw": [
-              "screen",
-              "issue_create",
-              "path",
-              "/issues/new"
-            ],
-            "screenId": "issue_create",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 44,
-                "line": 20,
-                "offset": 521
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 20,
-                "offset": 482
-              }
-            },
-            "path": "/issues/:id/edit",
-            "raw": [
-              "screen",
-              "issue_edit",
-              "path",
-              "/issues/:id/edit"
-            ],
-            "screenId": "issue_edit",
-            "type": "ui_route"
-          }
-        ],
-        "uiScreenRegions": [],
-        "uiScreens": [],
-        "uiVisibility": [],
-        "uiWeb": [
-          {
-            "capability": null,
-            "directive": "layout",
-            "loc": {
-              "end": {
-                "column": 51,
-                "line": 24,
-                "offset": 588
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 24,
-                "offset": 542
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "layout",
-              "responsive_collection"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "responsive_collection"
-          },
-          {
-            "capability": null,
-            "directive": "desktop_variant",
-            "loc": {
-              "end": {
-                "column": 44,
-                "line": 25,
-                "offset": 632
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 25,
-                "offset": 593
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "desktop_variant",
-              "table"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "table"
-          },
-          {
-            "capability": null,
-            "directive": "mobile_variant",
-            "loc": {
-              "end": {
-                "column": 43,
-                "line": 26,
-                "offset": 675
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 26,
-                "offset": 637
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "mobile_variant",
-              "cards"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "cards"
-          },
-          {
-            "capability": null,
-            "directive": "layout",
-            "loc": {
-              "end": {
-                "column": 43,
-                "line": 27,
-                "offset": 718
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 27,
-                "offset": 680
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_detail",
-              "layout",
-              "detail_page"
-            ],
-            "targetId": "issue_detail",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "detail_page"
-          },
-          {
-            "capability": null,
-            "directive": "present",
-            "loc": {
-              "end": {
-                "column": 37,
-                "line": 28,
-                "offset": 755
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 28,
-                "offset": 723
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_create",
-              "present",
-              "page"
-            ],
-            "targetId": "issue_create",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "page"
-          },
-          {
-            "capability": null,
-            "directive": "present",
-            "loc": {
-              "end": {
-                "column": 35,
-                "line": 29,
-                "offset": 790
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 29,
-                "offset": 760
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_edit",
-              "present",
-              "page"
-            ],
-            "targetId": "issue_edit",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "page"
-          }
-        ]
-      },
-      {
-        "dbColumns": [],
-        "dbIndexes": [],
-        "dbKeys": [],
-        "dbLifecycle": [],
-        "dbRelations": [],
-        "dbTables": [],
         "description": "Web realization for the shared Issues UI using a React profile",
         "from": null,
         "generatorDefaults": [
@@ -9848,13 +9008,13 @@
               "end": {
                 "column": 18,
                 "line": 38,
-                "offset": 1025
+                "offset": 1032
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 38,
-                "offset": 1012
+                "offset": 1019
               }
             },
             "raw": [
@@ -9870,13 +9030,13 @@
               "end": {
                 "column": 24,
                 "line": 39,
-                "offset": 1049
+                "offset": 1056
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 39,
-                "offset": 1030
+                "offset": 1037
               }
             },
             "raw": [
@@ -9892,13 +9052,13 @@
               "end": {
                 "column": 16,
                 "line": 40,
-                "offset": 1065
+                "offset": 1072
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 40,
-                "offset": 1054
+                "offset": 1061
               }
             },
             "raw": [
@@ -9922,15 +9082,15 @@
         "httpPreconditions": [],
         "httpResponses": [],
         "httpStatus": [],
-        "id": "proj_ui_web",
+        "id": "proj_ui_web__react",
         "kind": "projection",
         "loc": {
           "end": {
             "column": 2,
             "line": 44,
-            "offset": 1088
+            "offset": 1095
           },
-          "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+          "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
           "start": {
             "column": 1,
             "line": 1,
@@ -9956,13 +9116,13 @@
                 "end": {
                   "column": 18,
                   "line": 38,
-                  "offset": 1025
+                  "offset": 1032
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 38,
-                  "offset": 1012
+                  "offset": 1019
                 }
               },
               "raw": [
@@ -9978,13 +9138,13 @@
                 "end": {
                   "column": 24,
                   "line": 39,
-                  "offset": 1049
+                  "offset": 1056
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 39,
-                  "offset": 1030
+                  "offset": 1037
                 }
               },
               "raw": [
@@ -10000,13 +9160,13 @@
                 "end": {
                   "column": 16,
                   "line": 40,
-                  "offset": 1065
+                  "offset": 1072
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 40,
-                  "offset": 1054
+                  "offset": 1061
                 }
               },
               "raw": [
@@ -10096,13 +9256,13 @@
                 "end": {
                   "column": 35,
                   "line": 17,
-                  "offset": 369
+                  "offset": 376
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 17,
-                  "offset": 339
+                  "offset": 346
                 }
               },
               "path": "/issues",
@@ -10120,13 +9280,13 @@
                 "end": {
                   "column": 41,
                   "line": 18,
-                  "offset": 410
+                  "offset": 417
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 18,
-                  "offset": 374
+                  "offset": 381
                 }
               },
               "path": "/issues/:id",
@@ -10144,13 +9304,13 @@
                 "end": {
                   "column": 41,
                   "line": 19,
-                  "offset": 451
+                  "offset": 458
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 19,
-                  "offset": 415
+                  "offset": 422
                 }
               },
               "path": "/issues/new",
@@ -10168,13 +9328,13 @@
                 "end": {
                   "column": 44,
                   "line": 20,
-                  "offset": 495
+                  "offset": 502
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 20,
-                  "offset": 456
+                  "offset": 463
                 }
               },
               "path": "/issues/:id/edit",
@@ -10198,13 +9358,13 @@
                 "end": {
                   "column": 37,
                   "line": 24,
-                  "offset": 548
+                  "offset": 555
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 24,
-                  "offset": 516
+                  "offset": 523
                 }
               },
               "raw": [
@@ -10225,13 +9385,13 @@
                 "end": {
                   "column": 51,
                   "line": 25,
-                  "offset": 599
+                  "offset": 606
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 25,
-                  "offset": 553
+                  "offset": 560
                 }
               },
               "raw": [
@@ -10252,13 +9412,13 @@
                 "end": {
                   "column": 48,
                   "line": 26,
-                  "offset": 647
+                  "offset": 654
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 26,
-                  "offset": 604
+                  "offset": 611
                 }
               },
               "raw": [
@@ -10279,13 +9439,13 @@
                 "end": {
                   "column": 43,
                   "line": 27,
-                  "offset": 690
+                  "offset": 697
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 27,
-                  "offset": 652
+                  "offset": 659
                 }
               },
               "raw": [
@@ -10306,13 +9466,13 @@
                 "end": {
                   "column": 43,
                   "line": 28,
-                  "offset": 733
+                  "offset": 740
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 28,
-                  "offset": 695
+                  "offset": 702
                 }
               },
               "raw": [
@@ -10333,13 +9493,13 @@
                 "end": {
                   "column": 44,
                   "line": 29,
-                  "offset": 777
+                  "offset": 784
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 29,
-                  "offset": 738
+                  "offset": 745
                 }
               },
               "raw": [
@@ -10360,13 +9520,13 @@
                 "end": {
                   "column": 43,
                   "line": 30,
-                  "offset": 820
+                  "offset": 827
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 30,
-                  "offset": 782
+                  "offset": 789
                 }
               },
               "raw": [
@@ -10387,13 +9547,13 @@
                 "end": {
                   "column": 38,
                   "line": 31,
-                  "offset": 858
+                  "offset": 865
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 31,
-                  "offset": 825
+                  "offset": 832
                 }
               },
               "raw": [
@@ -10414,13 +9574,13 @@
                 "end": {
                   "column": 35,
                   "line": 32,
-                  "offset": 893
+                  "offset": 900
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 32,
-                  "offset": 863
+                  "offset": 870
                 }
               },
               "raw": [
@@ -10444,13 +9604,13 @@
                 "end": {
                   "column": 42,
                   "line": 33,
-                  "offset": 935
+                  "offset": 942
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 33,
-                  "offset": 898
+                  "offset": 905
                 }
               },
               "raw": [
@@ -10474,13 +9634,13 @@
                 "end": {
                   "column": 44,
                   "line": 34,
-                  "offset": 979
+                  "offset": 986
                 },
-                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
                 "start": {
                   "column": 5,
                   "line": 34,
-                  "offset": 940
+                  "offset": 947
                 }
               },
               "raw": [
@@ -10553,13 +9713,13 @@
               "end": {
                 "column": 35,
                 "line": 17,
-                "offset": 369
+                "offset": 376
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 17,
-                "offset": 339
+                "offset": 346
               }
             },
             "path": "/issues",
@@ -10577,13 +9737,13 @@
               "end": {
                 "column": 41,
                 "line": 18,
-                "offset": 410
+                "offset": 417
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 18,
-                "offset": 374
+                "offset": 381
               }
             },
             "path": "/issues/:id",
@@ -10601,13 +9761,13 @@
               "end": {
                 "column": 41,
                 "line": 19,
-                "offset": 451
+                "offset": 458
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 19,
-                "offset": 415
+                "offset": 422
               }
             },
             "path": "/issues/new",
@@ -10625,13 +9785,13 @@
               "end": {
                 "column": 44,
                 "line": 20,
-                "offset": 495
+                "offset": 502
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 20,
-                "offset": 456
+                "offset": 463
               }
             },
             "path": "/issues/:id/edit",
@@ -10656,13 +9816,13 @@
               "end": {
                 "column": 37,
                 "line": 24,
-                "offset": 548
+                "offset": 555
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 24,
-                "offset": 516
+                "offset": 523
               }
             },
             "raw": [
@@ -10683,13 +9843,13 @@
               "end": {
                 "column": 51,
                 "line": 25,
-                "offset": 599
+                "offset": 606
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 25,
-                "offset": 553
+                "offset": 560
               }
             },
             "raw": [
@@ -10710,13 +9870,13 @@
               "end": {
                 "column": 48,
                 "line": 26,
-                "offset": 647
+                "offset": 654
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 26,
-                "offset": 604
+                "offset": 611
               }
             },
             "raw": [
@@ -10737,13 +9897,13 @@
               "end": {
                 "column": 43,
                 "line": 27,
-                "offset": 690
+                "offset": 697
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 27,
-                "offset": 652
+                "offset": 659
               }
             },
             "raw": [
@@ -10764,13 +9924,13 @@
               "end": {
                 "column": 43,
                 "line": 28,
-                "offset": 733
+                "offset": 740
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 28,
-                "offset": 695
+                "offset": 702
               }
             },
             "raw": [
@@ -10791,13 +9951,13 @@
               "end": {
                 "column": 44,
                 "line": 29,
-                "offset": 777
+                "offset": 784
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 29,
-                "offset": 738
+                "offset": 745
               }
             },
             "raw": [
@@ -10818,13 +9978,13 @@
               "end": {
                 "column": 43,
                 "line": 30,
-                "offset": 820
+                "offset": 827
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 30,
-                "offset": 782
+                "offset": 789
               }
             },
             "raw": [
@@ -10845,13 +10005,13 @@
               "end": {
                 "column": 38,
                 "line": 31,
-                "offset": 858
+                "offset": 865
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 31,
-                "offset": 825
+                "offset": 832
               }
             },
             "raw": [
@@ -10872,13 +10032,13 @@
               "end": {
                 "column": 35,
                 "line": 32,
-                "offset": 893
+                "offset": 900
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 32,
-                "offset": 863
+                "offset": 870
               }
             },
             "raw": [
@@ -10902,13 +10062,13 @@
               "end": {
                 "column": 42,
                 "line": 33,
-                "offset": 935
+                "offset": 942
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 33,
-                "offset": 898
+                "offset": 905
               }
             },
             "raw": [
@@ -10932,13 +10092,13 @@
               "end": {
                 "column": 44,
                 "line": 34,
-                "offset": 979
+                "offset": 986
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 34,
-                "offset": 940
+                "offset": 947
               }
             },
             "raw": [
@@ -10951,6 +10111,846 @@
             "targetKind": "action",
             "type": "ui_web_binding",
             "value": "footer"
+          }
+        ]
+      },
+      {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
+        "description": "Web realization for the shared Issues UI using a SvelteKit profile",
+        "from": null,
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 22,
+                "line": 33,
+                "offset": 841
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 33,
+                "offset": 824
+              }
+            },
+            "raw": [
+              "profile",
+              "sveltekit"
+            ],
+            "type": "generator_default",
+            "value": "sveltekit"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 24,
+                "line": 34,
+                "offset": 865
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 34,
+                "offset": 846
+              }
+            },
+            "raw": [
+              "language",
+              "typescript"
+            ],
+            "type": "generator_default",
+            "value": "typescript"
+          },
+          {
+            "key": "styling",
+            "loc": {
+              "end": {
+                "column": 16,
+                "line": 35,
+                "offset": 881
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 35,
+                "offset": 870
+              }
+            },
+            "raw": [
+              "styling",
+              "css"
+            ],
+            "type": "generator_default",
+            "value": "css"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "id": "proj_ui_web__sveltekit",
+        "kind": "projection",
+        "loc": {
+          "end": {
+            "column": 2,
+            "line": 39,
+            "offset": 904
+          },
+          "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          }
+        },
+        "name": "Issues Web UI (SvelteKit)",
+        "outputs": [
+          "ui_contract",
+          "web_app"
+        ],
+        "plan": {
+          "dbColumns": [],
+          "dbIndexes": [],
+          "dbKeys": [],
+          "dbLifecycle": [],
+          "dbRelations": [],
+          "dbTables": [],
+          "generatorDefaults": [
+            {
+              "key": "profile",
+              "loc": {
+                "end": {
+                  "column": 22,
+                  "line": 33,
+                  "offset": 841
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 33,
+                  "offset": 824
+                }
+              },
+              "raw": [
+                "profile",
+                "sveltekit"
+              ],
+              "type": "generator_default",
+              "value": "sveltekit"
+            },
+            {
+              "key": "language",
+              "loc": {
+                "end": {
+                  "column": 24,
+                  "line": 34,
+                  "offset": 865
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 34,
+                  "offset": 846
+                }
+              },
+              "raw": [
+                "language",
+                "typescript"
+              ],
+              "type": "generator_default",
+              "value": "typescript"
+            },
+            {
+              "key": "styling",
+              "loc": {
+                "end": {
+                  "column": 16,
+                  "line": 35,
+                  "offset": 881
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 35,
+                  "offset": 870
+                }
+              },
+              "raw": [
+                "styling",
+                "css"
+              ],
+              "type": "generator_default",
+              "value": "css"
+            }
+          ],
+          "http": [],
+          "httpAsync": [],
+          "httpAuthz": [],
+          "httpCache": [],
+          "httpCallbacks": [],
+          "httpDelete": [],
+          "httpDownload": [],
+          "httpErrors": [],
+          "httpFields": [],
+          "httpIdempotency": [],
+          "httpPreconditions": [],
+          "httpResponses": [],
+          "httpStatus": [],
+          "outputs": [
+            {
+              "id": "ui_contract",
+              "order": 0,
+              "type": "symbol"
+            },
+            {
+              "id": "web_app",
+              "order": 1,
+              "type": "symbol"
+            }
+          ],
+          "platform": "ui_web",
+          "realizes": [
+            {
+              "order": 0,
+              "target": {
+                "id": "proj_ui_shared",
+                "kind": "projection"
+              }
+            },
+            {
+              "order": 1,
+              "target": {
+                "id": "cap_list_issues",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 2,
+              "target": {
+                "id": "cap_get_issue",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 3,
+              "target": {
+                "id": "cap_create_issue",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 4,
+              "target": {
+                "id": "cap_update_issue",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 5,
+              "target": {
+                "id": "cap_close_issue",
+                "kind": "capability"
+              }
+            }
+          ],
+          "type": "projection_plan",
+          "uiActions": [],
+          "uiCollections": [],
+          "uiRoutes": [
+            {
+              "loc": {
+                "end": {
+                  "column": 35,
+                  "line": 17,
+                  "offset": 396
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 17,
+                  "offset": 366
+                }
+              },
+              "path": "/issues",
+              "raw": [
+                "screen",
+                "issue_list",
+                "path",
+                "/issues"
+              ],
+              "screenId": "issue_list",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 41,
+                  "line": 18,
+                  "offset": 437
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 18,
+                  "offset": 401
+                }
+              },
+              "path": "/issues/:id",
+              "raw": [
+                "screen",
+                "issue_detail",
+                "path",
+                "/issues/:id"
+              ],
+              "screenId": "issue_detail",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 41,
+                  "line": 19,
+                  "offset": 478
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 19,
+                  "offset": 442
+                }
+              },
+              "path": "/issues/new",
+              "raw": [
+                "screen",
+                "issue_create",
+                "path",
+                "/issues/new"
+              ],
+              "screenId": "issue_create",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 44,
+                  "line": 20,
+                  "offset": 522
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 20,
+                  "offset": 483
+                }
+              },
+              "path": "/issues/:id/edit",
+              "raw": [
+                "screen",
+                "issue_edit",
+                "path",
+                "/issues/:id/edit"
+              ],
+              "screenId": "issue_edit",
+              "type": "ui_route"
+            }
+          ],
+          "uiScreens": [],
+          "uiVisibility": [],
+          "uiWeb": [
+            {
+              "capability": null,
+              "directive": "layout",
+              "loc": {
+                "end": {
+                  "column": 51,
+                  "line": 24,
+                  "offset": 589
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 24,
+                  "offset": 543
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_list",
+                "layout",
+                "responsive_collection"
+              ],
+              "targetId": "issue_list",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "responsive_collection"
+            },
+            {
+              "capability": null,
+              "directive": "desktop_variant",
+              "loc": {
+                "end": {
+                  "column": 44,
+                  "line": 25,
+                  "offset": 633
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 25,
+                  "offset": 594
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_list",
+                "desktop_variant",
+                "table"
+              ],
+              "targetId": "issue_list",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "table"
+            },
+            {
+              "capability": null,
+              "directive": "mobile_variant",
+              "loc": {
+                "end": {
+                  "column": 43,
+                  "line": 26,
+                  "offset": 676
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 26,
+                  "offset": 638
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_list",
+                "mobile_variant",
+                "cards"
+              ],
+              "targetId": "issue_list",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "cards"
+            },
+            {
+              "capability": null,
+              "directive": "layout",
+              "loc": {
+                "end": {
+                  "column": 43,
+                  "line": 27,
+                  "offset": 719
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 27,
+                  "offset": 681
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_detail",
+                "layout",
+                "detail_page"
+              ],
+              "targetId": "issue_detail",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "detail_page"
+            },
+            {
+              "capability": null,
+              "directive": "present",
+              "loc": {
+                "end": {
+                  "column": 37,
+                  "line": 28,
+                  "offset": 756
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 28,
+                  "offset": 724
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_create",
+                "present",
+                "page"
+              ],
+              "targetId": "issue_create",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "page"
+            },
+            {
+              "capability": null,
+              "directive": "present",
+              "loc": {
+                "end": {
+                  "column": 35,
+                  "line": 29,
+                  "offset": 791
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+                "start": {
+                  "column": 5,
+                  "line": 29,
+                  "offset": 761
+                }
+              },
+              "raw": [
+                "screen",
+                "issue_edit",
+                "present",
+                "page"
+              ],
+              "targetId": "issue_edit",
+              "targetKind": "screen",
+              "type": "ui_web_binding",
+              "value": "page"
+            }
+          ]
+        },
+        "platform": "ui_web",
+        "realizes": [
+          {
+            "id": "proj_ui_shared",
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "id": "cap_list_issues",
+            "target": {
+              "id": "cap_list_issues",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_issue",
+            "target": {
+              "id": "cap_get_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_create_issue",
+            "target": {
+              "id": "cap_create_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_update_issue",
+            "target": {
+              "id": "cap_update_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_close_issue",
+            "target": {
+              "id": "cap_close_issue",
+              "kind": "capability"
+            }
+          }
+        ],
+        "status": "active",
+        "uiActions": [],
+        "uiAppShell": [],
+        "uiCollections": [],
+        "uiLookups": [],
+        "uiNavigation": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 17,
+                "offset": 396
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 17,
+                "offset": 366
+              }
+            },
+            "path": "/issues",
+            "raw": [
+              "screen",
+              "issue_list",
+              "path",
+              "/issues"
+            ],
+            "screenId": "issue_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 18,
+                "offset": 437
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 18,
+                "offset": 401
+              }
+            },
+            "path": "/issues/:id",
+            "raw": [
+              "screen",
+              "issue_detail",
+              "path",
+              "/issues/:id"
+            ],
+            "screenId": "issue_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 19,
+                "offset": 478
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 19,
+                "offset": 442
+              }
+            },
+            "path": "/issues/new",
+            "raw": [
+              "screen",
+              "issue_create",
+              "path",
+              "/issues/new"
+            ],
+            "screenId": "issue_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 20,
+                "offset": 522
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 20,
+                "offset": 483
+              }
+            },
+            "path": "/issues/:id/edit",
+            "raw": [
+              "screen",
+              "issue_edit",
+              "path",
+              "/issues/:id/edit"
+            ],
+            "screenId": "issue_edit",
+            "type": "ui_route"
+          }
+        ],
+        "uiScreenRegions": [],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": [
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 51,
+                "line": 24,
+                "offset": 589
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 24,
+                "offset": 543
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 25,
+                "offset": 633
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 25,
+                "offset": 594
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 26,
+                "offset": 676
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 26,
+                "offset": 638
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 27,
+                "offset": 719
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 27,
+                "offset": 681
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "issue_detail",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 37,
+                "line": 28,
+                "offset": 756
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 28,
+                "offset": 724
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_create",
+              "present",
+              "page"
+            ],
+            "targetId": "issue_create",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 29,
+                "offset": 791
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 29,
+                "offset": 761
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "issue_edit",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "page"
           }
         ]
       }
@@ -13479,7 +13479,8 @@
       "relatedProjections": [
         "proj_api",
         "proj_ui_shared",
-        "proj_ui_web"
+        "proj_ui_web__react",
+        "proj_ui_web__sveltekit"
       ],
       "relatedRoles": [],
       "relatedRules": [
@@ -13528,7 +13529,8 @@
       "relatedProjections": [
         "proj_api",
         "proj_ui_shared",
-        "proj_ui_web"
+        "proj_ui_web__react",
+        "proj_ui_web__sveltekit"
       ],
       "relatedRoles": [],
       "relatedRules": [
@@ -22522,846 +22524,6 @@
       "dbLifecycle": [],
       "dbRelations": [],
       "dbTables": [],
-      "description": "Web realization for the shared Issues UI using a SvelteKit profile",
-      "from": null,
-      "generatorDefaults": [
-        {
-          "key": "profile",
-          "loc": {
-            "end": {
-              "column": 22,
-              "line": 33,
-              "offset": 840
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 33,
-              "offset": 823
-            }
-          },
-          "raw": [
-            "profile",
-            "sveltekit"
-          ],
-          "type": "generator_default",
-          "value": "sveltekit"
-        },
-        {
-          "key": "language",
-          "loc": {
-            "end": {
-              "column": 24,
-              "line": 34,
-              "offset": 864
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 34,
-              "offset": 845
-            }
-          },
-          "raw": [
-            "language",
-            "typescript"
-          ],
-          "type": "generator_default",
-          "value": "typescript"
-        },
-        {
-          "key": "styling",
-          "loc": {
-            "end": {
-              "column": 16,
-              "line": 35,
-              "offset": 880
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 35,
-              "offset": 869
-            }
-          },
-          "raw": [
-            "styling",
-            "css"
-          ],
-          "type": "generator_default",
-          "value": "css"
-        }
-      ],
-      "http": [],
-      "httpAsync": [],
-      "httpAuthz": [],
-      "httpCache": [],
-      "httpCallbacks": [],
-      "httpDelete": [],
-      "httpDownload": [],
-      "httpErrors": [],
-      "httpFields": [],
-      "httpIdempotency": [],
-      "httpPreconditions": [],
-      "httpResponses": [],
-      "httpStatus": [],
-      "id": "proj_ui_web_sveltekit",
-      "kind": "projection",
-      "loc": {
-        "end": {
-          "column": 2,
-          "line": 39,
-          "offset": 903
-        },
-        "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-        "start": {
-          "column": 1,
-          "line": 1,
-          "offset": 0
-        }
-      },
-      "name": "Issues Web UI (SvelteKit)",
-      "outputs": [
-        "ui_contract",
-        "web_app"
-      ],
-      "plan": {
-        "dbColumns": [],
-        "dbIndexes": [],
-        "dbKeys": [],
-        "dbLifecycle": [],
-        "dbRelations": [],
-        "dbTables": [],
-        "generatorDefaults": [
-          {
-            "key": "profile",
-            "loc": {
-              "end": {
-                "column": 22,
-                "line": 33,
-                "offset": 840
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 33,
-                "offset": 823
-              }
-            },
-            "raw": [
-              "profile",
-              "sveltekit"
-            ],
-            "type": "generator_default",
-            "value": "sveltekit"
-          },
-          {
-            "key": "language",
-            "loc": {
-              "end": {
-                "column": 24,
-                "line": 34,
-                "offset": 864
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 34,
-                "offset": 845
-              }
-            },
-            "raw": [
-              "language",
-              "typescript"
-            ],
-            "type": "generator_default",
-            "value": "typescript"
-          },
-          {
-            "key": "styling",
-            "loc": {
-              "end": {
-                "column": 16,
-                "line": 35,
-                "offset": 880
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 35,
-                "offset": 869
-              }
-            },
-            "raw": [
-              "styling",
-              "css"
-            ],
-            "type": "generator_default",
-            "value": "css"
-          }
-        ],
-        "http": [],
-        "httpAsync": [],
-        "httpAuthz": [],
-        "httpCache": [],
-        "httpCallbacks": [],
-        "httpDelete": [],
-        "httpDownload": [],
-        "httpErrors": [],
-        "httpFields": [],
-        "httpIdempotency": [],
-        "httpPreconditions": [],
-        "httpResponses": [],
-        "httpStatus": [],
-        "outputs": [
-          {
-            "id": "ui_contract",
-            "order": 0,
-            "type": "symbol"
-          },
-          {
-            "id": "web_app",
-            "order": 1,
-            "type": "symbol"
-          }
-        ],
-        "platform": "ui_web",
-        "realizes": [
-          {
-            "order": 0,
-            "target": {
-              "id": "proj_ui_shared",
-              "kind": "projection"
-            }
-          },
-          {
-            "order": 1,
-            "target": {
-              "id": "cap_list_issues",
-              "kind": "capability"
-            }
-          },
-          {
-            "order": 2,
-            "target": {
-              "id": "cap_get_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "order": 3,
-            "target": {
-              "id": "cap_create_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "order": 4,
-            "target": {
-              "id": "cap_update_issue",
-              "kind": "capability"
-            }
-          },
-          {
-            "order": 5,
-            "target": {
-              "id": "cap_close_issue",
-              "kind": "capability"
-            }
-          }
-        ],
-        "type": "projection_plan",
-        "uiActions": [],
-        "uiCollections": [],
-        "uiRoutes": [
-          {
-            "loc": {
-              "end": {
-                "column": 35,
-                "line": 17,
-                "offset": 395
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 17,
-                "offset": 365
-              }
-            },
-            "path": "/issues",
-            "raw": [
-              "screen",
-              "issue_list",
-              "path",
-              "/issues"
-            ],
-            "screenId": "issue_list",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 41,
-                "line": 18,
-                "offset": 436
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 18,
-                "offset": 400
-              }
-            },
-            "path": "/issues/:id",
-            "raw": [
-              "screen",
-              "issue_detail",
-              "path",
-              "/issues/:id"
-            ],
-            "screenId": "issue_detail",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 41,
-                "line": 19,
-                "offset": 477
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 19,
-                "offset": 441
-              }
-            },
-            "path": "/issues/new",
-            "raw": [
-              "screen",
-              "issue_create",
-              "path",
-              "/issues/new"
-            ],
-            "screenId": "issue_create",
-            "type": "ui_route"
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 44,
-                "line": 20,
-                "offset": 521
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 20,
-                "offset": 482
-              }
-            },
-            "path": "/issues/:id/edit",
-            "raw": [
-              "screen",
-              "issue_edit",
-              "path",
-              "/issues/:id/edit"
-            ],
-            "screenId": "issue_edit",
-            "type": "ui_route"
-          }
-        ],
-        "uiScreens": [],
-        "uiVisibility": [],
-        "uiWeb": [
-          {
-            "capability": null,
-            "directive": "layout",
-            "loc": {
-              "end": {
-                "column": 51,
-                "line": 24,
-                "offset": 588
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 24,
-                "offset": 542
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "layout",
-              "responsive_collection"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "responsive_collection"
-          },
-          {
-            "capability": null,
-            "directive": "desktop_variant",
-            "loc": {
-              "end": {
-                "column": 44,
-                "line": 25,
-                "offset": 632
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 25,
-                "offset": 593
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "desktop_variant",
-              "table"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "table"
-          },
-          {
-            "capability": null,
-            "directive": "mobile_variant",
-            "loc": {
-              "end": {
-                "column": 43,
-                "line": 26,
-                "offset": 675
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 26,
-                "offset": 637
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_list",
-              "mobile_variant",
-              "cards"
-            ],
-            "targetId": "issue_list",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "cards"
-          },
-          {
-            "capability": null,
-            "directive": "layout",
-            "loc": {
-              "end": {
-                "column": 43,
-                "line": 27,
-                "offset": 718
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 27,
-                "offset": 680
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_detail",
-              "layout",
-              "detail_page"
-            ],
-            "targetId": "issue_detail",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "detail_page"
-          },
-          {
-            "capability": null,
-            "directive": "present",
-            "loc": {
-              "end": {
-                "column": 37,
-                "line": 28,
-                "offset": 755
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 28,
-                "offset": 723
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_create",
-              "present",
-              "page"
-            ],
-            "targetId": "issue_create",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "page"
-          },
-          {
-            "capability": null,
-            "directive": "present",
-            "loc": {
-              "end": {
-                "column": 35,
-                "line": 29,
-                "offset": 790
-              },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-              "start": {
-                "column": 5,
-                "line": 29,
-                "offset": 760
-              }
-            },
-            "raw": [
-              "screen",
-              "issue_edit",
-              "present",
-              "page"
-            ],
-            "targetId": "issue_edit",
-            "targetKind": "screen",
-            "type": "ui_web_binding",
-            "value": "page"
-          }
-        ]
-      },
-      "platform": "ui_web",
-      "realizes": [
-        {
-          "id": "proj_ui_shared",
-          "target": {
-            "id": "proj_ui_shared",
-            "kind": "projection"
-          }
-        },
-        {
-          "id": "cap_list_issues",
-          "target": {
-            "id": "cap_list_issues",
-            "kind": "capability"
-          }
-        },
-        {
-          "id": "cap_get_issue",
-          "target": {
-            "id": "cap_get_issue",
-            "kind": "capability"
-          }
-        },
-        {
-          "id": "cap_create_issue",
-          "target": {
-            "id": "cap_create_issue",
-            "kind": "capability"
-          }
-        },
-        {
-          "id": "cap_update_issue",
-          "target": {
-            "id": "cap_update_issue",
-            "kind": "capability"
-          }
-        },
-        {
-          "id": "cap_close_issue",
-          "target": {
-            "id": "cap_close_issue",
-            "kind": "capability"
-          }
-        }
-      ],
-      "status": "active",
-      "uiActions": [],
-      "uiAppShell": [],
-      "uiCollections": [],
-      "uiLookups": [],
-      "uiNavigation": [],
-      "uiRoutes": [
-        {
-          "loc": {
-            "end": {
-              "column": 35,
-              "line": 17,
-              "offset": 395
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 17,
-              "offset": 365
-            }
-          },
-          "path": "/issues",
-          "raw": [
-            "screen",
-            "issue_list",
-            "path",
-            "/issues"
-          ],
-          "screenId": "issue_list",
-          "type": "ui_route"
-        },
-        {
-          "loc": {
-            "end": {
-              "column": 41,
-              "line": 18,
-              "offset": 436
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 18,
-              "offset": 400
-            }
-          },
-          "path": "/issues/:id",
-          "raw": [
-            "screen",
-            "issue_detail",
-            "path",
-            "/issues/:id"
-          ],
-          "screenId": "issue_detail",
-          "type": "ui_route"
-        },
-        {
-          "loc": {
-            "end": {
-              "column": 41,
-              "line": 19,
-              "offset": 477
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 19,
-              "offset": 441
-            }
-          },
-          "path": "/issues/new",
-          "raw": [
-            "screen",
-            "issue_create",
-            "path",
-            "/issues/new"
-          ],
-          "screenId": "issue_create",
-          "type": "ui_route"
-        },
-        {
-          "loc": {
-            "end": {
-              "column": 44,
-              "line": 20,
-              "offset": 521
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 20,
-              "offset": 482
-            }
-          },
-          "path": "/issues/:id/edit",
-          "raw": [
-            "screen",
-            "issue_edit",
-            "path",
-            "/issues/:id/edit"
-          ],
-          "screenId": "issue_edit",
-          "type": "ui_route"
-        }
-      ],
-      "uiScreenRegions": [],
-      "uiScreens": [],
-      "uiVisibility": [],
-      "uiWeb": [
-        {
-          "capability": null,
-          "directive": "layout",
-          "loc": {
-            "end": {
-              "column": 51,
-              "line": 24,
-              "offset": 588
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 24,
-              "offset": 542
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_list",
-            "layout",
-            "responsive_collection"
-          ],
-          "targetId": "issue_list",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "responsive_collection"
-        },
-        {
-          "capability": null,
-          "directive": "desktop_variant",
-          "loc": {
-            "end": {
-              "column": 44,
-              "line": 25,
-              "offset": 632
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 25,
-              "offset": 593
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_list",
-            "desktop_variant",
-            "table"
-          ],
-          "targetId": "issue_list",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "table"
-        },
-        {
-          "capability": null,
-          "directive": "mobile_variant",
-          "loc": {
-            "end": {
-              "column": 43,
-              "line": 26,
-              "offset": 675
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 26,
-              "offset": 637
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_list",
-            "mobile_variant",
-            "cards"
-          ],
-          "targetId": "issue_list",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "cards"
-        },
-        {
-          "capability": null,
-          "directive": "layout",
-          "loc": {
-            "end": {
-              "column": 43,
-              "line": 27,
-              "offset": 718
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 27,
-              "offset": 680
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_detail",
-            "layout",
-            "detail_page"
-          ],
-          "targetId": "issue_detail",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "detail_page"
-        },
-        {
-          "capability": null,
-          "directive": "present",
-          "loc": {
-            "end": {
-              "column": 37,
-              "line": 28,
-              "offset": 755
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 28,
-              "offset": 723
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_create",
-            "present",
-            "page"
-          ],
-          "targetId": "issue_create",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "page"
-        },
-        {
-          "capability": null,
-          "directive": "present",
-          "loc": {
-            "end": {
-              "column": 35,
-              "line": 29,
-              "offset": 790
-            },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web-sveltekit.tg",
-            "start": {
-              "column": 5,
-              "line": 29,
-              "offset": 760
-            }
-          },
-          "raw": [
-            "screen",
-            "issue_edit",
-            "present",
-            "page"
-          ],
-          "targetId": "issue_edit",
-          "targetKind": "screen",
-          "type": "ui_web_binding",
-          "value": "page"
-        }
-      ]
-    },
-    {
-      "dbColumns": [],
-      "dbIndexes": [],
-      "dbKeys": [],
-      "dbLifecycle": [],
-      "dbRelations": [],
-      "dbTables": [],
       "description": "Web realization for the shared Issues UI using a React profile",
       "from": null,
       "generatorDefaults": [
@@ -23371,13 +22533,13 @@
             "end": {
               "column": 18,
               "line": 38,
-              "offset": 1025
+              "offset": 1032
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 38,
-              "offset": 1012
+              "offset": 1019
             }
           },
           "raw": [
@@ -23393,13 +22555,13 @@
             "end": {
               "column": 24,
               "line": 39,
-              "offset": 1049
+              "offset": 1056
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 39,
-              "offset": 1030
+              "offset": 1037
             }
           },
           "raw": [
@@ -23415,13 +22577,13 @@
             "end": {
               "column": 16,
               "line": 40,
-              "offset": 1065
+              "offset": 1072
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 40,
-              "offset": 1054
+              "offset": 1061
             }
           },
           "raw": [
@@ -23445,15 +22607,15 @@
       "httpPreconditions": [],
       "httpResponses": [],
       "httpStatus": [],
-      "id": "proj_ui_web",
+      "id": "proj_ui_web__react",
       "kind": "projection",
       "loc": {
         "end": {
           "column": 2,
           "line": 44,
-          "offset": 1088
+          "offset": 1095
         },
-        "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+        "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
         "start": {
           "column": 1,
           "line": 1,
@@ -23479,13 +22641,13 @@
               "end": {
                 "column": 18,
                 "line": 38,
-                "offset": 1025
+                "offset": 1032
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 38,
-                "offset": 1012
+                "offset": 1019
               }
             },
             "raw": [
@@ -23501,13 +22663,13 @@
               "end": {
                 "column": 24,
                 "line": 39,
-                "offset": 1049
+                "offset": 1056
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 39,
-                "offset": 1030
+                "offset": 1037
               }
             },
             "raw": [
@@ -23523,13 +22685,13 @@
               "end": {
                 "column": 16,
                 "line": 40,
-                "offset": 1065
+                "offset": 1072
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 40,
-                "offset": 1054
+                "offset": 1061
               }
             },
             "raw": [
@@ -23619,13 +22781,13 @@
               "end": {
                 "column": 35,
                 "line": 17,
-                "offset": 369
+                "offset": 376
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 17,
-                "offset": 339
+                "offset": 346
               }
             },
             "path": "/issues",
@@ -23643,13 +22805,13 @@
               "end": {
                 "column": 41,
                 "line": 18,
-                "offset": 410
+                "offset": 417
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 18,
-                "offset": 374
+                "offset": 381
               }
             },
             "path": "/issues/:id",
@@ -23667,13 +22829,13 @@
               "end": {
                 "column": 41,
                 "line": 19,
-                "offset": 451
+                "offset": 458
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 19,
-                "offset": 415
+                "offset": 422
               }
             },
             "path": "/issues/new",
@@ -23691,13 +22853,13 @@
               "end": {
                 "column": 44,
                 "line": 20,
-                "offset": 495
+                "offset": 502
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 20,
-                "offset": 456
+                "offset": 463
               }
             },
             "path": "/issues/:id/edit",
@@ -23721,13 +22883,13 @@
               "end": {
                 "column": 37,
                 "line": 24,
-                "offset": 548
+                "offset": 555
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 24,
-                "offset": 516
+                "offset": 523
               }
             },
             "raw": [
@@ -23748,13 +22910,13 @@
               "end": {
                 "column": 51,
                 "line": 25,
-                "offset": 599
+                "offset": 606
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 25,
-                "offset": 553
+                "offset": 560
               }
             },
             "raw": [
@@ -23775,13 +22937,13 @@
               "end": {
                 "column": 48,
                 "line": 26,
-                "offset": 647
+                "offset": 654
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 26,
-                "offset": 604
+                "offset": 611
               }
             },
             "raw": [
@@ -23802,13 +22964,13 @@
               "end": {
                 "column": 43,
                 "line": 27,
-                "offset": 690
+                "offset": 697
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 27,
-                "offset": 652
+                "offset": 659
               }
             },
             "raw": [
@@ -23829,13 +22991,13 @@
               "end": {
                 "column": 43,
                 "line": 28,
-                "offset": 733
+                "offset": 740
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 28,
-                "offset": 695
+                "offset": 702
               }
             },
             "raw": [
@@ -23856,13 +23018,13 @@
               "end": {
                 "column": 44,
                 "line": 29,
-                "offset": 777
+                "offset": 784
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 29,
-                "offset": 738
+                "offset": 745
               }
             },
             "raw": [
@@ -23883,13 +23045,13 @@
               "end": {
                 "column": 43,
                 "line": 30,
-                "offset": 820
+                "offset": 827
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 30,
-                "offset": 782
+                "offset": 789
               }
             },
             "raw": [
@@ -23910,13 +23072,13 @@
               "end": {
                 "column": 38,
                 "line": 31,
-                "offset": 858
+                "offset": 865
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 31,
-                "offset": 825
+                "offset": 832
               }
             },
             "raw": [
@@ -23937,13 +23099,13 @@
               "end": {
                 "column": 35,
                 "line": 32,
-                "offset": 893
+                "offset": 900
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 32,
-                "offset": 863
+                "offset": 870
               }
             },
             "raw": [
@@ -23967,13 +23129,13 @@
               "end": {
                 "column": 42,
                 "line": 33,
-                "offset": 935
+                "offset": 942
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 33,
-                "offset": 898
+                "offset": 905
               }
             },
             "raw": [
@@ -23997,13 +23159,13 @@
               "end": {
                 "column": 44,
                 "line": 34,
-                "offset": 979
+                "offset": 986
               },
-              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
               "start": {
                 "column": 5,
                 "line": 34,
-                "offset": 940
+                "offset": 947
               }
             },
             "raw": [
@@ -24076,13 +23238,13 @@
             "end": {
               "column": 35,
               "line": 17,
-              "offset": 369
+              "offset": 376
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 17,
-              "offset": 339
+              "offset": 346
             }
           },
           "path": "/issues",
@@ -24100,13 +23262,13 @@
             "end": {
               "column": 41,
               "line": 18,
-              "offset": 410
+              "offset": 417
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 18,
-              "offset": 374
+              "offset": 381
             }
           },
           "path": "/issues/:id",
@@ -24124,13 +23286,13 @@
             "end": {
               "column": 41,
               "line": 19,
-              "offset": 451
+              "offset": 458
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 19,
-              "offset": 415
+              "offset": 422
             }
           },
           "path": "/issues/new",
@@ -24148,13 +23310,13 @@
             "end": {
               "column": 44,
               "line": 20,
-              "offset": 495
+              "offset": 502
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 20,
-              "offset": 456
+              "offset": 463
             }
           },
           "path": "/issues/:id/edit",
@@ -24179,13 +23341,13 @@
             "end": {
               "column": 37,
               "line": 24,
-              "offset": 548
+              "offset": 555
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 24,
-              "offset": 516
+              "offset": 523
             }
           },
           "raw": [
@@ -24206,13 +23368,13 @@
             "end": {
               "column": 51,
               "line": 25,
-              "offset": 599
+              "offset": 606
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 25,
-              "offset": 553
+              "offset": 560
             }
           },
           "raw": [
@@ -24233,13 +23395,13 @@
             "end": {
               "column": 48,
               "line": 26,
-              "offset": 647
+              "offset": 654
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 26,
-              "offset": 604
+              "offset": 611
             }
           },
           "raw": [
@@ -24260,13 +23422,13 @@
             "end": {
               "column": 43,
               "line": 27,
-              "offset": 690
+              "offset": 697
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 27,
-              "offset": 652
+              "offset": 659
             }
           },
           "raw": [
@@ -24287,13 +23449,13 @@
             "end": {
               "column": 43,
               "line": 28,
-              "offset": 733
+              "offset": 740
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 28,
-              "offset": 695
+              "offset": 702
             }
           },
           "raw": [
@@ -24314,13 +23476,13 @@
             "end": {
               "column": 44,
               "line": 29,
-              "offset": 777
+              "offset": 784
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 29,
-              "offset": 738
+              "offset": 745
             }
           },
           "raw": [
@@ -24341,13 +23503,13 @@
             "end": {
               "column": 43,
               "line": 30,
-              "offset": 820
+              "offset": 827
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 30,
-              "offset": 782
+              "offset": 789
             }
           },
           "raw": [
@@ -24368,13 +23530,13 @@
             "end": {
               "column": 38,
               "line": 31,
-              "offset": 858
+              "offset": 865
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 31,
-              "offset": 825
+              "offset": 832
             }
           },
           "raw": [
@@ -24395,13 +23557,13 @@
             "end": {
               "column": 35,
               "line": 32,
-              "offset": 893
+              "offset": 900
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 32,
-              "offset": 863
+              "offset": 870
             }
           },
           "raw": [
@@ -24425,13 +23587,13 @@
             "end": {
               "column": 42,
               "line": 33,
-              "offset": 935
+              "offset": 942
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 33,
-              "offset": 898
+              "offset": 905
             }
           },
           "raw": [
@@ -24455,13 +23617,13 @@
             "end": {
               "column": 44,
               "line": 34,
-              "offset": 979
+              "offset": 986
             },
-            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web.tg",
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--react.tg",
             "start": {
               "column": 5,
               "line": 34,
-              "offset": 940
+              "offset": 947
             }
           },
           "raw": [
@@ -24474,6 +23636,846 @@
           "targetKind": "action",
           "type": "ui_web_binding",
           "value": "footer"
+        }
+      ]
+    },
+    {
+      "dbColumns": [],
+      "dbIndexes": [],
+      "dbKeys": [],
+      "dbLifecycle": [],
+      "dbRelations": [],
+      "dbTables": [],
+      "description": "Web realization for the shared Issues UI using a SvelteKit profile",
+      "from": null,
+      "generatorDefaults": [
+        {
+          "key": "profile",
+          "loc": {
+            "end": {
+              "column": 22,
+              "line": 33,
+              "offset": 841
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 33,
+              "offset": 824
+            }
+          },
+          "raw": [
+            "profile",
+            "sveltekit"
+          ],
+          "type": "generator_default",
+          "value": "sveltekit"
+        },
+        {
+          "key": "language",
+          "loc": {
+            "end": {
+              "column": 24,
+              "line": 34,
+              "offset": 865
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 34,
+              "offset": 846
+            }
+          },
+          "raw": [
+            "language",
+            "typescript"
+          ],
+          "type": "generator_default",
+          "value": "typescript"
+        },
+        {
+          "key": "styling",
+          "loc": {
+            "end": {
+              "column": 16,
+              "line": 35,
+              "offset": 881
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 35,
+              "offset": 870
+            }
+          },
+          "raw": [
+            "styling",
+            "css"
+          ],
+          "type": "generator_default",
+          "value": "css"
+        }
+      ],
+      "http": [],
+      "httpAsync": [],
+      "httpAuthz": [],
+      "httpCache": [],
+      "httpCallbacks": [],
+      "httpDelete": [],
+      "httpDownload": [],
+      "httpErrors": [],
+      "httpFields": [],
+      "httpIdempotency": [],
+      "httpPreconditions": [],
+      "httpResponses": [],
+      "httpStatus": [],
+      "id": "proj_ui_web__sveltekit",
+      "kind": "projection",
+      "loc": {
+        "end": {
+          "column": 2,
+          "line": 39,
+          "offset": 904
+        },
+        "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0
+        }
+      },
+      "name": "Issues Web UI (SvelteKit)",
+      "outputs": [
+        "ui_contract",
+        "web_app"
+      ],
+      "plan": {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 22,
+                "line": 33,
+                "offset": 841
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 33,
+                "offset": 824
+              }
+            },
+            "raw": [
+              "profile",
+              "sveltekit"
+            ],
+            "type": "generator_default",
+            "value": "sveltekit"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 24,
+                "line": 34,
+                "offset": 865
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 34,
+                "offset": 846
+              }
+            },
+            "raw": [
+              "language",
+              "typescript"
+            ],
+            "type": "generator_default",
+            "value": "typescript"
+          },
+          {
+            "key": "styling",
+            "loc": {
+              "end": {
+                "column": 16,
+                "line": 35,
+                "offset": 881
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 35,
+                "offset": 870
+              }
+            },
+            "raw": [
+              "styling",
+              "css"
+            ],
+            "type": "generator_default",
+            "value": "css"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "outputs": [
+          {
+            "id": "ui_contract",
+            "order": 0,
+            "type": "symbol"
+          },
+          {
+            "id": "web_app",
+            "order": 1,
+            "type": "symbol"
+          }
+        ],
+        "platform": "ui_web",
+        "realizes": [
+          {
+            "order": 0,
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "order": 1,
+            "target": {
+              "id": "cap_list_issues",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 2,
+            "target": {
+              "id": "cap_get_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 3,
+            "target": {
+              "id": "cap_create_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 4,
+            "target": {
+              "id": "cap_update_issue",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 5,
+            "target": {
+              "id": "cap_close_issue",
+              "kind": "capability"
+            }
+          }
+        ],
+        "type": "projection_plan",
+        "uiActions": [],
+        "uiCollections": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 17,
+                "offset": 396
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 17,
+                "offset": 366
+              }
+            },
+            "path": "/issues",
+            "raw": [
+              "screen",
+              "issue_list",
+              "path",
+              "/issues"
+            ],
+            "screenId": "issue_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 18,
+                "offset": 437
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 18,
+                "offset": 401
+              }
+            },
+            "path": "/issues/:id",
+            "raw": [
+              "screen",
+              "issue_detail",
+              "path",
+              "/issues/:id"
+            ],
+            "screenId": "issue_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 19,
+                "offset": 478
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 19,
+                "offset": 442
+              }
+            },
+            "path": "/issues/new",
+            "raw": [
+              "screen",
+              "issue_create",
+              "path",
+              "/issues/new"
+            ],
+            "screenId": "issue_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 20,
+                "offset": 522
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 20,
+                "offset": 483
+              }
+            },
+            "path": "/issues/:id/edit",
+            "raw": [
+              "screen",
+              "issue_edit",
+              "path",
+              "/issues/:id/edit"
+            ],
+            "screenId": "issue_edit",
+            "type": "ui_route"
+          }
+        ],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": [
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 51,
+                "line": 24,
+                "offset": 589
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 24,
+                "offset": 543
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 25,
+                "offset": 633
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 25,
+                "offset": 594
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 26,
+                "offset": 676
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 26,
+                "offset": 638
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "issue_list",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 27,
+                "offset": 719
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 27,
+                "offset": 681
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "issue_detail",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 37,
+                "line": 28,
+                "offset": 756
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 28,
+                "offset": 724
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_create",
+              "present",
+              "page"
+            ],
+            "targetId": "issue_create",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 29,
+                "offset": 791
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+              "start": {
+                "column": 5,
+                "line": 29,
+                "offset": 761
+              }
+            },
+            "raw": [
+              "screen",
+              "issue_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "issue_edit",
+            "targetKind": "screen",
+            "type": "ui_web_binding",
+            "value": "page"
+          }
+        ]
+      },
+      "platform": "ui_web",
+      "realizes": [
+        {
+          "id": "proj_ui_shared",
+          "target": {
+            "id": "proj_ui_shared",
+            "kind": "projection"
+          }
+        },
+        {
+          "id": "cap_list_issues",
+          "target": {
+            "id": "cap_list_issues",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_issue",
+          "target": {
+            "id": "cap_get_issue",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_create_issue",
+          "target": {
+            "id": "cap_create_issue",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_update_issue",
+          "target": {
+            "id": "cap_update_issue",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_close_issue",
+          "target": {
+            "id": "cap_close_issue",
+            "kind": "capability"
+          }
+        }
+      ],
+      "status": "active",
+      "uiActions": [],
+      "uiAppShell": [],
+      "uiCollections": [],
+      "uiLookups": [],
+      "uiNavigation": [],
+      "uiRoutes": [
+        {
+          "loc": {
+            "end": {
+              "column": 35,
+              "line": 17,
+              "offset": 396
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 17,
+              "offset": 366
+            }
+          },
+          "path": "/issues",
+          "raw": [
+            "screen",
+            "issue_list",
+            "path",
+            "/issues"
+          ],
+          "screenId": "issue_list",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 18,
+              "offset": 437
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 18,
+              "offset": 401
+            }
+          },
+          "path": "/issues/:id",
+          "raw": [
+            "screen",
+            "issue_detail",
+            "path",
+            "/issues/:id"
+          ],
+          "screenId": "issue_detail",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 19,
+              "offset": 478
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 19,
+              "offset": 442
+            }
+          },
+          "path": "/issues/new",
+          "raw": [
+            "screen",
+            "issue_create",
+            "path",
+            "/issues/new"
+          ],
+          "screenId": "issue_create",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 44,
+              "line": 20,
+              "offset": 522
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 20,
+              "offset": 483
+            }
+          },
+          "path": "/issues/:id/edit",
+          "raw": [
+            "screen",
+            "issue_edit",
+            "path",
+            "/issues/:id/edit"
+          ],
+          "screenId": "issue_edit",
+          "type": "ui_route"
+        }
+      ],
+      "uiScreenRegions": [],
+      "uiScreens": [],
+      "uiVisibility": [],
+      "uiWeb": [
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 51,
+              "line": 24,
+              "offset": 589
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 24,
+              "offset": 543
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_list",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "issue_list",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 44,
+              "line": 25,
+              "offset": 633
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 25,
+              "offset": 594
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_list",
+            "desktop_variant",
+            "table"
+          ],
+          "targetId": "issue_list",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 26,
+              "offset": 676
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 26,
+              "offset": 638
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_list",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "issue_list",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 27,
+              "offset": 719
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 27,
+              "offset": 681
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_detail",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "issue_detail",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 37,
+              "line": 28,
+              "offset": 756
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 28,
+              "offset": 724
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_create",
+            "present",
+            "page"
+          ],
+          "targetId": "issue_create",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 35,
+              "line": 29,
+              "offset": 791
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/issues/topogram/projections/proj-ui-web--sveltekit.tg",
+            "start": {
+              "column": 5,
+              "line": 29,
+              "offset": 761
+            }
+          },
+          "raw": [
+            "screen",
+            "issue_edit",
+            "present",
+            "page"
+          ],
+          "targetId": "issue_edit",
+          "targetKind": "screen",
+          "type": "ui_web_binding",
+          "value": "page"
         }
       ]
     },

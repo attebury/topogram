@@ -3,7 +3,7 @@
   "name": "Issues Runtime Smoke Plan",
   "projections": {
     "api": "proj_api",
-    "ui": "proj_ui_web"
+    "ui": "proj_ui_web__sveltekit"
   },
   "env": {
     "apiBase": "TOPOGRAM_API_BASE_URL",

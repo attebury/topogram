@@ -24,7 +24,8 @@ related_rules:
 related_projections:
   - proj_api
   - proj_ui_shared
-  - proj_ui_web
+  - proj_ui_web__sveltekit
+  - proj_ui_web__react
 failure_signals:
   - The user can create a task in an archived project.
   - The user can assign a task to an inactive owner.

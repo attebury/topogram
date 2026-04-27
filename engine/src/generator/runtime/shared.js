@@ -127,14 +127,35 @@ function uiWebProjectionCandidates(graph) {
   );
 }
 
+const WEB_UI_FAMILY_PREFIX = "proj_ui_web__";
+
+/** Prefer canonical ids when multiple shipped web stacks exist (deterministic, not lexicographic). */
+const DEFAULT_WEB_UI_STACK_ORDER = ["proj_ui_web__sveltekit", "proj_ui_web__react"];
+
+/**
+ * Prefer canonical shipped web projections (`proj_ui_web__{stack}`); otherwise first routed ui_web projection.
+ */
+export function pickDefaultUiWebProjection(graph) {
+  const candidates = uiWebProjectionCandidates(graph);
+  const hierarchical = candidates.filter((projection) => projection.id.startsWith(WEB_UI_FAMILY_PREFIX));
+  if (hierarchical.length > 0) {
+    for (const id of DEFAULT_WEB_UI_STACK_ORDER) {
+      const match = hierarchical.find((projection) => projection.id === id);
+      if (match) {
+        return match;
+      }
+    }
+    return hierarchical.sort((a, b) => a.id.localeCompare(b.id))[0];
+  }
+  return candidates[0];
+}
+
 export function getDefaultEnvironmentProjections(graph, options = {}) {
   const apiProjection =
     (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
     apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||
     apiProjectionCandidates(graph)[0];
-  const uiProjection =
-    uiWebProjectionCandidates(graph).find((projection) => projection.id === "proj_ui_web") ||
-    uiWebProjectionCandidates(graph)[0];
+  const uiProjection = pickDefaultUiWebProjection(graph);
   const dbProjection = getDefaultBackendDbProjection(graph, options);
 
   if (!apiProjection) {

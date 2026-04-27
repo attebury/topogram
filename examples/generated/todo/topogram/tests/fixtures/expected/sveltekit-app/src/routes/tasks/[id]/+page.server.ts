@@ -11,6 +11,7 @@ export const actions: Actions = {
     if (!updated_at) {
       return fail(400, { actionError: "updated_at is required to complete this task." });
     }
+
     try {
       await completeTask(fetch, params.id, { completed_at }, {
         headers: {
@@ -29,6 +30,7 @@ export const actions: Actions = {
     if (!updated_at) {
       return fail(400, { actionError: "updated_at is required to delete this task." });
     }
+
     try {
       await deleteTask(fetch, params.id, {
         headers: {

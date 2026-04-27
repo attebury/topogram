@@ -68,8 +68,8 @@ const needsRevisionSnapshot = JSON.parse(
 const jsonTargets = [
   [["docs-index.json"], { target: "docs-index" }],
   [["verification-plan.json"], { target: "verification-plan" }],
-  [["proj_ui_web.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web" }],
-  [["proj_ui_web_sveltekit.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web_sveltekit" }],
+  [["proj_ui_web__react.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__react" }],
+  [["proj_ui_web__sveltekit.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__sveltekit" }],
   [["proj_db_postgres.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_postgres" }],
   [["proj_db_sqlite.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_sqlite" }],
   [["proj_db_postgres.needs-revision.db-migration-plan.json"], { target: "db-migration-plan", projectionId: "proj_db_postgres", fromSnapshot: needsRevisionSnapshot, fromSnapshotPath: path.join(migrationsRoot, "proj_db_postgres.needs-revision-from.snapshot.json") }],
@@ -95,8 +95,8 @@ for (const [[fileName], options] of textTargets) {
 const bundleTargets = [
   [["hono-server"], { target: "hono-server", projectionId: "proj_api" }],
   [["express-server"], { target: "express-server", projectionId: "proj_api" }],
-  [["react-app"], { target: "sveltekit-app", projectionId: "proj_ui_web" }],
-  [["sveltekit-app"], { target: "sveltekit-app", projectionId: "proj_ui_web_sveltekit" }],
+  [["react-app"], { target: "sveltekit-app", projectionId: "proj_ui_web__react" }],
+  [["sveltekit-app"], { target: "sveltekit-app", projectionId: "proj_ui_web__sveltekit" }],
   [["runtime-check-bundle"], { target: "runtime-check-bundle" }],
   [["app-bundle"], { target: "app-bundle" }]
 ];

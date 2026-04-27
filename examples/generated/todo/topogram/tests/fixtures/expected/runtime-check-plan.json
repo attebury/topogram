@@ -16,7 +16,7 @@
   "projections": {
     "api": "proj_api",
     "db": "proj_db_postgres",
-    "ui": "proj_ui_web"
+    "ui": "proj_ui_web__sveltekit"
   },
   "report": {
     "outputPath": "state/runtime-check-report.json"

@@ -27,15 +27,15 @@ That single package drives:
 
 The current proof uses two web targets for the same `content-approval` model:
 
-- React web via `proj_ui_web`
-- SvelteKit web via `proj_ui_web_sveltekit`
+- React web via `proj_ui_web__react`
+- SvelteKit web via `proj_ui_web__sveltekit`
 
 Relevant outputs:
 
 - React UI contract:
-  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web_sveltekit.ui-web-contract.json)
+  [examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json](../examples/generated/content-approval/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json)
 - React app fixture:
   [examples/generated/content-approval/topogram/tests/fixtures/expected/react-app](../examples/generated/content-approval/topogram/tests/fixtures/expected/react-app)
 - SvelteKit app fixture:

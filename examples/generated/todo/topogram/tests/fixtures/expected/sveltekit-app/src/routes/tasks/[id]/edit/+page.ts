@@ -22,6 +22,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
     values: {
       title: task.title ?? "",
       description: task.description ?? "",
+      priority: task.priority ?? "medium",
       owner_id: task.owner_id ?? "",
       due_at: task.due_at ? String(task.due_at).slice(0, 16) : "",
       status: task.status ?? ""

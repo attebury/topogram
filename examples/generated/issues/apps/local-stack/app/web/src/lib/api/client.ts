@@ -1,4 +1,5 @@
-import apiContracts from "../topogram/api-contracts.json";
+import { env as publicEnv } from "$env/dynamic/public";
+import apiContracts from "$lib/topogram/api-contracts.json";
 
 type Fetcher = typeof fetch;
 type ApiContract = (typeof apiContracts)[keyof typeof apiContracts];
@@ -7,11 +8,11 @@ type RequestOptions = {
 };
 
 function apiBase() {
-  return import.meta.env.PUBLIC_TOPOGRAM_API_BASE_URL || import.meta.env.VITE_PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:3001";
+  return publicEnv.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:3001";
 }
 
 function authToken() {
-  return import.meta.env.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function buildPath(contract: ApiContract, input: Record<string, unknown>) {
@@ -62,6 +63,9 @@ export async function requestCapability(fetcher: Fetcher, capabilityId: keyof ty
   }
   if (response.status === 204) {
     return null;
+  }
+  if ((contract.endpoint.download || []).length > 0) {
+    return response.arrayBuffer();
   }
   return response.json();
 }

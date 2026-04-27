@@ -83,8 +83,12 @@
               <div class="task-meta">
                 <a href={'/tasks/' + task.id}><strong>{task.title}</strong></a>
                 {#if task.description}<span class="muted">{task.description}</span>{/if}
+                <span class="muted">Priority: {task.priority ?? "medium"}</span>
               </div>
-              <span class="badge">{task.status}</span>
+              <div class="button-row">
+                <span class="badge">{task.priority ?? "medium"}</span>
+                <span class="badge">{task.status}</span>
+              </div>
             </li>
           {/each}
         </ul>

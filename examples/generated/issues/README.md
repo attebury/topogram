@@ -4,8 +4,8 @@ This folder is a second example Topogram package used to validate that the engin
 
 It is also the current first explicit multi-target proof for the same domain across two web realizations:
 
-- React via `proj_ui_web`
-- SvelteKit via `proj_ui_web_sveltekit`
+- React via `proj_ui_web__react`
+- SvelteKit via `proj_ui_web__sveltekit`
 
 That proof is documented in [docs/multi-target-proof-issues.md](../../../docs/multi-target-proof-issues.md).
 

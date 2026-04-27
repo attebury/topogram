@@ -321,7 +321,7 @@ test("content approval review actions keep claim-gated auth proofs stable", () =
 
   const uiBundle = generateWorkspace(parsePath(contentApprovalTopogramPath), {
     target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__react"
   });
   assert.equal(uiBundle.ok, true);
   const articleDetail = uiBundle.artifact.screens.find((screen) => screen.id === "article_detail");
@@ -347,13 +347,13 @@ test("content approval review actions keep claim-gated auth proofs stable", () =
 test("issues generated web clients keep bearer token injection stable", () => {
   const reactBundle = generateWorkspace(parsePath(issuesTopogramPath), {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__react"
   });
   assert.equal(reactBundle.ok, true);
 
   const svelteBundle = generateWorkspace(parsePath(issuesTopogramPath), {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web_sveltekit"
+    projectionId: "proj_ui_web__sveltekit"
   });
   assert.equal(svelteBundle.ok, true);
 
@@ -388,7 +388,7 @@ test("generated backend CORS and authorization wiring fail closed", () => {
 test("generated UI contracts and pages carry explicit ownership visibility", () => {
   const issuesReactBundle = generateWorkspace(parsePath(issuesTopogramPath), {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__react"
   });
   assert.equal(issuesReactBundle.ok, true);
   assert.match(issuesReactBundle.artifact["src/lib/topogram/ui-web-contract.json"], /"ownershipField": "assignee_id"/);
@@ -399,7 +399,7 @@ test("generated UI contracts and pages carry explicit ownership visibility", () 
   const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
   const todoSvelteBundle = generateWorkspace(parsePath(todoTopogramPath), {
     target: "sveltekit-app",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_ui_web__sveltekit"
   });
   assert.equal(todoSvelteBundle.ok, true);
   assert.match(todoSvelteBundle.artifact["src/lib/topogram/ui-web-contract.json"], /"ownershipField": "owner_id"/);

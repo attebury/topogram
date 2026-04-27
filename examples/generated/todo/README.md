@@ -4,8 +4,8 @@ This folder is the reference Todo example used to exercise the Topogram engine.
 
 It is also the third explicit multi-target proof for the same domain across two web realizations at the emitted UI-contract seam:
 
-- React via `proj_ui_web_react`
-- SvelteKit via `proj_ui_web`
+- React via `proj_ui_web__react`
+- SvelteKit via `proj_ui_web__sveltekit`
 
 That proof is documented in [docs/multi-target-proof-todo.md](../../../docs/multi-target-proof-todo.md).
 

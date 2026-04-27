@@ -10,13 +10,13 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 test("issues contract auditor reports parity for emitted seams", () => {
   const reactUi = JSON.parse(
     fs.readFileSync(
-      path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web.ui-web-contract.json"),
+      path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web__react.ui-web-contract.json"),
       "utf8"
     )
   );
   const svelteUi = JSON.parse(
     fs.readFileSync(
-      path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web_sveltekit.ui-web-contract.json"),
+      path.join(repoRoot, "examples", "generated", "issues", "topogram", "tests", "fixtures", "expected", "proj_ui_web__sveltekit.ui-web-contract.json"),
       "utf8"
     )
   );

@@ -1,0 +1,49 @@
+projection proj_ui_web__react {
+  name "Content Approval Web UI"
+  description "Web realization for the shared Content Approval UI using a React profile"
+
+  platform ui_web
+  realizes [
+    proj_ui_shared,
+    cap_list_articles,
+    cap_get_article,
+    cap_create_article,
+    cap_update_article,
+    cap_request_article_revision,
+    cap_approve_article,
+    cap_reject_article
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen article_list path /articles
+    screen article_detail path /articles/:id
+    screen article_create path /articles/new
+    screen article_edit path /articles/:id/edit
+    screen editorial_settings path /settings
+  }
+
+  ui_web {
+    screen article_list shell sidebar
+    screen article_list layout responsive_collection
+    screen article_list desktop_variant table
+    screen article_list mobile_variant cards
+    screen article_list collection table
+    screen article_detail breadcrumbs visible
+    screen article_detail layout detail_page
+    screen article_create present drawer
+    screen article_edit present page
+    screen editorial_settings shell topbar
+    screen editorial_settings layout detail_page
+    action cap_request_article_revision placement toolbar
+    action cap_request_article_revision present popover
+  }
+
+  generator_defaults {
+    profile react
+    language typescript
+    styling css
+  }
+
+  status active
+}

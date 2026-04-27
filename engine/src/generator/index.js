@@ -92,7 +92,8 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "server-contract" ||
     target === "persistence-scaffold" ||
     target === "hono-server" ||
-    target === "express-server"
+    target === "express-server" ||
+    target === "swiftui-app"
   ) {
     return okResult(target, generateAppTarget(target, graph, options));
   }

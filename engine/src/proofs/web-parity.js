@@ -28,7 +28,7 @@ function normalizeScreen(screen) {
   };
 }
 
-function normalizeScreens(contract) {
+export function normalizeScreens(contract) {
   return contract.screens.map(normalizeScreen).sort((left, right) => left.id.localeCompare(right.id));
 }
 

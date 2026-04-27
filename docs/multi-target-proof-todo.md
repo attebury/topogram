@@ -27,15 +27,15 @@ That single package drives:
 
 The current proof uses two web targets for the same `todo` model:
 
-- React web via `proj_ui_web_react`
-- SvelteKit web via `proj_ui_web`
+- React web via `proj_ui_web__react`
+- SvelteKit web via `proj_ui_web__sveltekit`
 
 Relevant outputs:
 
 - React UI contract:
-  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web_react.ui-web-contract.json)
+  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web__react.ui-web-contract.json)
 - SvelteKit UI contract:
-  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web.ui-web-contract.json)
+  [examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json](../examples/generated/todo/topogram/tests/fixtures/expected/proj_ui_web__sveltekit.ui-web-contract.json)
 
 This proof is intentionally anchored at the emitted UI-contract seam. It does not yet claim a committed second Todo app bundle beside the current SvelteKit-first app surface.
 

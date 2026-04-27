@@ -1,4 +1,4 @@
-import { PUBLIC_TOPOGRAM_API_BASE_URL } from "$env/static/public";
+import { env as publicEnv } from "$env/dynamic/public";
 import apiContracts from "$lib/topogram/api-contracts.json";
 
 type Fetcher = typeof fetch;
@@ -8,7 +8,11 @@ type RequestOptions = {
 };
 
 function apiBase() {
-  return PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:3000";
+  return publicEnv.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:3000";
+}
+
+function authToken() {
+  return publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || "";
 }
 
 function buildPath(contract: ApiContract, input: Record<string, unknown>) {
@@ -28,12 +32,15 @@ function buildPath(contract: ApiContract, input: Record<string, unknown>) {
   return query ? `${path}?${query}` : path;
 }
 
-async function request(fetcher: Fetcher, capabilityId: keyof typeof apiContracts, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+export async function requestCapability(fetcher: Fetcher, capabilityId: keyof typeof apiContracts, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   const contract = apiContracts[capabilityId];
   const url = new URL(buildPath(contract, input), apiBase()).toString();
   const headers = new Headers();
   for (const [name, value] of Object.entries(options.headers || {})) {
     headers.set(name, value);
+  }
+  if ((contract.endpoint.authz || []).length > 0 && authToken() && !headers.has("Authorization")) {
+    headers.set("Authorization", "Bearer " + authToken());
   }
   let body: string | undefined;
   if ((contract.requestContract?.transport.body || []).length > 0) {
@@ -63,34 +70,50 @@ async function request(fetcher: Fetcher, capabilityId: keyof typeof apiContracts
   return response.json();
 }
 
+export async function listPrimaryResources(fetcher: Fetcher, input: Record<string, unknown> = {}) {
+  return requestCapability(fetcher, "cap_list_tasks", input);
+}
 export async function listTasks(fetcher: Fetcher, input: Record<string, unknown> = {}) {
-  return request(fetcher, "cap_list_tasks", input);
+  return listPrimaryResources(fetcher, input);
 }
 
-export async function getTask(fetcher: Fetcher, task_id: string) {
-  return request(fetcher, "cap_get_task", { task_id });
+export async function getPrimaryResource(fetcher: Fetcher, primary_id: string) {
+  return requestCapability(fetcher, "cap_get_task", { task_id: primary_id });
+}
+export async function getTask(fetcher: Fetcher, primary_id: string) {
+  return getPrimaryResource(fetcher, primary_id);
 }
 
+export async function createPrimaryResource(fetcher: Fetcher, input: Record<string, unknown>, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_create_task", input, options);
+}
 export async function createTask(fetcher: Fetcher, input: Record<string, unknown>, options: RequestOptions = {}) {
-  return request(fetcher, "cap_create_task", input, options);
+  return createPrimaryResource(fetcher, input, options);
 }
 
-export async function updateTask(fetcher: Fetcher, task_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return request(fetcher, "cap_update_task", { task_id, ...input }, options);
+export async function updatePrimaryResource(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_update_task", { task_id: primary_id, ...input }, options);
+}
+export async function updateTask(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return updatePrimaryResource(fetcher, primary_id, input, options);
 }
 
-export async function completeTask(fetcher: Fetcher, task_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return request(fetcher, "cap_complete_task", { task_id, ...input }, options);
+export async function terminalPrimaryAction(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_complete_task", { task_id: primary_id, ...input }, options);
+}
+export async function completeTask(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return terminalPrimaryAction(fetcher, primary_id, input, options);
 }
 
-export async function deleteTask(fetcher: Fetcher, task_id: string, options: RequestOptions = {}) {
-  return request(fetcher, "cap_delete_task", { task_id }, options);
+export async function deleteTask(fetcher: Fetcher, primary_id: string, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_delete_task", { task_id: primary_id }, options);
 }
 
-export async function exportTasks(fetcher: Fetcher, input: Record<string, unknown> = {}) {
-  return request(fetcher, "cap_export_tasks", input);
+export async function exportTasks(fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_export_tasks", input, options);
 }
 
 export async function getTaskExportJob(fetcher: Fetcher, job_id: string) {
-  return request(fetcher, "cap_get_task_export_job", { job_id });
+  return requestCapability(fetcher, "cap_get_task_export_job", { job_id });
 }
+

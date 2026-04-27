@@ -3,7 +3,7 @@
   "name": "Todo Generated Compile Checks",
   "projections": {
     "api": "proj_api",
-    "ui": "proj_ui_web",
+    "ui": "proj_ui_web__sveltekit",
     "db": "proj_db_postgres"
   },
   "checks": [

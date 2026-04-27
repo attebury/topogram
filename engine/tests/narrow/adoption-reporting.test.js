@@ -194,7 +194,7 @@ test("preview adoption status renders preview canonical changes and remaining ri
         }
       ],
       projection_review_groups: [{ projection_id: "proj_api", items: [] }],
-      ui_review_groups: [{ projection_id: "proj_ui_web", items: [] }],
+      ui_review_groups: [{ projection_id: "proj_ui_web__sveltekit", items: [] }],
       workflow_review_groups: []
     },
     () => "",
