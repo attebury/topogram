@@ -93,10 +93,12 @@ Use:
 
 `topogram` release and merge confidence now depends on `topogram-demo` claim freshness, not on a local imported corpus.
 
+For alpha, this is a launch requirement, not beta hardening.
+
 Use this operating rule:
 
 - after merging a `topogram` change that could affect imported claims, run or inspect the `topogram-demo` imported proof freshness workflow
-- before treating a `topogram` `main` commit as release-ready, confirm the active imported claims in `topogram-demo` are still freshness-current against that exact `topogram` commit
+- before treating a `topogram` `main` commit as alpha-facing release-ready or demo-ready, confirm the active imported claims in `topogram-demo` are still freshness-current against that exact `topogram` commit
 - if `topogram-demo` reports stale imported claims, treat that as release-ops work, not as a reason to rebuild local proof mirrors in the product repo
 
 Practical sequence:
@@ -104,4 +106,12 @@ Practical sequence:
 1. Merge the `topogram` change.
 2. Let `topogram-demo` compare its active imported claims against the new `topogram` `main`.
 3. If freshness drift appears, rerun and refresh the affected imported targets in `topogram-demo`.
-4. Only use imported-proof claims in release or evaluator material after that refresh path is green again.
+4. Only use imported-proof claims in alpha release or evaluator material after that refresh path is green again.
+
+The green bar for that refresh path is:
+
+- `node ./ops/verify-imported-targets.mjs` passes in `topogram-demo`
+- `node ./ops/claim-freshness.mjs --topogram-repo ../topogram` passes in `topogram-demo`
+- the non-PR full-set freshness run no longer has an open `Imported proof freshness drift` issue
+
+That loop has now been rehearsed end to end on the active imported set, so this is an operational alpha requirement rather than a hypothetical future contract.
