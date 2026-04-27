@@ -37,8 +37,8 @@ Relevant generated outputs:
   [examples/generated/issues/topogram/tests/fixtures/expected/hono-server](../examples/generated/issues/topogram/tests/fixtures/expected/hono-server)
 - Express server fixture:
   [examples/generated/issues/topogram/tests/fixtures/expected/express-server](../examples/generated/issues/topogram/tests/fixtures/expected/express-server)
-- Shared emitted server contract:
-  [examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+- Shared emitted API contract (OpenAPI):
+  [examples/generated/issues/topogram/tests/fixtures/expected/openapi.json](../examples/generated/issues/topogram/tests/fixtures/expected/openapi.json)
 
 ## What Must Stay The Same
 

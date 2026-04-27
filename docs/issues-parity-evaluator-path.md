@@ -23,8 +23,8 @@ Then verify the seams directly:
   [examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web.ui-web-contract.json)
   and
   [examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json](../examples/generated/issues/artifacts/ui-web/proj_ui_web_sveltekit.ui-web-contract.json)
-- API/runtime seam:
-  [examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json](../examples/generated/issues/topogram/tests/fixtures/expected/proj_api.server-contract.json)
+- API/runtime seam (OpenAPI):
+  [examples/generated/issues/topogram/tests/fixtures/expected/openapi.json](../examples/generated/issues/topogram/tests/fixtures/expected/openapi.json)
 
 ## What To Run
 
