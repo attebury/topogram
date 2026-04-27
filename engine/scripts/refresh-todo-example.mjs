@@ -87,6 +87,7 @@ function refreshExpectedFixtures() {
     [["proj_ui_shared.ui-contract-graph.json"], { target: "ui-contract-graph", projectionId: "proj_ui_shared" }],
     [["proj_ui_web__sveltekit.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__sveltekit" }],
     [["proj_ui_web__react.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_web__react" }],
+    [["proj_ui_native__ios.ui-web-contract.json"], { target: "ui-web-contract", projectionId: "proj_ui_native__ios" }],
     [["proj_db_postgres.db-contract-graph.json"], { target: "db-contract-graph", projectionId: "proj_db_postgres" }],
     [["proj_db_sqlite.db-contract-graph.json"], { target: "db-contract-graph", projectionId: "proj_db_sqlite" }],
     [["proj_db_postgres.db-schema-snapshot.json"], { target: "db-schema-snapshot", projectionId: "proj_db_postgres" }],

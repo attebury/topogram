@@ -11117,6 +11117,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
@@ -12715,6 +12716,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
@@ -14021,9 +14023,2162 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
+        "uiScreenRegions": [],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": []
+      },
+      {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
+        "description": "Native SwiftUI realization sharing routes and UI hints with the web stacks",
+        "from": null,
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 20,
+                "line": 86,
+                "offset": 2855
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 86,
+                "offset": 2840
+              }
+            },
+            "raw": [
+              "profile",
+              "swiftui"
+            ],
+            "type": "generator_default",
+            "value": "swiftui"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 19,
+                "line": 87,
+                "offset": 2874
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 87,
+                "offset": 2860
+              }
+            },
+            "raw": [
+              "language",
+              "swift"
+            ],
+            "type": "generator_default",
+            "value": "swift"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "id": "proj_ui_native__ios",
+        "kind": "projection",
+        "loc": {
+          "end": {
+            "column": 2,
+            "line": 91,
+            "offset": 2897
+          },
+          "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          }
+        },
+        "name": "Todo Native iOS UI",
+        "outputs": [
+          "ui_contract",
+          "web_app"
+        ],
+        "plan": {
+          "dbColumns": [],
+          "dbIndexes": [],
+          "dbKeys": [],
+          "dbLifecycle": [],
+          "dbRelations": [],
+          "dbTables": [],
+          "generatorDefaults": [
+            {
+              "key": "profile",
+              "loc": {
+                "end": {
+                  "column": 20,
+                  "line": 86,
+                  "offset": 2855
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 86,
+                  "offset": 2840
+                }
+              },
+              "raw": [
+                "profile",
+                "swiftui"
+              ],
+              "type": "generator_default",
+              "value": "swiftui"
+            },
+            {
+              "key": "language",
+              "loc": {
+                "end": {
+                  "column": 19,
+                  "line": 87,
+                  "offset": 2874
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 87,
+                  "offset": 2860
+                }
+              },
+              "raw": [
+                "language",
+                "swift"
+              ],
+              "type": "generator_default",
+              "value": "swift"
+            }
+          ],
+          "http": [],
+          "httpAsync": [],
+          "httpAuthz": [],
+          "httpCache": [],
+          "httpCallbacks": [],
+          "httpDelete": [],
+          "httpDownload": [],
+          "httpErrors": [],
+          "httpFields": [],
+          "httpIdempotency": [],
+          "httpPreconditions": [],
+          "httpResponses": [],
+          "httpStatus": [],
+          "outputs": [
+            {
+              "id": "ui_contract",
+              "order": 0,
+              "type": "symbol"
+            },
+            {
+              "id": "web_app",
+              "order": 1,
+              "type": "symbol"
+            }
+          ],
+          "platform": "ui_ios",
+          "realizes": [
+            {
+              "order": 0,
+              "target": {
+                "id": "cap_list_projects",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 1,
+              "target": {
+                "id": "cap_get_project",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 2,
+              "target": {
+                "id": "cap_create_project",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 3,
+              "target": {
+                "id": "cap_update_project",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 4,
+              "target": {
+                "id": "cap_list_users",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 5,
+              "target": {
+                "id": "cap_get_user",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 6,
+              "target": {
+                "id": "cap_create_user",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 7,
+              "target": {
+                "id": "cap_update_user",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 8,
+              "target": {
+                "id": "proj_ui_shared",
+                "kind": "projection"
+              }
+            },
+            {
+              "order": 9,
+              "target": {
+                "id": "cap_list_tasks",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 10,
+              "target": {
+                "id": "cap_get_task",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 11,
+              "target": {
+                "id": "cap_create_task",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 12,
+              "target": {
+                "id": "cap_update_task",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 13,
+              "target": {
+                "id": "cap_complete_task",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 14,
+              "target": {
+                "id": "cap_delete_task",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 15,
+              "target": {
+                "id": "cap_export_tasks",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 16,
+              "target": {
+                "id": "cap_get_task_export_job",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 17,
+              "target": {
+                "id": "cap_download_task_export",
+                "kind": "capability"
+              }
+            }
+          ],
+          "type": "projection_plan",
+          "uiActions": [],
+          "uiCollections": [],
+          "uiRoutes": [
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 29,
+                  "offset": 670
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 29,
+                  "offset": 636
+                }
+              },
+              "path": "/projects",
+              "raw": [
+                "screen",
+                "project_list",
+                "path",
+                "/projects"
+              ],
+              "screenId": "project_list",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 45,
+                  "line": 30,
+                  "offset": 715
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 30,
+                  "offset": 675
+                }
+              },
+              "path": "/projects/:id",
+              "raw": [
+                "screen",
+                "project_detail",
+                "path",
+                "/projects/:id"
+              ],
+              "screenId": "project_detail",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 45,
+                  "line": 31,
+                  "offset": 760
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 31,
+                  "offset": 720
+                }
+              },
+              "path": "/projects/new",
+              "raw": [
+                "screen",
+                "project_create",
+                "path",
+                "/projects/new"
+              ],
+              "screenId": "project_create",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 48,
+                  "line": 32,
+                  "offset": 808
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 32,
+                  "offset": 765
+                }
+              },
+              "path": "/projects/:id/edit",
+              "raw": [
+                "screen",
+                "project_edit",
+                "path",
+                "/projects/:id/edit"
+              ],
+              "screenId": "project_edit",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 33,
+                  "line": 33,
+                  "offset": 841
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 33,
+                  "offset": 813
+                }
+              },
+              "path": "/users",
+              "raw": [
+                "screen",
+                "user_list",
+                "path",
+                "/users"
+              ],
+              "screenId": "user_list",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 34,
+                  "offset": 880
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 34,
+                  "offset": 846
+                }
+              },
+              "path": "/users/:id",
+              "raw": [
+                "screen",
+                "user_detail",
+                "path",
+                "/users/:id"
+              ],
+              "screenId": "user_detail",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 35,
+                  "offset": 919
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 35,
+                  "offset": 885
+                }
+              },
+              "path": "/users/new",
+              "raw": [
+                "screen",
+                "user_create",
+                "path",
+                "/users/new"
+              ],
+              "screenId": "user_create",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 42,
+                  "line": 36,
+                  "offset": 961
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 36,
+                  "offset": 924
+                }
+              },
+              "path": "/users/:id/edit",
+              "raw": [
+                "screen",
+                "user_edit",
+                "path",
+                "/users/:id/edit"
+              ],
+              "screenId": "user_edit",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 33,
+                  "line": 37,
+                  "offset": 994
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 37,
+                  "offset": 966
+                }
+              },
+              "path": "/tasks",
+              "raw": [
+                "screen",
+                "task_list",
+                "path",
+                "/tasks"
+              ],
+              "screenId": "task_list",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 40,
+                  "line": 38,
+                  "offset": 1034
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 38,
+                  "offset": 999
+                }
+              },
+              "path": "/tasks/board",
+              "raw": [
+                "screen",
+                "task_board",
+                "path",
+                "/tasks/board"
+              ],
+              "screenId": "task_board",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 46,
+                  "line": 39,
+                  "offset": 1080
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 39,
+                  "offset": 1039
+                }
+              },
+              "path": "/tasks/calendar",
+              "raw": [
+                "screen",
+                "task_calendar",
+                "path",
+                "/tasks/calendar"
+              ],
+              "screenId": "task_calendar",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 40,
+                  "offset": 1119
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 40,
+                  "offset": 1085
+                }
+              },
+              "path": "/tasks/:id",
+              "raw": [
+                "screen",
+                "task_detail",
+                "path",
+                "/tasks/:id"
+              ],
+              "screenId": "task_detail",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 41,
+                  "offset": 1158
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 41,
+                  "offset": 1124
+                }
+              },
+              "path": "/tasks/new",
+              "raw": [
+                "screen",
+                "task_create",
+                "path",
+                "/tasks/new"
+              ],
+              "screenId": "task_create",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 42,
+                  "line": 42,
+                  "offset": 1200
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 42,
+                  "offset": 1163
+                }
+              },
+              "path": "/tasks/:id/edit",
+              "raw": [
+                "screen",
+                "task_edit",
+                "path",
+                "/tasks/:id/edit"
+              ],
+              "screenId": "task_edit",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 51,
+                  "line": 43,
+                  "offset": 1251
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 43,
+                  "offset": 1205
+                }
+              },
+              "path": "/task-exports/:job_id",
+              "raw": [
+                "screen",
+                "task_exports",
+                "path",
+                "/task-exports/:job_id"
+              ],
+              "screenId": "task_exports",
+              "type": "ui_route"
+            }
+          ],
+          "uiScreens": [],
+          "uiVisibility": [],
+          "uiWeb": []
+        },
+        "platform": "ui_ios",
+        "realizes": [
+          {
+            "id": "cap_list_projects",
+            "target": {
+              "id": "cap_list_projects",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_project",
+            "target": {
+              "id": "cap_get_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_create_project",
+            "target": {
+              "id": "cap_create_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_update_project",
+            "target": {
+              "id": "cap_update_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_list_users",
+            "target": {
+              "id": "cap_list_users",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_user",
+            "target": {
+              "id": "cap_get_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_create_user",
+            "target": {
+              "id": "cap_create_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_update_user",
+            "target": {
+              "id": "cap_update_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "proj_ui_shared",
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "id": "cap_list_tasks",
+            "target": {
+              "id": "cap_list_tasks",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_task",
+            "target": {
+              "id": "cap_get_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_create_task",
+            "target": {
+              "id": "cap_create_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_update_task",
+            "target": {
+              "id": "cap_update_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_complete_task",
+            "target": {
+              "id": "cap_complete_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_delete_task",
+            "target": {
+              "id": "cap_delete_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_export_tasks",
+            "target": {
+              "id": "cap_export_tasks",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_task_export_job",
+            "target": {
+              "id": "cap_get_task_export_job",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_download_task_export",
+            "target": {
+              "id": "cap_download_task_export",
+              "kind": "capability"
+            }
+          }
+        ],
+        "status": "active",
+        "uiActions": [],
+        "uiAppShell": [],
+        "uiCollections": [],
+        "uiIos": [
+          {
+            "capability": null,
+            "directive": "shell",
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 47,
+                "offset": 1306
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 47,
+                "offset": 1272
+              }
+            },
+            "raw": [
+              "screen",
+              "task_list",
+              "shell",
+              "bottom_tabs"
+            ],
+            "targetId": "task_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "bottom_tabs"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 53,
+                "line": 48,
+                "offset": 1359
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 48,
+                "offset": 1311
+              }
+            },
+            "raw": [
+              "screen",
+              "project_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "project_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 46,
+                "line": 49,
+                "offset": 1405
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 49,
+                "offset": 1364
+              }
+            },
+            "raw": [
+              "screen",
+              "project_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "project_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 50,
+                "offset": 1450
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 50,
+                "offset": 1410
+              }
+            },
+            "raw": [
+              "screen",
+              "project_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "project_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 51,
+                "offset": 1491
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 51,
+                "offset": 1455
+              }
+            },
+            "raw": [
+              "screen",
+              "project_list",
+              "collection",
+              "table"
+            ],
+            "targetId": "project_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 52,
+                "offset": 1536
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 52,
+                "offset": 1496
+              }
+            },
+            "raw": [
+              "screen",
+              "project_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "project_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 53,
+                "offset": 1575
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 53,
+                "offset": 1541
+              }
+            },
+            "raw": [
+              "screen",
+              "project_create",
+              "present",
+              "page"
+            ],
+            "targetId": "project_create",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 37,
+                "line": 54,
+                "offset": 1612
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 54,
+                "offset": 1580
+              }
+            },
+            "raw": [
+              "screen",
+              "project_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "project_edit",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 50,
+                "line": 55,
+                "offset": 1662
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 55,
+                "offset": 1617
+              }
+            },
+            "raw": [
+              "screen",
+              "user_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "user_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 56,
+                "offset": 1705
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 56,
+                "offset": 1667
+              }
+            },
+            "raw": [
+              "screen",
+              "user_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "user_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 57,
+                "offset": 1747
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 57,
+                "offset": 1710
+              }
+            },
+            "raw": [
+              "screen",
+              "user_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "user_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 38,
+                "line": 58,
+                "offset": 1785
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 58,
+                "offset": 1752
+              }
+            },
+            "raw": [
+              "screen",
+              "user_list",
+              "collection",
+              "table"
+            ],
+            "targetId": "user_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 59,
+                "offset": 1827
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 59,
+                "offset": 1790
+              }
+            },
+            "raw": [
+              "screen",
+              "user_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "user_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 36,
+                "line": 60,
+                "offset": 1863
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 60,
+                "offset": 1832
+              }
+            },
+            "raw": [
+              "screen",
+              "user_create",
+              "present",
+              "page"
+            ],
+            "targetId": "user_create",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 34,
+                "line": 61,
+                "offset": 1897
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 61,
+                "offset": 1868
+              }
+            },
+            "raw": [
+              "screen",
+              "user_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "user_edit",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 50,
+                "line": 62,
+                "offset": 1947
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 62,
+                "offset": 1902
+              }
+            },
+            "raw": [
+              "screen",
+              "task_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "task_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 63,
+                "offset": 1990
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 63,
+                "offset": 1952
+              }
+            },
+            "raw": [
+              "screen",
+              "task_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "task_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 64,
+                "offset": 2032
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 64,
+                "offset": 1995
+              }
+            },
+            "raw": [
+              "screen",
+              "task_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "task_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 38,
+                "line": 65,
+                "offset": 2070
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 65,
+                "offset": 2037
+              }
+            },
+            "raw": [
+              "screen",
+              "task_list",
+              "collection",
+              "table"
+            ],
+            "targetId": "task_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 51,
+                "line": 66,
+                "offset": 2121
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 66,
+                "offset": 2075
+              }
+            },
+            "raw": [
+              "screen",
+              "task_board",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "task_board",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 67,
+                "offset": 2165
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 67,
+                "offset": 2126
+              }
+            },
+            "raw": [
+              "screen",
+              "task_board",
+              "desktop_variant",
+              "board"
+            ],
+            "targetId": "task_board",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "board"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 68,
+                "offset": 2208
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 68,
+                "offset": 2170
+              }
+            },
+            "raw": [
+              "screen",
+              "task_board",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "task_board",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 69,
+                "offset": 2247
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 69,
+                "offset": 2213
+              }
+            },
+            "raw": [
+              "screen",
+              "task_board",
+              "collection",
+              "board"
+            ],
+            "targetId": "task_board",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "board"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 54,
+                "line": 70,
+                "offset": 2301
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 70,
+                "offset": 2252
+              }
+            },
+            "raw": [
+              "screen",
+              "task_calendar",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "task_calendar",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 50,
+                "line": 71,
+                "offset": 2351
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 71,
+                "offset": 2306
+              }
+            },
+            "raw": [
+              "screen",
+              "task_calendar",
+              "desktop_variant",
+              "calendar"
+            ],
+            "targetId": "task_calendar",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "calendar"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 72,
+                "offset": 2396
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 72,
+                "offset": 2356
+              }
+            },
+            "raw": [
+              "screen",
+              "task_calendar",
+              "mobile_variant",
+              "list"
+            ],
+            "targetId": "task_calendar",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "list"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 73,
+                "offset": 2441
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 73,
+                "offset": 2401
+              }
+            },
+            "raw": [
+              "screen",
+              "task_calendar",
+              "collection",
+              "calendar"
+            ],
+            "targetId": "task_calendar",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "calendar"
+          },
+          {
+            "capability": null,
+            "directive": "breadcrumbs",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 74,
+                "offset": 2484
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 74,
+                "offset": 2446
+              }
+            },
+            "raw": [
+              "screen",
+              "task_detail",
+              "breadcrumbs",
+              "visible"
+            ],
+            "targetId": "task_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "visible"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 75,
+                "offset": 2526
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 75,
+                "offset": 2489
+              }
+            },
+            "raw": [
+              "screen",
+              "task_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "task_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 76,
+                "offset": 2570
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 76,
+                "offset": 2531
+              }
+            },
+            "raw": [
+              "screen",
+              "task_create",
+              "present",
+              "bottom_sheet"
+            ],
+            "targetId": "task_create",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "bottom_sheet"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 34,
+                "line": 77,
+                "offset": 2604
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 77,
+                "offset": 2575
+              }
+            },
+            "raw": [
+              "screen",
+              "task_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "task_edit",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 37,
+                "line": 78,
+                "offset": 2641
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 78,
+                "offset": 2609
+              }
+            },
+            "raw": [
+              "screen",
+              "task_exports",
+              "present",
+              "page"
+            ],
+            "targetId": "task_exports",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": {
+              "id": "cap_create_task",
+              "kind": "capability"
+            },
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 79,
+                "offset": 2680
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 79,
+                "offset": 2646
+              }
+            },
+            "raw": [
+              "action",
+              "cap_create_task",
+              "present",
+              "fab"
+            ],
+            "targetId": "cap_create_task",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "fab"
+          },
+          {
+            "capability": {
+              "id": "cap_delete_task",
+              "kind": "capability"
+            },
+            "directive": "confirm",
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 80,
+                "offset": 2721
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 80,
+                "offset": 2685
+              }
+            },
+            "raw": [
+              "action",
+              "cap_delete_task",
+              "confirm",
+              "modal"
+            ],
+            "targetId": "cap_delete_task",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "modal"
+          },
+          {
+            "capability": {
+              "id": "cap_delete_task",
+              "kind": "capability"
+            },
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 81,
+                "offset": 2763
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 81,
+                "offset": 2726
+              }
+            },
+            "raw": [
+              "action",
+              "cap_delete_task",
+              "present",
+              "button"
+            ],
+            "targetId": "cap_delete_task",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "button"
+          },
+          {
+            "capability": {
+              "id": "cap_delete_task",
+              "kind": "capability"
+            },
+            "directive": "placement",
+            "loc": {
+              "end": {
+                "column": 44,
+                "line": 82,
+                "offset": 2807
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 82,
+                "offset": 2768
+              }
+            },
+            "raw": [
+              "action",
+              "cap_delete_task",
+              "placement",
+              "footer"
+            ],
+            "targetId": "cap_delete_task",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "footer"
+          }
+        ],
+        "uiLookups": [],
+        "uiNavigation": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 29,
+                "offset": 670
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 29,
+                "offset": 636
+              }
+            },
+            "path": "/projects",
+            "raw": [
+              "screen",
+              "project_list",
+              "path",
+              "/projects"
+            ],
+            "screenId": "project_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 30,
+                "offset": 715
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 30,
+                "offset": 675
+              }
+            },
+            "path": "/projects/:id",
+            "raw": [
+              "screen",
+              "project_detail",
+              "path",
+              "/projects/:id"
+            ],
+            "screenId": "project_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 31,
+                "offset": 760
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 31,
+                "offset": 720
+              }
+            },
+            "path": "/projects/new",
+            "raw": [
+              "screen",
+              "project_create",
+              "path",
+              "/projects/new"
+            ],
+            "screenId": "project_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 48,
+                "line": 32,
+                "offset": 808
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 32,
+                "offset": 765
+              }
+            },
+            "path": "/projects/:id/edit",
+            "raw": [
+              "screen",
+              "project_edit",
+              "path",
+              "/projects/:id/edit"
+            ],
+            "screenId": "project_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 33,
+                "offset": 841
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 33,
+                "offset": 813
+              }
+            },
+            "path": "/users",
+            "raw": [
+              "screen",
+              "user_list",
+              "path",
+              "/users"
+            ],
+            "screenId": "user_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 34,
+                "offset": 880
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 34,
+                "offset": 846
+              }
+            },
+            "path": "/users/:id",
+            "raw": [
+              "screen",
+              "user_detail",
+              "path",
+              "/users/:id"
+            ],
+            "screenId": "user_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 35,
+                "offset": 919
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 35,
+                "offset": 885
+              }
+            },
+            "path": "/users/new",
+            "raw": [
+              "screen",
+              "user_create",
+              "path",
+              "/users/new"
+            ],
+            "screenId": "user_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 36,
+                "offset": 961
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 36,
+                "offset": 924
+              }
+            },
+            "path": "/users/:id/edit",
+            "raw": [
+              "screen",
+              "user_edit",
+              "path",
+              "/users/:id/edit"
+            ],
+            "screenId": "user_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 37,
+                "offset": 994
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 37,
+                "offset": 966
+              }
+            },
+            "path": "/tasks",
+            "raw": [
+              "screen",
+              "task_list",
+              "path",
+              "/tasks"
+            ],
+            "screenId": "task_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 40,
+                "line": 38,
+                "offset": 1034
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 38,
+                "offset": 999
+              }
+            },
+            "path": "/tasks/board",
+            "raw": [
+              "screen",
+              "task_board",
+              "path",
+              "/tasks/board"
+            ],
+            "screenId": "task_board",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 46,
+                "line": 39,
+                "offset": 1080
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 39,
+                "offset": 1039
+              }
+            },
+            "path": "/tasks/calendar",
+            "raw": [
+              "screen",
+              "task_calendar",
+              "path",
+              "/tasks/calendar"
+            ],
+            "screenId": "task_calendar",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 40,
+                "offset": 1119
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 40,
+                "offset": 1085
+              }
+            },
+            "path": "/tasks/:id",
+            "raw": [
+              "screen",
+              "task_detail",
+              "path",
+              "/tasks/:id"
+            ],
+            "screenId": "task_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 41,
+                "offset": 1158
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 41,
+                "offset": 1124
+              }
+            },
+            "path": "/tasks/new",
+            "raw": [
+              "screen",
+              "task_create",
+              "path",
+              "/tasks/new"
+            ],
+            "screenId": "task_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 42,
+                "offset": 1200
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 42,
+                "offset": 1163
+              }
+            },
+            "path": "/tasks/:id/edit",
+            "raw": [
+              "screen",
+              "task_edit",
+              "path",
+              "/tasks/:id/edit"
+            ],
+            "screenId": "task_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 51,
+                "line": 43,
+                "offset": 1251
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 43,
+                "offset": 1205
+              }
+            },
+            "path": "/task-exports/:job_id",
+            "raw": [
+              "screen",
+              "task_exports",
+              "path",
+              "/task-exports/:job_id"
+            ],
+            "screenId": "task_exports",
+            "type": "ui_route"
+          }
+        ],
         "uiScreenRegions": [],
         "uiScreens": [],
         "uiVisibility": [],
@@ -16788,6 +18943,7 @@
             "value": "table"
           }
         ],
+        "uiIos": [],
         "uiLookups": [
           {
             "emptyLabel": "Unassigned",
@@ -20830,6 +22986,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [
@@ -24010,6 +26167,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [
@@ -44156,6 +46314,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
@@ -45754,6 +47913,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
@@ -47060,9 +49220,2162 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
+      "uiScreenRegions": [],
+      "uiScreens": [],
+      "uiVisibility": [],
+      "uiWeb": []
+    },
+    {
+      "dbColumns": [],
+      "dbIndexes": [],
+      "dbKeys": [],
+      "dbLifecycle": [],
+      "dbRelations": [],
+      "dbTables": [],
+      "description": "Native SwiftUI realization sharing routes and UI hints with the web stacks",
+      "from": null,
+      "generatorDefaults": [
+        {
+          "key": "profile",
+          "loc": {
+            "end": {
+              "column": 20,
+              "line": 86,
+              "offset": 2855
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 86,
+              "offset": 2840
+            }
+          },
+          "raw": [
+            "profile",
+            "swiftui"
+          ],
+          "type": "generator_default",
+          "value": "swiftui"
+        },
+        {
+          "key": "language",
+          "loc": {
+            "end": {
+              "column": 19,
+              "line": 87,
+              "offset": 2874
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 87,
+              "offset": 2860
+            }
+          },
+          "raw": [
+            "language",
+            "swift"
+          ],
+          "type": "generator_default",
+          "value": "swift"
+        }
+      ],
+      "http": [],
+      "httpAsync": [],
+      "httpAuthz": [],
+      "httpCache": [],
+      "httpCallbacks": [],
+      "httpDelete": [],
+      "httpDownload": [],
+      "httpErrors": [],
+      "httpFields": [],
+      "httpIdempotency": [],
+      "httpPreconditions": [],
+      "httpResponses": [],
+      "httpStatus": [],
+      "id": "proj_ui_native__ios",
+      "kind": "projection",
+      "loc": {
+        "end": {
+          "column": 2,
+          "line": 91,
+          "offset": 2897
+        },
+        "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0
+        }
+      },
+      "name": "Todo Native iOS UI",
+      "outputs": [
+        "ui_contract",
+        "web_app"
+      ],
+      "plan": {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 20,
+                "line": 86,
+                "offset": 2855
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 86,
+                "offset": 2840
+              }
+            },
+            "raw": [
+              "profile",
+              "swiftui"
+            ],
+            "type": "generator_default",
+            "value": "swiftui"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 19,
+                "line": 87,
+                "offset": 2874
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 87,
+                "offset": 2860
+              }
+            },
+            "raw": [
+              "language",
+              "swift"
+            ],
+            "type": "generator_default",
+            "value": "swift"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "outputs": [
+          {
+            "id": "ui_contract",
+            "order": 0,
+            "type": "symbol"
+          },
+          {
+            "id": "web_app",
+            "order": 1,
+            "type": "symbol"
+          }
+        ],
+        "platform": "ui_ios",
+        "realizes": [
+          {
+            "order": 0,
+            "target": {
+              "id": "cap_list_projects",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 1,
+            "target": {
+              "id": "cap_get_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 2,
+            "target": {
+              "id": "cap_create_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 3,
+            "target": {
+              "id": "cap_update_project",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 4,
+            "target": {
+              "id": "cap_list_users",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 5,
+            "target": {
+              "id": "cap_get_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 6,
+            "target": {
+              "id": "cap_create_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 7,
+            "target": {
+              "id": "cap_update_user",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 8,
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "order": 9,
+            "target": {
+              "id": "cap_list_tasks",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 10,
+            "target": {
+              "id": "cap_get_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 11,
+            "target": {
+              "id": "cap_create_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 12,
+            "target": {
+              "id": "cap_update_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 13,
+            "target": {
+              "id": "cap_complete_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 14,
+            "target": {
+              "id": "cap_delete_task",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 15,
+            "target": {
+              "id": "cap_export_tasks",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 16,
+            "target": {
+              "id": "cap_get_task_export_job",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 17,
+            "target": {
+              "id": "cap_download_task_export",
+              "kind": "capability"
+            }
+          }
+        ],
+        "type": "projection_plan",
+        "uiActions": [],
+        "uiCollections": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 29,
+                "offset": 670
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 29,
+                "offset": 636
+              }
+            },
+            "path": "/projects",
+            "raw": [
+              "screen",
+              "project_list",
+              "path",
+              "/projects"
+            ],
+            "screenId": "project_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 30,
+                "offset": 715
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 30,
+                "offset": 675
+              }
+            },
+            "path": "/projects/:id",
+            "raw": [
+              "screen",
+              "project_detail",
+              "path",
+              "/projects/:id"
+            ],
+            "screenId": "project_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 31,
+                "offset": 760
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 31,
+                "offset": 720
+              }
+            },
+            "path": "/projects/new",
+            "raw": [
+              "screen",
+              "project_create",
+              "path",
+              "/projects/new"
+            ],
+            "screenId": "project_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 48,
+                "line": 32,
+                "offset": 808
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 32,
+                "offset": 765
+              }
+            },
+            "path": "/projects/:id/edit",
+            "raw": [
+              "screen",
+              "project_edit",
+              "path",
+              "/projects/:id/edit"
+            ],
+            "screenId": "project_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 33,
+                "offset": 841
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 33,
+                "offset": 813
+              }
+            },
+            "path": "/users",
+            "raw": [
+              "screen",
+              "user_list",
+              "path",
+              "/users"
+            ],
+            "screenId": "user_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 34,
+                "offset": 880
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 34,
+                "offset": 846
+              }
+            },
+            "path": "/users/:id",
+            "raw": [
+              "screen",
+              "user_detail",
+              "path",
+              "/users/:id"
+            ],
+            "screenId": "user_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 35,
+                "offset": 919
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 35,
+                "offset": 885
+              }
+            },
+            "path": "/users/new",
+            "raw": [
+              "screen",
+              "user_create",
+              "path",
+              "/users/new"
+            ],
+            "screenId": "user_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 36,
+                "offset": 961
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 36,
+                "offset": 924
+              }
+            },
+            "path": "/users/:id/edit",
+            "raw": [
+              "screen",
+              "user_edit",
+              "path",
+              "/users/:id/edit"
+            ],
+            "screenId": "user_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 37,
+                "offset": 994
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 37,
+                "offset": 966
+              }
+            },
+            "path": "/tasks",
+            "raw": [
+              "screen",
+              "task_list",
+              "path",
+              "/tasks"
+            ],
+            "screenId": "task_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 40,
+                "line": 38,
+                "offset": 1034
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 38,
+                "offset": 999
+              }
+            },
+            "path": "/tasks/board",
+            "raw": [
+              "screen",
+              "task_board",
+              "path",
+              "/tasks/board"
+            ],
+            "screenId": "task_board",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 46,
+                "line": 39,
+                "offset": 1080
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 39,
+                "offset": 1039
+              }
+            },
+            "path": "/tasks/calendar",
+            "raw": [
+              "screen",
+              "task_calendar",
+              "path",
+              "/tasks/calendar"
+            ],
+            "screenId": "task_calendar",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 40,
+                "offset": 1119
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 40,
+                "offset": 1085
+              }
+            },
+            "path": "/tasks/:id",
+            "raw": [
+              "screen",
+              "task_detail",
+              "path",
+              "/tasks/:id"
+            ],
+            "screenId": "task_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 41,
+                "offset": 1158
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 41,
+                "offset": 1124
+              }
+            },
+            "path": "/tasks/new",
+            "raw": [
+              "screen",
+              "task_create",
+              "path",
+              "/tasks/new"
+            ],
+            "screenId": "task_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 42,
+                "line": 42,
+                "offset": 1200
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 42,
+                "offset": 1163
+              }
+            },
+            "path": "/tasks/:id/edit",
+            "raw": [
+              "screen",
+              "task_edit",
+              "path",
+              "/tasks/:id/edit"
+            ],
+            "screenId": "task_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 51,
+                "line": 43,
+                "offset": 1251
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 43,
+                "offset": 1205
+              }
+            },
+            "path": "/task-exports/:job_id",
+            "raw": [
+              "screen",
+              "task_exports",
+              "path",
+              "/task-exports/:job_id"
+            ],
+            "screenId": "task_exports",
+            "type": "ui_route"
+          }
+        ],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": []
+      },
+      "platform": "ui_ios",
+      "realizes": [
+        {
+          "id": "cap_list_projects",
+          "target": {
+            "id": "cap_list_projects",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_project",
+          "target": {
+            "id": "cap_get_project",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_create_project",
+          "target": {
+            "id": "cap_create_project",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_update_project",
+          "target": {
+            "id": "cap_update_project",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_list_users",
+          "target": {
+            "id": "cap_list_users",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_user",
+          "target": {
+            "id": "cap_get_user",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_create_user",
+          "target": {
+            "id": "cap_create_user",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_update_user",
+          "target": {
+            "id": "cap_update_user",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "proj_ui_shared",
+          "target": {
+            "id": "proj_ui_shared",
+            "kind": "projection"
+          }
+        },
+        {
+          "id": "cap_list_tasks",
+          "target": {
+            "id": "cap_list_tasks",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_task",
+          "target": {
+            "id": "cap_get_task",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_create_task",
+          "target": {
+            "id": "cap_create_task",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_update_task",
+          "target": {
+            "id": "cap_update_task",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_complete_task",
+          "target": {
+            "id": "cap_complete_task",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_delete_task",
+          "target": {
+            "id": "cap_delete_task",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_export_tasks",
+          "target": {
+            "id": "cap_export_tasks",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_task_export_job",
+          "target": {
+            "id": "cap_get_task_export_job",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_download_task_export",
+          "target": {
+            "id": "cap_download_task_export",
+            "kind": "capability"
+          }
+        }
+      ],
+      "status": "active",
+      "uiActions": [],
+      "uiAppShell": [],
+      "uiCollections": [],
+      "uiIos": [
+        {
+          "capability": null,
+          "directive": "shell",
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 47,
+              "offset": 1306
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 47,
+              "offset": 1272
+            }
+          },
+          "raw": [
+            "screen",
+            "task_list",
+            "shell",
+            "bottom_tabs"
+          ],
+          "targetId": "task_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "bottom_tabs"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 53,
+              "line": 48,
+              "offset": 1359
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 48,
+              "offset": 1311
+            }
+          },
+          "raw": [
+            "screen",
+            "project_list",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "project_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 46,
+              "line": 49,
+              "offset": 1405
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 49,
+              "offset": 1364
+            }
+          },
+          "raw": [
+            "screen",
+            "project_list",
+            "desktop_variant",
+            "table"
+          ],
+          "targetId": "project_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 50,
+              "offset": 1450
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 50,
+              "offset": 1410
+            }
+          },
+          "raw": [
+            "screen",
+            "project_list",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "project_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 51,
+              "offset": 1491
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 51,
+              "offset": 1455
+            }
+          },
+          "raw": [
+            "screen",
+            "project_list",
+            "collection",
+            "table"
+          ],
+          "targetId": "project_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 52,
+              "offset": 1536
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 52,
+              "offset": 1496
+            }
+          },
+          "raw": [
+            "screen",
+            "project_detail",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "project_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 53,
+              "offset": 1575
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 53,
+              "offset": 1541
+            }
+          },
+          "raw": [
+            "screen",
+            "project_create",
+            "present",
+            "page"
+          ],
+          "targetId": "project_create",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 37,
+              "line": 54,
+              "offset": 1612
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 54,
+              "offset": 1580
+            }
+          },
+          "raw": [
+            "screen",
+            "project_edit",
+            "present",
+            "page"
+          ],
+          "targetId": "project_edit",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 50,
+              "line": 55,
+              "offset": 1662
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 55,
+              "offset": 1617
+            }
+          },
+          "raw": [
+            "screen",
+            "user_list",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "user_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 56,
+              "offset": 1705
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 56,
+              "offset": 1667
+            }
+          },
+          "raw": [
+            "screen",
+            "user_list",
+            "desktop_variant",
+            "table"
+          ],
+          "targetId": "user_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 57,
+              "offset": 1747
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 57,
+              "offset": 1710
+            }
+          },
+          "raw": [
+            "screen",
+            "user_list",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "user_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 38,
+              "line": 58,
+              "offset": 1785
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 58,
+              "offset": 1752
+            }
+          },
+          "raw": [
+            "screen",
+            "user_list",
+            "collection",
+            "table"
+          ],
+          "targetId": "user_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 59,
+              "offset": 1827
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 59,
+              "offset": 1790
+            }
+          },
+          "raw": [
+            "screen",
+            "user_detail",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "user_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 36,
+              "line": 60,
+              "offset": 1863
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 60,
+              "offset": 1832
+            }
+          },
+          "raw": [
+            "screen",
+            "user_create",
+            "present",
+            "page"
+          ],
+          "targetId": "user_create",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 34,
+              "line": 61,
+              "offset": 1897
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 61,
+              "offset": 1868
+            }
+          },
+          "raw": [
+            "screen",
+            "user_edit",
+            "present",
+            "page"
+          ],
+          "targetId": "user_edit",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 50,
+              "line": 62,
+              "offset": 1947
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 62,
+              "offset": 1902
+            }
+          },
+          "raw": [
+            "screen",
+            "task_list",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "task_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 63,
+              "offset": 1990
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 63,
+              "offset": 1952
+            }
+          },
+          "raw": [
+            "screen",
+            "task_list",
+            "desktop_variant",
+            "table"
+          ],
+          "targetId": "task_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 64,
+              "offset": 2032
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 64,
+              "offset": 1995
+            }
+          },
+          "raw": [
+            "screen",
+            "task_list",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "task_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 38,
+              "line": 65,
+              "offset": 2070
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 65,
+              "offset": 2037
+            }
+          },
+          "raw": [
+            "screen",
+            "task_list",
+            "collection",
+            "table"
+          ],
+          "targetId": "task_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 51,
+              "line": 66,
+              "offset": 2121
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 66,
+              "offset": 2075
+            }
+          },
+          "raw": [
+            "screen",
+            "task_board",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "task_board",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 44,
+              "line": 67,
+              "offset": 2165
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 67,
+              "offset": 2126
+            }
+          },
+          "raw": [
+            "screen",
+            "task_board",
+            "desktop_variant",
+            "board"
+          ],
+          "targetId": "task_board",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "board"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 68,
+              "offset": 2208
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 68,
+              "offset": 2170
+            }
+          },
+          "raw": [
+            "screen",
+            "task_board",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "task_board",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 69,
+              "offset": 2247
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 69,
+              "offset": 2213
+            }
+          },
+          "raw": [
+            "screen",
+            "task_board",
+            "collection",
+            "board"
+          ],
+          "targetId": "task_board",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "board"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 54,
+              "line": 70,
+              "offset": 2301
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 70,
+              "offset": 2252
+            }
+          },
+          "raw": [
+            "screen",
+            "task_calendar",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "task_calendar",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 50,
+              "line": 71,
+              "offset": 2351
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 71,
+              "offset": 2306
+            }
+          },
+          "raw": [
+            "screen",
+            "task_calendar",
+            "desktop_variant",
+            "calendar"
+          ],
+          "targetId": "task_calendar",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "calendar"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 72,
+              "offset": 2396
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 72,
+              "offset": 2356
+            }
+          },
+          "raw": [
+            "screen",
+            "task_calendar",
+            "mobile_variant",
+            "list"
+          ],
+          "targetId": "task_calendar",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "list"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 73,
+              "offset": 2441
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 73,
+              "offset": 2401
+            }
+          },
+          "raw": [
+            "screen",
+            "task_calendar",
+            "collection",
+            "calendar"
+          ],
+          "targetId": "task_calendar",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "calendar"
+        },
+        {
+          "capability": null,
+          "directive": "breadcrumbs",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 74,
+              "offset": 2484
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 74,
+              "offset": 2446
+            }
+          },
+          "raw": [
+            "screen",
+            "task_detail",
+            "breadcrumbs",
+            "visible"
+          ],
+          "targetId": "task_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "visible"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 75,
+              "offset": 2526
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 75,
+              "offset": 2489
+            }
+          },
+          "raw": [
+            "screen",
+            "task_detail",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "task_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 44,
+              "line": 76,
+              "offset": 2570
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 76,
+              "offset": 2531
+            }
+          },
+          "raw": [
+            "screen",
+            "task_create",
+            "present",
+            "bottom_sheet"
+          ],
+          "targetId": "task_create",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "bottom_sheet"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 34,
+              "line": 77,
+              "offset": 2604
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 77,
+              "offset": 2575
+            }
+          },
+          "raw": [
+            "screen",
+            "task_edit",
+            "present",
+            "page"
+          ],
+          "targetId": "task_edit",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 37,
+              "line": 78,
+              "offset": 2641
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 78,
+              "offset": 2609
+            }
+          },
+          "raw": [
+            "screen",
+            "task_exports",
+            "present",
+            "page"
+          ],
+          "targetId": "task_exports",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": {
+            "id": "cap_create_task",
+            "kind": "capability"
+          },
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 79,
+              "offset": 2680
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 79,
+              "offset": 2646
+            }
+          },
+          "raw": [
+            "action",
+            "cap_create_task",
+            "present",
+            "fab"
+          ],
+          "targetId": "cap_create_task",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "fab"
+        },
+        {
+          "capability": {
+            "id": "cap_delete_task",
+            "kind": "capability"
+          },
+          "directive": "confirm",
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 80,
+              "offset": 2721
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 80,
+              "offset": 2685
+            }
+          },
+          "raw": [
+            "action",
+            "cap_delete_task",
+            "confirm",
+            "modal"
+          ],
+          "targetId": "cap_delete_task",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "modal"
+        },
+        {
+          "capability": {
+            "id": "cap_delete_task",
+            "kind": "capability"
+          },
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 81,
+              "offset": 2763
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 81,
+              "offset": 2726
+            }
+          },
+          "raw": [
+            "action",
+            "cap_delete_task",
+            "present",
+            "button"
+          ],
+          "targetId": "cap_delete_task",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "button"
+        },
+        {
+          "capability": {
+            "id": "cap_delete_task",
+            "kind": "capability"
+          },
+          "directive": "placement",
+          "loc": {
+            "end": {
+              "column": 44,
+              "line": 82,
+              "offset": 2807
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 82,
+              "offset": 2768
+            }
+          },
+          "raw": [
+            "action",
+            "cap_delete_task",
+            "placement",
+            "footer"
+          ],
+          "targetId": "cap_delete_task",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "footer"
+        }
+      ],
+      "uiLookups": [],
+      "uiNavigation": [],
+      "uiRoutes": [
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 29,
+              "offset": 670
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 29,
+              "offset": 636
+            }
+          },
+          "path": "/projects",
+          "raw": [
+            "screen",
+            "project_list",
+            "path",
+            "/projects"
+          ],
+          "screenId": "project_list",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 30,
+              "offset": 715
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 30,
+              "offset": 675
+            }
+          },
+          "path": "/projects/:id",
+          "raw": [
+            "screen",
+            "project_detail",
+            "path",
+            "/projects/:id"
+          ],
+          "screenId": "project_detail",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 31,
+              "offset": 760
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 31,
+              "offset": 720
+            }
+          },
+          "path": "/projects/new",
+          "raw": [
+            "screen",
+            "project_create",
+            "path",
+            "/projects/new"
+          ],
+          "screenId": "project_create",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 48,
+              "line": 32,
+              "offset": 808
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 32,
+              "offset": 765
+            }
+          },
+          "path": "/projects/:id/edit",
+          "raw": [
+            "screen",
+            "project_edit",
+            "path",
+            "/projects/:id/edit"
+          ],
+          "screenId": "project_edit",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 33,
+              "line": 33,
+              "offset": 841
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 33,
+              "offset": 813
+            }
+          },
+          "path": "/users",
+          "raw": [
+            "screen",
+            "user_list",
+            "path",
+            "/users"
+          ],
+          "screenId": "user_list",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 34,
+              "offset": 880
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 34,
+              "offset": 846
+            }
+          },
+          "path": "/users/:id",
+          "raw": [
+            "screen",
+            "user_detail",
+            "path",
+            "/users/:id"
+          ],
+          "screenId": "user_detail",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 35,
+              "offset": 919
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 35,
+              "offset": 885
+            }
+          },
+          "path": "/users/new",
+          "raw": [
+            "screen",
+            "user_create",
+            "path",
+            "/users/new"
+          ],
+          "screenId": "user_create",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 36,
+              "offset": 961
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 36,
+              "offset": 924
+            }
+          },
+          "path": "/users/:id/edit",
+          "raw": [
+            "screen",
+            "user_edit",
+            "path",
+            "/users/:id/edit"
+          ],
+          "screenId": "user_edit",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 33,
+              "line": 37,
+              "offset": 994
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 37,
+              "offset": 966
+            }
+          },
+          "path": "/tasks",
+          "raw": [
+            "screen",
+            "task_list",
+            "path",
+            "/tasks"
+          ],
+          "screenId": "task_list",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 40,
+              "line": 38,
+              "offset": 1034
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 38,
+              "offset": 999
+            }
+          },
+          "path": "/tasks/board",
+          "raw": [
+            "screen",
+            "task_board",
+            "path",
+            "/tasks/board"
+          ],
+          "screenId": "task_board",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 46,
+              "line": 39,
+              "offset": 1080
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 39,
+              "offset": 1039
+            }
+          },
+          "path": "/tasks/calendar",
+          "raw": [
+            "screen",
+            "task_calendar",
+            "path",
+            "/tasks/calendar"
+          ],
+          "screenId": "task_calendar",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 40,
+              "offset": 1119
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 40,
+              "offset": 1085
+            }
+          },
+          "path": "/tasks/:id",
+          "raw": [
+            "screen",
+            "task_detail",
+            "path",
+            "/tasks/:id"
+          ],
+          "screenId": "task_detail",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 41,
+              "offset": 1158
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 41,
+              "offset": 1124
+            }
+          },
+          "path": "/tasks/new",
+          "raw": [
+            "screen",
+            "task_create",
+            "path",
+            "/tasks/new"
+          ],
+          "screenId": "task_create",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 42,
+              "line": 42,
+              "offset": 1200
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 42,
+              "offset": 1163
+            }
+          },
+          "path": "/tasks/:id/edit",
+          "raw": [
+            "screen",
+            "task_edit",
+            "path",
+            "/tasks/:id/edit"
+          ],
+          "screenId": "task_edit",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 51,
+              "line": 43,
+              "offset": 1251
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/todo/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 43,
+              "offset": 1205
+            }
+          },
+          "path": "/task-exports/:job_id",
+          "raw": [
+            "screen",
+            "task_exports",
+            "path",
+            "/task-exports/:job_id"
+          ],
+          "screenId": "task_exports",
+          "type": "ui_route"
+        }
+      ],
       "uiScreenRegions": [],
       "uiScreens": [],
       "uiVisibility": [],
@@ -49827,6 +54140,7 @@
           "value": "table"
         }
       ],
+      "uiIos": [],
       "uiLookups": [
         {
           "emptyLabel": "Unassigned",
@@ -53869,6 +58183,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [
@@ -57049,6 +61364,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [

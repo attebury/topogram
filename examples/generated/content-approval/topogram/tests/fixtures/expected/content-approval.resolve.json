@@ -5891,6 +5891,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
@@ -7457,6 +7458,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
@@ -8557,6 +8559,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [],
@@ -9921,6 +9924,7 @@
             "value": "table"
           }
         ],
+        "uiIos": [],
         "uiLookups": [
           {
             "emptyLabel": "All publications",
@@ -11798,6 +11802,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [
@@ -13104,6 +13109,7 @@
         "uiActions": [],
         "uiAppShell": [],
         "uiCollections": [],
+        "uiIos": [],
         "uiLookups": [],
         "uiNavigation": [],
         "uiRoutes": [
@@ -23453,6 +23459,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
@@ -25019,6 +25026,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
@@ -26119,6 +26127,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
@@ -27483,6 +27492,7 @@
           "value": "table"
         }
       ],
+      "uiIos": [],
       "uiLookups": [
         {
           "emptyLabel": "All publications",
@@ -29360,6 +29370,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [
@@ -30666,6 +30677,7 @@
       "uiActions": [],
       "uiAppShell": [],
       "uiCollections": [],
+      "uiIos": [],
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [

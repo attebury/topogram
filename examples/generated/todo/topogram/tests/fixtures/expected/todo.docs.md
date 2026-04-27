@@ -657,6 +657,14 @@ Platform: `db_sqlite`
 Realizes: `entity_task`, `entity_project`, `entity_user`
 Outputs: `db_contract`, `sql_schema`
 
+### `proj_ui_native__ios` - Todo Native iOS UI
+
+Native SwiftUI realization sharing routes and UI hints with the web stacks
+
+Platform: `ui_ios`
+Realizes: `cap_list_projects`, `cap_get_project`, `cap_create_project`, `cap_update_project`, `cap_list_users`, `cap_get_user`, `cap_create_user`, `cap_update_user`, `proj_ui_shared`, `cap_list_tasks`, `cap_get_task`, `cap_create_task`, `cap_update_task`, `cap_complete_task`, `cap_delete_task`, `cap_export_tasks`, `cap_get_task_export_job`, `cap_download_task_export`
+Outputs: `ui_contract`, `web_app`
+
 ### `proj_ui_shared` - Todo Shared UI
 
 Platform-neutral UI semantics for the Todo product
