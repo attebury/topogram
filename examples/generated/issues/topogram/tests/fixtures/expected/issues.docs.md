@@ -285,6 +285,14 @@ Platform: `db_sqlite`
 Realizes: `entity_issue`, `entity_board`, `entity_user`
 Outputs: `db_contract`, `sql_schema`
 
+### `proj_ui_native__ios` - Issues Native iOS UI
+
+Native SwiftUI realization sharing routes and UI hints with the web stacks
+
+Platform: `ui_ios`
+Realizes: `proj_ui_shared`, `cap_list_issues`, `cap_get_issue`, `cap_create_issue`, `cap_update_issue`, `cap_close_issue`
+Outputs: `ui_contract`, `web_app`
+
 ### `proj_ui_shared` - Issues Shared UI
 
 Platform-neutral UI semantics for the Issues product

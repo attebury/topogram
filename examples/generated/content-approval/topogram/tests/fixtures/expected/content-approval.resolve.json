@@ -8575,6 +8575,911 @@
         "dbLifecycle": [],
         "dbRelations": [],
         "dbTables": [],
+        "description": "Native SwiftUI realization sharing routes and UI hints with the web stacks",
+        "from": null,
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 20,
+                "line": 43,
+                "offset": 1325
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 43,
+                "offset": 1310
+              }
+            },
+            "raw": [
+              "profile",
+              "swiftui"
+            ],
+            "type": "generator_default",
+            "value": "swiftui"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 19,
+                "line": 44,
+                "offset": 1344
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 44,
+                "offset": 1330
+              }
+            },
+            "raw": [
+              "language",
+              "swift"
+            ],
+            "type": "generator_default",
+            "value": "swift"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "id": "proj_ui_native__ios",
+        "kind": "projection",
+        "loc": {
+          "end": {
+            "column": 2,
+            "line": 48,
+            "offset": 1367
+          },
+          "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          }
+        },
+        "name": "Content Approval Native iOS UI",
+        "outputs": [
+          "ui_contract",
+          "web_app"
+        ],
+        "plan": {
+          "dbColumns": [],
+          "dbIndexes": [],
+          "dbKeys": [],
+          "dbLifecycle": [],
+          "dbRelations": [],
+          "dbTables": [],
+          "generatorDefaults": [
+            {
+              "key": "profile",
+              "loc": {
+                "end": {
+                  "column": 20,
+                  "line": 43,
+                  "offset": 1325
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 43,
+                  "offset": 1310
+                }
+              },
+              "raw": [
+                "profile",
+                "swiftui"
+              ],
+              "type": "generator_default",
+              "value": "swiftui"
+            },
+            {
+              "key": "language",
+              "loc": {
+                "end": {
+                  "column": 19,
+                  "line": 44,
+                  "offset": 1344
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 44,
+                  "offset": 1330
+                }
+              },
+              "raw": [
+                "language",
+                "swift"
+              ],
+              "type": "generator_default",
+              "value": "swift"
+            }
+          ],
+          "http": [],
+          "httpAsync": [],
+          "httpAuthz": [],
+          "httpCache": [],
+          "httpCallbacks": [],
+          "httpDelete": [],
+          "httpDownload": [],
+          "httpErrors": [],
+          "httpFields": [],
+          "httpIdempotency": [],
+          "httpPreconditions": [],
+          "httpResponses": [],
+          "httpStatus": [],
+          "outputs": [
+            {
+              "id": "ui_contract",
+              "order": 0,
+              "type": "symbol"
+            },
+            {
+              "id": "web_app",
+              "order": 1,
+              "type": "symbol"
+            }
+          ],
+          "platform": "ui_ios",
+          "realizes": [
+            {
+              "order": 0,
+              "target": {
+                "id": "proj_ui_shared",
+                "kind": "projection"
+              }
+            },
+            {
+              "order": 1,
+              "target": {
+                "id": "cap_list_articles",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 2,
+              "target": {
+                "id": "cap_get_article",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 3,
+              "target": {
+                "id": "cap_create_article",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 4,
+              "target": {
+                "id": "cap_update_article",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 5,
+              "target": {
+                "id": "cap_request_article_revision",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 6,
+              "target": {
+                "id": "cap_approve_article",
+                "kind": "capability"
+              }
+            },
+            {
+              "order": 7,
+              "target": {
+                "id": "cap_reject_article",
+                "kind": "capability"
+              }
+            }
+          ],
+          "type": "projection_plan",
+          "uiActions": [],
+          "uiCollections": [],
+          "uiRoutes": [
+            {
+              "loc": {
+                "end": {
+                  "column": 39,
+                  "line": 19,
+                  "offset": 480
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 19,
+                  "offset": 446
+                }
+              },
+              "path": "/articles",
+              "raw": [
+                "screen",
+                "article_list",
+                "path",
+                "/articles"
+              ],
+              "screenId": "article_list",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 45,
+                  "line": 20,
+                  "offset": 525
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 20,
+                  "offset": 485
+                }
+              },
+              "path": "/articles/:id",
+              "raw": [
+                "screen",
+                "article_detail",
+                "path",
+                "/articles/:id"
+              ],
+              "screenId": "article_detail",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 45,
+                  "line": 21,
+                  "offset": 570
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 21,
+                  "offset": 530
+                }
+              },
+              "path": "/articles/new",
+              "raw": [
+                "screen",
+                "article_create",
+                "path",
+                "/articles/new"
+              ],
+              "screenId": "article_create",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 48,
+                  "line": 22,
+                  "offset": 618
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 22,
+                  "offset": 575
+                }
+              },
+              "path": "/articles/:id/edit",
+              "raw": [
+                "screen",
+                "article_edit",
+                "path",
+                "/articles/:id/edit"
+              ],
+              "screenId": "article_edit",
+              "type": "ui_route"
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 45,
+                  "line": 23,
+                  "offset": 663
+                },
+                "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+                "start": {
+                  "column": 5,
+                  "line": 23,
+                  "offset": 623
+                }
+              },
+              "path": "/settings",
+              "raw": [
+                "screen",
+                "editorial_settings",
+                "path",
+                "/settings"
+              ],
+              "screenId": "editorial_settings",
+              "type": "ui_route"
+            }
+          ],
+          "uiScreens": [],
+          "uiVisibility": [],
+          "uiWeb": []
+        },
+        "platform": "ui_ios",
+        "realizes": [
+          {
+            "id": "proj_ui_shared",
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "id": "cap_list_articles",
+            "target": {
+              "id": "cap_list_articles",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_get_article",
+            "target": {
+              "id": "cap_get_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_create_article",
+            "target": {
+              "id": "cap_create_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_update_article",
+            "target": {
+              "id": "cap_update_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_request_article_revision",
+            "target": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_approve_article",
+            "target": {
+              "id": "cap_approve_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "id": "cap_reject_article",
+            "target": {
+              "id": "cap_reject_article",
+              "kind": "capability"
+            }
+          }
+        ],
+        "status": "active",
+        "uiActions": [],
+        "uiAppShell": [],
+        "uiCollections": [],
+        "uiIos": [
+          {
+            "capability": null,
+            "directive": "shell",
+            "loc": {
+              "end": {
+                "column": 38,
+                "line": 27,
+                "offset": 717
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 27,
+                "offset": 684
+              }
+            },
+            "raw": [
+              "screen",
+              "article_list",
+              "shell",
+              "sidebar"
+            ],
+            "targetId": "article_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "sidebar"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 53,
+                "line": 28,
+                "offset": 770
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 28,
+                "offset": 722
+              }
+            },
+            "raw": [
+              "screen",
+              "article_list",
+              "layout",
+              "responsive_collection"
+            ],
+            "targetId": "article_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "responsive_collection"
+          },
+          {
+            "capability": null,
+            "directive": "desktop_variant",
+            "loc": {
+              "end": {
+                "column": 46,
+                "line": 29,
+                "offset": 816
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 29,
+                "offset": 775
+              }
+            },
+            "raw": [
+              "screen",
+              "article_list",
+              "desktop_variant",
+              "table"
+            ],
+            "targetId": "article_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "mobile_variant",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 30,
+                "offset": 861
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 30,
+                "offset": 821
+              }
+            },
+            "raw": [
+              "screen",
+              "article_list",
+              "mobile_variant",
+              "cards"
+            ],
+            "targetId": "article_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "cards"
+          },
+          {
+            "capability": null,
+            "directive": "collection",
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 31,
+                "offset": 902
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 31,
+                "offset": 866
+              }
+            },
+            "raw": [
+              "screen",
+              "article_list",
+              "collection",
+              "table"
+            ],
+            "targetId": "article_list",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "table"
+          },
+          {
+            "capability": null,
+            "directive": "breadcrumbs",
+            "loc": {
+              "end": {
+                "column": 46,
+                "line": 32,
+                "offset": 948
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 32,
+                "offset": 907
+              }
+            },
+            "raw": [
+              "screen",
+              "article_detail",
+              "breadcrumbs",
+              "visible"
+            ],
+            "targetId": "article_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "visible"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 33,
+                "offset": 993
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 33,
+                "offset": 953
+              }
+            },
+            "raw": [
+              "screen",
+              "article_detail",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "article_detail",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 34,
+                "offset": 1034
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 34,
+                "offset": 998
+              }
+            },
+            "raw": [
+              "screen",
+              "article_create",
+              "present",
+              "drawer"
+            ],
+            "targetId": "article_create",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "drawer"
+          },
+          {
+            "capability": null,
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 37,
+                "line": 35,
+                "offset": 1071
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 35,
+                "offset": 1039
+              }
+            },
+            "raw": [
+              "screen",
+              "article_edit",
+              "present",
+              "page"
+            ],
+            "targetId": "article_edit",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "page"
+          },
+          {
+            "capability": null,
+            "directive": "shell",
+            "loc": {
+              "end": {
+                "column": 43,
+                "line": 36,
+                "offset": 1114
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 36,
+                "offset": 1076
+              }
+            },
+            "raw": [
+              "screen",
+              "editorial_settings",
+              "shell",
+              "topbar"
+            ],
+            "targetId": "editorial_settings",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "topbar"
+          },
+          {
+            "capability": null,
+            "directive": "layout",
+            "loc": {
+              "end": {
+                "column": 49,
+                "line": 37,
+                "offset": 1163
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 37,
+                "offset": 1119
+              }
+            },
+            "raw": [
+              "screen",
+              "editorial_settings",
+              "layout",
+              "detail_page"
+            ],
+            "targetId": "editorial_settings",
+            "targetKind": "screen",
+            "type": "ui_ios_binding",
+            "value": "detail_page"
+          },
+          {
+            "capability": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            },
+            "directive": "placement",
+            "loc": {
+              "end": {
+                "column": 58,
+                "line": 38,
+                "offset": 1221
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 38,
+                "offset": 1168
+              }
+            },
+            "raw": [
+              "action",
+              "cap_request_article_revision",
+              "placement",
+              "toolbar"
+            ],
+            "targetId": "cap_request_article_revision",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "toolbar"
+          },
+          {
+            "capability": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            },
+            "directive": "present",
+            "loc": {
+              "end": {
+                "column": 56,
+                "line": 39,
+                "offset": 1277
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 39,
+                "offset": 1226
+              }
+            },
+            "raw": [
+              "action",
+              "cap_request_article_revision",
+              "present",
+              "popover"
+            ],
+            "targetId": "cap_request_article_revision",
+            "targetKind": "action",
+            "type": "ui_ios_binding",
+            "value": "popover"
+          }
+        ],
+        "uiLookups": [],
+        "uiNavigation": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 19,
+                "offset": 480
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 19,
+                "offset": 446
+              }
+            },
+            "path": "/articles",
+            "raw": [
+              "screen",
+              "article_list",
+              "path",
+              "/articles"
+            ],
+            "screenId": "article_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 20,
+                "offset": 525
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 20,
+                "offset": 485
+              }
+            },
+            "path": "/articles/:id",
+            "raw": [
+              "screen",
+              "article_detail",
+              "path",
+              "/articles/:id"
+            ],
+            "screenId": "article_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 21,
+                "offset": 570
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 21,
+                "offset": 530
+              }
+            },
+            "path": "/articles/new",
+            "raw": [
+              "screen",
+              "article_create",
+              "path",
+              "/articles/new"
+            ],
+            "screenId": "article_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 48,
+                "line": 22,
+                "offset": 618
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 22,
+                "offset": 575
+              }
+            },
+            "path": "/articles/:id/edit",
+            "raw": [
+              "screen",
+              "article_edit",
+              "path",
+              "/articles/:id/edit"
+            ],
+            "screenId": "article_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 23,
+                "offset": 663
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 23,
+                "offset": 623
+              }
+            },
+            "path": "/settings",
+            "raw": [
+              "screen",
+              "editorial_settings",
+              "path",
+              "/settings"
+            ],
+            "screenId": "editorial_settings",
+            "type": "ui_route"
+          }
+        ],
+        "uiScreenRegions": [],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": []
+      },
+      {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
         "description": "Platform-neutral UI semantics for the Content Approval product",
         "from": null,
         "generatorDefaults": [],
@@ -26131,6 +27036,911 @@
       "uiLookups": [],
       "uiNavigation": [],
       "uiRoutes": [],
+      "uiScreenRegions": [],
+      "uiScreens": [],
+      "uiVisibility": [],
+      "uiWeb": []
+    },
+    {
+      "dbColumns": [],
+      "dbIndexes": [],
+      "dbKeys": [],
+      "dbLifecycle": [],
+      "dbRelations": [],
+      "dbTables": [],
+      "description": "Native SwiftUI realization sharing routes and UI hints with the web stacks",
+      "from": null,
+      "generatorDefaults": [
+        {
+          "key": "profile",
+          "loc": {
+            "end": {
+              "column": 20,
+              "line": 43,
+              "offset": 1325
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 43,
+              "offset": 1310
+            }
+          },
+          "raw": [
+            "profile",
+            "swiftui"
+          ],
+          "type": "generator_default",
+          "value": "swiftui"
+        },
+        {
+          "key": "language",
+          "loc": {
+            "end": {
+              "column": 19,
+              "line": 44,
+              "offset": 1344
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 44,
+              "offset": 1330
+            }
+          },
+          "raw": [
+            "language",
+            "swift"
+          ],
+          "type": "generator_default",
+          "value": "swift"
+        }
+      ],
+      "http": [],
+      "httpAsync": [],
+      "httpAuthz": [],
+      "httpCache": [],
+      "httpCallbacks": [],
+      "httpDelete": [],
+      "httpDownload": [],
+      "httpErrors": [],
+      "httpFields": [],
+      "httpIdempotency": [],
+      "httpPreconditions": [],
+      "httpResponses": [],
+      "httpStatus": [],
+      "id": "proj_ui_native__ios",
+      "kind": "projection",
+      "loc": {
+        "end": {
+          "column": 2,
+          "line": 48,
+          "offset": 1367
+        },
+        "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0
+        }
+      },
+      "name": "Content Approval Native iOS UI",
+      "outputs": [
+        "ui_contract",
+        "web_app"
+      ],
+      "plan": {
+        "dbColumns": [],
+        "dbIndexes": [],
+        "dbKeys": [],
+        "dbLifecycle": [],
+        "dbRelations": [],
+        "dbTables": [],
+        "generatorDefaults": [
+          {
+            "key": "profile",
+            "loc": {
+              "end": {
+                "column": 20,
+                "line": 43,
+                "offset": 1325
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 43,
+                "offset": 1310
+              }
+            },
+            "raw": [
+              "profile",
+              "swiftui"
+            ],
+            "type": "generator_default",
+            "value": "swiftui"
+          },
+          {
+            "key": "language",
+            "loc": {
+              "end": {
+                "column": 19,
+                "line": 44,
+                "offset": 1344
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 44,
+                "offset": 1330
+              }
+            },
+            "raw": [
+              "language",
+              "swift"
+            ],
+            "type": "generator_default",
+            "value": "swift"
+          }
+        ],
+        "http": [],
+        "httpAsync": [],
+        "httpAuthz": [],
+        "httpCache": [],
+        "httpCallbacks": [],
+        "httpDelete": [],
+        "httpDownload": [],
+        "httpErrors": [],
+        "httpFields": [],
+        "httpIdempotency": [],
+        "httpPreconditions": [],
+        "httpResponses": [],
+        "httpStatus": [],
+        "outputs": [
+          {
+            "id": "ui_contract",
+            "order": 0,
+            "type": "symbol"
+          },
+          {
+            "id": "web_app",
+            "order": 1,
+            "type": "symbol"
+          }
+        ],
+        "platform": "ui_ios",
+        "realizes": [
+          {
+            "order": 0,
+            "target": {
+              "id": "proj_ui_shared",
+              "kind": "projection"
+            }
+          },
+          {
+            "order": 1,
+            "target": {
+              "id": "cap_list_articles",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 2,
+            "target": {
+              "id": "cap_get_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 3,
+            "target": {
+              "id": "cap_create_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 4,
+            "target": {
+              "id": "cap_update_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 5,
+            "target": {
+              "id": "cap_request_article_revision",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 6,
+            "target": {
+              "id": "cap_approve_article",
+              "kind": "capability"
+            }
+          },
+          {
+            "order": 7,
+            "target": {
+              "id": "cap_reject_article",
+              "kind": "capability"
+            }
+          }
+        ],
+        "type": "projection_plan",
+        "uiActions": [],
+        "uiCollections": [],
+        "uiRoutes": [
+          {
+            "loc": {
+              "end": {
+                "column": 39,
+                "line": 19,
+                "offset": 480
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 19,
+                "offset": 446
+              }
+            },
+            "path": "/articles",
+            "raw": [
+              "screen",
+              "article_list",
+              "path",
+              "/articles"
+            ],
+            "screenId": "article_list",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 20,
+                "offset": 525
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 20,
+                "offset": 485
+              }
+            },
+            "path": "/articles/:id",
+            "raw": [
+              "screen",
+              "article_detail",
+              "path",
+              "/articles/:id"
+            ],
+            "screenId": "article_detail",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 21,
+                "offset": 570
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 21,
+                "offset": 530
+              }
+            },
+            "path": "/articles/new",
+            "raw": [
+              "screen",
+              "article_create",
+              "path",
+              "/articles/new"
+            ],
+            "screenId": "article_create",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 48,
+                "line": 22,
+                "offset": 618
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 22,
+                "offset": 575
+              }
+            },
+            "path": "/articles/:id/edit",
+            "raw": [
+              "screen",
+              "article_edit",
+              "path",
+              "/articles/:id/edit"
+            ],
+            "screenId": "article_edit",
+            "type": "ui_route"
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 45,
+                "line": 23,
+                "offset": 663
+              },
+              "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+              "start": {
+                "column": 5,
+                "line": 23,
+                "offset": 623
+              }
+            },
+            "path": "/settings",
+            "raw": [
+              "screen",
+              "editorial_settings",
+              "path",
+              "/settings"
+            ],
+            "screenId": "editorial_settings",
+            "type": "ui_route"
+          }
+        ],
+        "uiScreens": [],
+        "uiVisibility": [],
+        "uiWeb": []
+      },
+      "platform": "ui_ios",
+      "realizes": [
+        {
+          "id": "proj_ui_shared",
+          "target": {
+            "id": "proj_ui_shared",
+            "kind": "projection"
+          }
+        },
+        {
+          "id": "cap_list_articles",
+          "target": {
+            "id": "cap_list_articles",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_get_article",
+          "target": {
+            "id": "cap_get_article",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_create_article",
+          "target": {
+            "id": "cap_create_article",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_update_article",
+          "target": {
+            "id": "cap_update_article",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_request_article_revision",
+          "target": {
+            "id": "cap_request_article_revision",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_approve_article",
+          "target": {
+            "id": "cap_approve_article",
+            "kind": "capability"
+          }
+        },
+        {
+          "id": "cap_reject_article",
+          "target": {
+            "id": "cap_reject_article",
+            "kind": "capability"
+          }
+        }
+      ],
+      "status": "active",
+      "uiActions": [],
+      "uiAppShell": [],
+      "uiCollections": [],
+      "uiIos": [
+        {
+          "capability": null,
+          "directive": "shell",
+          "loc": {
+            "end": {
+              "column": 38,
+              "line": 27,
+              "offset": 717
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 27,
+              "offset": 684
+            }
+          },
+          "raw": [
+            "screen",
+            "article_list",
+            "shell",
+            "sidebar"
+          ],
+          "targetId": "article_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "sidebar"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 53,
+              "line": 28,
+              "offset": 770
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 28,
+              "offset": 722
+            }
+          },
+          "raw": [
+            "screen",
+            "article_list",
+            "layout",
+            "responsive_collection"
+          ],
+          "targetId": "article_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "responsive_collection"
+        },
+        {
+          "capability": null,
+          "directive": "desktop_variant",
+          "loc": {
+            "end": {
+              "column": 46,
+              "line": 29,
+              "offset": 816
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 29,
+              "offset": 775
+            }
+          },
+          "raw": [
+            "screen",
+            "article_list",
+            "desktop_variant",
+            "table"
+          ],
+          "targetId": "article_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "mobile_variant",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 30,
+              "offset": 861
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 30,
+              "offset": 821
+            }
+          },
+          "raw": [
+            "screen",
+            "article_list",
+            "mobile_variant",
+            "cards"
+          ],
+          "targetId": "article_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "cards"
+        },
+        {
+          "capability": null,
+          "directive": "collection",
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 31,
+              "offset": 902
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 31,
+              "offset": 866
+            }
+          },
+          "raw": [
+            "screen",
+            "article_list",
+            "collection",
+            "table"
+          ],
+          "targetId": "article_list",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "table"
+        },
+        {
+          "capability": null,
+          "directive": "breadcrumbs",
+          "loc": {
+            "end": {
+              "column": 46,
+              "line": 32,
+              "offset": 948
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 32,
+              "offset": 907
+            }
+          },
+          "raw": [
+            "screen",
+            "article_detail",
+            "breadcrumbs",
+            "visible"
+          ],
+          "targetId": "article_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "visible"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 33,
+              "offset": 993
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 33,
+              "offset": 953
+            }
+          },
+          "raw": [
+            "screen",
+            "article_detail",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "article_detail",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 41,
+              "line": 34,
+              "offset": 1034
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 34,
+              "offset": 998
+            }
+          },
+          "raw": [
+            "screen",
+            "article_create",
+            "present",
+            "drawer"
+          ],
+          "targetId": "article_create",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "drawer"
+        },
+        {
+          "capability": null,
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 37,
+              "line": 35,
+              "offset": 1071
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 35,
+              "offset": 1039
+            }
+          },
+          "raw": [
+            "screen",
+            "article_edit",
+            "present",
+            "page"
+          ],
+          "targetId": "article_edit",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "page"
+        },
+        {
+          "capability": null,
+          "directive": "shell",
+          "loc": {
+            "end": {
+              "column": 43,
+              "line": 36,
+              "offset": 1114
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 36,
+              "offset": 1076
+            }
+          },
+          "raw": [
+            "screen",
+            "editorial_settings",
+            "shell",
+            "topbar"
+          ],
+          "targetId": "editorial_settings",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "topbar"
+        },
+        {
+          "capability": null,
+          "directive": "layout",
+          "loc": {
+            "end": {
+              "column": 49,
+              "line": 37,
+              "offset": 1163
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 37,
+              "offset": 1119
+            }
+          },
+          "raw": [
+            "screen",
+            "editorial_settings",
+            "layout",
+            "detail_page"
+          ],
+          "targetId": "editorial_settings",
+          "targetKind": "screen",
+          "type": "ui_ios_binding",
+          "value": "detail_page"
+        },
+        {
+          "capability": {
+            "id": "cap_request_article_revision",
+            "kind": "capability"
+          },
+          "directive": "placement",
+          "loc": {
+            "end": {
+              "column": 58,
+              "line": 38,
+              "offset": 1221
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 38,
+              "offset": 1168
+            }
+          },
+          "raw": [
+            "action",
+            "cap_request_article_revision",
+            "placement",
+            "toolbar"
+          ],
+          "targetId": "cap_request_article_revision",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "toolbar"
+        },
+        {
+          "capability": {
+            "id": "cap_request_article_revision",
+            "kind": "capability"
+          },
+          "directive": "present",
+          "loc": {
+            "end": {
+              "column": 56,
+              "line": 39,
+              "offset": 1277
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 39,
+              "offset": 1226
+            }
+          },
+          "raw": [
+            "action",
+            "cap_request_article_revision",
+            "present",
+            "popover"
+          ],
+          "targetId": "cap_request_article_revision",
+          "targetKind": "action",
+          "type": "ui_ios_binding",
+          "value": "popover"
+        }
+      ],
+      "uiLookups": [],
+      "uiNavigation": [],
+      "uiRoutes": [
+        {
+          "loc": {
+            "end": {
+              "column": 39,
+              "line": 19,
+              "offset": 480
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 19,
+              "offset": 446
+            }
+          },
+          "path": "/articles",
+          "raw": [
+            "screen",
+            "article_list",
+            "path",
+            "/articles"
+          ],
+          "screenId": "article_list",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 20,
+              "offset": 525
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 20,
+              "offset": 485
+            }
+          },
+          "path": "/articles/:id",
+          "raw": [
+            "screen",
+            "article_detail",
+            "path",
+            "/articles/:id"
+          ],
+          "screenId": "article_detail",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 21,
+              "offset": 570
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 21,
+              "offset": 530
+            }
+          },
+          "path": "/articles/new",
+          "raw": [
+            "screen",
+            "article_create",
+            "path",
+            "/articles/new"
+          ],
+          "screenId": "article_create",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 48,
+              "line": 22,
+              "offset": 618
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 22,
+              "offset": 575
+            }
+          },
+          "path": "/articles/:id/edit",
+          "raw": [
+            "screen",
+            "article_edit",
+            "path",
+            "/articles/:id/edit"
+          ],
+          "screenId": "article_edit",
+          "type": "ui_route"
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 45,
+              "line": 23,
+              "offset": 663
+            },
+            "file": "/Users/attebury/topogram-cursor/examples/generated/content-approval/topogram/projections/proj-ui-native--ios.tg",
+            "start": {
+              "column": 5,
+              "line": 23,
+              "offset": 623
+            }
+          },
+          "path": "/settings",
+          "raw": [
+            "screen",
+            "editorial_settings",
+            "path",
+            "/settings"
+          ],
+          "screenId": "editorial_settings",
+          "type": "ui_route"
+        }
+      ],
       "uiScreenRegions": [],
       "uiScreens": [],
       "uiVisibility": [],

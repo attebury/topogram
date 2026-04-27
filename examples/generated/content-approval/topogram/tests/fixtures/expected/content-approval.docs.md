@@ -357,6 +357,14 @@ Platform: `db_sqlite`
 Realizes: `entity_article`, `entity_publication`, `entity_user`
 Outputs: `db_contract`, `sql_schema`
 
+### `proj_ui_native__ios` - Content Approval Native iOS UI
+
+Native SwiftUI realization sharing routes and UI hints with the web stacks
+
+Platform: `ui_ios`
+Realizes: `proj_ui_shared`, `cap_list_articles`, `cap_get_article`, `cap_create_article`, `cap_update_article`, `cap_request_article_revision`, `cap_approve_article`, `cap_reject_article`
+Outputs: `ui_contract`, `web_app`
+
 ### `proj_ui_shared` - Content Approval Shared UI
 
 Platform-neutral UI semantics for the Content Approval product
