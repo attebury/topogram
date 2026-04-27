@@ -24,6 +24,12 @@ Topogram is most credible today when framed as a system that helps teams:
 - keep emitted contracts and verification aligned with those changes
 - stop clearly when a change should remain manual
 
+The strongest present proof for that wedge is:
+
+- maintained-app change guidance with explicit safe, guarded, and no-go boundaries
+- brownfield recovery, staged review, and planning/operator proof in the product repo
+- active imported breadth and freshness-current imported claims in [topogram-demo](https://github.com/attebury/topogram-demo)
+
 ## What We Can Prove Today
 
 ### Proven now
@@ -76,6 +82,11 @@ The current import/adopt operator proof is also more explicit now:
 - conservative maintained seam-review summaries on import-plan surfaces
 - explicit distinction between clear-candidate and no-candidate maintained proposals
 - review and decision surfaces that carry the recommended query family and compact operator loop directly
+
+Keep the split explicit:
+
+- `topogram` proves the deterministic local rehearsal path for staged import/adopt review and planning
+- `topogram-demo` proves current imported breadth on real external systems
 
 ### Planning proof
 
@@ -221,3 +232,9 @@ The current invite-led alpha audience and contact path are documented here:
 
 - [docs/design-partner-profile.md](./design-partner-profile.md)
 - [docs/invite-led-alpha.md](./invite-led-alpha.md)
+
+The operator-facing alpha intake, triage, and feedback workflow is documented here:
+
+- [docs/alpha-interest-triage-rubric.md](./alpha-interest-triage-rubric.md)
+- [docs/partner-feedback-template.md](./partner-feedback-template.md)
+- [docs/alpha-first-call-guide.md](./alpha-first-call-guide.md)

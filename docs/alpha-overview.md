@@ -21,7 +21,7 @@ What this means in practice:
 
 ## 2. The Strongest Alpha Proof
 
-The clearest current alpha proof is not just that Topogram generates artifacts. It is that Topogram can guide change in maintained code and distinguish what should be accepted, reviewed, or rejected.
+The clearest current alpha proof is not just that Topogram generates artifacts. It is that Topogram can guide change in maintained code, stage brownfield recovery for review, and distinguish what should be accepted, reviewed, or rejected.
 
 ![Topogram change boundary](./assets/launch-graphics/change-boundary.svg)
 
@@ -51,6 +51,7 @@ The brownfield/operator path is also more readable now:
 
 - import/adopt proposals show conservative maintained seam-review summaries
 - `review-packet` and `proceed-decision` make the next query family and operator loop explicit
+- the local brownfield rehearsal path now lives in `topogram`, while imported breadth and freshness stay in [topogram-demo](https://github.com/attebury/topogram-demo)
 
 For the fuller brownfield flow, see:
 
@@ -64,7 +65,7 @@ Topogram's alpha claim is intentionally narrow:
 
 - proven now:
   - maintained-app proof
-  - brownfield recovery and adoption flow
+  - brownfield recovery and staged adoption/review flow
   - generated examples and parity proofs
   - alpha-complete signed-token auth boundary
 - not claimed yet:
@@ -83,5 +84,6 @@ If this overview feels credible, read these next:
 
 1. [docs/evaluator-path.md](./evaluator-path.md)
 2. [examples/maintained/proof-app/proof/edit-existing-app.md](../examples/maintained/proof-app/proof/edit-existing-app.md)
-3. [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
-4. [docs/proof-points-and-limits.md](./proof-points-and-limits.md)
+3. [docs/agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md)
+4. [docs/confirmed-proof-matrix.md](./confirmed-proof-matrix.md)
+5. [docs/proof-points-and-limits.md](./proof-points-and-limits.md)

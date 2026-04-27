@@ -96,6 +96,12 @@ The goal is not to capture everything. The goal is to capture the few signals th
   - live demo
   - deeper technical session
   - no follow-up
+- Normalized next-step label:
+  - `repo/evaluator-path only`
+  - `async follow-up`
+  - `live demo`
+  - `deeper technical session`
+  - `no follow-up`
 
 ## Signals To Capture Verbatim
 
@@ -103,6 +109,11 @@ The goal is not to capture everything. The goal is to capture the few signals th
 - Strong objection:
 - Unexpected use case:
 - Off-strategy ask:
+- Normalized blocker:
+  - `story blocker`
+  - `proof blocker`
+  - `product-shaping request`
+  - `off-strategy ask`
 
 ## Internal Readout
 
@@ -116,3 +127,4 @@ The goal is not to capture everything. The goal is to capture the few signals th
   - off-strategy
 - Notes for product / messaging:
 
+Use [alpha-interest-triage-rubric.md](./alpha-interest-triage-rubric.md) before or during triage, then use this template after a serious conversation or async review so the captured feedback uses the same fit and blocker vocabulary.

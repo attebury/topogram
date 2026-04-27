@@ -35,9 +35,9 @@ Launch-ready means:
 - proof docs do not overclaim
 - one maintained query sequence and one deterministic import/adopt rehearsal path still run as written
 
-## Repository shaping before first push
+## Repository shaping and claim discipline
 
-Before first remote push, keep the repository split into three categories.
+Keep the repository split into three categories.
 
 ### 1. Alpha branch content
 
@@ -65,9 +65,7 @@ Recommended handling:
 - keep only a small roadmap or docs trail on the launch branch
 - do not let alpha-facing docs imply these are current commitments
 
-### 3. Ongoing post-push policy
-
-After the first remote push:
+### 3. Ongoing policy
 
 - `alpha/*` branches are for launch-closeout work only
 - `post-alpha/*` branches are for shaping work
@@ -75,6 +73,7 @@ After the first remote push:
   - [README.md](../README.md)
   - [proof-points-and-limits.md](./proof-points-and-limits.md)
   - [alpha-ready-checklist.md](./alpha-ready-checklist.md)
+  - [alpha-launch-tracker.md](./alpha-launch-tracker.md)
 
 Every future change should be classified as:
 
@@ -82,9 +81,10 @@ Every future change should be classified as:
 - `can-slip`
 - `post-alpha only`
 
-## Pre-push commit history cleanup
+## Historical Note On First-Push Cleanup
 
-Before the first remote push, rewrite local history into a short public-facing sequence.
+The first remote-facing alpha push required a deliberate history cleanup.
+That historical step is complete and should not remain as a live launch requirement.
 
 Target shape:
 
@@ -110,23 +110,12 @@ Recommended commit-message style:
 - `Add workflow preset guidance for agent operating model`
 - `Lock invite-led alpha story and evaluator path`
 
-## Current blocker to history rewrite
+## Current Verification Rule
 
-The history rewrite should happen only after the current working tree is sorted into:
-
-- keep for alpha
-- park before push
-- revert from launch branch
-
-Do not rewrite the local commit sequence while the working tree still mixes alpha-closeout work with parked post-alpha shaping changes.
-
-## Verification before first push
-
-Before first remote push, verify:
+When a branch changes public alpha claims, verify:
 
 - evaluator path still matches the actual demo sequence
 - maintained query sequence still runs exactly as documented
 - deterministic import/adopt fixture still produces a non-empty staged proposal demo
 - proof docs do not overclaim beyond the current maintained, brownfield, and auth boundary
-- the launch branch contains no accidental post-alpha shaping work
-- the rewritten commit history reads top-to-bottom as one coherent alpha story
+- the branch contains no accidental post-alpha shaping work

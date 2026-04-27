@@ -127,3 +127,27 @@ Treat these as caution signals even if the score looks decent.
 - keep it short
 - do not try to force-fit them into the current alpha
 
+## Normalized Blocker Taxonomy
+
+After triage or a real conversation, normalize the strongest concern into one of:
+
+- `story blocker`
+  - the wedge, proof boundary, or evaluator story does not read clearly enough
+- `proof blocker`
+  - the current proof path or verification surface is not strong enough for their pressure test
+- `product-shaping request`
+  - the request is interesting but belongs in post-alpha shaping rather than the current alpha bar
+- `off-strategy ask`
+  - the ask conflicts with the current wedge or explicit claim boundary
+
+## Normalized Next-Step Taxonomy
+
+When there is a follow-up, normalize it into one of:
+
+- `repo/evaluator-path only`
+- `async follow-up`
+- `live demo`
+- `deeper technical session`
+- `no follow-up`
+
+Use the same categories in [partner-feedback-template.md](./partner-feedback-template.md) so triage and post-conversation capture stay comparable.

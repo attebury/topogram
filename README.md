@@ -4,7 +4,7 @@ Topogram helps humans and agents evolve software safely.
 
 It keeps intent, generated outputs, and verification aligned so software changes stay structured, explainable, and provable instead of drifting across prompts, code, and docs.
 
-Topogram is a spec-and-proof layer for controlled software evolution. It models the parts that should stay durable, generates contracts and runnable artifacts from that model, and keeps verification attached to the same source of truth.
+Topogram is a controlled software evolution system. More specifically, it acts as a software-intent operating model and spec-and-proof layer: it models the parts that should stay durable, generates contracts and runnable artifacts from that model, and keeps verification attached to the same source of truth.
 
 ```mermaid
 flowchart LR
@@ -117,6 +117,12 @@ This repo is grounded in working proofs, not just concept demos:
 - [docs/evaluator-path.md](./docs/evaluator-path.md): the canonical evaluator flow and demo path
 - [docs/agent-planning-evaluator-path.md](./docs/agent-planning-evaluator-path.md): the shortest evaluator-facing proof path for single-agent and multi-agent planning
 
+The strongest current alpha proof is:
+
+- maintained-app change guidance with explicit safe, guarded, and no-go boundaries
+- brownfield recovery, staged import/adopt review, and planning/operator proof
+- imported breadth managed separately in [topogram-demo](https://github.com/attebury/topogram-demo)
+
 ## Good Fit
 
 Topogram is a strong fit for:
@@ -145,6 +151,11 @@ Topogram is still an early system. It should not be presented as:
 Current auth support should be treated as alpha-complete and proof-oriented, not production-ready. Generated browser examples use `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`, which is intentionally public and only suitable for local/demo verification. Generated API CORS defaults are local-origin only and should be configured through `TOPOGRAM_CORS_ORIGINS` before exposing a generated stack beyond localhost. Start with [docs/auth-evaluator-path.md](./docs/auth-evaluator-path.md) and [docs/auth-profile-bearer-jwt-hs256.md](./docs/auth-profile-bearer-jwt-hs256.md) for the current boundary.
 
 Topogram generality is also still under active proof. The product repo now keeps generated and maintained examples locally, while imported brownfield proof targets are managed as a separate proof-ops concern so this repo does not double as a trial corpus.
+
+That means the current alpha claim stays narrow:
+
+- `topogram` proves the local generated, maintained, and brownfield rehearsal path
+- [topogram-demo](https://github.com/attebury/topogram-demo) proves the active imported breadth and freshness-current imported claims
 
 The old `trials/` tree has been retired from the product repo. Product-side importer regression now runs from curated fixtures under `engine/tests/fixtures/import`; see [docs/import-fixtures-inventory.md](./docs/import-fixtures-inventory.md) and [docs/remaining-trial-policy.md](./docs/remaining-trial-policy.md).
 

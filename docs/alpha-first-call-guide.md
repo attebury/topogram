@@ -102,3 +102,17 @@ Immediately capture:
 - likely next step
 - whether this validates the current wedge or points to post-alpha work
 
+Normalize the notes using:
+
+- [partner-feedback-template.md](./partner-feedback-template.md)
+- next-step labels:
+  - `repo/evaluator-path only`
+  - `async follow-up`
+  - `live demo`
+  - `deeper technical session`
+  - `no follow-up`
+- blocker labels:
+  - `story blocker`
+  - `proof blocker`
+  - `product-shaping request`
+  - `off-strategy ask`

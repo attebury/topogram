@@ -142,6 +142,14 @@ No change that broadens alpha claims should land without checking:
 - `docs/proof-points-and-limits.md`
 - `docs/alpha-ready-checklist.md`
 
+That first-push history cleanup is now historical rather than active.
+
+The current ongoing rule is:
+
+- keep alpha-facing branches and docs claim-disciplined
+- keep post-alpha shaping work visibly separate from alpha commitments
+- check `README.md`, `docs/proof-points-and-limits.md`, `docs/alpha-ready-checklist.md`, and `docs/alpha-launch-tracker.md` before landing any branch that changes public alpha claims
+
 ## 2026-04-22 - Formalize a moderate branch workflow and keep operator memory local-only
 
 Status: active development direction
