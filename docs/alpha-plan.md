@@ -25,6 +25,12 @@ The canonical story for alpha is:
 
 - Topogram helps humans and agents evolve software safely by keeping intent, generated outputs, and verification aligned.
 
+The strongest present proof for that story is:
+
+- maintained-app change guidance with explicit safe, guarded, and no-go boundaries
+- brownfield recovery, staged review, and planning/operator proof
+- imported breadth managed as a separate proof-ops surface in `topogram-demo`
+
 The canonical evaluator path should remain:
 
 1. state the wedge from [README.md](../README.md)
@@ -82,6 +88,9 @@ Current working references:
 
 - [design-partner-profile.md](./design-partner-profile.md)
 - [invite-led-alpha.md](./invite-led-alpha.md)
+- [alpha-interest-triage-rubric.md](./alpha-interest-triage-rubric.md)
+- [partner-feedback-template.md](./partner-feedback-template.md)
+- [alpha-first-call-guide.md](./alpha-first-call-guide.md)
 - [alpha-launch-tracker.md](./alpha-launch-tracker.md)
 
 ## Can slip without blocking alpha
@@ -221,7 +230,7 @@ That means the next project-management focus should be:
 2. confirm the exact demo path and evidence sequence
 3. make sure proof links and scripts are clean and reliable
 4. ensure the invite-led alpha positioning is explicit everywhere
-5. separate alpha-closeout work from parked post-alpha shaping work before first remote push
+5. keep alpha-facing claim discipline separate from post-alpha shaping work on current branches and docs
 
 ## Next trust-building target after alpha
 

@@ -27,6 +27,12 @@ The current alpha contact path is lightweight:
 
 This is intentionally simple for alpha. It is not yet a polished intake workflow.
 
+Operator-side qualification, first-call handling, and feedback capture should follow:
+
+- [alpha-interest-triage-rubric.md](./alpha-interest-triage-rubric.md)
+- [alpha-first-call-guide.md](./alpha-first-call-guide.md)
+- [partner-feedback-template.md](./partner-feedback-template.md)
+
 ## What Interested Teams Should Expect
 
 The alpha is invite-led and scope-disciplined.
@@ -54,3 +60,16 @@ The best first alpha engagement is usually one contained workflow:
 - one proof-oriented review loop with humans and agents both in the process
 
 That is a better alpha fit than asking Topogram to be the full platform boundary for an entire product on day one.
+
+## Public Boundary For This Page
+
+Keep this page public-facing and concise.
+
+It should state:
+
+- who Topogram is for right now
+- how to reach out
+- what a good first alpha trial looks like
+- what to expect from the current alpha boundary
+
+It should not try to carry the full operator workflow for triage, scoring, or feedback normalization.

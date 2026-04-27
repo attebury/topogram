@@ -46,3 +46,19 @@ The best early alpha conversation usually starts with:
 3. which changes feel risky because contracts, workflows, or verification move out of sync?
 
 If those questions resonate, the team is probably a good alpha candidate.
+
+## Good First Alpha Trial
+
+The best first alpha trial is:
+
+- one real brownfield repo or subsystem
+- one contained workflow-heavy or contract-sensitive change
+- one proof-oriented review loop with humans and agents both in the process
+
+This is a better fit than treating Topogram as the platform boundary for a whole product on day one.
+
+For the operator-side triage and feedback workflow, use:
+
+- [alpha-interest-triage-rubric.md](./alpha-interest-triage-rubric.md)
+- [partner-feedback-template.md](./partner-feedback-template.md)
+- [alpha-first-call-guide.md](./alpha-first-call-guide.md)
