@@ -200,16 +200,16 @@ export function getDefaultEnvironmentProjections(graph, options = {}) {
   return { apiProjection, uiProjection, dbProjection };
 }
 
-export function generateServerBundle(graph, projectionId) {
-  return generateHonoServer(graph, { projectionId });
+export function generateServerBundle(graph, projectionId, options = {}) {
+  return generateHonoServer(graph, { ...options, projectionId });
 }
 
-export function generateWebBundle(graph, projectionId) {
-  return generateWebApp(graph, { projectionId });
+export function generateWebBundle(graph, projectionId, options = {}) {
+  return generateWebApp(graph, { ...options, projectionId });
 }
 
-export function generateDbBundle(graph, projectionId) {
-  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId));
+export function generateDbBundle(graph, projectionId, options = {}) {
+  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId), options);
 }
 
 export function generateRuntimeApiContracts(graph) {

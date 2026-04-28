@@ -20,7 +20,7 @@ function generatorProfile(projection, fallback) {
 }
 
 function buildEnvironmentPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const dbLifecycle = generateDbLifecyclePlan(graph, { projectionId: dbProjection.id });
   const profile = options.profileId || (dbProjection.platform === "db_sqlite" ? "local_process" : "local_docker");
@@ -434,9 +434,9 @@ export function generateEnvironmentBundle(graph, options = {}) {
     files["scripts/docker-stack.sh"] = renderEnvironmentDockerStackScript();
   }
 
-  const serverBundle = generateServerBundle(graph, apiProjection.id);
-  const webBundle = generateWebBundle(graph, uiProjection.id);
-  const dbBundle = generateDbBundle(graph, dbProjection.id);
+  const serverBundle = generateServerBundle(graph, apiProjection.id, options);
+  const webBundle = generateWebBundle(graph, uiProjection.id, options);
+  const dbBundle = generateDbBundle(graph, dbProjection.id, options);
 
   mergeNamedBundles(files, {
     server: serverBundle,

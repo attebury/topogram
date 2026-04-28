@@ -18,7 +18,7 @@ import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderLoadEnvScript, renderNestedBundleShellScript } from "./bundle-shared.js";
 
 function buildAppBundlePlan(graph, options = {}) {
-  const runtimeReference = structuredClone(getExampleImplementation(graph).runtime.reference);
+  const runtimeReference = structuredClone(getExampleImplementation(graph, options).runtime.reference);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const environmentProfile = options.profileId || "local_process";
   const deployProfile = options.deployProfileId || "fly_io";
@@ -217,11 +217,11 @@ function renderAppBundleDeployCheckScript() {
 export function generateAppBundle(graph, options = {}) {
   const plan = buildAppBundlePlan(graph, options);
   plan.projections.dbPlatform = getDefaultEnvironmentProjections(graph, options).dbProjection.platform;
-  const envBundle = generateEnvironmentBundle(graph, { profileId: plan.profiles.environment });
-  const deployBundle = generateDeploymentBundle(graph, { profileId: plan.profiles.deployment });
-  const smokeBundle = generateRuntimeSmokeBundle(graph, {});
-  const runtimeCheckBundle = generateRuntimeCheckBundle(graph, {});
-  const compileBundle = generateCompileCheckBundle(graph, {});
+  const envBundle = generateEnvironmentBundle(graph, { ...options, profileId: plan.profiles.environment });
+  const deployBundle = generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment });
+  const smokeBundle = generateRuntimeSmokeBundle(graph, options);
+  const runtimeCheckBundle = generateRuntimeCheckBundle(graph, options);
+  const compileBundle = generateCompileCheckBundle(graph, options);
 
   const files = {
     ".env.example": renderAppBundleEnvExample(plan),

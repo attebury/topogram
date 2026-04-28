@@ -58,8 +58,8 @@ function buildSvelteKitLookupModule(defaultApiBaseUrl) {
   return renderLookupModule("sveltekit", defaultApiBaseUrl);
 }
 
-function buildSvelteKitScaffold(contract, apiContracts) {
-  const implementation = getExampleImplementation({ root: contract.graphRoot });
+function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
+  const implementation = getExampleImplementation(null, options);
   const webReference = implementation.web.reference;
   const runtimeReference = implementation.runtime.reference;
   const webScreenReference = implementation.web.screenReference;
@@ -193,5 +193,5 @@ function buildSvelteKitScaffold(contract, apiContracts) {
 
 export function generateSvelteKitApp(graph, options = {}) {
   const realization = buildWebRealization(graph, options);
-  return buildSvelteKitScaffold({ ...realization.contract, graphRoot: graph.root }, realization.apiContracts);
+  return buildSvelteKitScaffold(realization.contract, realization.apiContracts, options);
 }

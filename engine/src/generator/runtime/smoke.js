@@ -2,7 +2,7 @@ import { buildVerificationSummary, getDefaultEnvironmentProjections, runtimeUrls
 import { getExampleImplementation } from "../../example-implementation.js";
 
 function buildRuntimeSmokePlan(graph, options = {}) {
-  const implementation = getExampleImplementation(graph);
+  const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeChecks = implementation.runtime.checks;
   const { apiProjection, uiProjection } = getDefaultEnvironmentProjections(graph, options);
@@ -27,8 +27,8 @@ function buildRuntimeSmokePlan(graph, options = {}) {
   };
 }
 
-function renderRuntimeSmokeEnvExample(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderRuntimeSmokeEnvExample(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const urls = runtimeUrls(runtimeReference);
   return `TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_WEB_BASE_URL=${urls.web}
@@ -36,8 +36,8 @@ ${runtimeReference.environment.envExample || ""}
 `;
 }
 
-function renderRuntimeSmokeReadme(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderRuntimeSmokeReadme(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const verification = buildVerificationSummary(graph, ["smoke", "journey"]);
   const verificationLines = verification
     ? `\n## Canonical Verification\n\n- Sources: ${verification.sources.map((entry) => `\`${entry.id}\``).join(", ")}\n- Scenarios: ${verification.scenarios.map((entry) => entry.label).join(", ")}\n`
@@ -83,8 +83,8 @@ node "$SCRIPT_DIR/smoke.mjs"
 `;
 }
 
-function renderRuntimeSmokeModule(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderRuntimeSmokeModule(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const containerField = runtimeReference.smoke.createPayload.containerField;
   const payloadEntries = [
     ["title", runtimeReference.smoke.createPayload.title],
@@ -161,11 +161,11 @@ console.log(JSON.stringify({
 export function generateRuntimeSmokeBundle(graph, options = {}) {
   const plan = buildRuntimeSmokePlan(graph, options);
   return {
-    ".env.example": renderRuntimeSmokeEnvExample(graph),
-    "README.md": renderRuntimeSmokeReadme(graph),
+    ".env.example": renderRuntimeSmokeEnvExample(graph, options),
+    "README.md": renderRuntimeSmokeReadme(graph, options),
     "runtime-smoke-plan.json": `${JSON.stringify(plan, null, 2)}\n`,
     "scripts/smoke.sh": renderRuntimeSmokeScript(),
-    "scripts/smoke.mjs": renderRuntimeSmokeModule(graph)
+    "scripts/smoke.mjs": renderRuntimeSmokeModule(graph, options)
   };
 }
 

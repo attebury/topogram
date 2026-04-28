@@ -147,7 +147,7 @@ function renderResponseTypeDeclarations(baseName, contract, byId) {
 }
 
 export function generatePersistenceScaffold(graph, options = {}) {
-  const implementation = getExampleImplementation(graph);
+  const implementation = getExampleImplementation(graph, options);
   const repositoryReference = implementation.backend.repositoryReference;
   const repositoryRenderers = implementation.backend.repositoryRenderers;
   const repositoryInterfaceName = repositoryReference.repositoryInterfaceName;

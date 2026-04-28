@@ -25,7 +25,7 @@ function slugifyAppName(name) {
 }
 
 function buildDeploymentPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const profile = options.profileId || "fly_io";
   const supportedProfiles = ["fly_io", "railway"];
@@ -240,9 +240,9 @@ export function generateDeploymentBundle(graph, options = {}) {
     files["railway.json"] = renderRailwayJson();
   }
 
-  const serverBundle = generateServerBundle(graph, apiProjection.id);
-  const webBundle = generateWebBundle(graph, uiProjection.id);
-  const dbBundle = generateDbBundle(graph, dbProjection.id);
+  const serverBundle = generateServerBundle(graph, apiProjection.id, options);
+  const webBundle = generateWebBundle(graph, uiProjection.id, options);
+  const dbBundle = generateDbBundle(graph, dbProjection.id, options);
   mergeNamedBundles(files, {
     server: serverBundle,
     web: webBundle,

@@ -8,7 +8,7 @@ import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeBundleFiles } from "./bundle-shared.js";
 
 function buildCompileCheckPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   return {
     type: "compile_check_plan",
@@ -41,8 +41,8 @@ function buildCompileCheckPlan(graph, options = {}) {
   };
 }
 
-function renderCompileCheckEnvExample(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderCompileCheckEnvExample(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const urls = runtimeUrls(runtimeReference);
   if (runtimeReference.localDbProjectionId === "proj_db_sqlite") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
@@ -58,8 +58,8 @@ ${runtimeReference.environment.envExample || ""}
 `;
 }
 
-function renderCompileCheckReadme(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderCompileCheckReadme(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   return `# ${runtimeReference.compileCheck.name.replace("Plan", "Bundle")}
 
 This bundle verifies that the generated server and web projects typecheck and build.
@@ -108,13 +108,13 @@ export function generateCompileCheckBundle(graph, options = {}) {
   const plan = buildCompileCheckPlan(graph, options);
   const { apiProjection, uiProjection } = getDefaultEnvironmentProjections(graph, options);
   const files = {
-    ".env.example": renderCompileCheckEnvExample(graph),
-    "README.md": renderCompileCheckReadme(graph),
+    ".env.example": renderCompileCheckEnvExample(graph, options),
+    "README.md": renderCompileCheckReadme(graph, options),
     "compile-check-plan.json": `${JSON.stringify(plan, null, 2)}\n`,
     "scripts/check.sh": renderCompileCheckScript()
   };
-  const serverBundle = generateServerBundle(graph, apiProjection.id);
-  const webBundle = generateWebBundle(graph, uiProjection.id);
+  const serverBundle = generateServerBundle(graph, apiProjection.id, options);
+  const webBundle = generateWebBundle(graph, uiProjection.id, options);
   mergeBundleFiles(files, "server", serverBundle);
   mergeBundleFiles(files, "web", webBundle);
   return files;

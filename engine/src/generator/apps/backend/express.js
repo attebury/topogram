@@ -486,8 +486,8 @@ export async function authorizeWithGeneratedAuthProfile(
 `;
 }
 
-function renderExpressServerContextTs(contract, graph) {
-  const implementation = getExampleImplementation(graph);
+function renderExpressServerContextTs(contract, graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const repositoryReference = implementation.backend.repositoryReference;
   const repositoryInterfaceName = repositoryReference.repositoryInterfaceName;
   const dependencyName = repositoryReference.dependencyName;
@@ -508,8 +508,8 @@ export interface ServerDependencies {
 `;
 }
 
-function renderExpressServerIndexTs(graph) {
-  const implementation = getExampleImplementation(graph);
+function renderExpressServerIndexTs(graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const backendReference = implementation.backend.reference;
   const runtimeReference = implementation.runtime.reference;
   const repositoryReference = implementation.backend.repositoryReference;
@@ -746,17 +746,17 @@ export function generateExpressServer(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
   const realization = buildBackendRuntimeRealization(graph, options);
   const contract = realization.contract;
-  const persistenceScaffold = generatePersistenceScaffold(graph, { projectionId: realization.dbProjection.id });
+  const persistenceScaffold = generatePersistenceScaffold(graph, { ...options, projectionId: realization.dbProjection.id });
   const prismaSchema = generateDbTarget("prisma-schema", graph, { projectionId: realization.dbProjection.id });
 
   return {
     "package.json": renderExpressServerPackageJson(),
     "tsconfig.json": renderServerTsconfig(),
-    "scripts/seed-demo.mjs": renderServerSeedScript(graph),
-    "src/index.ts": renderExpressServerIndexTs(graph),
+    "scripts/seed-demo.mjs": renderServerSeedScript(graph, options),
+    "src/index.ts": renderExpressServerIndexTs(graph, options),
     "src/lib/topogram/server-contract.ts": renderServerContractModule(graph, projection.id),
     "src/lib/server/helpers.ts": renderExpressServerHelpers(),
-    "src/lib/server/context.ts": renderExpressServerContextTs(contract, graph),
+    "src/lib/server/context.ts": renderExpressServerContextTs(contract, graph, options),
     "src/lib/server/app.ts": renderExpressServerAppTs(realization),
     "src/lib/persistence/types.ts": persistenceScaffold["types.ts"],
     "src/lib/persistence/repositories.ts": persistenceScaffold["repositories.ts"],

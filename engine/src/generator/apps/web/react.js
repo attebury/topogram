@@ -126,8 +126,8 @@ ${footerEnabled ? `        <footer className="app-footer">
 `;
 }
 
-function buildReactScaffold(realization, graph) {
-  const implementation = getExampleImplementation(graph);
+function buildReactScaffold(realization, graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const webReference = implementation.web.reference;
   const runtimeReference = implementation.runtime.reference;
   const webReferenceWithDefaults = {
@@ -334,5 +334,5 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
 
 export function generateReactApp(graph, options = {}) {
   const realization = buildWebRealization(graph, options);
-  return buildReactScaffold(realization, graph);
+  return buildReactScaffold(realization, graph, options);
 }

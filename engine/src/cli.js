@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
+import { loadImplementationProvider } from "./example-implementation.js";
 import { recommendedVerificationTargets } from "./generator/context/shared.js";
 import {
   buildAuthHintsQueryPayload,
@@ -39,6 +42,29 @@ import {
 import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
+
+const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
+  "persistence-scaffold",
+  "hono-server",
+  "express-server",
+  "sveltekit-app",
+  "environment-plan",
+  "environment-bundle",
+  "deployment-plan",
+  "deployment-bundle",
+  "runtime-smoke-plan",
+  "runtime-smoke-bundle",
+  "runtime-check-plan",
+  "runtime-check-bundle",
+  "compile-check-plan",
+  "compile-check-bundle",
+  "app-bundle-plan",
+  "app-bundle",
+  "native-parity-plan",
+  "native-parity-bundle"
+]);
 
 function printUsage() {
   console.log("Usage: topogram validate <path>");
@@ -108,6 +134,70 @@ function normalizeTopogramPath(inputPath) {
   }
   const candidate = path.join(absolute, "topogram");
   return fs.existsSync(candidate) ? candidate : absolute;
+}
+
+function isSameOrInside(parent, child) {
+  const relative = path.relative(path.resolve(parent), path.resolve(child));
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function rejectOutputDir(message) {
+  throw new Error(`${message} Choose a generated output directory such as ./app.`);
+}
+
+function assertSafeGeneratedOutputDir(outDir, topogramRoot) {
+  const resolvedOutDir = path.resolve(outDir);
+  const resolvedTopogramRoot = path.resolve(topogramRoot);
+  const homeDir = path.resolve(os.homedir());
+  const cwd = path.resolve(process.cwd());
+
+  if (resolvedOutDir === cwd) {
+    rejectOutputDir("Refusing to replace the current working directory.");
+  }
+  if (resolvedOutDir === REPO_ROOT) {
+    rejectOutputDir("Refusing to replace the repository root.");
+  }
+  if (resolvedOutDir === homeDir) {
+    rejectOutputDir("Refusing to replace the home directory.");
+  }
+  if (isSameOrInside(resolvedOutDir, resolvedTopogramRoot) || isSameOrInside(resolvedTopogramRoot, resolvedOutDir)) {
+    rejectOutputDir("Refusing to replace the Topogram source directory or one of its parents/children.");
+  }
+
+  if (!fs.existsSync(resolvedOutDir)) {
+    return;
+  }
+  const stat = fs.statSync(resolvedOutDir);
+  if (!stat.isDirectory()) {
+    throw new Error(`Refusing to write generated output over non-directory path: ${resolvedOutDir}`);
+  }
+  const hasSentinel = fs.existsSync(path.join(resolvedOutDir, GENERATED_OUTPUT_SENTINEL));
+  const isEmpty = fs.readdirSync(resolvedOutDir).length === 0;
+  if (!isEmpty && !hasSentinel) {
+    rejectOutputDir(
+      `Refusing to replace non-empty directory without ${GENERATED_OUTPUT_SENTINEL}: ${resolvedOutDir}.`
+    );
+  }
+}
+
+function generatedOutputSentinel(target) {
+  return `${JSON.stringify({
+    generated_by: "topogram",
+    target,
+    safe_to_replace: true
+  }, null, 2)}\n`;
+}
+
+function topogramInputPathForGeneration(inputPath) {
+  const absolute = path.resolve(inputPath);
+  if (isSameOrInside(REPO_ROOT, absolute)) {
+    return `./${path.relative(REPO_ROOT, absolute).replace(/\\/g, "/")}`;
+  }
+  return path.basename(absolute) === "topogram" ? "./topogram" : ".";
+}
+
+function targetRequiresImplementationProvider(target) {
+  return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
 }
 
 function workflowPresetSelectors({
@@ -293,6 +383,10 @@ const outDir = outDirIndex >= 0 ? args[outDirIndex + 1] : null;
 const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath;
+
+if ((shouldValidate || generateTarget === "app-bundle") && inputPath) {
+  inputPath = normalizeTopogramPath(inputPath);
+}
 
 try {
   if (commandArgs?.queryName === "adoption-plan") {
@@ -1819,6 +1913,9 @@ try {
   const ast = parsePath(inputPath);
 
   if (generateTarget) {
+    const implementation = targetRequiresImplementationProvider(generateTarget)
+      ? await loadImplementationProvider(inputPath)
+      : null;
     const result = generateWorkspace(ast, {
       target: generateTarget,
       shapeId,
@@ -1833,7 +1930,9 @@ try {
       profileId,
       fromSnapshot: fromSnapshotPath ? JSON.parse(fs.readFileSync(fromSnapshotPath, "utf8")) : null,
       fromSnapshotPath,
-      fromTopogramPath
+      fromTopogramPath,
+      topogramInputPath: topogramInputPathForGeneration(inputPath),
+      implementation
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -1842,6 +1941,7 @@ try {
 
     if (shouldWrite) {
       const resolvedOutDir = path.resolve(effectiveOutDir || "artifacts");
+      assertSafeGeneratedOutputDir(resolvedOutDir, inputPath);
       const outputFiles = buildOutputFiles(result, {
         shapeId,
         capabilityId,
@@ -1851,6 +1951,10 @@ try {
         journeyId,
         taskId,
         modeId
+      });
+      outputFiles.unshift({
+        path: GENERATED_OUTPUT_SENTINEL,
+        contents: generatedOutputSentinel(generateTarget)
       });
       fs.rmSync(resolvedOutDir, { recursive: true, force: true });
       fs.mkdirSync(resolvedOutDir, { recursive: true });

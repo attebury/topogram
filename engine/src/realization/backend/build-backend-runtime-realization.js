@@ -17,7 +17,7 @@ function uiLookupBindings(graph) {
 
 export function getDefaultBackendDbProjection(graph, options = {}) {
   const candidates = dbProjectionCandidates(graph);
-  const implementation = getExampleImplementation(graph);
+  const implementation = getExampleImplementation(graph, options);
   const preferredProjectionId = implementation.runtime?.reference?.localDbProjectionId || null;
   const explicit = options.dbProjectionId
     ? candidates.find((projection) => projection.id === options.dbProjectionId)
@@ -45,7 +45,7 @@ export function buildBackendRuntimeRealization(graph, options = {}) {
     throw new Error("Backend runtime realization requires at least one DB projection");
   }
 
-  const implementation = getExampleImplementation(graph);
+  const implementation = getExampleImplementation(graph, options);
   const repositoryReference = implementation.backend.repositoryReference;
   const backendReference = implementation.backend.reference;
   const runtimeReference = implementation.runtime?.reference || null;

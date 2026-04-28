@@ -1,56 +1,86 @@
 import fs from "node:fs";
 import path from "node:path";
-
-import { TODO_IMPLEMENTATION } from "../../demos/generated/todo-demo-app/implementation/index.js";
-
-const EXAMPLE_IMPLEMENTATIONS = [TODO_IMPLEMENTATION];
+import { pathToFileURL } from "node:url";
 
 function normalizeRoot(root) {
   return String(root || "").replace(/\\/g, "/");
 }
 
-function findImplementationConfig(root) {
-  let current = root;
+function normalizeSearchRoot(root) {
+  if (!root) {
+    return null;
+  }
+  const absolute = path.resolve(root);
+  try {
+    return fs.realpathSync(absolute);
+  } catch {
+    return absolute;
+  }
+}
+
+function implementationProviderError(root) {
+  const suffix = root ? ` for ${normalizeRoot(root)}` : "";
+  return new Error(
+    `Topogram app/runtime generation requires an explicit implementation provider${suffix}. ` +
+      "Add topogram.implementation.json with implementation_module, or pass an implementation provider in generator options."
+  );
+}
+
+export function findImplementationConfig(root) {
+  let current = normalizeSearchRoot(root);
   while (current && current !== path.dirname(current)) {
     const candidate = path.join(current, "topogram.implementation.json");
     if (fs.existsSync(candidate)) {
-      return JSON.parse(fs.readFileSync(candidate, "utf8"));
+      return {
+        config: JSON.parse(fs.readFileSync(candidate, "utf8")),
+        configPath: candidate,
+        configDir: path.dirname(candidate)
+      };
     }
     current = path.dirname(current);
   }
   return null;
 }
 
-export function getExampleImplementation(graph) {
-  const root = normalizeRoot(graph?.root);
-  const realRoot = (() => {
-    try {
-      return normalizeRoot(fs.realpathSync(graph?.root));
-    } catch {
-      return root;
-    }
-  })();
-  const explicitConfig = (() => {
-    try {
-      return findImplementationConfig(fs.realpathSync(graph?.root));
-    } catch {
-      return graph?.root ? findImplementationConfig(path.resolve(graph.root)) : null;
-    }
-  })();
-  if (explicitConfig?.implementation_id) {
-    const explicitMatch = EXAMPLE_IMPLEMENTATIONS.find(
-      (implementation) => implementation.exampleId === explicitConfig.implementation_id
+export function getExampleImplementation(graph, options = {}) {
+  const implementation = options.implementation || options.implementationProvider || null;
+  if (implementation) {
+    return implementation;
+  }
+  throw implementationProviderError(graph?.root);
+}
+
+export async function loadImplementationProvider(root) {
+  const found = findImplementationConfig(root);
+  if (!found) {
+    throw implementationProviderError(root);
+  }
+
+  const { config, configPath, configDir } = found;
+  if (!config.implementation_module) {
+    throw new Error(
+      `Topogram implementation config ${normalizeRoot(configPath)} is missing implementation_module.`
     );
-    if (!explicitMatch) {
-      throw new Error(`No Topogram implementation found for implementation_id '${explicitConfig.implementation_id}'.`);
-    }
-    return explicitMatch;
   }
-  const matched = EXAMPLE_IMPLEMENTATIONS.find(
-    (implementation) => root.includes(implementation.exampleRoot) || realRoot.includes(implementation.exampleRoot)
-  );
-  if (matched) {
-    return matched;
+
+  const modulePath = path.resolve(configDir, config.implementation_module);
+  const module = await import(pathToFileURL(modulePath).href);
+  const exportName = config.implementation_export || "default";
+  const implementation = module[exportName];
+  if (!implementation) {
+    throw new Error(
+      `Topogram implementation module ${normalizeRoot(modulePath)} does not export '${exportName}'.`
+    );
   }
-  return EXAMPLE_IMPLEMENTATIONS[0];
+  if (
+    config.implementation_id &&
+    implementation.exampleId &&
+    implementation.exampleId !== config.implementation_id
+  ) {
+    throw new Error(
+      `Topogram implementation config requested '${config.implementation_id}', ` +
+        `but provider exported '${implementation.exampleId}'.`
+    );
+  }
+  return implementation;
 }

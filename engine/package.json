@@ -13,7 +13,7 @@
     "validate:bad": "node ./src/cli.js validate ./tests/fixtures/invalid/missing-reference",
     "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
     "generate:app-bundle": "node ./src/cli.js generate app ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
-    "test:narrow": "node --test ./tests/narrow/parser-lex.test.js ./tests/narrow/format-stable-stringify.test.js ./tests/narrow/reconcile-journeys.test.js ./tests/narrow/runtime-shared.test.js ./tests/narrow/auth-alpha-complete.test.js ./tests/narrow/generated-app-workflow.test.js",
-    "test": "npm run test:narrow"
+    "test:active": "node --test ./tests/active/*.test.js",
+    "test": "npm run test:active"
   }
 }

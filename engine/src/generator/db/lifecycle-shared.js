@@ -10,7 +10,10 @@ import { generatePostgresDrizzleSchema } from "./postgres/drizzle.js";
 import { generatePostgresPrismaSchema } from "./postgres/prisma.js";
 import { generateSqlitePrismaSchema } from "./sqlite/prisma.js";
 
-function defaultInputPathForGraph(graph) {
+function defaultInputPathForGraph(graph, options = {}) {
+  if (options.topogramInputPath) {
+    return options.topogramInputPath;
+  }
   const root = graph.root || "";
   if (root.includes("/demos/generated/todo-demo-app/topogram")) {
     return "./demos/generated/todo-demo-app/topogram";
@@ -18,10 +21,10 @@ function defaultInputPathForGraph(graph) {
   if (root.includes("/engine/tests/fixtures/workspaces/app-basic")) {
     return "./engine/tests/fixtures/workspaces/app-basic";
   }
-  return "./demos/generated/todo-demo-app/topogram";
+  return ".";
 }
 
-function dbLifecyclePlan(graph, projection) {
+function dbLifecyclePlan(graph, projection, options = {}) {
   const contract = buildDbProjectionContract(graph, projection);
   const snapshot = normalizeDbSchemaSnapshot(contract);
   const engine = snapshot.engine;
@@ -34,7 +37,7 @@ function dbLifecyclePlan(graph, projection) {
     dbProfile: contract.profile,
     ormProfiles,
     runtimeProfile: ormProfiles.includes("prisma") ? "prisma" : null,
-    inputPath: defaultInputPathForGraph(graph),
+    inputPath: defaultInputPathForGraph(graph, options),
     state: {
       currentSnapshot: "state/current.snapshot.json",
       desiredSnapshot: "state/desired.snapshot.json",
@@ -534,8 +537,8 @@ exec bash "$SCRIPT_DIR/db-bootstrap.sh"
 `;
 }
 
-function generateDbLifecycleBundle(graph, projection) {
-  const plan = dbLifecyclePlan(graph, projection);
+function generateDbLifecycleBundle(graph, projection, options = {}) {
+  const plan = dbLifecyclePlan(graph, projection, options);
   const files = {
     "README.md": renderDbLifecycleReadme(plan),
     ".env.example": renderDbLifecycleEnvExample(projection, plan),
@@ -561,22 +564,22 @@ function generateDbLifecycleBundle(graph, projection) {
   return files;
 }
 
-export function generateDbLifecyclePlanForProjection(graph, projection) {
-  return dbLifecyclePlan(graph, projection);
+export function generateDbLifecyclePlanForProjection(graph, projection, options = {}) {
+  return dbLifecyclePlan(graph, projection, options);
 }
 
 export function generateDbLifecyclePlan(graph, options = {}) {
   if (options.projectionId) {
-    return dbLifecyclePlan(graph, getProjection(graph, options.projectionId));
+    return dbLifecyclePlan(graph, getProjection(graph, options.projectionId), options);
   }
 
   const output = {};
   for (const projection of dbProjectionCandidates(graph)) {
-    output[projection.id] = dbLifecyclePlan(graph, projection);
+    output[projection.id] = dbLifecyclePlan(graph, projection, options);
   }
   return output;
 }
 
-export function generateDbLifecycleBundleForProjection(graph, projection) {
-  return generateDbLifecycleBundle(graph, projection);
+export function generateDbLifecycleBundleForProjection(graph, projection, options = {}) {
+  return generateDbLifecycleBundle(graph, projection, options);
 }

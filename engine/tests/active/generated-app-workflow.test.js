@@ -35,6 +35,7 @@ test("public authoring-to-app aliases validate and generate app bundles", () => 
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
 
   for (const relativePath of [
+    ".topogram-generated.json",
     "README.md",
     "package.json",
     "app-bundle-plan.json",

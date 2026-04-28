@@ -5,19 +5,20 @@ import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { generateCompileCheckPlan } from "../../src/generator/runtime/compile-check.js";
 import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "../../src/generator/runtime/smoke.js";
+import { TODO_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
-const todoTopogramPath = path.join(repoRoot, "examples", "generated", "todo", "topogram");
+const appBasicTopogramPath = path.join(repoRoot, "engine", "tests", "fixtures", "workspaces", "app-basic");
 
-function todoGraph() {
-  const parsed = parsePath(todoTopogramPath);
+function appBasicGraph() {
+  const parsed = parsePath(appBasicTopogramPath);
   const resolved = resolveWorkspace(parsed);
   assert.equal(resolved.ok, true);
   return resolved.graph;
 }
 
 test("runtime smoke bundle exposes stable script and README contracts", () => {
-  const bundle = generateRuntimeSmokeBundle(todoGraph());
+  const bundle = generateRuntimeSmokeBundle(appBasicGraph(), { implementation: TODO_IMPLEMENTATION });
 
   assert.match(bundle["scripts/smoke.sh"], /node "\$SCRIPT_DIR\/smoke\.mjs"/);
   assert.match(bundle["README.md"], /## Canonical Verification/);
@@ -27,9 +28,10 @@ test("runtime smoke bundle exposes stable script and README contracts", () => {
 });
 
 test("runtime smoke and compile plans keep required check contracts stable", () => {
-  const graph = todoGraph();
-  const smokePlan = generateRuntimeSmokePlan(graph);
-  const compilePlan = generateCompileCheckPlan(graph);
+  const graph = appBasicGraph();
+  const options = { implementation: TODO_IMPLEMENTATION };
+  const smokePlan = generateRuntimeSmokePlan(graph, options);
+  const compilePlan = generateCompileCheckPlan(graph, options);
 
   assert.equal(smokePlan.env.apiBase, "TOPOGRAM_API_BASE_URL");
   assert.equal(smokePlan.env.webBase, "TOPOGRAM_WEB_BASE_URL");

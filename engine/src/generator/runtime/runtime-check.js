@@ -10,7 +10,7 @@ import { getExampleImplementation } from "../../example-implementation.js";
 import { renderNodeScriptRunner } from "./bundle-shared.js";
 
 function buildRuntimeCheckPlan(graph, options = {}) {
-  const implementation = getExampleImplementation(graph);
+  const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeChecks = implementation.runtime.checks;
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
@@ -62,8 +62,8 @@ function buildRuntimeCheckPlan(graph, options = {}) {
   };
 }
 
-function renderRuntimeCheckEnvExample(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderRuntimeCheckEnvExample(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const demo = runtimeReference.demoEnv;
   const urls = runtimeUrls(runtimeReference);
   return `TOPOGRAM_API_BASE_URL=${urls.api}
@@ -73,8 +73,8 @@ ${runtimeReference.environment.envExample || ""}
 `;
 }
 
-function renderRuntimeCheckReadme(graph) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+function renderRuntimeCheckReadme(graph, options = {}) {
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const verification = buildVerificationSummary(graph, ["runtime", "contract", "journey"]);
   const stageNames = (runtimeReference.runtimeCheck.stageNotes && runtimeReference.runtimeCheck.stageNotes.length > 0)
     ? runtimeReference.runtimeCheck.stageNotes
@@ -125,8 +125,8 @@ function renderRuntimeCheckScript() {
   return renderNodeScriptRunner("check.mjs", { searchParentEnv: true });
 }
 
-function renderRuntimeCheckModule(graph) {
-  const implementation = getExampleImplementation(graph);
+function renderRuntimeCheckModule(graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeCheckRenderers = implementation.runtime.checkRenderers;
   const ports = runtimePorts(runtimeReference);
@@ -492,12 +492,12 @@ if (!report.ok) {
 export function generateRuntimeCheckBundle(graph, options = {}) {
   const plan = buildRuntimeCheckPlan(graph, options);
   return {
-    ".env.example": renderRuntimeCheckEnvExample(graph),
-    "README.md": renderRuntimeCheckReadme(graph),
+    ".env.example": renderRuntimeCheckEnvExample(graph, options),
+    "README.md": renderRuntimeCheckReadme(graph, options),
     "runtime-check-plan.json": `${JSON.stringify(plan, null, 2)}\n`,
     "api-contracts.json": `${JSON.stringify(generateRuntimeApiContracts(graph), null, 2)}\n`,
     "scripts/check.sh": renderRuntimeCheckScript(),
-    "scripts/check.mjs": renderRuntimeCheckModule(graph)
+    "scripts/check.mjs": renderRuntimeCheckModule(graph, options)
   };
 }
 

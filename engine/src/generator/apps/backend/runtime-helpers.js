@@ -475,8 +475,8 @@ export async function authorizeWithGeneratedAuthProfile(
 `;
 }
 
-export function renderServerContextTs(contract, graph) {
-  const implementation = getExampleImplementation(graph);
+export function renderServerContextTs(contract, graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const repositoryReference = implementation.backend.repositoryReference;
   const repositoryInterfaceName = repositoryReference.repositoryInterfaceName;
   const dependencyName = repositoryReference.dependencyName;
@@ -497,8 +497,8 @@ export interface ServerDependencies {
 `;
 }
 
-export function renderServerIndexTs(graph) {
-  const implementation = getExampleImplementation(graph);
+export function renderServerIndexTs(graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   const backendReference = implementation.backend.reference;
   const runtimeReference = implementation.runtime.reference;
   const repositoryReference = implementation.backend.repositoryReference;
@@ -581,8 +581,8 @@ export function renderServerTsconfig() {
   }, null, 2)}\n`;
 }
 
-export function renderServerSeedScript(graph) {
-  const implementation = getExampleImplementation(graph);
+export function renderServerSeedScript(graph, options = {}) {
+  const implementation = getExampleImplementation(graph, options);
   return implementation.backend.reference.renderSeedScript();
 }
 

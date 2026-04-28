@@ -29,7 +29,7 @@ function escapeSwiftString(value) {
 }
 
 function buildNativeParityPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const urls = runtimeUrls(runtimeReference);
   const demoUserId = runtimeReference.demoEnv?.userId ?? null;
@@ -298,7 +298,7 @@ export function generateNativeParityPlan(graph, options = {}) {
 
 export function generateNativeParityBundle(graph, options = {}) {
   const plan = buildNativeParityPlan(graph, options);
-  const runtimeReference = getExampleImplementation(graph).runtime.reference;
+  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const urls = runtimeUrls(runtimeReference);
 
   return {

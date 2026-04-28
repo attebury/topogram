@@ -1,3 +1,5 @@
 {
-  "implementation_id": "todo-demo-app"
+  "implementation_id": "todo-demo-app",
+  "implementation_module": "./implementation/index.js",
+  "implementation_export": "TODO_IMPLEMENTATION"
 }

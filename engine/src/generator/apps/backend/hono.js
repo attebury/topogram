@@ -13,7 +13,6 @@ import {
 } from "./runtime-helpers.js";
 import { generateServerContract, renderServerContractModule } from "./server-contract.js";
 import { toPascalCase } from "../../db/shared.js";
-import { getExampleImplementation } from "../../../example-implementation.js";
 
 function renderServerAppTs(realization) {
   const { contract, lookupRoutes } = realization;
@@ -185,17 +184,17 @@ export function generateHonoServer(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
   const realization = buildBackendRuntimeRealization(graph, options);
   const contract = realization.contract;
-  const persistenceScaffold = generatePersistenceScaffold(graph, { projectionId: realization.dbProjection.id });
+  const persistenceScaffold = generatePersistenceScaffold(graph, { ...options, projectionId: realization.dbProjection.id });
   const prismaSchema = generateDbTarget("prisma-schema", graph, { projectionId: realization.dbProjection.id });
 
   return {
     "package.json": renderServerPackageJson(),
     "tsconfig.json": renderServerTsconfig(),
-    "scripts/seed-demo.mjs": renderServerSeedScript(graph),
-    "src/index.ts": renderServerIndexTs(graph),
+    "scripts/seed-demo.mjs": renderServerSeedScript(graph, options),
+    "src/index.ts": renderServerIndexTs(graph, options),
     "src/lib/topogram/server-contract.ts": renderServerContractModule(graph, projection.id),
     "src/lib/server/helpers.ts": renderServerHelpers(),
-    "src/lib/server/context.ts": renderServerContextTs(contract, graph),
+    "src/lib/server/context.ts": renderServerContextTs(contract, graph, options),
     "src/lib/server/app.ts": renderServerAppTs(realization),
     "src/lib/persistence/types.ts": persistenceScaffold["types.ts"],
     "src/lib/persistence/repositories.ts": persistenceScaffold["repositories.ts"],

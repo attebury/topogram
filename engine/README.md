@@ -28,7 +28,7 @@ No global install or published npm package is assumed yet.
 ## Layout
 
 - `src/` - engine source
-- `tests/narrow/` - focused engine tests
+- `tests/active/` - retained active engine tests
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
 - `tests/fixtures/invalid/` - invalid model cases
@@ -57,7 +57,7 @@ npm test
 Run the app-generation workflow test:
 
 ```bash
-node --test ./tests/narrow/generated-app-workflow.test.js
+node --test ./tests/active/generated-app-workflow.test.js
 ```
 
 Validate or generate through the public CLI shape:

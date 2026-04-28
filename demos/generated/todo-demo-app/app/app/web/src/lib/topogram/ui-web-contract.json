@@ -1646,6 +1646,5 @@
       "route": "/task-exports/:job_id",
       "include": true
     }
-  ],
-  "graphRoot": "/Users/attebury/Documents/topogram-pm/demos/generated/todo-demo-app/topogram"
+  ]
 }

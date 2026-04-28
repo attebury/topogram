@@ -31,8 +31,7 @@ const createResponse = await fetch(new URL("/tasks", apiBase), {
   },
   body: JSON.stringify({
     title: "Smoke Test Task",
-    project_id: demoContainerId,
-    owner_id: demoUserId
+    project_id: demoContainerId
   })
 });
 await expectStatus(createResponse, 201, "create resource");
