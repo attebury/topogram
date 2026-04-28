@@ -9,10 +9,12 @@ zero_sha="0000000000000000000000000000000000000000"
 
 is_excluded_path() {
   case "$1" in
-    examples/*/artifacts/*) return 0 ;;
-    examples/*/apps/*) return 0 ;;
-    examples/*/topogram/candidates/docs/journeys/import-report.json) return 0 ;;
-    examples/*/topogram/tests/fixtures/expected/*) return 0 ;;
+    examples/generated/*/artifacts/*) return 0 ;;
+    examples/generated/*/apps/*) return 0 ;;
+    examples/generated/*/topogram/candidates/docs/journeys/import-report.json) return 0 ;;
+    examples/generated/*/topogram/tests/fixtures/expected/*) return 0 ;;
+    demos/generated/*/app/*) return 0 ;;
+    engine/tests/fixtures/expected/*) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -64,7 +66,7 @@ main() {
     echo >&2
     echo "$matches" >&2
     echo >&2
-    echo "Allowed exceptions are limited to generated example outputs and expected fixtures under examples/." >&2
+    echo "Allowed exceptions are limited to generated outputs and expected fixtures." >&2
     echo "If this is an intentional generated-artifact change, normalize the path or expand the allowlist deliberately." >&2
     exit 1
   fi

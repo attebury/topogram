@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "engine/**"
+      - "demos/**"
       - "examples/**"
       - "product/**"
       - "scripts/**"
@@ -14,6 +15,7 @@ on:
       - main
     paths:
       - "engine/**"
+      - "demos/**"
       - "examples/**"
       - "product/**"
       - "scripts/**"
