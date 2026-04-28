@@ -19,28 +19,28 @@ npm install
 Validate the Topogram:
 
 ```bash
-npm run topogram:validate
+npm run check
 ```
 
 Generate the app bundle:
 
 ```bash
-npm run topogram:generate
+npm run generate
 ```
 
 Bootstrap and run the generated app:
 
 ```bash
-npm run app:bootstrap
-npm run app:dev
+npm run bootstrap
+npm run dev
 ```
 
 Run verification:
 
 ```bash
-npm run app:compile
+npm run verify
 npm run app:smoke
 npm run app:runtime-check
 ```
 
-For normal iteration, edit files under `topogram/`, regenerate with `npm run topogram:generate`, then rerun the relevant app checks.
+For normal iteration, edit files under `topogram/`, regenerate with `npm run generate`, then rerun the relevant app checks.

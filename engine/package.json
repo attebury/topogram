@@ -7,12 +7,14 @@
     "topogram": "./src/cli.js"
   },
   "scripts": {
+    "check": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic",
     "parse": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram",
     "parse:json": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --json",
     "validate": "node ./src/cli.js validate ../demos/generated/todo-demo-app/topogram",
     "validate:bad": "node ./src/cli.js validate ./tests/fixtures/invalid/missing-reference",
     "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
-    "generate:app-bundle": "node ./src/cli.js generate app ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
+    "generate:app": "node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out ./.tmp/app-basic",
+    "generate:app-bundle": "node ./src/cli.js generate ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
     "test:types": "tsc --allowJs --checkJs --noEmit --noResolve --module NodeNext --moduleResolution NodeNext --target ES2022 --lib ES2022,DOM ./tests/types/check-globals.d.ts ./src/project-config.js ./src/generator/registry.js ./src/generator/runtime/shared.js",
     "test:active": "npm run test:types && node --test ./tests/active/*.test.js",
     "test": "npm run test:active"

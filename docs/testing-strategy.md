@@ -25,16 +25,16 @@ Run the compile check:
 ```bash
 cd ../demos/generated/todo-demo-app
 npm install
-npm run topogram:check
-npm run topogram:generate
-npm run app:compile
+npm run check
+npm run generate
+npm run verify
 ```
 
 Run the smoke path when runtime services and local database state are available:
 
 ```bash
-npm run app:bootstrap
-npm run app:dev
+npm run bootstrap
+npm run dev
 npm run app:smoke
 npm run app:runtime-check
 ```

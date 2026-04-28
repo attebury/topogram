@@ -9,16 +9,16 @@ Use Node 20+.
 ```bash
 cd demos/generated/todo-demo-app
 npm install
-npm run topogram:check
-npm run topogram:generate
-npm run app:compile
+npm run check
+npm run generate
+npm run verify
 ```
 
 For local runtime verification, run:
 
 ```bash
-npm run app:bootstrap
-npm run app:dev
+npm run bootstrap
+npm run dev
 npm run app:smoke
 npm run app:runtime-check
 ```
@@ -35,9 +35,8 @@ npm run app:runtime-check
 The engine is private and local to this repo, but it exposes the `topogram` bin for local demo consumption:
 
 ```bash
-topogram validate ./topogram
 topogram check ./topogram
-topogram generate app ./topogram --out ./app
+topogram generate ./topogram --out ./app
 ```
 
 No global install or published npm package is assumed yet.

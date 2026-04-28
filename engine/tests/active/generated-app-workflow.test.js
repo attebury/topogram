@@ -25,13 +25,19 @@ function readText(filePath) {
   return fs.readFileSync(filePath, "utf8").replace(/\s+$/, "\n");
 }
 
-test("public authoring-to-app aliases validate and generate app bundles", () => {
-  const validate = runCli(["validate", fixtureRoot]);
-  assert.equal(validate.status, 0, validate.stderr || validate.stdout);
-  assert.match(validate.stdout, /Validated \d+ file\(s\)/);
+test("public authoring-to-app commands check and generate app bundles", () => {
+  const help = runCli(["--help"]);
+  assert.equal(help.status, 0, help.stderr || help.stdout);
+  assert.match(help.stdout, /topogram check <path>/);
+  assert.match(help.stdout, /topogram generate <path>/);
+  assert.doesNotMatch(help.stdout, /query work-packet/);
+
+  const check = runCli(["check", fixtureRoot]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  assert.match(check.stdout, /Topogram check passed/);
 
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-app-basic-"));
-  const generate = runCli(["generate", "app", fixtureRoot, "--out", outputRoot]);
+  const generate = runCli(["generate", fixtureRoot, "--out", outputRoot]);
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
 
   for (const relativePath of [

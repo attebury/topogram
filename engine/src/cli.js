@@ -74,10 +74,25 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "native-parity-bundle"
 ]);
 
-function printUsage() {
+function printUsage(options = {}) {
+  const { all = false } = options;
   console.log("Usage: topogram check <path> [--json]");
-  console.log("Usage: topogram validate <path>");
+  console.log("   or: topogram generate <path> [--out <path>]");
   console.log("   or: topogram generate app <path> [--out <path>]");
+  console.log("");
+  console.log("Common commands:");
+  console.log("  topogram check ./topogram --json");
+  console.log("  topogram generate ./topogram --out ./app");
+  console.log("  topogram import app ./existing-app --write");
+  console.log("");
+  console.log("Generated app commands are emitted into the output package.json.");
+  console.log("Run `topogram help all` for legacy and agent-facing commands.");
+  if (!all) {
+    return;
+  }
+  console.log("");
+  console.log("Legacy and internal commands:");
+  console.log("Usage: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
@@ -307,7 +322,17 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
+if (args.length === 0 || args.includes("--help") || args.includes("-h") || args[0] === "help") {
+  printUsage({ all: args[1] === "all" || args.includes("--all") });
+  process.exit(args.length === 0 ? 1 : 0);
+}
+
+if (args[0] === "help-all") {
+  printUsage({ all: true });
+  process.exit(0);
+}
+
+if (args[0] === "generate" && args.length === 1) {
   printUsage();
   process.exit(1);
 }
@@ -320,6 +345,8 @@ if (args[0] === "check") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[2] };
+} else if (args[0] === "generate" && args[1] !== "journeys") {
+  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[1] };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -395,7 +422,7 @@ if (args[0] === "check") {
 } else if (args[0] === "query" && args[1] === "auth-review-packet") {
   commandArgs = { queryName: "auth-review-packet", inputPath: args[2] };
 }
-if (commandArgs?.inputPath) {
+if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath")) {
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
@@ -451,6 +478,12 @@ const outDir = outDirIndex >= 0 ? args[outDirIndex + 1] : null;
 const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath;
+
+if ((shouldCheck || shouldValidate || generateTarget === "app-bundle") && !inputPath) {
+  console.error("Missing required <path>.");
+  printUsage();
+  process.exit(1);
+}
 
 if ((shouldCheck || shouldValidate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);

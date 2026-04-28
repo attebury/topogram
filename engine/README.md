@@ -19,9 +19,8 @@ The engine is still private, but it exposes a local CLI binary:
 This lets demos consume the engine through a local file dependency and call:
 
 ```bash
-topogram validate ./topogram
 topogram check ./topogram
-topogram generate app ./topogram --out ./app
+topogram generate ./topogram --out ./app
 ```
 
 No global install or published npm package is assumed yet.
@@ -55,6 +54,12 @@ Run the engine test lane:
 npm test
 ```
 
+Check the active engine fixture:
+
+```bash
+npm run check
+```
+
 Run the app-generation workflow test:
 
 ```bash
@@ -65,5 +70,5 @@ Validate or generate through the public CLI shape:
 
 ```bash
 node ./src/cli.js check ./tests/fixtures/workspaces/app-basic
-node ./src/cli.js generate app ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
+node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
 ```

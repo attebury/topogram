@@ -4,7 +4,7 @@ The current greenfield workflow is:
 
 1. edit `topogram/` and `topogram.project.json`
 2. run `topogram check ./topogram`
-3. generate app artifacts
+3. run `topogram generate ./topogram --out ./app`
 4. compile or smoke-check the generated app
 5. repeat
 
@@ -21,9 +21,9 @@ cd engine
 npm test
 cd ../demos/generated/todo-demo-app
 npm install
-npm run topogram:check
-npm run topogram:generate
-npm run app:compile
+npm run check
+npm run generate
+npm run verify
 ```
 
 Run `npm run app:smoke` and `npm run app:runtime-check` when local services are ready.
