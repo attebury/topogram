@@ -1,0 +1,14 @@
+shape shape_output_task_export_callback {
+  name "Task Export Callback"
+  description "Outbound webhook payload sent when a task export completes"
+
+  fields {
+    job_id uuid required
+    status export_job_status required
+    download_url text optional
+    error_message text optional
+    completed_at datetime optional
+  }
+
+  status active
+}

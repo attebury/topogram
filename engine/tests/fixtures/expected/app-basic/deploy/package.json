@@ -1,0 +1,10 @@
+{
+  "name": "topogram-deployment-bundle",
+  "private": true,
+  "scripts": {
+    "deploy:check": "bash ./scripts/deploy-check.sh",
+    "deploy:server": "fly deploy",
+    "deploy:web": "vercel deploy",
+    "db:migrate": "bash ./scripts/deploy-migrate.sh"
+  }
+}

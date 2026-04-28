@@ -1,0 +1,16 @@
+verification ver_runtime_smoke {
+  name "Todo runtime smoke"
+  description "Covers the minimum web and API checks for the generated Todo stack."
+
+  validates [cap_create_task, cap_get_task, cap_list_tasks]
+  method smoke
+
+  scenarios [
+    tasks_page_responds,
+    create_task_smoke,
+    get_created_task_smoke,
+    list_tasks_smoke
+  ]
+
+  status active
+}

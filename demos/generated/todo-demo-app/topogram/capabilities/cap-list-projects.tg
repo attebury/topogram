@@ -1,0 +1,11 @@
+capability cap_list_projects {
+  name "List Projects"
+  description "Allows a user to list projects"
+
+  actors [actor_user]
+  reads [entity_project]
+  input [shape_input_list_projects]
+  output [shape_output_project_detail]
+
+  status active
+}

@@ -41,7 +41,9 @@ import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
 
 function printUsage() {
-  console.log("Usage: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
+  console.log("Usage: topogram validate <path>");
+  console.log("   or: topogram generate app <path> [--out <path>]");
+  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
   console.log("   or: node ./src/cli.js generate journeys <path> [--write]");
@@ -157,7 +159,11 @@ if (args.length === 0) {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "import" && args[1] === "app") {
+if (args[0] === "validate") {
+  commandArgs = { validate: true, inputPath: args[1] };
+} else if (args[0] === "generate" && args[1] === "app") {
+  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[2] };
+} else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
   commandArgs = { workflowName: "scan-docs", inputPath: args[2] };
@@ -236,7 +242,7 @@ if (commandArgs?.inputPath) {
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
-const shouldValidate = args.includes("--validate");
+const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
 const generateTarget = commandArgs?.generateTarget || (generateIndex >= 0 ? args[generateIndex + 1] : null);
@@ -280,12 +286,13 @@ const fromSnapshotIndex = args.indexOf("--from-snapshot");
 const fromSnapshotPath = fromSnapshotIndex >= 0 ? path.resolve(args[fromSnapshotIndex + 1]) : null;
 const fromTopogramIndex = args.indexOf("--from-topogram");
 const fromTopogramPath = fromTopogramIndex >= 0 ? path.resolve(args[fromTopogramIndex + 1]) : null;
-const shouldWrite = args.includes("--write");
+const shouldWrite = Boolean(commandArgs?.write) || args.includes("--write");
 const refreshAdopted = args.includes("--refresh-adopted");
 const outDirIndex = args.indexOf("--out-dir");
 const outDir = outDirIndex >= 0 ? args[outDirIndex + 1] : null;
 const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
+const effectiveOutDir = outDir || outPath;
 
 try {
   if (commandArgs?.queryName === "adoption-plan") {
@@ -1794,7 +1801,7 @@ try {
   if (workflowName) {
     const result = runWorkflow(workflowName, inputPath, { from: fromValue, adopt: adoptValue, write: shouldWrite, refreshAdopted });
     if (shouldWrite) {
-      const resolvedOutDir = path.resolve(outDir || result.defaultOutDir || "artifacts");
+      const resolvedOutDir = path.resolve(effectiveOutDir || result.defaultOutDir || "artifacts");
       fs.mkdirSync(resolvedOutDir, { recursive: true });
       for (const [relativePath, contents] of Object.entries(result.files || {})) {
         const destination = path.join(resolvedOutDir, relativePath);
@@ -1834,7 +1841,7 @@ try {
     }
 
     if (shouldWrite) {
-      const resolvedOutDir = path.resolve(outDir || "artifacts");
+      const resolvedOutDir = path.resolve(effectiveOutDir || "artifacts");
       const outputFiles = buildOutputFiles(result, {
         shapeId,
         capabilityId,

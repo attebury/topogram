@@ -1,0 +1,11 @@
+capability cap_get_user {
+  name "Get User"
+  description "Allows a user to fetch a single user by id"
+
+  actors [actor_user]
+  reads [entity_user]
+  input [shape_input_get_user]
+  output [shape_output_user_detail]
+
+  status active
+}

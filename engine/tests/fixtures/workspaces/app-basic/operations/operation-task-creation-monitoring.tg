@@ -1,0 +1,10 @@
+operation op_task_creation_monitoring {
+  name "Task creation monitoring"
+  description "Runtime monitoring for task creation"
+
+  observes [cap_create_task]
+  metrics [task_creation_latency, task_creation_failure_rate]
+  alerts [high_task_creation_failure_rate]
+
+  status active
+}

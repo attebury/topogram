@@ -1,0 +1,22 @@
+{
+  "name": "topogram-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "seed:demo": "node ./scripts/seed-demo.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@prisma/client": "^5.22.0",
+    "hono": "^4.6.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "prisma": "^5.22.0",
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.2"
+  }
+}

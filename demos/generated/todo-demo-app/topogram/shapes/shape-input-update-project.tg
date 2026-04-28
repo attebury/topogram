@@ -1,0 +1,14 @@
+shape shape_input_update_project {
+  name "Update Project Input"
+  description "Input for updating a project"
+
+  fields {
+    project_id uuid required
+    name string optional
+    description text optional
+    status project_status optional
+    owner_id uuid optional
+  }
+
+  status active
+}

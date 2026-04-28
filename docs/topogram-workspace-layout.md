@@ -2,16 +2,24 @@
 
 ## Summary
 
-Topogram should make the boundary between canonical, candidate, and generated surfaces obvious from the file layout.
+Topogram should make the boundary between authored, generated, fixture, and deferred surfaces obvious from the file layout.
 
 The goal is that a human or agent can answer three questions quickly:
 
-- what is durable source of truth?
-- what is only a proposal or candidate?
+- what is authored source of truth?
 - what is generated and should be regenerated rather than hand-edited?
-- what is maintained code that humans and agents may edit, but that the generator does not own?
+- what is an engine regression fixture rather than a user demo?
+- what is deferred import, maintained, or brownfield proof material?
 
 ## Recommended Layout
+
+### Active repo layout
+
+- `engine/**`: Topogram engine implementation and engine tests
+- `engine/tests/fixtures/workspaces/**`: engine-owned test workspaces
+- `engine/tests/fixtures/expected/**`: engine-owned golden outputs
+- `demos/generated/<domain>-demo-app/**`: user-facing generated app demos
+- `examples/**`: legacy transition material retained while active demos move under `demos/**`
 
 ### Canonical Topogram surfaces
 
@@ -51,7 +59,7 @@ These are engine-owned outputs.
 Typical layout:
 
 - `artifacts/**`
-- `apps/**`
+- `app/**` inside user-facing demos
 - generated contracts, bundles, digests, slices, reports, and verification outputs
 
 Principle:
@@ -74,6 +82,11 @@ Principle:
 - this code may be edited by both humans and agents
 - but it should not be treated as freely regenerable
 - Topogram should define the boundary it needs to stay aligned with, not replace the ownership of the code itself
+- maintained-app proof work is deferred during the generated-app reset
+
+### Deferred imported proof material
+
+`topogram-demo` and imported/brownfield proof docs are reference material during the current reset. They should not be required for quickstart, engine development, or generated app demos until `demos/imported/**` becomes active later.
 
 ## Ownership Model
 

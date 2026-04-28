@@ -1,0 +1,7718 @@
+export const serverContract = {
+  "type": "server_contract_graph",
+  "projection": {
+    "id": "proj_api",
+    "name": "API",
+    "platform": "dotnet"
+  },
+  "routes": [
+    {
+      "capabilityId": "cap_create_task",
+      "handlerName": "handleCreateTask",
+      "repositoryMethod": "createTask",
+      "method": "POST",
+      "path": "/tasks",
+      "successStatus": 201,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_create_task",
+          "name": "Create Task Input"
+        },
+        "fields": [
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "title",
+          "priority",
+          "project_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_create_task",
+          "title": "Create Task Input",
+          "description": "Fields accepted when creating a task",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "priority",
+            "project_id"
+          ]
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "rule_no_task_creation_in_archived_project",
+          "status": 409,
+          "source": "policy"
+        },
+        {
+          "type": "api_error_case",
+          "code": "rule_only_active_users_may_own_tasks",
+          "status": 400,
+          "source": "policy"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_create_task_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_create_task_idempotency_conflict",
+          "status": 409,
+          "source": "idempotency"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.create",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [
+          {
+            "header": "Idempotency-Key",
+            "required": true,
+            "error": 409,
+            "code": "cap_create_task_idempotency_conflict"
+          }
+        ],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_get_task",
+      "handlerName": "handleGetTask",
+      "repositoryMethod": "getTask",
+      "method": "GET",
+      "path": "/tasks/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_get_task",
+          "name": "Get Task Input"
+        },
+        "fields": [
+          {
+            "name": "task_id",
+            "sourceName": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "required": [
+          "task_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_get_task",
+          "title": "Get Task Input",
+          "description": "Input for fetching a single task",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "task_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "task_id",
+              "sourceName": "task_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_get_task_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_task_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": null,
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [
+          {
+            "responseHeader": "ETag",
+            "requestHeader": "If-None-Match",
+            "required": false,
+            "notModified": 304,
+            "source": "updated_at",
+            "code": "cap_get_task_not_modified"
+          }
+        ],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_update_task",
+      "handlerName": "handleUpdateTask",
+      "repositoryMethod": "updateTask",
+      "method": "PATCH",
+      "path": "/tasks/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_update_task",
+          "name": "Update Task Input"
+        },
+        "fields": [
+          {
+            "name": "task_id",
+            "sourceName": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          }
+        ],
+        "required": [
+          "task_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_update_task",
+          "title": "Update Task Input",
+          "description": "Input for updating a task",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "task_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "task_id",
+              "sourceName": "task_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ]
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "rule_only_active_users_may_own_tasks",
+          "status": 400,
+          "source": "policy"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_update_task_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_update_task_precondition_failed",
+          "status": 412,
+          "source": "precondition"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.update",
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
+          }
+        ],
+        "preconditions": [
+          {
+            "header": "If-Match",
+            "required": true,
+            "error": 412,
+            "source": "updated_at",
+            "code": "cap_update_task_precondition_failed"
+          }
+        ],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_complete_task",
+      "handlerName": "handleCompleteTask",
+      "repositoryMethod": "completeTask",
+      "method": "POST",
+      "path": "/tasks/:id/complete",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_complete_task",
+          "name": "Complete Task Input"
+        },
+        "fields": [
+          {
+            "name": "task_id",
+            "sourceName": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          }
+        ],
+        "required": [
+          "task_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_complete_task",
+          "title": "Complete Task Input",
+          "description": "Input for marking a task complete",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "task_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "task_id",
+              "sourceName": "task_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_complete_task_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_complete_task_precondition_failed",
+          "status": 412,
+          "source": "precondition"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_complete_task_idempotency_conflict",
+          "status": 409,
+          "source": "idempotency"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.complete",
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
+          }
+        ],
+        "preconditions": [
+          {
+            "header": "If-Match",
+            "required": true,
+            "error": 412,
+            "source": "updated_at",
+            "code": "cap_complete_task_precondition_failed"
+          }
+        ],
+        "idempotency": [
+          {
+            "header": "Idempotency-Key",
+            "required": true,
+            "error": 409,
+            "code": "cap_complete_task_idempotency_conflict"
+          }
+        ],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_list_tasks",
+      "handlerName": "handleListTasks",
+      "repositoryMethod": "listTasks",
+      "method": "GET",
+      "path": "/tasks",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_list_tasks",
+          "name": "List Tasks Input"
+        },
+        "fields": [
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "after",
+            "sourceName": "after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "after"
+            }
+          },
+          {
+            "name": "limit",
+            "sourceName": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "limit"
+            }
+          }
+        ],
+        "required": [],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_list_tasks",
+          "title": "List Tasks Input",
+          "description": "Input for listing tasks",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            },
+            "after": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 25
+            }
+          },
+          "additionalProperties": false
+        },
+        "transport": {
+          "path": [],
+          "query": [
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ]
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "after",
+              "sourceName": "after",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "after"
+              }
+            },
+            {
+              "name": "limit",
+              "sourceName": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "default": 25
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "limit"
+              }
+            }
+          ],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "next_cursor"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "topogram:shape:shape_output_task_detail",
+                "title": "Task Detail Output",
+                "description": "Detailed task payload",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "active",
+                      "completed",
+                      "archived"
+                    ],
+                    "default": "draft"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "default": "medium"
+                  },
+                  "owner_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "project_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "updated_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "completed_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "due_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "title",
+                  "status",
+                  "priority",
+                  "project_id",
+                  "created_at",
+                  "updated_at"
+                ]
+              }
+            },
+            "next_cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "mode": "cursor",
+        "collection": true,
+        "itemJsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "pagination": null,
+        "itemShape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "ordering": {
+          "field": "created_at",
+          "direction": "desc"
+        },
+        "cursor": {
+          "requestAfter": "after",
+          "responseNext": "next_cursor",
+          "responsePrev": null
+        },
+        "limit": {
+          "field": "limit",
+          "defaultValue": 25,
+          "maxValue": 100
+        },
+        "total": {
+          "included": false
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_list_tasks_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_tasks_invalid_cursor",
+          "status": 400,
+          "source": "cursor_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_tasks_invalid_limit",
+          "status": 400,
+          "source": "cursor_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_delete_task",
+      "handlerName": "handleDeleteTask",
+      "repositoryMethod": "deleteTask",
+      "method": "DELETE",
+      "path": "/tasks/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_delete_task",
+          "name": "Delete Task Input"
+        },
+        "fields": [
+          {
+            "name": "task_id",
+            "sourceName": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "required": [
+          "task_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_delete_task",
+          "title": "Delete Task Input",
+          "description": "Input for deleting a task",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "task_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "task_id",
+              "sourceName": "task_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_detail",
+          "name": "Task Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "title",
+            "sourceName": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "title"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "priority",
+            "sourceName": "priority",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "priority"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          },
+          {
+            "name": "updated_at",
+            "sourceName": "updated_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "updated_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "due_at",
+            "sourceName": "due_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "due_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "title",
+          "status",
+          "priority",
+          "project_id",
+          "created_at",
+          "updated_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_detail",
+          "title": "Task Detail Output",
+          "description": "Detailed task payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ],
+              "default": "draft"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "default": "medium"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "project_id",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "title",
+              "sourceName": "title",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "title"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ],
+                "default": "draft"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "priority",
+              "sourceName": "priority",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "default": "medium"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "priority"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            },
+            {
+              "name": "updated_at",
+              "sourceName": "updated_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "updated_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "due_at",
+              "sourceName": "due_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "due_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_delete_task_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_delete_task_precondition_failed",
+          "status": 412,
+          "source": "precondition"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_delete_task_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": "manager",
+            "permission": "tasks.delete",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [
+          {
+            "header": "If-Match",
+            "required": true,
+            "error": 412,
+            "source": "updated_at",
+            "code": "cap_delete_task_precondition_failed"
+          }
+        ],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_export_tasks",
+      "handlerName": "handleExportTasks",
+      "repositoryMethod": "exportTasks",
+      "method": "POST",
+      "path": "/tasks/export",
+      "successStatus": 202,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_export_tasks",
+          "name": "Export Tasks Input"
+        },
+        "fields": [
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "project_id"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "callback_url",
+            "sourceName": "callback_url",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "callback_url"
+            }
+          }
+        ],
+        "required": [],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_export_tasks",
+          "title": "Export Tasks Input",
+          "description": "Filters accepted when requesting a task export",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "completed",
+                "archived"
+              ]
+            },
+            "callback_url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "project_id"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "active",
+                  "completed",
+                  "archived"
+                ]
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "callback_url",
+              "sourceName": "callback_url",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "callback_url"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_export_job",
+          "name": "Task Export Job"
+        },
+        "fields": [
+          {
+            "name": "job_id",
+            "sourceName": "job_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "job_id"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "accepted"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "status_url",
+            "sourceName": "status_url",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status_url"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          }
+        ],
+        "required": [
+          "job_id",
+          "status",
+          "status_url",
+          "submitted_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_export_job",
+          "title": "Task Export Job",
+          "description": "Accepted job payload for long-running task exports",
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "default": "accepted"
+            },
+            "status_url": {
+              "type": "string"
+            },
+            "submitted_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "job_id",
+            "status",
+            "status_url",
+            "submitted_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "job_id",
+              "sourceName": "job_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "job_id"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "default": "accepted"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "status_url",
+              "sourceName": "status_url",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status_url"
+              }
+            },
+            {
+              "name": "submitted_at",
+              "sourceName": "submitted_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "submitted_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_export_tasks_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.export",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [
+          {
+            "mode": "job",
+            "accepted": 202,
+            "locationHeader": "Location",
+            "retryAfterHeader": "Retry-After",
+            "statusPath": "/task-exports/:job_id",
+            "statusCapability": {
+              "id": "cap_get_task_export_job",
+              "kind": "capability"
+            },
+            "job": {
+              "id": "shape_output_task_export_job",
+              "kind": "shape"
+            }
+          }
+        ],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_get_task_export_job",
+      "handlerName": "handleGetTaskExportJob",
+      "repositoryMethod": "getTaskExportJob",
+      "method": "GET",
+      "path": "/task-exports/:job_id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_get_task_export_job",
+          "name": "Get Task Export Job Input"
+        },
+        "fields": [
+          {
+            "name": "job_id",
+            "sourceName": "job_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "job_id"
+            }
+          }
+        ],
+        "required": [
+          "job_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_get_task_export_job",
+          "title": "Get Task Export Job Input",
+          "description": "Input for fetching task export job status",
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "job_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "job_id",
+              "sourceName": "job_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "job_id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_task_export_status",
+          "name": "Task Export Status"
+        },
+        "fields": [
+          {
+            "name": "job_id",
+            "sourceName": "job_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "job_id"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "accepted",
+                "running",
+                "completed",
+                "failed",
+                "expired"
+              ],
+              "default": "accepted"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "status_url",
+            "sourceName": "status_url",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status_url"
+            }
+          },
+          {
+            "name": "submitted_at",
+            "sourceName": "submitted_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "submitted_at"
+            }
+          },
+          {
+            "name": "completed_at",
+            "sourceName": "completed_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "completed_at"
+            }
+          },
+          {
+            "name": "expires_at",
+            "sourceName": "expires_at",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "expires_at"
+            }
+          },
+          {
+            "name": "download_url",
+            "sourceName": "download_url",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "download_url"
+            }
+          },
+          {
+            "name": "error_message",
+            "sourceName": "error_message",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "error_message"
+            }
+          }
+        ],
+        "required": [
+          "job_id",
+          "status",
+          "status_url",
+          "submitted_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_task_export_status",
+          "title": "Task Export Status",
+          "description": "Status payload for long-running task export jobs",
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "accepted",
+                "running",
+                "completed",
+                "failed",
+                "expired"
+              ],
+              "default": "accepted"
+            },
+            "status_url": {
+              "type": "string"
+            },
+            "submitted_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "download_url": {
+              "type": "string"
+            },
+            "error_message": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "job_id",
+            "status",
+            "status_url",
+            "submitted_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "job_id",
+              "sourceName": "job_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "job_id"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "accepted",
+                  "running",
+                  "completed",
+                  "failed",
+                  "expired"
+                ],
+                "default": "accepted"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "status_url",
+              "sourceName": "status_url",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status_url"
+              }
+            },
+            {
+              "name": "submitted_at",
+              "sourceName": "submitted_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "submitted_at"
+              }
+            },
+            {
+              "name": "completed_at",
+              "sourceName": "completed_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "completed_at"
+              }
+            },
+            {
+              "name": "expires_at",
+              "sourceName": "expires_at",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "expires_at"
+              }
+            },
+            {
+              "name": "download_url",
+              "sourceName": "download_url",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "download_url"
+              }
+            },
+            {
+              "name": "error_message",
+              "sourceName": "error_message",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "error_message"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_get_task_export_job_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_task_export_job_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.export.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [
+          {
+            "asyncFor": {
+              "id": "cap_export_tasks",
+              "kind": "capability"
+            },
+            "stateField": "status",
+            "completed": "completed",
+            "failed": "failed",
+            "expired": "expired",
+            "downloadCapability": {
+              "id": "cap_download_task_export",
+              "kind": "capability"
+            },
+            "downloadField": "download_url",
+            "errorField": "error_message"
+          }
+        ],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_download_task_export",
+      "handlerName": "handleDownloadTaskExport",
+      "repositoryMethod": "downloadTaskExport",
+      "method": "GET",
+      "path": "/task-exports/:job_id/download",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_get_task_export_job",
+          "name": "Get Task Export Job Input"
+        },
+        "fields": [
+          {
+            "name": "job_id",
+            "sourceName": "job_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "job_id"
+            }
+          }
+        ],
+        "required": [
+          "job_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_get_task_export_job",
+          "title": "Get Task Export Job Input",
+          "description": "Input for fetching task export job status",
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "job_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "job_id",
+              "sourceName": "job_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "job_id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": null,
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_download_task_export_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_download_task_export_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_download_task_export_not_ready",
+          "status": 409,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "tasks.export.download",
+            "claim": null,
+            "claimValue": null,
+            "ownership": "owner_or_admin",
+            "ownershipField": "owner_id"
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": [
+          {
+            "asyncFor": {
+              "id": "cap_export_tasks",
+              "kind": "capability"
+            },
+            "media": "application/zip",
+            "filename": "task-export.zip",
+            "disposition": "attachment"
+          }
+        ]
+      }
+    },
+    {
+      "capabilityId": "cap_list_projects",
+      "handlerName": "handleListProjects",
+      "repositoryMethod": "listProjects",
+      "method": "GET",
+      "path": "/projects",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_list_projects",
+          "name": "List Projects Input"
+        },
+        "fields": [
+          {
+            "name": "after",
+            "sourceName": "after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "after"
+            }
+          },
+          {
+            "name": "limit",
+            "sourceName": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "limit"
+            }
+          }
+        ],
+        "required": [],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_list_projects",
+          "title": "List Projects Input",
+          "description": "Input for listing projects",
+          "type": "object",
+          "properties": {
+            "after": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 25
+            }
+          },
+          "additionalProperties": false
+        },
+        "transport": {
+          "path": [],
+          "query": [
+            {
+              "name": "after",
+              "sourceName": "after",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "after"
+              }
+            },
+            {
+              "name": "limit",
+              "sourceName": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "default": 25
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "limit"
+              }
+            }
+          ],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_project_detail",
+          "name": "Project Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "next_cursor"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "topogram:shape:shape_output_project_detail",
+                "title": "Project Detail Output",
+                "description": "Detailed project payload",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "archived"
+                    ],
+                    "default": "active"
+                  },
+                  "owner_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "name",
+                  "status",
+                  "created_at"
+                ]
+              }
+            },
+            "next_cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "mode": "cursor",
+        "collection": true,
+        "itemJsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_project_detail",
+          "title": "Project Detail Output",
+          "description": "Detailed project payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "status",
+            "created_at"
+          ]
+        },
+        "pagination": null,
+        "itemShape": {
+          "id": "shape_output_project_detail",
+          "name": "Project Detail Output"
+        },
+        "ordering": {
+          "field": "created_at",
+          "direction": "desc"
+        },
+        "cursor": {
+          "requestAfter": "after",
+          "responseNext": "next_cursor",
+          "responsePrev": null
+        },
+        "limit": {
+          "field": "limit",
+          "defaultValue": 25,
+          "maxValue": 100
+        },
+        "total": {
+          "included": false
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "default": "active"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_list_projects_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_projects_invalid_cursor",
+          "status": 400,
+          "source": "cursor_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_projects_invalid_limit",
+          "status": 400,
+          "source": "cursor_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "projects.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_get_project",
+      "handlerName": "handleGetProject",
+      "repositoryMethod": "getProject",
+      "method": "GET",
+      "path": "/projects/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_get_project",
+          "name": "Get Project Input"
+        },
+        "fields": [
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "required": [
+          "project_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_get_project",
+          "title": "Get Project Input",
+          "description": "Input for fetching a single project",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "project_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_project_detail",
+          "name": "Project Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_project_detail",
+          "title": "Project Detail Output",
+          "description": "Detailed project payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "status",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "default": "active"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_get_project_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_project_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "projects.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_create_project",
+      "handlerName": "handleCreateProject",
+      "repositoryMethod": "createProject",
+      "method": "POST",
+      "path": "/projects",
+      "successStatus": 201,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_create_project",
+          "name": "Create Project Input"
+        },
+        "fields": [
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          }
+        ],
+        "required": [
+          "name",
+          "status"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_create_project",
+          "title": "Create Project Input",
+          "description": "Fields accepted when creating a project",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "status"
+          ]
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "default": "active"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_project_detail",
+          "name": "Project Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_project_detail",
+          "title": "Project Detail Output",
+          "description": "Detailed project payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "status",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "default": "active"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_create_project_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "projects.create",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_update_project",
+      "handlerName": "handleUpdateProject",
+      "repositoryMethod": "updateProject",
+      "method": "PATCH",
+      "path": "/projects/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_update_project",
+          "name": "Update Project Input"
+        },
+        "fields": [
+          {
+            "name": "project_id",
+            "sourceName": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          }
+        ],
+        "required": [
+          "project_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_update_project",
+          "title": "Update Project Input",
+          "description": "Input for updating a project",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "project_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "project_id",
+              "sourceName": "project_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ]
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_project_detail",
+          "name": "Project Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "name",
+            "sourceName": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "name"
+            }
+          },
+          {
+            "name": "description",
+            "sourceName": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "description"
+            }
+          },
+          {
+            "name": "status",
+            "sourceName": "status",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "status"
+            }
+          },
+          {
+            "name": "owner_id",
+            "sourceName": "owner_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "owner_id"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_project_detail",
+          "title": "Project Detail Output",
+          "description": "Detailed project payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ],
+              "default": "active"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "status",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "name",
+              "sourceName": "name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "name"
+              }
+            },
+            {
+              "name": "description",
+              "sourceName": "description",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "description"
+              }
+            },
+            {
+              "name": "status",
+              "sourceName": "status",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "archived"
+                ],
+                "default": "active"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "status"
+              }
+            },
+            {
+              "name": "owner_id",
+              "sourceName": "owner_id",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "owner_id"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_update_project_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_project_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "projects.update",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_list_users",
+      "handlerName": "handleListUsers",
+      "repositoryMethod": "listUsers",
+      "method": "GET",
+      "path": "/users",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_list_users",
+          "name": "List Users Input"
+        },
+        "fields": [
+          {
+            "name": "after",
+            "sourceName": "after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "after"
+            }
+          },
+          {
+            "name": "limit",
+            "sourceName": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            },
+            "transport": {
+              "location": "query",
+              "wireName": "limit"
+            }
+          }
+        ],
+        "required": [],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_list_users",
+          "title": "List Users Input",
+          "description": "Input for listing users",
+          "type": "object",
+          "properties": {
+            "after": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 25
+            }
+          },
+          "additionalProperties": false
+        },
+        "transport": {
+          "path": [],
+          "query": [
+            {
+              "name": "after",
+              "sourceName": "after",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "after"
+              }
+            },
+            {
+              "name": "limit",
+              "sourceName": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "default": 25
+              },
+              "transport": {
+                "location": "query",
+                "wireName": "limit"
+              }
+            }
+          ],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_user_detail",
+          "name": "User Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "is_active",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "next_cursor"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "topogram:shape:shape_output_user_detail",
+                "title": "User Detail Output",
+                "description": "Detailed user payload",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "display_name": {
+                    "type": "string"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "email",
+                  "display_name",
+                  "is_active",
+                  "created_at"
+                ]
+              }
+            },
+            "next_cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "mode": "cursor",
+        "collection": true,
+        "itemJsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_user_detail",
+          "title": "User Detail Output",
+          "description": "Detailed user payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "email",
+            "display_name",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "pagination": null,
+        "itemShape": {
+          "id": "shape_output_user_detail",
+          "name": "User Detail Output"
+        },
+        "ordering": {
+          "field": "created_at",
+          "direction": "desc"
+        },
+        "cursor": {
+          "requestAfter": "after",
+          "responseNext": "next_cursor",
+          "responsePrev": null
+        },
+        "limit": {
+          "field": "limit",
+          "defaultValue": 25,
+          "maxValue": 100
+        },
+        "total": {
+          "included": false
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": true,
+              "schema": {
+                "type": "boolean",
+                "default": true
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_list_users_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_users_invalid_cursor",
+          "status": 400,
+          "source": "cursor_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_list_users_invalid_limit",
+          "status": 400,
+          "source": "cursor_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "users.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_get_user",
+      "handlerName": "handleGetUser",
+      "repositoryMethod": "getUser",
+      "method": "GET",
+      "path": "/users/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_get_user",
+          "name": "Get User Input"
+        },
+        "fields": [
+          {
+            "name": "user_id",
+            "sourceName": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          }
+        ],
+        "required": [
+          "user_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_get_user",
+          "title": "Get User Input",
+          "description": "Input for fetching a single user",
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "user_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "user_id",
+              "sourceName": "user_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": []
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_user_detail",
+          "name": "User Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "is_active",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_user_detail",
+          "title": "User Detail Output",
+          "description": "Detailed user payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "email",
+            "display_name",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": true,
+              "schema": {
+                "type": "boolean",
+                "default": true
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_get_user_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_user_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "users.read",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_create_user",
+      "handlerName": "handleCreateUser",
+      "repositoryMethod": "createUser",
+      "method": "POST",
+      "path": "/users",
+      "successStatus": 201,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_create_user",
+          "name": "Create User Input"
+        },
+        "fields": [
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          }
+        ],
+        "required": [
+          "email",
+          "display_name",
+          "is_active"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_create_user",
+          "title": "Create User Input",
+          "description": "Fields accepted when creating a user",
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "email",
+            "display_name",
+            "is_active"
+          ]
+        },
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": true,
+              "schema": {
+                "type": "boolean",
+                "default": true
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_user_detail",
+          "name": "User Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "is_active",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_user_detail",
+          "title": "User Detail Output",
+          "description": "Detailed user payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "email",
+            "display_name",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": true,
+              "schema": {
+                "type": "boolean",
+                "default": true
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_create_user_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "users.create",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    },
+    {
+      "capabilityId": "cap_update_user",
+      "handlerName": "handleUpdateUser",
+      "repositoryMethod": "updateUser",
+      "method": "PATCH",
+      "path": "/users/:id",
+      "successStatus": 200,
+      "requestContract": {
+        "type": "api_request_contract",
+        "shape": {
+          "id": "shape_input_update_user",
+          "name": "Update User Input"
+        },
+        "fields": [
+          {
+            "name": "user_id",
+            "sourceName": "user_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "path",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          }
+        ],
+        "required": [
+          "user_id"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_input_update_user",
+          "title": "Update User Input",
+          "description": "Input for updating a user",
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "user_id"
+          ]
+        },
+        "transport": {
+          "path": [
+            {
+              "name": "user_id",
+              "sourceName": "user_id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "path",
+                "wireName": "id"
+              }
+            }
+          ],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            }
+          ]
+        }
+      },
+      "responseContract": {
+        "type": "api_response_contract",
+        "shape": {
+          "id": "shape_output_user_detail",
+          "name": "User Detail Output"
+        },
+        "fields": [
+          {
+            "name": "id",
+            "sourceName": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "id"
+            }
+          },
+          {
+            "name": "email",
+            "sourceName": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "email"
+            }
+          },
+          {
+            "name": "display_name",
+            "sourceName": "display_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "display_name"
+            }
+          },
+          {
+            "name": "is_active",
+            "sourceName": "is_active",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "is_active"
+            }
+          },
+          {
+            "name": "created_at",
+            "sourceName": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "transport": {
+              "location": "body",
+              "wireName": "created_at"
+            }
+          }
+        ],
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "is_active",
+          "created_at"
+        ],
+        "jsonSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "topogram:shape:shape_output_user_detail",
+          "title": "User Detail Output",
+          "description": "Detailed user payload",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "email": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "email",
+            "display_name",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "mode": "item",
+        "collection": false,
+        "itemJsonSchema": null,
+        "pagination": null,
+        "transport": {
+          "path": [],
+          "query": [],
+          "header": [],
+          "body": [
+            {
+              "name": "id",
+              "sourceName": "id",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "id"
+              }
+            },
+            {
+              "name": "email",
+              "sourceName": "email",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "email"
+              }
+            },
+            {
+              "name": "display_name",
+              "sourceName": "display_name",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "display_name"
+              }
+            },
+            {
+              "name": "is_active",
+              "sourceName": "is_active",
+              "required": true,
+              "schema": {
+                "type": "boolean",
+                "default": true
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "is_active"
+              }
+            },
+            {
+              "name": "created_at",
+              "sourceName": "created_at",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "transport": {
+                "location": "body",
+                "wireName": "created_at"
+              }
+            }
+          ]
+        }
+      },
+      "errors": [
+        {
+          "type": "api_error_case",
+          "code": "cap_update_user_invalid_request",
+          "status": 400,
+          "source": "request_contract"
+        },
+        {
+          "type": "api_error_case",
+          "code": "cap_get_user_not_found",
+          "status": 404,
+          "source": "projection_mapping"
+        }
+      ],
+      "endpoint": {
+        "auth": "user",
+        "authz": [
+          {
+            "role": null,
+            "permission": "users.update",
+            "claim": null,
+            "claimValue": null,
+            "ownership": null,
+            "ownershipField": null
+          }
+        ],
+        "preconditions": [],
+        "idempotency": [],
+        "cache": [],
+        "async": [],
+        "status": [],
+        "download": []
+      }
+    }
+  ]
+} as const;

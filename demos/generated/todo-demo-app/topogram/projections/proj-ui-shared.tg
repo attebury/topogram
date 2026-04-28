@@ -1,0 +1,126 @@
+projection proj_ui_shared {
+  name "Todo Shared UI"
+  description "Platform-neutral UI semantics for the Todo product"
+
+  platform ui_shared
+  realizes [
+    cap_list_projects,
+    cap_get_project,
+    cap_create_project,
+    cap_update_project,
+    cap_list_users,
+    cap_get_user,
+    cap_create_user,
+    cap_update_user,
+    cap_list_tasks,
+    cap_get_task,
+    cap_create_task,
+    cap_update_task,
+    cap_complete_task,
+    cap_delete_task,
+    cap_export_tasks,
+    cap_get_task_export_job,
+    cap_download_task_export
+  ]
+  outputs [ui_contract]
+
+  ui_app_shell {
+    brand "Topogram Todo"
+    shell bottom_tabs
+    global_search true
+    notifications true
+    account_menu true
+    footer legal
+  }
+
+  ui_screens {
+    screen project_list kind list title "Projects" load cap_list_projects item_shape shape_output_project_card detail_capability cap_get_project primary_action cap_create_project empty_title "No projects yet" empty_body "Create a project to organize your tasks" loading_state skeleton error_state inline
+    screen project_detail kind detail title "Project Details" load cap_get_project view_shape shape_output_project_detail primary_action cap_update_project loading_state skeleton
+    screen project_create kind form title "Create Project" input_shape shape_input_create_project submit cap_create_project success_navigate project_detail success_state banner
+    screen project_edit kind form title "Edit Project" input_shape shape_input_update_project submit cap_update_project success_navigate project_detail success_state banner
+    screen user_list kind list title "Users" load cap_list_users item_shape shape_output_user_card detail_capability cap_get_user primary_action cap_create_user empty_title "No users yet" empty_body "Create a user to start assigning work" loading_state skeleton error_state inline
+    screen user_detail kind detail title "User Details" load cap_get_user view_shape shape_output_user_detail primary_action cap_update_user loading_state skeleton
+    screen user_create kind form title "Create User" input_shape shape_input_create_user submit cap_create_user success_navigate user_detail success_state banner
+    screen user_edit kind form title "Edit User" input_shape shape_input_update_user submit cap_update_user success_navigate user_detail success_state banner
+    screen task_list kind list title "Tasks" load cap_list_tasks item_shape shape_output_task_card detail_capability cap_get_task primary_action cap_create_task empty_title "No tasks yet" empty_body "Create a task to get started" loading_state skeleton error_state inline
+    screen task_board kind board title "Task Board" load cap_list_tasks item_shape shape_output_task_card detail_capability cap_get_task primary_action cap_create_task empty_title "No tasks on this board" empty_body "Create a task to start planning work" loading_state skeleton error_state inline
+    screen task_calendar kind calendar title "Task Calendar" load cap_list_tasks item_shape shape_output_task_card detail_capability cap_get_task primary_action cap_create_task empty_title "No scheduled tasks" empty_body "Create a task with dates to populate the calendar" loading_state skeleton error_state inline
+    screen task_detail kind detail title "Task Details" load cap_get_task view_shape shape_output_task_detail primary_action cap_update_task secondary_action cap_complete_task destructive_action cap_delete_task loading_state skeleton
+    screen task_create kind wizard title "Create Task" input_shape shape_input_create_task submit cap_create_task success_navigate task_detail success_state banner
+    screen task_edit kind form title "Edit Task" input_shape shape_input_update_task submit cap_update_task success_navigate task_detail success_state banner
+    screen task_exports kind job_status title "Export Status" load cap_get_task_export_job view_shape shape_output_task_export_status terminal_action cap_download_task_export
+  }
+
+  ui_collections {
+    screen project_list pagination cursor
+    screen project_list sort created_at desc
+    screen project_list view table
+    screen user_list pagination cursor
+    screen user_list sort created_at desc
+    screen user_list view table
+    screen task_list filter project_id
+    screen task_list filter owner_id
+    screen task_list filter status
+    screen task_list pagination cursor
+    screen task_list sort created_at desc
+    screen task_list group status
+    screen task_list view table
+  }
+
+  ui_actions {
+    screen project_list action cap_create_project prominence primary placement toolbar
+    screen user_list action cap_create_user prominence primary placement toolbar
+    screen task_list action cap_export_tasks prominence secondary placement toolbar
+    screen task_detail action cap_complete_task prominence primary placement footer
+    screen task_detail action cap_delete_task prominence destructive placement footer
+  }
+
+  ui_visibility {
+    action cap_create_project visible_if permission projects.create
+    action cap_update_project visible_if permission projects.update
+    action cap_create_user visible_if permission users.create
+    action cap_update_user visible_if permission users.update
+    action cap_delete_task visible_if permission tasks.delete
+    action cap_update_task visible_if ownership owner_or_admin
+    action cap_complete_task visible_if ownership owner_or_admin
+    action cap_export_tasks visible_if permission tasks.export
+  }
+
+  ui_lookups {
+    screen project_create field owner_id entity entity_user label_field display_name empty_label "Unassigned"
+    screen project_edit field owner_id entity entity_user label_field display_name empty_label "Unassigned"
+    screen task_list field project_id entity entity_project label_field name empty_label "All projects"
+    screen task_list field owner_id entity entity_user label_field display_name empty_label "All owners"
+    screen task_create field project_id entity entity_project label_field name
+    screen task_create field owner_id entity entity_user label_field display_name empty_label "Unassigned"
+    screen task_edit field owner_id entity entity_user label_field display_name empty_label "Unassigned"
+  }
+
+  ui_navigation {
+    group workspace label "Workspace" placement primary pattern bottom_tabs
+    group admin label "Admin" placement primary pattern bottom_tabs
+    screen task_list group workspace label "Tasks" order 10 visible true default true sitemap include pattern bottom_tabs
+    screen task_board group workspace label "Board" order 20 visible true sitemap include pattern bottom_tabs
+    screen task_calendar group workspace label "Calendar" order 30 visible true sitemap include pattern bottom_tabs
+    screen project_list group workspace label "Projects" order 40 visible true sitemap include pattern bottom_tabs
+    screen user_list group admin label "Users" order 50 visible true sitemap include pattern bottom_tabs
+    screen task_create group workspace label "Create Task" visible false breadcrumb task_list sitemap exclude
+    screen task_detail group workspace label "Task Details" visible false breadcrumb task_list sitemap exclude pattern stack_navigation
+  }
+
+  ui_screen_regions {
+    screen task_list region hero pattern summary_stats placement primary
+    screen task_list region toolbar pattern action_bar placement primary
+    screen task_list region results pattern resource_table placement primary
+    screen task_board region toolbar pattern action_bar placement primary
+    screen task_board region results pattern board_view placement primary
+    screen task_calendar region toolbar pattern action_bar placement primary
+    screen task_calendar region results pattern calendar_view placement primary
+    screen task_detail region summary pattern detail_panel placement primary
+    screen task_detail region activity pattern activity_feed placement supporting
+    screen project_list region results pattern resource_table placement primary
+    screen user_list region results pattern resource_table placement primary
+  }
+
+  status active
+}

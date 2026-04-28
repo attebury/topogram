@@ -1,0 +1,12 @@
+capability cap_complete_task {
+  name "Complete Task"
+  description "Allows a user to mark a task complete"
+
+  actors [actor_user]
+  reads [entity_task]
+  updates [entity_task]
+  input [shape_input_complete_task]
+  output [shape_output_task_detail]
+
+  status active
+}

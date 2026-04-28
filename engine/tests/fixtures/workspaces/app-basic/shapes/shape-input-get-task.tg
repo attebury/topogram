@@ -1,0 +1,10 @@
+shape shape_input_get_task {
+  name "Get Task Input"
+  description "Input for fetching a single task"
+
+  fields {
+    task_id uuid required
+  }
+
+  status active
+}

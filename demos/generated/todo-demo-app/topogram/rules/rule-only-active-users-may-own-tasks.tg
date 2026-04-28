@@ -1,0 +1,10 @@
+rule rule_only_active_users_may_own_tasks {
+  name "Only active users may own tasks"
+  description "A task owner must be an active user"
+
+  applies_to [cap_create_task, cap_update_task]
+  requirement "owner.is_active == true"
+  severity error
+
+  status active
+}

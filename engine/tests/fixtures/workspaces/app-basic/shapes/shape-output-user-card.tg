@@ -1,0 +1,6 @@
+shape shape_output_user_card from entity_user {
+  name "User Card Output"
+  description "Compact user payload for cards and lists"
+  include [id, display_name, email, is_active]
+  status active
+}

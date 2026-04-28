@@ -1,0 +1,10 @@
+shape shape_input_get_user {
+  name "Get User Input"
+  description "Input for fetching a single user"
+
+  fields {
+    user_id uuid required
+  }
+
+  status active
+}

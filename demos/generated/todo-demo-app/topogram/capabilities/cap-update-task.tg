@@ -1,0 +1,12 @@
+capability cap_update_task {
+  name "Update Task"
+  description "Allows a user to update mutable task fields"
+
+  actors [actor_user]
+  reads [entity_task]
+  updates [entity_task]
+  input [shape_input_update_task]
+  output [shape_output_task_detail]
+
+  status active
+}

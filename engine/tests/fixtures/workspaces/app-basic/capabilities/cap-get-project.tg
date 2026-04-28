@@ -1,0 +1,11 @@
+capability cap_get_project {
+  name "Get Project"
+  description "Allows a user to fetch a single project by id"
+
+  actors [actor_user]
+  reads [entity_project]
+  input [shape_input_get_project]
+  output [shape_output_project_detail]
+
+  status active
+}

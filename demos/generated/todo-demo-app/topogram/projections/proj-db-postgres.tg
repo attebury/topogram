@@ -1,0 +1,55 @@
+projection proj_db_postgres {
+  name "Todo Postgres DB"
+  description "Postgres persistence realization for the Todo domain"
+
+  platform db_postgres
+  realizes [entity_task, entity_project, entity_user]
+  outputs [db_contract, sql_schema]
+
+  db_tables {
+    entity_task table tasks
+    entity_project table projects
+    entity_user table users
+  }
+
+  db_columns {
+    entity_task field owner_id column owner_id
+    entity_task field project_id column project_id
+    entity_project field owner_id column owner_id
+    entity_project field created_at column created_at
+    entity_user field display_name column display_name
+  }
+
+  db_keys {
+    entity_task primary [id]
+    entity_project primary [id]
+    entity_user primary [id]
+  }
+
+  db_indexes {
+    entity_task index [project_id, status]
+    entity_task index [owner_id, status]
+    entity_project unique [name]
+    entity_project index [owner_id, status]
+    entity_user unique [email]
+  }
+
+  db_relations {
+    entity_task foreign_key owner_id references entity_user.id on_delete set_null
+    entity_task foreign_key project_id references entity_project.id on_delete cascade
+    entity_project foreign_key owner_id references entity_user.id on_delete set_null
+  }
+
+  db_lifecycle {
+    entity_task soft_delete field status value archived
+    entity_task timestamps created_at created_at updated_at updated_at
+  }
+
+  generator_defaults {
+    profile postgres_sql
+    language sql
+    styling css
+  }
+
+  status active
+}

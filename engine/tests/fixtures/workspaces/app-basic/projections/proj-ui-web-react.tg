@@ -1,0 +1,92 @@
+projection proj_ui_web_react {
+  name "Todo Web UI (React)"
+  description "Web realization for the shared Todo UI using a React profile"
+
+  platform ui_web
+  realizes [
+    cap_list_projects,
+    cap_get_project,
+    cap_create_project,
+    cap_update_project,
+    cap_list_users,
+    cap_get_user,
+    cap_create_user,
+    cap_update_user,
+    proj_ui_shared,
+    cap_list_tasks,
+    cap_get_task,
+    cap_create_task,
+    cap_update_task,
+    cap_complete_task,
+    cap_delete_task,
+    cap_export_tasks,
+    cap_get_task_export_job,
+    cap_download_task_export
+  ]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen project_list path /projects
+    screen project_detail path /projects/:id
+    screen project_create path /projects/new
+    screen project_edit path /projects/:id/edit
+    screen user_list path /users
+    screen user_detail path /users/:id
+    screen user_create path /users/new
+    screen user_edit path /users/:id/edit
+    screen task_list path /tasks
+    screen task_board path /tasks/board
+    screen task_calendar path /tasks/calendar
+    screen task_detail path /tasks/:id
+    screen task_create path /tasks/new
+    screen task_edit path /tasks/:id/edit
+    screen task_exports path /task-exports/:job_id
+  }
+
+  ui_web {
+    screen task_list shell bottom_tabs
+    screen project_list layout responsive_collection
+    screen project_list desktop_variant table
+    screen project_list mobile_variant cards
+    screen project_list collection table
+    screen project_detail layout detail_page
+    screen project_create present page
+    screen project_edit present page
+    screen user_list layout responsive_collection
+    screen user_list desktop_variant table
+    screen user_list mobile_variant cards
+    screen user_list collection table
+    screen user_detail layout detail_page
+    screen user_create present page
+    screen user_edit present page
+    screen task_list layout responsive_collection
+    screen task_list desktop_variant table
+    screen task_list mobile_variant cards
+    screen task_list collection table
+    screen task_board layout responsive_collection
+    screen task_board desktop_variant board
+    screen task_board mobile_variant cards
+    screen task_board collection board
+    screen task_calendar layout responsive_collection
+    screen task_calendar desktop_variant calendar
+    screen task_calendar mobile_variant list
+    screen task_calendar collection calendar
+    screen task_detail breadcrumbs visible
+    screen task_detail layout detail_page
+    screen task_create present bottom_sheet
+    screen task_edit present page
+    screen task_exports present page
+    action cap_create_task present fab
+    action cap_delete_task confirm modal
+    action cap_delete_task present button
+    action cap_delete_task placement footer
+  }
+
+  generator_defaults {
+    profile react
+    language typescript
+    styling css
+  }
+
+  status active
+}

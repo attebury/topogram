@@ -1,0 +1,18 @@
+{
+  "name": "todo-demo-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "topogram:validate": "topogram validate ./topogram",
+    "topogram:generate": "topogram generate app ./topogram --out ./app",
+    "app:bootstrap": "npm --prefix ./app run bootstrap",
+    "app:dev": "npm --prefix ./app run dev",
+    "app:compile": "npm --prefix ./app run compile",
+    "app:smoke": "npm --prefix ./app run smoke",
+    "app:runtime-check": "npm --prefix ./app run runtime-check",
+    "app:check": "npm run app:compile && npm run app:smoke && npm run app:runtime-check"
+  },
+  "devDependencies": {
+    "topogram": "file:../../../engine"
+  }
+}

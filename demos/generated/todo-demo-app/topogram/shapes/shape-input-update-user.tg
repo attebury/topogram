@@ -1,0 +1,13 @@
+shape shape_input_update_user {
+  name "Update User Input"
+  description "Input for updating a user"
+
+  fields {
+    user_id uuid required
+    email string optional
+    display_name string optional
+    is_active boolean optional
+  }
+
+  status active
+}

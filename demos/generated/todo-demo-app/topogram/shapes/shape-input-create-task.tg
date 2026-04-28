@@ -1,0 +1,6 @@
+shape shape_input_create_task from entity_task {
+  name "Create Task Input"
+  description "Fields accepted when creating a task"
+  include [title, description, priority, owner_id, project_id, due_at]
+  status active
+}

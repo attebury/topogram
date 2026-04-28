@@ -1,90 +1,93 @@
 # Topogram
 
-Topogram helps humans and agents evolve software safely: **one durable model** (`.tg`), **many realized surfaces** (APIs, web clients, persistence artifacts), **optional brownfield import**, and **verification** tied to the same intent.
+Topogram is being reset around one complete workflow: author a Topogram, generate a runnable app, and verify it.
 
-At early stage, **start here** — then read [docs/overview.md](./docs/overview.md) for motivation, limits, proof inventory, FAQ, and commands.
+The active path is intentionally smaller than earlier repo material. Import, maintained-app, brownfield, and `topogram-demo` proof work remains in history and deferred docs, but it is not part of the current quickstart.
 
----
+## Start Here
 
-## Product workflow
-
-**North star:** model durable intent → optionally **import** and **adopt** brownfield structure → **produce** (deterministic **generation** and/or **agent-assisted** edits) → **verify** → **evolve** the model and repeat.
-
-Teams target **multiple stacks from one Topogram over time**. This repo proves that loop rigorously for a **subset** of stacks today; the matrix below separates **shipped** from **target**.
-
-```mermaid
-flowchart TD
-  M["1. Model<br/>canonical topogram/ *.tg"] --> I{"2. Import?"}
-  I -->|yes| BR["Brownfield: hints, reconcile,<br/>candidates/, adoption"]
-  I -->|no| P["3. Produce"]
-  BR --> AD["Adopt into canonical model"]
-  AD --> P
-  P["3. Produce<br/>generate +/or agent"] --> V["4. Verify<br/>compile, smoke, runtime-check"]
-  V --> EV{"5. Change?"}
-  EV -->|yes| M
-  EV -->|no| DONE["Ship / operate"]
-```
-
-
-
-**Generate vs agent.** The **engine** owns deterministic realization (contracts, bundles, generator-owned code paths). **Agents** work from queries and bounded packets (plans, review material, edits across **maintained** boundaries). Canonical meaning lives in `.tg`; emitted outputs live under `artifacts/` and generated apps; hand-owned glue is explicit. See [docs/topogram-workspace-layout.md](./docs/topogram-workspace-layout.md).
-
-### Where proofs live
-
-
-| Location                         | Role                                                                                                           |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `**examples/generated/<app>/`**  | Reference apps in this repo. Golden fixtures + CI (`scripts/verify-generated-example.sh`).                     |
-| `**examples/maintained/<app>/**` | Maintained proof apps (`scripts/verify-product-app.sh`).                                                       |
-| `**examples/imported/**`         | Bridge only; bulk brownfield snapshots live in **[topogram-demo](https://github.com/attebury/topogram-demo)**. |
-
-
-Generator regression **here** is not the same thing as imported breadth **there** — both matter.
-
-### Capability matrix (honest)
-
-
-| Surface class                                           | Generate (today)               | Agent-assisted            | Import story                    | CI verify (today)                  |
-| ------------------------------------------------------- | ------------------------------ | ------------------------- | ------------------------------- | ---------------------------------- |
-| HTTP API (Node, Hono)                                   | Yes (`hono-server`)            | Yes                       | Staged rehearsal + demo targets | Yes                                |
-| HTTP API (Node, Express)                                | Yes (`express-server`)         | Yes                       | Same                            | Yes (parity vs Hono)               |
-| Web (SvelteKit)                                         | Yes (`sveltekit-app`)          | Yes                       | Demo-scope trials               | Yes                                |
-| Web (React / Vite)                                      | Yes (e.g. issues)              | Yes                       | Same                            | Yes                                |
-| Persistence (Prisma / SQL / SQLite)                     | Yes                            | Yes                       | Partial                         | Yes                                |
-| Native mobile / desktop (Swift, Kotlin, Bun desktop, …) | **No** first-class targets yet | Queries scope manual work | Trials / roadmap                | Not same as generated-runtime gate |
-
-
-**Roadmap (target, not a repo promise):** additional projections or generator targets (e.g. Android, iOS, Bun-first) following the same loop once modeled. **Full native parity** (Xcode/Gradle builds on pinned SDKs) is **ops-gated in [topogram-demo](https://github.com/attebury/topogram-demo)** — see [examples/native](https://github.com/attebury/topogram-demo/tree/main/examples/native) — not default **topogram** CI.
-
----
-
-## Documentation
-
-
-| Doc                                                        | Use                                                                                                       |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **[docs/overview.md](./docs/overview.md)**                 | Full orientation: why, limits, proof points list, FAQ, getting started, verification scripts, repo layout |
-| **[docs/README.md](./docs/README.md)**                     | Index of all docs by role                                                                                 |
-| **[docs/product-workflow.md](./docs/product-workflow.md)** | Stable name in docs index; links here                                                                     |
-
-
----
-
-## Quick start
-
-Use Node 20+ (matches CI).
+The canonical demo is [demos/generated/todo-demo-app](./demos/generated/todo-demo-app).
 
 ```bash
-cd ./engine
-npm run validate
-npm run validate:issues
-npm run validate:content-approval
+cd demos/generated/todo-demo-app
+npm install
+npm run topogram:validate
+npm run topogram:generate
+npm run app:bootstrap
+npm run app:dev
 ```
 
-See [docs/overview.md](./docs/overview.md#getting-started) for bundles, verification matrix, and brownfield rehearsal.
+In another terminal, run the generated checks:
 
----
+```bash
+cd demos/generated/todo-demo-app
+npm run app:compile
+npm run app:smoke
+npm run app:runtime-check
+```
 
-## License
+The normal loop is:
 
-Topogram is licensed under the Apache License 2.0. See [LICENSE](./LICENSE). Copyright is documented in [NOTICE](./NOTICE).
+1. Edit `topogram/`.
+2. Run `npm run topogram:validate`.
+3. Run `npm run topogram:generate`.
+4. Run the app and the relevant generated checks.
+
+## Repo Layout
+
+- [engine](./engine): Topogram parser, resolver, validator, generators, CLI, and engine tests
+- [engine/tests/fixtures](./engine/tests/fixtures): engine-owned regression workspaces and expected outputs
+- [demos/generated/todo-demo-app](./demos/generated/todo-demo-app): user-facing generated app demo
+- [docs](./docs): quickstart, layout, testing, and deferred proof notes
+- [examples](./examples): legacy transition material retained while the repo is reshaped
+
+Fixtures are for engine development. Demos are for users and product workflow proof.
+
+## Engine CLI Shape
+
+The engine is now package-shaped for local consumption by demos:
+
+```bash
+topogram validate ./topogram
+topogram generate app ./topogram --out ./app
+```
+
+The package is still private and local to this repo. The demo consumes it through a file dependency instead of assuming a published npm package or global install.
+
+## Current Scope
+
+Active:
+
+- generated app workflow from authored Topogram
+- local app bundle generation
+- generated compile, smoke, and runtime-check verification
+- engine fixtures separated from runnable demos
+
+Deferred:
+
+- import/adopt workflows
+- maintained-app evolution proofs
+- brownfield proof operations
+- `topogram-demo` as an active product dependency
+- global install and npm publishing
+
+## Development
+
+For engine work:
+
+```bash
+cd engine
+npm test
+```
+
+For the product workflow demo:
+
+```bash
+cd demos/generated/todo-demo-app
+npm install
+npm run topogram:validate
+npm run topogram:generate
+npm run app:compile
+```
+
+The old `examples/**` tree is retained as transition material. New generated-app work should prefer `demos/generated/<domain>-demo-app` for user-facing demos and `engine/tests/fixtures/**` for engine regression inputs.

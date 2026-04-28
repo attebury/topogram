@@ -1,0 +1,24 @@
+entity entity_user {
+  name "User"
+  description "A person who can own tasks"
+
+  fields {
+    id uuid required
+    email string required
+    display_name string required
+    is_active boolean required default true
+    created_at datetime required
+  }
+
+  keys {
+    primary [id]
+    unique [email]
+  }
+
+  invariants {
+    email format == email
+    display_name length <= 120
+  }
+
+  status active
+}

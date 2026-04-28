@@ -1,0 +1,77 @@
+{
+  "type": "runtime_smoke_plan",
+  "name": "Todo Runtime Smoke Plan",
+  "projections": {
+    "api": "proj_api",
+    "ui": "proj_ui_web"
+  },
+  "verification": {
+    "methods": [
+      "smoke"
+    ],
+    "sources": [
+      {
+        "id": "ver_runtime_smoke",
+        "name": "Todo runtime smoke",
+        "method": "smoke",
+        "validates": [
+          "cap_create_task",
+          "cap_get_task",
+          "cap_list_tasks"
+        ]
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "tasks_page_responds",
+        "label": "tasks page responds"
+      },
+      {
+        "id": "create_task_smoke",
+        "label": "create task smoke"
+      },
+      {
+        "id": "get_created_task_smoke",
+        "label": "get created task smoke"
+      },
+      {
+        "id": "list_tasks_smoke",
+        "label": "list tasks smoke"
+      }
+    ]
+  },
+  "env": {
+    "apiBase": "TOPOGRAM_API_BASE_URL",
+    "webBase": "TOPOGRAM_WEB_BASE_URL"
+  },
+  "checks": [
+    {
+      "id": "web_tasks_page",
+      "type": "web_get",
+      "path": "/tasks",
+      "expectStatus": 200,
+      "expectText": "Tasks"
+    },
+    {
+      "id": "create_task",
+      "type": "api_post",
+      "path": "/tasks",
+      "expectStatus": 201,
+      "capabilityId": "cap_create_task"
+    },
+    {
+      "id": "get_task",
+      "type": "api_get",
+      "path": "/tasks/:id",
+      "expectStatus": 200,
+      "capabilityId": "cap_get_task"
+    },
+    {
+      "id": "list_tasks",
+      "type": "api_get",
+      "path": "/tasks",
+      "expectStatus": 200,
+      "capabilityId": "cap_list_tasks"
+    }
+  ]
+}

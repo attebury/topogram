@@ -1,7 +1,7 @@
 function authTokenExpression(target) {
   return target === "sveltekit"
-    ? 'publicEnv.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || ""'
-    : 'readPublicEnv("PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN") || readPublicEnv("VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN")';
+    ? 'publicEnv.PUBLIC_TOPOGRAM_AUTH_TOKEN || ""'
+    : 'readPublicEnv("PUBLIC_TOPOGRAM_AUTH_TOKEN") || readPublicEnv("VITE_PUBLIC_TOPOGRAM_AUTH_TOKEN")';
 }
 
 function apiBaseExpression(target, defaultApiBaseUrl) {
@@ -105,8 +105,8 @@ function principalFromJwt(token: string): AuthPrincipal | null {
   if (!payload || typeof payload !== "object") return null;
   return {
     userId: typeof payload.sub === "string" ? payload.sub : "",
-    permissions: new Set(Array.isArray(payload.permissions) ? payload.permissions.filter((value: unknown) => typeof value === "string") : []),
-    roles: new Set(Array.isArray(payload.roles) ? payload.roles.filter((value: unknown) => typeof value === "string") : []),
+    permissions: new Set(Array.isArray(payload.permissions) ? payload.permissions.filter((value: unknown): value is string => typeof value === "string") : []),
+    roles: new Set(Array.isArray(payload.roles) ? payload.roles.filter((value: unknown): value is string => typeof value === "string") : []),
     claims: payload as Record<string, unknown>,
     isAdmin: payload.admin === true
   };
@@ -228,7 +228,7 @@ ${target === "react" ? "" : publicEnvHelper(target)}function apiBase() {
 
 function authToken() {
   return ${target === "react"
-    ? 'import.meta.env.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || ""'
+    ? 'import.meta.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_AUTH_TOKEN || ""'
     : authTokenExpression(target)};
 }
 
@@ -318,19 +318,18 @@ export async function terminalPrimaryAction(fetcher: Fetcher, primary_id: string
 export async function ${webReference.client.functionNames.terminal}(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   return terminalPrimaryAction(fetcher, primary_id, input, options);
 }
-${webReference.client.capabilityIds.delete && webReference.client.functionNames.delete ? `
-export async function ${webReference.client.functionNames.delete}(fetcher: Fetcher, primary_id: string, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "${webReference.client.capabilityIds.delete}", { ${webReference.client.primaryParam}: primary_id }, options);
-}
-` : ""}${webReference.client.capabilityIds.export && webReference.client.functionNames.export ? `
-export async function ${webReference.client.functionNames.export}(fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "${webReference.client.capabilityIds.export}", input, options);
-}
-` : ""}${webReference.client.capabilityIds.getExportJob && webReference.client.functionNames.getExportJob ? `
-export async function ${webReference.client.functionNames.getExportJob}(fetcher: Fetcher, job_id: string) {
-  return requestCapability(fetcher, "${webReference.client.capabilityIds.getExportJob}", { job_id });
-}
-` : ""}
+${(webReference.client.extraFunctions || []).map((entry) => {
+  const params = entry.primaryParam
+    ? `fetcher: Fetcher, ${entry.primaryParam}: string, input: Record<string, unknown> = {}, options: RequestOptions = {}`
+    : "fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}";
+  const payload = entry.primaryParam
+    ? `{ ${entry.primaryParam}, ...input }`
+    : "input";
+  return `
+export async function ${entry.name}(${params}) {
+  return requestCapability(fetcher, "${entry.capabilityId}", ${payload}, options);
+}`;
+}).join("\n")}
 `;
 }
 
@@ -338,7 +337,7 @@ export function renderLookupModule(target, defaultApiBaseUrl) {
   const preamble = target === "sveltekit" ? `${publicEnvPreamble(target)}\n` : publicEnvPreamble(target);
   const authTokenHelper = `function authToken() {
   return ${target === "react"
-    ? 'import.meta.env.PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN || ""'
+    ? 'import.meta.env.PUBLIC_TOPOGRAM_AUTH_TOKEN || import.meta.env.VITE_PUBLIC_TOPOGRAM_AUTH_TOKEN || ""'
     : authTokenExpression(target)};
 }
 

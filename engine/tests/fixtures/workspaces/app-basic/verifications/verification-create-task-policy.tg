@@ -1,0 +1,15 @@
+verification ver_create_task_policy {
+  name "Create task policy"
+  description "Verifies create-task behavior and policy"
+
+  validates [cap_create_task, rule_no_task_creation_in_archived_project, rule_only_active_users_may_own_tasks]
+  method runtime
+
+  scenarios [
+    create_task_in_active_project,
+    reject_task_in_archived_project,
+    reject_assignment_to_inactive_user
+  ]
+
+  status active
+}

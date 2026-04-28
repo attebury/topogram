@@ -12,6 +12,12 @@ import { generateSqlitePrismaSchema } from "./sqlite/prisma.js";
 
 function defaultInputPathForGraph(graph) {
   const root = graph.root || "";
+  if (root.includes("/demos/generated/todo-demo-app/topogram")) {
+    return "./demos/generated/todo-demo-app/topogram";
+  }
+  if (root.includes("/engine/tests/fixtures/workspaces/app-basic")) {
+    return "./engine/tests/fixtures/workspaces/app-basic";
+  }
   if (root.includes("/examples/generated/content-approval/topogram")) {
     return "./examples/generated/content-approval/topogram";
   }
@@ -100,14 +106,9 @@ function renderEmptySnapshotForProjection(projection) {
   };
 }
 
-function renderDbLifecycleEnvExample(projection) {
+function renderDbLifecycleEnvExample(projection, plan) {
   const engine = projection.platform === "db_sqlite" ? "sqlite" : "postgres";
-  const projectionName = `${projection.id} ${projection.name || ""}`.toLowerCase();
-  const inputPath = projectionName.includes("content approval")
-    ? "./examples/generated/content-approval/topogram"
-    : projectionName.includes("issues")
-      ? "./examples/generated/issues/topogram"
-      : "./examples/generated/todo/topogram";
+  const inputPath = plan.inputPath;
   if (engine === "sqlite") {
     return `DATABASE_URL=file:./var/${projection.id}.sqlite\nTOPOGRAM_REPO_ROOT=../..\nTOPOGRAM_INPUT_PATH=${inputPath}\n`;
   }
@@ -543,7 +544,7 @@ function generateDbLifecycleBundle(graph, projection) {
   const plan = dbLifecyclePlan(graph, projection);
   const files = {
     "README.md": renderDbLifecycleReadme(plan),
-    ".env.example": renderDbLifecycleEnvExample(projection),
+    ".env.example": renderDbLifecycleEnvExample(projection, plan),
     "scripts/db-common.sh": renderDbLifecycleCommonScript(plan),
     "scripts/db-status.sh": renderDbStatusScript(),
     "scripts/db-bootstrap.sh": renderDbBootstrapScript(),

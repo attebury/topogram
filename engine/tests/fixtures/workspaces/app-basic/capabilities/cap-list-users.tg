@@ -1,0 +1,11 @@
+capability cap_list_users {
+  name "List Users"
+  description "Allows a user to list users"
+
+  actors [actor_user]
+  reads [entity_user]
+  input [shape_input_list_users]
+  output [shape_output_user_detail]
+
+  status active
+}

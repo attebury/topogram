@@ -2,9 +2,11 @@
 
 This page defines how **imported brownfield** proof targets and the **`examples/native/`** parity tier are managed outside the main product repo.
 
+Status: deferred during the generated-app reset. `topogram-demo` remains reference material for imported/brownfield proof history, but it is not part of the active quickstart, CI path, or engine development workflow.
+
 The canonical imported-proof home is [topogram-demo](https://github.com/attebury/topogram-demo).
 
-For the initial GitHub bootstrap and first-target migration order, see [Topogram Demo Bootstrap](./topogram-demo-bootstrap.md).
+For the initial GitHub bootstrap and first-target migration order, see [Topogram Demo Bootstrap](./project-management/archive/topogram-demo-bootstrap.md).
 
 ## Repo Split
 

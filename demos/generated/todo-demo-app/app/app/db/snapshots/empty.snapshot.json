@@ -1,0 +1,17 @@
+{
+  "type": "db_schema_snapshot",
+  "projection": {
+    "id": "proj_db_postgres",
+    "name": "Todo Postgres DB",
+    "platform": "db_postgres"
+  },
+  "profile": "postgres_sql",
+  "generatorDefaults": {
+    "profile": "postgres_sql",
+    "language": "sql",
+    "styling": "css"
+  },
+  "engine": "postgres",
+  "enums": [],
+  "tables": []
+}

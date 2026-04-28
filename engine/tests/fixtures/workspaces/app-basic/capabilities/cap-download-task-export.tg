@@ -1,0 +1,10 @@
+capability cap_download_task_export {
+  name "Download Task Export"
+  description "Downloads the completed task export artifact"
+
+  actors [actor_user]
+  reads [entity_task]
+  input [shape_input_get_task_export_job]
+
+  status active
+}

@@ -1,0 +1,10 @@
+shape shape_input_delete_task {
+  name "Delete Task Input"
+  description "Input for deleting a task"
+
+  fields {
+    task_id uuid required
+  }
+
+  status active
+}

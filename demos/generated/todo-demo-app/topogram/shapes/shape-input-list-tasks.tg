@@ -1,0 +1,14 @@
+shape shape_input_list_tasks {
+  name "List Tasks Input"
+  description "Input for listing tasks"
+
+  fields {
+    project_id uuid optional
+    owner_id uuid optional
+    status task_status optional
+    after text optional
+    limit integer optional default 25
+  }
+
+  status active
+}
