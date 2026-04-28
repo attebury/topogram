@@ -49,7 +49,7 @@ export function jsonError(error: unknown) {
     body: {
       error: {
         code: "internal_server_error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: "Internal server error"
       }
     }
   };
@@ -64,7 +64,13 @@ export function coerceValue(raw: string | undefined, schema: { type?: string; fo
   }
   if (schema.type === "integer" || schema.type === "number") {
     const parsed = Number(raw);
-    return Number.isNaN(parsed) ? raw : parsed;
+    if (Number.isNaN(parsed)) {
+      throw new HttpError(400, "invalid_number", `Invalid numeric value: ${raw}`);
+    }
+    if (schema.type === "integer" && !Number.isInteger(parsed)) {
+      throw new HttpError(400, "invalid_integer", `Invalid integer value: ${raw}`);
+    }
+    return parsed;
   }
   if (schema.type === "boolean") {
     return raw === "true";
@@ -153,8 +159,43 @@ function parseJsonSegment(segment: string, code: string) {
   }
 }
 
-function readHs256Secret() {
-  return process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+function readHs256Secrets() {
+  const plural = process.env.TOPOGRAM_AUTH_JWT_SECRETS || "";
+  if (plural) {
+    const list = plural.split(",").map((value) => value.trim()).filter(Boolean);
+    if (list.length > 0) {
+      return list;
+    }
+  }
+  const singular = process.env.TOPOGRAM_AUTH_JWT_SECRET || "";
+  return singular ? [singular] : [];
+}
+
+function readExpectedIssuer() {
+  return process.env.TOPOGRAM_AUTH_JWT_ISSUER || "";
+}
+
+function readExpectedAudience() {
+  return process.env.TOPOGRAM_AUTH_JWT_AUDIENCE || "";
+}
+
+function audienceMatches(claim: unknown, expected: string) {
+  if (typeof claim === "string") {
+    return claim === expected;
+  }
+  if (Array.isArray(claim)) {
+    return claim.some((value) => typeof value === "string" && value === expected);
+  }
+  return false;
+}
+
+export function contentDisposition(disposition: string, filename: string) {
+  const safeDisposition = disposition === "inline" ? "inline" : "attachment";
+  const safeFilename = filename
+    .replace(/[\r\n"]/g, "")
+    .replace(/[\\/]/g, "_")
+    .trim() || "download.bin";
+  return `${safeDisposition}; filename="${safeFilename}"`;
 }
 
 function parsePrincipalClaims(payload: Record<string, unknown>): AuthPrincipal {
@@ -204,9 +245,9 @@ function principalFromJwtHs256(token: string): AuthPrincipal | null {
     return null;
   }
 
-  const secret = readHs256Secret();
-  if (!secret) {
-    throw new HttpError(500, "missing_auth_jwt_secret", "Missing TOPOGRAM_AUTH_JWT_SECRET");
+  const secrets = readHs256Secrets();
+  if (secrets.length === 0) {
+    throw new HttpError(500, "missing_auth_jwt_secret", "Missing TOPOGRAM_AUTH_JWT_SECRET or TOPOGRAM_AUTH_JWT_SECRETS");
   }
 
   const segments = token.split(".");
@@ -222,19 +263,36 @@ function principalFromJwtHs256(token: string): AuthPrincipal | null {
     throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
-  const expectedSignature = crypto
-    .createHmac("sha256", secret)
-    .update(encodedHeader + "." + encodedPayload)
-    .digest("base64url");
-
   const actualBytes = Buffer.from(signature);
-  const expectedBytes = Buffer.from(expectedSignature);
-  if (actualBytes.length !== expectedBytes.length || !crypto.timingSafeEqual(actualBytes, expectedBytes)) {
+  const signingInput = encodedHeader + "." + encodedPayload;
+  let signatureMatched = false;
+  for (const candidate of secrets) {
+    const expectedSignature = crypto
+      .createHmac("sha256", candidate)
+      .update(signingInput)
+      .digest("base64url");
+    const expectedBytes = Buffer.from(expectedSignature);
+    if (actualBytes.length === expectedBytes.length && crypto.timingSafeEqual(actualBytes, expectedBytes)) {
+      signatureMatched = true;
+      break;
+    }
+  }
+  if (!signatureMatched) {
     throw new HttpError(401, "invalid_bearer_signature", "Invalid bearer token signature");
   }
 
   if (typeof payload?.exp === "number" && payload.exp <= Math.floor(Date.now() / 1000)) {
     throw new HttpError(401, "expired_bearer_token", "Bearer token has expired");
+  }
+
+  const expectedIssuer = readExpectedIssuer();
+  if (expectedIssuer && payload?.iss !== expectedIssuer) {
+    throw new HttpError(401, "invalid_bearer_issuer", "Bearer token issuer is not trusted");
+  }
+
+  const expectedAudience = readExpectedAudience();
+  if (expectedAudience && !audienceMatches(payload?.aud, expectedAudience)) {
+    throw new HttpError(401, "invalid_bearer_audience", "Bearer token audience does not match");
   }
 
   return parsePrincipalClaims(payload);
@@ -270,7 +328,8 @@ function hasClaim(principal: AuthPrincipal, claim: string | null | undefined, cl
 
 function ownerIdFromResource(
   resource: Record<string, unknown> | null | undefined,
-  ownershipField: string | null | undefined
+  ownershipField: string | null | undefined,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!resource || typeof resource !== "object") {
     return "";
@@ -281,6 +340,10 @@ function ownerIdFromResource(
     if (typeof explicitValue === "string" && explicitValue.length > 0) {
       return explicitValue;
     }
+    return "";
+  }
+
+  if (!options.allowHeuristicOwnership) {
     return "";
   }
 
@@ -298,7 +361,8 @@ async function satisfiesOwnership(
   principal: AuthPrincipal,
   ownership: string | null | undefined,
   ownershipField: string | null | undefined,
-  authorizationContext: AuthorizationContext | undefined
+  authorizationContext: AuthorizationContext | undefined,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!ownership || ownership === "none") {
     return true;
@@ -315,13 +379,14 @@ async function satisfiesOwnership(
   }
 
   const resource = await authorizationContext.loadResource();
-  return ownerIdFromResource(resource, ownershipField) === principal.userId;
+  return ownerIdFromResource(resource, ownershipField, options) === principal.userId;
 }
 
 async function authorizeWithPrincipal(
   principal: AuthPrincipal,
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
-  authorizationContext?: AuthorizationContext
+  authorizationContext?: AuthorizationContext,
+  options: { allowHeuristicOwnership?: boolean } = {}
 ) {
   if (!authz || authz.length === 0) {
     return;
@@ -331,7 +396,7 @@ async function authorizeWithPrincipal(
     const roleOk = hasRole(principal, rule.role);
     const permissionOk = hasPermission(principal, rule.permission);
     const claimOk = hasClaim(principal, rule.claim, rule.claimValue);
-    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, rule.ownershipField, authorizationContext);
+    const ownershipOk = await satisfiesOwnership(principal, rule.ownership, rule.ownershipField, authorizationContext, options);
     if (roleOk && permissionOk && claimOk && ownershipOk) {
       return;
     }
@@ -347,7 +412,7 @@ export async function authorizeWithBearerDemoProfile(
 ) {
   const envPrincipal = principalFromEnv();
   if (!envPrincipal) {
-    return;
+    throw new HttpError(500, "missing_auth_demo_token", "Missing TOPOGRAM_AUTH_TOKEN for bearer_demo auth profile");
   }
 
   const token = readBearerToken(c);
@@ -358,7 +423,7 @@ export async function authorizeWithBearerDemoProfile(
     throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
-  await authorizeWithPrincipal(envPrincipal.principal, authz, authorizationContext);
+  await authorizeWithPrincipal(envPrincipal.principal, authz, authorizationContext, { allowHeuristicOwnership: true });
 }
 
 export async function authorizeWithBearerJwtHs256Profile(
@@ -366,10 +431,6 @@ export async function authorizeWithBearerJwtHs256Profile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
-  if ((process.env.TOPOGRAM_AUTH_PROFILE || "") !== "bearer_jwt_hs256") {
-    return;
-  }
-
   const token = readBearerToken(c);
   if (!token) {
     throw new HttpError(401, "missing_bearer_token", "Missing bearer token");
@@ -377,7 +438,7 @@ export async function authorizeWithBearerJwtHs256Profile(
 
   const principal = principalFromJwtHs256(token);
   if (!principal) {
-    return;
+    throw new HttpError(401, "invalid_bearer_token", "Invalid bearer token");
   }
 
   await authorizeWithPrincipal(principal, authz, authorizationContext);
@@ -388,6 +449,10 @@ export async function authorizeWithGeneratedAuthProfile(
   authz: ReadonlyArray<{ role?: string | null; permission?: string | null; claim?: string | null; claimValue?: string | null; ownership?: string | null; ownershipField?: string | null }>,
   authorizationContext?: AuthorizationContext
 ) {
+  if (!authz || authz.length === 0) {
+    return;
+  }
+
   const profile = process.env.TOPOGRAM_AUTH_PROFILE || "";
   if (profile === "bearer_demo") {
     await authorizeWithBearerDemoProfile(c, authz, authorizationContext);
@@ -395,5 +460,11 @@ export async function authorizeWithGeneratedAuthProfile(
   }
   if (profile === "bearer_jwt_hs256") {
     await authorizeWithBearerJwtHs256Profile(c, authz, authorizationContext);
+    return;
   }
+  throw new HttpError(
+    500,
+    profile ? "unsupported_auth_profile" : "missing_auth_profile",
+    profile ? `Unsupported TOPOGRAM_AUTH_PROFILE: ${profile}` : "Missing TOPOGRAM_AUTH_PROFILE for protected route"
+  );
 }

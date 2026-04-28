@@ -143,6 +143,9 @@ function buildReactScaffold(realization, graph) {
   const detailScreen = contract.screens.find((screen) => screen.id === webScreenReference.detailScreenId);
   const createScreen = contract.screens.find((screen) => screen.id === webScreenReference.createScreenId);
   const editScreen = contract.screens.find((screen) => screen.id === webScreenReference.editScreenId);
+  const taskExports = webScreenReference.exportsScreenId
+    ? contract.screens.find((screen) => screen.id === webScreenReference.exportsScreenId)
+    : null;
   const listLookups = Object.fromEntries((listScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
   const createLookups = Object.fromEntries((createScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
   const editLookups = Object.fromEntries((editScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
@@ -307,6 +310,7 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
       taskDetail: detailScreen,
       taskCreate: createScreen,
       taskEdit: editScreen,
+      taskExports,
       listLookups,
       createLookups,
       editLookups,

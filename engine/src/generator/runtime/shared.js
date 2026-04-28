@@ -172,6 +172,10 @@ export function pickDefaultUiWebProjection(graph) {
     }
     return hierarchical.sort((a, b) => a.id.localeCompare(b.id))[0];
   }
+  const legacySvelteKitProjection = candidates.find((projection) => projection.id === "proj_ui_web");
+  if (legacySvelteKitProjection) {
+    return legacySvelteKitProjection;
+  }
   return candidates[0];
 }
 

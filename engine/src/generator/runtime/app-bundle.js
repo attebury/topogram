@@ -225,7 +225,7 @@ export function generateAppBundle(graph, options = {}) {
 
   const files = {
     ".env.example": renderAppBundleEnvExample(plan),
-    ".gitignore": "node_modules/\n.env\n",
+    ".gitignore": "node_modules/\n.env\ncompile/*/package-lock.json\n",
     "README.md": renderAppBundleReadme(plan),
     "package.json": renderAppBundlePackageJson(),
     "app-bundle-plan.json": `${JSON.stringify(plan, null, 2)}\n`,

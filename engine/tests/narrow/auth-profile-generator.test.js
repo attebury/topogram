@@ -358,14 +358,14 @@ test("issues generated web clients keep bearer token injection stable", () => {
   assert.equal(svelteBundle.ok, true);
 
   assert.match(reactBundle.artifact["src/lib/api/client.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
-  assert.match(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
-  assert.doesNotMatch(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_AUTH_TOKEN/);
+  assert.match(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_AUTH_TOKEN/);
+  assert.doesNotMatch(reactBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
   assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /function authToken\(\)/);
-  assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
+  assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /PUBLIC_TOPOGRAM_AUTH_TOKEN/);
   assert.match(reactBundle.artifact["src/lib/api/lookups.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
 
   assert.match(svelteBundle.artifact["src/lib/api/client.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
-  assert.match(svelteBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN/);
+  assert.match(svelteBundle.artifact["src/lib/api/client.ts"], /PUBLIC_TOPOGRAM_AUTH_TOKEN/);
   assert.match(svelteBundle.artifact["src/lib/api/lookups.ts"], /headers\.set\("Authorization", "Bearer " \+ authToken\(\)\)/);
 });
 
