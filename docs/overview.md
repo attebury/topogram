@@ -4,18 +4,7 @@ Topogram's current goal is simple: author a Topogram and generate a runnable app
 
 ## Current Scope
 
-In scope:
-
-- the engine under `engine/`
-- the generated Todo demo under `demos/generated/todo-demo-app/`
-- validation, generation, compile, smoke, and runtime-check flows
-
-Out of scope for now:
-
-- brownfield import
-- maintained-app workflows
-- parity proof matrices
-- launch and alpha planning
+The active scope is the engine under `engine/`, the generated Todo demo under `demos/generated/todo-demo-app/`, and the validation, generation, compile, smoke, and runtime-check flows.
 
 ## First Run
 

@@ -44,7 +44,3 @@ npm run app:runtime-check
 ```
 
 For normal iteration, edit files under `topogram/`, regenerate with `npm run topogram:generate`, then rerun the relevant app checks.
-
-## Boundary
-
-This demo is the active generated-app proof path. Import, maintained-app, and brownfield proof work is deferred while the authoring-to-app workflow is tightened.

@@ -14,8 +14,6 @@
     "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
     "generate:app-bundle": "node ./src/cli.js generate app ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
     "test:narrow": "node --test ./tests/narrow/parser-lex.test.js ./tests/narrow/format-stable-stringify.test.js ./tests/narrow/reconcile-journeys.test.js ./tests/narrow/runtime-shared.test.js ./tests/narrow/auth-alpha-complete.test.js ./tests/narrow/generated-app-workflow.test.js",
-    "test:proof-corpus:list": "node ./scripts/list-proof-corpus-fixtures.mjs",
-    "test:proof-corpus": "node ./scripts/test.js",
     "test": "npm run test:narrow"
   }
 }

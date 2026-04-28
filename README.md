@@ -2,8 +2,6 @@
 
 Topogram is being narrowed around one complete workflow: author a Topogram, generate a runnable app, and verify it.
 
-Deferred for now: import/adopt, maintained-app proofs, brownfield proof operations, parity matrices, and `topogram-demo` proof work.
-
 ## First Use
 
 Use Node 20+.
@@ -31,7 +29,6 @@ npm run app:runtime-check
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `demos/generated/todo-demo-app/` - canonical generated app demo
 - `docs/` - terse first-use docs
-- `topogram-project/project/topogram/deferred-code/examples/` - archived legacy examples
 
 ## Engine
 

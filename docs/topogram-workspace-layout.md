@@ -33,7 +33,3 @@ demos/generated/todo-demo-app/app/
 ```
 
 This output is generated. Prefer regenerating it instead of hand-editing it.
-
-## Deferred Material
-
-Legacy `examples/` code has moved to `topogram-project/project/topogram/deferred-code/examples/`.

@@ -36,7 +36,3 @@ npm run app:dev
 npm run app:smoke
 npm run app:runtime-check
 ```
-
-## What To Keep Out
-
-Do not make brownfield import, maintained-app proof, parity matrices, or launch planning part of the default first-use path. Those can come back later after the generated-app workflow is clean.

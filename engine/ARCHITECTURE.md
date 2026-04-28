@@ -51,5 +51,3 @@ The active repo proof target is intentionally small:
 
 - `engine/tests/fixtures/workspaces/app-basic`: engine-owned authoring-to-app fixture
 - `demos/generated/todo-demo-app`: canonical user-facing generated app demo
-
-Legacy examples and brownfield/import proof work are archived in `topogram-project/project/topogram/deferred-code/examples/`.

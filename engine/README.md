@@ -32,7 +32,6 @@ No global install or published npm package is assumed yet.
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
 - `tests/fixtures/invalid/` - invalid model cases
-- `tests/fixtures/import/` - deferred import/adopt regression inputs
 
 User-facing generated app demos live outside the engine under `../demos/generated/**`.
 
@@ -67,7 +66,3 @@ Validate or generate through the public CLI shape:
 node ./src/cli.js validate ./tests/fixtures/workspaces/app-basic
 node ./src/cli.js generate app ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
 ```
-
-## Deferred Surfaces
-
-Import/adopt, maintained-app, context-serving, auth proof, and brownfield proof code remains in the repo. It is not the active quickstart path while Topogram is being narrowed around generated app demos.
