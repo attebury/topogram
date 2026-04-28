@@ -5,7 +5,6 @@ on:
     paths:
       - "engine/**"
       - "demos/**"
-      - "examples/**"
       - "product/**"
       - "scripts/**"
       - "README.md"
@@ -16,7 +15,6 @@ on:
     paths:
       - "engine/**"
       - "demos/**"
-      - "examples/**"
       - "product/**"
       - "scripts/**"
       - "README.md"

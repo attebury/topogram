@@ -5,7 +5,6 @@ on:
     paths:
       - "engine/**"
       - "demos/**"
-      - "examples/**"
       - "product/**"
       - "scripts/**"
       - "README.md"
@@ -31,10 +30,6 @@ jobs:
     outputs:
       generated_canary: ${{ github.event_name == 'pull_request' && steps.filter.outputs.generated_canary || steps.defaults.outputs.generated_canary }}
       generated_demo: ${{ github.event_name == 'pull_request' && steps.filter.outputs.generated_demo || steps.defaults.outputs.generated_demo }}
-      product_app: ${{ github.event_name == 'pull_request' && steps.filter.outputs.product_app || steps.defaults.outputs.product_app }}
-      todo_example: ${{ github.event_name == 'pull_request' && steps.filter.outputs.todo_example || steps.defaults.outputs.todo_example }}
-      issues_example: ${{ github.event_name == 'pull_request' && steps.filter.outputs.issues_example || steps.defaults.outputs.issues_example }}
-      content_approval_example: ${{ github.event_name == 'pull_request' && steps.filter.outputs.content_approval_example || steps.defaults.outputs.content_approval_example }}
     steps:
       - uses: actions/checkout@v4
         if: github.event_name == 'pull_request'
@@ -48,31 +43,16 @@ jobs:
               - "engine/src/realization/**"
               - "engine/src/example-implementation.js"
               - "engine/src/generator/runtime/**"
-              - "examples/**/apps/**"
-              - "scripts/verify-generated-example.sh"
             generated_demo:
               - "demos/generated/**"
               - "engine/**"
               - "scripts/verify-generated-demo.sh"
-            product_app:
-              - "product/app/**"
-              - "scripts/verify-product-app.sh"
-            todo_example:
-              - "examples/todo/**"
-            issues_example:
-              - "examples/issues/**"
-            content_approval_example:
-              - "examples/content-approval/**"
       - id: defaults
         if: github.event_name != 'pull_request'
         run: |
           {
             echo "generated_canary=true"
             echo "generated_demo=true"
-            echo "product_app=true"
-            echo "todo_example=true"
-            echo "issues_example=true"
-            echo "content_approval_example=true"
           } >> "$GITHUB_OUTPUT"
 
   generated-demo:
@@ -91,51 +71,3 @@ jobs:
           node-version: 20
       - name: Run generated demo verification
         run: bash ./scripts/verify-generated-demo.sh todo-demo-app compile
-
-  generated-runtime:
-    name: Archived generated example regression (${{ matrix.example }})
-    runs-on: ubuntu-latest
-    needs:
-      - changes
-    if: >-
-      github.event_name != 'pull_request' ||
-      (matrix.example == 'todo' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.todo_example == 'true')) ||
-      (matrix.example == 'issues' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.issues_example == 'true')) ||
-      (matrix.example == 'content-approval' && (needs.changes.outputs.generated_canary == 'true' || needs.changes.outputs.content_approval_example == 'true'))
-    strategy:
-      fail-fast: false
-      matrix:
-        example:
-          - todo
-          - issues
-          - content-approval
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Run generated example verification
-        run: |
-          MODE="full"
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            MODE="compile-smoke"
-          fi
-          bash ./scripts/verify-generated-example.sh "${{ matrix.example }}" "$MODE"
-
-  maintained-proof:
-    name: Maintained proof regression
-    runs-on: ubuntu-latest
-    needs:
-      - changes
-    if: >-
-      github.event_name != 'pull_request' ||
-      needs.changes.outputs.product_app == 'true'
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Run maintained proof verification
-        run: bash ./scripts/verify-product-app.sh

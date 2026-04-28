@@ -1,6 +1,0 @@
-shape shape_output_issue_detail from entity_issue {
-  name "Issue Detail Output"
-  description "Detailed issue payload"
-  include [id, title, description, status, assignee_id, board_id, created_at, updated_at, closed_at, priority]
-  status active
-}

@@ -1,6 +1,0 @@
-actor actor_user {
-  name "User"
-  description "Workspace member interacting with the task system"
-
-  status active
-}

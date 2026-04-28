@@ -1,3 +1,0 @@
-enum issue_status {
-  values [open, in_progress, closed, archived]
-}

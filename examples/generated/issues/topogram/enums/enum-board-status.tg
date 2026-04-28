@@ -1,3 +1,0 @@
-enum board_status {
-  values [active, archived]
-}

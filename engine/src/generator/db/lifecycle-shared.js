@@ -18,13 +18,7 @@ function defaultInputPathForGraph(graph) {
   if (root.includes("/engine/tests/fixtures/workspaces/app-basic")) {
     return "./engine/tests/fixtures/workspaces/app-basic";
   }
-  if (root.includes("/examples/generated/content-approval/topogram")) {
-    return "./examples/generated/content-approval/topogram";
-  }
-  if (root.includes("/examples/generated/issues/topogram")) {
-    return "./examples/generated/issues/topogram";
-  }
-  return "./examples/generated/todo/topogram";
+  return "./demos/generated/todo-demo-app/topogram";
 }
 
 function dbLifecyclePlan(graph, projection) {

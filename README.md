@@ -31,7 +31,7 @@ npm run app:runtime-check
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `demos/generated/todo-demo-app/` - canonical generated app demo
 - `docs/` - terse first-use docs
-- `examples/` - legacy transition material while demos become the active path
+- `topogram-project/project/topogram/deferred-code/examples/` - archived legacy examples
 
 ## Engine
 

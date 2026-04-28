@@ -36,8 +36,4 @@ This output is generated. Prefer regenerating it instead of hand-editing it.
 
 ## Deferred Material
 
-```text
-examples/
-```
-
-`examples/` is legacy transition material while the active product path moves under `demos/generated/`.
+Legacy `examples/` code has moved to `topogram-project/project/topogram/deferred-code/examples/`.

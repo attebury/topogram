@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { EXAMPLE_IMPLEMENTATIONS } from "../../examples/registry.js";
+import { TODO_IMPLEMENTATION } from "../../demos/generated/todo-demo-app/implementation/index.js";
+
+const EXAMPLE_IMPLEMENTATIONS = [TODO_IMPLEMENTATION];
 
 function normalizeRoot(root) {
   return String(root || "").replace(/\\/g, "/");

@@ -45,7 +45,7 @@ The active evaluator path is:
 ### 3. Docs and repo shape
 
 - point README and docs first at the generated app workflow
-- keep `examples/**` as transition material until it is migrated or archived
+- keep archived example material in `topogram-project/project/topogram/deferred-code/examples/`
 - keep `topogram-demo` as deferred imported/brownfield proof history
 
 ## Deferred
