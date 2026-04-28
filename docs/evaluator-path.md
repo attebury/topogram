@@ -17,7 +17,6 @@ flowchart LR
 Read:
 
 - [README.md](../README.md)
-- [alpha-overview.md](./alpha-overview.md)
 - [proof-points-and-limits.md](./proof-points-and-limits.md)
 
 The key question to answer here is:

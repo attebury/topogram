@@ -230,13 +230,4 @@ That is now the clearest next answer to the “too example-shaped” critique wi
 
 ## Invite-Led Alpha Readiness
 
-The current invite-led alpha audience and contact path are documented here:
-
-- [docs/design-partner-profile.md](./internal/design-partner-profile.md)
-- [docs/invite-led-alpha.md](./internal/invite-led-alpha.md)
-
-The operator-facing alpha intake, triage, and feedback workflow is documented here:
-
-- [docs/alpha-interest-triage-rubric.md](./internal/alpha-interest-triage-rubric.md)
-- [docs/partner-feedback-template.md](./internal/partner-feedback-template.md)
-- [docs/alpha-first-call-guide.md](./internal/alpha-first-call-guide.md)
+Invite-led alpha planning, design-partner notes, intake, triage, feedback workflow, and launch tracking moved to `topogram-project/project/topogram/deferred-docs/`.

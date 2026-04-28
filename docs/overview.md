@@ -102,7 +102,6 @@ This repo is grounded in working proofs, not just concept demos:
 - [topogram-demo-ops.md](./topogram-demo-ops.md): the ops contract for keeping imported proof claims fresh in [topogram-demo](https://github.com/attebury/topogram-demo), including the release handshake between `topogram` merges and imported-proof refreshes
 - [testing-strategy.md](./testing-strategy.md): the verification philosophy and current regression layers
 - [proof-points-and-limits.md](./proof-points-and-limits.md): the current claim boundary, proof matrix, and known limits
-- [alpha-overview.md](./alpha-overview.md): the short visual walkthrough for evaluators and design partners
 - [skeptical-evaluator.md](./skeptical-evaluator.md): direct answers to the strongest skeptical objections
 - [evaluator-path.md](./evaluator-path.md): the canonical evaluator flow and demo path
 - [agent-planning-evaluator-path.md](./agent-planning-evaluator-path.md): the shortest evaluator-facing proof path for single-agent and multi-agent planning
@@ -127,7 +126,7 @@ Topogram is a strong fit for:
 
 Topogram is for technical teams already using coding agents who need stronger structure, review boundaries, and proof while evolving real software.
 
-For the design-partner profile and current invite path, see [internal/design-partner-profile.md](./internal/design-partner-profile.md) and [internal/invite-led-alpha.md](./internal/invite-led-alpha.md).
+Design-partner and invite-path planning notes now live in `topogram-project/project/topogram/deferred-docs/`.
 
 ## Current Limits
 
