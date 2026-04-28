@@ -217,7 +217,7 @@ Generated web clients attach `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN` automatically on 
 
 Generated servers fail closed when a protected route has no supported auth profile, no auth handler, or a missing demo token. Generated CORS defaults allow only local web origins and can be overridden with `TOPOGRAM_CORS_ORIGINS`.
 
-The current auth proof boundary includes:
+The current auth behavior includes:
 
 - signed bearer token verification
 - `401` missing, invalid-signature, and expired-token behavior
@@ -225,11 +225,7 @@ The current auth proof boundary includes:
 - generated permission, ownership, and claim enforcement
 - generated UI visibility that follows the same modeled auth rules
 
-For the primary auth profile and alpha boundary, see [../docs/auth-profile-bearer-jwt-hs256.md](../docs/auth-profile-bearer-jwt-hs256.md).
-
-`bearer_demo` remains supported as a lighter local/demo profile. It is no longer the primary auth narrative. For that profile, see [../docs/auth-profile-bearer-demo.md](../docs/auth-profile-bearer-demo.md).
-
-For the modeled authorization surface itself, including when to use `permission`, `ownership`, and `claim`, see [../docs/auth-modeling.md](../docs/auth-modeling.md).
+`bearer_jwt_hs256` is the primary generated auth profile. `bearer_demo` remains supported as a lighter local/demo profile.
 
 For brownfield repos, `reconcile` can now infer review-required auth hints from imported auth evidence and surface them in bundle READMEs, reconcile reports, and projection patch candidates. That currently includes:
 

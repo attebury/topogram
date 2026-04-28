@@ -1,15 +1,22 @@
 # Product Workflow
 
-The **canonical big picture** — workflow diagram, capability matrix, and proof split — lives at the repository **[README](../README.md)** so visitors see it first.
+The current workflow is:
 
-For motivation, limits, proof inventory, FAQ, and verification commands, use **[Overview](./overview.md)**.
+1. edit `examples/generated/todo/topogram/`
+2. validate the Topogram
+3. generate app artifacts
+4. compile or smoke-check the generated app
+5. repeat
 
-For vocabulary: [Topogram Product Glossary](./topogram-product-glossary.md). For day-to-day edits after onboarding: [Steady-State Development Loop](./steady-state-development-loop.md).
+For first use, run:
 
-## Related
+```bash
+cd engine
+npm test
+cd ../examples/generated/todo/apps/local-stack
+npm run compile
+```
 
-- [Topogram Demo Ops](./topogram-demo-ops.md) — imported proof + **`examples/native/`** parity tier (demo repo)
-- [Human/Agent Collaboration Model](./human-agent-collaboration.md)
-- [Topogram Workspace Layout](./topogram-workspace-layout.md)
-- [Proof Points And Limits](./proof-points-and-limits.md)
-- [Testing Strategy](./testing-strategy.md)
+Run `bash ./scripts/verify-generated-example.sh todo compile-smoke` from the repo root when local services are ready.
+
+For folder ownership, see [Topogram Workspace Layout](./topogram-workspace-layout.md).
