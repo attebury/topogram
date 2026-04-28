@@ -2,7 +2,7 @@
 
 This folder contains the Topogram implementation: parser, validator, resolver, generators, runtime bundle emitters, and CLI.
 
-The active product workflow is now authoring-to-generated-app. Engine development should stay separate from user-facing demos.
+The active product workflow is authoring-to-generated-app. Engine development should stay separate from user-facing demos.
 
 ## Package Shape
 
@@ -27,12 +27,12 @@ No global install or published npm package is assumed yet.
 
 ## Layout
 
-- `src/`: engine source
-- `tests/narrow/`: focused engine tests
-- `tests/fixtures/workspaces/`: engine-owned Topogram workspaces
-- `tests/fixtures/expected/`: engine-owned golden outputs
-- `tests/fixtures/invalid/`: invalid model cases
-- `tests/fixtures/import/`: deferred import/adopt regression inputs
+- `src/` - engine source
+- `tests/narrow/` - focused engine tests
+- `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
+- `tests/fixtures/expected/` - engine-owned golden outputs
+- `tests/fixtures/invalid/` - invalid model cases
+- `tests/fixtures/import/` - deferred import/adopt regression inputs
 
 User-facing generated app demos live outside the engine under `../demos/generated/**`.
 
@@ -45,7 +45,7 @@ tests/fixtures/workspaces/app-basic/
 tests/fixtures/expected/app-basic/
 ```
 
-It is a fixture, not a user example. It exists to test the engine's app-generation behavior and public CLI aliases.
+It is a fixture, not a user example.
 
 ## Commands
 
@@ -70,4 +70,4 @@ node ./src/cli.js generate app ./tests/fixtures/workspaces/app-basic --out /tmp/
 
 ## Deferred Surfaces
 
-Import/adopt, maintained-app, context-serving, and brownfield proof code remains in the repo. It is not the active quickstart path while Topogram is being narrowed around generated app demos.
+Import/adopt, maintained-app, context-serving, auth proof, and brownfield proof code remains in the repo. It is not the active quickstart path while Topogram is being narrowed around generated app demos.

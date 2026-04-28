@@ -61,7 +61,7 @@ function buildNativeParityPlan(graph, options = {}) {
 
 function renderRootReadme(plan, urls) {
   const demoOpsUrl =
-    "https://github.com/attebury/topogram/blob/main/docs/topogram-demo-ops.md";
+    "https://github.com/attebury/topogram/blob/main/docs/README.md";
   return `# Native parity bundle
 
 Minimal **Android (Gradle/Kotlin)** and **iOS (Swift Package / SwiftUI)** stubs wired to the same runtime URL metadata as other Topogram bundles.
@@ -100,7 +100,7 @@ swift build
 
 ## Promotion
 
-Copy a verified tree into [\`topogram-demo\` \`examples/native/<slug>/\`](https://github.com/attebury/topogram-demo/tree/main/examples/native) after pinning — see [Topogram Demo Ops](${demoOpsUrl}).
+Native parity promotion is deferred while the active docs focus on generated app demos. See [Topogram docs](${demoOpsUrl}).
 `;
 }
 

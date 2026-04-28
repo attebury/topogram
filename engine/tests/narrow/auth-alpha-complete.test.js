@@ -93,21 +93,6 @@ test("auth alpha-complete claim has structural runtime proof coverage", () => {
   });
 });
 
-test("auth alpha-complete docs point at the proof fixtures they claim", () => {
-  const doc = readText("docs/auth-alpha-complete.md");
-
-  for (const required of [
-    "permission",
-    "ownership",
-    "claim",
-    "../examples/generated/issues/topogram/tests/fixtures/expected/runtime-check-bundle/runtime-check-plan.json",
-    "../examples/generated/content-approval/topogram/tests/fixtures/expected/runtime-check-bundle/runtime-check-plan.json",
-    "auth-profile-bearer-jwt-hs256-launch-checklist.md"
-  ]) {
-    assert.match(doc, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
-});
-
 test("generated JWT helper does not use heuristic ownership fallback", () => {
   const helpers = renderServerHelpers();
 
