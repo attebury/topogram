@@ -48,16 +48,22 @@ It is a fixture, not a user example.
 
 ## Commands
 
-Run the engine test lane:
+Run the engine gate:
+
+```bash
+npm run check
+```
+
+Run the same gate directly:
 
 ```bash
 npm test
 ```
 
-Check the active engine fixture:
+Run only the active fixture validity check:
 
 ```bash
-npm run check
+npm run check:fixture
 ```
 
 Run the app-generation workflow test:

@@ -7,7 +7,8 @@
     "topogram": "./src/cli.js"
   },
   "scripts": {
-    "check": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic",
+    "check": "npm test",
+    "check:fixture": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic",
     "parse": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram",
     "parse:json": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --json",
     "validate": "node ./src/cli.js validate ../demos/generated/todo-demo-app/topogram",
