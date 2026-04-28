@@ -10,7 +10,7 @@
   "topology": {
     "components": [
       {
-        "id": "api",
+        "id": "todo_api",
         "type": "api",
         "projection": "proj_api",
         "generator": {
@@ -19,10 +19,10 @@
         },
         "port": 3000,
         "api": null,
-        "database": "db"
+        "database": "todo_postgres"
       },
       {
-        "id": "web",
+        "id": "todo_sveltekit",
         "type": "web",
         "projection": "proj_ui_web",
         "generator": {
@@ -30,11 +30,11 @@
           "version": "1"
         },
         "port": 5173,
-        "api": "api",
+        "api": "todo_api",
         "database": null
       },
       {
-        "id": "db",
+        "id": "todo_postgres",
         "type": "database",
         "projection": "proj_db_postgres",
         "generator": {
@@ -253,13 +253,14 @@
     "deployCheck": "./scripts/deploy-check.sh"
   },
   "layout": {
-    "app": "app",
+    "apps": "apps",
     "deploy": "deploy",
     "smoke": "smoke",
     "runtimeCheck": "runtime-check",
     "compile": "compile",
-    "services": "app/services",
-    "web": "app/web",
-    "db": "app/db"
+    "services": "apps/services",
+    "web": "apps/web",
+    "db": "apps/db",
+    "native": "apps/native"
   }
 }

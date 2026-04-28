@@ -2,8 +2,8 @@
 
 This bundle packages deployment helpers for the generated runtime.
 
-- `services/api/`: generated Hono + Prisma server scaffold
-- `web/web/`: generated SvelteKit web scaffold
+- `services/app_api/`: generated Hono + Prisma server scaffold
+- `web/app_sveltekit/`: generated SvelteKit web scaffold
 - platform deployment files for `fly_io`
 - a Vercel config for the web app
 
@@ -15,7 +15,7 @@ This bundle packages deployment helpers for the generated runtime.
 
 ## Web Deploy
 
-- Review `web/web/vercel.json`
+- Review `web/app_sveltekit/vercel.json`
 - Set `PUBLIC_TOPOGRAM_API_BASE_URL`
 - Deploy with `vercel deploy`
 

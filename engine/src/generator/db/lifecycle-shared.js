@@ -389,8 +389,13 @@ ${engine === "sqlite" ? `  normalize_sqlite_database_url
   if [[ -z "$runtime_server_dir" && -f "$BUNDLE_DIR/../server/package.json" ]]; then
     runtime_server_dir="$BUNDLE_DIR/../server"
   fi
-  if [[ -z "$runtime_server_dir" && -f "$BUNDLE_DIR/../../services/api/package.json" ]]; then
-    runtime_server_dir="$BUNDLE_DIR/../../services/api"
+  if [[ -z "$runtime_server_dir" && -d "$BUNDLE_DIR/../../services" ]]; then
+    for candidate in "$BUNDLE_DIR"/../../services/*; do
+      if [[ -f "$candidate/package.json" ]]; then
+        runtime_server_dir="$candidate"
+        break
+      fi
+    done
   fi
   if [[ -n "$runtime_server_dir" && -f "$runtime_server_dir/package.json" ]]; then
     (cd "$runtime_server_dir" && npm install && npm exec -- prisma db push --schema "$PRISMA_SCHEMA" --skip-generate)

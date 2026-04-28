@@ -98,7 +98,7 @@ function buildEnvironmentPlan(graph, options = {}) {
         port: component.port || ports.server,
         dir: topology.serviceDir(component),
         database: component.database,
-        databaseEnv: dbEnvVarsForComponent(component.databaseComponent)
+        databaseEnv: dbEnvVarsForComponent(component.databaseComponent, { primary: component.databaseComponent?.id === topology.primaryDb?.id })
       })),
       webs: topology.webComponents.map((component) => ({
         id: component.id,
@@ -113,7 +113,7 @@ function buildEnvironmentPlan(graph, options = {}) {
         platform: component.projection.platform,
         port: component.port,
         dir: topology.dbDir(component),
-        env: dbEnvVarsForComponent(component)
+        env: dbEnvVarsForComponent(component, { primary: component.id === topology.primaryDb?.id })
       }))
     },
     ports: {
@@ -286,10 +286,12 @@ function renderEnvironmentLoadEnvScript() {
 function renderEnvironmentBootstrapDbScript(plan) {
   const dbBootstrapLines = plan.components.databases.map((component) => {
     const env = component.env;
+    const runtimeApi = plan.components.apis.find((apiComponent) => apiComponent.database === component.id);
     const assignments = [
       `DATABASE_URL="\${${env.databaseUrl}:-}"`,
-      `DATABASE_ADMIN_URL="\${${env.databaseAdminUrl}:-}"`
-    ].join(" ");
+      `DATABASE_ADMIN_URL="\${${env.databaseAdminUrl}:-}"`,
+      runtimeApi ? `TOPOGRAM_RUNTIME_SERVER_DIR="$ROOT_DIR/${runtimeApi.dir}"` : null
+    ].filter(Boolean).join(" ");
     return `(cd "$ROOT_DIR/${component.dir}" && TOPOGRAM_ENV_FILE=/dev/null ${assignments} bash ./scripts/db-bootstrap-or-migrate.sh)`;
   });
   const primaryApi = plan.components.apis[0];

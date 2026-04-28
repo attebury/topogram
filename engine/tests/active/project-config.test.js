@@ -171,8 +171,8 @@ test("environment plans support multiple api services and database lifecycle com
     projectConfig: config
   });
 
-  assert.deepEqual(plan.components.apis.map((entry) => entry.id), ["api", "internal_api"]);
-  assert.deepEqual(plan.components.databases.map((entry) => entry.id), ["db", "audit_db"]);
+  assert.deepEqual(plan.components.apis.map((entry) => entry.id), ["app_api", "internal_api"]);
+  assert.deepEqual(plan.components.databases.map((entry) => entry.id), ["app_postgres", "audit_db"]);
   assert.equal(plan.components.apis[1].port, 3001);
   assert.equal(plan.components.databases[1].dir, "db/audit_db");
 });

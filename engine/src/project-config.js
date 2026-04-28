@@ -124,27 +124,27 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
       components: [
         ...(apiProjection && dbProjection
           ? [{
-              id: "api",
+              id: "app_api",
               type: "api",
               projection: apiProjection.id,
               generator: { id: "topogram/hono", version: "1" },
               port: ports.server || 3000,
-              database: "db"
+              database: "app_postgres"
             }]
           : []),
         ...(webProjection
           ? [{
-              id: "web",
+              id: "app_sveltekit",
               type: "web",
               projection: webProjection.id,
               generator: { id: "topogram/sveltekit", version: "1" },
               port: ports.web || 5173,
-              api: "api"
+              api: "app_api"
             }]
           : []),
         ...(dbProjection
           ? [{
-              id: "db",
+              id: "app_postgres",
               type: "database",
               projection: dbProjection.id,
               generator: { id: dbGenerator, version: "1" },

@@ -9,7 +9,7 @@
   "topology": {
     "components": [
       {
-        "id": "api",
+        "id": "todo_api",
         "type": "api",
         "projection": "proj_api",
         "generator": {
@@ -18,7 +18,7 @@
         }
       },
       {
-        "id": "web",
+        "id": "todo_sveltekit",
         "type": "web",
         "projection": "proj_ui_web",
         "generator": {
@@ -27,7 +27,7 @@
         }
       },
       {
-        "id": "db",
+        "id": "todo_postgres",
         "type": "database",
         "projection": "proj_db_postgres",
         "generator": {

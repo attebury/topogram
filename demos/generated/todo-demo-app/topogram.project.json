@@ -14,7 +14,7 @@
   "topology": {
     "components": [
       {
-        "id": "api",
+        "id": "todo_api",
         "type": "api",
         "projection": "proj_api",
         "generator": {
@@ -22,10 +22,10 @@
           "version": "1"
         },
         "port": 3000,
-        "database": "db"
+        "database": "todo_postgres"
       },
       {
-        "id": "web",
+        "id": "todo_sveltekit",
         "type": "web",
         "projection": "proj_ui_web",
         "generator": {
@@ -33,10 +33,10 @@
           "version": "1"
         },
         "port": 5173,
-        "api": "api"
+        "api": "todo_api"
       },
       {
-        "id": "db",
+        "id": "todo_postgres",
         "type": "database",
         "projection": "proj_db_postgres",
         "generator": {

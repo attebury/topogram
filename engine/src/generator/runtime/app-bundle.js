@@ -70,14 +70,15 @@ function buildAppBundlePlan(graph, options = {}) {
       deployCheck: "./scripts/deploy-check.sh"
     },
     layout: {
-      app: "app",
+      apps: "apps",
       deploy: "deploy",
       smoke: "smoke",
       runtimeCheck: "runtime-check",
       compile: "compile",
-      services: "app/services",
-      web: "app/web",
-      db: "app/db"
+      services: "apps/services",
+      web: "apps/web",
+      db: "apps/db",
+      native: "apps/native"
     }
   };
 }
@@ -146,9 +147,10 @@ function renderAppBundleReadme(plan) {
 This is the polished generated app bundle for Topogram v0.1.
 
 It includes:
-- \`app/services/<api-id>/\`: generated API service scaffolds
-- \`app/web/<web-id>/\`: generated web scaffolds
-- \`app/db/<db-id>/\`: generated DB lifecycle bundles
+- \`apps/services/<api-id>/\`: generated API service scaffolds
+- \`apps/web/<web-id>/\`: generated web scaffolds
+- \`apps/db/<db-id>/\`: generated DB lifecycle bundles
+- \`apps/native/<native-id>/\`: generated native app scaffolds
 - \`deploy/\`: deployment packaging
 - \`compile/\`: generated compile verification
 - \`smoke/\`: minimal runtime confidence check
@@ -221,11 +223,11 @@ function renderAppBundleLoadEnvScript() {
 }
 
 function renderAppBundleBootstrapScript() {
-  return renderNestedBundleShellScript("app", "scripts/bootstrap-db.sh");
+  return renderNestedBundleShellScript("apps", "scripts/bootstrap-db.sh");
 }
 
 function renderAppBundleDevScript() {
-  return renderNestedBundleShellScript("app", "scripts/stack-dev.sh");
+  return renderNestedBundleShellScript("apps", "scripts/stack-dev.sh");
 }
 
 function renderAppBundleSmokeScript() {
@@ -269,7 +271,7 @@ export function generateAppBundle(graph, options = {}) {
   };
 
   mergeNamedBundles(files, {
-    app: envBundle,
+    apps: envBundle,
     deploy: deployBundle,
     smoke: smokeBundle,
     "runtime-check": runtimeCheckBundle,

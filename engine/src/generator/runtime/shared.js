@@ -254,14 +254,14 @@ export function generateRuntimeApiContracts(graph) {
   return generateApiContractGraph(graph, {});
 }
 
-function envVarPrefix(componentId) {
-  return componentId === "db"
+function envVarPrefix(componentId, options = {}) {
+  return options.primary || componentId === "db"
     ? ""
     : `${componentId.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_`;
 }
 
-export function dbEnvVarsForComponent(component) {
-  const prefix = envVarPrefix(component.id);
+export function dbEnvVarsForComponent(component, options = {}) {
+  const prefix = envVarPrefix(component.id, options);
   return {
     databaseUrl: component.env?.databaseUrl || `${prefix}DATABASE_URL`,
     databaseAdminUrl: component.env?.databaseAdminUrl || `${prefix}DATABASE_ADMIN_URL`,

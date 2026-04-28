@@ -43,7 +43,8 @@ This output is generated. Prefer regenerating it instead of hand-editing it.
 Generated app bundles use component directories:
 
 ```text
-app/services/<api-id>/
-app/web/<web-id>/
-app/db/<db-id>/
+apps/services/<api-id>/
+apps/web/<web-id>/
+apps/db/<db-id>/
+apps/native/<native-id>/
 ```
