@@ -19,7 +19,7 @@ import {
   renderTodoTaskRoutes
 } from "./web/renderers.js";
 
-export const TODO_IMPLEMENTATION = {
+export const APP_BASIC_IMPLEMENTATION = {
   exampleId: "app-basic-fixture",
   exampleRoot: "/engine/tests/fixtures/workspaces/app-basic",
   backend: {
@@ -50,4 +50,4 @@ export const TODO_IMPLEMENTATION = {
   }
 };
 
-export default TODO_IMPLEMENTATION;
+export default APP_BASIC_IMPLEMENTATION;

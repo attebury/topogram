@@ -42,6 +42,14 @@ import {
 import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
+import {
+  formatProjectConfigErrors,
+  loadProjectConfig,
+  outputOwnershipForPath,
+  projectConfigOrDefault,
+  validateProjectConfig,
+  validateProjectOutputOwnership
+} from "./project-config.js";
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -67,6 +75,7 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 ]);
 
 function printUsage() {
+  console.log("Usage: topogram check <path> [--json]");
   console.log("Usage: topogram validate <path>");
   console.log("   or: topogram generate app <path> [--out <path>]");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
@@ -180,6 +189,15 @@ function assertSafeGeneratedOutputDir(outDir, topogramRoot) {
   }
 }
 
+function assertProjectOutputAllowsWrite(configInfo, outDir) {
+  const ownership = outputOwnershipForPath(configInfo, outDir);
+  if (ownership?.ownership === "maintained") {
+    throw new Error(
+      `Refusing to write generated output to maintained output '${ownership.name}': ${ownership.path}`
+    );
+  }
+}
+
 function generatedOutputSentinel(target) {
   return `${JSON.stringify({
     generated_by: "topogram",
@@ -198,6 +216,53 @@ function topogramInputPathForGeneration(inputPath) {
 
 function targetRequiresImplementationProvider(target) {
   return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
+}
+
+function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation }) {
+  const statementCount = ast.files.flatMap((file) => file.statements).length;
+  const projectInfo = projectConfigInfo || {
+    configPath: null,
+    compatibility: false,
+    config: { topology: null }
+  };
+  return {
+    ok: resolved.ok && projectValidation.ok,
+    inputPath,
+    topogram: {
+      files: ast.files.length,
+      statements: statementCount,
+      valid: resolved.ok
+    },
+    project: {
+      configPath: projectInfo.configPath,
+      compatibility: Boolean(projectInfo.compatibility),
+      valid: projectValidation.ok,
+      topology: projectInfo.config.topology
+    },
+    errors: [
+      ...(resolved.ok ? [] : resolved.validation.errors.map((error) => ({
+        source: "topogram",
+        message: error.message,
+        loc: error.loc
+      }))),
+      ...projectValidation.errors.map((error) => ({
+        source: "project",
+        message: error.message,
+        loc: error.loc
+      }))
+    ]
+  };
+}
+
+function combineProjectValidationResults(...results) {
+  const errors = [];
+  for (const result of results) {
+    errors.push(...(result?.errors || []));
+  }
+  return {
+    ok: errors.length === 0,
+    errors
+  };
 }
 
 function workflowPresetSelectors({
@@ -249,7 +314,9 @@ if (args.length === 0) {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "validate") {
+if (args[0] === "check") {
+  commandArgs = { check: true, inputPath: args[1] };
+} else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[2] };
@@ -332,6 +399,7 @@ if (commandArgs?.inputPath) {
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const shouldCheck = Boolean(commandArgs?.check);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -384,11 +452,42 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath;
 
-if ((shouldValidate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
 try {
+  if (shouldCheck) {
+    const ast = parsePath(inputPath);
+    const resolved = resolveWorkspace(ast);
+    const implementation = await loadImplementationProvider(inputPath).catch(() => null);
+    const explicitProjectConfig = loadProjectConfig(inputPath);
+    const projectConfigInfo = explicitProjectConfig ||
+      (implementation ? projectConfigOrDefault(inputPath, resolved.ok ? resolved.graph : null, implementation) : null);
+    const projectValidation = projectConfigInfo
+      ? combineProjectValidationResults(
+          validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null),
+          validateProjectOutputOwnership(projectConfigInfo)
+        )
+      : { ok: false, errors: [{ message: "Missing topogram.project.json or compatible topogram.implementation.json", loc: null }] };
+    const payload = checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else if (payload.ok) {
+      console.log(`Topogram check passed for ${inputPath}.`);
+      console.log(`Validated ${payload.topogram.files} file(s) and ${payload.topogram.statements} statement(s).`);
+      console.log(`Project config: ${payload.project.configPath || "compatibility defaults"}`);
+    } else {
+      if (!resolved.ok) {
+        console.error(formatValidationErrors(resolved.validation));
+      }
+      if (!projectValidation.ok) {
+        console.error(formatProjectConfigErrors(projectValidation, projectConfigInfo?.configPath || "topogram.project.json"));
+      }
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
   if (commandArgs?.queryName === "adoption-plan") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
@@ -1916,6 +2015,23 @@ try {
     const implementation = targetRequiresImplementationProvider(generateTarget)
       ? await loadImplementationProvider(inputPath)
       : null;
+    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget)
+      ? resolveWorkspace(ast)
+      : null;
+    if (resolvedForConfig && !resolvedForConfig.ok) {
+      console.error(formatValidationErrors(resolvedForConfig.validation));
+      process.exit(1);
+    }
+    const projectConfigInfo = targetRequiresImplementationProvider(generateTarget)
+      ? projectConfigOrDefault(inputPath, resolvedForConfig.graph, implementation)
+      : null;
+    const projectConfigValidation = projectConfigInfo
+      ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph)
+      : { ok: true, errors: [] };
+    if (!projectConfigValidation.ok) {
+      console.error(formatProjectConfigErrors(projectConfigValidation, projectConfigInfo?.configPath || "topogram.project.json"));
+      process.exit(1);
+    }
     const result = generateWorkspace(ast, {
       target: generateTarget,
       shapeId,
@@ -1932,7 +2048,8 @@ try {
       fromSnapshotPath,
       fromTopogramPath,
       topogramInputPath: topogramInputPathForGeneration(inputPath),
-      implementation
+      implementation,
+      projectConfig: projectConfigInfo?.config || null
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -1941,6 +2058,7 @@ try {
 
     if (shouldWrite) {
       const resolvedOutDir = path.resolve(effectiveOutDir || "artifacts");
+      assertProjectOutputAllowsWrite(projectConfigInfo, resolvedOutDir);
       assertSafeGeneratedOutputDir(resolvedOutDir, inputPath);
       const outputFiles = buildOutputFiles(result, {
         shapeId,

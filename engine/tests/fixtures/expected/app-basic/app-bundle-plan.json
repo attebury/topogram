@@ -7,6 +7,46 @@
     "db": "proj_db_postgres",
     "dbPlatform": "db_postgres"
   },
+  "topology": {
+    "components": [
+      {
+        "id": "api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        },
+        "port": 3000,
+        "api": null,
+        "database": "db"
+      },
+      {
+        "id": "web",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/sveltekit",
+          "version": "1"
+        },
+        "port": 5173,
+        "api": "api",
+        "database": null
+      },
+      {
+        "id": "db",
+        "type": "database",
+        "projection": "proj_db_postgres",
+        "generator": {
+          "id": "topogram/postgres",
+          "version": "1"
+        },
+        "port": 5432,
+        "api": null,
+        "database": null
+      }
+    ]
+  },
   "runtimeReference": {
     "localDbProjectionId": "proj_db_postgres",
     "serviceName": "topogram-todo-server",
@@ -217,6 +257,9 @@
     "deploy": "deploy",
     "smoke": "smoke",
     "runtimeCheck": "runtime-check",
-    "compile": "compile"
+    "compile": "compile",
+    "services": "app/services",
+    "web": "app/web",
+    "db": "app/db"
   }
 }

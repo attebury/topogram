@@ -1,0 +1,50 @@
+{
+  "version": "0.1",
+  "implementation": {
+    "id": "app-basic-fixture",
+    "module": "./implementation/index.js",
+    "export": "APP_BASIC_IMPLEMENTATION"
+  },
+  "outputs": {
+    "app": {
+      "path": "./app",
+      "ownership": "generated"
+    }
+  },
+  "topology": {
+    "components": [
+      {
+        "id": "api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        },
+        "port": 3000,
+        "database": "db"
+      },
+      {
+        "id": "web",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/sveltekit",
+          "version": "1"
+        },
+        "port": 5173,
+        "api": "api"
+      },
+      {
+        "id": "db",
+        "type": "database",
+        "projection": "proj_db_postgres",
+        "generator": {
+          "id": "topogram/postgres",
+          "version": "1"
+        },
+        "port": 5432
+      }
+    ]
+  }
+}

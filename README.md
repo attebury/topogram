@@ -9,7 +9,7 @@ Use Node 20+.
 ```bash
 cd demos/generated/todo-demo-app
 npm install
-npm run topogram:validate
+npm run topogram:check
 npm run topogram:generate
 npm run app:compile
 ```
@@ -36,6 +36,7 @@ The engine is private and local to this repo, but it exposes the `topogram` bin 
 
 ```bash
 topogram validate ./topogram
+topogram check ./topogram
 topogram generate app ./topogram --out ./app
 ```
 

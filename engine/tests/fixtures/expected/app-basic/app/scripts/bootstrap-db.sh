@@ -13,7 +13,9 @@ if [[ "${TOPOGRAM_ENVIRONMENT_PROFILE:-local_process}" == "local_docker" ]]; the
   fi
   docker compose -f "$ROOT_DIR/docker-compose.yml" up -d db
 fi
-(cd "$ROOT_DIR/db" && bash ./scripts/db-bootstrap-or-migrate.sh)
+(cd "$ROOT_DIR/db/db" && TOPOGRAM_ENV_FILE=/dev/null DATABASE_URL="${DATABASE_URL:-}" DATABASE_ADMIN_URL="${DATABASE_ADMIN_URL:-}" bash ./scripts/db-bootstrap-or-migrate.sh)
 if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then
-(cd "$ROOT_DIR/server" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)
+if [[ -n "${DATABASE_URL:-}" ]]; then export DATABASE_URL="${DATABASE_URL}"; fi
+if [[ -n "${DATABASE_ADMIN_URL:-}" ]]; then export DATABASE_ADMIN_URL="${DATABASE_ADMIN_URL}"; fi
+(cd "$ROOT_DIR/services/api" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)
 fi

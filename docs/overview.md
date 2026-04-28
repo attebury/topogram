@@ -4,7 +4,7 @@ Topogram's current goal is simple: author a Topogram and generate a runnable app
 
 ## Current Scope
 
-The active scope is the engine under `engine/`, the generated Todo demo under `demos/generated/todo-demo-app/`, and the validation, generation, compile, smoke, and runtime-check flows.
+The active scope is the engine under `engine/`, the generated Todo demo under `demos/generated/todo-demo-app/`, and the check, generation, compile, smoke, and runtime-check flows.
 
 ## First Run
 
@@ -20,7 +20,7 @@ Then run the generated Todo demo path:
 ```bash
 cd ../demos/generated/todo-demo-app
 npm install
-npm run topogram:validate
+npm run topogram:check
 npm run topogram:generate
 npm run app:compile
 ```
@@ -40,6 +40,12 @@ Edit the Todo model here:
 
 ```text
 demos/generated/todo-demo-app/topogram/
+```
+
+Edit stack, topology, output ownership, ports, and generator bindings here:
+
+```text
+demos/generated/todo-demo-app/topogram.project.json
 ```
 
 Generated output is written under:

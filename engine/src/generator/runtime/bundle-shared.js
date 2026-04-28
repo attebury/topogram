@@ -75,13 +75,15 @@ export function renderLoadEnvScript(options = {}) {
 }
 
 export function renderEnvAwareShellScript(bodyLines, options = {}) {
+  const rootDir = options.rootDirExpression || 'ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"';
+  const loadEnvScript = options.loadEnvScript || '"$SCRIPT_DIR/load-env.sh"';
   const lines = [
     "#!/usr/bin/env bash",
     "set -euo pipefail",
     "",
     'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"',
-    'ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"',
-    '. "$SCRIPT_DIR/load-env.sh"',
+    rootDir,
+    `. ${loadEnvScript}`,
     "",
     ...(bodyLines || [])
   ];

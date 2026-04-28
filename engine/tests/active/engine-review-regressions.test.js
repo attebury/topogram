@@ -14,6 +14,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const engineRoot = path.join(repoRoot, "engine");
 const cliPath = path.join(engineRoot, "src", "cli.js");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
+const generatedDemoPath = ["demos", "generated", "todo-demo-app"].join("/");
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [cliPath, ...args], {
@@ -33,15 +34,14 @@ function copyFixtureTopogram() {
   const implementationModule = path
     .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
     .replace(/\\/g, "/");
-  fs.writeFileSync(
-    path.join(topogramRoot, "topogram.implementation.json"),
-    `${JSON.stringify({
-      implementation_id: "app-basic-fixture",
-      implementation_module: implementationModule,
-      implementation_export: "TODO_IMPLEMENTATION"
-    }, null, 2)}\n`,
-    "utf8"
-  );
+  const projectConfigPath = path.join(topogramRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  projectConfig.implementation = {
+    id: "app-basic-fixture",
+    module: implementationModule,
+    export: "APP_BASIC_IMPLEMENTATION"
+  };
+  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
   return { root, topogramRoot };
 }
 
@@ -74,7 +74,7 @@ test("generate app normalizes a demo root and writes a sentinel", () => {
 
 test("app generation requires an explicit implementation provider", () => {
   const { topogramRoot } = copyFixtureTopogram();
-  fs.rmSync(path.join(topogramRoot, "topogram.implementation.json"), { force: true });
+  fs.rmSync(path.join(topogramRoot, "topogram.project.json"), { force: true });
   fs.rmSync(path.join(topogramRoot, "implementation"), { recursive: true, force: true });
 
   const result = runCli(["generate", "app", topogramRoot, "--out", path.join(path.dirname(topogramRoot), "app")]);
@@ -144,6 +144,6 @@ test("generated contracts do not contain machine-local paths", () => {
     const contents = fs.readFileSync(file, "utf8");
     assert.doesNotMatch(contents, /\/Users\//, file);
     assert.doesNotMatch(contents, /graphRoot/, file);
-    assert.doesNotMatch(contents, /demos\/generated\/todo-demo-app/, file);
+    assert.equal(contents.includes(generatedDemoPath), false, file);
   }
 });

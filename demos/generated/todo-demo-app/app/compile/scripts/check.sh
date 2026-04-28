@@ -11,13 +11,13 @@ if [[ -f "$ENV_FILE" ]]; then
   set +a
 fi
 
-echo "Checking generated server..."
-(cd "$ROOT_DIR/server" && npm install && npm run check)
+echo "Checking generated server (services/api)..."
+(cd "$ROOT_DIR/services/api" && npm install && npm run check)
 
-echo "Checking generated web..."
-(cd "$ROOT_DIR/web" && npm install && npm run check)
+echo "Checking generated web (web/web)..."
+(cd "$ROOT_DIR/web/web" && npm install && npm run check)
 
-echo "Building generated web..."
-(cd "$ROOT_DIR/web" && npm run build)
+echo "Building generated web (web/web)..."
+(cd "$ROOT_DIR/web/web" && npm install && npm run build)
 
 echo "Compile checks passed."

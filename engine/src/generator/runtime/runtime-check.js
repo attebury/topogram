@@ -2,6 +2,7 @@ import {
   generateRuntimeApiContracts,
   buildVerificationSummary,
   getDefaultEnvironmentProjections,
+  resolveRuntimeTopology,
   selectChecksByVerification,
   runtimePorts,
   runtimeUrls
@@ -13,6 +14,7 @@ function buildRuntimeCheckPlan(graph, options = {}) {
   const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeChecks = implementation.runtime.checks;
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const verification = buildVerificationSummary(graph, ["runtime", "contract", "journey"]);
   const apiSelection = selectChecksByVerification(graph, runtimeChecks.apiStage.checks, ["runtime", "contract", "journey"], {
@@ -33,6 +35,14 @@ function buildRuntimeCheckPlan(graph, options = {}) {
       api: apiProjection.id,
       ui: uiProjection.id,
       db: dbProjection.id
+    },
+    topology: {
+      components: topology.components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        projection: component.projection.id,
+        generator: component.generator
+      }))
     },
     ...(verification ? { verification } : {}),
     ...(apiSelection.selection ? { selection: apiSelection.selection } : {}),
@@ -65,7 +75,7 @@ function buildRuntimeCheckPlan(graph, options = {}) {
 function renderRuntimeCheckEnvExample(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const demo = runtimeReference.demoEnv;
-  const urls = runtimeUrls(runtimeReference);
+  const urls = runtimeUrls(runtimeReference, resolveRuntimeTopology(graph, options));
   return `TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_WEB_BASE_URL=${urls.web}
 TOPOGRAM_DEMO_USER_ID=${demo.userId}
@@ -129,7 +139,7 @@ function renderRuntimeCheckModule(graph, options = {}) {
   const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeCheckRenderers = implementation.runtime.checkRenderers;
-  const ports = runtimePorts(runtimeReference);
+  const ports = runtimePorts(runtimeReference, resolveRuntimeTopology(graph, options));
   return `import fs from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";

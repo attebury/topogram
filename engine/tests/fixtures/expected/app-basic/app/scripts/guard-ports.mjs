@@ -2,9 +2,27 @@
 import net from "node:net";
 
 const role = process.argv[2] || "stack";
-const serverPort = Number(process.env.SERVER_PORT || "3000");
-const webPort = Number(process.env.WEB_PORT || "5173");
+const ports = [
+  {
+    "id": "api",
+    "type": "api",
+    "env": "API_PORT",
+    "fallbackEnv": "SERVER_PORT",
+    "port": 3000
+  },
+  {
+    "id": "web",
+    "type": "web",
+    "env": "WEB_PORT",
+    "fallbackEnv": "WEB_PORT",
+    "port": 5173
+  }
+];
 const expectedService = "topogram-todo-server";
+
+function effectivePort(entry) {
+  return Number(process.env[entry.env] || process.env[entry.fallbackEnv] || entry.port);
+}
 
 function portInUse(port) {
   return new Promise((resolve) => {
@@ -50,14 +68,15 @@ async function failForWebPort(port) {
   process.exit(1);
 }
 
-if (role === "server" || role === "stack") {
-  if (await portInUse(serverPort)) {
-    await failForServerPort(serverPort);
+for (const entry of ports) {
+  if (role !== "stack" && role !== entry.type) {
+    continue;
   }
-}
-
-if (role === "web" || role === "stack") {
-  if (await portInUse(webPort)) {
-    await failForWebPort(webPort);
+  const port = effectivePort(entry);
+  if (await portInUse(port)) {
+    if (entry.type === "api") {
+      await failForServerPort(port);
+    }
+    await failForWebPort(port);
   }
 }

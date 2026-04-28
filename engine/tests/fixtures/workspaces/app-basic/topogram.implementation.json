@@ -1,5 +1,0 @@
-{
-  "implementation_id": "app-basic-fixture",
-  "implementation_module": "./implementation/index.js",
-  "implementation_export": "TODO_IMPLEMENTATION"
-}

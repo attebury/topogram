@@ -5,7 +5,7 @@ import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { generateCompileCheckPlan } from "../../src/generator/runtime/compile-check.js";
 import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "../../src/generator/runtime/smoke.js";
-import { TODO_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
+import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..");
 const appBasicTopogramPath = path.join(repoRoot, "engine", "tests", "fixtures", "workspaces", "app-basic");
@@ -18,7 +18,7 @@ function appBasicGraph() {
 }
 
 test("runtime smoke bundle exposes stable script and README contracts", () => {
-  const bundle = generateRuntimeSmokeBundle(appBasicGraph(), { implementation: TODO_IMPLEMENTATION });
+  const bundle = generateRuntimeSmokeBundle(appBasicGraph(), { implementation: APP_BASIC_IMPLEMENTATION });
 
   assert.match(bundle["scripts/smoke.sh"], /node "\$SCRIPT_DIR\/smoke\.mjs"/);
   assert.match(bundle["README.md"], /## Canonical Verification/);
@@ -29,7 +29,7 @@ test("runtime smoke bundle exposes stable script and README contracts", () => {
 
 test("runtime smoke and compile plans keep required check contracts stable", () => {
   const graph = appBasicGraph();
-  const options = { implementation: TODO_IMPLEMENTATION };
+  const options = { implementation: APP_BASIC_IMPLEMENTATION };
   const smokePlan = generateRuntimeSmokePlan(graph, options);
   const compilePlan = generateCompileCheckPlan(graph, options);
 

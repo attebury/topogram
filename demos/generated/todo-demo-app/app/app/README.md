@@ -2,9 +2,9 @@
 
 This bundle packages the generated runtime into one local environment:
 
-- `server/`: generated Hono + Prisma server scaffold
-- `web/`: generated SvelteKit web scaffold
-- `db/`: generated DB lifecycle bundle
+- `services/<api-id>/`: generated API service scaffolds
+- `web/<web-id>/`: generated SvelteKit web scaffolds
+- `db/<db-id>/`: generated DB lifecycle bundles
 - local-process Postgres orchestration (no Docker files generated)
 
 ## Quick Start

@@ -1,5 +1,5 @@
 import { getExampleImplementation } from "../../example-implementation.js";
-import { getDefaultEnvironmentProjections, runtimeUrls } from "../runtime/shared.js";
+import { getDefaultEnvironmentProjections, resolveRuntimeTopology, runtimeUrls } from "../runtime/shared.js";
 
 /** Pinned toolchains for reproducible native parity stubs (document in README). */
 export const NATIVE_PARITY_PINNED = {
@@ -30,8 +30,9 @@ function escapeSwiftString(value) {
 
 function buildNativeParityPlan(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
-  const urls = runtimeUrls(runtimeReference);
+  const urls = runtimeUrls(runtimeReference, topology);
   const demoUserId = runtimeReference.demoEnv?.userId ?? null;
 
   return {
@@ -299,7 +300,7 @@ export function generateNativeParityPlan(graph, options = {}) {
 export function generateNativeParityBundle(graph, options = {}) {
   const plan = buildNativeParityPlan(graph, options);
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
-  const urls = runtimeUrls(runtimeReference);
+  const urls = runtimeUrls(runtimeReference, resolveRuntimeTopology(graph, options));
 
   return {
     "native-parity-plan.json": `${JSON.stringify(plan, null, 2)}\n`,

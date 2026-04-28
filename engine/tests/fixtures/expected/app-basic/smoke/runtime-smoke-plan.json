@@ -5,6 +5,37 @@
     "api": "proj_api",
     "ui": "proj_ui_web"
   },
+  "topology": {
+    "components": [
+      {
+        "id": "api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        }
+      },
+      {
+        "id": "web",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/sveltekit",
+          "version": "1"
+        }
+      },
+      {
+        "id": "db",
+        "type": "database",
+        "projection": "proj_db_postgres",
+        "generator": {
+          "id": "topogram/postgres",
+          "version": "1"
+        }
+      }
+    ]
+  },
   "verification": {
     "methods": [
       "smoke"

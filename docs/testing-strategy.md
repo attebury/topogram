@@ -1,6 +1,6 @@
 # Testing Strategy
 
-Keep the test surface small while Topogram is being rebuilt around generated demos.
+Keep the test surface small while Topogram is rebuilt around engine-owned fixtures and generated demos.
 
 ## Engine
 
@@ -16,6 +16,8 @@ Engine regression fixtures belong under:
 engine/tests/fixtures/
 ```
 
+Engine tests must not import or reference `demos/generated/**`. The generated Todo app is a demo-level verification target, not an engine dependency.
+
 ## Generated Todo Demo
 
 Run the compile check:
@@ -23,7 +25,7 @@ Run the compile check:
 ```bash
 cd ../demos/generated/todo-demo-app
 npm install
-npm run topogram:validate
+npm run topogram:check
 npm run topogram:generate
 npm run app:compile
 ```

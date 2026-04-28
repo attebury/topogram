@@ -14,13 +14,6 @@ function defaultInputPathForGraph(graph, options = {}) {
   if (options.topogramInputPath) {
     return options.topogramInputPath;
   }
-  const root = graph.root || "";
-  if (root.includes("/demos/generated/todo-demo-app/topogram")) {
-    return "./demos/generated/todo-demo-app/topogram";
-  }
-  if (root.includes("/engine/tests/fixtures/workspaces/app-basic")) {
-    return "./engine/tests/fixtures/workspaces/app-basic";
-  }
   return ".";
 }
 
@@ -392,8 +385,15 @@ ${plan.bundle.prismaSchema ? `  if [[ "\${TOPOGRAM_SKIP_RUNTIME_CLIENT_REFRESH:-
   fi
   local prisma_version="5.22.0"
 ${engine === "sqlite" ? `  normalize_sqlite_database_url
-` : ""}  if [[ -f "$BUNDLE_DIR/../server/package.json" ]]; then
-    (cd "$BUNDLE_DIR/../server" && npm install && npm exec -- prisma db push --schema "$PRISMA_SCHEMA" --skip-generate)
+` : ""}  local runtime_server_dir="\${TOPOGRAM_RUNTIME_SERVER_DIR:-}"
+  if [[ -z "$runtime_server_dir" && -f "$BUNDLE_DIR/../server/package.json" ]]; then
+    runtime_server_dir="$BUNDLE_DIR/../server"
+  fi
+  if [[ -z "$runtime_server_dir" && -f "$BUNDLE_DIR/../../services/api/package.json" ]]; then
+    runtime_server_dir="$BUNDLE_DIR/../../services/api"
+  fi
+  if [[ -n "$runtime_server_dir" && -f "$runtime_server_dir/package.json" ]]; then
+    (cd "$runtime_server_dir" && npm install && npm exec -- prisma db push --schema "$PRISMA_SCHEMA" --skip-generate)
     return
   fi
   npx -p "prisma@$prisma_version" prisma db push --schema "$PRISMA_SCHEMA" --skip-generate` : `  :`}

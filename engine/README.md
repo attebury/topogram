@@ -20,6 +20,7 @@ This lets demos consume the engine through a local file dependency and call:
 
 ```bash
 topogram validate ./topogram
+topogram check ./topogram
 topogram generate app ./topogram --out ./app
 ```
 
@@ -63,6 +64,6 @@ node --test ./tests/active/generated-app-workflow.test.js
 Validate or generate through the public CLI shape:
 
 ```bash
-node ./src/cli.js validate ./tests/fixtures/workspaces/app-basic
+node ./src/cli.js check ./tests/fixtures/workspaces/app-basic
 node ./src/cli.js generate app ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
 ```

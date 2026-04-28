@@ -2,7 +2,8 @@ import {
   generateDbBundle,
   generateServerBundle,
   generateWebBundle,
-  getDefaultEnvironmentProjections
+  getDefaultEnvironmentProjections,
+  resolveRuntimeTopology
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderRootEnvFileShellScript, renderRootShellScript } from "./bundle-shared.js";
@@ -26,6 +27,7 @@ function slugifyAppName(name) {
 
 function buildDeploymentPlan(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const profile = options.profileId || "fly_io";
   const supportedProfiles = ["fly_io", "railway"];
@@ -50,10 +52,27 @@ function buildDeploymentPlan(graph, options = {}) {
       ui: uiProjection.id,
       db: dbProjection.id
     },
+    topology: {
+      components: topology.components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        projection: component.projection.id,
+        generator: component.generator,
+        port: component.port ?? null,
+        api: component.api || null,
+        database: component.database || null
+      }))
+    },
+    directories: {
+      server: topology.serviceDir(topology.primaryApi),
+      web: topology.webDir(topology.primaryWeb),
+      db: topology.dbDir(topology.primaryDb)
+    },
     runtime: {
       server: "hono",
       web: webProfile,
-      orm: "prisma"
+      orm: "prisma",
+      serverPort: topology.primaryApi?.port || 3000
     },
     targets: {
       server: profile === "fly_io" ? "fly.io" : "railway",
@@ -78,7 +97,7 @@ DATABASE_URL=
 PUBLIC_TOPOGRAM_API_BASE_URL=
 
 # Optional server runtime values
-PORT=3000
+PORT=${plan.runtime.serverPort}
 NODE_ENV=production
 `;
 }
@@ -102,15 +121,15 @@ function renderDeploymentReadme(plan) {
 
 This bundle packages deployment helpers for the generated runtime.
 
-- \`server/\`: generated Hono + Prisma server scaffold
-- \`web/\`: generated ${plan.runtime.web === "react" ? "Vite + React Router" : "SvelteKit"} web scaffold
+- \`${plan.directories.server}/\`: generated Hono + Prisma server scaffold
+- \`${plan.directories.web}/\`: generated ${plan.runtime.web === "react" ? "Vite + React Router" : "SvelteKit"} web scaffold
 - platform deployment files for \`${plan.deployment.profile}\`
 - a Vercel config for the web app
 
 ${platformNotes}
 ## Web Deploy
 
-- Review \`web/vercel.json\`
+- Review \`${plan.directories.web}/vercel.json\`
 - Set \`PUBLIC_TOPOGRAM_API_BASE_URL\`
 - Deploy with \`${plan.recommendedCommands.deployWeb}\`
 
@@ -151,16 +170,16 @@ function renderDeploymentCheckScript(plan) {
   });
 }
 
-function renderDeploymentMigrateScript() {
+function renderDeploymentMigrateScript(plan) {
   return renderRootShellScript([
-    'cd "$ROOT_DIR/server"',
+    `cd "$ROOT_DIR/${plan.directories.server}"`,
     "npm install",
     "npm exec -- prisma generate --schema prisma/schema.prisma",
     "npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate"
   ]);
 }
 
-function renderServerDockerfile() {
+function renderServerDockerfile(plan) {
   return `FROM node:22-alpine
 WORKDIR /app
 
@@ -173,8 +192,8 @@ COPY src ./src
 
 RUN npm exec -- prisma generate --schema prisma/schema.prisma
 
-ENV PORT=3000
-EXPOSE 3000
+ENV PORT=${plan.runtime.serverPort}
+EXPOSE ${plan.runtime.serverPort}
 
 CMD ["npm", "run", "dev"]
 `;
@@ -185,13 +204,13 @@ function renderFlyToml(plan) {
 primary_region = "ord"
 
 [build]
-  dockerfile = "server/Dockerfile"
+  dockerfile = "${plan.directories.server}/Dockerfile"
 
 [env]
-  PORT = "3000"
+  PORT = "${plan.runtime.serverPort}"
 
 [http_service]
-  internal_port = 3000
+  internal_port = ${plan.runtime.serverPort}
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
@@ -199,12 +218,12 @@ primary_region = "ord"
 `;
 }
 
-function renderRailwayJson() {
+function renderRailwayJson(plan) {
   return `${JSON.stringify({
     "$schema": "https://railway.app/railway.schema.json",
     build: {
       builder: "DOCKERFILE",
-      dockerfilePath: "server/Dockerfile"
+      dockerfilePath: `${plan.directories.server}/Dockerfile`
     },
     deploy: {
       startCommand: "npm run dev",
@@ -222,32 +241,42 @@ function renderVercelJson(plan) {
 
 export function generateDeploymentBundle(graph, options = {}) {
   const plan = buildDeploymentPlan(graph, options);
-  const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const topology = resolveRuntimeTopology(graph, options);
   const files = {
     ".env.example": renderDeploymentEnvExample(plan),
     "README.md": renderDeploymentReadme(plan),
     "package.json": renderDeploymentPackageJson(plan),
     "scripts/deploy-check.sh": renderDeploymentCheckScript(plan),
-    "scripts/deploy-migrate.sh": renderDeploymentMigrateScript(),
-    "server/Dockerfile": renderServerDockerfile(),
-    "web/vercel.json": renderVercelJson(plan)
+    "scripts/deploy-migrate.sh": renderDeploymentMigrateScript(plan),
+    [`${plan.directories.server}/Dockerfile`]: renderServerDockerfile(plan),
+    [`${plan.directories.web}/vercel.json`]: renderVercelJson(plan)
   };
 
   if (plan.deployment.profile === "fly_io") {
     files["fly.toml"] = renderFlyToml(plan);
   }
   if (plan.deployment.profile === "railway") {
-    files["railway.json"] = renderRailwayJson();
+    files["railway.json"] = renderRailwayJson(plan);
   }
 
-  const serverBundle = generateServerBundle(graph, apiProjection.id, options);
-  const webBundle = generateWebBundle(graph, uiProjection.id, options);
-  const dbBundle = generateDbBundle(graph, dbProjection.id, options);
-  mergeNamedBundles(files, {
-    server: serverBundle,
-    web: webBundle,
-    db: dbBundle
-  });
+  for (const component of topology.apiComponents) {
+    const serverBundle = generateServerBundle(graph, component.projection.id, { ...options, component });
+    mergeNamedBundles(files, {
+      [topology.serviceDir(component)]: serverBundle
+    });
+  }
+  for (const component of topology.webComponents) {
+    const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
+    mergeNamedBundles(files, {
+      [topology.webDir(component)]: webBundle
+    });
+  }
+  for (const component of topology.dbComponents) {
+    const dbBundle = generateDbBundle(graph, component.projection.id, { ...options, component });
+    mergeNamedBundles(files, {
+      [topology.dbDir(component)]: dbBundle
+    });
+  }
 
   return files;
 }

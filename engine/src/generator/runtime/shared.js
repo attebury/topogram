@@ -1,9 +1,35 @@
+// @ts-check
+
+import { generateExpressServer } from "../apps/backend/express.js";
 import { generateHonoServer } from "../apps/backend/hono.js";
 import { generateWebApp } from "../apps/web/index.js";
 import { generateApiContractGraph } from "../api.js";
 import { generateDbLifecycleBundleForProjection } from "../db/lifecycle-shared.js";
 import { getProjection } from "../db/shared.js";
 import { getDefaultBackendDbProjection } from "../../realization/backend/index.js";
+import { defaultProjectConfigForGraph, validateProjectConfig } from "../../project-config.js";
+import { generatorProfile } from "../registry.js";
+
+/**
+ * @typedef {Object} ResolvedGraph
+ * @property {Record<string, Array<Record<string, any>>>} byKind
+ * @property {string} [root]
+ */
+
+/**
+ * @typedef {Object} RuntimeTopology
+ * @property {import("../../project-config.js").ProjectConfig} config
+ * @property {Array<Record<string, any>>} components
+ * @property {Array<Record<string, any>>} apiComponents
+ * @property {Array<Record<string, any>>} webComponents
+ * @property {Array<Record<string, any>>} dbComponents
+ * @property {Record<string, any>|null} primaryApi
+ * @property {Record<string, any>|null} primaryWeb
+ * @property {Record<string, any>|null} primaryDb
+ * @property {(component: Record<string, any>) => string} serviceDir
+ * @property {(component: Record<string, any>) => string} webDir
+ * @property {(component: Record<string, any>) => string} dbDir
+ */
 
 function verificationScenarioValue(item) {
   if (!item) {
@@ -180,12 +206,13 @@ export function pickDefaultUiWebProjection(graph) {
 }
 
 export function getDefaultEnvironmentProjections(graph, options = {}) {
-  const apiProjection =
+  const topology = resolveRuntimeTopology(graph, options);
+  const apiProjection = topology.primaryApi?.projection ||
     (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
     apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||
     apiProjectionCandidates(graph)[0];
-  const uiProjection = pickDefaultUiWebProjection(graph);
-  const dbProjection = getDefaultBackendDbProjection(graph, options);
+  const uiProjection = topology.primaryWeb?.projection || pickDefaultUiWebProjection(graph);
+  const dbProjection = topology.primaryDb?.projection || getDefaultBackendDbProjection(graph, options);
 
   if (!apiProjection) {
     throw new Error("Environment generation requires at least one API projection");
@@ -201,30 +228,111 @@ export function getDefaultEnvironmentProjections(graph, options = {}) {
 }
 
 export function generateServerBundle(graph, projectionId, options = {}) {
-  return generateHonoServer(graph, { ...options, projectionId });
+  const topology = resolveRuntimeTopology(graph, options);
+  const component = options.component || topology.apiComponents.find((entry) => entry.projection.id === projectionId);
+  const profile = generatorProfile(component?.generator?.id, "hono");
+  const dbProjectionId = component?.databaseComponent?.projection?.id || options.dbProjectionId;
+  const generatorOptions = { ...options, projectionId, dbProjectionId, component };
+  return profile === "express"
+    ? generateExpressServer(graph, generatorOptions)
+    : generateHonoServer(graph, generatorOptions);
 }
 
 export function generateWebBundle(graph, projectionId, options = {}) {
-  return generateWebApp(graph, { ...options, projectionId });
+  const topology = resolveRuntimeTopology(graph, options);
+  const component = options.component || topology.webComponents.find((entry) => entry.projection.id === projectionId);
+  return generateWebApp(graph, { ...options, projectionId, component });
 }
 
 export function generateDbBundle(graph, projectionId, options = {}) {
-  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId), options);
+  const topology = resolveRuntimeTopology(graph, options);
+  const component = options.component || topology.dbComponents.find((entry) => entry.projection.id === projectionId);
+  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId), { ...options, component });
 }
 
 export function generateRuntimeApiContracts(graph) {
   return generateApiContractGraph(graph, {});
 }
 
-export function runtimePorts(runtimeReference) {
+function envVarPrefix(componentId) {
+  return componentId === "db"
+    ? ""
+    : `${componentId.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_`;
+}
+
+export function dbEnvVarsForComponent(component) {
+  const prefix = envVarPrefix(component.id);
   return {
-    server: runtimeReference?.ports?.server || 3000,
-    web: runtimeReference?.ports?.web || 5173
+    databaseUrl: component.env?.databaseUrl || `${prefix}DATABASE_URL`,
+    databaseAdminUrl: component.env?.databaseAdminUrl || `${prefix}DATABASE_ADMIN_URL`,
+    dbPort: component.env?.dbPort || `${prefix}DB_PORT`,
+    postgresDb: component.env?.postgresDb || `${prefix}POSTGRES_DB`
   };
 }
 
-export function runtimeUrls(runtimeReference) {
-  const ports = runtimePorts(runtimeReference);
+function decorateComponents(graph, config) {
+  const byProjectionId = new Map((graph.byKind.projection || []).map((projection) => [projection.id, projection]));
+  const rawComponents = config.topology?.components || [];
+  const components = rawComponents.map((component) => ({
+    ...component,
+    projection: byProjectionId.get(component.projection)
+  }));
+  const byId = new Map(components.map((component) => [component.id, component]));
+  for (const component of components) {
+    if (component.type === "api" && component.database) {
+      component.databaseComponent = byId.get(component.database) || null;
+    }
+    if (component.type === "web" && component.api) {
+      component.apiComponent = byId.get(component.api) || null;
+    }
+  }
+  return components;
+}
+
+export function resolveRuntimeTopology(graph, options = {}) {
+  const config = options.projectConfig || defaultProjectConfigForGraph(graph, options.implementation || null);
+  const validation = validateProjectConfig(config, graph);
+  if (!validation.ok) {
+    throw new Error(validation.errors.map((error) => error.message).join("\n"));
+  }
+  const components = decorateComponents(graph, config);
+  const apiComponents = components.filter((component) => component.type === "api");
+  const webComponents = components.filter((component) => component.type === "web");
+  const dbComponents = components.filter((component) => component.type === "database");
+  const primaryApi = apiComponents[0] || null;
+  const primaryWeb = webComponents[0] || null;
+  const primaryDb = primaryApi?.databaseComponent || dbComponents[0] || null;
+
+  return {
+    config,
+    components,
+    apiComponents,
+    webComponents,
+    dbComponents,
+    primaryApi,
+    primaryWeb,
+    primaryDb,
+    serviceDir(component) {
+      return `services/${component.id}`;
+    },
+    webDir(component) {
+      return `web/${component.id}`;
+    },
+    dbDir(component) {
+      return `db/${component.id}`;
+    }
+  };
+}
+
+export function runtimePorts(runtimeReference, topology = null) {
+  return {
+    server: topology?.primaryApi?.port || runtimeReference?.ports?.server || 3000,
+    web: topology?.primaryWeb?.port || runtimeReference?.ports?.web || 5173
+  };
+}
+
+export function runtimeUrls(runtimeReference, topology = null) {
+  const ports = runtimePorts(runtimeReference, topology);
   return {
     api: `http://localhost:${ports.server}`,
     web: `http://localhost:${ports.web}`

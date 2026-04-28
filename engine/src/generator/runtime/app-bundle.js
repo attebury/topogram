@@ -13,12 +13,19 @@ import {
 import {
   generateRuntimeSmokeBundle
 } from "./smoke.js";
-import { buildVerificationSummary, getDefaultEnvironmentProjections, runtimePorts, runtimeUrls } from "./shared.js";
+import {
+  buildVerificationSummary,
+  getDefaultEnvironmentProjections,
+  resolveRuntimeTopology,
+  runtimePorts,
+  runtimeUrls
+} from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderLoadEnvScript, renderNestedBundleShellScript } from "./bundle-shared.js";
 
 function buildAppBundlePlan(graph, options = {}) {
   const runtimeReference = structuredClone(getExampleImplementation(graph, options).runtime.reference);
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const environmentProfile = options.profileId || "local_process";
   const deployProfile = options.deployProfileId || "fly_io";
@@ -38,6 +45,17 @@ function buildAppBundlePlan(graph, options = {}) {
       ui: uiProjection.id,
       db: dbProjection.id
     },
+    topology: {
+      components: topology.components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        projection: component.projection.id,
+        generator: component.generator,
+        port: component.port ?? null,
+        api: component.api || null,
+        database: component.database || null
+      }))
+    },
     runtimeReference,
     profiles: {
       environment: environmentProfile,
@@ -56,7 +74,10 @@ function buildAppBundlePlan(graph, options = {}) {
       deploy: "deploy",
       smoke: "smoke",
       runtimeCheck: "runtime-check",
-      compile: "compile"
+      compile: "compile",
+      services: "app/services",
+      web: "app/web",
+      db: "app/db"
     }
   };
 }
@@ -64,8 +85,12 @@ function buildAppBundlePlan(graph, options = {}) {
 function renderAppBundleEnvExample(plan) {
   const demo = plan.runtimeReference.demoEnv;
   const databaseName = plan.runtimeReference.environment.databaseName || "topogram_app";
-  const ports = runtimePorts(plan.runtimeReference);
-  const urls = runtimeUrls(plan.runtimeReference);
+  const topology = {
+    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
+    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+  };
+  const ports = runtimePorts(plan.runtimeReference, topology);
+  const urls = runtimeUrls(plan.runtimeReference, topology);
   if (plan.projections.dbPlatform === "db_sqlite") {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
@@ -112,13 +137,18 @@ TOPOGRAM_WEB_BASE_URL=${urls.web}
 }
 
 function renderAppBundleReadme(plan) {
-  const urls = runtimeUrls(plan.runtimeReference);
+  const urls = runtimeUrls(plan.runtimeReference, {
+    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
+    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+  });
   return `# ${plan.name}
 
 This is the polished generated app bundle for Topogram v0.1.
 
 It includes:
-- \`app/\`: the runnable local app stack
+- \`app/services/<api-id>/\`: generated API service scaffolds
+- \`app/web/<web-id>/\`: generated web scaffolds
+- \`app/db/<db-id>/\`: generated DB lifecycle bundles
 - \`deploy/\`: deployment packaging
 - \`compile/\`: generated compile verification
 - \`smoke/\`: minimal runtime confidence check
@@ -225,7 +255,7 @@ export function generateAppBundle(graph, options = {}) {
 
   const files = {
     ".env.example": renderAppBundleEnvExample(plan),
-    ".gitignore": "node_modules/\n.env\ncompile/*/package-lock.json\n",
+    ".gitignore": "node_modules/\n.env\n**/node_modules/\n**/package-lock.json\n",
     "README.md": renderAppBundleReadme(plan),
     "package.json": renderAppBundlePackageJson(),
     "app-bundle-plan.json": `${JSON.stringify(plan, null, 2)}\n`,

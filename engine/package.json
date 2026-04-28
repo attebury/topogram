@@ -13,7 +13,12 @@
     "validate:bad": "node ./src/cli.js validate ./tests/fixtures/invalid/missing-reference",
     "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
     "generate:app-bundle": "node ./src/cli.js generate app ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
-    "test:active": "node --test ./tests/active/*.test.js",
+    "test:types": "tsc --allowJs --checkJs --noEmit --noResolve --module NodeNext --moduleResolution NodeNext --target ES2022 --lib ES2022,DOM ./tests/types/check-globals.d.ts ./src/project-config.js ./src/generator/registry.js ./src/generator/runtime/shared.js",
+    "test:active": "npm run test:types && node --test ./tests/active/*.test.js",
     "test": "npm run test:active"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "typescript": "^5.6.3"
   }
 }

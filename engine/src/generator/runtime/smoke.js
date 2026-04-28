@@ -1,10 +1,17 @@
-import { buildVerificationSummary, getDefaultEnvironmentProjections, runtimeUrls, selectChecksByVerification } from "./shared.js";
+import {
+  buildVerificationSummary,
+  getDefaultEnvironmentProjections,
+  resolveRuntimeTopology,
+  runtimeUrls,
+  selectChecksByVerification
+} from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 
 function buildRuntimeSmokePlan(graph, options = {}) {
   const implementation = getExampleImplementation(graph, options);
   const runtimeReference = implementation.runtime.reference;
   const runtimeChecks = implementation.runtime.checks;
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection } = getDefaultEnvironmentProjections(graph, options);
   const verification = buildVerificationSummary(graph, ["smoke", "journey"]);
   const smokeSelection = selectChecksByVerification(graph, runtimeChecks.smokeChecks, ["smoke", "journey"], {
@@ -16,6 +23,14 @@ function buildRuntimeSmokePlan(graph, options = {}) {
     projections: {
       api: apiProjection.id,
       ui: uiProjection.id
+    },
+    topology: {
+      components: topology.components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        projection: component.projection.id,
+        generator: component.generator
+      }))
     },
     ...(verification ? { verification } : {}),
     ...(smokeSelection.selection ? { selection: smokeSelection.selection } : {}),
@@ -29,7 +44,7 @@ function buildRuntimeSmokePlan(graph, options = {}) {
 
 function renderRuntimeSmokeEnvExample(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
-  const urls = runtimeUrls(runtimeReference);
+  const urls = runtimeUrls(runtimeReference, resolveRuntimeTopology(graph, options));
   return `TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_WEB_BASE_URL=${urls.web}
 ${runtimeReference.environment.envExample || ""}

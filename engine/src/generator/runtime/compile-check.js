@@ -2,6 +2,7 @@ import {
   generateServerBundle,
   generateWebBundle,
   getDefaultEnvironmentProjections,
+  resolveRuntimeTopology,
   runtimeUrls
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
@@ -9,7 +10,28 @@ import { mergeBundleFiles } from "./bundle-shared.js";
 
 function buildCompileCheckPlan(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
+  const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const apiChecks = topology.apiComponents.map((component, index) => ({
+    id: index === 0 ? "server_typecheck" : `server_typecheck_${component.id}`,
+    cwd: topology.serviceDir(component),
+    install: "npm install",
+    command: "npm run check"
+  }));
+  const webChecks = topology.webComponents.flatMap((component, index) => [
+    {
+      id: index === 0 ? "web_typecheck" : `web_typecheck_${component.id}`,
+      cwd: topology.webDir(component),
+      install: "npm install",
+      command: "npm run check"
+    },
+    {
+      id: index === 0 ? "web_build" : `web_build_${component.id}`,
+      cwd: topology.webDir(component),
+      install: "npm install",
+      command: "npm run build"
+    }
+  ]);
   return {
     type: "compile_check_plan",
     name: runtimeReference.compileCheck.name,
@@ -18,32 +40,22 @@ function buildCompileCheckPlan(graph, options = {}) {
       ui: uiProjection.id,
       db: dbProjection.id
     },
-    checks: [
-      {
-        id: "server_typecheck",
-        cwd: "server",
-        install: "npm install",
-        command: "npm run check"
-      },
-      {
-        id: "web_typecheck",
-        cwd: "web",
-        install: "npm install",
-        command: "npm run check"
-      },
-      {
-        id: "web_build",
-        cwd: "web",
-        install: "npm install",
-        command: "npm run build"
-      }
-    ]
+    topology: {
+      components: topology.components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        projection: component.projection.id,
+        generator: component.generator
+      }))
+    },
+    checks: [...apiChecks, ...webChecks]
   };
 }
 
 function renderCompileCheckEnvExample(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
-  const urls = runtimeUrls(runtimeReference);
+  const topology = resolveRuntimeTopology(graph, options);
+  const urls = runtimeUrls(runtimeReference, topology);
   if (runtimeReference.localDbProjectionId === "proj_db_sqlite") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
@@ -77,46 +89,51 @@ This bundle verifies that the generated server and web projects typecheck and bu
 `;
 }
 
-function renderCompileCheckScript() {
-  return `#!/usr/bin/env bash
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-ENV_FILE="\${TOPOGRAM_ENV_FILE:-$ROOT_DIR/.env}"
-
-if [[ -f "$ENV_FILE" ]]; then
-  set -a
-  . "$ENV_FILE"
-  set +a
-fi
-
-echo "Checking generated server..."
-(cd "$ROOT_DIR/server" && npm install && npm run check)
-
-echo "Checking generated web..."
-(cd "$ROOT_DIR/web" && npm install && npm run check)
-
-echo "Building generated web..."
-(cd "$ROOT_DIR/web" && npm run build)
-
-echo "Compile checks passed."
-`;
+function renderCompileCheckScript(plan) {
+  const lines = [
+    "#!/usr/bin/env bash",
+    "set -euo pipefail",
+    "",
+    'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"',
+    'ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"',
+    'ENV_FILE="${TOPOGRAM_ENV_FILE:-$ROOT_DIR/.env}"',
+    "",
+    'if [[ -f "$ENV_FILE" ]]; then',
+    "  set -a",
+    '  . "$ENV_FILE"',
+    "  set +a",
+    "fi",
+    ""
+  ];
+  for (const check of plan.checks) {
+    const label = check.id.includes("web")
+      ? check.id.includes("build") ? "Building generated web" : "Checking generated web"
+      : "Checking generated server";
+    lines.push(`echo "${label} (${check.cwd})..."`);
+    lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.install} && ${check.command})`);
+    lines.push("");
+  }
+  lines.push('echo "Compile checks passed."');
+  return `${lines.join("\n")}\n`;
 }
 
 export function generateCompileCheckBundle(graph, options = {}) {
   const plan = buildCompileCheckPlan(graph, options);
-  const { apiProjection, uiProjection } = getDefaultEnvironmentProjections(graph, options);
+  const topology = resolveRuntimeTopology(graph, options);
   const files = {
     ".env.example": renderCompileCheckEnvExample(graph, options),
     "README.md": renderCompileCheckReadme(graph, options),
     "compile-check-plan.json": `${JSON.stringify(plan, null, 2)}\n`,
-    "scripts/check.sh": renderCompileCheckScript()
+    "scripts/check.sh": renderCompileCheckScript(plan)
   };
-  const serverBundle = generateServerBundle(graph, apiProjection.id, options);
-  const webBundle = generateWebBundle(graph, uiProjection.id, options);
-  mergeBundleFiles(files, "server", serverBundle);
-  mergeBundleFiles(files, "web", webBundle);
+  for (const component of topology.apiComponents) {
+    const serverBundle = generateServerBundle(graph, component.projection.id, { ...options, component });
+    mergeBundleFiles(files, topology.serviceDir(component), serverBundle);
+  }
+  for (const component of topology.webComponents) {
+    const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
+    mergeBundleFiles(files, topology.webDir(component), webBundle);
+  }
   return files;
 }
 

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "topogram:validate": "topogram validate ./topogram",
+    "topogram:check": "topogram check ./topogram",
+    "topogram:validate": "topogram check ./topogram",
     "topogram:generate": "topogram generate app ./topogram --out ./app",
     "app:bootstrap": "npm --prefix ./app run bootstrap",
     "app:dev": "npm --prefix ./app run dev",

@@ -2,6 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import {
+  findLegacyImplementationConfig,
+  findProjectConfig
+} from "./project-config.js";
+
 function normalizeRoot(root) {
   return String(root || "").replace(/\\/g, "/");
 }
@@ -22,24 +27,20 @@ function implementationProviderError(root) {
   const suffix = root ? ` for ${normalizeRoot(root)}` : "";
   return new Error(
     `Topogram app/runtime generation requires an explicit implementation provider${suffix}. ` +
-      "Add topogram.implementation.json with implementation_module, or pass an implementation provider in generator options."
+      "Add topogram.project.json with implementation.module, or pass an implementation provider in generator options."
   );
 }
 
 export function findImplementationConfig(root) {
-  let current = normalizeSearchRoot(root);
-  while (current && current !== path.dirname(current)) {
-    const candidate = path.join(current, "topogram.implementation.json");
-    if (fs.existsSync(candidate)) {
-      return {
-        config: JSON.parse(fs.readFileSync(candidate, "utf8")),
-        configPath: candidate,
-        configDir: path.dirname(candidate)
-      };
-    }
-    current = path.dirname(current);
+  const projectConfig = findProjectConfig(root);
+  if (projectConfig?.config?.implementation) {
+    return {
+      config: projectConfig.config.implementation,
+      configPath: projectConfig.configPath,
+      configDir: projectConfig.configDir
+    };
   }
-  return null;
+  return findLegacyImplementationConfig(root);
 }
 
 export function getExampleImplementation(graph, options = {}) {
@@ -57,15 +58,16 @@ export async function loadImplementationProvider(root) {
   }
 
   const { config, configPath, configDir } = found;
-  if (!config.implementation_module) {
+  const implementationModule = config.implementation_module || config.module;
+  if (!implementationModule) {
     throw new Error(
-      `Topogram implementation config ${normalizeRoot(configPath)} is missing implementation_module.`
+      `Topogram implementation config ${normalizeRoot(configPath)} is missing implementation module.`
     );
   }
 
-  const modulePath = path.resolve(configDir, config.implementation_module);
+  const modulePath = path.resolve(configDir, implementationModule);
   const module = await import(pathToFileURL(modulePath).href);
-  const exportName = config.implementation_export || "default";
+  const exportName = config.implementation_export || config.export || "default";
   const implementation = module[exportName];
   if (!implementation) {
     throw new Error(
@@ -73,12 +75,12 @@ export async function loadImplementationProvider(root) {
     );
   }
   if (
-    config.implementation_id &&
+    (config.implementation_id || config.id) &&
     implementation.exampleId &&
-    implementation.exampleId !== config.implementation_id
+    implementation.exampleId !== (config.implementation_id || config.id)
   ) {
     throw new Error(
-      `Topogram implementation config requested '${config.implementation_id}', ` +
+      `Topogram implementation config requested '${config.implementation_id || config.id}', ` +
         `but provider exported '${implementation.exampleId}'.`
     );
   }

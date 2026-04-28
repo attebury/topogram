@@ -6,22 +6,53 @@
     "ui": "proj_ui_web",
     "db": "proj_db_postgres"
   },
+  "topology": {
+    "components": [
+      {
+        "id": "api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        }
+      },
+      {
+        "id": "web",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/sveltekit",
+          "version": "1"
+        }
+      },
+      {
+        "id": "db",
+        "type": "database",
+        "projection": "proj_db_postgres",
+        "generator": {
+          "id": "topogram/postgres",
+          "version": "1"
+        }
+      }
+    ]
+  },
   "checks": [
     {
       "id": "server_typecheck",
-      "cwd": "server",
+      "cwd": "services/api",
       "install": "npm install",
       "command": "npm run check"
     },
     {
       "id": "web_typecheck",
-      "cwd": "web",
+      "cwd": "web/web",
       "install": "npm install",
       "command": "npm run check"
     },
     {
       "id": "web_build",
-      "cwd": "web",
+      "cwd": "web/web",
       "install": "npm install",
       "command": "npm run build"
     }

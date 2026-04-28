@@ -2,7 +2,7 @@ app = "topogram-todo-deployment-stack"
 primary_region = "ord"
 
 [build]
-  dockerfile = "server/Dockerfile"
+  dockerfile = "services/api/Dockerfile"
 
 [env]
   PORT = "3000"

@@ -3,7 +3,9 @@
 This is the polished generated app bundle for Topogram v0.1.
 
 It includes:
-- `app/`: the runnable local app stack
+- `app/services/<api-id>/`: generated API service scaffolds
+- `app/web/<web-id>/`: generated web scaffolds
+- `app/db/<db-id>/`: generated DB lifecycle bundles
 - `deploy/`: deployment packaging
 - `compile/`: generated compile verification
 - `smoke/`: minimal runtime confidence check
