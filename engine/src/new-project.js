@@ -953,7 +953,7 @@ export function applyTemplateUpdate(options) {
 
   const baselineManifest = readTemplateFilesManifest(options.projectRoot);
   if (!baselineManifest) {
-    issues.push(`Cannot apply template update because ${TEMPLATE_FILES_MANIFEST} is missing. Create a fresh starter or wait for an explicit trust/adopt command before applying template updates.`);
+    issues.push(`Cannot apply template update because ${TEMPLATE_FILES_MANIFEST} is missing. Review current template-owned files, then run 'topogram trust template' to record the baseline before applying template updates.`);
   }
   const baselineByPath = new Map((baselineManifest?.files || []).map((file) => [file.path, file]));
   const currentHashes = currentTemplateOwnedFileHashes(options.projectRoot, options.projectConfig);

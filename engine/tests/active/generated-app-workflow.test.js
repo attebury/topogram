@@ -239,6 +239,7 @@ test("topogram generate requires local executable implementation trust", () => {
 
   const trust = runCli(["trust", "template"], { cwd: projectRoot });
   assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  assert.match(trust.stdout, /Wrote \.topogram-template-files\.json/);
   assert.match(trust.stdout, /Wrote \.topogram-template-trust\.json/);
   assert.equal(fs.existsSync(trustPath), true);
 
@@ -329,6 +330,7 @@ test("topogram trust status reports implementation content drift and trust refre
 
   const trust = runCli(["trust", "template"], { cwd: projectRoot });
   assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  assert.match(trust.stdout, /Wrote \.topogram-template-files\.json/);
   assert.match(trust.stdout, /Trusted implementation digest/);
 
   const cleanStatus = runCli(["trust", "status", "--json"], { cwd: projectRoot });
@@ -498,6 +500,34 @@ test("topogram template update apply refuses local template-owned conflicts", ()
   assert.notEqual(humanApply.status, 0, humanApply.stdout);
   assert.match(humanApply.stdout, /Template update apply: refused/);
   assert.match(humanApply.stdout, /Conflict: topogram\/entities\/entity-greeting\.tg/);
+});
+
+test("topogram trust template records template-owned baseline for update apply", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-baseline-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.rmSync(path.join(projectRoot, ".topogram-template-files.json"));
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+  fs.appendFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# candidate edit after baseline\n",
+    "utf8"
+  );
+
+  const refused = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.notEqual(refused.status, 0, refused.stdout);
+  assert.match(JSON.parse(refused.stdout).issues.join("\n"), /\.topogram-template-files\.json is missing/);
+
+  const trust = runCli(["trust", "template"], { cwd: projectRoot });
+  assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  assert.match(trust.stdout, /Wrote \.topogram-template-files\.json/);
+  assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
+
+  const apply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.equal(apply.status, 0, apply.stderr || apply.stdout);
+  assert.ok(JSON.parse(apply.stdout).applied.some((file) => file.path === "topogram/entities/entity-greeting.tg"));
 });
 
 test("topogram template check validates reusable template conformance", () => {

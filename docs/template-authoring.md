@@ -145,6 +145,10 @@ current-only deletes in this milestone, and refuses to overwrite a file that no
 longer matches the last trusted template-owned baseline. Executable
 implementation trust is refreshed after a successful apply.
 
+For projects created before `.topogram-template-files.json` existed, review the
+current template-owned files and run `topogram trust template` once to record the
+baseline before using apply mode.
+
 ## Template Conformance
 
 Template authors can run a reusable conformance check:

@@ -10,7 +10,12 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
-import { applyTemplateUpdate, buildTemplateUpdatePlan, createNewProject } from "./new-project.js";
+import {
+  applyTemplateUpdate,
+  buildTemplateUpdatePlan,
+  createNewProject,
+  writeTemplateFilesManifest
+} from "./new-project.js";
 import {
   getTemplateTrustDiff,
   getTemplateTrustStatus,
@@ -1242,26 +1247,27 @@ try {
   if (shouldTrustTemplate) {
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
-      throw new Error("Cannot trust template implementation without topogram.project.json.");
+      throw new Error("Cannot trust template files without topogram.project.json.");
     }
-    if (!projectConfigInfo.config.implementation) {
-      throw new Error("Cannot trust template implementation because topogram.project.json has no implementation config.");
+    const fileManifest = writeTemplateFilesManifest(projectConfigInfo.configDir, projectConfigInfo.config);
+    console.log(`Wrote .topogram-template-files.json with ${fileManifest.files.length} template-owned file hash(es).`);
+    if (projectConfigInfo.config.implementation) {
+      const implementationInfo = {
+        config: projectConfigInfo.config.implementation,
+        configPath: projectConfigInfo.configPath,
+        configDir: projectConfigInfo.configDir
+      };
+      if (implementationRequiresTrust(implementationInfo)) {
+        const trustRecord = writeTemplateTrustRecord(projectConfigInfo.configDir, projectConfigInfo.config);
+        console.log(`Wrote ${TEMPLATE_TRUST_FILE} for ${trustRecord.implementation.module}.`);
+        if (trustRecord.template.id) {
+          console.log(`Trusted template: ${trustRecord.template.id}@${trustRecord.template.version || "unknown"}`);
+        }
+        console.log(`Trusted implementation digest: ${trustRecord.content.digest}`);
+        process.exit(0);
+      }
     }
-    const implementationInfo = {
-      config: projectConfigInfo.config.implementation,
-      configPath: projectConfigInfo.configPath,
-      configDir: projectConfigInfo.configDir
-    };
-    if (!implementationRequiresTrust(implementationInfo)) {
-      console.log("No local implementation trust record needed for this project.");
-      process.exit(0);
-    }
-    const trustRecord = writeTemplateTrustRecord(projectConfigInfo.configDir, projectConfigInfo.config);
-    console.log(`Wrote ${TEMPLATE_TRUST_FILE} for ${trustRecord.implementation.module}.`);
-    if (trustRecord.template.id) {
-      console.log(`Trusted template: ${trustRecord.template.id}@${trustRecord.template.version || "unknown"}`);
-    }
-    console.log(`Trusted implementation digest: ${trustRecord.content.digest}`);
+    console.log("No local implementation trust record needed for this project.");
     process.exit(0);
   }
 

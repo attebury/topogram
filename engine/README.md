@@ -94,7 +94,9 @@ Use `topogram template update --plan [--template <spec>]` to compare the current
 project with a candidate template without writing files. After review,
 `topogram template update --apply [--template <spec>]` writes added/changed
 template-owned files, records a new `.topogram-template-files.json` baseline,
-skips deletes, and refuses local conflicts.
+skips deletes, and refuses local conflicts. Existing projects can run
+`topogram trust template` after review to record the first template-owned file
+baseline.
 
 Template authors can run `topogram template check <template-spec-or-path>` to
 validate manifest/layout, temporary starter creation, starter checks, trust
