@@ -7,6 +7,7 @@ import test from "node:test";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const engineRoot = path.join(repoRoot, "engine");
+const todoDemoRoot = path.join(repoRoot, "demos", "generated", "todo-demo-app");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
 const expectedRoot = path.join(engineRoot, "tests", "fixtures", "expected", "app-basic");
 
@@ -152,6 +153,25 @@ test("repo root smoke test app script creates and builds disposable app", () => 
   assert.match(result.stdout, /Smoke test app generated/);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "app", ".topogram-generated.json")), true);
+});
+
+test("todo demo exposes generated starter command surface", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(todoDemoRoot, "package.json"), "utf8"));
+  assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
+  assert.equal(pkg.scripts.status, "topogram check");
+  assert.equal(pkg.scripts.inspect, "topogram check --json");
+  assert.equal(pkg.scripts.check, "topogram check");
+  assert.equal(pkg.scripts.build, "topogram build");
+  assert.equal(pkg.scripts.generate, "topogram generate");
+
+  const explain = runNpm(["run", "explain"], todoDemoRoot);
+  assert.equal(explain.status, 0, explain.stderr || explain.stdout);
+  assert.match(explain.stdout, /Topogram app workflow/);
+  assert.match(explain.stdout, /npm run status/);
+
+  const status = runNpm(["run", "status"], todoDemoRoot);
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  assert.match(status.stdout, /todo_api/);
 });
 
 test("topogram new refuses to create generated projects inside engine", () => {
