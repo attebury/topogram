@@ -29,7 +29,7 @@ No global install or published npm package is assumed yet. Create generated proj
 From the repo root, prefer:
 
 ```bash
-npm run create -- ./my-topogram-app
+npm run new -- ./my-topogram-app
 ```
 
 ## Layout

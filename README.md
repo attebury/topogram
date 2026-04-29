@@ -9,7 +9,7 @@ Use Node 20+.
 ```bash
 cd topogram
 npm install
-npm run create -- ./my-topogram-app
+npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run status
@@ -41,7 +41,7 @@ npm run app:runtime-check
 The engine is private and local to this repo, but it exposes the `topogram` bin for local demo consumption:
 
 ```bash
-npm run create -- ./my-app
+npm run new -- ./my-app
 cd ./my-app
 npm run status
 npm run build

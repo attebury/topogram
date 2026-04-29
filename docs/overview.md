@@ -18,7 +18,7 @@ npm install
 Create a starter project outside `engine/`:
 
 ```bash
-npm run create -- ./my-topogram-app
+npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run status

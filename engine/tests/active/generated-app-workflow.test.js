@@ -127,10 +127,10 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_postgres")), true);
 });
 
-test("repo root create script creates a generated app starter project outside engine", () => {
+test("repo root new script creates a generated app starter project outside engine", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-root-create-"));
   const projectRoot = path.join(root, "starter");
-  const create = runNpm(["run", "create", "--", projectRoot], repoRoot);
+  const create = runNpm(["run", "new", "--", projectRoot], repoRoot);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
