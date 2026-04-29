@@ -211,6 +211,10 @@ function validateTemplateRoot(templateRoot) {
 function installTemplatePackage(templateSpec) {
   const installRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-"));
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const localNpmConfig = path.join(process.cwd(), ".npmrc");
+  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
+    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
+    : {};
   const result = childProcess.spawnSync(
     npmBin,
     [
@@ -227,6 +231,7 @@ function installTemplatePackage(templateSpec) {
       encoding: "utf8",
       env: {
         ...process.env,
+        ...npmConfigEnv,
         PATH: process.env.PATH || ""
       }
     }
