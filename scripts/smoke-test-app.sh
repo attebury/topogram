@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SMOKE_APP_DIR="$ROOT_DIR/.tmp/smoke-test-app"
+
+cd "$ROOT_DIR"
+npm --prefix ./engine ci
+
+rm -rf "$SMOKE_APP_DIR"
+npm run new -- "$SMOKE_APP_DIR"
+npm --prefix "$SMOKE_APP_DIR" install
+npm --prefix "$SMOKE_APP_DIR" run status
+npm --prefix "$SMOKE_APP_DIR" run build
+
+echo
+echo "Smoke test app generated at $SMOKE_APP_DIR"
+echo "Next:"
+echo "  cd .tmp/smoke-test-app"
+echo "  npm run verify"

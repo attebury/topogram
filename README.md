@@ -6,15 +6,15 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 
 Use Node 20+.
 
-To run the disposable demo:
+To run the disposable generated-app smoke test:
 
 ```bash
 cd topogram
 npm install
-npm run demo
+npm run smoke:test-app
 ```
 
-This writes a generated starter to `.tmp/demo-app`.
+This writes a generated starter to `.tmp/smoke-test-app`.
 
 To create your own starter:
 

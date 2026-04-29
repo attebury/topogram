@@ -20,7 +20,7 @@ For first use, run:
 ```bash
 cd topogram
 npm install
-npm run demo
+npm run smoke:test-app
 ```
 
 To create your own starter:

@@ -29,7 +29,7 @@ No global install or published npm package is assumed yet. Create generated proj
 From the repo root, prefer:
 
 ```bash
-npm run demo
+npm run smoke:test-app
 npm run new -- ./my-topogram-app
 ```
 

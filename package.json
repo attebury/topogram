@@ -4,7 +4,7 @@
   "scripts": {
     "new": "npm --prefix ./engine run new --",
     "create": "npm --prefix ./engine run new --",
-    "demo": "bash ./scripts/demo.sh",
+    "smoke:test-app": "bash ./scripts/smoke-test-app.sh",
     "check": "npm --prefix ./engine run check",
     "test": "npm --prefix ./engine test",
     "engine:install": "npm --prefix ./engine install",

@@ -10,15 +10,15 @@ The active scope is the engine under `engine/`, the generated Todo demo under `d
 
 Use Node 20+.
 
-Run the disposable demo:
+Run the disposable generated-app smoke test:
 
 ```bash
 cd topogram
 npm install
-npm run demo
+npm run smoke:test-app
 ```
 
-This writes to `.tmp/demo-app`.
+This writes to `.tmp/smoke-test-app`.
 
 ```bash
 cd topogram
