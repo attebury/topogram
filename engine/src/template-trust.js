@@ -12,7 +12,7 @@ export const TEMPLATE_TRUST_POLICY = "topogram-template-executable-implementatio
  * @property {string} version
  * @property {string} trustPolicy
  * @property {string} trustedAt
- * @property {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null }} template
+ * @property {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog?: Record<string, any>|null }} template
  * @property {{ id: string|null, module: string, export: string }} implementation
  * @property {{ algorithm: "sha256", root: string, digest: string, files: Array<{ path: string, sha256: string, size: number }> }} content
  */
@@ -292,7 +292,10 @@ function buildTrustRecord(configDir, projectConfig, implementation) {
       source: typeof template.source === "string" ? template.source : null,
       sourceSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null,
       requested: typeof template.requested === "string" ? template.requested : null,
-      sourceRoot: typeof template.sourceRoot === "string" ? template.sourceRoot : null
+      sourceRoot: typeof template.sourceRoot === "string" ? template.sourceRoot : null,
+      catalog: template.catalog && typeof template.catalog === "object" && !Array.isArray(template.catalog)
+        ? template.catalog
+        : null
     },
     implementation,
     content
@@ -387,7 +390,7 @@ function implementationReviewFile(configDir, relativePath, file) {
 /**
  * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} implementationInfo
  * @param {Record<string, any>|null} projectConfig
- * @returns {{ ok: boolean, requiresTrust: boolean, trustPath: string, trustRecord: TemplateTrustRecord|null, template: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, includesExecutableImplementation: boolean|null }, implementation: { id: string|null, module: string|null, export: string|null }, content: { trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }, issues: string[] }}
+ * @returns {{ ok: boolean, requiresTrust: boolean, trustPath: string, trustRecord: TemplateTrustRecord|null, template: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog?: Record<string, any>|null, includesExecutableImplementation: boolean|null }, implementation: { id: string|null, module: string|null, export: string|null }, content: { trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }, issues: string[] }}
  */
 export function getTemplateTrustStatus(implementationInfo, projectConfig = null) {
   if (!implementationRequiresTrust(implementationInfo)) {
@@ -396,7 +399,7 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
       requiresTrust: false,
       trustPath: path.join(implementationInfo.configDir, TEMPLATE_TRUST_FILE),
       trustRecord: null,
-      template: { id: null, version: null, source: null, sourceSpec: null, requested: null, sourceRoot: null, includesExecutableImplementation: null },
+      template: { id: null, version: null, source: null, sourceSpec: null, requested: null, sourceRoot: null, catalog: null, includesExecutableImplementation: null },
       implementation: { id: null, module: null, export: null },
       content: { trustedDigest: null, currentDigest: null, added: [], removed: [], changed: [] },
       issues: []
@@ -470,6 +473,7 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
       sourceSpec: projectTemplate?.sourceSpec || trustRecord?.template?.sourceSpec || null,
       requested: projectTemplate?.requested || trustRecord?.template?.requested || null,
       sourceRoot: projectTemplate?.sourceRoot || trustRecord?.template?.sourceRoot || null,
+      catalog: projectTemplate?.catalog || trustRecord?.template?.catalog || null,
       includesExecutableImplementation: typeof projectTemplate?.includesExecutableImplementation === "boolean"
         ? projectTemplate.includesExecutableImplementation
         : null

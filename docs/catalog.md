@@ -33,6 +33,30 @@ topogram template list
 topogram new ./todo-demo --template todo
 ```
 
+Projects created from a catalog alias still use package-backed template
+metadata. `topogram.project.json` records:
+
+```json
+{
+  "template": {
+    "source": "package",
+    "requested": "todo",
+    "sourceSpec": "@attebury/topogram-template-todo@0.1.2",
+    "catalog": {
+      "id": "todo",
+      "source": "github:attebury/topograms/topograms.catalog.json",
+      "package": "@attebury/topogram-template-todo",
+      "version": "0.1.2",
+      "packageSpec": "@attebury/topogram-template-todo@0.1.2"
+    }
+  }
+}
+```
+
+`sourceSpec` remains the package spec used by template update, latest-version
+checks, and trust policy. `requested` and `catalog` preserve the human-facing
+alias and catalog source for auditability.
+
 Copy a pure topogram package for editing:
 
 ```bash

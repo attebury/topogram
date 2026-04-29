@@ -21,6 +21,7 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {string} [templateName]
  * @property {string} engineRoot
  * @property {string} templatesRoot
+ * @property {CatalogTemplateProvenance|null} [templateProvenance]
  */
 
 /**
@@ -87,6 +88,15 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {TemplateManifest} manifest
  * @property {"builtin"|"local"|"package"} source
  * @property {string|null} packageSpec
+ */
+
+/**
+ * @typedef {Object} CatalogTemplateProvenance
+ * @property {string} id
+ * @property {string} source
+ * @property {string} package
+ * @property {string} version
+ * @property {string} packageSpec
  */
 
 /**
@@ -473,30 +483,37 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
 /**
  * @param {string} projectRoot
  * @param {ResolvedTemplate} template
+ * @param {CatalogTemplateProvenance|null} [templateProvenance]
  * @returns {Record<string, any>}
  */
-function writeProjectTemplateMetadata(projectRoot, template) {
+function writeProjectTemplateMetadata(projectRoot, template, templateProvenance = null) {
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  projectConfig.template = projectTemplateMetadata(template);
+  projectConfig.template = projectTemplateMetadata(template, templateProvenance);
   fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
   return projectConfig;
 }
 
 /**
  * @param {ResolvedTemplate} template
- * @returns {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean }}
+ * @param {CatalogTemplateProvenance|null} [templateProvenance]
+ * @returns {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean, catalog?: CatalogTemplateProvenance }}
  */
-function projectTemplateMetadata(template) {
-  return {
+function projectTemplateMetadata(template, templateProvenance = null) {
+  /** @type {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean, catalog?: CatalogTemplateProvenance }} */
+  const metadata = {
     id: template.manifest.id,
     version: template.manifest.version,
     source: template.source,
-    requested: template.requested,
+    requested: templateProvenance?.id || template.requested,
     sourceSpec: template.packageSpec || template.requested,
     sourceRoot: template.source === "local" ? template.root : null,
     includesExecutableImplementation: Boolean(template.manifest.includesExecutableImplementation)
   };
+  if (templateProvenance) {
+    metadata.catalog = templateProvenance;
+  }
+  return metadata;
 }
 
 /**
@@ -1109,7 +1126,8 @@ export function writeTemplateFilesManifest(projectRoot, projectConfig) {
       version: projectConfig.template?.version || null,
       source: projectConfig.template?.source || null,
       sourceSpec: projectConfig.template?.sourceSpec || null,
-      requested: projectConfig.template?.requested || null
+      requested: projectConfig.template?.requested || null,
+      catalog: projectConfig.template?.catalog || null
     },
     files: fileRecords
   };
@@ -1793,7 +1811,8 @@ export function createNewProject({
   targetPath,
   templateName = "web-api-db",
   engineRoot,
-  templatesRoot
+  templatesRoot,
+  templateProvenance = null
 }) {
   if (!targetPath) {
     throw new Error("topogram new requires <path>.");
@@ -1804,7 +1823,7 @@ export function createNewProject({
 
   ensureCreatableProjectRoot(projectRoot);
   copyTopogramWorkspace(template.root, projectRoot);
-  const projectConfig = writeProjectTemplateMetadata(projectRoot, template);
+  const projectConfig = writeProjectTemplateMetadata(projectRoot, template, templateProvenance);
   writeProjectPackage(projectRoot, engineRoot);
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, template.manifest.id);

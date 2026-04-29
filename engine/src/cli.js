@@ -448,7 +448,7 @@ function combineProjectValidationResults(...results) {
 
 /**
  * @param {Record<string, any>|null|undefined} projectConfig
- * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, includesExecutableImplementation: boolean|null }}
+ * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog: Record<string, any>|null, includesExecutableImplementation: boolean|null }}
  */
 function templateMetadataFromProjectConfig(projectConfig) {
   const template = projectConfig?.template || {};
@@ -459,6 +459,9 @@ function templateMetadataFromProjectConfig(projectConfig) {
     sourceSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null,
     requested: typeof template.requested === "string" ? template.requested : null,
     sourceRoot: typeof template.sourceRoot === "string" ? template.sourceRoot : null,
+    catalog: template.catalog && typeof template.catalog === "object" && !Array.isArray(template.catalog)
+      ? template.catalog
+      : null,
     includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
       ? template.includesExecutableImplementation
       : null
@@ -609,6 +612,9 @@ function printTemplateStatus(payload) {
   }
   if (payload.template.requested) {
     console.log(`Requested: ${payload.template.requested}`);
+  }
+  if (payload.template.catalog) {
+    console.log(`Catalog: ${payload.template.catalog.id || "unknown"} from ${payload.template.catalog.source || "unknown"}`);
   }
   if (payload.template.sourceRoot) {
     console.log(`Source root: ${payload.template.sourceRoot}`);
@@ -825,25 +831,38 @@ function printCatalogCopy(payload) {
 /**
  * @param {string} templateName
  * @param {string|null} source
- * @returns {string}
+ * @returns {{ templateName: string, provenance: { id: string, source: string, package: string, version: string, packageSpec: string }|null }}
  */
 function resolveCatalogTemplateAlias(templateName, source = null) {
   if (!isCatalogAliasCandidate(templateName)) {
-    return templateName;
+    return { templateName, provenance: null };
   }
   const catalogSource = catalogSourceOrDefault(source);
   if (isCatalogSourceDisabled(catalogSource)) {
-    return templateName;
+    return { templateName, provenance: null };
   }
   try {
     const loaded = loadCatalog(catalogSource);
     const entry = findCatalogEntry(loaded.catalog, templateName, "template");
-    return entry ? catalogEntryPackageSpec(entry) : templateName;
+    if (!entry) {
+      return { templateName, provenance: null };
+    }
+    const packageSpec = catalogEntryPackageSpec(entry);
+    return {
+      templateName: packageSpec,
+      provenance: {
+        id: entry.id,
+        source: loaded.source,
+        package: entry.package,
+        version: entry.defaultVersion,
+        packageSpec
+      }
+    };
   } catch (error) {
     if (source || process.env.TOPOGRAM_CATALOG_SOURCE) {
       throw error;
     }
-    return templateName;
+    return { templateName, provenance: null };
   }
 }
 
@@ -1996,10 +2015,11 @@ try {
   }
 
   if (commandArgs?.newProject) {
-    const resolvedTemplateName = resolveCatalogTemplateAlias(templateName, catalogSource);
+    const resolvedTemplate = resolveCatalogTemplateAlias(templateName, catalogSource);
     const result = createNewProject({
       targetPath: inputPath,
-      templateName: resolvedTemplateName,
+      templateName: resolvedTemplate.templateName,
+      templateProvenance: resolvedTemplate.provenance,
       engineRoot: ENGINE_ROOT,
       templatesRoot: TEMPLATES_ROOT
     });

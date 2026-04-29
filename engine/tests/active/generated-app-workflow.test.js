@@ -335,8 +335,33 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
   assert.equal(projectConfig.template.id, "@scope/topogram-template-todo");
   assert.equal(projectConfig.template.source, "package");
+  assert.equal(projectConfig.template.requested, "todo");
   assert.equal(projectConfig.template.sourceSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.deepEqual(projectConfig.template.catalog, {
+    id: "todo",
+    source: catalogPath,
+    package: "@scope/topogram-template-todo",
+    version: "0.1.0",
+    packageSpec: "@scope/topogram-template-todo@0.1.0"
+  });
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
+  const fileManifest = readJson(path.join(projectRoot, ".topogram-template-files.json"));
+  assert.equal(fileManifest.template.requested, "todo");
+  assert.deepEqual(fileManifest.template.catalog, projectConfig.template.catalog);
+  const trustRecord = readJson(path.join(projectRoot, ".topogram-template-trust.json"));
+  assert.equal(trustRecord.template.requested, "todo");
+  assert.deepEqual(trustRecord.template.catalog, projectConfig.template.catalog);
+
+  const status = runCli(["template", "status", "--json"], { cwd: projectRoot });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.template.requested, "todo");
+  assert.deepEqual(statusPayload.template.catalog, projectConfig.template.catalog);
+
+  const humanStatus = runCli(["template", "status"], { cwd: projectRoot });
+  assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
+  assert.match(humanStatus.stdout, /Requested: todo/);
+  assert.match(humanStatus.stdout, /Catalog: todo from /);
 });
 
 test("topogram catalog copy installs pure topogram packages and rejects implementation code", () => {
