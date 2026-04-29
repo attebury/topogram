@@ -45,7 +45,9 @@ Inspect, plan, or apply a template update:
 ```bash
 topogram template policy check
 topogram template policy init
+topogram template policy pin @attebury/topogram-template-todo@0.1.2
 topogram template update --status
+topogram template update --recommend
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template @attebury/topogram-template-todo@0.1.2
@@ -77,6 +79,13 @@ projects and CI to verify the current template metadata against allowed sources,
 template ids, package scopes, executable-template policy, and optional pinned
 versions. Use `topogram template policy init` to create or refresh the policy
 from the current `topogram.project.json`.
+After reviewing a candidate template, use `topogram template policy pin
+<template-id@version>` to record the reviewed exact version without hand-editing
+the policy file.
+
+`topogram template update --recommend` is the human handoff view for upgrades.
+It summarizes current/candidate versions, conflicts, delete reviews, and the
+next command to run before you apply or adopt files.
 
 For single-file adoption, use `--accept-current` when a local edit is
 intentional and should become the new trusted baseline, `--accept-candidate`

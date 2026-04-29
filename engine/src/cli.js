@@ -20,6 +20,7 @@ import {
   loadTemplatePolicy,
   resolveTemplate,
   templatePolicyDiagnosticsForTemplate,
+  writeTemplatePolicy,
   writeTemplatePolicyForProject,
   writeTemplateFilesManifest
 } from "./new-project.js";
@@ -107,8 +108,9 @@ function printUsage(options = {}) {
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
+  console.log("   or: topogram template policy pin [template-id@version] [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
-  console.log("   or: topogram template update [path] --status|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
+  console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
@@ -124,8 +126,10 @@ function printUsage(options = {}) {
   console.log("  topogram template status");
   console.log("  topogram template policy init");
   console.log("  topogram template policy check");
+  console.log("  topogram template policy pin @scope/template@0.2.0");
   console.log("  topogram template check web-api-db");
   console.log("  topogram template update --status");
+  console.log("  topogram template update --recommend");
   console.log("  topogram template update --plan");
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
@@ -656,6 +660,117 @@ function printTemplateUpdatePlan(plan) {
 }
 
 /**
+ * @param {any} status
+ * @returns {{ ok: boolean, mode: "recommend", writes: false, current: any, candidate: any, compatible: boolean, issues: string[], diagnostics: any[], summary: any, files: any[], conflicts: any[], skipped: any[], recommendations: Array<{ action: string, command: string|null, reason: string, path: string|null }> }}
+ */
+function buildTemplateUpdateRecommendationPayload(status) {
+  /** @type {Array<{ action: string, command: string|null, reason: string, path: string|null }>} */
+  const recommendations = [];
+  const diagnostics = Array.isArray(status.diagnostics)
+    ? status.diagnostics.map((diagnostic) => diagnostic.code === "template_update_available"
+      ? { ...diagnostic, severity: "warning" }
+      : diagnostic)
+    : [];
+  const errorDiagnostics = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+  const conflicts = Array.isArray(status.conflicts) ? status.conflicts : [];
+  const skipped = Array.isArray(status.skipped) ? status.skipped : [];
+  const files = Array.isArray(status.files) ? status.files : [];
+  const addedChanged = files.filter((file) => file.kind === "added" || file.kind === "changed");
+
+  if (errorDiagnostics.length > 0) {
+    recommendations.push({
+      action: "resolve-errors",
+      command: "topogram template update --status",
+      reason: "Template policy, compatibility, baseline, or conflict errors must be resolved before applying candidate files.",
+      path: null
+    });
+  }
+  for (const conflict of conflicts) {
+    recommendations.push({
+      action: "review-conflict",
+      command: `topogram template update --accept-current ${conflict.path}`,
+      reason: "Local edits differ from the last trusted template-owned baseline. Accept current after review, or apply the candidate manually.",
+      path: conflict.path
+    });
+  }
+  if (addedChanged.length > 0 && conflicts.length === 0 && errorDiagnostics.length === 0) {
+    recommendations.push({
+      action: "apply-candidate",
+      command: "topogram template update --apply",
+      reason: `${addedChanged.length} added or changed candidate file(s) can be applied without local conflicts.`,
+      path: null
+    });
+  }
+  for (const item of skipped) {
+    recommendations.push({
+      action: "review-delete",
+      command: `topogram template update --delete-current ${item.path}`,
+      reason: "The candidate no longer owns this current file. Delete it only after review.",
+      path: item.path
+    });
+  }
+  if (files.length === 0 && errorDiagnostics.length === 0) {
+    recommendations.push({
+      action: "none",
+      command: null,
+      reason: "Current project files already match the candidate template.",
+      path: null
+    });
+  }
+  if (status.candidate?.id && status.candidate?.version && errorDiagnostics.length === 0) {
+    recommendations.push({
+      action: "pin-reviewed-version",
+      command: `topogram template policy pin ${status.candidate.id}@${status.candidate.version}`,
+      reason: "After reviewing or applying this candidate, pin the template version in project policy.",
+      path: null
+    });
+  }
+  return {
+    ...status,
+    ok: errorDiagnostics.length === 0,
+    mode: "recommend",
+    writes: false,
+    issues: errorDiagnostics.map((diagnostic) => diagnostic.message),
+    diagnostics,
+    recommendations
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateUpdateRecommendationPayload>} payload
+ * @returns {void}
+ */
+function printTemplateUpdateRecommendation(payload) {
+  console.log(payload.ok ? "Template update recommendation: ready" : "Template update recommendation: blocked");
+  console.log(`Current: ${payload.current?.id || "unknown"}@${payload.current?.version || "unknown"}`);
+  console.log(`Candidate: ${payload.candidate?.id || "unknown"}@${payload.candidate?.version || "unknown"}`);
+  console.log(`Added: ${payload.summary.added}`);
+  console.log(`Changed: ${payload.summary.changed}`);
+  console.log(`Current-only: ${payload.summary.currentOnly}`);
+  console.log(`Conflicts: ${payload.conflicts.length}`);
+  if (payload.reportPath) {
+    console.log(`Report: ${payload.reportPath}`);
+  }
+  for (const diagnostic of payload.diagnostics || []) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+  console.log("");
+  console.log("Recommended next steps:");
+  for (const recommendation of payload.recommendations) {
+    console.log(`- ${recommendation.reason}`);
+    if (recommendation.command) {
+      console.log(`  ${recommendation.command}`);
+    }
+  }
+}
+
+/**
  * @typedef {Object} TemplateCheckDiagnostic
  * @property {string} code
  * @property {"error"|"warning"} severity
@@ -1071,6 +1186,136 @@ function printTemplatePolicyCheckPayload(payload) {
 }
 
 /**
+ * @param {string|null|undefined} spec
+ * @returns {{ id: string, version: string }|null}
+ */
+function parseTemplateVersionPin(spec) {
+  if (!spec) {
+    return null;
+  }
+  const separator = spec.lastIndexOf("@");
+  if (separator <= 0 || separator === spec.length - 1) {
+    throw new Error("Template policy pin requires a template id and version, for example @scope/template@0.2.0.");
+  }
+  return {
+    id: spec.slice(0, separator),
+    version: spec.slice(separator + 1)
+  };
+}
+
+/**
+ * @param {string} projectPath
+ * @param {string|null|undefined} spec
+ * @returns {{ ok: boolean, path: string, policy: any, pinned: { id: string, version: string }, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+function buildTemplatePolicyPinPayload(projectPath, spec) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_project_missing",
+      message: "Cannot pin template policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), "topogram.template-policy.json"),
+      policy: null,
+      pinned: { id: "", version: "" },
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const parsed = parseTemplateVersionPin(spec);
+  const currentTemplate = projectConfigInfo.config.template || {};
+  const pin = parsed || {
+    id: typeof currentTemplate.id === "string" ? currentTemplate.id : "",
+    version: typeof currentTemplate.version === "string" ? currentTemplate.version : ""
+  };
+  if (!pin.id || !pin.version) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_pin_missing_version",
+      message: "Cannot pin a template version without a template id and version.",
+      path: projectConfigInfo.configPath,
+      suggestedFix: "Pass a pin such as @scope/template@0.2.0, or ensure topogram.project.json records template.id and template.version.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
+      policy: null,
+      pinned: pin,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+
+  const existing = loadTemplatePolicy(projectConfigInfo.configDir);
+  const diagnostics = existing.diagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+  if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+    return {
+      ok: false,
+      path: existing.path,
+      policy: existing.policy,
+      pinned: pin,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
+  }
+  const policy = existing.policy || writeTemplatePolicyForProject(projectConfigInfo.configDir, projectConfigInfo.config);
+  const allowedTemplateIds = policy.allowedTemplateIds.includes(pin.id)
+    ? policy.allowedTemplateIds
+    : [...policy.allowedTemplateIds, pin.id];
+  const allowedPackageScopes = [...(policy.allowedPackageScopes || [])];
+  if (pin.id.startsWith("@")) {
+    const scope = pin.id.split("/")[0];
+    if (scope && !allowedPackageScopes.includes(scope)) {
+      allowedPackageScopes.push(scope);
+    }
+  }
+  const nextPolicy = {
+    ...policy,
+    allowedTemplateIds,
+    allowedPackageScopes,
+    pinnedVersions: {
+      ...(policy.pinnedVersions || {}),
+      [pin.id]: pin.version
+    }
+  };
+  writeTemplatePolicy(projectConfigInfo.configDir, nextPolicy);
+  return {
+    ok: true,
+    path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
+    policy: nextPolicy,
+    pinned: pin,
+    diagnostics: [],
+    errors: []
+  };
+}
+
+/**
+ * @param {{ ok: boolean, path: string, pinned: { id: string, version: string }, diagnostics: TemplateCheckDiagnostic[] }}
+ * @returns {void}
+ */
+function printTemplatePolicyPinPayload(payload) {
+  console.log(payload.ok ? "Template policy pin updated" : "Template policy pin failed");
+  console.log(`Policy: ${payload.path}`);
+  if (payload.pinned.id) {
+    console.log(`Pinned: ${payload.pinned.id}@${payload.pinned.version || "unknown"}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
  * @param {Record<string, any>} details
  * @returns {string[]}
  */
@@ -1198,6 +1443,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { templatePolicyInit: true, inputPath: commandPath(3) };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "check") {
   commandArgs = { templatePolicyCheck: true, inputPath: commandPath(3) };
+} else if (args[0] === "template" && args[1] === "policy" && args[2] === "pin") {
+  commandArgs = { templatePolicyPin: true, templatePolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null, inputPath: commandPath(4) };
 } else if (args[0] === "template" && args[1] === "check") {
   commandArgs = { templateCheck: true, inputPath: args[2] };
 } else if (args[0] === "template" && args[1] === "update") {
@@ -1288,6 +1535,7 @@ const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
 const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
+const shouldTemplatePolicyPin = Boolean(commandArgs?.templatePolicyPin);
 const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
@@ -1344,13 +1592,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -1428,6 +1676,16 @@ try {
     process.exit(payload.ok ? 0 : 1);
   }
 
+  if (shouldTemplatePolicyPin) {
+    const payload = buildTemplatePolicyPinPayload(inputPath, commandArgs?.templatePolicyPinSpec);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplatePolicyPinPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
   if (shouldTemplateCheck) {
     const payload = buildTemplateCheckPayload(inputPath);
     if (emitJson) {
@@ -1443,6 +1701,7 @@ try {
     const checkUpdate = args.includes("--check");
     const planUpdate = args.includes("--plan");
     const statusUpdate = args.includes("--status");
+    const recommendUpdate = args.includes("--recommend");
     const acceptCurrentIndex = args.indexOf("--accept-current");
     const acceptCandidateIndex = args.indexOf("--accept-candidate");
     const deleteCurrentIndex = args.indexOf("--delete-current");
@@ -1452,12 +1711,12 @@ try {
     const fileAction = acceptCurrentUpdate ? "accept-current" : acceptCandidateUpdate ? "accept-candidate" : deleteCurrentUpdate ? "delete-current" : null;
     const fileActionIndex = acceptCurrentUpdate ? acceptCurrentIndex : acceptCandidateUpdate ? acceptCandidateIndex : deleteCurrentUpdate ? deleteCurrentIndex : -1;
     const fileActionPath = fileActionIndex >= 0 ? args[fileActionIndex + 1] : null;
-    const updateModeCount = [applyUpdate, checkUpdate, planUpdate, statusUpdate, acceptCurrentUpdate, acceptCandidateUpdate, deleteCurrentUpdate].filter(Boolean).length;
+    const updateModeCount = [applyUpdate, checkUpdate, planUpdate, statusUpdate, recommendUpdate, acceptCurrentUpdate, acceptCandidateUpdate, deleteCurrentUpdate].filter(Boolean).length;
     if (updateModeCount > 1) {
       throw new Error("Choose one template update mode or file adoption action.");
     }
     if (updateModeCount === 0) {
-      throw new Error("Template update requires `--status`, `--plan`, `--check`, `--apply`, `--accept-current <file>`, `--accept-candidate <file>`, or `--delete-current <file>`.");
+      throw new Error("Template update requires `--status`, `--recommend`, `--plan`, `--check`, `--apply`, `--accept-current <file>`, `--accept-candidate <file>`, or `--delete-current <file>`.");
     }
     if (fileAction && (!fileActionPath || fileActionPath.startsWith("-"))) {
       throw new Error(`Template update ${fileAction} requires a relative file path.`);
@@ -1476,12 +1735,14 @@ try {
       };
       update = fileAction
         ? applyTemplateUpdateFileAction({ ...updateOptions, action: fileAction, filePath: fileActionPath || "" })
-        : (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : statusUpdate ? buildTemplateUpdateStatus : buildTemplateUpdatePlan)(updateOptions);
+        : recommendUpdate
+          ? buildTemplateUpdateRecommendationPayload(buildTemplateUpdateStatus(updateOptions))
+          : (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : statusUpdate ? buildTemplateUpdateStatus : buildTemplateUpdatePlan)(updateOptions);
     } catch (error) {
       const message = messageFromError(error);
       update = {
         ok: false,
-        mode: fileAction || (applyUpdate ? "apply" : checkUpdate ? "check" : statusUpdate ? "status" : "plan"),
+        mode: fileAction || (applyUpdate ? "apply" : checkUpdate ? "check" : statusUpdate ? "status" : recommendUpdate ? "recommend" : "plan"),
         writes: false,
         current: {
           id: typeof projectConfigInfo.config.template?.id === "string" ? projectConfigInfo.config.template.id : null,
@@ -1501,7 +1762,13 @@ try {
         files: [],
         applied: [],
         skipped: [],
-        conflicts: []
+        conflicts: [],
+        recommendations: recommendUpdate ? [{
+          action: "resolve-errors",
+          command: "topogram template update --status",
+          reason: "Resolve the candidate template before choosing an update action.",
+          path: null
+        }] : undefined
       };
     }
     if (outPath) {
@@ -1512,6 +1779,8 @@ try {
     }
     if (emitJson) {
       console.log(stableStringify(update));
+    } else if (recommendUpdate) {
+      printTemplateUpdateRecommendation(update);
     } else {
       printTemplateUpdatePlan(update);
     }

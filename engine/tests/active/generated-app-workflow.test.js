@@ -146,7 +146,9 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
   assert.equal(pkg.scripts["template:check"], undefined);
+  assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");
   assert.equal(pkg.scripts["template:update:status"], "topogram template update --status");
+  assert.equal(pkg.scripts["template:update:recommend"], "topogram template update --recommend");
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
   assert.equal(pkg.scripts["template:update:check"], "topogram template update --check");
   assert.equal(pkg.scripts["template:update:apply"], "topogram template update --apply");
@@ -374,6 +376,27 @@ test("topogram template policy init and check manage project policy", () => {
   assert.deepEqual(checkPayload.diagnostics, []);
 });
 
+test("topogram template policy pin records a reviewed template version", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-pin-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.rmSync(path.join(projectRoot, "topogram.template-policy.json"));
+
+  const pinCurrent = runCli(["template", "policy", "pin", "--json"], { cwd: projectRoot });
+  assert.equal(pinCurrent.status, 0, pinCurrent.stderr || pinCurrent.stdout);
+  const currentPayload = JSON.parse(pinCurrent.stdout);
+  assert.equal(currentPayload.pinned.id, "topogram/web-api-db");
+  assert.equal(currentPayload.policy.pinnedVersions["topogram/web-api-db"], currentPayload.pinned.version);
+
+  const pinExplicit = runCli(["template", "policy", "pin", "@scope/next-template@2.0.0", "--json"], { cwd: projectRoot });
+  assert.equal(pinExplicit.status, 0, pinExplicit.stderr || pinExplicit.stdout);
+  const explicitPayload = JSON.parse(pinExplicit.stdout);
+  assert.equal(explicitPayload.policy.pinnedVersions["@scope/next-template"], "2.0.0");
+  assert.equal(explicitPayload.policy.allowedTemplateIds.includes("@scope/next-template"), true);
+  assert.equal(explicitPayload.policy.allowedPackageScopes.includes("@scope"), true);
+});
+
 test("topogram new supports local path template packs", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-local-template-"));
   const projectRoot = path.join(root, "starter");
@@ -524,6 +547,49 @@ test("topogram template update status reports action needed and writes review re
   assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
   assert.match(humanStatus.stdout, /Template update status: action needed/);
   assert.match(humanStatus.stdout, /Refused due to 1 conflict\(s\)/);
+});
+
+test("topogram template update recommend explains the next reviewed action", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-recommend-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const reportPath = path.join(root, "reports", "recommendation.json");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+  const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.version = "0.2.0";
+  writeJson(manifestPath, manifest);
+  fs.appendFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# candidate recommend edit\n",
+    "utf8"
+  );
+
+  const recommend = runCli([
+    "template",
+    "update",
+    "--recommend",
+    "--template",
+    nextTemplateRoot,
+    "--json",
+    "--out",
+    reportPath
+  ], { cwd: projectRoot });
+  assert.equal(recommend.status, 0, recommend.stderr || recommend.stdout);
+  const payload = JSON.parse(recommend.stdout);
+  assert.equal(payload.mode, "recommend");
+  assert.equal(payload.writes, false);
+  assert.equal(payload.recommendations.some((item) => item.action === "apply-candidate" && item.command === "topogram template update --apply"), true);
+  assert.equal(payload.recommendations.some((item) => item.action === "pin-reviewed-version" && item.command === "topogram template policy pin topogram/web-api-db@0.2.0"), true);
+  assert.equal(readJson(reportPath).mode, "recommend");
+
+  const human = runCli(["template", "update", "--recommend", "--template", nextTemplateRoot], { cwd: projectRoot });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Template update recommendation: ready/);
+  assert.match(human.stdout, /Recommended next steps:/);
+  assert.match(human.stdout, /topogram template update --apply/);
 });
 
 test("topogram template update accept-current adopts local file baseline", () => {
@@ -955,7 +1021,7 @@ test("topogram template update requires explicit plan mode", () => {
 
   const update = runCli(["template", "update"], { cwd: projectRoot });
   assert.notEqual(update.status, 0, update.stdout);
-  assert.match(update.stderr, /requires `--status`, `--plan`, `--check`, `--apply`/);
+  assert.match(update.stderr, /requires `--status`, `--recommend`, `--plan`, `--check`, `--apply`/);
 });
 
 test("topogram new supports packed npm template packs", () => {

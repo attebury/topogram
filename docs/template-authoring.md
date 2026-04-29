@@ -143,6 +143,7 @@ project. Existing projects can create or refresh one from their current
 topogram template policy init
 topogram template policy check
 topogram template policy check --json
+topogram template policy pin @scope/topogram-template-name@0.1.0
 ```
 
 Policy check succeeds with a warning when the file is missing so older projects
@@ -154,6 +155,10 @@ trusted npm scopes. `executableImplementation` may be `allow`, `warn`, or
 `deny`. `pinnedVersions` can force a reviewed exact template version until a
 human updates the pin.
 
+Use `topogram template policy pin <template-id@version>` after reviewing a
+candidate template. The command updates `pinnedVersions`, ensures the template id
+is allowed, and records the package scope for scoped package templates.
+
 This policy does not prove package identity or sign templates yet. Treat it as
 the v1 guardrail that makes template intent explicit and gives agents a single
 file to inspect before changing template-owned project files.
@@ -164,6 +169,7 @@ Review template changes first:
 
 ```bash
 topogram template update --status
+topogram template update --recommend
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template ./local-template
@@ -190,6 +196,11 @@ Status mode uses the same comparison as plan mode and adds apply-readiness
 analysis: missing baselines, local conflicts, and current-only files that need
 manual delete review. It is intended for humans or agents deciding what to do
 next before applying a template update.
+
+Recommend mode is the concise next-action view. It reports current and candidate
+versions, summarizes added/changed/current-only files, calls out conflicts, and
+prints the next command to run: apply the candidate, accept current for a
+conflict, delete a reviewed current-only file, or pin the reviewed version.
 
 Check mode is the no-write guard for CI and consumer repos. It exits zero when
 the current project is aligned with the recorded or supplied template, and exits

@@ -25,6 +25,7 @@ topogram check
 topogram generate
 topogram template status
 topogram template policy check
+topogram template policy pin @scope/template@0.2.0
 topogram template check ../my-template
 topogram template update --plan
 topogram trust template
@@ -99,10 +100,13 @@ template versions:
 ```bash
 topogram template policy check
 topogram template policy init
+topogram template policy pin @scope/template@0.2.0
 ```
 
 Use `topogram template update --status [--template <spec>]` to inspect current
 template adoption state with baseline and conflict analysis. Use
+`topogram template update --recommend [--template <spec>]` for a concise
+human/agent next-step summary before applying, adopting, or deleting files. Use
 `topogram template update --plan [--template <spec>]` to compare the current
 project with a candidate template without writing files. Use
 `topogram template update --check [--template <spec>]` as the no-write CI guard;
