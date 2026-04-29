@@ -124,3 +124,10 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "web", "app_sveltekit")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_postgres")), true);
 });
+
+test("topogram new refuses to create generated projects inside engine", () => {
+  const create = runCli(["new", "./my-topogram-app"]);
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /inside the engine directory/);
+  assert.equal(fs.existsSync(path.join(engineRoot, "my-topogram-app")), false);
+});

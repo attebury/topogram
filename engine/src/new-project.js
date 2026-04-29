@@ -40,6 +40,29 @@ function fileDependencyForEngine(projectRoot, engineRoot) {
 }
 
 /**
+ * @param {string} parent
+ * @param {string} child
+ * @returns {boolean}
+ */
+function isSameOrInside(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} engineRoot
+ * @returns {void}
+ */
+function assertProjectOutsideEngine(projectRoot, engineRoot) {
+  if (isSameOrInside(path.resolve(engineRoot), path.resolve(projectRoot))) {
+    throw new Error(
+      `Refusing to create a generated project inside the engine directory. Use a path outside engine, for example '../${path.basename(projectRoot)}'.`
+    );
+  }
+}
+
+/**
  * @param {string} projectRoot
  * @returns {void}
  */
@@ -164,6 +187,7 @@ export function createNewProject({
   }
 
   const projectRoot = path.resolve(targetPath);
+  assertProjectOutsideEngine(projectRoot, engineRoot);
   const templateRoot = path.join(templatesRoot, templateName);
   if (!fs.existsSync(templateRoot)) {
     throw new Error(`Template '${templateName}' is not installed at '${templateRoot}'.`);
