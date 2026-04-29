@@ -80,19 +80,19 @@ npm test
 Run only the active fixture validity check:
 
 ```bash
-npm run fixture:status
+npm run fixture:check
 ```
 
 Inspect the active fixture topology as JSON:
 
 ```bash
-npm run fixture:inspect
+npm run fixture:check:json
 ```
 
 Generate the active fixture app bundle:
 
 ```bash
-npm run fixture:build
+npm run fixture:generate
 ```
 
 Run the app-generation workflow test:
@@ -105,5 +105,5 @@ Validate or generate through the public CLI shape:
 
 ```bash
 node ./src/cli.js check ./tests/fixtures/workspaces/app-basic
-node ./src/cli.js build ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
+node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
 ```

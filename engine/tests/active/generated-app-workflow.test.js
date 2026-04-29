@@ -43,6 +43,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
+  assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
   assert.doesNotMatch(help.stdout, /query work-packet/);
 
   const check = runCli(["check", fixtureRoot]);
@@ -68,6 +69,15 @@ test("public authoring-to-app commands check and generate app bundles", () => {
       `${relativePath} should match the app-basic fixture`
     );
   }
+
+  const statusAlias = runCli(["status", fixtureRoot]);
+  assert.notEqual(statusAlias.status, 0, statusAlias.stdout);
+
+  const doctorAlias = runCli(["doctor", fixtureRoot]);
+  assert.notEqual(doctorAlias.status, 0, doctorAlias.stdout);
+
+  const buildAlias = runCli(["build", fixtureRoot, "--out", outputRoot]);
+  assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
 });
 
 test("public commands default to project topogram and app paths", () => {
@@ -87,8 +97,8 @@ test("public commands default to project topogram and app paths", () => {
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
 
-  const build = runCli(["build"], { cwd: projectRoot });
-  assert.equal(build.status, 0, build.stderr || build.stdout);
+  const generate = runCli(["generate"], { cwd: projectRoot });
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
 

@@ -99,8 +99,7 @@ function printUsage(options = {}) {
   }
   console.log("");
   console.log("Legacy and internal commands:");
-  console.log("Usage: topogram build [path] [--out <path>]");
-  console.log("   or: topogram validate <path>");
+  console.log("Usage: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
@@ -440,17 +439,15 @@ function commandPath(index, fallback = "./topogram") {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "new" || args[0] === "create" || args[0] === "init") {
+if (args[0] === "new" || args[0] === "create") {
   commandArgs = { newProject: true, inputPath: args[1] };
-} else if (args[0] === "check" || args[0] === "status" || args[0] === "doctor") {
+} else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
-  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
-} else if (args[0] === "build") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };

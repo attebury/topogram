@@ -8,8 +8,8 @@
     "check": "npm --prefix ./engine run check",
     "test": "npm --prefix ./engine test",
     "engine:install": "npm --prefix ./engine install",
-    "engine:status": "npm --prefix ./engine run fixture:status",
-    "engine:inspect": "npm --prefix ./engine run fixture:inspect",
-    "engine:build": "npm --prefix ./engine run fixture:build"
+    "engine:check": "npm --prefix ./engine run fixture:check",
+    "engine:check:json": "npm --prefix ./engine run fixture:check:json",
+    "engine:generate": "npm --prefix ./engine run fixture:generate"
   }
 }
