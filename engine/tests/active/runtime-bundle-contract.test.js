@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
-import { generateCompileCheckPlan } from "../../src/generator/runtime/compile-check.js";
+import { generateCompileCheckBundle, generateCompileCheckPlan } from "../../src/generator/runtime/compile-check.js";
 import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "../../src/generator/runtime/smoke.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -44,4 +44,16 @@ test("runtime smoke and compile plans keep required check contracts stable", () 
     compilePlan.checks.map((check) => check.id),
     ["server_typecheck", "web_typecheck", "web_build"]
   );
+  assert.deepEqual(
+    compilePlan.checks.map((check) => check.install),
+    [
+      "npm install --no-audit --no-fund",
+      "npm install --no-audit --no-fund",
+      "npm install --no-audit --no-fund"
+    ]
+  );
+
+  const compileBundle = generateCompileCheckBundle(graph, options);
+  assert.match(compileBundle["scripts/check.sh"], /Installing dependencies \(services\/app_api\)/);
+  assert.match(compileBundle["scripts/check.sh"], /Running npm run check \(services\/app_api\)/);
 });

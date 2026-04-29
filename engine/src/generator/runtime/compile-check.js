@@ -15,20 +15,20 @@ function buildCompileCheckPlan(graph, options = {}) {
   const apiChecks = topology.apiComponents.map((component, index) => ({
     id: index === 0 ? "server_typecheck" : `server_typecheck_${component.id}`,
     cwd: topology.serviceDir(component),
-    install: "npm install",
+    install: "npm install --no-audit --no-fund",
     command: "npm run check"
   }));
   const webChecks = topology.webComponents.flatMap((component, index) => [
     {
       id: index === 0 ? "web_typecheck" : `web_typecheck_${component.id}`,
       cwd: topology.webDir(component),
-      install: "npm install",
+      install: "npm install --no-audit --no-fund",
       command: "npm run check"
     },
     {
       id: index === 0 ? "web_build" : `web_build_${component.id}`,
       cwd: topology.webDir(component),
-      install: "npm install",
+      install: "npm install --no-audit --no-fund",
       command: "npm run build"
     }
   ]);
@@ -110,7 +110,10 @@ function renderCompileCheckScript(plan) {
       ? check.id.includes("build") ? "Building generated web" : "Checking generated web"
       : "Checking generated server";
     lines.push(`echo "${label} (${check.cwd})..."`);
-    lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.install} && ${check.command})`);
+    lines.push(`echo "Installing dependencies (${check.cwd})..."`);
+    lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.install})`);
+    lines.push(`echo "Running ${check.command} (${check.cwd})..."`);
+    lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.command})`);
     lines.push("");
   }
   lines.push('echo "Compile checks passed."');
