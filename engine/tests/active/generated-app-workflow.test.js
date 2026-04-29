@@ -146,6 +146,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
   assert.equal(pkg.scripts["template:check"], undefined);
+  assert.equal(pkg.scripts["template:update:status"], "topogram template update --status");
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
   assert.equal(pkg.scripts["template:update:check"], "topogram template update --check");
   assert.equal(pkg.scripts["template:update:apply"], "topogram template update --apply");
@@ -446,6 +447,53 @@ test("topogram template update check reports clean and pending updates without w
   assert.equal(pendingPayload.writes, false);
   assert.equal(pendingPayload.diagnostics.some((diagnostic) => diagnostic.code === "template_update_available"), true);
   assert.doesNotMatch(fs.readFileSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"), "utf8"), /candidate check edit/);
+});
+
+test("topogram template update status reports action needed and writes review report", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-status-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const reportPath = path.join(root, "reports", "template-update-report.json");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+  fs.appendFileSync(
+    path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# local status edit\n",
+    "utf8"
+  );
+  fs.appendFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# candidate status edit\n",
+    "utf8"
+  );
+
+  const status = runCli([
+    "template",
+    "update",
+    "--status",
+    "--template",
+    nextTemplateRoot,
+    "--json",
+    "--out",
+    reportPath
+  ], { cwd: projectRoot });
+  assert.notEqual(status.status, 0, status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.mode, "status");
+  assert.equal(payload.writes, false);
+  assert.equal(payload.conflicts.some((conflict) => conflict.path === "topogram/entities/entity-greeting.tg"), true);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_update_conflict"), true);
+  assert.equal(payload.reportPath, reportPath);
+  const report = readJson(reportPath);
+  assert.equal(report.mode, "status");
+  assert.equal(report.reportPath, undefined);
+  assert.equal(report.conflicts.some((conflict) => conflict.path === "topogram/entities/entity-greeting.tg"), true);
+
+  const humanStatus = runCli(["template", "update", "--status", "--template", nextTemplateRoot], { cwd: projectRoot });
+  assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
+  assert.match(humanStatus.stdout, /Template update status: action needed/);
+  assert.match(humanStatus.stdout, /Refused due to 1 conflict\(s\)/);
 });
 
 test("topogram template update reports incompatible template ids", () => {
@@ -759,7 +807,7 @@ test("topogram template update requires explicit plan mode", () => {
 
   const update = runCli(["template", "update"], { cwd: projectRoot });
   assert.notEqual(update.status, 0, update.stdout);
-  assert.match(update.stderr, /requires `--plan`, `--check`, or `--apply`/);
+  assert.match(update.stderr, /requires `--status`, `--plan`, `--check`, or `--apply`/);
 });
 
 test("topogram new supports packed npm template packs", () => {

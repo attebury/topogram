@@ -90,12 +90,15 @@ regenerate it with `topogram trust template` after reviewing copied
 summary, then `topogram trust status` and `topogram trust diff` to inspect
 changed files before refreshing trust.
 
-Use `topogram template update --plan [--template <spec>]` to compare the current
+Use `topogram template update --status [--template <spec>]` to inspect current
+template adoption state with baseline and conflict analysis. Use
+`topogram template update --plan [--template <spec>]` to compare the current
 project with a candidate template without writing files. Use
 `topogram template update --check [--template <spec>]` as the no-write CI guard;
 it exits nonzero when the project is not aligned with the recorded or supplied
-template. After review, `topogram template update --apply [--template <spec>]`
-writes added/changed template-owned files, records a new
+template. Any update mode can write a machine-readable review report with
+`--out <path>`. After review, `topogram template update --apply [--template
+<spec>]` writes added/changed template-owned files, records a new
 `.topogram-template-files.json` baseline, skips deletes, and refuses local
 conflicts. Existing projects can run `topogram trust template` after review to
 record the first template-owned file baseline. JSON output includes structured

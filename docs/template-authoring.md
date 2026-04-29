@@ -122,11 +122,13 @@ latest-version checks are not performed by default.
 Review template changes first:
 
 ```bash
+topogram template update --status
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template ./local-template
 topogram template update --plan --template @scope/topogram-template-name@0.2.0
 topogram template update --plan --json
+topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
 ```
 
@@ -140,10 +142,21 @@ template. It reports added, changed, and current-only files with hashes and text
 diffs where practical. Plan mode never writes files and never executes template
 implementation code.
 
+Status mode uses the same comparison as plan mode and adds apply-readiness
+analysis: missing baselines, local conflicts, and current-only files that need
+manual delete review. It is intended for humans or agents deciding what to do
+next before applying a template update.
+
 Check mode is the no-write guard for CI and consumer repos. It exits zero when
 the current project is aligned with the recorded or supplied template, and exits
 nonzero when a template update is available or the candidate is invalid. Use it
 when a workflow should fail until a human reviews and applies the update.
+
+Any update mode can write a review artifact with `--out <path>`. The file uses
+the same JSON shape as `--json`: current and candidate template metadata,
+summary counts, file hashes and diffs, conflicts, skipped files, and structured
+diagnostics. This is the preferred handoff packet for agents reviewing template
+drift.
 
 Apply mode writes only reviewed added/changed template-owned files. It records a
 fresh `.topogram-template-files.json` baseline after a successful apply, skips

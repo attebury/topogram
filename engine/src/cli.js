@@ -14,6 +14,7 @@ import {
   applyTemplateUpdate,
   buildTemplateUpdateCheck,
   buildTemplateUpdatePlan,
+  buildTemplateUpdateStatus,
   createNewProject,
   writeTemplateFilesManifest
 } from "./new-project.js";
@@ -100,7 +101,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
-  console.log("   or: topogram template update [path] --plan|--check|--apply [--template <spec>] [--json]");
+  console.log("   or: topogram template update [path] --status|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -114,6 +115,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust diff");
   console.log("  topogram template status");
   console.log("  topogram template check web-api-db");
+  console.log("  topogram template update --status");
   console.log("  topogram template update --plan");
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
@@ -527,8 +529,11 @@ function printTemplateStatus(payload) {
 function printTemplateUpdatePlan(plan) {
   const isApply = plan.mode === "apply";
   const isCheck = plan.mode === "check";
+  const isStatus = plan.mode === "status";
   if (isApply) {
     console.log(plan.ok ? "Template update apply: complete" : "Template update apply: refused");
+  } else if (isStatus) {
+    console.log(plan.ok ? "Template update status: aligned" : "Template update status: action needed");
   } else if (isCheck) {
     console.log(plan.ok ? "Template update check: aligned" : "Template update check: out of date");
   } else {
@@ -537,18 +542,24 @@ function printTemplateUpdatePlan(plan) {
   console.log(`Current: ${plan.current?.id || "unknown"}@${plan.current?.version || "unknown"}`);
   console.log(`Candidate: ${plan.candidate?.id || "unknown"}@${plan.candidate?.version || "unknown"}`);
   console.log(`Writes: ${plan.writes ? "applied" : "none"}`);
+  if (plan.reportPath) {
+    console.log(`Report: ${plan.reportPath}`);
+  }
   console.log(`Added: ${plan.summary.added}`);
   console.log(`Changed: ${plan.summary.changed}`);
   console.log(`Current-only: ${plan.summary.currentOnly}`);
   console.log(`Unchanged: ${plan.summary.unchanged}`);
-  if (isApply) {
+  if (isApply || isStatus) {
     const appliedCount = (plan.applied || []).length;
     const skippedCount = (plan.skipped || []).length;
     const conflictCount = (plan.conflicts || []).length;
-    if (appliedCount === 0 && skippedCount === 0 && conflictCount === 0 && plan.files.length === 0) {
+    if (isApply && appliedCount === 0 && skippedCount === 0 && conflictCount === 0 && plan.files.length === 0) {
       console.log("No changes to apply.");
     }
-    if (appliedCount > 0) {
+    if (isStatus && plan.files.length === 0 && conflictCount === 0 && skippedCount === 0 && (plan.diagnostics || []).length === 0) {
+      console.log("No template update action needed.");
+    }
+    if (isApply && appliedCount > 0) {
       console.log(`Applied ${appliedCount} file(s).`);
     }
     if (skippedCount > 0) {
@@ -605,10 +616,10 @@ function printTemplateUpdatePlan(plan) {
   if (plan.files.length === 0) {
     console.log("No template-owned file changes found.");
   }
-  if (!isApply && !isCheck) {
+  if (!isApply && !isCheck && !isStatus) {
     console.log("");
     console.log("This command did not write files. Review the plan before applying template updates.");
-  } else if (isCheck) {
+  } else if (isCheck || isStatus) {
     console.log("");
     console.log("This command did not write files.");
   }
@@ -1256,12 +1267,13 @@ try {
     const applyUpdate = args.includes("--apply");
     const checkUpdate = args.includes("--check");
     const planUpdate = args.includes("--plan");
-    const updateModeCount = [applyUpdate, checkUpdate, planUpdate].filter(Boolean).length;
+    const statusUpdate = args.includes("--status");
+    const updateModeCount = [applyUpdate, checkUpdate, planUpdate, statusUpdate].filter(Boolean).length;
     if (updateModeCount > 1) {
-      throw new Error("Choose one of `topogram template update --plan`, `topogram template update --check`, or `topogram template update --apply`.");
+      throw new Error("Choose one of `topogram template update --status`, `topogram template update --plan`, `topogram template update --check`, or `topogram template update --apply`.");
     }
     if (updateModeCount === 0) {
-      throw new Error("Template update requires `--plan`, `--check`, or `--apply`.");
+      throw new Error("Template update requires `--status`, `--plan`, `--check`, or `--apply`.");
     }
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
@@ -1269,7 +1281,7 @@ try {
     }
     let update;
     try {
-      update = (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : buildTemplateUpdatePlan)({
+      update = (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : statusUpdate ? buildTemplateUpdateStatus : buildTemplateUpdatePlan)({
         projectRoot: projectConfigInfo.configDir,
         projectConfig: projectConfigInfo.config,
         templateName: templateIndex >= 0 ? templateName : null,
@@ -1279,7 +1291,7 @@ try {
       const message = messageFromError(error);
       update = {
         ok: false,
-        mode: applyUpdate ? "apply" : checkUpdate ? "check" : "plan",
+        mode: applyUpdate ? "apply" : checkUpdate ? "check" : statusUpdate ? "status" : "plan",
         writes: false,
         current: {
           id: typeof projectConfigInfo.config.template?.id === "string" ? projectConfigInfo.config.template.id : null,
@@ -1301,6 +1313,12 @@ try {
         skipped: [],
         conflicts: []
       };
+    }
+    if (outPath) {
+      const reportPath = path.resolve(outPath);
+      fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+      fs.writeFileSync(reportPath, `${stableStringify(update)}\n`, "utf8");
+      update.reportPath = reportPath;
     }
     if (emitJson) {
       console.log(stableStringify(update));

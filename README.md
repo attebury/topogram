@@ -40,26 +40,31 @@ by template update apply. Use `topogram template status` for the lifecycle summa
 `topogram trust status` and `topogram trust diff` to inspect changed files
 before refreshing trust.
 
-Plan or apply a template update:
+Inspect, plan, or apply a template update:
 
 ```bash
+topogram template update --status
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template @attebury/topogram-template-todo@0.1.2
 topogram template update --plan --json
+topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
 ```
 
 The update plan compares template-owned files in the current project with the
-candidate template and reports added, changed, and current-only files.
+candidate template and reports added, changed, and current-only files. `--status`
+adds baseline/conflict analysis for the current adoption state without writing.
 `--check` is the no-write CI guard: it exits nonzero when the project is not
-aligned with the recorded or supplied template. `--apply` writes only reviewed
-added/changed template-owned files, records a new `.topogram-template-files.json`
-baseline, skips deletes, and refuses to overwrite files that changed since the
-last trusted template-owned baseline. Human output summarizes no-op, applied,
-skipped, and conflict counts; JSON output includes structured diagnostics with
-codes, paths, suggested fixes, and workflow steps. If the baseline is missing,
-review the current template-owned files and run `topogram trust template`.
+aligned with the recorded or supplied template. `--out` writes the same
+machine-readable review report emitted by JSON mode. `--apply` writes only
+reviewed added/changed template-owned files, records a new
+`.topogram-template-files.json` baseline, skips deletes, and refuses to
+overwrite files that changed since the last trusted template-owned baseline.
+Human output summarizes no-op, applied, skipped, and conflict counts; JSON output
+includes structured diagnostics with codes, paths, suggested fixes, and workflow
+steps. If the baseline is missing, review the current template-owned files and
+run `topogram trust template`.
 
 Validate a reusable template pack:
 
