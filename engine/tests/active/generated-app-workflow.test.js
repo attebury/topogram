@@ -147,6 +147,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.scripts["template:status"], "topogram template status");
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
+  assert.equal(pkg.scripts["template:update:apply"], "topogram template update --apply");
   assert.equal(pkg.scripts["trust:status"], "topogram trust status");
   assert.equal(pkg.scripts["trust:diff"], "topogram trust diff");
 
@@ -156,6 +157,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
@@ -175,6 +177,11 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(trustRecord.content.algorithm, "sha256");
   assert.match(trustRecord.content.digest, /^[a-f0-9]{64}$/);
   assert.ok(trustRecord.content.files.some((file) => file.path === "index.js"));
+  const fileManifest = JSON.parse(fs.readFileSync(path.join(projectRoot, ".topogram-template-files.json"), "utf8"));
+  assert.equal(fileManifest.template.id, "topogram/web-api-db");
+  assert.equal(fileManifest.template.version, projectConfig.template.version);
+  assert.ok(fileManifest.files.some((file) => file.path === "topogram.project.json"));
+  assert.ok(fileManifest.files.some((file) => file.path === "topogram/entities/entity-greeting.tg"));
 
   const templateStatus = runCli(["template", "status", "--json"], { cwd: projectRoot });
   assert.equal(templateStatus.status, 0, templateStatus.stderr || templateStatus.stdout);
@@ -366,7 +373,15 @@ test("topogram template update emits a non-writing update plan", () => {
   );
   fs.writeFileSync(
     path.join(nextTemplateRoot, "topogram", "entities", "entity-note.tg"),
-    "entity Note\n",
+    `entity entity_note {
+  name "Note"
+  description "A note added by a template update"
+  fields {
+    id uuid required
+  }
+  status active
+}
+`,
     "utf8"
   );
 
@@ -392,6 +407,97 @@ test("topogram template update emits a non-writing update plan", () => {
   assert.match(humanPlan.stdout, /Template update plan: ready for review/);
   assert.match(humanPlan.stdout, /Writes: none/);
   assert.match(humanPlan.stdout, /ADDED: topogram\/entities\/entity-note\.tg/);
+});
+
+test("topogram template update applies reviewed template-owned changes", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-apply-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+  const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.version = "0.3.0";
+  writeJson(manifestPath, manifest);
+  fs.appendFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# applied template edit\n",
+    "utf8"
+  );
+  fs.writeFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-note.tg"),
+    `entity entity_note {
+  name "Note"
+  description "A note added by a template update"
+  fields {
+    id uuid required
+  }
+  status active
+}
+`,
+    "utf8"
+  );
+
+  const apply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.equal(apply.status, 0, apply.stderr || apply.stdout);
+  const payload = JSON.parse(apply.stdout);
+  assert.equal(payload.mode, "apply");
+  assert.equal(payload.writes, true);
+  assert.equal(payload.candidate.version, "0.3.0");
+  assert.ok(payload.applied.some((file) => file.path === "topogram/entities/entity-greeting.tg"));
+  assert.ok(payload.applied.some((file) => file.path === "topogram/entities/entity-note.tg"));
+  assert.match(fs.readFileSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"), "utf8"), /# applied template edit/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-note.tg")), true);
+  const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
+  assert.equal(projectConfig.template.version, "0.3.0");
+  const fileManifest = readJson(path.join(projectRoot, ".topogram-template-files.json"));
+  assert.equal(fileManifest.template.version, "0.3.0");
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const trustStatus = runCli(["trust", "status", "--json"], { cwd: projectRoot });
+  assert.equal(trustStatus.status, 0, trustStatus.stderr || trustStatus.stdout);
+  assert.equal(JSON.parse(trustStatus.stdout).ok, true);
+
+  const humanApply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot], { cwd: projectRoot });
+  assert.equal(humanApply.status, 0, humanApply.stderr || humanApply.stdout);
+  assert.match(humanApply.stdout, /Template update apply: complete/);
+  assert.match(humanApply.stdout, /Writes: none/);
+});
+
+test("topogram template update apply refuses local template-owned conflicts", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-conflict-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+  fs.appendFileSync(
+    path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# local edit\n",
+    "utf8"
+  );
+  fs.appendFileSync(
+    path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# candidate edit\n",
+    "utf8"
+  );
+
+  const apply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.notEqual(apply.status, 0, apply.stdout);
+  const payload = JSON.parse(apply.stdout);
+  assert.equal(payload.mode, "apply");
+  assert.equal(payload.writes, false);
+  assert.ok(payload.conflicts.some((conflict) => conflict.path === "topogram/entities/entity-greeting.tg"));
+  const currentText = fs.readFileSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"), "utf8");
+  assert.match(currentText, /# local edit/);
+  assert.doesNotMatch(currentText, /# candidate edit/);
+
+  const humanApply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot], { cwd: projectRoot });
+  assert.notEqual(humanApply.status, 0, humanApply.stdout);
+  assert.match(humanApply.stdout, /Template update apply: refused/);
+  assert.match(humanApply.stdout, /Conflict: topogram\/entities\/entity-greeting\.tg/);
 });
 
 test("topogram template check validates reusable template conformance", () => {
@@ -537,7 +643,7 @@ test("topogram template update requires explicit plan mode", () => {
 
   const update = runCli(["template", "update"], { cwd: projectRoot });
   assert.notEqual(update.status, 0, update.stdout);
-  assert.match(update.stderr, /plan-only/);
+  assert.match(update.stderr, /requires `--plan` or `--apply`/);
 });
 
 test("topogram new supports packed npm template packs", () => {

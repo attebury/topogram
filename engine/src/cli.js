@@ -10,7 +10,7 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
-import { buildTemplateUpdatePlan, createNewProject } from "./new-project.js";
+import { applyTemplateUpdate, buildTemplateUpdatePlan, createNewProject } from "./new-project.js";
 import {
   getTemplateTrustDiff,
   getTemplateTrustStatus,
@@ -94,7 +94,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
-  console.log("   or: topogram template update [path] --plan [--template <spec>] [--json]");
+  console.log("   or: topogram template update [path] --plan|--apply [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -109,6 +109,7 @@ function printUsage(options = {}) {
   console.log("  topogram template status");
   console.log("  topogram template check web-api-db");
   console.log("  topogram template update --plan");
+  console.log("  topogram template update --apply");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
@@ -513,16 +514,32 @@ function printTemplateStatus(payload) {
 }
 
 /**
- * @param {ReturnType<typeof buildTemplateUpdatePlan>} plan
+ * @param {any} plan
  * @returns {void}
  */
 function printTemplateUpdatePlan(plan) {
-  console.log(plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible");
+  const isApply = plan.mode === "apply";
+  console.log(
+    isApply
+      ? (plan.ok ? "Template update apply: complete" : "Template update apply: refused")
+      : (plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible")
+  );
   console.log(`Current: ${plan.current.id || "unknown"}@${plan.current.version || "unknown"}`);
   console.log(`Candidate: ${plan.candidate.id}@${plan.candidate.version}`);
-  console.log("Writes: none");
+  console.log(`Writes: ${plan.writes ? "applied" : "none"}`);
   for (const issue of plan.issues) {
     console.log(`Issue: ${issue}`);
+  }
+  for (const conflict of plan.conflicts || []) {
+    console.log(`Conflict: ${conflict.path}`);
+    console.log(`  reason: ${conflict.reason}`);
+  }
+  for (const applied of plan.applied || []) {
+    console.log(`Applied: ${applied.path}`);
+  }
+  for (const skipped of plan.skipped || []) {
+    console.log(`Skipped: ${skipped.path}`);
+    console.log(`  reason: ${skipped.reason}`);
   }
   console.log(`Added: ${plan.summary.added}`);
   console.log(`Changed: ${plan.summary.changed}`);
@@ -551,8 +568,10 @@ function printTemplateUpdatePlan(plan) {
   if (plan.files.length === 0) {
     console.log("No template-owned file changes found.");
   }
-  console.log("");
-  console.log("This command did not write files. Review the plan before applying template updates manually.");
+  if (!isApply) {
+    console.log("");
+    console.log("This command did not write files. Review the plan before applying template updates.");
+  }
 }
 
 /**
@@ -1194,25 +1213,30 @@ try {
   }
 
   if (shouldTemplateUpdate) {
-    if (!args.includes("--plan")) {
-      throw new Error("Template update is plan-only for now. Run `topogram template update --plan`.");
+    const applyUpdate = args.includes("--apply");
+    const planUpdate = args.includes("--plan");
+    if (applyUpdate && planUpdate) {
+      throw new Error("Choose either `topogram template update --plan` or `topogram template update --apply`, not both.");
+    }
+    if (!applyUpdate && !planUpdate) {
+      throw new Error("Template update requires `--plan` or `--apply`.");
     }
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
-      throw new Error("Cannot plan template update without topogram.project.json.");
+      throw new Error("Cannot update template without topogram.project.json.");
     }
-    const plan = buildTemplateUpdatePlan({
+    const update = (applyUpdate ? applyTemplateUpdate : buildTemplateUpdatePlan)({
       projectRoot: projectConfigInfo.configDir,
       projectConfig: projectConfigInfo.config,
       templateName: templateIndex >= 0 ? templateName : null,
       templatesRoot: TEMPLATES_ROOT
     });
     if (emitJson) {
-      console.log(stableStringify(plan));
+      console.log(stableStringify(update));
     } else {
-      printTemplateUpdatePlan(plan);
+      printTemplateUpdatePlan(update);
     }
-    process.exit(plan.ok ? 0 : 1);
+    process.exit(update.ok ? 0 : 1);
   }
 
   if (shouldTrustTemplate) {

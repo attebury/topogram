@@ -11,6 +11,7 @@ import { writeTemplateTrustRecord } from "./template-trust.js";
 const CLI_PACKAGE_NAME = "@attebury/topogram";
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
 const TEMPLATE_MANIFEST = "topogram-template.json";
+const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const MAX_TEXT_DIFF_BYTES = 256 * 1024;
 
 /**
@@ -27,6 +28,13 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {Record<string, any>} projectConfig
  * @property {string|null} [templateName]
  * @property {string} templatesRoot
+ */
+
+/**
+ * @typedef {Object} TemplateOwnedFileRecord
+ * @property {string} path
+ * @property {string} sha256
+ * @property {number} size
  */
 
 /**
@@ -646,6 +654,21 @@ function fileSnapshot(absolutePath, content = null) {
 }
 
 /**
+ * @param {{ absolutePath: string|null, content: string|null }} file
+ * @returns {{ sha256: string, size: number }}
+ */
+function fileHash(file) {
+  const snapshot = fileSnapshot(file.absolutePath, file.content);
+  if (!snapshot) {
+    throw new Error("Cannot hash missing template-owned file.");
+  }
+  return {
+    sha256: snapshot.sha256,
+    size: snapshot.size
+  };
+}
+
+/**
  * @param {ResolvedTemplate} template
  * @returns {Map<string, { path: string, content: string|null, absolutePath: string|null }>}
  */
@@ -713,6 +736,66 @@ function currentTemplateOwnedFiles(projectRoot, includeImplementation, projectCo
 }
 
 /**
+ * @param {Record<string, any>} projectConfig
+ * @returns {boolean}
+ */
+function includesTemplateImplementation(projectConfig) {
+  const template = projectConfig.template || {};
+  return Boolean(
+    projectConfig.implementation ||
+    template.includesExecutableImplementation
+  );
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {Record<string, any>} projectConfig
+ * @returns {Map<string, TemplateOwnedFileRecord>}
+ */
+function currentTemplateOwnedFileHashes(projectRoot, projectConfig) {
+  const files = currentTemplateOwnedFiles(projectRoot, includesTemplateImplementation(projectConfig), projectConfig);
+  return new Map([...files.entries()].map(([relativePath, file]) => {
+    const hash = fileHash(file);
+    return [relativePath, { path: relativePath, ...hash }];
+  }));
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {{ version: string, template: Record<string, any>, files: TemplateOwnedFileRecord[] }|null}
+ */
+function readTemplateFilesManifest(projectRoot) {
+  const manifestPath = path.join(projectRoot, TEMPLATE_FILES_MANIFEST);
+  if (!fs.existsSync(manifestPath)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {Record<string, any>} projectConfig
+ * @returns {{ version: string, template: Record<string, any>, files: TemplateOwnedFileRecord[] }}
+ */
+export function writeTemplateFilesManifest(projectRoot, projectConfig) {
+  const fileRecords = [...currentTemplateOwnedFileHashes(projectRoot, projectConfig).values()]
+    .sort((left, right) => left.path.localeCompare(right.path));
+  const manifest = {
+    version: "0.1",
+    template: {
+      id: projectConfig.template?.id || null,
+      version: projectConfig.template?.version || null,
+      source: projectConfig.template?.source || null,
+      sourceSpec: projectConfig.template?.sourceSpec || null,
+      requested: projectConfig.template?.requested || null
+    },
+    files: fileRecords
+  };
+  fs.writeFileSync(path.join(projectRoot, TEMPLATE_FILES_MANIFEST), `${stableJsonStringify(manifest)}\n`, "utf8");
+  return manifest;
+}
+
+/**
  * @param {TemplateUpdatePlanOptions} options
  * @returns {{ ok: boolean, mode: "plan", writes: false, current: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }, candidate: { id: string, version: string, source: string, sourceSpec: string, requested: string }, compatible: boolean, issues: string[], summary: { added: number, changed: number, currentOnly: number, unchanged: number }, files: Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
  */
@@ -737,7 +820,7 @@ export function buildTemplateUpdatePlan({
   const candidateFiles = candidateTemplateFiles(candidateTemplate);
   const currentFiles = currentTemplateOwnedFiles(
     projectRoot,
-    Boolean(projectConfig.implementation || currentTemplate.includesExecutableImplementation || candidateMetadata.includesExecutableImplementation),
+    Boolean(includesTemplateImplementation(projectConfig) || candidateMetadata.includesExecutableImplementation),
     projectConfig
   );
   const allPaths = new Set([...candidateFiles.keys(), ...currentFiles.keys()]);
@@ -811,6 +894,142 @@ export function buildTemplateUpdatePlan({
 }
 
 /**
+ * @param {{ absolutePath: string|null, content: string|null }} candidateFile
+ * @param {string} destinationPath
+ * @returns {void}
+ */
+function writeCandidateFile(candidateFile, destinationPath) {
+  fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+  if (candidateFile.content !== null) {
+    fs.writeFileSync(destinationPath, candidateFile.content, "utf8");
+    return;
+  }
+  if (!candidateFile.absolutePath) {
+    throw new Error(`Cannot apply template file without content or source path: ${destinationPath}`);
+  }
+  fs.cpSync(candidateFile.absolutePath, destinationPath);
+}
+
+/**
+ * @param {TemplateOwnedFileRecord|null} baseline
+ * @param {{ sha256: string, size: number }|null} currentHash
+ * @returns {boolean}
+ */
+function fileMatchesBaseline(baseline, currentHash) {
+  if (!baseline && !currentHash) {
+    return true;
+  }
+  if (!baseline || !currentHash) {
+    return false;
+  }
+  return baseline.sha256 === currentHash.sha256 && baseline.size === currentHash.size;
+}
+
+/**
+ * @param {TemplateUpdatePlanOptions} options
+ * @returns {{ ok: boolean, mode: "apply", writes: boolean, current: ReturnType<typeof buildTemplateUpdatePlan>["current"], candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"], compatible: boolean, issues: string[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], applied: Array<{ path: string, kind: "added"|"changed" }>, skipped: Array<{ path: string, kind: "current-only", reason: string }>, conflicts: Array<{ path: string, reason: string }>, files: ReturnType<typeof buildTemplateUpdatePlan>["files"] }}
+ */
+export function applyTemplateUpdate(options) {
+  const plan = buildTemplateUpdatePlan(options);
+  /** @type {Array<{ path: string, kind: "added"|"changed" }>} */
+  const applied = [];
+  /** @type {Array<{ path: string, kind: "current-only", reason: string }>} */
+  const skipped = [];
+  /** @type {Array<{ path: string, reason: string }>} */
+  const conflicts = [];
+  const issues = [...plan.issues];
+  if (!plan.ok) {
+    return {
+      ...plan,
+      ok: false,
+      mode: "apply",
+      writes: false,
+      applied,
+      skipped,
+      conflicts,
+      issues
+    };
+  }
+
+  const baselineManifest = readTemplateFilesManifest(options.projectRoot);
+  if (!baselineManifest) {
+    issues.push(`Cannot apply template update because ${TEMPLATE_FILES_MANIFEST} is missing. Create a fresh starter or wait for an explicit trust/adopt command before applying template updates.`);
+  }
+  const baselineByPath = new Map((baselineManifest?.files || []).map((file) => [file.path, file]));
+  const currentHashes = currentTemplateOwnedFileHashes(options.projectRoot, options.projectConfig);
+  for (const file of plan.files) {
+    if (file.kind === "current-only") {
+      skipped.push({
+        path: file.path,
+        kind: "current-only",
+        reason: "Deletes are not applied by template update --apply in this milestone."
+      });
+      continue;
+    }
+    if (file.kind !== "added" && file.kind !== "changed") {
+      continue;
+    }
+    const baseline = baselineByPath.get(file.path) || null;
+    const currentHash = currentHashes.get(file.path) || null;
+    if (!fileMatchesBaseline(baseline, currentHash)) {
+      conflicts.push({
+        path: file.path,
+        reason: baseline
+          ? "Current file differs from the last trusted template-owned baseline."
+          : "Current file is not part of the trusted template-owned baseline."
+      });
+    }
+  }
+  if (conflicts.length > 0) {
+    issues.push("Template update has conflicts. Review local edits before applying.");
+  }
+  if (issues.length > 0) {
+    return {
+      ...plan,
+      ok: false,
+      mode: "apply",
+      writes: false,
+      applied,
+      skipped,
+      conflicts,
+      issues
+    };
+  }
+
+  const currentTemplate = options.projectConfig.template || {};
+  const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
+  const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
+  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  for (const file of plan.files) {
+    if (file.kind !== "added" && file.kind !== "changed") {
+      continue;
+    }
+    const candidateFile = candidateFiles.get(file.path);
+    if (!candidateFile) {
+      throw new Error(`Cannot apply missing candidate template file: ${file.path}`);
+    }
+    writeCandidateFile(candidateFile, path.join(options.projectRoot, file.path));
+    applied.push({ path: file.path, kind: file.kind });
+  }
+
+  const nextProjectConfig = JSON.parse(fs.readFileSync(path.join(options.projectRoot, "topogram.project.json"), "utf8"));
+  writeTemplateFilesManifest(options.projectRoot, nextProjectConfig);
+  if (nextProjectConfig.implementation) {
+    writeTemplateTrustRecord(options.projectRoot, nextProjectConfig);
+  }
+  return {
+    ...plan,
+    ok: true,
+    mode: "apply",
+    writes: applied.length > 0,
+    issues,
+    applied,
+    skipped,
+    conflicts
+  };
+}
+
+/**
  * @param {string} projectRoot
  * @param {string} engineRoot
  * @returns {void}
@@ -828,6 +1047,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
       generate: "topogram generate",
       "template:status": "topogram template status",
       "template:update:plan": "topogram template update --plan",
+      "template:update:apply": "topogram template update --apply",
       "trust:status": "topogram trust status",
       "trust:diff": "topogram trust diff",
       verify: "npm run app:compile",
@@ -878,6 +1098,7 @@ Useful inspection:
    npm run check:json
    npm run template:status
    npm run template:update:plan
+   npm run template:update:apply
    npm run trust:status
    npm run trust:diff
 \`;
@@ -936,6 +1157,7 @@ export function createNewProject({
   writeProjectPackage(projectRoot, engineRoot);
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, template.manifest.id);
+  writeTemplateFilesManifest(projectRoot, projectConfig);
 
   const warnings = [];
   if (template.manifest.includesExecutableImplementation) {
