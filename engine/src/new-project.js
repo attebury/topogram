@@ -495,7 +495,7 @@ Generated app code is written to \`app/\`.
 
 /**
  * @param {CreateNewProjectOptions} options
- * @returns {{ projectRoot: string, templateName: string, topogramPath: string, appPath: string }}
+ * @returns {{ projectRoot: string, templateName: string, topogramPath: string, appPath: string, warnings: string[] }}
  */
 export function createNewProject({
   targetPath,
@@ -516,10 +516,19 @@ export function createNewProject({
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, template.manifest.id);
 
+  const warnings = [];
+  if (template.manifest.includesExecutableImplementation) {
+    warnings.push(
+      `Template '${template.manifest.id}' copied implementation/ code into this project. ` +
+        "topogram new did not execute it, but topogram generate may load it later."
+    );
+  }
+
   return {
     projectRoot,
     templateName: template.manifest.id,
     topogramPath: path.join(projectRoot, "topogram"),
-    appPath: path.join(projectRoot, "app")
+    appPath: path.join(projectRoot, "app"),
+    warnings
   };
 }

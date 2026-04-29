@@ -25,7 +25,7 @@ engine/templates/
 ```
 
 Templates are copied by `topogram new`. They are product starters, not regression fixtures.
-Shared template packs use the same layout with `topogram-template.json`, `topogram/`, `topogram.project.json`, and optional trusted `implementation/` code.
+The built-in template is a neutral Hello-resource starter. Shared template packs use the same layout with `topogram-template.json`, `topogram/`, `topogram.project.json`, and optional trusted `implementation/` code. See `docs/template-authoring.md`.
 
 ## Generated Workspace
 

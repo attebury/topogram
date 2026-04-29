@@ -130,7 +130,9 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
   assert.equal(pkg.devDependencies.topogram, undefined);
 
-  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.match(create.stderr, /copied implementation\/ code/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), false);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
@@ -163,6 +165,7 @@ test("topogram new supports local path template packs", () => {
   const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Template: topogram\/web-api-db/);
+  assert.match(create.stderr, /topogram generate may load it later/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
 
@@ -196,7 +199,8 @@ test("topogram new supports packed npm template packs", () => {
   });
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Template: topogram\/web-api-db/);
-  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.match(create.stderr, /copied implementation\/ code/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
 });
 
@@ -224,7 +228,7 @@ test("repo root new script creates a generated app starter project outside engin
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
-  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
 });
 
 test("repo root smoke test app script creates and generates disposable app", () => {

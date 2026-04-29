@@ -1,9 +1,5 @@
-# Web API DB Implementation
+# Starter Implementation
 
-This folder holds template implementation details used by the current generated app bundle.
-
-Examples include:
-
-- seed data
-- runtime metadata
-- backend and web reference implementation choices
+This folder holds the small implementation provider copied by the built-in
+neutral `web-api-db` starter. It intentionally avoids Todo-specific domain
+logic; richer product examples belong in external template packs.

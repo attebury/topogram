@@ -31,6 +31,9 @@ npm run generate
 npm run verify
 ```
 
+The built-in starter is a neutral Hello-resource app with one API, one SvelteKit
+web surface, and one Postgres database projection.
+
 To create a starter from a shared template pack:
 
 ```bash
@@ -70,6 +73,7 @@ Publishing is manual through the `Publish CLI Package` GitHub Actions workflow.
 
 The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
 The Todo starter source lives in the private `topogram-template-todo` repo and publishes as `@attebury/topogram-template-todo`.
+See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
 
 ## License
 

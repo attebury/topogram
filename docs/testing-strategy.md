@@ -27,6 +27,7 @@ npm run cli:check
 ```
 
 This packs `@attebury/topogram`, installs it into a disposable consumer project, creates a starter with the installed `topogram` binary, then checks and generates the starter.
+It also packs and consumes a local template tarball so template-package behavior stays covered without depending on the Todo demo.
 
 ## Generated Todo Demo Consumer
 

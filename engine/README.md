@@ -65,7 +65,7 @@ Run the engine gate:
 npm run check
 ```
 
-Create a starter project from the built-in template:
+Create a starter project from the built-in neutral Hello-resource template:
 
 ```bash
 npm run new -- ../my-topogram-app
@@ -78,6 +78,8 @@ topogram new ../todo-demo --template @attebury/topogram-template-todo
 ```
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
+
+Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
 
 Run the same gate directly:
 

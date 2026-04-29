@@ -1,51 +1,51 @@
-import { TODO_BACKEND_REFERENCE } from "./backend/reference.js";
-import { TODO_BACKEND_REPOSITORY_REFERENCE } from "./backend/repository-reference.js";
+import { HELLO_BACKEND_REFERENCE } from "./backend/reference.js";
+import { HELLO_BACKEND_REPOSITORY_REFERENCE } from "./backend/repository-reference.js";
 import {
-  renderTodoDrizzleRepositoryBody,
-  renderTodoPrismaRepositoryBody
+  renderHelloDrizzleRepositoryBody,
+  renderHelloPrismaRepositoryBody
 } from "./backend/repository-renderers.js";
-import { TODO_RUNTIME_REFERENCE } from "./runtime/reference.js";
-import { TODO_RUNTIME_CHECKS } from "./runtime/checks.js";
+import { HELLO_RUNTIME_REFERENCE } from "./runtime/reference.js";
+import { HELLO_RUNTIME_CHECKS } from "./runtime/checks.js";
 import {
-  renderTodoRuntimeCheckCases,
-  renderTodoRuntimeCheckCreatePayload,
-  renderTodoRuntimeCheckHelpers,
-  renderTodoRuntimeCheckState
+  renderHelloRuntimeCheckCases,
+  renderHelloRuntimeCheckCreatePayload,
+  renderHelloRuntimeCheckHelpers,
+  renderHelloRuntimeCheckState
 } from "./runtime/check-renderers.js";
-import { TODO_WEB_REFERENCE } from "./web/reference.js";
-import { TODO_WEB_SCREEN_REFERENCE } from "./web/screens-reference.js";
+import { HELLO_WEB_REFERENCE } from "./web/reference.js";
+import { HELLO_WEB_SCREEN_REFERENCE } from "./web/screens-reference.js";
 import {
-  renderTodoHomePage,
-  renderTodoTaskRoutes
+  renderHelloHomePage,
+  renderHelloRoutes
 } from "./web/renderers.js";
 
 export const WEB_API_DB_IMPLEMENTATION = {
   exampleId: "web-api-db-template",
   exampleRoot: "/topogram",
   backend: {
-    reference: TODO_BACKEND_REFERENCE,
-    repositoryReference: TODO_BACKEND_REPOSITORY_REFERENCE,
+    reference: HELLO_BACKEND_REFERENCE,
+    repositoryReference: HELLO_BACKEND_REPOSITORY_REFERENCE,
     repositoryRenderers: {
-      renderPrismaRepositoryBody: renderTodoPrismaRepositoryBody,
-      renderDrizzleRepositoryBody: renderTodoDrizzleRepositoryBody
+      renderPrismaRepositoryBody: renderHelloPrismaRepositoryBody,
+      renderDrizzleRepositoryBody: renderHelloDrizzleRepositoryBody
     }
   },
   runtime: {
-    reference: TODO_RUNTIME_REFERENCE,
-    checks: TODO_RUNTIME_CHECKS,
+    reference: HELLO_RUNTIME_REFERENCE,
+    checks: HELLO_RUNTIME_CHECKS,
     checkRenderers: {
-      renderRuntimeCheckState: renderTodoRuntimeCheckState,
-      renderRuntimeCheckCreatePayload: renderTodoRuntimeCheckCreatePayload,
-      renderRuntimeCheckHelpers: renderTodoRuntimeCheckHelpers,
-      renderRuntimeCheckCases: renderTodoRuntimeCheckCases
+      renderRuntimeCheckState: renderHelloRuntimeCheckState,
+      renderRuntimeCheckCreatePayload: renderHelloRuntimeCheckCreatePayload,
+      renderRuntimeCheckHelpers: renderHelloRuntimeCheckHelpers,
+      renderRuntimeCheckCases: renderHelloRuntimeCheckCases
     }
   },
   web: {
-    reference: TODO_WEB_REFERENCE,
-    screenReference: TODO_WEB_SCREEN_REFERENCE,
+    reference: HELLO_WEB_REFERENCE,
+    screenReference: HELLO_WEB_SCREEN_REFERENCE,
     renderers: {
-      renderHomePage: renderTodoHomePage,
-      renderRoutes: renderTodoTaskRoutes
+      renderHomePage: renderHelloHomePage,
+      renderRoutes: renderHelloRoutes
     }
   }
 };

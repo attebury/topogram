@@ -1,15 +1,15 @@
 verification ver_runtime_smoke {
-  name "Todo runtime smoke"
-  description "Covers the minimum web and API checks for the generated Todo stack."
+  name "Starter runtime smoke"
+  description "Covers the minimum web and API checks for the neutral starter."
 
-  validates [cap_create_task, cap_get_task, cap_list_tasks]
+  validates [cap_create_greeting, cap_get_greeting, cap_list_greetings]
   method smoke
 
   scenarios [
-    tasks_page_responds,
-    create_task_smoke,
-    get_created_task_smoke,
-    list_tasks_smoke
+    home_page_responds,
+    create_greeting_smoke,
+    get_created_greeting_smoke,
+    list_greetings_smoke
   ]
 
   status active

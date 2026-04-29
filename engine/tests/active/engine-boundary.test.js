@@ -5,7 +5,10 @@ import test from "node:test";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const testsRoot = path.join(repoRoot, "engine", "tests");
-const forbiddenDemoPath = ["demos", "generated"].join("/");
+const forbiddenDemoReferences = [
+  ["demos", "generated"].join("/"),
+  ["todo", "demo", "app"].join("-")
+];
 
 function visitFiles(root) {
   const files = [];
@@ -25,7 +28,7 @@ test("engine tests do not reference generated demo workspaces", () => {
   for (const file of visitFiles(testsRoot)) {
     const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
     const contents = fs.readFileSync(file, "utf8");
-    if (contents.includes(forbiddenDemoPath)) {
+    if (forbiddenDemoReferences.some((reference) => contents.includes(reference))) {
       offenders.push(relative);
     }
   }

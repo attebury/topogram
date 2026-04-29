@@ -603,6 +603,9 @@ try {
     });
     console.log(`Created Topogram project at ${result.projectRoot}.`);
     console.log(`Template: ${result.templateName}`);
+    for (const warning of result.warnings) {
+      console.warn(`Warning: ${warning}`);
+    }
     console.log("");
     console.log("Next steps:");
     const relativeProjectRoot = path.relative(process.cwd(), result.projectRoot);
