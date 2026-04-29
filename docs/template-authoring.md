@@ -49,6 +49,7 @@ For npm or GitHub Packages, keep the package payload narrow:
 Use the built-in neutral starter:
 
 ```bash
+topogram template list
 topogram new ./my-app
 ```
 
@@ -105,6 +106,7 @@ or if `implementation/` changed since it was trusted, `topogram check` and
 
 ```bash
 topogram template status
+topogram template status --latest
 topogram template status --json
 topogram trust status
 topogram trust status --json
@@ -116,6 +118,11 @@ topogram trust diff --json
 template provenance recorded in `topogram.project.json`, whether executable
 implementation code is trusted, whether local files drifted, and that registry
 latest-version checks are not performed by default.
+
+`topogram template status --latest` is the opt-in registry check for
+package-backed templates. It reports the recorded version, latest package
+version, and the candidate package spec to compare. It does not support local or
+built-in templates.
 
 ## Template Allow Policy
 
@@ -170,6 +177,7 @@ Review template changes first:
 ```bash
 topogram template update --status
 topogram template update --recommend
+topogram template update --recommend --latest
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template ./local-template
@@ -201,6 +209,9 @@ Recommend mode is the concise next-action view. It reports current and candidate
 versions, summarizes added/changed/current-only files, calls out conflicts, and
 prints the next command to run: apply the candidate, accept current for a
 conflict, delete a reviewed current-only file, or pin the reviewed version.
+For package-backed projects, add `--latest` to use the latest registry version
+as the candidate. This is explicit so CI and normal status checks do not make
+surprise network calls.
 
 Check mode is the no-write guard for CI and consumer repos. It exits zero when
 the current project is aligned with the recorded or supplied template, and exits

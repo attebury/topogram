@@ -23,6 +23,7 @@ This lets source checkouts and private-package consumers call:
 topogram create ../my-app
 topogram check
 topogram generate
+topogram template list
 topogram template status
 topogram template policy check
 topogram template policy pin @scope/template@0.2.0
@@ -102,6 +103,10 @@ topogram template policy check
 topogram template policy init
 topogram template policy pin @scope/template@0.2.0
 ```
+
+Use `topogram template status --latest` and `topogram template update --latest`
+only for package-backed templates when an explicit registry lookup is desired.
+Plain status and update commands do not query the registry.
 
 Use `topogram template update --status [--template <spec>]` to inspect current
 template adoption state with baseline and conflict analysis. Use

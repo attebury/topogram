@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import childProcess from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,7 @@ import {
   buildTemplateUpdatePlan,
   buildTemplateUpdateStatus,
   createNewProject,
+  listBuiltInTemplates,
   loadTemplatePolicy,
   resolveTemplate,
   templatePolicyDiagnosticsForTemplate,
@@ -105,12 +107,13 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
+  console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
   console.log("   or: topogram template policy pin [template-id@version] [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
-  console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
+  console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
@@ -123,13 +126,16 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
+  console.log("  topogram template list");
   console.log("  topogram template status");
+  console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
   console.log("  topogram template policy check");
   console.log("  topogram template policy pin @scope/template@0.2.0");
   console.log("  topogram template check web-api-db");
   console.log("  topogram template update --status");
   console.log("  topogram template update --recommend");
+  console.log("  topogram template update --recommend --latest");
   console.log("  topogram template update --plan");
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
@@ -444,10 +450,91 @@ function templateMetadataFromProjectConfig(projectConfig) {
 }
 
 /**
- * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
- * @returns {{ ok: boolean, template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, latest: { checked: false, reason: string }, recommendations: string[] }}
+ * @param {string} spec
+ * @returns {string}
  */
-function buildTemplateStatusPayload(projectConfigInfo) {
+function packageNameFromPackageSpec(spec) {
+  if (spec.startsWith("@")) {
+    const segments = spec.split("/");
+    if (segments.length < 2) {
+      throw new Error(`Invalid scoped package spec '${spec}'.`);
+    }
+    const scope = segments[0];
+    const nameAndVersion = segments.slice(1).join("/");
+    const versionIndex = nameAndVersion.indexOf("@");
+    return `${scope}/${versionIndex >= 0 ? nameAndVersion.slice(0, versionIndex) : nameAndVersion}`;
+  }
+  const versionIndex = spec.indexOf("@");
+  return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
+}
+
+/**
+ * @param {string} packageName
+ * @returns {string}
+ */
+function latestVersionForPackage(packageName) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const localNpmConfig = path.join(process.cwd(), ".npmrc");
+  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
+    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
+    : {};
+  const result = childProcess.spawnSync(npmBin, ["view", packageName, "version", "--json"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      ...npmConfigEnv,
+      PATH: process.env.PATH || ""
+    }
+  });
+  if (result.status !== 0) {
+    throw new Error(`Failed to inspect latest version for '${packageName}'.\n${result.stderr || result.stdout}`.trim());
+  }
+  const raw = (result.stdout || "").trim();
+  if (!raw) {
+    throw new Error(`npm view returned no version for '${packageName}'.`);
+  }
+  const parsed = JSON.parse(raw);
+  if (typeof parsed !== "string" || !parsed) {
+    throw new Error(`npm view returned an invalid version for '${packageName}'.`);
+  }
+  return parsed;
+}
+
+/**
+ * @param {ReturnType<typeof templateMetadataFromProjectConfig>} template
+ * @returns {{ checked: boolean, supported: boolean, packageName: string|null, version: string|null, isCurrent: boolean|null, candidateSpec: string|null, reason: string|null }}
+ */
+function latestTemplateInfo(template) {
+  if (template.source !== "package") {
+    return {
+      checked: true,
+      supported: false,
+      packageName: null,
+      version: null,
+      isCurrent: null,
+      candidateSpec: null,
+      reason: "Latest-version lookup is only supported for package-backed templates."
+    };
+  }
+  const packageName = packageNameFromPackageSpec(template.sourceSpec || template.requested || template.id || "");
+  const version = latestVersionForPackage(packageName);
+  return {
+    checked: true,
+    supported: true,
+    packageName,
+    version,
+    isCurrent: template.version === version,
+    candidateSpec: `${packageName}@${version}`,
+    reason: null
+  };
+}
+
+/**
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
+ * @param {{ latest?: boolean }} [options]
+ * @returns {{ ok: boolean, template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, latest: { checked: boolean, supported?: boolean, packageName?: string|null, version?: string|null, isCurrent?: boolean|null, candidateSpec?: string|null, reason: string|null }, recommendations: string[] }}
+ */
+function buildTemplateStatusPayload(projectConfigInfo, options = {}) {
   const template = templateMetadataFromProjectConfig(projectConfigInfo.config);
   const recommendations = [];
   /** @type {ReturnType<typeof getTemplateTrustStatus>|null} */
@@ -465,14 +552,20 @@ function buildTemplateStatusPayload(projectConfigInfo) {
   if (!template.id) {
     recommendations.push("No template metadata found in topogram.project.json.");
   }
+  const latest = options.latest
+    ? latestTemplateInfo(template)
+    : {
+        checked: false,
+        reason: "Registry lookups are not performed by default."
+      };
+  if (latest.checked && latest.supported && latest.candidateSpec && latest.isCurrent === false) {
+    recommendations.push(`Run \`topogram template update --recommend --template ${latest.candidateSpec}\` to review the latest template.`);
+  }
   return {
     ok: trust ? trust.ok : true,
     template,
     trust,
-    latest: {
-      checked: false,
-      reason: "Registry lookups are not performed by default."
-    },
+    latest,
     recommendations
   };
 }
@@ -504,7 +597,20 @@ function printTemplateStatus(payload) {
   if (payload.template.sourceRoot) {
     console.log(`Source root: ${payload.template.sourceRoot}`);
   }
-  console.log("Latest version: not checked");
+  if (!payload.latest.checked) {
+    console.log("Latest version: not checked");
+  } else if (!payload.latest.supported) {
+    console.log(`Latest version: not checked (${payload.latest.reason})`);
+  } else {
+    console.log(`Latest version: ${payload.latest.version}`);
+    if (payload.latest.packageName) {
+      console.log(`Latest package: ${payload.latest.packageName}`);
+    }
+    if (payload.latest.candidateSpec) {
+      console.log(`Latest candidate: ${payload.latest.candidateSpec}`);
+    }
+    console.log(`Latest status: ${payload.latest.isCurrent ? "current" : "update available"}`);
+  }
   if (payload.trust) {
     if (payload.trust.trustRecord?.trustedAt) {
       console.log(`Trusted at: ${payload.trust.trustRecord.trustedAt}`);
@@ -533,6 +639,30 @@ function printTemplateStatus(payload) {
   }
   for (const recommendation of payload.recommendations) {
     console.log(recommendation);
+  }
+}
+
+/**
+ * @returns {{ ok: boolean, templates: ReturnType<typeof listBuiltInTemplates> }}
+ */
+function buildTemplateListPayload() {
+  return {
+    ok: true,
+    templates: listBuiltInTemplates(TEMPLATES_ROOT)
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateListPayload>} payload
+ * @returns {void}
+ */
+function printTemplateList(payload) {
+  console.log("Available templates:");
+  for (const template of payload.templates) {
+    console.log(`- ${template.id}@${template.version}`);
+    console.log(`  source: ${template.source}`);
+    console.log(`  name: ${template.name}`);
+    console.log(`  executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
   }
 }
 
@@ -1437,6 +1567,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "diff") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "list") {
+  commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
@@ -1532,6 +1664,7 @@ const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
+const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
 const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
@@ -1576,6 +1709,7 @@ const presetIndex = args.indexOf("--preset");
 const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
 const templateIndex = args.indexOf("--template");
 const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "web-api-db";
+const useLatestTemplate = args.includes("--latest");
 const bundleIndex = args.indexOf("--bundle");
 const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
 const laneIndex = args.indexOf("--lane");
@@ -1629,12 +1763,22 @@ try {
     process.exit(0);
   }
 
+  if (shouldTemplateList) {
+    const payload = buildTemplateListPayload();
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateList(payload);
+    }
+    process.exit(0);
+  }
+
   if (shouldTemplateStatus) {
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
       throw new Error("Cannot inspect template status without topogram.project.json.");
     }
-    const status = buildTemplateStatusPayload(projectConfigInfo);
+    const status = buildTemplateStatusPayload(projectConfigInfo, { latest: useLatestTemplate });
     if (emitJson) {
       console.log(stableStringify(status));
     } else {
@@ -1725,12 +1869,20 @@ try {
     if (!projectConfigInfo) {
       throw new Error("Cannot update template without topogram.project.json.");
     }
+    const requestedTemplateName = templateIndex >= 0
+      ? templateName
+      : useLatestTemplate
+        ? latestTemplateInfo(templateMetadataFromProjectConfig(projectConfigInfo.config)).candidateSpec
+        : null;
+    if (useLatestTemplate && !requestedTemplateName) {
+      throw new Error("Cannot use --latest because the current template is not package-backed.");
+    }
     let update;
     try {
       const updateOptions = {
         projectRoot: projectConfigInfo.configDir,
         projectConfig: projectConfigInfo.config,
-        templateName: templateIndex >= 0 ? templateName : null,
+        templateName: requestedTemplateName,
         templatesRoot: TEMPLATES_ROOT
       };
       update = fileAction

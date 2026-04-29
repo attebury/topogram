@@ -20,7 +20,7 @@ function runCli(args, options = {}) {
     env: {
       ...process.env,
       ...(options.env || {}),
-      PATH: process.env.PATH || ""
+      PATH: options.env?.PATH || process.env.PATH || ""
     }
   });
 }
@@ -33,7 +33,7 @@ function runNpm(args, cwd, options = {}) {
     env: {
       ...process.env,
       ...(options.env || {}),
-      PATH: process.env.PATH || ""
+      PATH: options.env?.PATH || process.env.PATH || ""
     }
   });
 }
@@ -60,14 +60,58 @@ function copyBuiltInTemplate(root, name = "template") {
   return templateRoot;
 }
 
+function createFakeNpm(root) {
+  const binDir = path.join(root, "bin");
+  fs.mkdirSync(binDir, { recursive: true });
+  const npmPath = path.join(binDir, "npm");
+  fs.writeFileSync(npmPath, `#!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
+const args = process.argv.slice(2);
+function packageNameFromSpec(spec) {
+  if (spec.startsWith("@")) {
+    const [scope, rest] = spec.split("/");
+    const versionIndex = rest.indexOf("@");
+    return path.join(scope, versionIndex >= 0 ? rest.slice(0, versionIndex) : rest);
+  }
+  const versionIndex = spec.indexOf("@");
+  return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
+}
+if (args[0] === "view") {
+  process.stdout.write(JSON.stringify(process.env.FAKE_NPM_LATEST_VERSION || "0.2.0") + "\\n");
+  process.exit(0);
+}
+if (args[0] === "install") {
+  const prefix = args[args.indexOf("--prefix") + 1];
+  const spec = args[args.length - 1];
+  const source = spec.endsWith("@0.1.0") ? process.env.FAKE_TEMPLATE_INITIAL : process.env.FAKE_TEMPLATE_LATEST;
+  const target = path.join(prefix, "node_modules", packageNameFromSpec(spec));
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.cpSync(source, target, { recursive: true });
+  process.exit(0);
+}
+process.stderr.write("Unexpected fake npm command: " + args.join(" ") + "\\n");
+process.exit(1);
+`, "utf8");
+  fs.chmodSync(npmPath, 0o755);
+  return binDir;
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
+  assert.match(help.stdout, /topogram template list/);
+  assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
   assert.doesNotMatch(help.stdout, /query work-packet/);
+
+  const templateList = runCli(["template", "list", "--json"]);
+  assert.equal(templateList.status, 0, templateList.stderr || templateList.stdout);
+  const listPayload = JSON.parse(templateList.stdout);
+  assert.equal(listPayload.templates.some((template) => template.id === "topogram/web-api-db" && template.source === "builtin"), true);
 
   const check = runCli(["check", fixtureRoot]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -200,6 +244,13 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(templateStatusPayload.template.source, "builtin");
   assert.equal(templateStatusPayload.latest.checked, false);
   assert.equal(templateStatusPayload.trust.ok, true);
+
+  const builtinLatest = runCli(["template", "status", "--latest", "--json"], { cwd: projectRoot });
+  assert.equal(builtinLatest.status, 0, builtinLatest.stderr || builtinLatest.stdout);
+  const builtinLatestPayload = JSON.parse(builtinLatest.stdout);
+  assert.equal(builtinLatestPayload.latest.checked, true);
+  assert.equal(builtinLatestPayload.latest.supported, false);
+  assert.match(builtinLatestPayload.latest.reason, /package-backed/);
 
   const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(humanTemplateStatus.status, 0, humanTemplateStatus.stderr || humanTemplateStatus.stdout);
@@ -410,6 +461,50 @@ test("topogram new supports local path template packs", () => {
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.equal(check.status, 0, check.stderr || check.stdout);
+});
+
+test("package-backed templates can inspect and recommend latest versions explicitly", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-latest-"));
+  const initialTemplateRoot = copyBuiltInTemplate(root, "template-initial");
+  const latestTemplateRoot = copyBuiltInTemplate(root, "template-latest");
+  const projectRoot = path.join(root, "starter");
+  for (const [templateRoot, version] of [[initialTemplateRoot, "0.1.0"], [latestTemplateRoot, "0.2.0"]]) {
+    const manifestPath = path.join(templateRoot, "topogram-template.json");
+    const manifest = readJson(manifestPath);
+    manifest.id = "@scope/topogram-template-latest";
+    manifest.version = version;
+    writeJson(manifestPath, manifest);
+  }
+  fs.appendFileSync(
+    path.join(latestTemplateRoot, "topogram", "entities", "entity-greeting.tg"),
+    "\n# latest package edit\n",
+    "utf8"
+  );
+  const fakeNpmBin = createFakeNpm(root);
+  const env = {
+    FAKE_TEMPLATE_INITIAL: initialTemplateRoot,
+    FAKE_TEMPLATE_LATEST: latestTemplateRoot,
+    FAKE_NPM_LATEST_VERSION: "0.2.0",
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const create = runCli(["new", projectRoot, "--template", "@scope/topogram-template-latest@0.1.0"], { env });
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const status = runCli(["template", "status", "--latest", "--json"], { cwd: projectRoot, env });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.latest.checked, true);
+  assert.equal(statusPayload.latest.supported, true);
+  assert.equal(statusPayload.latest.version, "0.2.0");
+  assert.equal(statusPayload.latest.candidateSpec, "@scope/topogram-template-latest@0.2.0");
+  assert.equal(statusPayload.latest.isCurrent, false);
+
+  const recommend = runCli(["template", "update", "--recommend", "--latest", "--json"], { cwd: projectRoot, env });
+  assert.equal(recommend.status, 0, recommend.stderr || recommend.stdout);
+  const recommendPayload = JSON.parse(recommend.stdout);
+  assert.equal(recommendPayload.mode, "recommend");
+  assert.equal(recommendPayload.candidate.version, "0.2.0");
+  assert.equal(recommendPayload.recommendations.some((item) => item.command === "topogram template update --apply"), true);
 });
 
 test("topogram template update emits a non-writing update plan", () => {

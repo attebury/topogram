@@ -43,11 +43,14 @@ before refreshing trust.
 Inspect, plan, or apply a template update:
 
 ```bash
+topogram template list
+topogram template status --latest
 topogram template policy check
 topogram template policy init
 topogram template policy pin @attebury/topogram-template-todo@0.1.2
 topogram template update --status
 topogram template update --recommend
+topogram template update --recommend --latest
 topogram template update --plan
 topogram template update --check
 topogram template update --plan --template @attebury/topogram-template-todo@0.1.2
@@ -86,6 +89,9 @@ the policy file.
 `topogram template update --recommend` is the human handoff view for upgrades.
 It summarizes current/candidate versions, conflicts, delete reviews, and the
 next command to run before you apply or adopt files.
+Use `topogram template status --latest` or `topogram template update --latest`
+only when you want an explicit package registry lookup; normal status remains
+local and deterministic.
 
 For single-file adoption, use `--accept-current` when a local edit is
 intentional and should become the new trusted baseline, `--accept-candidate`

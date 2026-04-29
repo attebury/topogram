@@ -258,6 +258,25 @@ function validateTemplateRoot(templateRoot) {
 }
 
 /**
+ * @param {string} templatesRoot
+ * @returns {Array<{ id: string, version: string, source: "builtin", name: string, includesExecutableImplementation: boolean, path: string }>}
+ */
+export function listBuiltInTemplates(templatesRoot) {
+  return [...TEMPLATE_NAMES].sort((a, b) => a.localeCompare(b)).map((name) => {
+    const templateRoot = path.join(templatesRoot, name);
+    const manifest = validateTemplateRoot(templateRoot);
+    return {
+      id: manifest.id,
+      version: manifest.version,
+      source: "builtin",
+      name,
+      includesExecutableImplementation: Boolean(manifest.includesExecutableImplementation),
+      path: templateRoot
+    };
+  });
+}
+
+/**
  * @param {string} templateSpec
  * @returns {string}
  */
