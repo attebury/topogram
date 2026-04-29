@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "noResolve": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"]
+  },
+  "files": [
+    "./tests/types/check-globals.d.ts",
+    "./src/generator/surfaces/services/express.d.ts",
+    "./src/generator/surfaces/services/hono.d.ts",
+    "./src/generator/surfaces/web/index.d.ts",
+    "./src/generator/api.d.ts",
+    "./src/generator/surfaces/databases/lifecycle-shared.d.ts",
+    "./src/generator/surfaces/databases/shared.d.ts",
+    "./src/realization/backend/index.d.ts",
+    "./src/project-config.js",
+    "./src/new-project.js",
+    "./src/generator/registry.js",
+    "./src/generator/runtime/shared.js"
+  ]
+}
