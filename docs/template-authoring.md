@@ -117,6 +117,47 @@ template provenance recorded in `topogram.project.json`, whether executable
 implementation code is trusted, whether local files drifted, and that registry
 latest-version checks are not performed by default.
 
+## Template Allow Policy
+
+Projects may define `topogram.template-policy.json` to control which templates a
+human or agent can use for checks and updates:
+
+```json
+{
+  "version": "0.1",
+  "allowedSources": ["builtin", "local", "package"],
+  "allowedTemplateIds": ["@scope/topogram-template-name"],
+  "allowedPackageScopes": ["@scope"],
+  "executableImplementation": "allow",
+  "pinnedVersions": {
+    "@scope/topogram-template-name": "0.1.0"
+  }
+}
+```
+
+New starters create a permissive policy for the template that created the
+project. Existing projects can create or refresh one from their current
+`topogram.project.json`:
+
+```bash
+topogram template policy init
+topogram template policy check
+topogram template policy check --json
+```
+
+Policy check succeeds with a warning when the file is missing so older projects
+can adopt it incrementally. When the file exists, template update/status/check
+commands enforce it before comparing candidate files. `allowedSources` controls
+`builtin`, `local`, and package templates. `allowedTemplateIds` keeps updates on
+the expected template family. `allowedPackageScopes` limits package templates to
+trusted npm scopes. `executableImplementation` may be `allow`, `warn`, or
+`deny`. `pinnedVersions` can force a reviewed exact template version until a
+human updates the pin.
+
+This policy does not prove package identity or sign templates yet. Treat it as
+the v1 guardrail that makes template intent explicit and gives agents a single
+file to inspect before changing template-owned project files.
+
 ## Template Updates
 
 Review template changes first:

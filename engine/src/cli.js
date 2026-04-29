@@ -17,6 +17,10 @@ import {
   buildTemplateUpdatePlan,
   buildTemplateUpdateStatus,
   createNewProject,
+  loadTemplatePolicy,
+  resolveTemplate,
+  templatePolicyDiagnosticsForTemplate,
+  writeTemplatePolicyForProject,
   writeTemplateFilesManifest
 } from "./new-project.js";
 import {
@@ -101,6 +105,8 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template policy init [path] [--json]");
+  console.log("   or: topogram template policy check [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
@@ -116,6 +122,8 @@ function printUsage(options = {}) {
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
   console.log("  topogram template status");
+  console.log("  topogram template policy init");
+  console.log("  topogram template policy check");
   console.log("  topogram template check web-api-db");
   console.log("  topogram template update --status");
   console.log("  topogram template update --plan");
@@ -805,6 +813,26 @@ function buildTemplateCheckPayload(templateSpec) {
   const diagnostics = [];
   let created = null;
   try {
+    const callerPolicyInfo = loadTemplatePolicy(process.cwd());
+    if (callerPolicyInfo.exists) {
+      const resolvedTemplate = resolveTemplate(templateSpec, TEMPLATES_ROOT);
+      const policyDiagnostics = templatePolicyDiagnosticsForTemplate(callerPolicyInfo, resolvedTemplate, "template-check-policy");
+      if (policyDiagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+        const stepDiagnostics = policyDiagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+        diagnostics.push(...stepDiagnostics);
+        steps.push(templateCheckStep("template-policy", false, {
+          path: callerPolicyInfo.path
+        }, stepDiagnostics));
+        return {
+          ok: false,
+          templateSpec,
+          projectRoot: null,
+          steps,
+          diagnostics,
+          errors: diagnostics.map((diagnostic) => diagnostic.message)
+        };
+      }
+    }
     created = createNewProject({
       targetPath: projectRoot,
       templateName: templateSpec,
@@ -957,6 +985,92 @@ function buildTemplateCheckPayload(templateSpec) {
 }
 
 /**
+ * @param {string} projectPath
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+function buildTemplatePolicyCheckPayload(projectPath) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_project_missing",
+      message: "Cannot check template policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), "topogram.template-policy.json"),
+      exists: false,
+      policy: null,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const policyInfo = loadTemplatePolicy(projectConfigInfo.configDir);
+  /** @type {TemplateCheckDiagnostic[]} */
+  const diagnostics = policyInfo.diagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+  if (!policyInfo.exists) {
+    diagnostics.push(templateCheckDiagnostic({
+      code: "template_policy_missing",
+      severity: "warning",
+      message: "No topogram.template-policy.json found. Template operations are permissive until a policy is defined.",
+      path: policyInfo.path,
+      suggestedFix: "Run `topogram template policy init` to create a project template policy.",
+      step: "policy"
+    }));
+  } else if (policyInfo.policy) {
+    const template = projectConfigInfo.config.template || {};
+    const source = template.source === "builtin" || template.source === "local" || template.source === "package"
+      ? template.source
+      : "builtin";
+    const currentTemplate = {
+      requested: typeof template.requested === "string" ? template.requested : String(template.id || "unknown"),
+      root: projectConfigInfo.configDir,
+      manifest: {
+        id: typeof template.id === "string" ? template.id : "unknown",
+        version: typeof template.version === "string" ? template.version : "unknown",
+        kind: "starter",
+        topogramVersion: "*",
+        includesExecutableImplementation: Boolean(template.includesExecutableImplementation)
+      },
+      source,
+      packageSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null
+    };
+    diagnostics.push(...templatePolicyDiagnosticsForTemplate(policyInfo, currentTemplate, "policy")
+      .map((diagnostic) => templateCheckDiagnostic(diagnostic)));
+  }
+  const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    path: policyInfo.path,
+    exists: policyInfo.exists,
+    policy: policyInfo.policy,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {{ ok: boolean, path: string, exists: boolean, policy: any, diagnostics: TemplateCheckDiagnostic[] }} payload
+ * @returns {void}
+ */
+function printTemplatePolicyCheckPayload(payload) {
+  console.log(payload.ok ? "Template policy check passed" : "Template policy check failed");
+  console.log(`Policy: ${payload.path}`);
+  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
  * @param {Record<string, any>} details
  * @returns {string[]}
  */
@@ -1080,6 +1194,10 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
+  commandArgs = { templatePolicyInit: true, inputPath: commandPath(3) };
+} else if (args[0] === "template" && args[1] === "policy" && args[2] === "check") {
+  commandArgs = { templatePolicyCheck: true, inputPath: commandPath(3) };
 } else if (args[0] === "template" && args[1] === "check") {
   commandArgs = { templateCheck: true, inputPath: args[2] };
 } else if (args[0] === "template" && args[1] === "update") {
@@ -1168,6 +1286,8 @@ const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
+const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
+const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
 const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
@@ -1224,13 +1344,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -1273,6 +1393,39 @@ try {
       printTemplateStatus(status);
     }
     process.exit(status.ok ? 0 : 1);
+  }
+
+  if (shouldTemplatePolicyInit) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot initialize template policy without topogram.project.json.");
+    }
+    const policy = writeTemplatePolicyForProject(projectConfigInfo.configDir, projectConfigInfo.config);
+    const payload = {
+      ok: true,
+      path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
+      policy,
+      diagnostics: [],
+      errors: []
+    };
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      console.log(`Wrote template policy: ${payload.path}`);
+      console.log(`Allowed template ids: ${policy.allowedTemplateIds.join(", ") || "(any)"}`);
+      console.log(`Allowed sources: ${policy.allowedSources.join(", ") || "(any)"}`);
+    }
+    process.exit(0);
+  }
+
+  if (shouldTemplatePolicyCheck) {
+    const payload = buildTemplatePolicyCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplatePolicyCheckPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldTemplateCheck) {

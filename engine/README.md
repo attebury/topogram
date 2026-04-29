@@ -24,6 +24,7 @@ topogram create ../my-app
 topogram check
 topogram generate
 topogram template status
+topogram template policy check
 topogram template check ../my-template
 topogram template update --plan
 topogram trust template
@@ -89,6 +90,16 @@ regenerate it with `topogram trust template` after reviewing copied
 `implementation/` code. Use `topogram template status` for the lifecycle
 summary, then `topogram trust status` and `topogram trust diff` to inspect
 changed files before refreshing trust.
+
+Projects also include `topogram.template-policy.json`, the allow policy used by
+template update and template check commands. It can restrict candidate template
+sources, template ids, package scopes, executable-template behavior, and pinned
+template versions:
+
+```bash
+topogram template policy check
+topogram template policy init
+```
 
 Use `topogram template update --status [--template <spec>]` to inspect current
 template adoption state with baseline and conflict analysis. Use

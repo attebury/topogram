@@ -160,6 +160,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
@@ -168,6 +169,9 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(projectConfig.template.sourceSpec, "web-api-db");
   assert.equal(projectConfig.template.sourceRoot, null);
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
+  const policy = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.template-policy.json"), "utf8"));
+  assert.deepEqual(policy.allowedTemplateIds, ["topogram/web-api-db"]);
+  assert.equal(policy.executableImplementation, "allow");
   const trustRecord = JSON.parse(fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8"));
   assert.equal(trustRecord.trustPolicy, "topogram-template-executable-implementation-v1");
   assert.equal(trustRecord.template.id, "topogram/web-api-db");
@@ -342,6 +346,32 @@ test("topogram trust status reports implementation content drift and trust refre
   assert.deepEqual(cleanPayload.content.changed, []);
   assert.deepEqual(cleanPayload.content.added, []);
   assert.deepEqual(cleanPayload.content.removed, []);
+});
+
+test("topogram template policy init and check manage project policy", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.rmSync(path.join(projectRoot, "topogram.template-policy.json"));
+
+  const missing = runCli(["template", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.equal(missing.status, 0, missing.stderr || missing.stdout);
+  const missingPayload = JSON.parse(missing.stdout);
+  assert.equal(missingPayload.exists, false);
+  assert.equal(missingPayload.diagnostics.some((diagnostic) => diagnostic.code === "template_policy_missing"), true);
+
+  const init = runCli(["template", "policy", "init", "--json"], { cwd: projectRoot });
+  assert.equal(init.status, 0, init.stderr || init.stdout);
+  const initPayload = JSON.parse(init.stdout);
+  assert.equal(initPayload.policy.allowedTemplateIds.includes("topogram/web-api-db"), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
+
+  const check = runCli(["template", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.ok, true);
+  assert.deepEqual(checkPayload.diagnostics, []);
 });
 
 test("topogram new supports local path template packs", () => {
@@ -584,6 +614,53 @@ test("topogram template update reports incompatible template ids", () => {
   const payload = JSON.parse(plan.stdout);
   assert.equal(payload.compatible, false);
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_id_mismatch"), true);
+});
+
+test("topogram template policy denies disallowed sources, executable templates, and version mismatches", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-deny-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+
+  const policyPath = path.join(projectRoot, "topogram.template-policy.json");
+  const policy = readJson(policyPath);
+  policy.allowedSources = ["builtin"];
+  writeJson(policyPath, policy);
+  const localDenied = runCli(["template", "update", "--plan", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.notEqual(localDenied.status, 0, localDenied.stdout);
+  assert.equal(JSON.parse(localDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "template_source_denied"), true);
+
+  policy.allowedSources = ["builtin", "local", "package"];
+  policy.executableImplementation = "deny";
+  writeJson(policyPath, policy);
+  const executableDenied = runCli(["template", "update", "--status", "--json"], { cwd: projectRoot });
+  assert.notEqual(executableDenied.status, 0, executableDenied.stdout);
+  assert.equal(JSON.parse(executableDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "template_executable_denied"), true);
+
+  policy.executableImplementation = "allow";
+  policy.pinnedVersions = { "topogram/web-api-db": "0.0.0-pinned" };
+  writeJson(policyPath, policy);
+  const versionDenied = runCli(["template", "update", "--status", "--json"], { cwd: projectRoot });
+  assert.notEqual(versionDenied.status, 0, versionDenied.stdout);
+  assert.equal(JSON.parse(versionDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "template_version_mismatch"), true);
+});
+
+test("topogram template check enforces caller template policy when present", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-policy-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const policy = readJson(path.join(projectRoot, "topogram.template-policy.json"));
+  policy.allowedSources = ["builtin"];
+  writeJson(path.join(projectRoot, "topogram.template-policy.json"), policy);
+
+  const check = runCli(["template", "check", builtInTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_source_denied"), true);
+  assert.equal(payload.steps.some((step) => step.name === "template-policy" && step.ok === false), true);
 });
 
 test("topogram template update applies reviewed template-owned changes", () => {

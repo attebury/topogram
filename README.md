@@ -43,6 +43,8 @@ before refreshing trust.
 Inspect, plan, or apply a template update:
 
 ```bash
+topogram template policy check
+topogram template policy init
 topogram template update --status
 topogram template update --plan
 topogram template update --check
@@ -68,6 +70,13 @@ Human output summarizes no-op, applied, skipped, and conflict counts; JSON outpu
 includes structured diagnostics with codes, paths, suggested fixes, and workflow
 steps. If the baseline is missing, review the current template-owned files and
 run `topogram trust template`.
+
+`topogram.template-policy.json` is the project-owned template allow policy.
+New starters create one automatically. Use `topogram template policy check` in
+projects and CI to verify the current template metadata against allowed sources,
+template ids, package scopes, executable-template policy, and optional pinned
+versions. Use `topogram template policy init` to create or refresh the policy
+from the current `topogram.project.json`.
 
 For single-file adoption, use `--accept-current` when a local edit is
 intentional and should become the new trusted baseline, `--accept-candidate`
