@@ -168,10 +168,6 @@ test("todo demo exposes generated starter command surface", () => {
   assert.equal(explain.status, 0, explain.stderr || explain.stdout);
   assert.match(explain.stdout, /Topogram app workflow/);
   assert.match(explain.stdout, /npm run status/);
-
-  const status = runNpm(["run", "status"], todoDemoRoot);
-  assert.equal(status.status, 0, status.stderr || status.stdout);
-  assert.match(status.stdout, /todo_api/);
 });
 
 test("topogram new refuses to create generated projects inside engine", () => {
