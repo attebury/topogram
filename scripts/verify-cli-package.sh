@@ -11,7 +11,8 @@ export npm_config_cache="$NPM_CACHE_DIR"
 RUN_DIR="$(mktemp -d "$WORK_ROOT/run.XXXXXX")"
 PACK_DIR="$RUN_DIR/pack"
 CONSUMER_DIR="$RUN_DIR/consumer"
-mkdir -p "$PACK_DIR" "$CONSUMER_DIR"
+TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
+mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR"
 
 echo "Packing @attebury/topogram..."
 PACK_NAME="$(cd "$ENGINE_DIR" && npm pack --silent --pack-destination "$PACK_DIR" | tail -n 1)"
@@ -44,21 +45,63 @@ echo "Creating a starter with the packed CLI..."
   TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter
 )
 
+echo "Packing a template pack..."
+cp -R "$ENGINE_DIR/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
+(
+  cd "$TEMPLATE_PACKAGE_DIR"
+  node --input-type=module -e '
+    import fs from "node:fs";
+    const pkg = {
+      name: "@attebury/topogram-template-smoke",
+      version: "0.1.0",
+      private: true,
+      type: "module",
+      files: ["topogram-template.json", "topogram", "topogram.project.json", "implementation"]
+    };
+    fs.writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
+  '
+)
+TEMPLATE_PACK_NAME="$(cd "$TEMPLATE_PACKAGE_DIR" && npm pack --silent --pack-destination "$PACK_DIR" | tail -n 1)"
+TEMPLATE_TARBALL="$PACK_DIR/$TEMPLATE_PACK_NAME"
+
+if [[ ! -f "$TEMPLATE_TARBALL" ]]; then
+  echo "Expected template tarball was not created: $TEMPLATE_TARBALL" >&2
+  exit 1
+fi
+
+echo "Creating a starter with the packed template..."
+(
+  cd "$CONSUMER_DIR"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter-from-template --template "$TEMPLATE_TARBALL"
+)
+
 STARTER_DIR="$CONSUMER_DIR/starter"
+STARTER_TEMPLATE_DIR="$CONSUMER_DIR/starter-from-template"
 if [[ ! -f "$STARTER_DIR/package.json" ]]; then
   echo "Expected starter package.json was not created." >&2
+  exit 1
+fi
+if [[ ! -f "$STARTER_TEMPLATE_DIR/package.json" ]]; then
+  echo "Expected template starter package.json was not created." >&2
   exit 1
 fi
 
 echo "Installing starter dependencies from the packed CLI tarball..."
 npm --prefix "$STARTER_DIR" install >/dev/null
+npm --prefix "$STARTER_TEMPLATE_DIR" install >/dev/null
 
 echo "Checking and generating the starter..."
 npm --prefix "$STARTER_DIR" run check
 npm --prefix "$STARTER_DIR" run generate
+npm --prefix "$STARTER_TEMPLATE_DIR" run check
+npm --prefix "$STARTER_TEMPLATE_DIR" run generate
 
 if [[ ! -f "$STARTER_DIR/app/.topogram-generated.json" ]]; then
   echo "Expected generated app sentinel was not written." >&2
+  exit 1
+fi
+if [[ ! -f "$STARTER_TEMPLATE_DIR/app/.topogram-generated.json" ]]; then
+  echo "Expected generated template app sentinel was not written." >&2
   exit 1
 fi
 

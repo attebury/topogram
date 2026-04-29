@@ -9,6 +9,9 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 const engineRoot = path.join(repoRoot, "engine");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
 const expectedRoot = path.join(engineRoot, "tests", "fixtures", "expected", "app-basic");
+const builtInTemplateRoot = path.join(engineRoot, "templates", "web-api-db");
+const npmCacheRoot = path.join(os.tmpdir(), "topogram-generated-app-workflow-npm-cache");
+fs.mkdirSync(npmCacheRoot, { recursive: true });
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [path.join(engineRoot, "src", "cli.js"), ...args], {
@@ -16,21 +19,27 @@ function runCli(args, options = {}) {
     encoding: "utf8",
     env: {
       ...process.env,
+      ...(options.env || {}),
       PATH: process.env.PATH || ""
     }
   });
 }
 
-function runNpm(args, cwd) {
+function runNpm(args, cwd, options = {}) {
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
   return childProcess.spawnSync(npmBin, args, {
     cwd,
     encoding: "utf8",
     env: {
       ...process.env,
+      ...(options.env || {}),
       PATH: process.env.PATH || ""
     }
   });
+}
+
+function writePackageJson(root, pkg) {
+  fs.writeFileSync(path.join(root, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
 }
 
 function readText(filePath) {
@@ -146,6 +155,66 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "services", "app_api")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "web", "app_sveltekit")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_postgres")), true);
+});
+
+test("topogram new supports local path template packs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-local-template-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  assert.match(create.stdout, /Template: topogram\/web-api-db/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+});
+
+test("topogram new supports packed npm template packs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-packed-template-"));
+  const templatePackageRoot = path.join(root, "template-package");
+  const packRoot = path.join(root, "pack");
+  const projectRoot = path.join(root, "starter");
+  fs.mkdirSync(packRoot);
+  fs.cpSync(builtInTemplateRoot, templatePackageRoot, { recursive: true });
+  writePackageJson(templatePackageRoot, {
+    name: "@attebury/topogram-template-test",
+    version: "0.1.0",
+    private: true,
+    type: "module",
+    files: ["topogram-template.json", "topogram", "topogram.project.json", "implementation"]
+  });
+
+  const pack = runNpm(["pack", "--pack-destination", packRoot], templatePackageRoot, {
+    env: { npm_config_cache: npmCacheRoot }
+  });
+  assert.equal(pack.status, 0, pack.stderr || pack.stdout);
+  const tarball = path.join(packRoot, pack.stdout.trim().split(/\s+/).at(-1));
+
+  const create = runCli(["new", projectRoot, "--template", tarball], {
+    env: { npm_config_cache: npmCacheRoot }
+  });
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  assert.match(create.stdout, /Template: topogram\/web-api-db/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
+});
+
+test("topogram new reports invalid template manifests", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-invalid-template-"));
+  const templateRoot = path.join(root, "bad-template");
+  const projectRoot = path.join(root, "starter");
+  fs.mkdirSync(path.join(templateRoot, "topogram"), { recursive: true });
+  fs.writeFileSync(path.join(templateRoot, "topogram.project.json"), "{}\n", "utf8");
+  fs.writeFileSync(path.join(templateRoot, "topogram-template.json"), JSON.stringify({
+    id: "bad-template",
+    version: "0.1.0",
+    kind: "starter"
+  }, null, 2));
+
+  const create = runCli(["new", projectRoot, "--template", templateRoot]);
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /topogram-template\.json is missing required string field 'topogramVersion'/);
 });
 
 test("repo root new script creates a generated app starter project outside engine", () => {

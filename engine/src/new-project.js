@@ -1,10 +1,13 @@
 // @ts-check
 
 import fs from "node:fs";
+import childProcess from "node:child_process";
+import os from "node:os";
 import path from "node:path";
 
 const CLI_PACKAGE_NAME = "@attebury/topogram";
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
+const TEMPLATE_MANIFEST = "topogram-template.json";
 
 /**
  * @typedef {Object} CreateNewProjectOptions
@@ -12,6 +15,25 @@ const TEMPLATE_NAMES = new Set(["web-api-db"]);
  * @property {string} [templateName]
  * @property {string} engineRoot
  * @property {string} templatesRoot
+ */
+
+/**
+ * @typedef {Object} TemplateManifest
+ * @property {string} id
+ * @property {string} version
+ * @property {string} kind
+ * @property {string} topogramVersion
+ * @property {boolean} [includesExecutableImplementation]
+ * @property {string} [description]
+ */
+
+/**
+ * @typedef {Object} ResolvedTemplate
+ * @property {string} requested
+ * @property {string} root
+ * @property {TemplateManifest} manifest
+ * @property {"builtin"|"local"|"package"} source
+ * @property {string|null} packageSpec
  */
 
 /**
@@ -89,6 +111,233 @@ function isSameOrInside(parent, child) {
 }
 
 /**
+ * @param {string} value
+ * @returns {boolean}
+ */
+function isLocalTemplateSpec(value) {
+  return value === "." ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    path.isAbsolute(value);
+}
+
+/**
+ * @param {string} spec
+ * @returns {string}
+ */
+function packageNameFromSpec(spec) {
+  if (spec.startsWith("@")) {
+    const segments = spec.split("/");
+    if (segments.length < 2) {
+      throw new Error(`Invalid scoped template package spec '${spec}'.`);
+    }
+    const scope = segments[0];
+    const nameAndVersion = segments[1];
+    const versionIndex = nameAndVersion.indexOf("@");
+    const name = versionIndex >= 0 ? nameAndVersion.slice(0, versionIndex) : nameAndVersion;
+    return `${scope}/${name}`;
+  }
+  const versionIndex = spec.indexOf("@");
+  return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {TemplateManifest}
+ */
+function validateTemplateManifest(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${TEMPLATE_MANIFEST} must contain a JSON object.`);
+  }
+  const manifest = /** @type {Record<string, unknown>} */ (value);
+  for (const field of ["id", "version", "kind", "topogramVersion"]) {
+    if (typeof manifest[field] !== "string" || !manifest[field]) {
+      throw new Error(`${TEMPLATE_MANIFEST} is missing required string field '${field}'.`);
+    }
+  }
+  if (manifest.kind !== "starter") {
+    throw new Error(`${TEMPLATE_MANIFEST} kind must be 'starter'.`);
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(manifest, "includesExecutableImplementation") &&
+    typeof manifest.includesExecutableImplementation !== "boolean"
+  ) {
+    throw new Error(`${TEMPLATE_MANIFEST} field 'includesExecutableImplementation' must be a boolean.`);
+  }
+  return /** @type {TemplateManifest} */ (manifest);
+}
+
+/**
+ * @param {string} templateRoot
+ * @returns {TemplateManifest}
+ */
+function readTemplateManifest(templateRoot) {
+  const manifestPath = path.join(templateRoot, TEMPLATE_MANIFEST);
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`Template at '${templateRoot}' is missing ${TEMPLATE_MANIFEST}.`);
+  }
+  return validateTemplateManifest(JSON.parse(fs.readFileSync(manifestPath, "utf8")));
+}
+
+/**
+ * @param {string} templateRoot
+ * @returns {TemplateManifest}
+ */
+function validateTemplateRoot(templateRoot) {
+  const manifest = readTemplateManifest(templateRoot);
+  const topogramRoot = path.join(templateRoot, "topogram");
+  const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
+    throw new Error(`Template '${manifest.id}' is missing topogram/.`);
+  }
+  if (!fs.existsSync(projectConfigPath) || !fs.statSync(projectConfigPath).isFile()) {
+    throw new Error(`Template '${manifest.id}' is missing topogram.project.json.`);
+  }
+  if (manifest.includesExecutableImplementation) {
+    const implementationRoot = path.join(templateRoot, "implementation");
+    if (!fs.existsSync(implementationRoot) || !fs.statSync(implementationRoot).isDirectory()) {
+      throw new Error(
+        `Template '${manifest.id}' declares executable implementation code but is missing implementation/.`
+      );
+    }
+  }
+  return manifest;
+}
+
+/**
+ * @param {string} templateSpec
+ * @returns {string}
+ */
+function installTemplatePackage(templateSpec) {
+  const installRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-"));
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const result = childProcess.spawnSync(
+    npmBin,
+    [
+      "install",
+      "--prefix",
+      installRoot,
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund",
+      "--package-lock=false",
+      templateSpec
+    ],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: process.env.PATH || ""
+      }
+    }
+  );
+  if (result.status !== 0) {
+    throw new Error(
+      `Failed to install template package '${templateSpec}'.\n${result.stderr || result.stdout}`.trim()
+    );
+  }
+  const packageRoot = path.join(installRoot, "node_modules", packageNameFromSpec(templateSpec));
+  if (fs.existsSync(packageRoot)) {
+    return packageRoot;
+  }
+  return findInstalledTemplatePackageRoot(installRoot, templateSpec);
+}
+
+/**
+ * @param {string} installRoot
+ * @param {string} templateSpec
+ * @returns {string}
+ */
+function findInstalledTemplatePackageRoot(installRoot, templateSpec) {
+  const nodeModules = path.join(installRoot, "node_modules");
+  if (!fs.existsSync(nodeModules)) {
+    throw new Error(`Template package '${templateSpec}' did not create node_modules.`);
+  }
+  /** @type {string[]} */
+  const candidates = [];
+  for (const entry of fs.readdirSync(nodeModules)) {
+    if (entry === ".bin") {
+      continue;
+    }
+    const entryPath = path.join(nodeModules, entry);
+    if (entry.startsWith("@")) {
+      for (const scopedEntry of fs.readdirSync(entryPath)) {
+        candidates.push(path.join(entryPath, scopedEntry));
+      }
+      continue;
+    }
+    candidates.push(entryPath);
+  }
+  const templateRoots = candidates.filter((candidate) =>
+    fs.existsSync(path.join(candidate, TEMPLATE_MANIFEST))
+  );
+  if (templateRoots.length === 1) {
+    return templateRoots[0];
+  }
+  if (templateRoots.length > 1) {
+    throw new Error(`Template package '${templateSpec}' installed multiple template manifests.`);
+  }
+  throw new Error(`Template package '${templateSpec}' did not install a package with ${TEMPLATE_MANIFEST}.`);
+}
+
+/**
+ * @param {string} templateName
+ * @param {string} templatesRoot
+ * @returns {ResolvedTemplate}
+ */
+function resolveTemplate(templateName, templatesRoot) {
+  if (TEMPLATE_NAMES.has(templateName)) {
+    const templateRoot = path.join(templatesRoot, templateName);
+    if (!fs.existsSync(templateRoot)) {
+      throw new Error(`Template '${templateName}' is not installed at '${templateRoot}'.`);
+    }
+    return {
+      requested: templateName,
+      root: templateRoot,
+      manifest: validateTemplateRoot(templateRoot),
+      source: "builtin",
+      packageSpec: null
+    };
+  }
+
+  if (isLocalTemplateSpec(templateName)) {
+    const templateRoot = path.resolve(templateName);
+    if (!fs.existsSync(templateRoot)) {
+      throw new Error(`Local template path '${templateName}' does not exist.`);
+    }
+    if (!fs.statSync(templateRoot).isDirectory()) {
+      const packageTemplateRoot = installTemplatePackage(templateName);
+      return {
+        requested: templateName,
+        root: packageTemplateRoot,
+        manifest: validateTemplateRoot(packageTemplateRoot),
+        source: "package",
+        packageSpec: templateName
+      };
+    }
+    return {
+      requested: templateName,
+      root: templateRoot,
+      manifest: validateTemplateRoot(templateRoot),
+      source: "local",
+      packageSpec: null
+    };
+  }
+
+  const templateRoot = installTemplatePackage(templateName);
+  if (!fs.existsSync(templateRoot)) {
+    throw new Error(`Template package '${templateName}' did not install to '${templateRoot}'.`);
+  }
+  return {
+    requested: templateName,
+    root: templateRoot,
+    manifest: validateTemplateRoot(templateRoot),
+    source: "package",
+    packageSpec: templateName
+  };
+}
+
+/**
  * @param {string} projectRoot
  * @param {string} engineRoot
  * @returns {void}
@@ -128,24 +377,20 @@ function ensureCreatableProjectRoot(projectRoot) {
  */
 function copyTopogramWorkspace(templateRoot, projectRoot) {
   const topogramRoot = path.join(projectRoot, "topogram");
-  fs.mkdirSync(topogramRoot, { recursive: true });
-
-  for (const entry of fs.readdirSync(templateRoot)) {
-    if (entry === "topogram.project.json" || entry === "implementation") {
-      continue;
-    }
-    fs.cpSync(path.join(templateRoot, entry), path.join(topogramRoot, entry), { recursive: true });
-  }
+  fs.cpSync(path.join(templateRoot, "topogram"), topogramRoot, { recursive: true });
 
   fs.cpSync(
     path.join(templateRoot, "topogram.project.json"),
     path.join(projectRoot, "topogram.project.json")
   );
-  fs.cpSync(
-    path.join(templateRoot, "implementation"),
-    path.join(projectRoot, "implementation"),
-    { recursive: true }
-  );
+  const implementationRoot = path.join(templateRoot, "implementation");
+  if (fs.existsSync(implementationRoot)) {
+    fs.cpSync(
+      implementationRoot,
+      path.join(projectRoot, "implementation"),
+      { recursive: true }
+    );
+  }
 }
 
 /**
@@ -256,26 +501,19 @@ export function createNewProject({
   if (!targetPath) {
     throw new Error("topogram new requires <path>.");
   }
-  if (!TEMPLATE_NAMES.has(templateName)) {
-    throw new Error(`Unknown template '${templateName}'. Available templates: ${[...TEMPLATE_NAMES].join(", ")}.`);
-  }
-
   const projectRoot = path.resolve(targetPath);
   assertProjectOutsideEngine(projectRoot, engineRoot);
-  const templateRoot = path.join(templatesRoot, templateName);
-  if (!fs.existsSync(templateRoot)) {
-    throw new Error(`Template '${templateName}' is not installed at '${templateRoot}'.`);
-  }
+  const template = resolveTemplate(templateName, templatesRoot);
 
   ensureCreatableProjectRoot(projectRoot);
-  copyTopogramWorkspace(templateRoot, projectRoot);
+  copyTopogramWorkspace(template.root, projectRoot);
   writeProjectPackage(projectRoot, engineRoot);
   writeExplainScript(projectRoot);
-  writeProjectReadme(projectRoot, templateName);
+  writeProjectReadme(projectRoot, template.manifest.id);
 
   return {
     projectRoot,
-    templateName,
+    templateName: template.manifest.id,
     topogramPath: path.join(projectRoot, "topogram"),
     appPath: path.join(projectRoot, "app")
   };

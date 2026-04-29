@@ -38,13 +38,13 @@ npm run new -- ./my-topogram-app
 ## Layout
 
 - `src/` - engine source
-- `templates/` - starter Topogram workspaces for `topogram new`
+- `templates/` - minimal built-in starter template for `topogram new`
 - `tests/active/` - retained active engine tests
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
 - `tests/fixtures/invalid/` - invalid model cases
 
-The in-repo Todo demo is a temporary consumer mirror. Long-term generated app verification should move to the private todo-demo repo.
+The generated Todo demo and Todo starter template live outside this repo in `topogram-demo-todo` and `topogram-template-todo`.
 
 ## Active Fixture
 
@@ -65,10 +65,16 @@ Run the engine gate:
 npm run check
 ```
 
-Create a starter project from the current Foundation MVP template:
+Create a starter project from the built-in template:
 
 ```bash
 npm run new -- ../my-topogram-app
+```
+
+Create a starter project from a shared template package:
+
+```bash
+topogram new ../todo-demo --template @attebury/topogram-template-todo
 ```
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.

@@ -81,8 +81,8 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
-  console.log("   or: topogram new <path> [--template web-api-db]");
-  console.log("   or: topogram create <path> [--template web-api-db]");
+  console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
+  console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram create ./my-app");

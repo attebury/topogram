@@ -1,0 +1,8 @@
+{
+  "id": "topogram/web-api-db",
+  "version": "0.1.0",
+  "kind": "starter",
+  "description": "Minimal generated web/API/database starter.",
+  "topogramVersion": "0.1",
+  "includesExecutableImplementation": true
+}

@@ -31,6 +31,12 @@ npm run generate
 npm run verify
 ```
 
+To create a starter from a shared template pack:
+
+```bash
+topogram new ./todo-demo --template @attebury/topogram-template-todo
+```
+
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
 For local runtime verification, run:
@@ -45,7 +51,7 @@ npm run app:runtime-check
 ## Repo Layout
 
 - `engine/` - Topogram engine, CLI, tests, and fixtures
-- `engine/templates/` - starter Topogram workspaces for `topogram new`
+- `engine/templates/` - minimal built-in starter template for `topogram new`
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `docs/` - terse first-use docs
 
@@ -63,6 +69,7 @@ npm run generate
 Publishing is manual through the `Publish CLI Package` GitHub Actions workflow.
 
 The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
+The Todo starter source lives in the private `topogram-template-todo` repo and publishes as `@attebury/topogram-template-todo`.
 
 ## License
 

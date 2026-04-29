@@ -25,6 +25,7 @@ engine/templates/
 ```
 
 Templates are copied by `topogram new`. They are product starters, not regression fixtures.
+Shared template packs use the same layout with `topogram-template.json`, `topogram/`, `topogram.project.json`, and optional trusted `implementation/` code.
 
 ## Generated Workspace
 
