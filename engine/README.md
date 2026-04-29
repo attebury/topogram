@@ -19,12 +19,12 @@ The engine is still private, but it exposes a local CLI binary:
 This lets demos consume the engine through a local file dependency and call:
 
 ```bash
-topogram new ./my-app
+topogram create ../my-app
 topogram check
 topogram build
 ```
 
-No global install or published npm package is assumed yet.
+No global install or published npm package is assumed yet. Create generated projects outside `engine/`; this directory is source and test code.
 
 ## Layout
 
@@ -61,6 +61,8 @@ Create a starter project from the current Foundation MVP template:
 ```bash
 npm run new -- ../my-topogram-app
 ```
+
+Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 
 Run the same gate directly:
 

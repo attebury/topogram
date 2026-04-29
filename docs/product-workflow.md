@@ -2,7 +2,7 @@
 
 The current greenfield workflow is:
 
-1. run `topogram new ./my-app`
+1. from outside `engine/`, run `topogram create ./my-app`
 2. edit `topogram/` and `topogram.project.json`
 3. run `topogram check`
 4. run `topogram build`
@@ -18,10 +18,10 @@ Brownfield apps import into candidate Topogram artifacts first, then the candida
 For first use, run:
 
 ```bash
-cd engine
-npm install
-npm run new -- ../my-topogram-app
-cd ../my-topogram-app
+cd topogram
+npm --prefix ./engine install
+node ./engine/src/cli.js create ./my-topogram-app
+cd ./my-topogram-app
 npm install
 npm run status
 npm run build

@@ -11,16 +11,15 @@ The active scope is the engine under `engine/`, the generated Todo demo under `d
 Use Node 20+.
 
 ```bash
-cd engine
-npm install
-npm run status
+cd topogram
+npm --prefix ./engine install
 ```
 
-Create a starter project:
+Create a starter project outside `engine/`:
 
 ```bash
-npm run new -- ../my-topogram-app
-cd ../my-topogram-app
+node ./engine/src/cli.js create ./my-topogram-app
+cd ./my-topogram-app
 npm install
 npm run status
 npm run build

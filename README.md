@@ -7,15 +7,17 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 Use Node 20+.
 
 ```bash
-cd engine
-npm install
-npm run new -- ../my-topogram-app
-cd ../my-topogram-app
+cd topogram
+npm --prefix ./engine install
+node ./engine/src/cli.js create ./my-topogram-app
+cd ./my-topogram-app
 npm install
 npm run status
 npm run build
 npm run verify
 ```
+
+Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
 For local runtime verification, run:
 
@@ -39,7 +41,7 @@ npm run app:runtime-check
 The engine is private and local to this repo, but it exposes the `topogram` bin for local demo consumption:
 
 ```bash
-topogram new ./my-app
+topogram create ./my-app
 topogram check
 topogram build
 ```
