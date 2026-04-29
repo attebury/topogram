@@ -79,17 +79,20 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 
 function printUsage(options = {}) {
   const { all = false } = options;
-  console.log("Usage: topogram check <path> [--json]");
+  console.log("Usage: topogram check [path] [--json]");
+  console.log("   or: topogram generate [path] [--out <path>]");
+  console.log("   or: topogram build [path] [--out <path>]");
   console.log("   or: topogram new <path> [--template web-api-db]");
-  console.log("   or: topogram generate <path> [--out <path>]");
-  console.log("   or: topogram generate app <path> [--out <path>]");
+  console.log("   or: topogram create <path> [--template web-api-db]");
   console.log("");
   console.log("Common commands:");
-  console.log("  topogram new ./my-app");
-  console.log("  topogram check ./topogram --json");
-  console.log("  topogram generate ./topogram --out ./app");
+  console.log("  topogram create ./my-app");
+  console.log("  topogram check");
+  console.log("  topogram check --json");
+  console.log("  topogram build");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
+  console.log("Defaults: check/build use ./topogram, and build writes ./app.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -430,23 +433,25 @@ if (args[0] === "help-all") {
   process.exit(0);
 }
 
-if (args[0] === "generate" && args.length === 1) {
-  printUsage();
-  process.exit(1);
+function commandPath(index, fallback = "./topogram") {
+  const value = args[index];
+  return value && !value.startsWith("-") ? value : fallback;
 }
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "new") {
+if (args[0] === "new" || args[0] === "create" || args[0] === "init") {
   commandArgs = { newProject: true, inputPath: args[1] };
-} else if (args[0] === "check") {
-  commandArgs = { check: true, inputPath: args[1] };
+} else if (args[0] === "check" || args[0] === "status" || args[0] === "doctor") {
+  commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
-  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[2] };
+  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
-  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: args[1] };
+  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
+} else if (args[0] === "build") {
+  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -579,7 +584,7 @@ const outDirIndex = args.indexOf("--out-dir");
 const outDir = outDirIndex >= 0 ? args[outDirIndex + 1] : null;
 const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
-const effectiveOutDir = outDir || outPath;
+const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
 if ((shouldCheck || shouldValidate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");

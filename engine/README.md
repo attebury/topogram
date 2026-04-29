@@ -20,8 +20,8 @@ This lets demos consume the engine through a local file dependency and call:
 
 ```bash
 topogram new ./my-app
-topogram check ./topogram
-topogram generate ./topogram --out ./app
+topogram check
+topogram build
 ```
 
 No global install or published npm package is assumed yet.
@@ -71,7 +71,19 @@ npm test
 Run only the active fixture validity check:
 
 ```bash
-npm run check:fixture
+npm run fixture:status
+```
+
+Inspect the active fixture topology as JSON:
+
+```bash
+npm run fixture:inspect
+```
+
+Generate the active fixture app bundle:
+
+```bash
+npm run fixture:build
 ```
 
 Run the app-generation workflow test:
@@ -84,5 +96,5 @@ Validate or generate through the public CLI shape:
 
 ```bash
 node ./src/cli.js check ./tests/fixtures/workspaces/app-basic
-node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
+node ./src/cli.js build ./tests/fixtures/workspaces/app-basic --out /tmp/topogram-app
 ```

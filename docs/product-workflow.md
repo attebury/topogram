@@ -4,8 +4,8 @@ The current greenfield workflow is:
 
 1. run `topogram new ./my-app`
 2. edit `topogram/` and `topogram.project.json`
-3. run `topogram check ./topogram`
-4. run `topogram generate ./topogram --out ./app`
+3. run `topogram check`
+4. run `topogram build`
 5. compile or smoke-check the generated app
 6. repeat
 
@@ -23,8 +23,8 @@ npm install
 npm run new -- ../my-topogram-app
 cd ../my-topogram-app
 npm install
-npm run check
-npm run generate
+npm run status
+npm run build
 npm run verify
 ```
 

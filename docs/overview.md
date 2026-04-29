@@ -13,7 +13,7 @@ Use Node 20+.
 ```bash
 cd engine
 npm install
-npm run check
+npm run status
 ```
 
 Create a starter project:
@@ -22,8 +22,8 @@ Create a starter project:
 npm run new -- ../my-topogram-app
 cd ../my-topogram-app
 npm install
-npm run check
-npm run generate
+npm run status
+npm run build
 npm run verify
 ```
 

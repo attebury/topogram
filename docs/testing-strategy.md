@@ -25,8 +25,8 @@ Run the compile check:
 ```bash
 cd ../demos/generated/todo-demo-app
 npm install
-npm run check
-npm run generate
+npm run status
+npm run build
 npm run verify
 ```
 
