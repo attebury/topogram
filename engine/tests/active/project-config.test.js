@@ -56,6 +56,9 @@ test("topogram check reports a valid project config in human and JSON modes", ()
   const human = runCli(["check", fixtureRoot]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram check passed/);
+  assert.match(human.stdout, /Project topology:/);
+  assert.match(human.stdout, /app_api: api proj_api via topogram\/hono@1 \(port 3000\) -> database app_postgres/);
+  assert.match(human.stdout, /app_sveltekit calls_api app_api/);
 
   const json = runCli(["check", fixtureRoot, "--json"]);
   assert.equal(json.status, 0, json.stderr || json.stdout);
@@ -63,6 +66,58 @@ test("topogram check reports a valid project config in human and JSON modes", ()
   assert.equal(payload.ok, true);
   assert.equal(payload.project.valid, true);
   assert.equal(payload.project.topology.components.length, 3);
+  assert.deepEqual(payload.project.resolvedTopology.outputs, [
+    {
+      name: "app",
+      path: "./app",
+      ownership: "generated"
+    }
+  ]);
+  assert.deepEqual(payload.project.resolvedTopology.components.map((component) => ({
+    id: component.id,
+    type: component.type,
+    projection: component.projection,
+    generator: component.generator,
+    port: component.port,
+    references: component.references
+  })), [
+    {
+      id: "app_api",
+      type: "api",
+      projection: "proj_api",
+      generator: { id: "topogram/hono", version: "1" },
+      port: 3000,
+      references: { api: null, database: "app_postgres" }
+    },
+    {
+      id: "app_postgres",
+      type: "database",
+      projection: "proj_db_postgres",
+      generator: { id: "topogram/postgres", version: "1" },
+      port: 5432,
+      references: { api: null, database: null }
+    },
+    {
+      id: "app_sveltekit",
+      type: "web",
+      projection: "proj_ui_web",
+      generator: { id: "topogram/sveltekit", version: "1" },
+      port: 5173,
+      references: { api: "app_api", database: null }
+    }
+  ]);
+  assert.deepEqual(payload.project.resolvedTopology.edges, [
+    {
+      from: "app_api",
+      to: "app_postgres",
+      type: "uses_database"
+    },
+    {
+      from: "app_sveltekit",
+      to: "app_api",
+      type: "calls_api"
+    }
+  ]);
 });
 
 test("topogram check supports legacy implementation compatibility fallback", () => {

@@ -238,6 +238,97 @@ function targetRequiresImplementationProvider(target) {
   return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
 }
 
+function topologyComponentReferences(component) {
+  return {
+    api: component.api || null,
+    database: component.database || null
+  };
+}
+
+function topologyComponentPort(component) {
+  return Object.prototype.hasOwnProperty.call(component, "port") ? component.port : null;
+}
+
+function summarizeProjectTopology(config) {
+  const outputs = Object.entries(config?.outputs || {})
+    .map(([name, output]) => ({
+      name,
+      path: output?.path || null,
+      ownership: output?.ownership || null
+    }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+  const components = (config?.topology?.components || [])
+    .map((component) => ({
+      id: component.id,
+      type: component.type,
+      projection: component.projection,
+      generator: {
+        id: component.generator?.id || null,
+        version: component.generator?.version || null
+      },
+      port: topologyComponentPort(component),
+      references: topologyComponentReferences(component)
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  const edges = components.flatMap((component) => {
+    const references = [];
+    if (component.references.api) {
+      references.push({
+        from: component.id,
+        to: component.references.api,
+        type: "calls_api"
+      });
+    }
+    if (component.references.database) {
+      references.push({
+        from: component.id,
+        to: component.references.database,
+        type: "uses_database"
+      });
+    }
+    return references;
+  }).sort((left, right) => `${left.from}:${left.type}:${left.to}`.localeCompare(`${right.from}:${right.type}:${right.to}`));
+  return {
+    outputs,
+    components,
+    edges
+  };
+}
+
+function formatTopologyComponent(component) {
+  const generator = component.generator.id
+    ? `${component.generator.id}${component.generator.version ? `@${component.generator.version}` : ""}`
+    : "unbound generator";
+  const port = component.port == null ? "no port" : `port ${component.port}`;
+  const refs = Object.entries(component.references)
+    .filter(([, value]) => Boolean(value))
+    .map(([key, value]) => `${key} ${value}`);
+  const suffix = refs.length ? ` -> ${refs.join(", ")}` : "";
+  return `  - ${component.id}: ${component.type} ${component.projection} via ${generator} (${port})${suffix}`;
+}
+
+function printTopologySummary(topology) {
+  console.log("Project topology:");
+  if (topology.outputs.length > 0) {
+    console.log("  Outputs:");
+    for (const output of topology.outputs) {
+      console.log(`  - ${output.name}: ${output.path || "unset"} (${output.ownership || "unknown"})`);
+    }
+  }
+  if (topology.components.length > 0) {
+    console.log("  Components:");
+    for (const component of topology.components) {
+      console.log(formatTopologyComponent(component));
+    }
+  }
+  if (topology.edges.length > 0) {
+    console.log("  Edges:");
+    for (const edge of topology.edges) {
+      console.log(`  - ${edge.from} ${edge.type} ${edge.to}`);
+    }
+  }
+}
+
 function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation }) {
   const statementCount = ast.files.flatMap((file) => file.statements).length;
   const projectInfo = projectConfigInfo || {
@@ -245,6 +336,7 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
     compatibility: false,
     config: { topology: null }
   };
+  const resolvedTopology = summarizeProjectTopology(projectInfo.config);
   return {
     ok: resolved.ok && projectValidation.ok,
     inputPath,
@@ -257,7 +349,8 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
       configPath: projectInfo.configPath,
       compatibility: Boolean(projectInfo.compatibility),
       valid: projectValidation.ok,
-      topology: projectInfo.config.topology
+      topology: projectInfo.config.topology,
+      resolvedTopology
     },
     errors: [
       ...(resolved.ok ? [] : resolved.validation.errors.map((error) => ({
@@ -542,6 +635,7 @@ try {
       console.log(`Topogram check passed for ${inputPath}.`);
       console.log(`Validated ${payload.topogram.files} file(s) and ${payload.topogram.statements} statement(s).`);
       console.log(`Project config: ${payload.project.configPath || "compatibility defaults"}`);
+      printTopologySummary(payload.project.resolvedTopology);
     } else {
       if (!resolved.ok) {
         console.error(formatValidationErrors(resolved.validation));
