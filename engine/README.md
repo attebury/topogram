@@ -104,6 +104,12 @@ conflicts. Existing projects can run `topogram trust template` after review to
 record the first template-owned file baseline. JSON output includes structured
 diagnostics with codes, paths, suggested fixes, and workflow steps.
 
+Single-file adoption actions are explicit and baseline-aware:
+`--accept-current <file>` records the current file as the trusted baseline,
+`--accept-candidate <file>` applies one candidate file after baseline checks,
+and `--delete-current <file>` deletes one current-only file only when it still
+matches the trusted baseline.
+
 Template authors can run `topogram template check <template-spec-or-path>` to
 validate manifest/layout, temporary starter creation, starter checks, trust
 metadata, and no-write update planning. The JSON form reports structured

@@ -50,6 +50,9 @@ topogram template update --plan --template @attebury/topogram-template-todo@0.1.
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
+topogram template update --accept-current topogram/entities/entity-greeting.tg
+topogram template update --accept-candidate topogram/entities/entity-greeting.tg --template ./next-template
+topogram template update --delete-current topogram/entities/old-resource.tg --template ./next-template
 ```
 
 The update plan compares template-owned files in the current project with the
@@ -65,6 +68,12 @@ Human output summarizes no-op, applied, skipped, and conflict counts; JSON outpu
 includes structured diagnostics with codes, paths, suggested fixes, and workflow
 steps. If the baseline is missing, review the current template-owned files and
 run `topogram trust template`.
+
+For single-file adoption, use `--accept-current` when a local edit is
+intentional and should become the new trusted baseline, `--accept-candidate`
+when one candidate file should replace the current file after baseline checks,
+and `--delete-current` when the candidate removed a file and the current file
+still matches the trusted baseline.
 
 Validate a reusable template pack:
 

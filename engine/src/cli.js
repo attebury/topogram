@@ -12,6 +12,7 @@ import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import {
   applyTemplateUpdate,
+  applyTemplateUpdateFileAction,
   buildTemplateUpdateCheck,
   buildTemplateUpdatePlan,
   buildTemplateUpdateStatus,
@@ -102,6 +103,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--plan|--check|--apply [--template <spec>] [--json] [--out <path>]");
+  console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -530,12 +532,15 @@ function printTemplateUpdatePlan(plan) {
   const isApply = plan.mode === "apply";
   const isCheck = plan.mode === "check";
   const isStatus = plan.mode === "status";
+  const isFileAction = ["accept-current", "accept-candidate", "delete-current"].includes(plan.mode);
   if (isApply) {
     console.log(plan.ok ? "Template update apply: complete" : "Template update apply: refused");
   } else if (isStatus) {
     console.log(plan.ok ? "Template update status: aligned" : "Template update status: action needed");
   } else if (isCheck) {
     console.log(plan.ok ? "Template update check: aligned" : "Template update check: out of date");
+  } else if (isFileAction) {
+    console.log(plan.ok ? `Template update ${plan.mode}: complete` : `Template update ${plan.mode}: refused`);
   } else {
     console.log(plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible");
   }
@@ -549,8 +554,10 @@ function printTemplateUpdatePlan(plan) {
   console.log(`Changed: ${plan.summary.changed}`);
   console.log(`Current-only: ${plan.summary.currentOnly}`);
   console.log(`Unchanged: ${plan.summary.unchanged}`);
-  if (isApply || isStatus) {
+  if (isApply || isStatus || isFileAction) {
     const appliedCount = (plan.applied || []).length;
+    const acceptedCount = (plan.accepted || []).length;
+    const deletedCount = (plan.deleted || []).length;
     const skippedCount = (plan.skipped || []).length;
     const conflictCount = (plan.conflicts || []).length;
     if (isApply && appliedCount === 0 && skippedCount === 0 && conflictCount === 0 && plan.files.length === 0) {
@@ -561,6 +568,15 @@ function printTemplateUpdatePlan(plan) {
     }
     if (isApply && appliedCount > 0) {
       console.log(`Applied ${appliedCount} file(s).`);
+    }
+    if (isFileAction && appliedCount > 0) {
+      console.log(`Accepted candidate for ${appliedCount} file(s).`);
+    }
+    if (acceptedCount > 0) {
+      console.log(`Accepted current baseline for ${acceptedCount} file(s).`);
+    }
+    if (deletedCount > 0) {
+      console.log(`Deleted ${deletedCount} current-only file(s).`);
     }
     if (skippedCount > 0) {
       console.log(`Skipped ${skippedCount} current-only file(s).`);
@@ -593,6 +609,12 @@ function printTemplateUpdatePlan(plan) {
     console.log(`Skipped: ${skipped.path}`);
     console.log(`  reason: ${skipped.reason}`);
   }
+  for (const accepted of plan.accepted || []) {
+    console.log(`Accepted current: ${accepted.path}`);
+  }
+  for (const deleted of plan.deleted || []) {
+    console.log(`Deleted: ${deleted.path}`);
+  }
   for (const file of plan.files) {
     console.log("");
     console.log(`${file.kind.toUpperCase()}: ${file.path}`);
@@ -616,7 +638,7 @@ function printTemplateUpdatePlan(plan) {
   if (plan.files.length === 0) {
     console.log("No template-owned file changes found.");
   }
-  if (!isApply && !isCheck && !isStatus) {
+  if (!isApply && !isCheck && !isStatus && !isFileAction) {
     console.log("");
     console.log("This command did not write files. Review the plan before applying template updates.");
   } else if (isCheck || isStatus) {
@@ -1268,12 +1290,24 @@ try {
     const checkUpdate = args.includes("--check");
     const planUpdate = args.includes("--plan");
     const statusUpdate = args.includes("--status");
-    const updateModeCount = [applyUpdate, checkUpdate, planUpdate, statusUpdate].filter(Boolean).length;
+    const acceptCurrentIndex = args.indexOf("--accept-current");
+    const acceptCandidateIndex = args.indexOf("--accept-candidate");
+    const deleteCurrentIndex = args.indexOf("--delete-current");
+    const acceptCurrentUpdate = acceptCurrentIndex >= 0;
+    const acceptCandidateUpdate = acceptCandidateIndex >= 0;
+    const deleteCurrentUpdate = deleteCurrentIndex >= 0;
+    const fileAction = acceptCurrentUpdate ? "accept-current" : acceptCandidateUpdate ? "accept-candidate" : deleteCurrentUpdate ? "delete-current" : null;
+    const fileActionIndex = acceptCurrentUpdate ? acceptCurrentIndex : acceptCandidateUpdate ? acceptCandidateIndex : deleteCurrentUpdate ? deleteCurrentIndex : -1;
+    const fileActionPath = fileActionIndex >= 0 ? args[fileActionIndex + 1] : null;
+    const updateModeCount = [applyUpdate, checkUpdate, planUpdate, statusUpdate, acceptCurrentUpdate, acceptCandidateUpdate, deleteCurrentUpdate].filter(Boolean).length;
     if (updateModeCount > 1) {
-      throw new Error("Choose one of `topogram template update --status`, `topogram template update --plan`, `topogram template update --check`, or `topogram template update --apply`.");
+      throw new Error("Choose one template update mode or file adoption action.");
     }
     if (updateModeCount === 0) {
-      throw new Error("Template update requires `--status`, `--plan`, `--check`, or `--apply`.");
+      throw new Error("Template update requires `--status`, `--plan`, `--check`, `--apply`, `--accept-current <file>`, `--accept-candidate <file>`, or `--delete-current <file>`.");
+    }
+    if (fileAction && (!fileActionPath || fileActionPath.startsWith("-"))) {
+      throw new Error(`Template update ${fileAction} requires a relative file path.`);
     }
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
@@ -1281,17 +1315,20 @@ try {
     }
     let update;
     try {
-      update = (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : statusUpdate ? buildTemplateUpdateStatus : buildTemplateUpdatePlan)({
+      const updateOptions = {
         projectRoot: projectConfigInfo.configDir,
         projectConfig: projectConfigInfo.config,
         templateName: templateIndex >= 0 ? templateName : null,
         templatesRoot: TEMPLATES_ROOT
-      });
+      };
+      update = fileAction
+        ? applyTemplateUpdateFileAction({ ...updateOptions, action: fileAction, filePath: fileActionPath || "" })
+        : (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : statusUpdate ? buildTemplateUpdateStatus : buildTemplateUpdatePlan)(updateOptions);
     } catch (error) {
       const message = messageFromError(error);
       update = {
         ok: false,
-        mode: applyUpdate ? "apply" : checkUpdate ? "check" : statusUpdate ? "status" : "plan",
+        mode: fileAction || (applyUpdate ? "apply" : checkUpdate ? "check" : statusUpdate ? "status" : "plan"),
         writes: false,
         current: {
           id: typeof projectConfigInfo.config.template?.id === "string" ? projectConfigInfo.config.template.id : null,

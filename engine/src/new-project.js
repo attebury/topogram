@@ -31,6 +31,10 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  */
 
 /**
+ * @typedef {TemplateUpdatePlanOptions & { filePath: string, action: "accept-current"|"accept-candidate"|"delete-current" }} TemplateUpdateFileActionOptions
+ */
+
+/**
  * @typedef {Object} TemplateOwnedFileRecord
  * @property {string} path
  * @property {string} sha256
@@ -483,6 +487,39 @@ function issueMessagesFromDiagnostics(diagnostics) {
 }
 
 /**
+ * @param {Record<string, any>} projectConfig
+ * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }}
+ */
+function currentTemplateMetadata(projectConfig) {
+  const currentTemplate = projectConfig.template || {};
+  return {
+    id: typeof currentTemplate.id === "string" ? currentTemplate.id : null,
+    version: typeof currentTemplate.version === "string" ? currentTemplate.version : null,
+    source: typeof currentTemplate.source === "string" ? currentTemplate.source : null,
+    sourceSpec: typeof currentTemplate.sourceSpec === "string" ? currentTemplate.sourceSpec : null,
+    requested: typeof currentTemplate.requested === "string" ? currentTemplate.requested : null
+  };
+}
+
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
+function normalizeTemplateUpdateActionPath(filePath) {
+  const normalized = path.posix.normalize(filePath.replace(/\\/g, "/"));
+  if (
+    !filePath ||
+    path.isAbsolute(filePath) ||
+    normalized === "." ||
+    normalized.startsWith("../") ||
+    normalized === ".."
+  ) {
+    throw new Error(`Template update action requires a relative template-owned file path: ${filePath || "(missing)"}`);
+  }
+  return normalized;
+}
+
+/**
  * @param {any} bytes
  * @returns {boolean}
  */
@@ -831,6 +868,39 @@ export function writeTemplateFilesManifest(projectRoot, projectConfig) {
 }
 
 /**
+ * @param {string} projectRoot
+ * @param {{ version: string, template: Record<string, any>, files: TemplateOwnedFileRecord[] }} manifest
+ * @returns {void}
+ */
+function writeTemplateFilesManifestData(projectRoot, manifest) {
+  const sortedManifest = {
+    ...manifest,
+    files: [...manifest.files].sort((left, right) => left.path.localeCompare(right.path))
+  };
+  fs.writeFileSync(path.join(projectRoot, TEMPLATE_FILES_MANIFEST), `${stableJsonStringify(sortedManifest)}\n`, "utf8");
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {{ version: string, template: Record<string, any>, files: TemplateOwnedFileRecord[] }} manifest
+ * @param {string} relativePath
+ * @param {TemplateOwnedFileRecord|null} record
+ * @returns {void}
+ */
+function updateTemplateFilesManifestRecord(projectRoot, manifest, relativePath, record) {
+  const byPath = new Map(manifest.files.map((file) => [file.path, file]));
+  if (record) {
+    byPath.set(relativePath, record);
+  } else {
+    byPath.delete(relativePath);
+  }
+  writeTemplateFilesManifestData(projectRoot, {
+    ...manifest,
+    files: [...byPath.values()]
+  });
+}
+
+/**
  * @param {TemplateUpdatePlanOptions} options
  * @returns {{ ok: boolean, mode: "plan", writes: false, current: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }, candidate: { id: string, version: string, source: string, sourceSpec: string, requested: string }, compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: { added: number, changed: number, currentOnly: number, unchanged: number }, files: Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
  */
@@ -914,13 +984,7 @@ export function buildTemplateUpdatePlan({
     ok: issues.length === 0,
     mode: "plan",
     writes: false,
-    current: {
-      id: typeof currentTemplate.id === "string" ? currentTemplate.id : null,
-      version: typeof currentTemplate.version === "string" ? currentTemplate.version : null,
-      source: typeof currentTemplate.source === "string" ? currentTemplate.source : null,
-      sourceSpec: typeof currentTemplate.sourceSpec === "string" ? currentTemplate.sourceSpec : null,
-      requested: typeof currentTemplate.requested === "string" ? currentTemplate.requested : null
-    },
+    current: currentTemplateMetadata(projectConfig),
     candidate: {
       id: candidateMetadata.id,
       version: candidateMetadata.version,
@@ -1105,6 +1169,196 @@ function fileMatchesBaseline(baseline, currentHash) {
     return false;
   }
   return baseline.sha256 === currentHash.sha256 && baseline.size === currentHash.size;
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} action
+ * @returns {TemplateUpdateDiagnostic}
+ */
+function templateBaselineMissingDiagnostic(projectRoot, action) {
+  return templateUpdateDiagnostic({
+    code: "template_baseline_missing",
+    message: `Cannot ${action} because ${TEMPLATE_FILES_MANIFEST} is missing. Review current template-owned files, then run 'topogram trust template' to record the baseline before applying template updates.`,
+    path: path.join(projectRoot, TEMPLATE_FILES_MANIFEST),
+    suggestedFix: "Review current template-owned files, then run `topogram trust template` to record the baseline before applying template updates.",
+    step: "baseline"
+  });
+}
+
+/**
+ * @param {TemplateUpdateDiagnostic[]} diagnostics
+ * @param {ReturnType<typeof buildTemplateUpdatePlan>|null} plan
+ * @param {TemplateUpdateFileActionOptions["action"]} action
+ * @param {string} relativePath
+ * @param {Array<{ path: string, kind: "added"|"changed" }>} applied
+ * @param {Array<{ path: string, kind: "accepted-current" }>} accepted
+ * @param {Array<{ path: string, kind: "current-only" }>} deleted
+ * @param {Array<{ path: string, reason: string }>} conflicts
+ * @param {ReturnType<typeof currentTemplateMetadata>} [current]
+ * @returns {{ ok: boolean, mode: TemplateUpdateFileActionOptions["action"], writes: boolean, current: ReturnType<typeof currentTemplateMetadata>, candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"]|null, compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], applied: Array<{ path: string, kind: "added"|"changed" }>, accepted: Array<{ path: string, kind: "accepted-current" }>, deleted: Array<{ path: string, kind: "current-only" }>, skipped: Array<{ path: string, kind: "current-only", reason: string }>, conflicts: Array<{ path: string, reason: string }>, files: ReturnType<typeof buildTemplateUpdatePlan>["files"], action: TemplateUpdateFileActionOptions["action"], path: string }}
+ */
+function templateUpdateFileActionResult(diagnostics, plan, action, relativePath, applied, accepted, deleted, conflicts, current = { id: null, version: null, source: null, sourceSpec: null, requested: null }) {
+  const issues = issueMessagesFromDiagnostics(diagnostics);
+  return {
+    ...(plan || {}),
+    ok: issues.length === 0,
+    mode: action,
+    writes: applied.length > 0 || accepted.length > 0 || deleted.length > 0,
+    current: plan?.current || current,
+    candidate: plan?.candidate || null,
+    compatible: plan?.compatible || issues.length === 0,
+    issues,
+    diagnostics,
+    summary: plan?.summary || { added: 0, changed: 0, currentOnly: 0, unchanged: 0 },
+    applied,
+    accepted,
+    deleted,
+    skipped: [],
+    conflicts,
+    files: plan?.files || [],
+    action,
+    path: relativePath
+  };
+}
+
+/**
+ * @param {TemplateUpdateFileActionOptions} options
+ * @returns {{ ok: boolean, mode: "accept-current"|"accept-candidate"|"delete-current", writes: boolean, current: ReturnType<typeof currentTemplateMetadata>, candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"]|null, compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], applied: Array<{ path: string, kind: "added"|"changed" }>, accepted: Array<{ path: string, kind: "accepted-current" }>, deleted: Array<{ path: string, kind: "current-only" }>, skipped: Array<{ path: string, kind: "current-only", reason: string }>, conflicts: Array<{ path: string, reason: string }>, files: ReturnType<typeof buildTemplateUpdatePlan>["files"], action: "accept-current"|"accept-candidate"|"delete-current", path: string }}
+ */
+export function applyTemplateUpdateFileAction(options) {
+  const relativePath = normalizeTemplateUpdateActionPath(options.filePath);
+  /** @type {TemplateUpdateDiagnostic[]} */
+  const diagnostics = [];
+  /** @type {Array<{ path: string, kind: "added"|"changed" }>} */
+  const applied = [];
+  /** @type {Array<{ path: string, kind: "accepted-current" }>} */
+  const accepted = [];
+  /** @type {Array<{ path: string, kind: "current-only" }>} */
+  const deleted = [];
+  /** @type {Array<{ path: string, reason: string }>} */
+  const conflicts = [];
+  const baselineManifest = readTemplateFilesManifest(options.projectRoot);
+  const current = currentTemplateMetadata(options.projectConfig);
+  if (!baselineManifest) {
+    diagnostics.push(templateBaselineMissingDiagnostic(options.projectRoot, options.action));
+    return templateUpdateFileActionResult(diagnostics, null, options.action, relativePath, applied, accepted, deleted, conflicts, current);
+  }
+
+  if (options.action === "accept-current") {
+    const currentHashes = currentTemplateOwnedFileHashes(options.projectRoot, options.projectConfig);
+    const currentHash = currentHashes.get(relativePath) || null;
+    if (!currentHash) {
+      diagnostics.push(templateUpdateDiagnostic({
+        code: "template_file_not_current",
+        message: `Cannot accept current file '${relativePath}' because it is not a current template-owned file.`,
+        path: path.join(options.projectRoot, relativePath),
+        suggestedFix: "Pass a file under topogram/, topogram.project.json, or trusted implementation/.",
+        step: "accept-current"
+      }));
+      return templateUpdateFileActionResult(diagnostics, null, options.action, relativePath, applied, accepted, deleted, conflicts, current);
+    }
+    updateTemplateFilesManifestRecord(options.projectRoot, baselineManifest, relativePath, currentHash);
+    accepted.push({ path: relativePath, kind: "accepted-current" });
+    return templateUpdateFileActionResult(diagnostics, null, options.action, relativePath, applied, accepted, deleted, conflicts, current);
+  }
+
+  const plan = buildTemplateUpdatePlan(options);
+  diagnostics.push(...plan.diagnostics);
+  if (!plan.ok) {
+    return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+  }
+  const file = plan.files.find((item) => item.path === relativePath) || null;
+  if (!file) {
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_file_unchanged",
+      message: `Template-owned file '${relativePath}' has no candidate update action.`,
+      path: path.join(options.projectRoot, relativePath),
+      suggestedFix: "Run `topogram template update --status` to see files that need adoption.",
+      step: options.action
+    }));
+    return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+  }
+
+  const baselineByPath = new Map(baselineManifest.files.map((record) => [record.path, record]));
+  const currentHashes = currentTemplateOwnedFileHashes(options.projectRoot, options.projectConfig);
+  const baseline = baselineByPath.get(relativePath) || null;
+  const currentHash = currentHashes.get(relativePath) || null;
+
+  if (options.action === "delete-current") {
+    if (file.kind !== "current-only") {
+      diagnostics.push(templateUpdateDiagnostic({
+        code: "template_delete_not_current_only",
+        message: `Cannot delete '${relativePath}' because it is not a current-only template-owned file.`,
+        path: path.join(options.projectRoot, relativePath),
+        suggestedFix: "Use delete-current only for files the candidate template removed.",
+        step: "delete-current"
+      }));
+      return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+    }
+    if (!fileMatchesBaseline(baseline, currentHash)) {
+      const reason = baseline
+        ? "Current file differs from the last trusted template-owned baseline."
+        : "Current file is not part of the trusted template-owned baseline.";
+      conflicts.push({ path: relativePath, reason });
+      diagnostics.push(templateUpdateDiagnostic({
+        code: "template_update_conflict",
+        message: `Template delete conflict in '${relativePath}': ${reason}`,
+        path: path.join(options.projectRoot, relativePath),
+        suggestedFix: "Review local edits before deleting, or accept current as the new baseline.",
+        step: "delete-current"
+      }));
+      return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+    }
+    fs.rmSync(path.join(options.projectRoot, relativePath));
+    updateTemplateFilesManifestRecord(options.projectRoot, baselineManifest, relativePath, null);
+    deleted.push({ path: relativePath, kind: "current-only" });
+    return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+  }
+
+  if (file.kind !== "added" && file.kind !== "changed") {
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_candidate_not_applicable",
+      message: `Cannot accept candidate for '${relativePath}' because the candidate has no added or changed file.`,
+      path: path.join(options.projectRoot, relativePath),
+      suggestedFix: "Use accept-candidate only for added or changed candidate files.",
+      step: "accept-candidate"
+    }));
+    return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+  }
+  if (file.kind === "changed" && !fileMatchesBaseline(baseline, currentHash)) {
+    const reason = baseline
+      ? "Current file differs from the last trusted template-owned baseline."
+      : "Current file is not part of the trusted template-owned baseline.";
+    conflicts.push({ path: relativePath, reason });
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_update_conflict",
+      message: `Template candidate conflict in '${relativePath}': ${reason}`,
+      path: path.join(options.projectRoot, relativePath),
+      suggestedFix: "Review local edits before accepting the candidate file.",
+      step: "accept-candidate"
+    }));
+    return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
+  }
+  const currentTemplate = options.projectConfig.template || {};
+  const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
+  const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
+  const candidateFile = candidateTemplateFiles(candidateTemplate).get(relativePath);
+  if (!candidateFile) {
+    throw new Error(`Cannot accept missing candidate template file: ${relativePath}`);
+  }
+  writeCandidateFile(candidateFile, path.join(options.projectRoot, relativePath));
+  const nextHash = fileHash({
+    absolutePath: path.join(options.projectRoot, relativePath),
+    content: null
+  });
+  updateTemplateFilesManifestRecord(options.projectRoot, baselineManifest, relativePath, {
+    path: relativePath,
+    sha256: nextHash.sha256,
+    size: nextHash.size
+  });
+  applied.push({ path: relativePath, kind: file.kind });
+  return templateUpdateFileActionResult(diagnostics, plan, options.action, relativePath, applied, accepted, deleted, conflicts);
 }
 
 /**

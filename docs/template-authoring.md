@@ -130,6 +130,9 @@ topogram template update --plan --template @scope/topogram-template-name@0.2.0
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
+topogram template update --accept-current topogram/entities/entity-greeting.tg
+topogram template update --accept-candidate topogram/entities/entity-greeting.tg --template ./local-template
+topogram template update --delete-current topogram/entities/old-resource.tg --template ./local-template
 ```
 
 Without `--template`, the command uses the recorded `sourceSpec` or `requested`
@@ -163,6 +166,14 @@ fresh `.topogram-template-files.json` baseline after a successful apply, skips
 current-only deletes in this milestone, and refuses to overwrite a file that no
 longer matches the last trusted template-owned baseline. Executable
 implementation trust is refreshed after a successful apply.
+
+Single-file adoption actions cover the common manual decisions from a status
+report. Use `--accept-current <file>` when the local edit is intentional and
+should become the new trusted baseline. Use `--accept-candidate <file>` when one
+candidate file should replace the current file after baseline checks pass. Use
+`--delete-current <file>` when the candidate template removed a file and the
+current file still matches the trusted baseline. These actions mutate only the
+named file or its baseline record.
 
 Human output prints a compact summary before file diffs, including `No changes
 to apply.`, `Applied N file(s).`, `Skipped N current-only file(s).`, and
