@@ -462,10 +462,14 @@ test("topogram template update applies reviewed template-owned changes", () => {
   assert.equal(trustStatus.status, 0, trustStatus.stderr || trustStatus.stdout);
   assert.equal(JSON.parse(trustStatus.stdout).ok, true);
 
+  const baselineBeforeNoop = fs.readFileSync(path.join(projectRoot, ".topogram-template-files.json"), "utf8");
+  const trustBeforeNoop = fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8");
   const humanApply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot], { cwd: projectRoot });
   assert.equal(humanApply.status, 0, humanApply.stderr || humanApply.stdout);
   assert.match(humanApply.stdout, /Template update apply: complete/);
   assert.match(humanApply.stdout, /Writes: none/);
+  assert.equal(fs.readFileSync(path.join(projectRoot, ".topogram-template-files.json"), "utf8"), baselineBeforeNoop);
+  assert.equal(fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8"), trustBeforeNoop);
 });
 
 test("topogram template update apply refuses local template-owned conflicts", () => {

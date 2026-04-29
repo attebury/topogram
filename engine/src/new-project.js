@@ -1012,10 +1012,12 @@ export function applyTemplateUpdate(options) {
     applied.push({ path: file.path, kind: file.kind });
   }
 
-  const nextProjectConfig = JSON.parse(fs.readFileSync(path.join(options.projectRoot, "topogram.project.json"), "utf8"));
-  writeTemplateFilesManifest(options.projectRoot, nextProjectConfig);
-  if (nextProjectConfig.implementation) {
-    writeTemplateTrustRecord(options.projectRoot, nextProjectConfig);
+  if (applied.length > 0) {
+    const nextProjectConfig = JSON.parse(fs.readFileSync(path.join(options.projectRoot, "topogram.project.json"), "utf8"));
+    writeTemplateFilesManifest(options.projectRoot, nextProjectConfig);
+    if (nextProjectConfig.implementation) {
+      writeTemplateTrustRecord(options.projectRoot, nextProjectConfig);
+    }
   }
   return {
     ...plan,
