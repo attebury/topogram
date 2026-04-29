@@ -1,0 +1,16 @@
+{
+  "version": "1",
+  "trustPolicy": "topogram-template-executable-implementation-v1",
+  "trustedAt": "2026-04-29T00:00:00.000Z",
+  "template": {
+    "id": null,
+    "version": null,
+    "source": null,
+    "sourceSpec": null
+  },
+  "implementation": {
+    "id": "app-basic-fixture",
+    "module": "./implementation/index.js",
+    "export": "APP_BASIC_IMPLEMENTATION"
+  }
+}

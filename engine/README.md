@@ -23,6 +23,7 @@ This lets source checkouts and private-package consumers call:
 topogram create ../my-app
 topogram check
 topogram generate
+topogram trust template
 ```
 
 Publishing is manual through the repo-level `Publish CLI Package` workflow. Create generated projects outside `engine/`; this directory is source and test code.
@@ -80,6 +81,9 @@ topogram new ../todo-demo --template @attebury/topogram-template-todo
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 
 Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
+Projects created from executable templates include `.topogram-template-trust.json`;
+regenerate it with `topogram trust template` after reviewing copied
+`implementation/` code.
 
 Run the same gate directly:
 

@@ -21,6 +21,7 @@
     "./src/generator/surfaces/databases/shared.d.ts",
     "./src/realization/backend/index.d.ts",
     "./src/project-config.js",
+    "./src/template-trust.js",
     "./src/new-project.js",
     "./src/generator/registry.js",
     "./src/generator/runtime/shared.js"

@@ -32,7 +32,9 @@ npm run verify
 ```
 
 The built-in starter is a neutral Hello-resource app with one API, one SvelteKit
-web surface, and one Postgres database projection.
+web surface, and one Postgres database projection. Executable templates record
+local trust in `.topogram-template-trust.json`; refresh it with
+`topogram trust template` after reviewing copied `implementation/` code.
 
 To create a starter from a shared template pack:
 

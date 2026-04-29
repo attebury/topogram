@@ -6,6 +6,7 @@ import {
   findLegacyImplementationConfig,
   findProjectConfig
 } from "./project-config.js";
+import { assertTrustedImplementation } from "./template-trust.js";
 
 function normalizeRoot(root) {
   return String(root || "").replace(/\\/g, "/");
@@ -58,6 +59,8 @@ export async function loadImplementationProvider(root) {
   }
 
   const { config, configPath, configDir } = found;
+  const projectConfig = findProjectConfig(root)?.config || null;
+  assertTrustedImplementation(found, projectConfig);
   const implementationModule = config.implementation_module || config.module;
   if (!implementationModule) {
     throw new Error(

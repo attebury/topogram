@@ -26,7 +26,8 @@ package.json           # required for npm packages
 
 Set `includesExecutableImplementation` to `true` when the pack ships an
 `implementation/` provider. `topogram new` copies that code but does not run it.
-`topogram generate` may load it later through `topogram.project.json`.
+`topogram generate` may load it later through `topogram.project.json`, so
+generated projects record local trust in `.topogram-template-trust.json`.
 
 ## Package Files
 
@@ -93,7 +94,18 @@ Template packs are copied into the target project. Package install uses
 
 Implementation providers are different: if a template includes `implementation/`
 and declares `includesExecutableImplementation: true`, the generated project may
-load that code during `topogram generate`. Use templates from sources you trust,
-review implementation code before generating, and keep product-specific
-implementation providers in external template repositories rather than the
-engine package.
+load that code during `topogram generate`. `topogram new` writes
+`.topogram-template-trust.json` with the template id, template version, source,
+and implementation module that were copied.
+
+If the trust file is missing or no longer matches `topogram.project.json`,
+`topogram generate` refuses to import `./implementation/index.js`. After
+reviewing `implementation/`, refresh the trust record:
+
+```bash
+topogram trust template
+```
+
+Use templates from sources you trust, review implementation code before
+generating, and keep product-specific implementation providers in external
+template repositories rather than the engine package.

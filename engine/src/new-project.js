@@ -5,6 +5,8 @@ import childProcess from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 
+import { writeTemplateTrustRecord } from "./template-trust.js";
+
 const CLI_PACKAGE_NAME = "@attebury/topogram";
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
 const TEMPLATE_MANIFEST = "topogram-template.json";
@@ -400,6 +402,25 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
 
 /**
  * @param {string} projectRoot
+ * @param {ResolvedTemplate} template
+ * @returns {Record<string, any>}
+ */
+function writeProjectTemplateMetadata(projectRoot, template) {
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  projectConfig.template = {
+    id: template.manifest.id,
+    version: template.manifest.version,
+    source: template.source,
+    sourceSpec: template.packageSpec || template.requested,
+    includesExecutableImplementation: Boolean(template.manifest.includesExecutableImplementation)
+  };
+  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+  return projectConfig;
+}
+
+/**
+ * @param {string} projectRoot
  * @param {string} engineRoot
  * @returns {void}
  */
@@ -512,15 +533,18 @@ export function createNewProject({
 
   ensureCreatableProjectRoot(projectRoot);
   copyTopogramWorkspace(template.root, projectRoot);
+  const projectConfig = writeProjectTemplateMetadata(projectRoot, template);
   writeProjectPackage(projectRoot, engineRoot);
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, template.manifest.id);
 
   const warnings = [];
   if (template.manifest.includesExecutableImplementation) {
+    writeTemplateTrustRecord(projectRoot, projectConfig);
     warnings.push(
       `Template '${template.manifest.id}' copied implementation/ code into this project. ` +
-        "topogram new did not execute it, but topogram generate may load it later."
+        "topogram new did not execute it, but topogram generate may load it later. " +
+        "Recorded local trust in .topogram-template-trust.json."
     );
   }
 

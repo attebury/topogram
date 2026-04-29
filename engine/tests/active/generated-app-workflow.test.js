@@ -135,7 +135,16 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), false);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
+  const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
+  assert.equal(projectConfig.template.id, "topogram/web-api-db");
+  assert.equal(projectConfig.template.includesExecutableImplementation, true);
+  const trustRecord = JSON.parse(fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8"));
+  assert.equal(trustRecord.trustPolicy, "topogram-template-executable-implementation-v1");
+  assert.equal(trustRecord.template.id, "topogram/web-api-db");
+  assert.equal(trustRecord.template.version, projectConfig.template.version);
+  assert.equal(trustRecord.implementation.module, "./implementation/index.js");
 
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
@@ -159,6 +168,50 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_postgres")), true);
 });
 
+test("topogram generate requires local executable implementation trust", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const trustPath = path.join(projectRoot, ".topogram-template-trust.json");
+  fs.rmSync(trustPath);
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  assert.match(check.stderr, /without \.topogram-template-trust\.json/);
+
+  const refused = runCli(["generate"], { cwd: projectRoot });
+  assert.notEqual(refused.status, 0, refused.stdout);
+  assert.match(refused.stderr, /without \.topogram-template-trust\.json/);
+  assert.match(refused.stderr, /topogram trust template/);
+
+  const trust = runCli(["trust", "template"], { cwd: projectRoot });
+  assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  assert.match(trust.stdout, /Wrote \.topogram-template-trust\.json/);
+  assert.equal(fs.existsSync(trustPath), true);
+
+  const generate = runCli(["generate"], { cwd: projectRoot });
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+  assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
+});
+
+test("topogram generate rejects stale template trust metadata", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-stale-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const trustPath = path.join(projectRoot, ".topogram-template-trust.json");
+  const trustRecord = JSON.parse(fs.readFileSync(trustPath, "utf8"));
+  trustRecord.template.version = "0.0.0-stale";
+  fs.writeFileSync(trustPath, `${JSON.stringify(trustRecord, null, 2)}\n`, "utf8");
+
+  const refused = runCli(["generate"], { cwd: projectRoot });
+  assert.notEqual(refused.status, 0, refused.stdout);
+  assert.match(refused.stderr, /trusts template version '0\.0\.0-stale'/);
+  assert.match(refused.stderr, /topogram\.project\.json declares/);
+});
+
 test("topogram new supports local path template packs", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-local-template-"));
   const projectRoot = path.join(root, "starter");
@@ -168,6 +221,7 @@ test("topogram new supports local path template packs", () => {
   assert.match(create.stderr, /topogram generate may load it later/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), true);
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.equal(check.status, 0, check.stderr || check.stdout);
