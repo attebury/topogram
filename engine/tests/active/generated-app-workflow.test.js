@@ -166,6 +166,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
+  assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
@@ -412,7 +413,46 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "README.md")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-source.json")), true);
   assert.equal(payload.files.some((file) => file === "topogram.project.json"), true);
+  assert.equal(payload.provenancePath, path.join(targetRoot, ".topogram-source.json"));
+
+  const sourceRecord = readJson(path.join(targetRoot, ".topogram-source.json"));
+  assert.equal(sourceRecord.kind, "topogram");
+  assert.equal(sourceRecord.catalog.id, "hello");
+  assert.equal(sourceRecord.catalog.source, catalogPath);
+  assert.equal(sourceRecord.package.name, "@scope/topogram-hello");
+  assert.equal(sourceRecord.package.version, "0.1.0");
+  assert.equal(sourceRecord.package.spec, "@scope/topogram-hello@0.1.0");
+  assert.equal(sourceRecord.trust.includesExecutableImplementation, false);
+  assert.ok(sourceRecord.files.some((file) => file.path === "topogram.project.json" && /^[a-f0-9]{64}$/.test(file.sha256)));
+
+  const cleanStatus = runCli(["source", "status", "--json"], { cwd: targetRoot });
+  assert.equal(cleanStatus.status, 0, cleanStatus.stderr || cleanStatus.stdout);
+  const cleanPayload = JSON.parse(cleanStatus.stdout);
+  assert.equal(cleanPayload.exists, true);
+  assert.equal(cleanPayload.status, "clean");
+  assert.deepEqual(cleanPayload.content.changed, []);
+  assert.deepEqual(cleanPayload.content.added, []);
+  assert.deepEqual(cleanPayload.content.removed, []);
+
+  fs.appendFileSync(path.join(targetRoot, "topogram", "entities", "entity-greeting.tg"), "\n# local edit\n", "utf8");
+  fs.writeFileSync(path.join(targetRoot, "topogram", "entities", "entity-local-note.tg"), "# local note\n", "utf8");
+  fs.rmSync(path.join(targetRoot, "README.md"));
+  const changedStatus = runCli(["source", "status", "--json"], { cwd: targetRoot });
+  assert.equal(changedStatus.status, 0, changedStatus.stderr || changedStatus.stdout);
+  const changedPayload = JSON.parse(changedStatus.stdout);
+  assert.equal(changedPayload.status, "changed");
+  assert.deepEqual(changedPayload.content.changed, ["topogram/entities/entity-greeting.tg"]);
+  assert.deepEqual(changedPayload.content.added, ["topogram/entities/entity-local-note.tg"]);
+  assert.deepEqual(changedPayload.content.removed, ["README.md"]);
+
+  const missingStatus = runCli(["source", "status", path.join(root, "no-provenance"), "--json"]);
+  assert.equal(missingStatus.status, 0, missingStatus.stderr || missingStatus.stdout);
+  const missingPayload = JSON.parse(missingStatus.stdout);
+  assert.equal(missingPayload.exists, false);
+  assert.equal(missingPayload.status, "missing");
+  assert.match(missingPayload.diagnostics[0].message, /\.topogram-source\.json was not found/);
 
   const unsafeTarget = path.join(root, "unsafe-copy");
   const unsafe = runCli(["catalog", "copy", "unsafe-package", unsafeTarget, "--catalog", catalogPath], { env });

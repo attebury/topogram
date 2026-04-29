@@ -70,11 +70,13 @@ import {
   catalogEntryPackageSpec,
   catalogSourceOrDefault,
   catalogTemplateListItem,
+  buildTopogramSourceStatus,
   checkCatalogSource,
   copyCatalogTopogramEntry,
   findCatalogEntry,
   isCatalogSourceDisabled,
-  loadCatalog
+  loadCatalog,
+  TOPOGRAM_SOURCE_FILE
 } from "./catalog.js";
 import {
   formatProjectConfigErrors,
@@ -120,6 +122,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog list [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram source status [path] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
@@ -142,6 +145,7 @@ function printUsage(options = {}) {
   console.log("  topogram catalog list");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
+  console.log("  topogram source status");
   console.log("  topogram template list");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
@@ -231,6 +235,14 @@ function normalizeTopogramPath(inputPath) {
   }
   const candidate = path.join(absolute, "topogram");
   return fs.existsSync(candidate) ? candidate : absolute;
+}
+
+function normalizeProjectRoot(inputPath) {
+  const absolute = path.resolve(inputPath);
+  if (path.basename(absolute) === "topogram") {
+    return path.dirname(absolute);
+  }
+  return absolute;
 }
 
 function isSameOrInside(parent, child) {
@@ -795,7 +807,7 @@ function printCatalogCheck(payload) {
  * @param {string} id
  * @param {string} targetPath
  * @param {{ source?: string|null, version?: string|null }} options
- * @returns {{ ok: boolean, source: string, id: string, kind: "topogram", packageSpec: string, targetPath: string, files: string[], diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, source: string, id: string, kind: "topogram", packageSpec: string, targetPath: string, provenancePath: string, files: string[], diagnostics: any[], errors: string[] }}
  */
 function buildCatalogCopyPayload(id, targetPath, options) {
   if (!id || id.startsWith("-")) {
@@ -809,7 +821,10 @@ function buildCatalogCopyPayload(id, targetPath, options) {
   if (!entry) {
     throw new Error(`Catalog topogram entry '${id}' was not found in ${loaded.source}.`);
   }
-  const copied = copyCatalogTopogramEntry(entry, targetPath, { version: options.version || null });
+  const copied = copyCatalogTopogramEntry(entry, targetPath, {
+    catalogSource: loaded.source,
+    version: options.version || null
+  });
   return {
     source: loaded.source,
     ...copied,
@@ -825,7 +840,41 @@ function buildCatalogCopyPayload(id, targetPath, options) {
 function printCatalogCopy(payload) {
   console.log(`Copied catalog topogram '${payload.id}' to ${payload.targetPath}.`);
   console.log(`Package: ${payload.packageSpec}`);
+  console.log(`Source provenance: ${payload.provenancePath}`);
   console.log(`Files: ${payload.files.length}`);
+}
+
+/**
+ * @param {ReturnType<typeof buildTopogramSourceStatus>} payload
+ * @returns {void}
+ */
+function printTopogramSourceStatus(payload) {
+  if (!payload.exists) {
+    console.log("Topogram source: missing");
+    console.log(`Expected: ${payload.path}`);
+  } else {
+    console.log(`Topogram source: ${payload.status}`);
+    console.log(`File: ${payload.path}`);
+    if (payload.source?.catalog?.id) {
+      console.log(`Catalog: ${payload.source.catalog.id}${payload.source.catalog.source ? ` from ${payload.source.catalog.source}` : ""}`);
+    }
+    if (payload.source?.package?.spec) {
+      console.log(`Package: ${payload.source.package.spec}`);
+    }
+  }
+  for (const kind of ["changed", "added", "removed"]) {
+    const files = payload.content[kind] || [];
+    console.log(`${kind[0].toUpperCase()}${kind.slice(1)}: ${files.length}`);
+    for (const file of files) {
+      console.log(`- ${file}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+  console.log("");
+  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
 }
 
 /**
@@ -1788,6 +1837,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { catalogCheck: true, inputPath: args[2] };
 } else if (args[0] === "catalog" && args[1] === "copy") {
   commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
+} else if (args[0] === "source" && args[1] === "status") {
+  commandArgs = { sourceStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "status") {
@@ -1888,6 +1939,7 @@ const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldCatalogList = Boolean(commandArgs?.catalogList);
 const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
 const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
+const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
@@ -1958,7 +2010,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -2010,6 +2062,16 @@ try {
       console.log(stableStringify(payload));
     } else {
       printCatalogCopy(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldSourceStatus) {
+    const payload = buildTopogramSourceStatus(normalizeProjectRoot(inputPath));
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTopogramSourceStatus(payload);
     }
     process.exit(0);
   }
