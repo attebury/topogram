@@ -12,6 +12,7 @@ import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import { createNewProject } from "./new-project.js";
 import {
+  getTemplateTrustStatus,
   implementationRequiresTrust,
   TEMPLATE_TRUST_FILE,
   validateProjectImplementationTrust,
@@ -88,6 +89,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram trust template [path]");
+  console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -97,6 +99,7 @@ function printUsage(options = {}) {
   console.log("  topogram check --json");
   console.log("  topogram generate");
   console.log("  topogram trust template");
+  console.log("  topogram trust status");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
@@ -459,6 +462,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {
   commandArgs = { trustTemplate: true, inputPath: commandPath(2) };
+} else if (args[0] === "trust" && args[1] === "status") {
+  commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -540,6 +545,7 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
 const emitJson = args.includes("--json");
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
+const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -594,13 +600,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -653,7 +659,57 @@ try {
     if (trustRecord.template.id) {
       console.log(`Trusted template: ${trustRecord.template.id}@${trustRecord.template.version || "unknown"}`);
     }
+    console.log(`Trusted implementation digest: ${trustRecord.content.digest}`);
     process.exit(0);
+  }
+
+  if (shouldTrustStatus) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot inspect template trust without topogram.project.json.");
+    }
+    if (!projectConfigInfo.config.implementation) {
+      throw new Error("Cannot inspect template trust because topogram.project.json has no implementation config.");
+    }
+    const implementationInfo = {
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    };
+    const status = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
+    if (emitJson) {
+      console.log(stableStringify(status));
+    } else if (!status.requiresTrust) {
+      console.log("No local implementation trust record needed for this project.");
+    } else {
+      console.log(status.ok ? "Template trust status: trusted" : "Template trust status: review required");
+      if (status.template.id) {
+        console.log(`Template: ${status.template.id}@${status.template.version || "unknown"}`);
+      }
+      console.log(`Implementation: ${status.implementation.module}`);
+      if (status.content.trustedDigest) {
+        console.log(`Trusted digest: ${status.content.trustedDigest}`);
+      }
+      if (status.content.currentDigest) {
+        console.log(`Current digest: ${status.content.currentDigest}`);
+      }
+      for (const issue of status.issues) {
+        console.log(`Issue: ${issue}`);
+      }
+      for (const filePath of status.content.changed) {
+        console.log(`Changed: ${filePath}`);
+      }
+      for (const filePath of status.content.added) {
+        console.log(`Added: ${filePath}`);
+      }
+      for (const filePath of status.content.removed) {
+        console.log(`Removed: ${filePath}`);
+      }
+      if (!status.ok) {
+        console.log("Review implementation/ and run `topogram trust template` to trust the current files.");
+      }
+    }
+    process.exit(status.ok ? 0 : 1);
   }
 
   if (shouldCheck) {

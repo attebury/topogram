@@ -1,7 +1,7 @@
 {
   "version": "1",
   "trustPolicy": "topogram-template-executable-implementation-v1",
-  "trustedAt": "2026-04-29T00:00:00.000Z",
+  "trustedAt": "2026-04-29T12:15:30.242Z",
   "template": {
     "id": null,
     "version": null,
@@ -12,5 +12,67 @@
     "id": "app-basic-fixture",
     "module": "./implementation/index.js",
     "export": "APP_BASIC_IMPLEMENTATION"
+  },
+  "content": {
+    "algorithm": "sha256",
+    "root": "implementation",
+    "digest": "5fbaad55e5159945ba08b35aef368fbc948dd7ccac453a44a26da43db090cbd6",
+    "files": [
+      {
+        "path": "backend/reference.js",
+        "sha256": "fdc2a8c808da34fc61dc752056d4d335cfda8f5272ab5bef44228521432d2ccf",
+        "size": 6077
+      },
+      {
+        "path": "backend/repository-reference.js",
+        "sha256": "25998b14ffa505c9943f23c4be0e4483d82f3c11e8c26d9da1b9da7c78b2607e",
+        "size": 2564
+      },
+      {
+        "path": "backend/repository-renderers.js",
+        "sha256": "fd975223dc6194cff3a0faf3a800ddd481da676a66677d8e0f1244f6a5c5619a",
+        "size": 24064
+      },
+      {
+        "path": "index.js",
+        "sha256": "91949083cbf6a240e34440e9f8005d0d0ef3c329cf7500958f4875be5c0d224f",
+        "size": 1836
+      },
+      {
+        "path": "README.md",
+        "sha256": "01161d433c8f5e715f8959de0fb596549d31307feeeae0afecfa753dbd93a428",
+        "size": 311
+      },
+      {
+        "path": "runtime/check-renderers.js",
+        "sha256": "70ad1c8444c1a5c4ac033d74bf7236cec894acbe3497bb9ff4def3dab2b11f26",
+        "size": 12956
+      },
+      {
+        "path": "runtime/checks.js",
+        "sha256": "cfd4b1e805c4546282fd2ea3c19c004f1306257991bcf1f2cdb46b9b0b116b01",
+        "size": 5367
+      },
+      {
+        "path": "runtime/reference.js",
+        "sha256": "d7a4a6b94e5efaf783f68eaa6715ddb6550898280764d4e423fbce278d29e34c",
+        "size": 3136
+      },
+      {
+        "path": "web/reference.js",
+        "sha256": "dc634a8c042d5026975ef1f67ee7cd0e66afa207d3c76b29ca57e5d3942cedb0",
+        "size": 1739
+      },
+      {
+        "path": "web/renderers.js",
+        "sha256": "b7422a7374b0bec44f2b4391efa9e7de67e7ab329c7a5f825d4c6b1df5b86e52",
+        "size": 44626
+      },
+      {
+        "path": "web/screens-reference.js",
+        "sha256": "10caf15e17253fde20b551cf02e87914d2e9b8c8bd24df755a40cc2240d9d964",
+        "size": 508
+      }
+    ]
   }
 }

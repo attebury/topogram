@@ -145,6 +145,9 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(trustRecord.template.id, "topogram/web-api-db");
   assert.equal(trustRecord.template.version, projectConfig.template.version);
   assert.equal(trustRecord.implementation.module, "./implementation/index.js");
+  assert.equal(trustRecord.content.algorithm, "sha256");
+  assert.match(trustRecord.content.digest, /^[a-f0-9]{64}$/);
+  assert.ok(trustRecord.content.files.some((file) => file.path === "index.js"));
 
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
@@ -210,6 +213,43 @@ test("topogram generate rejects stale template trust metadata", () => {
   assert.notEqual(refused.status, 0, refused.stdout);
   assert.match(refused.stderr, /trusts template version '0\.0\.0-stale'/);
   assert.match(refused.stderr, /topogram\.project\.json declares/);
+});
+
+test("topogram trust status reports implementation content drift and trust refresh adopts edits", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-content-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  fs.appendFileSync(path.join(projectRoot, "implementation", "index.js"), "\n// reviewed local edit\n", "utf8");
+  fs.writeFileSync(path.join(projectRoot, "implementation", "local-note.js"), "export const localNote = true;\n", "utf8");
+  fs.rmSync(path.join(projectRoot, "implementation", "README.md"));
+
+  const status = runCli(["trust", "status", "--json"], { cwd: projectRoot });
+  assert.notEqual(status.status, 0, status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.ok, false);
+  assert.equal(statusPayload.requiresTrust, true);
+  assert.match(statusPayload.issues.join("\n"), /implementation content changed/);
+  assert.deepEqual(statusPayload.content.changed, ["index.js"]);
+  assert.deepEqual(statusPayload.content.added, ["local-note.js"]);
+  assert.deepEqual(statusPayload.content.removed, ["README.md"]);
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  assert.match(check.stderr, /implementation content changed since it was last trusted/);
+
+  const trust = runCli(["trust", "template"], { cwd: projectRoot });
+  assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  assert.match(trust.stdout, /Trusted implementation digest/);
+
+  const cleanStatus = runCli(["trust", "status", "--json"], { cwd: projectRoot });
+  assert.equal(cleanStatus.status, 0, cleanStatus.stderr || cleanStatus.stdout);
+  const cleanPayload = JSON.parse(cleanStatus.stdout);
+  assert.equal(cleanPayload.ok, true);
+  assert.deepEqual(cleanPayload.content.changed, []);
+  assert.deepEqual(cleanPayload.content.added, []);
+  assert.deepEqual(cleanPayload.content.removed, []);
 });
 
 test("topogram new supports local path template packs", () => {

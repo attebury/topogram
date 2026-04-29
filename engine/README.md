@@ -83,7 +83,8 @@ Do not create generated projects under `engine/`. The CLI refuses paths inside t
 Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
 Projects created from executable templates include `.topogram-template-trust.json`;
 regenerate it with `topogram trust template` after reviewing copied
-`implementation/` code.
+`implementation/` code. Use `topogram trust status` to inspect changed files
+before refreshing trust.
 
 Run the same gate directly:
 

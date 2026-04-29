@@ -13,6 +13,11 @@ declare module "node:child_process" {
   export default childProcess;
 }
 
+declare module "node:crypto" {
+  const crypto: any;
+  export default crypto;
+}
+
 declare module "node:os" {
   const os: any;
   export default os;
