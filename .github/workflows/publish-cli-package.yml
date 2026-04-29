@@ -4,17 +4,22 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version to publish"
-        required: true
+        description: "Optional package version. When supplied, it must match engine/package.json."
+        required: false
         type: string
       dist_tag:
         description: "npm dist-tag"
         required: true
         default: "latest"
         type: string
+      create_tag:
+        description: "Create and push topogram-v<version> after publishing"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -32,9 +37,10 @@ jobs:
           node-version: 24
           registry-url: https://npm.pkg.github.com
           scope: "@attebury"
-      - name: Set package version
-        working-directory: engine
-        run: npm version "${{ inputs.version }}" --no-git-tag-version --allow-same-version
+      - name: Check release version
+        env:
+          EXPECTED_TOPOGRAM_VERSION: ${{ inputs.version }}
+        run: bash ./scripts/check-release-version.sh
       - name: Verify engine
         run: bash ./scripts/verify-engine.sh
       - name: Verify packed CLI
@@ -44,3 +50,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish --tag "${{ inputs.dist_tag }}"
+      - name: Create release tag
+        if: ${{ inputs.create_tag }}
+        run: |
+          VERSION="$(node -p "require('./engine/package.json').version")"
+          TAG="topogram-v$VERSION"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Release tag already exists: $TAG" >&2
+            exit 1
+          fi
+          git tag "$TAG"
+          git push origin "$TAG"

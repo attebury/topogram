@@ -70,6 +70,9 @@ npm run generate
 ```
 
 Publishing is manual through the `Publish CLI Package` GitHub Actions workflow.
+Before publishing, run `npm run release:prepare -- <version>` and commit the
+updated `engine/package.json` and `engine/package-lock.json`. See
+[Releasing](./docs/releasing.md).
 
 The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
 The Todo starter source lives in the private `topogram-template-todo` repo and publishes as `@attebury/topogram-template-todo`.
