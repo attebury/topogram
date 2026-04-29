@@ -43,6 +43,8 @@ before refreshing trust.
 Inspect, plan, or apply a template update:
 
 ```bash
+topogram catalog list
+topogram catalog check topograms.catalog.json
 topogram template list
 topogram template status --latest
 topogram template policy check
@@ -115,7 +117,14 @@ To create a starter from a shared template pack:
 
 ```bash
 topogram new ./todo-demo --template @attebury/topogram-template-todo
+topogram new ./todo-demo --template todo
 ```
+
+The second form resolves `todo` through the private catalog at
+`github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
+templates and reusable topograms are still installed from versioned packages.
+Use `topogram catalog copy <id> <target>` for pure topogram entries that should
+be copied into a workspace for editing. See [Catalog](./docs/catalog.md).
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
@@ -154,6 +163,7 @@ updated `engine/package.json` and `engine/package-lock.json`. See
 The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
 The Todo starter source lives in the private `topogram-template-todo` repo and publishes as `@attebury/topogram-template-todo`.
 See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
+See [Catalog](./docs/catalog.md) for private catalog layout and commands.
 
 ## License
 

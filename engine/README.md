@@ -23,6 +23,8 @@ This lets source checkouts and private-package consumers call:
 topogram create ../my-app
 topogram check
 topogram generate
+topogram catalog list
+topogram catalog check topograms.catalog.json
 topogram template list
 topogram template status
 topogram template policy check
@@ -82,11 +84,19 @@ Create a starter project from a shared template package:
 
 ```bash
 topogram new ../todo-demo --template @attebury/topogram-template-todo
+topogram new ../todo-demo --template todo
 ```
+
+Catalog aliases resolve through the private catalog index at
+`github:attebury/topograms/topograms.catalog.json`. The catalog is package
+backed; executable starter content still lives in template packages. Pure
+topogram catalog entries can be copied for editing with
+`topogram catalog copy <id> <target>`.
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 
 Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
+Catalog layout and private access are documented in `../docs/catalog.md`.
 Projects created from executable templates include `.topogram-template-trust.json`;
 regenerate it with `topogram trust template` after reviewing copied
 `implementation/` code. Use `topogram template status` for the lifecycle

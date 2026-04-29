@@ -72,6 +72,18 @@ Use a private GitHub Packages template:
 topogram new ./todo-demo --template @attebury/topogram-template-todo
 ```
 
+Use a private catalog alias:
+
+```bash
+topogram template list
+topogram new ./todo-demo --template todo
+```
+
+Catalog aliases resolve to package specs such as
+`@attebury/topogram-template-todo@0.1.2`. The catalog is only an index; the
+template package remains the source of versioned starter content. See
+[Catalog](./catalog.md).
+
 Private package consumers need registry auth in `.npmrc`:
 
 ```text

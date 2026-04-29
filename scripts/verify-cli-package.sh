@@ -12,6 +12,7 @@ RUN_DIR="$(mktemp -d "$WORK_ROOT/run.XXXXXX")"
 PACK_DIR="$RUN_DIR/pack"
 CONSUMER_DIR="$RUN_DIR/consumer"
 TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
+CATALOG_FILE="$RUN_DIR/topograms.catalog.json"
 mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR"
 
 echo "Packing @attebury/topogram..."
@@ -38,6 +39,31 @@ fi
 
 echo "Checking installed CLI help..."
 "$TOPOGRAM_BIN" --help >/dev/null
+
+echo "Checking installed CLI catalog commands..."
+node --input-type=module -e '
+  import fs from "node:fs";
+  const catalog = {
+    version: "0.1",
+    entries: [
+      {
+        id: "smoke",
+        kind: "template",
+        package: "@attebury/topogram-template-smoke",
+        defaultVersion: "0.1.0",
+        description: "Smoke template",
+        tags: ["smoke"],
+        trust: {
+          scope: "@attebury",
+          includesExecutableImplementation: true
+        }
+      }
+    ]
+  };
+  fs.writeFileSync(process.argv[1], `${JSON.stringify(catalog, null, 2)}\n`);
+' "$CATALOG_FILE"
+"$TOPOGRAM_BIN" catalog check "$CATALOG_FILE" >/dev/null
+"$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
 
 echo "Creating a starter with the packed CLI..."
 (

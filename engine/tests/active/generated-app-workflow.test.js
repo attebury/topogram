@@ -60,6 +60,63 @@ function copyBuiltInTemplate(root, name = "template") {
   return templateRoot;
 }
 
+function createCatalog(root, entries) {
+  fs.mkdirSync(root, { recursive: true });
+  const catalogPath = path.join(root, "topograms.catalog.json");
+  writeJson(catalogPath, {
+    version: "0.1",
+    entries
+  });
+  return catalogPath;
+}
+
+function catalogEntry(overrides = {}) {
+  return {
+    id: "todo",
+    kind: "template",
+    package: "@scope/topogram-template-todo",
+    defaultVersion: "0.1.0",
+    description: "Todo starter",
+    tags: ["todo", "demo"],
+    trust: {
+      scope: "@scope",
+      includesExecutableImplementation: true,
+      notes: "Test fixture package."
+    },
+    ...overrides
+  };
+}
+
+function createPureTopogramPackage(root, name = "topogram-package", options = {}) {
+  const packageRoot = path.join(root, name);
+  fs.mkdirSync(packageRoot, { recursive: true });
+  fs.cpSync(path.join(builtInTemplateRoot, "topogram"), path.join(packageRoot, "topogram"), { recursive: true });
+  writeJson(path.join(packageRoot, "topogram.project.json"), {
+    version: "0.1",
+    outputs: {
+      app: {
+        path: "./app",
+        ownership: "generated"
+      }
+    },
+    topology: {
+      components: []
+    }
+  });
+  fs.writeFileSync(path.join(packageRoot, "README.md"), "# Test topogram package\n", "utf8");
+  writePackageJson(packageRoot, {
+    name: "@scope/topogram-hello",
+    version: "0.1.0",
+    private: true,
+    files: ["topogram", "topogram.project.json", "README.md"]
+  });
+  if (options.implementation) {
+    fs.mkdirSync(path.join(packageRoot, "implementation"), { recursive: true });
+    fs.writeFileSync(path.join(packageRoot, "implementation", "index.js"), "export const unsafe = true;\n", "utf8");
+  }
+  return packageRoot;
+}
+
 function createFakeNpm(root) {
   const binDir = path.join(root, "bin");
   fs.mkdirSync(binDir, { recursive: true });
@@ -84,7 +141,14 @@ if (args[0] === "view") {
 if (args[0] === "install") {
   const prefix = args[args.indexOf("--prefix") + 1];
   const spec = args[args.length - 1];
-  const source = spec.endsWith("@0.1.0") ? process.env.FAKE_TEMPLATE_INITIAL : process.env.FAKE_TEMPLATE_LATEST;
+  const packageMap = process.env.FAKE_NPM_PACKAGES ? JSON.parse(process.env.FAKE_NPM_PACKAGES) : {};
+  const source = packageMap[spec] ||
+    packageMap[packageNameFromSpec(spec)] ||
+    (spec.endsWith("@0.1.0") ? process.env.FAKE_TEMPLATE_INITIAL : process.env.FAKE_TEMPLATE_LATEST);
+  if (!source) {
+    process.stderr.write("No fake npm package source for " + spec + "\\n");
+    process.exit(1);
+  }
   const target = path.join(prefix, "node_modules", packageNameFromSpec(spec));
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.cpSync(source, target, { recursive: true });
@@ -145,6 +209,190 @@ test("public authoring-to-app commands check and generate app bundles", () => {
 
   const buildAlias = runCli(["build", fixtureRoot, "--out", outputRoot]);
   assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
+});
+
+test("topogram catalog check validates catalog schema", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-check-"));
+  const validCatalog = createCatalog(root, [
+    catalogEntry(),
+    catalogEntry({
+      id: "hello",
+      kind: "topogram",
+      package: "@scope/topogram-hello",
+      defaultVersion: "0.1.0",
+      description: "Hello topogram",
+      tags: ["hello"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    })
+  ]);
+
+  const check = runCli(["catalog", "check", validCatalog, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.catalog.entries.length, 2);
+
+  const duplicateCatalog = createCatalog(path.join(root, "duplicate"), [
+    catalogEntry(),
+    catalogEntry({ id: "todo", package: "@scope/topogram-template-other" })
+  ]);
+  const duplicate = runCli(["catalog", "check", duplicateCatalog, "--json"]);
+  assert.notEqual(duplicate.status, 0, duplicate.stdout);
+  assert.equal(JSON.parse(duplicate.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_duplicate_id"), true);
+
+  const invalidKindCatalog = createCatalog(path.join(root, "invalid-kind"), [
+    catalogEntry({ kind: "app" })
+  ]);
+  const invalidKind = runCli(["catalog", "check", invalidKindCatalog, "--json"]);
+  assert.notEqual(invalidKind.status, 0, invalidKind.stdout);
+  assert.equal(JSON.parse(invalidKind.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_invalid_kind"), true);
+
+  const missingPackageCatalog = createCatalog(path.join(root, "missing-package"), [
+    catalogEntry({ package: "" })
+  ]);
+  const missingPackage = runCli(["catalog", "check", missingPackageCatalog, "--json"]);
+  assert.notEqual(missingPackage.status, 0, missingPackage.stdout);
+  assert.equal(JSON.parse(missingPackage.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_entry_field_missing"), true);
+
+  const executableTopogramCatalog = createCatalog(path.join(root, "executable-topogram"), [
+    catalogEntry({
+      id: "unsafe",
+      kind: "topogram",
+      package: "@scope/topogram-unsafe",
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: true
+      }
+    })
+  ]);
+  const executableTopogram = runCli(["catalog", "check", executableTopogramCatalog, "--json"]);
+  assert.notEqual(executableTopogram.status, 0, executableTopogram.stdout);
+  assert.equal(
+    JSON.parse(executableTopogram.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_topogram_executable_not_supported"),
+    true
+  );
+});
+
+test("topogram template list includes catalog template aliases", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-template-list-"));
+  const catalogPath = createCatalog(root, [
+    catalogEntry(),
+    catalogEntry({
+      id: "hello",
+      kind: "topogram",
+      package: "@scope/topogram-hello",
+      defaultVersion: "0.1.0",
+      description: "Hello topogram",
+      tags: ["hello"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    })
+  ]);
+
+  const list = runCli(["template", "list", "--json", "--catalog", catalogPath]);
+  assert.equal(list.status, 0, list.stderr || list.stdout);
+  const payload = JSON.parse(list.stdout);
+  assert.equal(payload.catalog.loaded, true);
+  assert.equal(payload.templates.some((template) => template.id === "topogram/web-api-db" && template.source === "builtin"), true);
+  const todoTemplate = payload.templates.find((template) => template.id === "todo");
+  assert.ok(todoTemplate);
+  assert.equal(todoTemplate.source, "catalog");
+  assert.equal(todoTemplate.package, "@scope/topogram-template-todo");
+  assert.equal(payload.templates.some((template) => template.id === "hello"), false);
+
+  const human = runCli(["catalog", "list", "--catalog", catalogPath]);
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /todo \(template\)/);
+  assert.match(human.stdout, /hello \(topogram\)/);
+});
+
+test("topogram new resolves catalog template aliases to package specs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-"));
+  const templateRoot = copyBuiltInTemplate(root, "todo-template");
+  const manifestPath = path.join(templateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.id = "@scope/topogram-template-todo";
+  manifest.version = "0.1.0";
+  writeJson(manifestPath, manifest);
+  const catalogPath = createCatalog(root, [catalogEntry()]);
+  const fakeNpmBin = createFakeNpm(root);
+  const projectRoot = path.join(root, "starter");
+  const env = {
+    FAKE_NPM_PACKAGES: JSON.stringify({
+      "@scope/topogram-template-todo@0.1.0": templateRoot
+    }),
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const create = runCli(["new", projectRoot, "--template", "todo", "--catalog", catalogPath], { env });
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  assert.match(create.stdout, /Template: @scope\/topogram-template-todo/);
+  const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
+  assert.equal(projectConfig.template.id, "@scope/topogram-template-todo");
+  assert.equal(projectConfig.template.source, "package");
+  assert.equal(projectConfig.template.sourceSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(projectConfig.template.includesExecutableImplementation, true);
+});
+
+test("topogram catalog copy installs pure topogram packages and rejects implementation code", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-copy-"));
+  const packageRoot = createPureTopogramPackage(root, "hello-topogram-package");
+  const unsafePackageRoot = createPureTopogramPackage(root, "unsafe-topogram-package", { implementation: true });
+  const catalogPath = createCatalog(root, [
+    catalogEntry({
+      id: "hello",
+      kind: "topogram",
+      package: "@scope/topogram-hello",
+      defaultVersion: "0.1.0",
+      description: "Hello topogram",
+      tags: ["hello"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    }),
+    catalogEntry({
+      id: "unsafe-package",
+      kind: "topogram",
+      package: "@scope/topogram-unsafe-package",
+      defaultVersion: "0.1.0",
+      description: "Unsafe topogram package",
+      tags: ["unsafe"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    })
+  ]);
+  const fakeNpmBin = createFakeNpm(root);
+  const env = {
+    FAKE_NPM_PACKAGES: JSON.stringify({
+      "@scope/topogram-hello@0.1.0": packageRoot,
+      "@scope/topogram-unsafe-package@0.1.0": unsafePackageRoot
+    }),
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const targetRoot = path.join(root, "copied");
+  const copy = runCli(["catalog", "copy", "hello", targetRoot, "--catalog", catalogPath, "--json"], { env });
+  assert.equal(copy.status, 0, copy.stderr || copy.stdout);
+  const payload = JSON.parse(copy.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.packageSpec, "@scope/topogram-hello@0.1.0");
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram.project.json")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "README.md")), true);
+  assert.equal(payload.files.some((file) => file === "topogram.project.json"), true);
+
+  const unsafeTarget = path.join(root, "unsafe-copy");
+  const unsafe = runCli(["catalog", "copy", "unsafe-package", unsafeTarget, "--catalog", catalogPath], { env });
+  assert.notEqual(unsafe.status, 0, unsafe.stdout);
+  assert.match(unsafe.stderr, /contains implementation\/, which is not allowed/);
 });
 
 test("public commands default to project topogram and app paths", () => {

@@ -178,7 +178,7 @@ function isLocalTemplateSpec(value) {
  * @param {string} spec
  * @returns {string}
  */
-function packageNameFromSpec(spec) {
+export function packageNameFromSpec(spec) {
   if (spec.startsWith("@")) {
     const segments = spec.split("/");
     if (segments.length < 2) {
@@ -280,7 +280,7 @@ export function listBuiltInTemplates(templatesRoot) {
  * @param {string} templateSpec
  * @returns {string}
  */
-function installTemplatePackage(templateSpec) {
+export function installPackageSpec(templateSpec) {
   const installRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-"));
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
   const localNpmConfig = path.join(process.cwd(), ".npmrc");
@@ -383,7 +383,7 @@ export function resolveTemplate(templateName, templatesRoot) {
       throw new Error(`Local template path '${templateName}' does not exist.`);
     }
     if (!fs.statSync(templateRoot).isDirectory()) {
-      const packageTemplateRoot = installTemplatePackage(templateName);
+      const packageTemplateRoot = installPackageSpec(templateName);
       return {
         requested: templateName,
         root: packageTemplateRoot,
@@ -401,7 +401,7 @@ export function resolveTemplate(templateName, templatesRoot) {
     };
   }
 
-  const templateRoot = installTemplatePackage(templateName);
+  const templateRoot = installPackageSpec(templateName);
   if (!fs.existsSync(templateRoot)) {
     throw new Error(`Template package '${templateName}' did not install to '${templateRoot}'.`);
   }

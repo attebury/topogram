@@ -67,6 +67,16 @@ import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
 import {
+  catalogEntryPackageSpec,
+  catalogSourceOrDefault,
+  catalogTemplateListItem,
+  checkCatalogSource,
+  copyCatalogTopogramEntry,
+  findCatalogEntry,
+  isCatalogSourceDisabled,
+  loadCatalog
+} from "./catalog.js";
+import {
   formatProjectConfigErrors,
   loadProjectConfig,
   outputOwnershipForPath,
@@ -107,6 +117,9 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
+  console.log("   or: topogram catalog list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog check <path-or-url> [--json]");
+  console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
@@ -126,6 +139,9 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
+  console.log("  topogram catalog list");
+  console.log("  topogram catalog check topograms.catalog.json");
+  console.log("  topogram catalog copy hello ./hello-topogram");
   console.log("  topogram template list");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
@@ -643,12 +659,44 @@ function printTemplateStatus(payload) {
 }
 
 /**
- * @returns {{ ok: boolean, templates: ReturnType<typeof listBuiltInTemplates> }}
+ * @param {{ catalogSource?: string|null }} [options]
+ * @returns {{ ok: boolean, catalog: { source: string|null, loaded: boolean }, templates: Array<Record<string, any>>, diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
-function buildTemplateListPayload() {
+function buildTemplateListPayload(options = {}) {
+  const catalogSource = catalogSourceOrDefault(options.catalogSource || null);
+  /** @type {Array<Record<string, any>>} */
+  const templates = listBuiltInTemplates(TEMPLATES_ROOT);
+  /** @type {Array<Record<string, any>>} */
+  const diagnostics = [];
+  let catalogLoaded = false;
+  if (!isCatalogSourceDisabled(catalogSource)) {
+    try {
+      const loaded = loadCatalog(catalogSource);
+      catalogLoaded = true;
+      templates.push(
+        ...loaded.catalog.entries
+          .filter((entry) => entry.kind === "template")
+          .map((entry) => catalogTemplateListItem(entry))
+      );
+    } catch (error) {
+      diagnostics.push({
+        code: "catalog_unavailable",
+        severity: "warning",
+        message: messageFromError(error),
+        path: catalogSource,
+        suggestedFix: "Run `topogram catalog list` after authenticating, or set TOPOGRAM_CATALOG_SOURCE=none to list only built-ins."
+      });
+    }
+  }
   return {
     ok: true,
-    templates: listBuiltInTemplates(TEMPLATES_ROOT)
+    catalog: {
+      source: isCatalogSourceDisabled(catalogSource) ? null : catalogSource,
+      loaded: catalogLoaded
+    },
+    templates,
+    diagnostics,
+    errors: []
   };
 }
 
@@ -662,8 +710,156 @@ function printTemplateList(payload) {
     console.log(`- ${template.id}@${template.version}`);
     console.log(`  source: ${template.source}`);
     console.log(`  name: ${template.name}`);
+    if (template.package) {
+      console.log(`  package: ${template.package}@${template.defaultVersion || template.version}`);
+    }
+    if (template.description) {
+      console.log(`  description: ${template.description}`);
+    }
     console.log(`  executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
   }
+  for (const diagnostic of payload.diagnostics) {
+    console.warn(`Warning: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, catalog: any, entries: any[], diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogListPayload(source) {
+  const loaded = loadCatalog(source || null);
+  return {
+    ok: true,
+    source: loaded.source,
+    catalog: {
+      version: loaded.catalog.version,
+      entries: loaded.catalog.entries.length
+    },
+    entries: loaded.catalog.entries,
+    diagnostics: loaded.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogListPayload>} payload
+ * @returns {void}
+ */
+function printCatalogList(payload) {
+  console.log(`Catalog: ${payload.source}`);
+  console.log(`Version: ${payload.catalog.version}`);
+  for (const entry of payload.entries) {
+    console.log(`- ${entry.id} (${entry.kind})`);
+    console.log(`  package: ${entry.package}@${entry.defaultVersion}`);
+    console.log(`  description: ${entry.description}`);
+    console.log(`  executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+}
+
+/**
+ * @param {string} source
+ * @returns {ReturnType<typeof checkCatalogSource>}
+ */
+function buildCatalogCheckPayload(source) {
+  if (!source) {
+    throw new Error("topogram catalog check requires <path-or-url>.");
+  }
+  return checkCatalogSource(source);
+}
+
+/**
+ * @param {ReturnType<typeof checkCatalogSource>} payload
+ * @returns {void}
+ */
+function printCatalogCheck(payload) {
+  console.log(payload.ok ? "Catalog check passed." : "Catalog check failed.");
+  console.log(`Source: ${payload.source}`);
+  if (payload.catalog) {
+    console.log(`Version: ${payload.catalog.version}`);
+    console.log(`Entries: ${payload.catalog.entries.length}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {string} id
+ * @param {string} targetPath
+ * @param {{ source?: string|null, version?: string|null }} options
+ * @returns {{ ok: boolean, source: string, id: string, kind: "topogram", packageSpec: string, targetPath: string, files: string[], diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogCopyPayload(id, targetPath, options) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram catalog copy requires <id>.");
+  }
+  if (!targetPath || targetPath.startsWith("-")) {
+    throw new Error("topogram catalog copy requires <target>.");
+  }
+  const loaded = loadCatalog(options.source || null);
+  const entry = findCatalogEntry(loaded.catalog, id, "topogram");
+  if (!entry) {
+    throw new Error(`Catalog topogram entry '${id}' was not found in ${loaded.source}.`);
+  }
+  const copied = copyCatalogTopogramEntry(entry, targetPath, { version: options.version || null });
+  return {
+    source: loaded.source,
+    ...copied,
+    diagnostics: [],
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogCopyPayload>} payload
+ * @returns {void}
+ */
+function printCatalogCopy(payload) {
+  console.log(`Copied catalog topogram '${payload.id}' to ${payload.targetPath}.`);
+  console.log(`Package: ${payload.packageSpec}`);
+  console.log(`Files: ${payload.files.length}`);
+}
+
+/**
+ * @param {string} templateName
+ * @param {string|null} source
+ * @returns {string}
+ */
+function resolveCatalogTemplateAlias(templateName, source = null) {
+  if (!isCatalogAliasCandidate(templateName)) {
+    return templateName;
+  }
+  const catalogSource = catalogSourceOrDefault(source);
+  if (isCatalogSourceDisabled(catalogSource)) {
+    return templateName;
+  }
+  try {
+    const loaded = loadCatalog(catalogSource);
+    const entry = findCatalogEntry(loaded.catalog, templateName, "template");
+    return entry ? catalogEntryPackageSpec(entry) : templateName;
+  } catch (error) {
+    if (source || process.env.TOPOGRAM_CATALOG_SOURCE) {
+      throw error;
+    }
+    return templateName;
+  }
+}
+
+/**
+ * @param {string} templateName
+ * @returns {boolean}
+ */
+function isCatalogAliasCandidate(templateName) {
+  return Boolean(templateName) &&
+    templateName !== "web-api-db" &&
+    !templateName.startsWith("@") &&
+    !templateName.startsWith("./") &&
+    !templateName.startsWith("../") &&
+    !path.isAbsolute(templateName) &&
+    !templateName.includes("/") &&
+    !templateName.endsWith(".tgz");
 }
 
 /**
@@ -1567,6 +1763,12 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "diff") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
+} else if (args[0] === "catalog" && args[1] === "list") {
+  commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+} else if (args[0] === "catalog" && args[1] === "check") {
+  commandArgs = { catalogCheck: true, inputPath: args[2] };
+} else if (args[0] === "catalog" && args[1] === "copy") {
+  commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "status") {
@@ -1664,6 +1866,9 @@ const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
+const shouldCatalogList = Boolean(commandArgs?.catalogList);
+const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
+const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
@@ -1709,6 +1914,14 @@ const presetIndex = args.indexOf("--preset");
 const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
 const templateIndex = args.indexOf("--template");
 const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "web-api-db";
+const catalogIndex = args.indexOf("--catalog");
+const catalogSource = catalogIndex >= 0 && args[catalogIndex + 1] && !args[catalogIndex + 1].startsWith("-")
+  ? args[catalogIndex + 1]
+  : null;
+const versionIndex = args.indexOf("--version");
+const requestedVersion = versionIndex >= 0 && args[versionIndex + 1] && !args[versionIndex + 1].startsWith("-")
+  ? args[versionIndex + 1]
+  : null;
 const useLatestTemplate = args.includes("--latest");
 const bundleIndex = args.indexOf("--bundle");
 const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
@@ -1732,15 +1945,61 @@ if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus |
   process.exit(1);
 }
 
+if (shouldCatalogCheck && !inputPath) {
+  console.error("Missing required <path-or-url>.");
+  printUsage();
+  process.exit(1);
+}
+
+if (shouldCatalogCopy && (!commandArgs?.catalogId || !inputPath)) {
+  console.error("Missing required <id> or <target>.");
+  printUsage();
+  process.exit(1);
+}
+
 if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
 try {
+  if (shouldCatalogList) {
+    const payload = buildCatalogListPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogList(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldCatalogCheck) {
+    const payload = buildCatalogCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogCopy) {
+    const payload = buildCatalogCopyPayload(commandArgs.catalogId, inputPath, {
+      source: catalogSource,
+      version: requestedVersion
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogCopy(payload);
+    }
+    process.exit(0);
+  }
+
   if (commandArgs?.newProject) {
+    const resolvedTemplateName = resolveCatalogTemplateAlias(templateName, catalogSource);
     const result = createNewProject({
       targetPath: inputPath,
-      templateName,
+      templateName: resolvedTemplateName,
       engineRoot: ENGINE_ROOT,
       templatesRoot: TEMPLATES_ROOT
     });
@@ -1764,7 +2023,7 @@ try {
   }
 
   if (shouldTemplateList) {
-    const payload = buildTemplateListPayload();
+    const payload = buildTemplateListPayload({ catalogSource });
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {
