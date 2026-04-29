@@ -106,6 +106,8 @@ or if `implementation/` changed since it was trusted, `topogram check` and
 ```bash
 topogram trust status
 topogram trust status --json
+topogram trust diff
+topogram trust diff --json
 ```
 
 After reviewing intentional edits in `implementation/`, refresh the trust record:

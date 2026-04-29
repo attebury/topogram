@@ -235,6 +235,31 @@ test("topogram trust status reports implementation content drift and trust refre
   assert.deepEqual(statusPayload.content.added, ["local-note.js"]);
   assert.deepEqual(statusPayload.content.removed, ["README.md"]);
 
+  const humanStatus = runCli(["trust", "status"], { cwd: projectRoot });
+  assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
+  assert.match(humanStatus.stdout, /topogram trust diff/);
+
+  const diff = runCli(["trust", "diff", "--json"], { cwd: projectRoot });
+  assert.notEqual(diff.status, 0, diff.stdout);
+  const diffPayload = JSON.parse(diff.stdout);
+  assert.equal(diffPayload.ok, false);
+  assert.deepEqual(
+    diffPayload.files.map((file) => `${file.kind}:${file.path}`),
+    ["changed:index.js", "added:local-note.js", "removed:README.md"]
+  );
+  const addedFile = diffPayload.files.find((file) => file.path === "local-note.js");
+  assert.match(addedFile.unifiedDiff, /\+export const localNote = true;/);
+  const changedFile = diffPayload.files.find((file) => file.path === "index.js");
+  assert.equal(changedFile.unifiedDiff, null);
+  assert.equal(changedFile.diffOmitted, true);
+
+  const humanDiff = runCli(["trust", "diff"], { cwd: projectRoot });
+  assert.notEqual(humanDiff.status, 0, humanDiff.stdout);
+  assert.match(humanDiff.stdout, /CHANGED: implementation\/index\.js/);
+  assert.match(humanDiff.stdout, /ADDED: implementation\/local-note\.js/);
+  assert.match(humanDiff.stdout, /\+export const localNote = true;/);
+  assert.match(humanDiff.stdout, /REMOVED: implementation\/README\.md/);
+
   const check = runCli(["check"], { cwd: projectRoot });
   assert.notEqual(check.status, 0, check.stdout);
   assert.match(check.stderr, /implementation content changed since it was last trusted/);

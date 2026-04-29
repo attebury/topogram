@@ -18,6 +18,7 @@ export const TEMPLATE_TRUST_POLICY = "topogram-template-executable-implementatio
  */
 
 const IGNORED_IMPLEMENTATION_ENTRIES = new Set([".DS_Store", "node_modules", ".tmp"]);
+const MAX_TEXT_DIFF_BYTES = 256 * 1024;
 
 /**
  * @param {string} parent
@@ -43,6 +44,133 @@ function normalizeRoot(value) {
  */
 function normalizeRelativePath(value) {
   return value.replace(/\\/g, "/");
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeDiffPath(value) {
+  return value.replace(/\t/g, "\\t").replace(/\n/g, "\\n");
+}
+
+/**
+ * @param {any} bytes
+ * @returns {boolean}
+ */
+function isLikelyText(bytes) {
+  if (bytes.includes(0)) {
+    return false;
+  }
+  const length = Math.min(bytes.length, 4096);
+  let suspicious = 0;
+  for (let index = 0; index < length; index += 1) {
+    const byte = bytes[index];
+    if (byte === 9 || byte === 10 || byte === 13) {
+      continue;
+    }
+    if (byte < 32 || byte === 127) {
+      suspicious += 1;
+    }
+  }
+  return length === 0 || suspicious / length < 0.02;
+}
+
+/**
+ * @param {string} text
+ * @returns {string[]}
+ */
+function linesForDiff(text) {
+  const lines = text.split("\n");
+  if (lines.at(-1) === "") {
+    lines.pop();
+  }
+  return lines;
+}
+
+/**
+ * @param {string[]} before
+ * @param {string[]} after
+ * @returns {Array<{ type: "same"|"added"|"removed", text: string }>}
+ */
+function diffLines(before, after) {
+  const rows = before.length;
+  const columns = after.length;
+  /** @type {number[][]} */
+  const table = Array.from({ length: rows + 1 }, () => Array(columns + 1).fill(0));
+  for (let row = rows - 1; row >= 0; row -= 1) {
+    for (let column = columns - 1; column >= 0; column -= 1) {
+      table[row][column] = before[row] === after[column]
+        ? table[row + 1][column + 1] + 1
+        : Math.max(table[row + 1][column], table[row][column + 1]);
+    }
+  }
+  /** @type {Array<{ type: "same"|"added"|"removed", text: string }>} */
+  const changes = [];
+  let row = 0;
+  let column = 0;
+  while (row < rows && column < columns) {
+    if (before[row] === after[column]) {
+      changes.push({ type: "same", text: before[row] });
+      row += 1;
+      column += 1;
+    } else if (table[row + 1][column] >= table[row][column + 1]) {
+      changes.push({ type: "removed", text: before[row] });
+      row += 1;
+    } else {
+      changes.push({ type: "added", text: after[column] });
+      column += 1;
+    }
+  }
+  while (row < rows) {
+    changes.push({ type: "removed", text: before[row] });
+    row += 1;
+  }
+  while (column < columns) {
+    changes.push({ type: "added", text: after[column] });
+    column += 1;
+  }
+  return changes;
+}
+
+/**
+ * @param {string} relativePath
+ * @param {string|null} beforeText
+ * @param {string|null} afterText
+ * @returns {string|null}
+ */
+function unifiedTextDiff(relativePath, beforeText, afterText) {
+  if (beforeText === null && afterText === null) {
+    return null;
+  }
+  const beforeLines = beforeText === null ? [] : linesForDiff(beforeText);
+  const afterLines = afterText === null ? [] : linesForDiff(afterText);
+  const changes = diffLines(beforeLines, afterLines);
+  const lines = [
+    `--- a/implementation/${escapeDiffPath(relativePath)}`,
+    `+++ b/implementation/${escapeDiffPath(relativePath)}`,
+    `@@ -1,${beforeLines.length} +1,${afterLines.length} @@`
+  ];
+  for (const change of changes) {
+    const prefix = change.type === "added" ? "+" : change.type === "removed" ? "-" : " ";
+    lines.push(`${prefix}${change.text}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * @param {string} filePath
+ * @returns {{ text: string|null, binary: boolean, omitted: boolean }}
+ */
+function readReviewText(filePath) {
+  const bytes = fs.readFileSync(filePath);
+  if (bytes.length > MAX_TEXT_DIFF_BYTES) {
+    return { text: null, binary: false, omitted: true };
+  }
+  if (!isLikelyText(bytes)) {
+    return { text: null, binary: true, omitted: false };
+  }
+  return { text: bytes.toString("utf8"), binary: false, omitted: false };
 }
 
 /**
@@ -234,6 +362,27 @@ function diffContentFiles(trustedByPath, currentByPath) {
 }
 
 /**
+ * @param {string} configDir
+ * @param {string} relativePath
+ * @param {{ path: string, sha256: string, size: number }|null} file
+ * @returns {{ path: string, sha256: string|null, size: number|null, binary: boolean, diffOmitted: boolean, text: string|null }}
+ */
+function implementationReviewFile(configDir, relativePath, file) {
+  if (!file) {
+    return { path: relativePath, sha256: null, size: null, binary: false, diffOmitted: false, text: null };
+  }
+  const reviewText = readReviewText(path.join(configDir, "implementation", relativePath));
+  return {
+    path: relativePath,
+    sha256: file.sha256,
+    size: file.size,
+    binary: reviewText.binary,
+    diffOmitted: reviewText.omitted,
+    text: reviewText.text
+  };
+}
+
+/**
  * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} implementationInfo
  * @param {Record<string, any>|null} projectConfig
  * @returns {{ ok: boolean, requiresTrust: boolean, trustPath: string, trustRecord: TemplateTrustRecord|null, template: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null }, implementation: { id: string|null, module: string|null, export: string|null }, content: { trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }, issues: string[] }}
@@ -321,6 +470,85 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
     implementation: fingerprint,
     content: contentStatus,
     issues
+  };
+}
+
+/**
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} implementationInfo
+ * @param {Record<string, any>|null} projectConfig
+ * @returns {{ ok: boolean, requiresTrust: boolean, status: ReturnType<typeof getTemplateTrustStatus>, files: Array<{ path: string, kind: "added"|"removed"|"changed", trusted: { path: string, sha256: string|null, size: number|null }|null, current: { path: string, sha256: string|null, size: number|null, binary: boolean, diffOmitted: boolean }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
+ */
+export function getTemplateTrustDiff(implementationInfo, projectConfig = null) {
+  const status = getTemplateTrustStatus(implementationInfo, projectConfig);
+  if (!status.requiresTrust || !status.trustRecord?.content) {
+    return { ok: status.ok, requiresTrust: status.requiresTrust, status, files: [] };
+  }
+  const currentContent = hashImplementationContent(implementationInfo.configDir);
+  const trustedByPath = new Map((status.trustRecord.content.files || []).map((file) => [file.path, file]));
+  const currentByPath = new Map(currentContent.files.map((file) => [file.path, file]));
+  /** @type {Array<{ path: string, kind: "added"|"removed"|"changed", trusted: { path: string, sha256: string|null, size: number|null }|null, current: { path: string, sha256: string|null, size: number|null, binary: boolean, diffOmitted: boolean }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }>} */
+  const files = [];
+
+  for (const relativePath of status.content.changed) {
+    const trusted = trustedByPath.get(relativePath) || null;
+    const current = currentByPath.get(relativePath) || null;
+    const currentReview = implementationReviewFile(implementationInfo.configDir, relativePath, current);
+    files.push({
+      path: relativePath,
+      kind: "changed",
+      trusted: trusted ? { path: relativePath, sha256: trusted.sha256, size: trusted.size } : null,
+      current: {
+        path: relativePath,
+        sha256: currentReview.sha256,
+        size: currentReview.size,
+        binary: currentReview.binary,
+        diffOmitted: currentReview.diffOmitted
+      },
+      binary: currentReview.binary,
+      diffOmitted: true,
+      unifiedDiff: null
+    });
+  }
+  for (const relativePath of status.content.added) {
+    const current = currentByPath.get(relativePath) || null;
+    const currentReview = implementationReviewFile(implementationInfo.configDir, relativePath, current);
+    files.push({
+      path: relativePath,
+      kind: "added",
+      trusted: null,
+      current: {
+        path: relativePath,
+        sha256: currentReview.sha256,
+        size: currentReview.size,
+        binary: currentReview.binary,
+        diffOmitted: currentReview.diffOmitted
+      },
+      binary: currentReview.binary,
+      diffOmitted: currentReview.binary || currentReview.diffOmitted,
+      unifiedDiff: currentReview.binary || currentReview.diffOmitted
+        ? null
+        : unifiedTextDiff(relativePath, null, currentReview.text)
+    });
+  }
+  for (const relativePath of status.content.removed) {
+    const trusted = trustedByPath.get(relativePath) || null;
+    files.push({
+      path: relativePath,
+      kind: "removed",
+      trusted: trusted ? { path: relativePath, sha256: trusted.sha256, size: trusted.size } : null,
+      current: null,
+      binary: false,
+      diffOmitted: true,
+      unifiedDiff: null
+    });
+  }
+
+  files.sort((a, b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
+  return {
+    ok: status.ok,
+    requiresTrust: status.requiresTrust,
+    status,
+    files
   };
 }
 

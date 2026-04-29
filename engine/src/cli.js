@@ -12,6 +12,7 @@ import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import { createNewProject } from "./new-project.js";
 import {
+  getTemplateTrustDiff,
   getTemplateTrustStatus,
   implementationRequiresTrust,
   TEMPLATE_TRUST_FILE,
@@ -90,6 +91,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
+  console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -100,6 +102,7 @@ function printUsage(options = {}) {
   console.log("  topogram generate");
   console.log("  topogram trust template");
   console.log("  topogram trust status");
+  console.log("  topogram trust diff");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
@@ -464,6 +467,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustTemplate: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "status") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
+} else if (args[0] === "trust" && args[1] === "diff") {
+  commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -546,6 +551,7 @@ const emitJson = args.includes("--json");
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
+const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -600,13 +606,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -706,10 +712,63 @@ try {
         console.log(`Removed: ${filePath}`);
       }
       if (!status.ok) {
-        console.log("Review implementation/ and run `topogram trust template` to trust the current files.");
+        console.log("Run `topogram trust diff` to review implementation changes, then `topogram trust template` to trust the current files.");
       }
     }
     process.exit(status.ok ? 0 : 1);
+  }
+
+  if (shouldTrustDiff) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot inspect template trust diff without topogram.project.json.");
+    }
+    if (!projectConfigInfo.config.implementation) {
+      throw new Error("Cannot inspect template trust diff because topogram.project.json has no implementation config.");
+    }
+    const implementationInfo = {
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    };
+    const diff = getTemplateTrustDiff(implementationInfo, projectConfigInfo.config);
+    if (emitJson) {
+      console.log(stableStringify(diff));
+    } else if (!diff.requiresTrust) {
+      console.log("No local implementation trust record needed for this project.");
+    } else if (diff.files.length === 0) {
+      console.log(diff.ok ? "Template trust diff: no implementation changes." : "Template trust diff: no file-level diff available.");
+      for (const issue of diff.status.issues) {
+        console.log(`Issue: ${issue}`);
+      }
+    } else {
+      console.log(diff.ok ? "Template trust diff: no implementation changes." : "Template trust diff: review required");
+      for (const file of diff.files) {
+        console.log("");
+        console.log(`${file.kind.toUpperCase()}: implementation/${file.path}`);
+        if (file.trusted) {
+          console.log(`  trusted sha256: ${file.trusted.sha256}`);
+          console.log(`  trusted size: ${file.trusted.size}`);
+        }
+        if (file.current) {
+          console.log(`  current sha256: ${file.current.sha256}`);
+          console.log(`  current size: ${file.current.size}`);
+        }
+        if (file.binary) {
+          console.log("  diff: binary file");
+        } else if (file.diffOmitted && !file.unifiedDiff) {
+          console.log("  diff: hash-only");
+        }
+        if (file.unifiedDiff) {
+          console.log(file.unifiedDiff.trimEnd());
+        }
+      }
+      if (!diff.ok) {
+        console.log("");
+        console.log("After review, run `topogram trust template` to trust the current files.");
+      }
+    }
+    process.exit(diff.ok ? 0 : 1);
   }
 
   if (shouldCheck) {
