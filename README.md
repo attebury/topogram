@@ -25,8 +25,8 @@ npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run explain
-npm run status
-npm run build
+npm run check
+npm run generate
 npm run verify
 ```
 
@@ -56,8 +56,8 @@ The engine is private and local to this repo, but it exposes the `topogram` bin 
 ```bash
 npm run new -- ./my-app
 cd ./my-app
-npm run status
-npm run build
+npm run check
+npm run generate
 ```
 
 No global install or published npm package is assumed yet.

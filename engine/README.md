@@ -21,7 +21,7 @@ This lets demos consume the engine through a local file dependency and call:
 ```bash
 topogram create ../my-app
 topogram check
-topogram build
+topogram generate
 ```
 
 No global install or published npm package is assumed yet. Create generated projects outside `engine/`; this directory is source and test code.

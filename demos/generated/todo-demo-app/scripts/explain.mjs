@@ -6,10 +6,10 @@ Topogram app workflow
    topogram.project.json
 
 2. Validate:
-   npm run status
+   npm run check
 
 3. Regenerate:
-   npm run build
+   npm run generate
 
 4. Verify generated app:
    npm run verify
@@ -19,7 +19,7 @@ Topogram app workflow
    npm run dev
 
 Useful inspection:
-   npm run inspect
+   npm run check:json
 `;
 
 console.log(message.trimEnd());

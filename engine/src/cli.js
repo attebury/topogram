@@ -81,7 +81,6 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
-  console.log("   or: topogram build [path] [--out <path>]");
   console.log("   or: topogram new <path> [--template web-api-db]");
   console.log("   or: topogram create <path> [--template web-api-db]");
   console.log("");
@@ -89,10 +88,10 @@ function printUsage(options = {}) {
   console.log("  topogram create ./my-app");
   console.log("  topogram check");
   console.log("  topogram check --json");
-  console.log("  topogram build");
+  console.log("  topogram generate");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
-  console.log("Defaults: check/build use ./topogram, and build writes ./app.");
+  console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -100,7 +99,8 @@ function printUsage(options = {}) {
   }
   console.log("");
   console.log("Legacy and internal commands:");
-  console.log("Usage: topogram validate <path>");
+  console.log("Usage: topogram build [path] [--out <path>]");
+  console.log("   or: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
@@ -614,8 +614,8 @@ try {
       : relativeProjectRoot;
     console.log(`  cd ${displayProjectRoot}`);
     console.log("  npm install");
-    console.log("  npm run status");
-    console.log("  npm run build");
+    console.log("  npm run check");
+    console.log("  npm run generate");
     console.log("  npm run verify");
     process.exit(0);
   }

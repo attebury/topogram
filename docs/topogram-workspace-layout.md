@@ -40,7 +40,7 @@ demos/generated/todo-demo-app/topogram.project.json
 
 This project config declares the generated app output, API/web/database topology, ports, and generator bindings. New workspaces should prefer `topogram.project.json`; `topogram.implementation.json` is only a temporary compatibility adapter.
 
-From a generated project root, `topogram check` reads `./topogram` and reports the resolved topology. `topogram build` regenerates the configured generated app output at `./app`.
+From a generated project root, `topogram check` reads `./topogram` and reports the resolved topology. `topogram generate` regenerates the configured generated app output at `./app`.
 
 ## Generated Output
 

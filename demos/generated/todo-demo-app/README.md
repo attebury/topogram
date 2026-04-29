@@ -20,13 +20,13 @@ Validate the Topogram:
 
 ```bash
 npm run explain
-npm run status
+npm run check
 ```
 
 Generate the app bundle:
 
 ```bash
-npm run build
+npm run generate
 ```
 
 Bootstrap and run the generated app:
@@ -44,4 +44,4 @@ npm run app:smoke
 npm run app:runtime-check
 ```
 
-For normal iteration, edit files under `topogram/`, regenerate with `npm run build`, then rerun the relevant app checks.
+For normal iteration, edit files under `topogram/`, regenerate with `npm run generate`, then rerun the relevant app checks.

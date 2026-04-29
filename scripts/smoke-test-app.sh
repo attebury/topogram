@@ -10,8 +10,8 @@ npm --prefix ./engine ci
 rm -rf "$SMOKE_APP_DIR"
 npm run new -- "$SMOKE_APP_DIR"
 npm --prefix "$SMOKE_APP_DIR" install
-npm --prefix "$SMOKE_APP_DIR" run status
-npm --prefix "$SMOKE_APP_DIR" run build
+npm --prefix "$SMOKE_APP_DIR" run check
+npm --prefix "$SMOKE_APP_DIR" run generate
 
 echo
 echo "Smoke test app generated at $SMOKE_APP_DIR"

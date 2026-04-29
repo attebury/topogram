@@ -33,10 +33,10 @@ echo "Installing ${DEMO_NAME} dependencies..."
 npm ci
 
 echo "Validating ${DEMO_NAME} Topogram..."
-npm run topogram:validate
+npm run check
 
 echo "Regenerating ${DEMO_NAME} app bundle..."
-npm run topogram:generate
+npm run generate
 
 echo "Running ${DEMO_NAME} compile checks..."
 npm run app:compile
