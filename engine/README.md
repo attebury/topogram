@@ -96,7 +96,8 @@ project with a candidate template without writing files.
 
 Template authors can run `topogram template check <template-spec-or-path>` to
 validate manifest/layout, temporary starter creation, starter checks, trust
-metadata, and no-write update planning.
+metadata, and no-write update planning. The JSON form reports structured
+diagnostics with codes, paths, and suggested fixes for authoring feedback.
 
 Run the same gate directly:
 

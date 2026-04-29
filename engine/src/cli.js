@@ -556,18 +556,150 @@ function printTemplateUpdatePlan(plan) {
 }
 
 /**
- * @param {string} name
- * @param {boolean} ok
- * @param {Record<string, any>} [details]
- * @returns {{ name: string, ok: boolean, details: Record<string, any> }}
+ * @typedef {Object} TemplateCheckDiagnostic
+ * @property {string} code
+ * @property {"error"|"warning"} severity
+ * @property {string} message
+ * @property {string|null} path
+ * @property {string|null} suggestedFix
+ * @property {string|null} step
  */
-function templateCheckStep(name, ok, details = {}) {
-  return { name, ok, details };
+
+/**
+ * @param {unknown} error
+ * @returns {string}
+ */
+function messageFromError(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * @param {Record<string, any>} input
+ * @returns {TemplateCheckDiagnostic}
+ */
+function templateCheckDiagnostic(input) {
+  return {
+    code: String(input.code || "template_check_failed"),
+    severity: input.severity === "warning" ? "warning" : "error",
+    message: String(input.message || "Template check failed."),
+    path: typeof input.path === "string" ? input.path : null,
+    suggestedFix: typeof input.suggestedFix === "string" ? input.suggestedFix : null,
+    step: typeof input.step === "string" ? input.step : null
+  };
 }
 
 /**
  * @param {string} templateSpec
- * @returns {{ ok: boolean, templateSpec: string, projectRoot: string|null, steps: Array<{ name: string, ok: boolean, details: Record<string, any> }>, errors: string[] }}
+ * @param {string} relativePath
+ * @returns {string|null}
+ */
+function localTemplatePath(templateSpec, relativePath) {
+  if (
+    templateSpec === "." ||
+    templateSpec.startsWith("./") ||
+    templateSpec.startsWith("../") ||
+    path.isAbsolute(templateSpec)
+  ) {
+    return path.join(path.resolve(templateSpec), relativePath);
+  }
+  return null;
+}
+
+/**
+ * @param {string} message
+ * @param {string} templateSpec
+ * @param {string} step
+ * @returns {TemplateCheckDiagnostic}
+ */
+function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
+  if (message.includes("is missing topogram-template.json")) {
+    return templateCheckDiagnostic({
+      code: "template_manifest_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Add topogram-template.json with id, version, kind, and topogramVersion.",
+      step
+    });
+  }
+  if (message.includes("is missing required string field") || message.includes("topogram-template.json")) {
+    return templateCheckDiagnostic({
+      code: "template_manifest_invalid",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Fix topogram-template.json so it matches the template manifest schema.",
+      step
+    });
+  }
+  if (message.includes("is missing topogram/")) {
+    return templateCheckDiagnostic({
+      code: "template_topogram_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram"),
+      suggestedFix: "Add a topogram/ directory with the reusable Topogram source files.",
+      step
+    });
+  }
+  if (message.includes("is missing topogram.project.json")) {
+    return templateCheckDiagnostic({
+      code: "template_project_config_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram.project.json"),
+      suggestedFix: "Add topogram.project.json beside topogram/ with outputs and topology.components.",
+      step
+    });
+  }
+  if (message.includes("is missing implementation/")) {
+    return templateCheckDiagnostic({
+      code: "template_implementation_missing",
+      message,
+      path: localTemplatePath(templateSpec, "implementation"),
+      suggestedFix: "Add implementation/ or set includesExecutableImplementation to false.",
+      step
+    });
+  }
+  return templateCheckDiagnostic({
+    code: "template_create_failed",
+    message,
+    path: path.isAbsolute(templateSpec) ? templateSpec : null,
+    suggestedFix: "Fix the template pack so topogram new can create a starter from it.",
+    step
+  });
+}
+
+/**
+ * @param {{ message: string, loc?: any }} error
+ * @param {string} step
+ * @param {string|null} configPath
+ * @returns {TemplateCheckDiagnostic}
+ */
+function diagnosticForStarterCheckFailure(error, step, configPath) {
+  const locFile = typeof error?.loc?.file === "string" ? error.loc.file : null;
+  const isTrust = error.message.includes(TEMPLATE_TRUST_FILE);
+  return templateCheckDiagnostic({
+    code: isTrust ? "template_trust_invalid" : "starter_check_failed",
+    message: error.message,
+    path: locFile || configPath,
+    suggestedFix: isTrust
+      ? "Review implementation/ and run topogram trust template in the generated starter."
+      : "Fix the generated Topogram source or topogram.project.json so topogram check passes.",
+    step
+  });
+}
+
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {Record<string, any>} [details]
+ * @param {TemplateCheckDiagnostic[]} [diagnostics]
+ * @returns {{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }}
+ */
+function templateCheckStep(name, ok, details = {}, diagnostics = []) {
+  return { name, ok, details, diagnostics };
+}
+
+/**
+ * @param {string} templateSpec
+ * @returns {{ ok: boolean, templateSpec: string, projectRoot: string|null, steps: Array<{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
  */
 function buildTemplateCheckPayload(templateSpec) {
   if (!templateSpec) {
@@ -575,10 +707,10 @@ function buildTemplateCheckPayload(templateSpec) {
   }
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-"));
   const projectRoot = path.join(runRoot, "starter");
-  /** @type {Array<{ name: string, ok: boolean, details: Record<string, any> }>} */
+  /** @type {Array<{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }>} */
   const steps = [];
-  /** @type {string[]} */
-  const errors = [];
+  /** @type {TemplateCheckDiagnostic[]} */
+  const diagnostics = [];
   let created = null;
   try {
     created = createNewProject({
@@ -592,16 +724,42 @@ function buildTemplateCheckPayload(templateSpec) {
       warnings: created.warnings.length
     }));
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error));
-    steps.push(templateCheckStep("create-starter", false));
-    return { ok: false, templateSpec, projectRoot: null, steps, errors };
+    const stepDiagnostics = [
+      diagnosticForTemplateCreateFailure(messageFromError(error), templateSpec, "create-starter")
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("create-starter", false, {}, stepDiagnostics));
+    return {
+      ok: false,
+      templateSpec,
+      projectRoot: null,
+      steps,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
   }
 
   const projectConfigInfo = loadProjectConfig(projectRoot);
   if (!projectConfigInfo) {
-    errors.push("Generated starter is missing topogram.project.json.");
-    steps.push(templateCheckStep("project-config", false));
-    return { ok: false, templateSpec, projectRoot, steps, errors };
+    const stepDiagnostics = [
+      templateCheckDiagnostic({
+        code: "starter_project_config_missing",
+        message: "Generated starter is missing topogram.project.json.",
+        path: path.join(projectRoot, "topogram.project.json"),
+        suggestedFix: "Ensure the template includes topogram.project.json at its root.",
+        step: "project-config"
+      })
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("project-config", false, {}, stepDiagnostics));
+    return {
+      ok: false,
+      templateSpec,
+      projectRoot,
+      steps,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
   }
   steps.push(templateCheckStep("project-config", true, {
     path: projectConfigInfo.configPath,
@@ -616,17 +774,16 @@ function buildTemplateCheckPayload(templateSpec) {
     validateProjectImplementationTrust(projectConfigInfo)
   );
   const starterCheckOk = resolved.ok && projectValidation.ok;
+  const starterDiagnostics = [
+    ...(resolved.ok ? [] : resolved.validation.errors),
+    ...projectValidation.errors
+  ].map((error) => diagnosticForStarterCheckFailure(error, "starter-check", projectConfigInfo.configPath));
   steps.push(templateCheckStep("starter-check", starterCheckOk, {
     files: ast.files.length,
     statements: ast.files.flatMap((file) => file.statements).length
-  }));
+  }, starterDiagnostics));
   if (!starterCheckOk) {
-    for (const error of [
-      ...(resolved.ok ? [] : resolved.validation.errors),
-      ...projectValidation.errors
-    ]) {
-      errors.push(error.message);
-    }
+    diagnostics.push(...starterDiagnostics);
   }
 
   const implementationInfo = projectConfigInfo.config.implementation
@@ -638,13 +795,20 @@ function buildTemplateCheckPayload(templateSpec) {
     : null;
   if (implementationInfo && implementationRequiresTrust(implementationInfo)) {
     const trustStatus = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
+    const trustDiagnostics = trustStatus.issues.map((issue) => templateCheckDiagnostic({
+      code: "template_trust_invalid",
+      message: issue,
+      path: trustStatus.trustPath,
+      suggestedFix: "Review implementation/ and run topogram trust template in the generated starter.",
+      step: "executable-implementation-trust"
+    }));
     steps.push(templateCheckStep("executable-implementation-trust", trustStatus.ok, {
       requiresTrust: true,
       trustPath: trustStatus.trustPath,
       trustedFiles: trustStatus.trustRecord?.content?.files?.length || 0
-    }));
+    }, trustDiagnostics));
     if (!trustStatus.ok) {
-      errors.push(...trustStatus.issues);
+      diagnostics.push(...trustDiagnostics);
     }
   } else {
     steps.push(templateCheckStep("executable-implementation-trust", true, {
@@ -666,11 +830,28 @@ function buildTemplateCheckPayload(templateSpec) {
       currentOnly: updatePlan.summary.currentOnly
     }));
     if (!updatePlan.ok) {
-      errors.push(...updatePlan.issues);
+      const stepDiagnostics = updatePlan.issues.map((issue) => templateCheckDiagnostic({
+        code: "template_update_plan_failed",
+        message: issue,
+        path: projectConfigInfo.configPath,
+        suggestedFix: "Fix template metadata so a no-write update plan can be produced.",
+        step: "template-update-plan"
+      }));
+      steps[steps.length - 1].diagnostics.push(...stepDiagnostics);
+      diagnostics.push(...stepDiagnostics);
     }
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : String(error));
-    steps.push(templateCheckStep("template-update-plan", false));
+    const stepDiagnostics = [
+      templateCheckDiagnostic({
+        code: "template_update_plan_failed",
+        message: messageFromError(error),
+        path: projectConfigInfo.configPath,
+        suggestedFix: "Fix template metadata so a no-write update plan can be produced.",
+        step: "template-update-plan"
+      })
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("template-update-plan", false, {}, stepDiagnostics));
   }
 
   return {
@@ -678,8 +859,19 @@ function buildTemplateCheckPayload(templateSpec) {
     templateSpec,
     projectRoot,
     steps,
-    errors
+    diagnostics,
+    errors: diagnostics.map((diagnostic) => diagnostic.message)
   };
+}
+
+/**
+ * @param {Record<string, any>} details
+ * @returns {string[]}
+ */
+function formatTemplateCheckDetails(details) {
+  return Object.entries(details)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `  ${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`);
 }
 
 /**
@@ -694,9 +886,28 @@ function printTemplateCheckPayload(payload) {
   }
   for (const step of payload.steps) {
     console.log(`${step.ok ? "PASS" : "FAIL"} ${step.name}`);
+    for (const detail of formatTemplateCheckDetails(step.details)) {
+      console.log(detail);
+    }
+    for (const diagnostic of step.diagnostics) {
+      console.log(`  [${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+      if (diagnostic.path) {
+        console.log(`    path: ${diagnostic.path}`);
+      }
+      if (diagnostic.suggestedFix) {
+        console.log(`    fix: ${diagnostic.suggestedFix}`);
+      }
+    }
   }
-  for (const error of payload.errors) {
-    console.log(`Issue: ${error}`);
+  const stepDiagnostics = new Set(payload.steps.flatMap((step) => step.diagnostics));
+  for (const diagnostic of payload.diagnostics.filter((item) => !stepDiagnostics.has(item))) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
   }
 }
 

@@ -154,6 +154,10 @@ executable-template trust metadata, and verifies that the starter can produce a
 no-write template update plan. It does not compile generated apps and does not
 execute template implementation code.
 
+Human output keeps the temporary starter path visible, prints step details, and
+groups diagnostics under failed steps. JSON output includes `diagnostics[]` with
+`code`, `severity`, `message`, `path`, `suggestedFix`, and `step`.
+
 After reviewing intentional edits in `implementation/`, refresh the trust record:
 
 ```bash

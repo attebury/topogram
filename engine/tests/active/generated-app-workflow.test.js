@@ -46,6 +46,20 @@ function readText(filePath) {
   return fs.readFileSync(filePath, "utf8").replace(/\s+$/, "\n");
 }
 
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
+function writeJson(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function copyBuiltInTemplate(root, name = "template") {
+  const templateRoot = path.join(root, name);
+  fs.cpSync(builtInTemplateRoot, templateRoot, { recursive: true });
+  return templateRoot;
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
@@ -131,7 +145,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
-  assert.equal(pkg.scripts["template:check"], "topogram template check .");
+  assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
   assert.equal(pkg.scripts["trust:status"], "topogram trust status");
   assert.equal(pkg.scripts["trust:diff"], "topogram trust diff");
@@ -390,11 +404,13 @@ test("topogram template check validates reusable template conformance", () => {
   assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, true);
   assert.equal(payload.steps.find((step) => step.name === "executable-implementation-trust").details.requiresTrust, true);
   assert.equal(payload.steps.find((step) => step.name === "template-update-plan").details.writes, false);
+  assert.deepEqual(payload.diagnostics, []);
 
   const humanCheck = runCli(["template", "check", builtInTemplateRoot]);
   assert.equal(humanCheck.status, 0, humanCheck.stderr || humanCheck.stdout);
   assert.match(humanCheck.stdout, /Template check passed/);
   assert.match(humanCheck.stdout, /PASS create-starter/);
+  assert.match(humanCheck.stdout, /Temp starter:/);
   assert.match(humanCheck.stdout, /PASS starter-check/);
   assert.match(humanCheck.stdout, /PASS executable-implementation-trust/);
   assert.match(humanCheck.stdout, /PASS template-update-plan/);
@@ -416,7 +432,101 @@ test("topogram template check reports invalid template conformance", () => {
   const payload = JSON.parse(check.stdout);
   assert.equal(payload.ok, false);
   assert.match(payload.errors.join("\n"), /topogramVersion/);
+  assert.equal(payload.diagnostics[0].code, "template_manifest_invalid");
+  assert.equal(payload.diagnostics[0].severity, "error");
+  assert.match(payload.diagnostics[0].path, /topogram-template\.json$/);
+  assert.match(payload.diagnostics[0].suggestedFix, /manifest schema/);
   assert.equal(payload.steps.find((step) => step.name === "create-starter").ok, false);
+
+  const humanCheck = runCli(["template", "check", templateRoot]);
+  assert.notEqual(humanCheck.status, 0, humanCheck.stdout);
+  assert.match(humanCheck.stdout, /FAIL create-starter/);
+  assert.match(humanCheck.stdout, /\[error\] template_manifest_invalid:/);
+  assert.match(humanCheck.stdout, /fix: Fix topogram-template\.json/);
+});
+
+for (const scenario of [
+  {
+    name: "missing manifest",
+    code: "template_manifest_missing",
+    setup(templateRoot) {
+      fs.rmSync(path.join(templateRoot, "topogram-template.json"));
+    }
+  },
+  {
+    name: "missing topogram",
+    code: "template_topogram_missing",
+    setup(templateRoot) {
+      fs.rmSync(path.join(templateRoot, "topogram"), { recursive: true });
+    }
+  },
+  {
+    name: "missing project config",
+    code: "template_project_config_missing",
+    setup(templateRoot) {
+      fs.rmSync(path.join(templateRoot, "topogram.project.json"));
+    }
+  },
+  {
+    name: "missing implementation",
+    code: "template_implementation_missing",
+    setup(templateRoot) {
+      fs.rmSync(path.join(templateRoot, "implementation"), { recursive: true });
+    }
+  }
+]) {
+  test(`topogram template check reports ${scenario.name}`, () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-shape-"));
+    const templateRoot = copyBuiltInTemplate(root, "bad-template");
+    scenario.setup(templateRoot);
+
+    const check = runCli(["template", "check", templateRoot, "--json"]);
+    assert.notEqual(check.status, 0, check.stdout);
+    const payload = JSON.parse(check.stdout);
+    assert.equal(payload.ok, false);
+    assert.equal(payload.diagnostics[0].code, scenario.code);
+    assert.equal(payload.diagnostics[0].step, "create-starter");
+    assert.equal(payload.steps.find((step) => step.name === "create-starter").diagnostics[0].code, scenario.code);
+    assert.ok(payload.diagnostics[0].suggestedFix);
+  });
+}
+
+test("topogram template check reports invalid generated project config", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-project-"));
+  const templateRoot = copyBuiltInTemplate(root, "bad-project-config");
+  const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.topology.components[0].generator.id = "topogram/not-real";
+  writeJson(projectConfigPath, projectConfig);
+
+  const check = runCli(["template", "check", templateRoot, "--json"]);
+  assert.notEqual(check.status, 0, check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.ok, false);
+  const diagnostic = payload.diagnostics.find((item) => item.code === "starter_check_failed");
+  assert.ok(diagnostic);
+  assert.match(diagnostic.message, /unknown generator 'topogram\/not-real'/);
+  assert.equal(fs.realpathSync(diagnostic.path), fs.realpathSync(path.join(payload.projectRoot, "topogram.project.json")));
+  assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, false);
+});
+
+test("topogram template check reports missing starter implementation trust", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-trust-"));
+  const templateRoot = copyBuiltInTemplate(root, "bad-trust");
+  const manifestPath = path.join(templateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.includesExecutableImplementation = false;
+  writeJson(manifestPath, manifest);
+
+  const check = runCli(["template", "check", templateRoot, "--json"]);
+  assert.notEqual(check.status, 0, check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.ok, false);
+  const diagnostic = payload.diagnostics.find((item) => item.code === "template_trust_invalid");
+  assert.ok(diagnostic);
+  assert.match(diagnostic.message, /without \.topogram-template-trust\.json/);
+  assert.match(diagnostic.suggestedFix, /topogram trust template/);
+  assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, false);
 });
 
 test("topogram template update requires explicit plan mode", () => {

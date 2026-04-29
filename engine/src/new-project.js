@@ -827,7 +827,6 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "check:json": "topogram check --json",
       generate: "topogram generate",
       "template:status": "topogram template status",
-      "template:check": "topogram template check .",
       "template:update:plan": "topogram template update --plan",
       "trust:status": "topogram trust status",
       "trust:diff": "topogram trust diff",
@@ -878,7 +877,6 @@ Topogram app workflow
 Useful inspection:
    npm run check:json
    npm run template:status
-   npm run template:check
    npm run template:update:plan
    npm run trust:status
    npm run trust:diff

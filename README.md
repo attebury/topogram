@@ -60,6 +60,8 @@ topogram template check @attebury/topogram-template-todo@0.1.1 --json
 
 Template checks create a temporary starter, run `topogram check` behavior,
 verify executable-template trust metadata, and verify a no-write update plan.
+Failures include structured diagnostics with a code, severity, path when known,
+and a suggested fix when Topogram can infer one.
 
 To create a starter from a shared template pack:
 
