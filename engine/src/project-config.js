@@ -34,11 +34,29 @@ import {
  * @property {{ id?: string, module?: string, export?: string, implementation_module?: string, implementation_export?: string }} [implementation]
  */
 
+/**
+ * @typedef {Object} ProjectConfigInfo
+ * @property {ProjectConfig} config
+ * @property {string|null} configPath
+ * @property {string} configDir
+ * @property {boolean} [compatibility]
+ */
+
+/**
+ * @typedef {Object} ValidationError
+ * @property {string} message
+ * @property {any} loc
+ */
+
 const PROJECT_CONFIG_FILE = "topogram.project.json";
 const LEGACY_IMPLEMENTATION_FILE = "topogram.implementation.json";
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const IDENTIFIER_PATTERN = /^[a-z][a-z0-9_]*$/;
 
+/**
+ * @param {string|null|undefined} root
+ * @returns {string|null}
+ */
 function normalizeSearchRoot(root) {
   if (!root) {
     return null;
@@ -51,10 +69,18 @@ function normalizeSearchRoot(root) {
   }
 }
 
+/**
+ * @param {string} root
+ * @returns {string}
+ */
 function normalizeRoot(root) {
   return String(root || "").replace(/\\/g, "/");
 }
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
 function resolveComparablePath(filePath) {
   const absolute = path.resolve(filePath);
   try {
@@ -66,10 +92,19 @@ function resolveComparablePath(filePath) {
   }
 }
 
+/**
+ * @param {string} filePath
+ * @returns {any}
+ */
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+/**
+ * @param {string} root
+ * @param {string} fileName
+ * @returns {{ config: any, configPath: string, configDir: string }|null}
+ */
 function findConfigFile(root, fileName) {
   let current = normalizeSearchRoot(root);
   while (current && current !== path.dirname(current)) {
@@ -86,26 +121,73 @@ function findConfigFile(root, fileName) {
   return null;
 }
 
+/**
+ * @param {string} root
+ * @returns {{ config: any, configPath: string, configDir: string }|null}
+ */
 export function findProjectConfig(root) {
   return findConfigFile(root, PROJECT_CONFIG_FILE);
 }
 
+/**
+ * @param {string} root
+ * @returns {{ config: any, configPath: string, configDir: string }|null}
+ */
 export function findLegacyImplementationConfig(root) {
   return findConfigFile(root, LEGACY_IMPLEMENTATION_FILE);
 }
 
+/**
+ * @param {Record<string, any>} graph
+ * @param {Record<string, any>|null} [implementation]
+ * @returns {ProjectConfig}
+ */
 export function defaultProjectConfigForGraph(graph, implementation = null) {
   const runtimeReference = implementation?.runtime?.reference || {};
-  const apiProjection = (graph.byKind.projection || []).find((projection) => (projection.http || []).length > 0);
+  /** @type {Array<Record<string, any>>} */
+  const projections = graph.byKind.projection || [];
+  const apiProjection = projections.find((projection) => (projection.http || []).length > 0);
   const webProjection =
-    (graph.byKind.projection || []).find((projection) => projection.id === "proj_ui_web") ||
-    (graph.byKind.projection || []).find((projection) => projection.platform === "ui_web");
+    projections.find((projection) => projection.id === "proj_ui_web") ||
+    projections.find((projection) => projection.platform === "ui_web");
   const dbProjection =
-    (graph.byKind.projection || []).find((projection) => projection.id === runtimeReference.localDbProjectionId) ||
-    (graph.byKind.projection || []).find((projection) => projection.platform === "db_postgres") ||
-    (graph.byKind.projection || []).find((projection) => projection.platform === "db_sqlite");
+    projections.find((projection) => projection.id === runtimeReference.localDbProjectionId) ||
+    projections.find((projection) => projection.platform === "db_postgres") ||
+    projections.find((projection) => projection.platform === "db_sqlite");
   const ports = runtimeReference.ports || {};
   const dbGenerator = dbProjection?.platform === "db_sqlite" ? "topogram/sqlite" : "topogram/postgres";
+  /** @type {RuntimeTopologyComponent[]} */
+  const components = [
+    ...(apiProjection && dbProjection
+      ? [{
+          id: "app_api",
+          type: /** @type {"api"} */ ("api"),
+          projection: apiProjection.id,
+          generator: { id: "topogram/hono", version: "1" },
+          port: ports.server || 3000,
+          database: "app_postgres"
+        }]
+      : []),
+    ...(webProjection
+      ? [{
+          id: "app_sveltekit",
+          type: /** @type {"web"} */ ("web"),
+          projection: webProjection.id,
+          generator: { id: "topogram/sveltekit", version: "1" },
+          port: ports.web || 5173,
+          api: "app_api"
+        }]
+      : []),
+    ...(dbProjection
+      ? [{
+          id: "app_postgres",
+          type: /** @type {"database"} */ ("database"),
+          projection: dbProjection.id,
+          generator: { id: dbGenerator, version: "1" },
+          port: dbProjection.platform === "db_sqlite" ? null : 5432
+        }]
+      : [])
+  ];
 
   return {
     version: "0.1",
@@ -121,41 +203,15 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
       }
     },
     topology: {
-      components: [
-        ...(apiProjection && dbProjection
-          ? [{
-              id: "app_api",
-              type: "api",
-              projection: apiProjection.id,
-              generator: { id: "topogram/hono", version: "1" },
-              port: ports.server || 3000,
-              database: "app_postgres"
-            }]
-          : []),
-        ...(webProjection
-          ? [{
-              id: "app_sveltekit",
-              type: "web",
-              projection: webProjection.id,
-              generator: { id: "topogram/sveltekit", version: "1" },
-              port: ports.web || 5173,
-              api: "app_api"
-            }]
-          : []),
-        ...(dbProjection
-          ? [{
-              id: "app_postgres",
-              type: "database",
-              projection: dbProjection.id,
-              generator: { id: dbGenerator, version: "1" },
-              port: dbProjection.platform === "db_sqlite" ? null : 5432
-            }]
-          : [])
-      ]
+      components
     }
   };
 }
 
+/**
+ * @param {string} root
+ * @returns {ProjectConfigInfo|null}
+ */
 export function loadProjectConfig(root) {
   const found = findProjectConfig(root);
   if (!found) {
@@ -167,6 +223,12 @@ export function loadProjectConfig(root) {
   };
 }
 
+/**
+ * @param {string} root
+ * @param {Record<string, any>|null} [graph]
+ * @param {Record<string, any>|null} [implementation]
+ * @returns {ProjectConfigInfo|null}
+ */
 export function projectConfigOrDefault(root, graph = null, implementation = null) {
   const found = loadProjectConfig(root);
   if (found) {
@@ -183,14 +245,31 @@ export function projectConfigOrDefault(root, graph = null, implementation = null
   };
 }
 
+/**
+ * @param {ValidationError[]} errors
+ * @param {string} message
+ * @param {any} [loc]
+ * @returns {void}
+ */
 function pushError(errors, message, loc = null) {
   errors.push({ message, loc });
 }
 
+/**
+ * @param {Record<string, any>} graph
+ * @returns {Map<string, Record<string, any>>}
+ */
 function projectionById(graph) {
-  return new Map((graph?.byKind?.projection || []).map((projection) => [projection.id, projection]));
+  /** @type {Array<Record<string, any>>} */
+  const projections = graph?.byKind?.projection || [];
+  return new Map(projections.map((projection) => [projection.id, projection]));
 }
 
+/**
+ * @param {ValidationError[]} errors
+ * @param {any} config
+ * @returns {void}
+ */
 function validateOutputConfig(errors, config) {
   if (!config.outputs || typeof config.outputs !== "object" || Array.isArray(config.outputs)) {
     pushError(errors, "topogram.project.json outputs must be an object");
@@ -210,10 +289,20 @@ function validateOutputConfig(errors, config) {
   }
 }
 
+/**
+ * @param {any} component
+ * @returns {string}
+ */
 function componentLabel(component) {
   return component?.id ? `Component '${component.id}'` : "Topology component";
 }
 
+/**
+ * @param {ValidationError[]} errors
+ * @param {any} component
+ * @param {Set<string>} seenIds
+ * @returns {boolean}
+ */
 function validateComponentShape(errors, component, seenIds) {
   if (!component || typeof component !== "object" || Array.isArray(component)) {
     pushError(errors, "Topology component must be an object");
@@ -248,6 +337,12 @@ function validateComponentShape(errors, component, seenIds) {
   return true;
 }
 
+/**
+ * @param {ValidationError[]} errors
+ * @param {RuntimeTopologyComponent} component
+ * @param {Map<string, Record<string, any>>} projections
+ * @returns {void}
+ */
 function validateComponentCompatibility(errors, component, projections) {
   const projection = projections.get(component.projection);
   if (!projection) {
@@ -271,6 +366,11 @@ function validateComponentCompatibility(errors, component, projections) {
   }
 }
 
+/**
+ * @param {ValidationError[]} errors
+ * @param {RuntimeTopologyComponent[]} components
+ * @returns {void}
+ */
 function validateTopologyReferences(errors, components) {
   const byId = new Map(components.map((component) => [component.id, component]));
   const usedPorts = new Map();
@@ -300,7 +400,13 @@ function validateTopologyReferences(errors, components) {
   }
 }
 
+/**
+ * @param {any} config
+ * @param {Record<string, any>|null} [graph]
+ * @returns {{ ok: boolean, errors: ValidationError[] }}
+ */
 export function validateProjectConfig(config, graph = null) {
+  /** @type {ValidationError[]} */
   const errors = [];
   if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ok: false, errors: [{ message: "topogram.project.json must contain a JSON object", loc: null }] };
@@ -330,12 +436,22 @@ export function validateProjectConfig(config, graph = null) {
   };
 }
 
+/**
+ * @param {{ errors: ValidationError[] }} result
+ * @param {string} [configPath]
+ * @returns {string}
+ */
 export function formatProjectConfigErrors(result, configPath = PROJECT_CONFIG_FILE) {
   return result.errors
     .map((error) => `${normalizeRoot(configPath)} ${error.message}`)
     .join("\n");
 }
 
+/**
+ * @param {ProjectConfigInfo|null|undefined} configInfo
+ * @param {string} outputName
+ * @returns {string|null}
+ */
 export function resolveOutputPath(configInfo, outputName) {
   const output = configInfo?.config?.outputs?.[outputName];
   if (!output?.path) {
@@ -345,6 +461,11 @@ export function resolveOutputPath(configInfo, outputName) {
   return resolveComparablePath(path.resolve(baseDir, output.path));
 }
 
+/**
+ * @param {ProjectConfigInfo|null|undefined} configInfo
+ * @param {string} outDir
+ * @returns {{ name: string, ownership: string, path: string }|null}
+ */
 export function outputOwnershipForPath(configInfo, outDir) {
   if (!configInfo?.config?.outputs) {
     return null;
@@ -366,7 +487,12 @@ export function outputOwnershipForPath(configInfo, outDir) {
   return null;
 }
 
+/**
+ * @param {ProjectConfigInfo|null|undefined} configInfo
+ * @returns {{ ok: boolean, errors: ValidationError[] }}
+ */
 export function validateProjectOutputOwnership(configInfo) {
+  /** @type {ValidationError[]} */
   const errors = [];
   if (!configInfo?.config?.outputs) {
     return { ok: true, errors };

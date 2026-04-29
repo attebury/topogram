@@ -17,20 +17,66 @@ import { generatorProfile } from "../registry.js";
  */
 
 /**
- * @typedef {Object} RuntimeTopology
- * @property {import("../../project-config.js").ProjectConfig} config
- * @property {Array<Record<string, any>>} components
- * @property {Array<Record<string, any>>} apiComponents
- * @property {Array<Record<string, any>>} webComponents
- * @property {Array<Record<string, any>>} dbComponents
- * @property {Record<string, any>|null} primaryApi
- * @property {Record<string, any>|null} primaryWeb
- * @property {Record<string, any>|null} primaryDb
- * @property {(component: Record<string, any>) => string} serviceDir
- * @property {(component: Record<string, any>) => string} webDir
- * @property {(component: Record<string, any>) => string} dbDir
+ * @typedef {Record<string, any>} RuntimeStatement
  */
 
+/**
+ * @typedef {Object} RuntimeComponent
+ * @property {string} id
+ * @property {"api"|"web"|"database"|"native"} type
+ * @property {RuntimeStatement} projection
+ * @property {import("../../project-config.js").GeneratorBinding} generator
+ * @property {number|null} [port]
+ * @property {string} [api]
+ * @property {string} [database]
+ * @property {Record<string, string>} [env]
+ * @property {RuntimeComponent|null} [apiComponent]
+ * @property {RuntimeComponent|null} [databaseComponent]
+ */
+
+/**
+ * @typedef {import("../../project-config.js").RuntimeTopologyComponent} RuntimeTopologyComponent
+ */
+
+/**
+ * @typedef {Object} RuntimeTopology
+ * @property {import("../../project-config.js").ProjectConfig} config
+ * @property {RuntimeComponent[]} components
+ * @property {RuntimeComponent[]} apiComponents
+ * @property {RuntimeComponent[]} webComponents
+ * @property {RuntimeComponent[]} dbComponents
+ * @property {RuntimeComponent|null} primaryApi
+ * @property {RuntimeComponent|null} primaryWeb
+ * @property {RuntimeComponent|null} primaryDb
+ * @property {(component: RuntimeComponent) => string} serviceDir
+ * @property {(component: RuntimeComponent) => string} webDir
+ * @property {(component: RuntimeComponent) => string} dbDir
+ */
+
+/**
+ * @typedef {Object} VerificationSelectionOptions
+ * @property {boolean} [keepLookupChecks]
+ * @property {boolean} [keepWebChecks]
+ */
+
+/**
+ * @typedef {Object} RuntimeGenerationOptions
+ * @property {import("../../project-config.js").ProjectConfig} [projectConfig]
+ * @property {Record<string, any>|null} [implementation]
+ * @property {string} [projectionId]
+ * @property {string} [dbProjectionId]
+ * @property {RuntimeComponent} [component]
+ */
+
+/**
+ * @typedef {Object} EnvVarOptions
+ * @property {boolean} [primary]
+ */
+
+/**
+ * @param {any} item
+ * @returns {string|null}
+ */
 function verificationScenarioValue(item) {
   if (!item) {
     return null;
@@ -41,6 +87,10 @@ function verificationScenarioValue(item) {
   return item.value || null;
 }
 
+/**
+ * @param {any} scenario
+ * @returns {string}
+ */
 function scenarioLabel(scenario) {
   return String(scenario || "")
     .replace(/^verify_/, "")
@@ -48,6 +98,11 @@ function scenarioLabel(scenario) {
     .trim();
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string[]} [methods]
+ * @returns {RuntimeStatement[]}
+ */
 export function getVerificationEntries(graph, methods = []) {
   const methodSet = new Set(methods);
   return (graph.byKind.verification || [])
@@ -55,6 +110,11 @@ export function getVerificationEntries(graph, methods = []) {
     .sort((left, right) => left.id.localeCompare(right.id));
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string[]} [methods]
+ * @returns {Record<string, any>|null}
+ */
 export function buildVerificationSummary(graph, methods = []) {
   const verifications = getVerificationEntries(graph, methods);
   if (verifications.length === 0) {
@@ -66,7 +126,7 @@ export function buildVerificationSummary(graph, methods = []) {
     const rawScenarios = Array.isArray(verification.scenarios)
       ? verification.scenarios
       : Array.isArray(verification.plan?.scenarios)
-        ? verification.plan.scenarios.map((entry) => entry?.target?.id || null)
+        ? /** @type {Array<Record<string, any>>} */ (verification.plan.scenarios).map((entry) => entry?.target?.id || null)
         : [];
     for (const raw of rawScenarios) {
       const id = verificationScenarioValue(raw);
@@ -86,12 +146,17 @@ export function buildVerificationSummary(graph, methods = []) {
       id: verification.id,
       name: verification.name || verification.id,
       method: verification.method,
-      validates: (verification.validates || []).map((item) => item.id)
+      validates: /** @type {Array<Record<string, any>>} */ (verification.validates || []).map((item) => item.id)
     })),
     scenarios: [...scenarioMap.values()]
   };
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string[]} [methods]
+ * @returns {Set<string>}
+ */
 export function getVerifiedCapabilityIds(graph, methods = []) {
   const verifications = getVerificationEntries(graph, methods);
   const capabilityIds = new Set();
@@ -105,6 +170,13 @@ export function getVerifiedCapabilityIds(graph, methods = []) {
   return capabilityIds;
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {Array<Record<string, any>>} checks
+ * @param {string[]} [methods]
+ * @param {VerificationSelectionOptions} [options]
+ * @returns {{ checks: Array<Record<string, any>>, selection: Record<string, any>|null }}
+ */
 export function selectChecksByVerification(graph, checks, methods = [], options = {}) {
   const capabilityIds = getVerifiedCapabilityIds(graph, methods);
   if (capabilityIds.size === 0) {
@@ -143,10 +215,18 @@ export function selectChecksByVerification(graph, checks, methods = [], options 
   };
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @returns {RuntimeStatement[]}
+ */
 function apiProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter((projection) => (projection.http || []).length > 0);
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @returns {RuntimeStatement[]}
+ */
 function uiWebProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
     (projection) => projection.platform === "ui_web" && (projection.uiRoutes || []).length > 0
@@ -161,13 +241,22 @@ const DEFAULT_WEB_UI_STACK_ORDER = ["proj_ui_web__sveltekit", "proj_ui_web__reac
 
 const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ui_native__ios"];
 
+/**
+ * @param {ResolvedGraph} graph
+ * @returns {RuntimeStatement[]}
+ */
 function uiIosProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
     (projection) => projection.platform === "ui_ios" && (projection.uiRoutes || []).length > 0
   );
 }
 
-/** Prefer canonical native projections (`proj_ui_native__{platform}`); otherwise first routed ui_ios projection. */
+/**
+ * Prefer canonical native projections (`proj_ui_native__{platform}`); otherwise first routed ui_ios projection.
+ *
+ * @param {ResolvedGraph} graph
+ * @returns {RuntimeStatement|undefined}
+ */
 export function pickDefaultIosUiProjection(graph) {
   const candidates = uiIosProjectionCandidates(graph);
   const hierarchical = candidates.filter((projection) => projection.id.startsWith(NATIVE_UI_FAMILY_PREFIX));
@@ -185,6 +274,9 @@ export function pickDefaultIosUiProjection(graph) {
 
 /**
  * Prefer canonical shipped web projections (`proj_ui_web__{stack}`); otherwise first routed ui_web projection.
+ *
+ * @param {ResolvedGraph} graph
+ * @returns {RuntimeStatement|undefined}
  */
 export function pickDefaultUiWebProjection(graph) {
   const candidates = uiWebProjectionCandidates(graph);
@@ -205,6 +297,11 @@ export function pickDefaultUiWebProjection(graph) {
   return candidates[0];
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {{ apiProjection: RuntimeStatement, uiProjection: RuntimeStatement, dbProjection: RuntimeStatement }}
+ */
 export function getDefaultEnvironmentProjections(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const apiProjection = topology.primaryApi?.projection ||
@@ -227,6 +324,12 @@ export function getDefaultEnvironmentProjections(graph, options = {}) {
   return { apiProjection, uiProjection, dbProjection };
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string} projectionId
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {any}
+ */
 export function generateServerBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.apiComponents.find((entry) => entry.projection.id === projectionId);
@@ -238,28 +341,54 @@ export function generateServerBundle(graph, projectionId, options = {}) {
     : generateHonoServer(graph, generatorOptions);
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string} projectionId
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {any}
+ */
 export function generateWebBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.webComponents.find((entry) => entry.projection.id === projectionId);
   return generateWebApp(graph, { ...options, projectionId, component });
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string} projectionId
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {any}
+ */
 export function generateDbBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.dbComponents.find((entry) => entry.projection.id === projectionId);
   return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId), { ...options, component });
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @returns {any}
+ */
 export function generateRuntimeApiContracts(graph) {
   return generateApiContractGraph(graph, {});
 }
 
+/**
+ * @param {string} componentId
+ * @param {EnvVarOptions} [options]
+ * @returns {string}
+ */
 function envVarPrefix(componentId, options = {}) {
   return options.primary || componentId === "db"
     ? ""
     : `${componentId.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_`;
 }
 
+/**
+ * @param {RuntimeComponent} component
+ * @param {EnvVarOptions} [options]
+ * @returns {{ databaseUrl: string, databaseAdminUrl: string, dbPort: string, postgresDb: string }}
+ */
 export function dbEnvVarsForComponent(component, options = {}) {
   const prefix = envVarPrefix(component.id, options);
   return {
@@ -270,12 +399,18 @@ export function dbEnvVarsForComponent(component, options = {}) {
   };
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {import("../../project-config.js").ProjectConfig} config
+ * @returns {RuntimeComponent[]}
+ */
 function decorateComponents(graph, config) {
   const byProjectionId = new Map((graph.byKind.projection || []).map((projection) => [projection.id, projection]));
   const rawComponents = config.topology?.components || [];
+  /** @type {RuntimeComponent[]} */
   const components = rawComponents.map((component) => ({
     ...component,
-    projection: byProjectionId.get(component.projection)
+    projection: byProjectionId.get(component.projection) || {}
   }));
   const byId = new Map(components.map((component) => [component.id, component]));
   for (const component of components) {
@@ -289,6 +424,11 @@ function decorateComponents(graph, config) {
   return components;
 }
 
+/**
+ * @param {ResolvedGraph} graph
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {RuntimeTopology}
+ */
 export function resolveRuntimeTopology(graph, options = {}) {
   const config = options.projectConfig || defaultProjectConfigForGraph(graph, options.implementation || null);
   const validation = validateProjectConfig(config, graph);
@@ -324,6 +464,11 @@ export function resolveRuntimeTopology(graph, options = {}) {
   };
 }
 
+/**
+ * @param {Record<string, any>|null|undefined} runtimeReference
+ * @param {RuntimeTopology|null} [topology]
+ * @returns {{ server: number, web: number }}
+ */
 export function runtimePorts(runtimeReference, topology = null) {
   return {
     server: topology?.primaryApi?.port || runtimeReference?.ports?.server || 3000,
@@ -331,6 +476,11 @@ export function runtimePorts(runtimeReference, topology = null) {
   };
 }
 
+/**
+ * @param {Record<string, any>|null|undefined} runtimeReference
+ * @param {RuntimeTopology|null} [topology]
+ * @returns {{ api: string, web: string }}
+ */
 export function runtimeUrls(runtimeReference, topology = null) {
   const ports = runtimePorts(runtimeReference, topology);
   return {

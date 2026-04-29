@@ -5,6 +5,18 @@ import path from "node:path";
 
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
 
+/**
+ * @typedef {Object} CreateNewProjectOptions
+ * @property {string} targetPath
+ * @property {string} [templateName]
+ * @property {string} engineRoot
+ * @property {string} templatesRoot
+ */
+
+/**
+ * @param {string} projectRoot
+ * @returns {string}
+ */
 function packageNameFromPath(projectRoot) {
   const baseName = path.basename(path.resolve(projectRoot)).toLowerCase();
   const normalized = baseName
@@ -14,6 +26,11 @@ function packageNameFromPath(projectRoot) {
   return normalized || "topogram-app";
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {string} engineRoot
+ * @returns {string}
+ */
 function fileDependencyForEngine(projectRoot, engineRoot) {
   const relative = path.relative(projectRoot, engineRoot).replace(/\\/g, "/");
   if (!relative || relative.startsWith("..")) {
@@ -22,6 +39,10 @@ function fileDependencyForEngine(projectRoot, engineRoot) {
   return `file:./${relative}`;
 }
 
+/**
+ * @param {string} projectRoot
+ * @returns {void}
+ */
 function ensureCreatableProjectRoot(projectRoot) {
   if (!fs.existsSync(projectRoot)) {
     fs.mkdirSync(projectRoot, { recursive: true });
@@ -30,12 +51,19 @@ function ensureCreatableProjectRoot(projectRoot) {
   if (!fs.statSync(projectRoot).isDirectory()) {
     throw new Error(`Cannot create project at '${projectRoot}' because it is not a directory.`);
   }
-  const entries = fs.readdirSync(projectRoot).filter((entry) => entry !== ".DS_Store");
+  /** @type {string[]} */
+  const dirEntries = fs.readdirSync(projectRoot);
+  const entries = dirEntries.filter((entry) => entry !== ".DS_Store");
   if (entries.length > 0) {
     throw new Error(`Refusing to create a Topogram project in non-empty directory '${projectRoot}'.`);
   }
 }
 
+/**
+ * @param {string} templateRoot
+ * @param {string} projectRoot
+ * @returns {void}
+ */
 function copyTopogramWorkspace(templateRoot, projectRoot) {
   const topogramRoot = path.join(projectRoot, "topogram");
   fs.mkdirSync(topogramRoot, { recursive: true });
@@ -58,6 +86,11 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
   );
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {string} engineRoot
+ * @returns {void}
+ */
 function writeProjectPackage(projectRoot, engineRoot) {
   const pkg = {
     name: packageNameFromPath(projectRoot),
@@ -85,6 +118,11 @@ function writeProjectPackage(projectRoot, engineRoot) {
   fs.writeFileSync(path.join(projectRoot, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {string} templateName
+ * @returns {void}
+ */
 function writeProjectReadme(projectRoot, templateName) {
   const readme = `# ${packageNameFromPath(projectRoot)}
 
@@ -105,6 +143,10 @@ Generated app code is written to \`app/\`.
   fs.writeFileSync(path.join(projectRoot, "README.md"), readme, "utf8");
 }
 
+/**
+ * @param {CreateNewProjectOptions} options
+ * @returns {{ projectRoot: string, templateName: string, topogramPath: string, appPath: string }}
+ */
 export function createNewProject({
   targetPath,
   templateName = "web-api-db",
