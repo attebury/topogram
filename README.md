@@ -39,6 +39,18 @@ code. Use `topogram template status` for the lifecycle summary, then
 `topogram trust status` and `topogram trust diff` to inspect changed files
 before refreshing trust.
 
+Plan a template update without writing files:
+
+```bash
+topogram template update --plan
+topogram template update --plan --template @attebury/topogram-template-todo@0.1.1
+topogram template update --plan --json
+```
+
+The update plan compares template-owned files in the current project with the
+candidate template and reports added, changed, and current-only files. It does
+not overwrite local edits.
+
 To create a starter from a shared template pack:
 
 ```bash

@@ -117,6 +117,27 @@ template provenance recorded in `topogram.project.json`, whether executable
 implementation code is trusted, whether local files drifted, and that registry
 latest-version checks are not performed by default.
 
+## Template Update Plans
+
+Template updates are plan-only in this milestone:
+
+```bash
+topogram template update --plan
+topogram template update --plan --template ./local-template
+topogram template update --plan --template @scope/topogram-template-name@0.2.0
+topogram template update --plan --json
+```
+
+Without `--template`, the command uses the recorded `sourceSpec` or `requested`
+template metadata from `topogram.project.json`. To compare against a newer
+package version, pass that version explicitly with `--template`.
+
+The plan compares template-owned project files (`topogram/`,
+`topogram.project.json`, and `implementation/` when present) with the candidate
+template. It reports added, changed, and current-only files with hashes and text
+diffs where practical. It never writes files and never executes template
+implementation code.
+
 After reviewing intentional edits in `implementation/`, refresh the trust record:
 
 ```bash

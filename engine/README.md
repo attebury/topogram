@@ -24,6 +24,7 @@ topogram create ../my-app
 topogram check
 topogram generate
 topogram template status
+topogram template update --plan
 topogram trust template
 ```
 
@@ -87,6 +88,10 @@ regenerate it with `topogram trust template` after reviewing copied
 `implementation/` code. Use `topogram template status` for the lifecycle
 summary, then `topogram trust status` and `topogram trust diff` to inspect
 changed files before refreshing trust.
+
+Template updates are plan-only in this pass. Use
+`topogram template update --plan [--template <spec>]` to compare the current
+project with a candidate template without writing files.
 
 Run the same gate directly:
 

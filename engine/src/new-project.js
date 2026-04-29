@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import childProcess from "node:child_process";
+import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 
@@ -10,12 +11,21 @@ import { writeTemplateTrustRecord } from "./template-trust.js";
 const CLI_PACKAGE_NAME = "@attebury/topogram";
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
 const TEMPLATE_MANIFEST = "topogram-template.json";
+const MAX_TEXT_DIFF_BYTES = 256 * 1024;
 
 /**
  * @typedef {Object} CreateNewProjectOptions
  * @property {string} targetPath
  * @property {string} [templateName]
  * @property {string} engineRoot
+ * @property {string} templatesRoot
+ */
+
+/**
+ * @typedef {Object} TemplateUpdatePlanOptions
+ * @property {string} projectRoot
+ * @property {Record<string, any>} projectConfig
+ * @property {string|null} [templateName]
  * @property {string} templatesRoot
  */
 
@@ -292,7 +302,7 @@ function findInstalledTemplatePackageRoot(installRoot, templateSpec) {
  * @param {string} templatesRoot
  * @returns {ResolvedTemplate}
  */
-function resolveTemplate(templateName, templatesRoot) {
+export function resolveTemplate(templateName, templatesRoot) {
   if (TEMPLATE_NAMES.has(templateName)) {
     const templateRoot = path.join(templatesRoot, templateName);
     if (!fs.existsSync(templateRoot)) {
@@ -408,7 +418,17 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
 function writeProjectTemplateMetadata(projectRoot, template) {
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  projectConfig.template = {
+  projectConfig.template = projectTemplateMetadata(template);
+  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+  return projectConfig;
+}
+
+/**
+ * @param {ResolvedTemplate} template
+ * @returns {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean }}
+ */
+function projectTemplateMetadata(template) {
+  return {
     id: template.manifest.id,
     version: template.manifest.version,
     source: template.source,
@@ -417,8 +437,346 @@ function writeProjectTemplateMetadata(projectRoot, template) {
     sourceRoot: template.source === "local" ? template.root : null,
     includesExecutableImplementation: Boolean(template.manifest.includesExecutableImplementation)
   };
-  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
-  return projectConfig;
+}
+
+/**
+ * @param {any} bytes
+ * @returns {boolean}
+ */
+function isLikelyText(bytes) {
+  if (bytes.includes(0)) {
+    return false;
+  }
+  const length = Math.min(bytes.length, 4096);
+  let suspicious = 0;
+  for (let index = 0; index < length; index += 1) {
+    const byte = bytes[index];
+    if (byte === 9 || byte === 10 || byte === 13) {
+      continue;
+    }
+    if (byte < 32 || byte === 127) {
+      suspicious += 1;
+    }
+  }
+  return length === 0 || suspicious / length < 0.02;
+}
+
+/**
+ * @param {string} text
+ * @returns {string[]}
+ */
+function linesForDiff(text) {
+  const lines = text.split("\n");
+  if (lines.at(-1) === "") {
+    lines.pop();
+  }
+  return lines;
+}
+
+/**
+ * @param {string[]} before
+ * @param {string[]} after
+ * @returns {Array<{ type: "same"|"added"|"removed", text: string }>}
+ */
+function diffLines(before, after) {
+  const rows = before.length;
+  const columns = after.length;
+  /** @type {number[][]} */
+  const table = Array.from({ length: rows + 1 }, () => Array(columns + 1).fill(0));
+  for (let row = rows - 1; row >= 0; row -= 1) {
+    for (let column = columns - 1; column >= 0; column -= 1) {
+      table[row][column] = before[row] === after[column]
+        ? table[row + 1][column + 1] + 1
+        : Math.max(table[row + 1][column], table[row][column + 1]);
+    }
+  }
+  /** @type {Array<{ type: "same"|"added"|"removed", text: string }>} */
+  const changes = [];
+  let row = 0;
+  let column = 0;
+  while (row < rows && column < columns) {
+    if (before[row] === after[column]) {
+      changes.push({ type: "same", text: before[row] });
+      row += 1;
+      column += 1;
+    } else if (table[row + 1][column] >= table[row][column + 1]) {
+      changes.push({ type: "removed", text: before[row] });
+      row += 1;
+    } else {
+      changes.push({ type: "added", text: after[column] });
+      column += 1;
+    }
+  }
+  while (row < rows) {
+    changes.push({ type: "removed", text: before[row] });
+    row += 1;
+  }
+  while (column < columns) {
+    changes.push({ type: "added", text: after[column] });
+    column += 1;
+  }
+  return changes;
+}
+
+/**
+ * @param {string} relativePath
+ * @param {string|null} beforeText
+ * @param {string|null} afterText
+ * @returns {string|null}
+ */
+function unifiedTextDiff(relativePath, beforeText, afterText) {
+  if (beforeText === null && afterText === null) {
+    return null;
+  }
+  const beforeLines = beforeText === null ? [] : linesForDiff(beforeText);
+  const afterLines = afterText === null ? [] : linesForDiff(afterText);
+  const changes = diffLines(beforeLines, afterLines);
+  const lines = [
+    `--- current/${relativePath}`,
+    `+++ candidate/${relativePath}`,
+    `@@ -1,${beforeLines.length} +1,${afterLines.length} @@`
+  ];
+  for (const change of changes) {
+    const prefix = change.type === "added" ? "+" : change.type === "removed" ? "-" : " ";
+    lines.push(`${prefix}${change.text}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * @param {string} value
+ * @returns {number}
+ */
+function utf8ByteLength(value) {
+  let length = 0;
+  for (const char of value) {
+    const codePoint = char.codePointAt(0) || 0;
+    if (codePoint <= 0x7f) {
+      length += 1;
+    } else if (codePoint <= 0x7ff) {
+      length += 2;
+    } else if (codePoint <= 0xffff) {
+      length += 3;
+    } else {
+      length += 4;
+    }
+  }
+  return length;
+}
+
+/**
+ * @param {string} root
+ * @param {string} currentDir
+ * @param {string[]} files
+ * @returns {void}
+ */
+function collectFiles(root, currentDir, files) {
+  if (!fs.existsSync(currentDir)) {
+    return;
+  }
+  for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+    if (entry.name === ".DS_Store" || entry.name === "node_modules" || entry.name === ".tmp") {
+      continue;
+    }
+    const entryPath = path.join(currentDir, entry.name);
+    if (entry.isDirectory()) {
+      collectFiles(root, entryPath, files);
+      continue;
+    }
+    if (entry.isFile()) {
+      files.push(path.relative(root, entryPath).replace(/\\/g, "/"));
+    }
+  }
+}
+
+/**
+ * @param {string|null} absolutePath
+ * @param {string|null} content
+ * @returns {{ sha256: string, size: number, text: string|null, binary: boolean, diffOmitted: boolean }|null}
+ */
+function fileSnapshot(absolutePath, content = null) {
+  if (!absolutePath && content === null) {
+    return null;
+  }
+  if (content !== null) {
+    return {
+      sha256: crypto.createHash("sha256").update(content, "utf8").digest("hex"),
+      size: utf8ByteLength(content),
+      text: content,
+      binary: false,
+      diffOmitted: false
+    };
+  }
+  const bytes = fs.readFileSync(absolutePath || "");
+  const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+  if (bytes.length > MAX_TEXT_DIFF_BYTES) {
+    return { sha256, size: bytes.length, text: null, binary: false, diffOmitted: true };
+  }
+  if (!isLikelyText(bytes)) {
+    return { sha256, size: bytes.length, text: null, binary: true, diffOmitted: false };
+  }
+  return { sha256, size: bytes.length, text: bytes.toString("utf8"), binary: false, diffOmitted: false };
+}
+
+/**
+ * @param {ResolvedTemplate} template
+ * @returns {Map<string, { path: string, content: string|null, absolutePath: string|null }>}
+ */
+function candidateTemplateFiles(template) {
+  const files = new Map();
+  for (const rootName of ["topogram", "implementation"]) {
+    const root = path.join(template.root, rootName);
+    if (!fs.existsSync(root)) {
+      continue;
+    }
+    /** @type {string[]} */
+    const relativeFiles = [];
+    collectFiles(template.root, root, relativeFiles);
+    for (const relativePath of relativeFiles) {
+      files.set(relativePath, {
+        path: relativePath,
+        content: null,
+        absolutePath: path.join(template.root, relativePath)
+      });
+    }
+  }
+  const candidateProjectConfig = JSON.parse(fs.readFileSync(path.join(template.root, "topogram.project.json"), "utf8"));
+  candidateProjectConfig.template = projectTemplateMetadata(template);
+  files.set("topogram.project.json", {
+    path: "topogram.project.json",
+    content: `${JSON.stringify(candidateProjectConfig, null, 2)}\n`,
+    absolutePath: null
+  });
+  return files;
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {boolean} includeImplementation
+ * @returns {Map<string, { path: string, absolutePath: string }>}
+ */
+function currentTemplateOwnedFiles(projectRoot, includeImplementation) {
+  const files = new Map();
+  for (const rootName of includeImplementation ? ["topogram", "implementation"] : ["topogram"]) {
+    const root = path.join(projectRoot, rootName);
+    if (!fs.existsSync(root)) {
+      continue;
+    }
+    /** @type {string[]} */
+    const relativeFiles = [];
+    collectFiles(projectRoot, root, relativeFiles);
+    for (const relativePath of relativeFiles) {
+      files.set(relativePath, {
+        path: relativePath,
+        absolutePath: path.join(projectRoot, relativePath)
+      });
+    }
+  }
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  if (fs.existsSync(projectConfigPath)) {
+    files.set("topogram.project.json", {
+      path: "topogram.project.json",
+      absolutePath: projectConfigPath
+    });
+  }
+  return files;
+}
+
+/**
+ * @param {TemplateUpdatePlanOptions} options
+ * @returns {{ ok: boolean, mode: "plan", writes: false, current: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }, candidate: { id: string, version: string, source: string, sourceSpec: string, requested: string }, compatible: boolean, issues: string[], summary: { added: number, changed: number, currentOnly: number, unchanged: number }, files: Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
+ */
+export function buildTemplateUpdatePlan({
+  projectRoot,
+  projectConfig,
+  templateName = null,
+  templatesRoot
+}) {
+  const currentTemplate = projectConfig.template || {};
+  const templateSpec = templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
+  if (!templateSpec || typeof templateSpec !== "string") {
+    throw new Error("Cannot plan template update because topogram.project.json has no template source spec.");
+  }
+  const candidateTemplate = resolveTemplate(templateSpec, templatesRoot);
+  const candidateMetadata = projectTemplateMetadata(candidateTemplate);
+  /** @type {string[]} */
+  const issues = [];
+  if (currentTemplate.id && currentTemplate.id !== candidateMetadata.id) {
+    issues.push(`Candidate template id '${candidateMetadata.id}' does not match current template id '${currentTemplate.id}'.`);
+  }
+  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  const currentFiles = currentTemplateOwnedFiles(
+    projectRoot,
+    Boolean(projectConfig.implementation || currentTemplate.includesExecutableImplementation || candidateMetadata.includesExecutableImplementation)
+  );
+  const allPaths = new Set([...candidateFiles.keys(), ...currentFiles.keys()]);
+  /** @type {Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }>} */
+  const files = [];
+
+  for (const relativePath of [...allPaths].sort((a, b) => a.localeCompare(b))) {
+    const candidateFile = candidateFiles.get(relativePath) || null;
+    const currentFile = currentFiles.get(relativePath) || null;
+    const candidateSnapshot = candidateFile
+      ? fileSnapshot(candidateFile.absolutePath, candidateFile.content)
+      : null;
+    const currentSnapshot = currentFile
+      ? fileSnapshot(currentFile.absolutePath)
+      : null;
+    let kind = /** @type {"added"|"changed"|"current-only"|"unchanged"} */ ("unchanged");
+    if (!currentSnapshot && candidateSnapshot) {
+      kind = "added";
+    } else if (currentSnapshot && !candidateSnapshot) {
+      kind = "current-only";
+    } else if (currentSnapshot && candidateSnapshot && (
+      currentSnapshot.sha256 !== candidateSnapshot.sha256 ||
+      currentSnapshot.size !== candidateSnapshot.size
+    )) {
+      kind = "changed";
+    }
+    const binary = Boolean(currentSnapshot?.binary || candidateSnapshot?.binary);
+    const diffOmitted = binary || Boolean(currentSnapshot?.diffOmitted || candidateSnapshot?.diffOmitted);
+    files.push({
+      path: relativePath,
+      kind,
+      current: currentSnapshot ? { sha256: currentSnapshot.sha256, size: currentSnapshot.size } : null,
+      candidate: candidateSnapshot ? { sha256: candidateSnapshot.sha256, size: candidateSnapshot.size } : null,
+      binary,
+      diffOmitted,
+      unifiedDiff: diffOmitted
+        ? null
+        : unifiedTextDiff(relativePath, currentSnapshot?.text || null, candidateSnapshot?.text || null)
+    });
+  }
+  const visibleFiles = files.filter((file) => file.kind !== "unchanged");
+  const summary = {
+    added: visibleFiles.filter((file) => file.kind === "added").length,
+    changed: visibleFiles.filter((file) => file.kind === "changed").length,
+    currentOnly: visibleFiles.filter((file) => file.kind === "current-only").length,
+    unchanged: files.filter((file) => file.kind === "unchanged").length
+  };
+  return {
+    ok: issues.length === 0,
+    mode: "plan",
+    writes: false,
+    current: {
+      id: typeof currentTemplate.id === "string" ? currentTemplate.id : null,
+      version: typeof currentTemplate.version === "string" ? currentTemplate.version : null,
+      source: typeof currentTemplate.source === "string" ? currentTemplate.source : null,
+      sourceSpec: typeof currentTemplate.sourceSpec === "string" ? currentTemplate.sourceSpec : null,
+      requested: typeof currentTemplate.requested === "string" ? currentTemplate.requested : null
+    },
+    candidate: {
+      id: candidateMetadata.id,
+      version: candidateMetadata.version,
+      source: candidateMetadata.source,
+      sourceSpec: candidateMetadata.sourceSpec,
+      requested: candidateMetadata.requested
+    },
+    compatible: issues.length === 0,
+    issues,
+    summary,
+    files: visibleFiles
+  };
 }
 
 /**
@@ -437,6 +795,10 @@ function writeProjectPackage(projectRoot, engineRoot) {
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
+      "template:status": "topogram template status",
+      "template:update:plan": "topogram template update --plan",
+      "trust:status": "topogram trust status",
+      "trust:diff": "topogram trust diff",
       verify: "npm run app:compile",
       bootstrap: "npm run app:bootstrap",
       dev: "npm run app:dev",
@@ -483,6 +845,10 @@ Topogram app workflow
 
 Useful inspection:
    npm run check:json
+   npm run template:status
+   npm run template:update:plan
+   npm run trust:status
+   npm run trust:diff
 \`;
 
 console.log(message.trimEnd());

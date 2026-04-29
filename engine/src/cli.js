@@ -10,7 +10,7 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
-import { createNewProject } from "./new-project.js";
+import { buildTemplateUpdatePlan, createNewProject } from "./new-project.js";
 import {
   getTemplateTrustDiff,
   getTemplateTrustStatus,
@@ -93,6 +93,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template update [path] --plan [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -105,6 +106,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
   console.log("  topogram template status");
+  console.log("  topogram template update --plan");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
@@ -508,6 +510,49 @@ function printTemplateStatus(payload) {
   }
 }
 
+/**
+ * @param {ReturnType<typeof buildTemplateUpdatePlan>} plan
+ * @returns {void}
+ */
+function printTemplateUpdatePlan(plan) {
+  console.log(plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible");
+  console.log(`Current: ${plan.current.id || "unknown"}@${plan.current.version || "unknown"}`);
+  console.log(`Candidate: ${plan.candidate.id}@${plan.candidate.version}`);
+  console.log("Writes: none");
+  for (const issue of plan.issues) {
+    console.log(`Issue: ${issue}`);
+  }
+  console.log(`Added: ${plan.summary.added}`);
+  console.log(`Changed: ${plan.summary.changed}`);
+  console.log(`Current-only: ${plan.summary.currentOnly}`);
+  console.log(`Unchanged: ${plan.summary.unchanged}`);
+  for (const file of plan.files) {
+    console.log("");
+    console.log(`${file.kind.toUpperCase()}: ${file.path}`);
+    if (file.current) {
+      console.log(`  current sha256: ${file.current.sha256}`);
+      console.log(`  current size: ${file.current.size}`);
+    }
+    if (file.candidate) {
+      console.log(`  candidate sha256: ${file.candidate.sha256}`);
+      console.log(`  candidate size: ${file.candidate.size}`);
+    }
+    if (file.binary) {
+      console.log("  diff: binary file");
+    } else if (file.diffOmitted && !file.unifiedDiff) {
+      console.log("  diff: hash-only");
+    }
+    if (file.unifiedDiff) {
+      console.log(file.unifiedDiff.trimEnd());
+    }
+  }
+  if (plan.files.length === 0) {
+    console.log("No template-owned file changes found.");
+  }
+  console.log("");
+  console.log("This command did not write files. Review the plan before applying template updates manually.");
+}
+
 function workflowPresetSelectors({
   taskModeArtifact,
   providerId = null,
@@ -585,6 +630,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "update") {
+  commandArgs = { templateUpdate: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -669,6 +716,7 @@ const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
+const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -723,13 +771,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -772,6 +820,28 @@ try {
       printTemplateStatus(status);
     }
     process.exit(status.ok ? 0 : 1);
+  }
+
+  if (shouldTemplateUpdate) {
+    if (!args.includes("--plan")) {
+      throw new Error("Template update is plan-only for now. Run `topogram template update --plan`.");
+    }
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot plan template update without topogram.project.json.");
+    }
+    const plan = buildTemplateUpdatePlan({
+      projectRoot: projectConfigInfo.configDir,
+      projectConfig: projectConfigInfo.config,
+      templateName: templateIndex >= 0 ? templateName : null,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    if (emitJson) {
+      console.log(stableStringify(plan));
+    } else {
+      printTemplateUpdatePlan(plan);
+    }
+    process.exit(plan.ok ? 0 : 1);
   }
 
   if (shouldTrustTemplate) {
