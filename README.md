@@ -6,6 +6,18 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 
 Use Node 20+.
 
+To run the disposable demo:
+
+```bash
+cd topogram
+npm install
+npm run demo
+```
+
+This writes a generated starter to `.tmp/demo-app`.
+
+To create your own starter:
+
 ```bash
 cd topogram
 npm install

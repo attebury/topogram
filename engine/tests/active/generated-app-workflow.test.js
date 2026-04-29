@@ -137,6 +137,14 @@ test("repo root new script creates a generated app starter project outside engin
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
 });
 
+test("repo root demo script creates and builds disposable demo app", () => {
+  const result = runNpm(["run", "demo"], repoRoot);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /Demo app generated/);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "demo-app", "topogram.project.json")), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "demo-app", "app", ".topogram-generated.json")), true);
+});
+
 test("topogram new refuses to create generated projects inside engine", () => {
   const create = runCli(["new", "./my-topogram-app"]);
   assert.notEqual(create.status, 0, create.stdout);

@@ -10,6 +10,16 @@ The active scope is the engine under `engine/`, the generated Todo demo under `d
 
 Use Node 20+.
 
+Run the disposable demo:
+
+```bash
+cd topogram
+npm install
+npm run demo
+```
+
+This writes to `.tmp/demo-app`.
+
 ```bash
 cd topogram
 npm install

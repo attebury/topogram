@@ -20,6 +20,14 @@ For first use, run:
 ```bash
 cd topogram
 npm install
+npm run demo
+```
+
+To create your own starter:
+
+```bash
+cd topogram
+npm install
 npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
