@@ -18,6 +18,14 @@ engine/tests/fixtures/
 
 Fixtures are for engine regression confidence. They are not user-facing demos.
 
+## Starter Templates
+
+```text
+engine/templates/
+```
+
+Templates are copied by `topogram new`. They are product starters, not regression fixtures.
+
 ## Generated Demo
 
 ```text

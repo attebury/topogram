@@ -1,0 +1,11 @@
+capability cap_get_task_export_job {
+  name "Get Task Export Job"
+  description "Fetches the current status of a task export job"
+
+  actors [actor_user]
+  reads [entity_task]
+  input [shape_input_get_task_export_job]
+  output [shape_output_task_export_status]
+
+  status active
+}

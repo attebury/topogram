@@ -12,13 +12,15 @@ Use Node 20+.
 
 ```bash
 cd engine
-npm test
+npm install
+npm run check
 ```
 
-Then run the generated Todo demo path:
+Create a starter project:
 
 ```bash
-cd ../demos/generated/todo-demo-app
+npm run new -- ../my-topogram-app
+cd ../my-topogram-app
 npm install
 npm run check
 npm run generate
@@ -36,22 +38,22 @@ npm run app:runtime-check
 
 ## Where To Edit
 
-Edit the Todo model here:
+Edit the Topogram model here:
 
 ```text
-demos/generated/todo-demo-app/topogram/
+my-topogram-app/topogram/
 ```
 
 Edit stack, topology, output ownership, ports, and generator bindings here:
 
 ```text
-demos/generated/todo-demo-app/topogram.project.json
+my-topogram-app/topogram.project.json
 ```
 
 Generated output is written under:
 
 ```text
-demos/generated/todo-demo-app/app/
+my-topogram-app/app/
 ```
 
 Treat generated output as disposable. Change the Topogram, then regenerate.

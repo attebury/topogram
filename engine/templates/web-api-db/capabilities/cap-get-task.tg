@@ -1,0 +1,11 @@
+capability cap_get_task {
+  name "Get Task"
+  description "Allows a user to fetch a single task by id"
+
+  actors [actor_user]
+  reads [entity_task]
+  input [shape_input_get_task]
+  output [shape_output_task_detail]
+
+  status active
+}

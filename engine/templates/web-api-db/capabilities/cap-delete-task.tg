@@ -1,0 +1,12 @@
+capability cap_delete_task {
+  name "Delete Task"
+  description "Allows a user to archive a task through the delete endpoint"
+
+  actors [actor_user]
+  reads [entity_task]
+  deletes [entity_task]
+  input [shape_input_delete_task]
+  output [shape_output_task_detail]
+
+  status active
+}

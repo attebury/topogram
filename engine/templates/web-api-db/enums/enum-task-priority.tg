@@ -1,0 +1,3 @@
+enum task_priority {
+  values [low, medium, high]
+}

@@ -19,6 +19,7 @@ The engine is still private, but it exposes a local CLI binary:
 This lets demos consume the engine through a local file dependency and call:
 
 ```bash
+topogram new ./my-app
 topogram check ./topogram
 topogram generate ./topogram --out ./app
 ```
@@ -28,6 +29,7 @@ No global install or published npm package is assumed yet.
 ## Layout
 
 - `src/` - engine source
+- `templates/` - starter Topogram workspaces for `topogram new`
 - `tests/active/` - retained active engine tests
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
@@ -52,6 +54,12 @@ Run the engine gate:
 
 ```bash
 npm run check
+```
+
+Create a starter project from the current Foundation MVP template:
+
+```bash
+npm run new -- ../my-topogram-app
 ```
 
 Run the same gate directly:

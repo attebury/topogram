@@ -1,0 +1,11 @@
+shape shape_input_complete_task {
+  name "Complete Task Input"
+  description "Input for marking a task complete"
+
+  fields {
+    task_id uuid required
+    completed_at datetime optional
+  }
+
+  status active
+}

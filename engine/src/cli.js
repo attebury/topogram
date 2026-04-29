@@ -10,6 +10,7 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
+import { createNewProject } from "./new-project.js";
 import { recommendedVerificationTargets } from "./generator/context/shared.js";
 import {
   buildAuthHintsQueryPayload,
@@ -53,6 +54,8 @@ import {
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
 const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "persistence-scaffold",
   "hono-server",
@@ -77,10 +80,12 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram check <path> [--json]");
+  console.log("   or: topogram new <path> [--template web-api-db]");
   console.log("   or: topogram generate <path> [--out <path>]");
   console.log("   or: topogram generate app <path> [--out <path>]");
   console.log("");
   console.log("Common commands:");
+  console.log("  topogram new ./my-app");
   console.log("  topogram check ./topogram --json");
   console.log("  topogram generate ./topogram --out ./app");
   console.log("  topogram import app ./existing-app --write");
@@ -339,7 +344,9 @@ if (args[0] === "generate" && args.length === 1) {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "check") {
+if (args[0] === "new") {
+  commandArgs = { newProject: true, inputPath: args[1] };
+} else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: args[1] };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
@@ -463,6 +470,8 @@ const providerIndex = args.indexOf("--provider");
 const providerId = providerIndex >= 0 ? args[providerIndex + 1] : null;
 const presetIndex = args.indexOf("--preset");
 const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
+const templateIndex = args.indexOf("--template");
+const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "web-api-db";
 const bundleIndex = args.indexOf("--bundle");
 const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
 const laneIndex = args.indexOf("--lane");
@@ -490,6 +499,29 @@ if ((shouldCheck || shouldValidate || generateTarget === "app-bundle") && inputP
 }
 
 try {
+  if (commandArgs?.newProject) {
+    const result = createNewProject({
+      targetPath: inputPath,
+      templateName,
+      engineRoot: ENGINE_ROOT,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    console.log(`Created Topogram project at ${result.projectRoot}.`);
+    console.log(`Template: ${result.templateName}`);
+    console.log("");
+    console.log("Next steps:");
+    const relativeProjectRoot = path.relative(process.cwd(), result.projectRoot);
+    const displayProjectRoot = !relativeProjectRoot || relativeProjectRoot.startsWith("..")
+      ? result.projectRoot
+      : relativeProjectRoot;
+    console.log(`  cd ${displayProjectRoot}`);
+    console.log("  npm install");
+    console.log("  npm run check");
+    console.log("  npm run generate");
+    console.log("  npm run verify");
+    process.exit(0);
+  }
+
   if (shouldCheck) {
     const ast = parsePath(inputPath);
     const resolved = resolveWorkspace(ast);

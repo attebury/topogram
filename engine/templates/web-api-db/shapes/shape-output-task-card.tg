@@ -1,0 +1,19 @@
+shape shape_output_task_card from entity_task {
+  name "Task Card Output"
+  description "Compact task payload for cards and lists"
+  include [title, status, priority, due_at, owner_id]
+
+  rename {
+    due_at dueAt
+    owner_id ownerId
+  }
+
+  overrides {
+    title optional
+    status default active
+    priority default medium
+    ownerId required
+  }
+
+  status active
+}

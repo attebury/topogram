@@ -1,0 +1,12 @@
+capability cap_update_project {
+  name "Update Project"
+  description "Allows a user to update mutable project fields"
+
+  actors [actor_user]
+  reads [entity_project]
+  updates [entity_project]
+  input [shape_input_update_project]
+  output [shape_output_project_detail]
+
+  status active
+}

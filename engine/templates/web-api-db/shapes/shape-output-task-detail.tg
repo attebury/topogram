@@ -1,0 +1,6 @@
+shape shape_output_task_detail from entity_task {
+  name "Task Detail Output"
+  description "Detailed task payload"
+  include [id, title, description, status, priority, owner_id, project_id, created_at, updated_at, completed_at, due_at]
+  status active
+}

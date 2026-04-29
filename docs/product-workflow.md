@@ -2,11 +2,12 @@
 
 The current greenfield workflow is:
 
-1. edit `topogram/` and `topogram.project.json`
-2. run `topogram check ./topogram`
-3. run `topogram generate ./topogram --out ./app`
-4. compile or smoke-check the generated app
-5. repeat
+1. run `topogram new ./my-app`
+2. edit `topogram/` and `topogram.project.json`
+3. run `topogram check ./topogram`
+4. run `topogram generate ./topogram --out ./app`
+5. compile or smoke-check the generated app
+6. repeat
 
 `topogram.project.json` owns stack and topology choices. It binds generated or maintained outputs, API/web/database components, ports, and generator IDs. Generated outputs can be regenerated when `.topogram-generated.json` is present; maintained outputs are not overwritten.
 
@@ -18,8 +19,9 @@ For first use, run:
 
 ```bash
 cd engine
-npm test
-cd ../demos/generated/todo-demo-app
+npm install
+npm run new -- ../my-topogram-app
+cd ../my-topogram-app
 npm install
 npm run check
 npm run generate

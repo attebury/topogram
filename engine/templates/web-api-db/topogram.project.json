@@ -1,0 +1,50 @@
+{
+  "version": "0.1",
+  "implementation": {
+    "id": "web-api-db-template",
+    "module": "./implementation/index.js",
+    "export": "WEB_API_DB_IMPLEMENTATION"
+  },
+  "outputs": {
+    "app": {
+      "path": "./app",
+      "ownership": "generated"
+    }
+  },
+  "topology": {
+    "components": [
+      {
+        "id": "app_api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        },
+        "port": 3000,
+        "database": "app_postgres"
+      },
+      {
+        "id": "app_sveltekit",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/sveltekit",
+          "version": "1"
+        },
+        "port": 5173,
+        "api": "app_api"
+      },
+      {
+        "id": "app_postgres",
+        "type": "database",
+        "projection": "proj_db_postgres",
+        "generator": {
+          "id": "topogram/postgres",
+          "version": "1"
+        },
+        "port": 5432
+      }
+    ]
+  }
+}

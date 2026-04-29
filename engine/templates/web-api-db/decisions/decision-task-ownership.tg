@@ -1,0 +1,9 @@
+decision dec_task_ownership {
+  name "Active task ownership is singular"
+  description "Active tasks use one accountable owner"
+
+  context [accountability, simplified_workflows, cleaner_ui]
+  consequences [easier_reporting, less_flexible_collaboration]
+
+  status accepted
+}
