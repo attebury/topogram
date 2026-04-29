@@ -35,8 +35,9 @@ The built-in starter is a neutral Hello-resource app with one API, one SvelteKit
 web surface, and one Postgres database projection. Executable templates record
 local trust in `.topogram-template-trust.json`; refresh it with
 `topogram trust template` after reviewing copied or edited `implementation/`
-code. Use `topogram trust status` and `topogram trust diff` to inspect changed
-files first.
+code. Use `topogram template status` for the lifecycle summary, then
+`topogram trust status` and `topogram trust diff` to inspect changed files
+before refreshing trust.
 
 To create a starter from a shared template pack:
 

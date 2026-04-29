@@ -92,6 +92,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
+  console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -103,6 +104,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
+  console.log("  topogram template status");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
@@ -394,6 +396,118 @@ function combineProjectValidationResults(...results) {
   };
 }
 
+/**
+ * @param {Record<string, any>|null|undefined} projectConfig
+ * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, includesExecutableImplementation: boolean|null }}
+ */
+function templateMetadataFromProjectConfig(projectConfig) {
+  const template = projectConfig?.template || {};
+  return {
+    id: typeof template.id === "string" ? template.id : null,
+    version: typeof template.version === "string" ? template.version : null,
+    source: typeof template.source === "string" ? template.source : null,
+    sourceSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null,
+    requested: typeof template.requested === "string" ? template.requested : null,
+    sourceRoot: typeof template.sourceRoot === "string" ? template.sourceRoot : null,
+    includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
+      ? template.includesExecutableImplementation
+      : null
+  };
+}
+
+/**
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
+ * @returns {{ ok: boolean, template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, latest: { checked: false, reason: string }, recommendations: string[] }}
+ */
+function buildTemplateStatusPayload(projectConfigInfo) {
+  const template = templateMetadataFromProjectConfig(projectConfigInfo.config);
+  const recommendations = [];
+  /** @type {ReturnType<typeof getTemplateTrustStatus>|null} */
+  let trust = null;
+  if (projectConfigInfo.config.implementation) {
+    trust = getTemplateTrustStatus({
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    }, projectConfigInfo.config);
+    if (!trust.ok) {
+      recommendations.push("Run `topogram trust diff` to review implementation changes, then `topogram trust template` to trust the current files.");
+    }
+  }
+  if (!template.id) {
+    recommendations.push("No template metadata found in topogram.project.json.");
+  }
+  return {
+    ok: trust ? trust.ok : true,
+    template,
+    trust,
+    latest: {
+      checked: false,
+      reason: "Registry lookups are not performed by default."
+    },
+    recommendations
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateStatusPayload>} payload
+ * @returns {void}
+ */
+function printTemplateStatus(payload) {
+  if (!payload.template.id) {
+    console.log("Template status: no template metadata");
+  } else if (payload.trust?.requiresTrust) {
+    console.log(payload.ok ? "Template status: trusted" : "Template status: review required");
+  } else {
+    console.log("Template status: no executable implementation trust needed");
+  }
+  if (payload.template.id) {
+    console.log(`Template: ${payload.template.id}@${payload.template.version || "unknown"}`);
+  }
+  if (payload.template.source) {
+    console.log(`Source: ${payload.template.source}`);
+  }
+  if (payload.template.sourceSpec) {
+    console.log(`Source spec: ${payload.template.sourceSpec}`);
+  }
+  if (payload.template.requested) {
+    console.log(`Requested: ${payload.template.requested}`);
+  }
+  if (payload.template.sourceRoot) {
+    console.log(`Source root: ${payload.template.sourceRoot}`);
+  }
+  console.log("Latest version: not checked");
+  if (payload.trust) {
+    if (payload.trust.trustRecord?.trustedAt) {
+      console.log(`Trusted at: ${payload.trust.trustRecord.trustedAt}`);
+    }
+    if (payload.trust.implementation.module) {
+      console.log(`Implementation: ${payload.trust.implementation.module}`);
+    }
+    if (payload.trust.content.trustedDigest) {
+      console.log(`Trusted digest: ${payload.trust.content.trustedDigest}`);
+    }
+    if (payload.trust.content.currentDigest) {
+      console.log(`Current digest: ${payload.trust.content.currentDigest}`);
+    }
+    for (const issue of payload.trust.issues) {
+      console.log(`Issue: ${issue}`);
+    }
+    for (const filePath of payload.trust.content.changed) {
+      console.log(`Changed: ${filePath}`);
+    }
+    for (const filePath of payload.trust.content.added) {
+      console.log(`Added: ${filePath}`);
+    }
+    for (const filePath of payload.trust.content.removed) {
+      console.log(`Removed: ${filePath}`);
+    }
+  }
+  for (const recommendation of payload.recommendations) {
+    console.log(recommendation);
+  }
+}
+
 function workflowPresetSelectors({
   taskModeArtifact,
   providerId = null,
@@ -469,6 +583,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "diff") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "status") {
+  commandArgs = { templateStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -552,6 +668,7 @@ const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
+const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -606,13 +723,13 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -641,6 +758,20 @@ try {
     console.log("  npm run generate");
     console.log("  npm run verify");
     process.exit(0);
+  }
+
+  if (shouldTemplateStatus) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot inspect template status without topogram.project.json.");
+    }
+    const status = buildTemplateStatusPayload(projectConfigInfo);
+    if (emitJson) {
+      console.log(stableStringify(status));
+    } else {
+      printTemplateStatus(status);
+    }
+    process.exit(status.ok ? 0 : 1);
   }
 
   if (shouldTrustTemplate) {

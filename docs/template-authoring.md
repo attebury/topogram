@@ -96,19 +96,26 @@ Implementation providers are different: if a template includes `implementation/`
 and declares `includesExecutableImplementation: true`, the generated project may
 load that code during `topogram generate`. `topogram new` writes
 `.topogram-template-trust.json` with the template id, template version, source,
-implementation module, and SHA-256 hashes for the copied `implementation/`
-files.
+requested package or path, local source root where available, implementation
+module, and SHA-256 hashes for the copied `implementation/` files.
 
 If the trust file is missing or no longer matches `topogram.project.json`,
 or if `implementation/` changed since it was trusted, `topogram check` and
 `topogram generate` refuse to import `./implementation/index.js`. Inspect drift:
 
 ```bash
+topogram template status
+topogram template status --json
 topogram trust status
 topogram trust status --json
 topogram trust diff
 topogram trust diff --json
 ```
+
+`topogram template status` is the user-facing lifecycle summary. It reports the
+template provenance recorded in `topogram.project.json`, whether executable
+implementation code is trusted, whether local files drifted, and that registry
+latest-version checks are not performed by default.
 
 After reviewing intentional edits in `implementation/`, refresh the trust record:
 

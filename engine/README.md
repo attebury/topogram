@@ -23,6 +23,7 @@ This lets source checkouts and private-package consumers call:
 topogram create ../my-app
 topogram check
 topogram generate
+topogram template status
 topogram trust template
 ```
 
@@ -83,8 +84,9 @@ Do not create generated projects under `engine/`. The CLI refuses paths inside t
 Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
 Projects created from executable templates include `.topogram-template-trust.json`;
 regenerate it with `topogram trust template` after reviewing copied
-`implementation/` code. Use `topogram trust status` and `topogram trust diff`
-to inspect changed files before refreshing trust.
+`implementation/` code. Use `topogram template status` for the lifecycle
+summary, then `topogram trust status` and `topogram trust diff` to inspect
+changed files before refreshing trust.
 
 Run the same gate directly:
 

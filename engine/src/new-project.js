@@ -412,7 +412,9 @@ function writeProjectTemplateMetadata(projectRoot, template) {
     id: template.manifest.id,
     version: template.manifest.version,
     source: template.source,
+    requested: template.requested,
     sourceSpec: template.packageSpec || template.requested,
+    sourceRoot: template.source === "local" ? template.root : null,
     includesExecutableImplementation: Boolean(template.manifest.includesExecutableImplementation)
   };
   fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");

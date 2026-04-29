@@ -139,15 +139,37 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
+  assert.equal(projectConfig.template.requested, "web-api-db");
+  assert.equal(projectConfig.template.source, "builtin");
+  assert.equal(projectConfig.template.sourceSpec, "web-api-db");
+  assert.equal(projectConfig.template.sourceRoot, null);
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
   const trustRecord = JSON.parse(fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8"));
   assert.equal(trustRecord.trustPolicy, "topogram-template-executable-implementation-v1");
   assert.equal(trustRecord.template.id, "topogram/web-api-db");
   assert.equal(trustRecord.template.version, projectConfig.template.version);
+  assert.equal(trustRecord.template.requested, "web-api-db");
+  assert.equal(trustRecord.template.sourceSpec, "web-api-db");
+  assert.equal(trustRecord.template.sourceRoot, null);
   assert.equal(trustRecord.implementation.module, "./implementation/index.js");
   assert.equal(trustRecord.content.algorithm, "sha256");
   assert.match(trustRecord.content.digest, /^[a-f0-9]{64}$/);
   assert.ok(trustRecord.content.files.some((file) => file.path === "index.js"));
+
+  const templateStatus = runCli(["template", "status", "--json"], { cwd: projectRoot });
+  assert.equal(templateStatus.status, 0, templateStatus.stderr || templateStatus.stdout);
+  const templateStatusPayload = JSON.parse(templateStatus.stdout);
+  assert.equal(templateStatusPayload.ok, true);
+  assert.equal(templateStatusPayload.template.id, "topogram/web-api-db");
+  assert.equal(templateStatusPayload.template.requested, "web-api-db");
+  assert.equal(templateStatusPayload.template.source, "builtin");
+  assert.equal(templateStatusPayload.latest.checked, false);
+  assert.equal(templateStatusPayload.trust.ok, true);
+
+  const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
+  assert.equal(humanTemplateStatus.status, 0, humanTemplateStatus.stderr || humanTemplateStatus.stdout);
+  assert.match(humanTemplateStatus.stdout, /Template status: trusted/);
+  assert.match(humanTemplateStatus.stdout, /Latest version: not checked/);
 
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
@@ -238,6 +260,20 @@ test("topogram trust status reports implementation content drift and trust refre
   const humanStatus = runCli(["trust", "status"], { cwd: projectRoot });
   assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
   assert.match(humanStatus.stdout, /topogram trust diff/);
+
+  const templateStatus = runCli(["template", "status", "--json"], { cwd: projectRoot });
+  assert.notEqual(templateStatus.status, 0, templateStatus.stdout);
+  const templateStatusPayload = JSON.parse(templateStatus.stdout);
+  assert.equal(templateStatusPayload.ok, false);
+  assert.equal(templateStatusPayload.template.id, "topogram/web-api-db");
+  assert.equal(templateStatusPayload.trust.ok, false);
+  assert.match(templateStatusPayload.recommendations.join("\n"), /topogram trust diff/);
+
+  const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
+  assert.notEqual(humanTemplateStatus.status, 0, humanTemplateStatus.stdout);
+  assert.match(humanTemplateStatus.stdout, /Template status: review required/);
+  assert.match(humanTemplateStatus.stdout, /Changed: index\.js/);
+  assert.match(humanTemplateStatus.stdout, /topogram trust diff/);
 
   const diff = runCli(["trust", "diff", "--json"], { cwd: projectRoot });
   assert.notEqual(diff.status, 0, diff.stdout);
