@@ -454,7 +454,7 @@ export function formatProjectConfigErrors(result, configPath = PROJECT_CONFIG_FI
  */
 export function resolveOutputPath(configInfo, outputName) {
   const output = configInfo?.config?.outputs?.[outputName];
-  if (!output?.path) {
+  if (!configInfo || !output?.path) {
     return null;
   }
   const baseDir = configInfo.configDir || process.cwd();

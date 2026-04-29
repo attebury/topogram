@@ -17,7 +17,7 @@
     "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
     "generate:app": "node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out ./.tmp/app-basic",
     "generate:app-bundle": "node ./src/cli.js generate ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
-    "test:types": "tsc --allowJs --checkJs --noEmit --noResolve --noImplicitAny --module NodeNext --moduleResolution NodeNext --target ES2022 --lib ES2022,DOM ./tests/types/check-globals.d.ts ./src/generator/surfaces/services/express.d.ts ./src/generator/surfaces/services/hono.d.ts ./src/generator/surfaces/web/index.d.ts ./src/generator/api.d.ts ./src/generator/surfaces/databases/lifecycle-shared.d.ts ./src/generator/surfaces/databases/shared.d.ts ./src/realization/backend/index.d.ts ./src/project-config.js ./src/new-project.js ./src/generator/registry.js ./src/generator/runtime/shared.js",
+    "test:types": "tsc --allowJs --checkJs --noEmit --noResolve --noImplicitAny --strictNullChecks --module NodeNext --moduleResolution NodeNext --target ES2022 --lib ES2022,DOM ./tests/types/check-globals.d.ts ./src/generator/surfaces/services/express.d.ts ./src/generator/surfaces/services/hono.d.ts ./src/generator/surfaces/web/index.d.ts ./src/generator/api.d.ts ./src/generator/surfaces/databases/lifecycle-shared.d.ts ./src/generator/surfaces/databases/shared.d.ts ./src/realization/backend/index.d.ts ./src/project-config.js ./src/new-project.js ./src/generator/registry.js ./src/generator/runtime/shared.js",
     "test:active": "npm run test:types && node --test ./tests/active/*.test.js",
     "test": "npm run test:active"
   },

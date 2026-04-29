@@ -34,7 +34,7 @@ jobs:
       generated_canary: ${{ github.event_name == 'pull_request' && steps.filter.outputs.generated_canary || steps.defaults.outputs.generated_canary }}
       generated_demo: ${{ github.event_name == 'pull_request' && steps.filter.outputs.generated_demo || steps.defaults.outputs.generated_demo }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: github.event_name == 'pull_request'
       - uses: dorny/paths-filter@v3
         if: github.event_name == 'pull_request'
@@ -68,8 +68,8 @@ jobs:
       needs.changes.outputs.generated_demo == 'true'
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: Run generated demo verification
