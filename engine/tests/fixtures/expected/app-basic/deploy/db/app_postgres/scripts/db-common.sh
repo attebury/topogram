@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUNDLE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-resolve_repo_root_candidate() {
+resolve_path_candidate() {
   local candidate="$1"
   local base_dir="$2"
   local resolved=""
@@ -15,38 +15,65 @@ resolve_repo_root_candidate() {
   else
     resolved="$(cd "$base_dir" && cd "$candidate" 2>/dev/null && pwd)" || return 1
   fi
-  if [[ -f "$resolved/engine/src/cli.js" ]]; then
-    printf '%s\n' "$resolved"
-    return 0
-  fi
-  return 1
+  printf '%s\n' "$resolved"
 }
-discover_repo_root() {
-  if [[ -n "${TOPOGRAM_REPO_ROOT:-}" ]]; then
-    local resolved=""
-    if resolved="$(resolve_repo_root_candidate "$TOPOGRAM_REPO_ROOT" "$PWD")"; then
-      printf '%s\n' "$resolved"
-      return
-    fi
-    if resolved="$(resolve_repo_root_candidate "$TOPOGRAM_REPO_ROOT" "$BUNDLE_DIR")"; then
-      printf '%s\n' "$resolved"
-      return
-    fi
-    echo "TOPOGRAM_REPO_ROOT is set but does not point to a Topogram repo: $TOPOGRAM_REPO_ROOT" >&2
-    exit 1
+find_topogram_bin() {
+  if [[ -n "${TOPOGRAM_BIN:-}" ]]; then
+    printf '%s\n' "$TOPOGRAM_BIN"
+    return
   fi
-  local resolved=""
-  for candidate in     "$BUNDLE_DIR/../../.."     "$BUNDLE_DIR/../../../.."     "$BUNDLE_DIR/../../../../.."     "$BUNDLE_DIR/../.."     "$BUNDLE_DIR/../../../../../../"; do
-    if resolved="$(resolve_repo_root_candidate "$candidate" "$PWD")"; then
-      printf '%s\n' "$resolved"
+  local candidates=(
+    "$BUNDLE_DIR/../../../../node_modules/.bin/topogram"
+    "$BUNDLE_DIR/../../../node_modules/.bin/topogram"
+    "$PWD/node_modules/.bin/topogram"
+  )
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
       return
     fi
   done
-  echo "Unable to locate the Topogram repo root. Set TOPOGRAM_REPO_ROOT." >&2
+  if command -v topogram >/dev/null 2>&1; then
+    command -v topogram
+    return
+  fi
+  echo "Unable to locate the Topogram CLI. Install @attebury/topogram or set TOPOGRAM_BIN." >&2
   exit 1
 }
-REPO_ROOT="$(discover_repo_root)"
-INPUT_PATH="${TOPOGRAM_INPUT_PATH:-$REPO_ROOT/engine/tests/fixtures/workspaces/app-basic}"
+discover_input_path() {
+  if [[ -n "${TOPOGRAM_INPUT_PATH:-}" ]]; then
+    local resolved=""
+    if resolved="$(resolve_path_candidate "$TOPOGRAM_INPUT_PATH" "$PWD")"; then
+      printf '%s\n' "$resolved"
+      return
+    fi
+    if resolved="$(resolve_path_candidate "$TOPOGRAM_INPUT_PATH" "$BUNDLE_DIR")"; then
+      printf '%s\n' "$resolved"
+      return
+    fi
+    echo "TOPOGRAM_INPUT_PATH is set but cannot be resolved: $TOPOGRAM_INPUT_PATH" >&2
+    exit 1
+  fi
+  local resolved=""
+  local candidates=(
+    "$BUNDLE_DIR/../../../.."
+    "$BUNDLE_DIR/../../.."
+    "$BUNDLE_DIR/../../../../.."
+    "$PWD"
+  )
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    if resolved="$(resolve_path_candidate "$candidate" "$PWD")" && [[ -d "$resolved/topogram" ]]; then
+      printf '%s\n' "$resolved/topogram"
+      return
+    fi
+  done
+  echo "Unable to locate a Topogram workspace. Set TOPOGRAM_INPUT_PATH." >&2
+  exit 1
+}
+TOPOGRAM_BIN="$(find_topogram_bin)"
+INPUT_PATH="$(discover_input_path)"
 PROJECTION_ID="proj_db_postgres"
 STATE_DIR="${TOPOGRAM_DB_STATE_DIR:-$BUNDLE_DIR/state}"
 CURRENT_SNAPSHOT="$STATE_DIR/current.snapshot.json"
@@ -150,17 +177,17 @@ infer_current_snapshot_from_live_tables() {
 }
 
 generate_desired_snapshot() {
-  node "$REPO_ROOT/engine/src/cli.js" "$INPUT_PATH" --generate db-schema-snapshot --projection "$PROJECTION_ID" > "$DESIRED_SNAPSHOT"
+  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate db-schema-snapshot --projection "$PROJECTION_ID" > "$DESIRED_SNAPSHOT"
 }
 
 generate_migration_plan() {
   local from_snapshot="$1"
-  node "$REPO_ROOT/engine/src/cli.js" "$INPUT_PATH" --generate db-migration-plan --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$PLAN_JSON"
+  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate db-migration-plan --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$PLAN_JSON"
 }
 
 generate_sql_migration() {
   local from_snapshot="$1"
-  node "$REPO_ROOT/engine/src/cli.js" "$INPUT_PATH" --generate sql-migration --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$MIGRATION_SQL"
+  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate sql-migration --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$MIGRATION_SQL"
 }
 
 ensure_supported_plan() {

@@ -1,10 +1,29 @@
 {
-  "name": "topogram",
+  "name": "@attebury/topogram",
   "version": "0.1.0",
-  "private": true,
+  "description": "Topogram CLI for checking Topogram workspaces and generating app bundles.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/attebury/topogram.git",
+    "directory": "engine"
+  },
   "type": "module",
   "bin": {
     "topogram": "./src/cli.js"
+  },
+  "files": [
+    "src",
+    "templates",
+    "README.md",
+    "ARCHITECTURE.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "new": "node ./src/cli.js new",
@@ -13,13 +32,13 @@
     "fixture:check:json": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic --json",
     "fixture:generate": "node ./src/cli.js generate ./tests/fixtures/workspaces/app-basic --out ./.tmp/app-basic",
     "check:fixture": "npm run fixture:check",
-    "parse": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram",
-    "parse:json": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --json",
-    "validate": "node ./src/cli.js validate ../demos/generated/todo-demo-app/topogram",
+    "parse": "node ./src/cli.js ./tests/fixtures/workspaces/app-basic",
+    "parse:json": "node ./src/cli.js ./tests/fixtures/workspaces/app-basic --json",
+    "validate": "node ./src/cli.js validate ./tests/fixtures/workspaces/app-basic",
     "validate:bad": "node ./src/cli.js validate ./tests/fixtures/invalid/missing-reference",
-    "resolve": "node ./src/cli.js ../demos/generated/todo-demo-app/topogram --resolve",
+    "resolve": "node ./src/cli.js ./tests/fixtures/workspaces/app-basic --resolve",
     "generate:app": "npm run fixture:generate",
-    "generate:app-bundle": "node ./src/cli.js generate ../demos/generated/todo-demo-app/topogram --out ../demos/generated/todo-demo-app/app",
+    "generate:app-bundle": "npm run fixture:generate",
     "test:types": "tsc -p ./tsconfig.check.json",
     "test:active": "npm run test:types && node --test ./tests/active/*.test.js",
     "test": "npm run test:active"

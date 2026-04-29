@@ -2,8 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+NPM_CACHE_DIR="$ROOT_DIR/.tmp/npm-cache"
 DEMO_NAME="${1:-todo-demo-app}"
 MODE="${2:-compile}"
+
+mkdir -p "$NPM_CACHE_DIR"
+export npm_config_cache="${npm_config_cache:-$NPM_CACHE_DIR}"
 
 case "$DEMO_NAME" in
   todo-demo-app)

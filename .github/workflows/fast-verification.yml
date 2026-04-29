@@ -5,20 +5,26 @@ on:
     paths:
       - "engine/**"
       - "demos/**"
+      - "docs/**"
       - "product/**"
       - "scripts/**"
+      - "package.json"
       - "README.md"
       - ".github/workflows/fast-verification.yml"
+      - ".github/workflows/publish-cli-package.yml"
   push:
     branches:
       - main
     paths:
       - "engine/**"
       - "demos/**"
+      - "docs/**"
       - "product/**"
       - "scripts/**"
+      - "package.json"
       - "README.md"
       - ".github/workflows/fast-verification.yml"
+      - ".github/workflows/publish-cli-package.yml"
   workflow_dispatch:
 
 permissions:
@@ -37,5 +43,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Run fast verification
+      - name: Run engine verification
         run: bash ./scripts/verify-engine.sh
+      - name: Run CLI package verification
+        run: bash ./scripts/verify-cli-package.sh

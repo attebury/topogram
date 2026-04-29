@@ -12,6 +12,7 @@ To run the disposable generated-app smoke test:
 cd topogram
 npm install
 npm run smoke:test-app
+npm run cli:check
 ```
 
 This writes a generated starter to `.tmp/smoke-test-app`.
@@ -46,12 +47,12 @@ npm run app:runtime-check
 - `engine/` - Topogram engine, CLI, tests, and fixtures
 - `engine/templates/` - starter Topogram workspaces for `topogram new`
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
-- `demos/generated/todo-demo-app/` - canonical generated app demo
+- `demos/generated/todo-demo-app/` - temporary in-repo generated app demo mirror until the private demo repo takes over consumer verification
 - `docs/` - terse first-use docs
 
 ## Engine
 
-The engine is private and local to this repo, but it exposes the `topogram` bin for local demo consumption:
+The engine package publishes privately as `@attebury/topogram` and exposes the `topogram` bin:
 
 ```bash
 npm run new -- ./my-app
@@ -60,7 +61,7 @@ npm run check
 npm run generate
 ```
 
-No global install or published npm package is assumed yet.
+Publishing is manual through the `Publish CLI Package` GitHub Actions workflow.
 
 ## License
 

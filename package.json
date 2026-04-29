@@ -5,6 +5,7 @@
     "new": "npm --prefix ./engine run new --",
     "create": "npm --prefix ./engine run new --",
     "smoke:test-app": "bash ./scripts/smoke-test-app.sh",
+    "cli:check": "bash ./scripts/verify-cli-package.sh",
     "check": "npm --prefix ./engine run check",
     "test": "npm --prefix ./engine test",
     "engine:install": "npm --prefix ./engine install",

@@ -6,17 +6,18 @@ The active product workflow is authoring-to-generated-app. Engine development sh
 
 ## Package Shape
 
-The engine is still private, but it exposes a local CLI binary:
+The engine is the publishable private CLI package:
 
 ```json
 {
+  "name": "@attebury/topogram",
   "bin": {
     "topogram": "./src/cli.js"
   }
 }
 ```
 
-This lets demos consume the engine through a local file dependency and call:
+This lets source checkouts and private-package consumers call:
 
 ```bash
 topogram create ../my-app
@@ -24,12 +25,13 @@ topogram check
 topogram generate
 ```
 
-No global install or published npm package is assumed yet. Create generated projects outside `engine/`; this directory is source and test code.
+Publishing is manual through the repo-level `Publish CLI Package` workflow. Create generated projects outside `engine/`; this directory is source and test code.
 
 From the repo root, prefer:
 
 ```bash
 npm run smoke:test-app
+npm run cli:check
 npm run new -- ./my-topogram-app
 ```
 
@@ -42,7 +44,7 @@ npm run new -- ./my-topogram-app
 - `tests/fixtures/expected/` - engine-owned golden outputs
 - `tests/fixtures/invalid/` - invalid model cases
 
-User-facing generated app demos live outside the engine under `../demos/generated/**`.
+The in-repo Todo demo is a temporary consumer mirror. Long-term generated app verification should move to the private todo-demo repo.
 
 ## Active Fixture
 

@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+const CLI_PACKAGE_NAME = "@attebury/topogram";
 const TEMPLATE_NAMES = new Set(["web-api-db"]);
 
 /**
@@ -37,6 +38,44 @@ function fileDependencyForEngine(projectRoot, engineRoot) {
     return `file:${engineRoot}`;
   }
   return `file:./${relative}`;
+}
+
+/**
+ * @param {string} engineRoot
+ * @returns {{ name: string, version: string }}
+ */
+function readCliPackageMetadata(engineRoot) {
+  const packagePath = path.join(engineRoot, "package.json");
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  return {
+    name: typeof pkg.name === "string" ? pkg.name : CLI_PACKAGE_NAME,
+    version: typeof pkg.version === "string" ? pkg.version : "0.0.0"
+  };
+}
+
+/**
+ * @param {string} engineRoot
+ * @returns {boolean}
+ */
+function isSourceCheckoutEngine(engineRoot) {
+  return fs.existsSync(path.join(engineRoot, "tests", "active"));
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} engineRoot
+ * @returns {{ name: string, spec: string }}
+ */
+function cliDependencyForProject(projectRoot, engineRoot) {
+  const metadata = readCliPackageMetadata(engineRoot);
+  const overrideSpec = process.env.TOPOGRAM_CLI_PACKAGE_SPEC || "";
+  if (overrideSpec) {
+    return { name: metadata.name, spec: overrideSpec };
+  }
+  if (isSourceCheckoutEngine(engineRoot)) {
+    return { name: metadata.name, spec: fileDependencyForEngine(projectRoot, engineRoot) };
+  }
+  return { name: metadata.name, spec: metadata.version };
 }
 
 /**
@@ -115,6 +154,7 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
  * @returns {void}
  */
 function writeProjectPackage(projectRoot, engineRoot) {
+  const cliDependency = cliDependencyForProject(projectRoot, engineRoot);
   const pkg = {
     name: packageNameFromPath(projectRoot),
     private: true,
@@ -135,7 +175,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "app:check": "npm run app:compile && npm run app:smoke && npm run app:runtime-check"
     },
     devDependencies: {
-      topogram: fileDependencyForEngine(projectRoot, engineRoot)
+      [cliDependency.name]: cliDependency.spec
     }
   };
   fs.writeFileSync(path.join(projectRoot, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");

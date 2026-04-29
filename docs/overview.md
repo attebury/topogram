@@ -4,7 +4,7 @@ Topogram's current goal is simple: author a Topogram and generate a runnable app
 
 ## Current Scope
 
-The active scope is the engine under `engine/`, the generated Todo demo under `demos/generated/todo-demo-app/`, and the check, generation, compile, smoke, and runtime-check flows.
+The active scope is the private CLI package under `engine/`, engine-owned fixtures under `engine/tests/fixtures/`, and the temporary generated Todo demo mirror under `demos/generated/todo-demo-app/`.
 
 ## First Run
 
@@ -16,6 +16,7 @@ Run the disposable generated-app smoke test:
 cd topogram
 npm install
 npm run smoke:test-app
+npm run cli:check
 ```
 
 This writes to `.tmp/smoke-test-app`.
@@ -72,4 +73,4 @@ Treat generated output as disposable. Change the Topogram, then regenerate.
 
 Engine fixtures should live under `engine/tests/fixtures/**`.
 
-The Todo demo is a product workflow proof, not the only engine regression fixture. Keep reusable engine tests close to the engine, and keep demo-specific behavior in the demo.
+The Todo demo is a product workflow proof and should move to the private demo repo as the long-term consumer test. Keep reusable engine tests close to the engine.

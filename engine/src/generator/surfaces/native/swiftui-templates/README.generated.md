@@ -22,5 +22,5 @@ Configure the API base URL and demo auth token via scheme environment variables 
 From `engine/`:
 
 ```bash
-node ./src/cli.js generate swiftui-app ./topogram --projection proj_ui_native__ios --write --out-dir ./app/ios-swiftui
+topogram ./topogram --generate swiftui-app --projection proj_ui_native__ios --write --out-dir ./app/ios-swiftui
 ```

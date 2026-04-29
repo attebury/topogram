@@ -14,7 +14,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const engineRoot = path.join(repoRoot, "engine");
 const cliPath = path.join(engineRoot, "src", "cli.js");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
-const generatedDemoPath = ["demos", "generated", "todo-demo-app"].join("/");
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [cliPath, ...args], {
@@ -144,6 +143,6 @@ test("generated contracts do not contain machine-local paths", () => {
     const contents = fs.readFileSync(file, "utf8");
     assert.doesNotMatch(contents, /\/Users\//, file);
     assert.doesNotMatch(contents, /graphRoot/, file);
-    assert.equal(contents.includes(generatedDemoPath), false, file);
+    assert.doesNotMatch(contents, /engine\/src\/cli\.js/, file);
   }
 });

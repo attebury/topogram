@@ -7,7 +7,6 @@ import test from "node:test";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const engineRoot = path.join(repoRoot, "engine");
-const todoDemoRoot = path.join(repoRoot, "demos", "generated", "todo-demo-app");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
 const expectedRoot = path.join(engineRoot, "tests", "fixtures", "expected", "app-basic");
 
@@ -119,7 +118,8 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.scripts.status, undefined);
   assert.equal(pkg.scripts.inspect, undefined);
   assert.equal(pkg.scripts.build, undefined);
-  assert.equal(pkg.devDependencies.topogram.startsWith("file:"), true);
+  assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
+  assert.equal(pkg.devDependencies.topogram, undefined);
 
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
@@ -164,23 +164,6 @@ test("repo root smoke test app script creates and generates disposable app", () 
   assert.match(result.stdout, /Smoke test app generated/);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "app", ".topogram-generated.json")), true);
-});
-
-test("todo demo exposes generated starter command surface", () => {
-  const pkg = JSON.parse(fs.readFileSync(path.join(todoDemoRoot, "package.json"), "utf8"));
-  assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
-  assert.equal(pkg.scripts.check, "topogram check");
-  assert.equal(pkg.scripts["check:json"], "topogram check --json");
-  assert.equal(pkg.scripts.generate, "topogram generate");
-  assert.equal(pkg.scripts.status, undefined);
-  assert.equal(pkg.scripts.inspect, undefined);
-  assert.equal(pkg.scripts.build, undefined);
-
-  const explain = runNpm(["run", "explain"], todoDemoRoot);
-  assert.equal(explain.status, 0, explain.stderr || explain.stdout);
-  assert.match(explain.stdout, /Topogram app workflow/);
-  assert.match(explain.stdout, /npm run check/);
-  assert.match(explain.stdout, /npm run generate/);
 });
 
 test("topogram new refuses to create generated projects inside engine", () => {

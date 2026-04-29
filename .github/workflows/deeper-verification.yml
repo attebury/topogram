@@ -7,10 +7,12 @@ on:
       - "demos/**"
       - "product/**"
       - "scripts/**"
+      - "package.json"
       - "README.md"
-      - "docs/testing-strategy.md"
+      - "docs/**"
       - "product/app/README.md"
       - ".github/workflows/deeper-verification.yml"
+      - ".github/workflows/publish-cli-package.yml"
   push:
     branches:
       - main

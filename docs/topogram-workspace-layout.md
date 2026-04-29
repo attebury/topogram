@@ -26,16 +26,16 @@ engine/templates/
 
 Templates are copied by `topogram new`. They are product starters, not regression fixtures.
 
-## Generated Demo
+## Generated Workspace
 
 ```text
-demos/generated/todo-demo-app/topogram/
+my-topogram-app/topogram/
 ```
 
-This is the editable Todo model used for the generated app workflow.
+This is the editable Topogram model used for a generated app workflow.
 
 ```text
-demos/generated/todo-demo-app/topogram.project.json
+my-topogram-app/topogram.project.json
 ```
 
 This project config declares the generated app output, API/web/database topology, ports, and generator bindings. New workspaces should prefer `topogram.project.json`; `topogram.implementation.json` is only a temporary compatibility adapter.
@@ -45,7 +45,7 @@ From a generated project root, `topogram check` reads `./topogram` and reports t
 ## Generated Output
 
 ```text
-demos/generated/todo-demo-app/app/
+my-topogram-app/app/
 ```
 
 This output is generated. Prefer regenerating it instead of hand-editing it.
@@ -58,3 +58,5 @@ apps/web/<web-id>/
 apps/db/<db-id>/
 apps/native/<native-id>/
 ```
+
+The in-repo Todo demo currently mirrors this layout under `demos/generated/todo-demo-app/`, but it is expected to move to a private consumer repo.

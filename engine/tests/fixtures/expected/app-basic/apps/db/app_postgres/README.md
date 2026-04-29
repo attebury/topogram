@@ -14,7 +14,7 @@ This bundle gives agents a repeatable database workflow for projection `proj_db_
 ## Optional Environment
 
 - `DATABASE_ADMIN_URL`
-- `TOPOGRAM_REPO_ROOT`
+- `TOPOGRAM_BIN`
 - `TOPOGRAM_INPUT_PATH`
 - `TOPOGRAM_DB_STATE_DIR`
 
