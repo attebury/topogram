@@ -1,5 +1,5 @@
 import { buildApiRealization } from "../api/index.js";
-import { generatorDefaultsMap, getProjection, sharedUiProjectionForWeb } from "../../generator/apps/shared.js";
+import { generatorDefaultsMap, getProjection, sharedUiProjectionForWeb } from "../../generator/surfaces/shared.js";
 import { buildUiSharedRealization } from "./build-ui-shared-realization.js";
 
 function collectCapabilityIds(contract) {

@@ -1,4 +1,4 @@
-import { renderSvelteKitRedirectingAction } from "../../../../../engine/src/generator/apps/web/sveltekit-actions.js";
+import { renderSvelteKitRedirectingAction } from "../../../../../engine/src/generator/surfaces/web/sveltekit-actions.js";
 import { TODO_WEB_SCREEN_REFERENCE } from "./screens-reference.js";
 
 export function renderTodoHomePage({

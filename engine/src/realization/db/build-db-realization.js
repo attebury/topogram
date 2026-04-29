@@ -2,7 +2,7 @@ import {
   buildDbProjectionContract,
   dbProjectionCandidates,
   getProjection
-} from "../../generator/db/shared.js";
+} from "../../generator/surfaces/databases/shared.js";
 
 export function buildDbRealization(graph, options = {}) {
   if (options.projectionId) {

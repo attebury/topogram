@@ -1,5 +1,5 @@
 import { generateApiContractGraph } from "../../api.js";
-import { findEnumStatement, toPascalCase } from "../../db/shared.js";
+import { findEnumStatement, toPascalCase } from "../databases/shared.js";
 import { getProjection } from "../shared.js";
 import { repositoryMethodName } from "./runtime-helpers.js";
 import { getExampleImplementation } from "../../../example-implementation.js";

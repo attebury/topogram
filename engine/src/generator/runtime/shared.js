@@ -1,11 +1,11 @@
 // @ts-check
 
-import { generateExpressServer } from "../apps/backend/express.js";
-import { generateHonoServer } from "../apps/backend/hono.js";
-import { generateWebApp } from "../apps/web/index.js";
+import { generateExpressServer } from "../surfaces/services/express.js";
+import { generateHonoServer } from "../surfaces/services/hono.js";
+import { generateWebApp } from "../surfaces/web/index.js";
 import { generateApiContractGraph } from "../api.js";
-import { generateDbLifecycleBundleForProjection } from "../db/lifecycle-shared.js";
-import { getProjection } from "../db/shared.js";
+import { generateDbLifecycleBundleForProjection } from "../surfaces/databases/lifecycle-shared.js";
+import { getProjection } from "../surfaces/databases/shared.js";
 import { getDefaultBackendDbProjection } from "../../realization/backend/index.js";
 import { defaultProjectConfigForGraph, validateProjectConfig } from "../../project-config.js";
 import { generatorProfile } from "../registry.js";

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { renderServerHelpers } from "../../src/generator/apps/backend/runtime-helpers.js";
+import { renderServerHelpers } from "../../src/generator/surfaces/services/runtime-helpers.js";
 
 test("generated JWT helper does not use heuristic ownership fallback", () => {
   const helpers = renderServerHelpers();

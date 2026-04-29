@@ -1,6 +1,6 @@
 import { buildDbRealization } from "../db/index.js";
-import { generateServerContract } from "../../generator/apps/backend/server-contract.js";
-import { dbProjectionCandidates } from "../../generator/db/shared.js";
+import { generateServerContract } from "../../generator/surfaces/services/server-contract.js";
+import { dbProjectionCandidates } from "../../generator/surfaces/databases/shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 
 function uiLookupBindings(graph) {

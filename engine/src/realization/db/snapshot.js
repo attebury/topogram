@@ -1,4 +1,4 @@
-import { generateDbSchemaSnapshot } from "../../generator/db/snapshot.js";
+import { generateDbSchemaSnapshot } from "../../generator/surfaces/databases/snapshot.js";
 
 export function buildDbSnapshotRealization(graph, options = {}) {
   return generateDbSchemaSnapshot(graph, options);

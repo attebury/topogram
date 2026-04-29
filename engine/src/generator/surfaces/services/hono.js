@@ -1,4 +1,4 @@
-import { generateDbTarget } from "../../db/index.js";
+import { generateDbTarget } from "../databases/index.js";
 import { buildBackendRuntimeRealization } from "../../../realization/backend/index.js";
 import { getProjection } from "../shared.js";
 import { generatePersistenceScaffold } from "./persistence-wiring.js";
@@ -12,7 +12,7 @@ import {
   routeTypeNames,
 } from "./runtime-helpers.js";
 import { generateServerContract, renderServerContractModule } from "./server-contract.js";
-import { toPascalCase } from "../../db/shared.js";
+import { toPascalCase } from "../databases/shared.js";
 
 function renderServerAppTs(realization) {
   const { contract, lookupRoutes } = realization;

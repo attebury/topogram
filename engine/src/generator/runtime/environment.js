@@ -1,4 +1,4 @@
-import { generateDbLifecyclePlan } from "../db/lifecycle-shared.js";
+import { generateDbLifecyclePlan } from "../surfaces/databases/lifecycle-shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import {
   generateDbBundle,

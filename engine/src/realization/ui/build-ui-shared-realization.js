@@ -1,4 +1,4 @@
-import { getProjection, uiProjectionCandidates } from "../../generator/apps/shared.js";
+import { getProjection, uiProjectionCandidates } from "../../generator/surfaces/shared.js";
 
 function toBooleanFlag(value, fallback = false) {
   if (value === "true") return true;

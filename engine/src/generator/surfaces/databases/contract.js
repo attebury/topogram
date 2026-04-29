@@ -1,4 +1,4 @@
-import { buildDbRealization } from "../../realization/db/index.js";
+import { buildDbRealization } from "../../../realization/db/index.js";
 
 export function generateDbContractGraph(graph, options = {}) {
   return buildDbRealization(graph, options);

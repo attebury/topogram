@@ -1,4 +1,4 @@
-import { generateBackendTarget } from "../generator/apps/backend/index.js";
+import { generateBackendTarget } from "../generator/surfaces/services/index.js";
 
 export function buildBackendParityEvidence(graph, projectionId = "proj_api") {
   const hono = generateBackendTarget("hono-server", graph, { projectionId });

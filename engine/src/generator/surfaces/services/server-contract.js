@@ -1,6 +1,6 @@
 import { generateApiContractGraph } from "../../api.js";
 import { getProjection } from "../shared.js";
-import { toPascalCase } from "../../db/shared.js";
+import { toPascalCase } from "../databases/shared.js";
 
 function indexStatements(graph) {
   const byId = new Map();

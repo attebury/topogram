@@ -11,8 +11,8 @@ import {
   generateOpenApi
 } from "./api.js";
 import { generateVerificationChecklist, generateVerificationPlan } from "./verification.js";
-import { generateDbTarget } from "./db/index.js";
-import { generateAppTarget } from "./apps/index.js";
+import { generateDbTarget } from "./surfaces/databases/index.js";
+import { generateAppTarget } from "./surfaces/index.js";
 import { generateRuntimeTarget } from "./runtime/index.js";
 import { generateContextTarget } from "./context/index.js";
 import { buildOutputFiles } from "./output.js";

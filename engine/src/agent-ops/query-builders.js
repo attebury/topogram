@@ -10,7 +10,7 @@ import {
   relatedProjectionsForEntity,
   relatedShapesForProjection
 } from "../generator/context/shared.js";
-import { generatorDefaultsMap } from "../generator/apps/shared.js";
+import { generatorDefaultsMap } from "../generator/surfaces/shared.js";
 
 export function canonicalWriteCandidatesFromWriteScope(writeScope) {
   return (writeScope?.safe_to_edit || []).filter((entry) => entry === "topogram/**" || String(entry).startsWith("topogram/"));

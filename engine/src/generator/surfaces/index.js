@@ -1,5 +1,5 @@
-import { generateBackendTarget } from "./backend/index.js";
-import { generateSwiftUiApp } from "./ios/swiftui-app.js";
+import { generateBackendTarget } from "./services/index.js";
+import { generateSwiftUiApp } from "./native/swiftui-app.js";
 import { generateWebTarget } from "./web/index.js";
 
 export function generateAppTarget(target, graph, options = {}) {

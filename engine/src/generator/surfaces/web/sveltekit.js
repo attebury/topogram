@@ -1,5 +1,5 @@
 import { buildWebRealization } from "../../../realization/ui/index.js";
-import { lookupRouteSegment } from "../backend/runtime-helpers.js";
+import { lookupRouteSegment } from "../services/runtime-helpers.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
 

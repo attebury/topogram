@@ -1,4 +1,4 @@
-import { generateDbMigrationPlan } from "../../generator/db/migration-plan.js";
+import { generateDbMigrationPlan } from "../../generator/surfaces/databases/migration-plan.js";
 
 export function buildDbMigrationPlanRealization(graph, options = {}) {
   return generateDbMigrationPlan(graph, options);
