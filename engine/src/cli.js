@@ -12,6 +12,7 @@ import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import {
   applyTemplateUpdate,
+  buildTemplateUpdateCheck,
   buildTemplateUpdatePlan,
   createNewProject,
   writeTemplateFilesManifest
@@ -99,7 +100,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
-  console.log("   or: topogram template update [path] --plan|--apply [--template <spec>] [--json]");
+  console.log("   or: topogram template update [path] --plan|--check|--apply [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("");
@@ -114,6 +115,7 @@ function printUsage(options = {}) {
   console.log("  topogram template status");
   console.log("  topogram template check web-api-db");
   console.log("  topogram template update --plan");
+  console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
@@ -524,16 +526,50 @@ function printTemplateStatus(payload) {
  */
 function printTemplateUpdatePlan(plan) {
   const isApply = plan.mode === "apply";
-  console.log(
-    isApply
-      ? (plan.ok ? "Template update apply: complete" : "Template update apply: refused")
-      : (plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible")
-  );
-  console.log(`Current: ${plan.current.id || "unknown"}@${plan.current.version || "unknown"}`);
-  console.log(`Candidate: ${plan.candidate.id}@${plan.candidate.version}`);
+  const isCheck = plan.mode === "check";
+  if (isApply) {
+    console.log(plan.ok ? "Template update apply: complete" : "Template update apply: refused");
+  } else if (isCheck) {
+    console.log(plan.ok ? "Template update check: aligned" : "Template update check: out of date");
+  } else {
+    console.log(plan.ok ? "Template update plan: ready for review" : "Template update plan: incompatible");
+  }
+  console.log(`Current: ${plan.current?.id || "unknown"}@${plan.current?.version || "unknown"}`);
+  console.log(`Candidate: ${plan.candidate?.id || "unknown"}@${plan.candidate?.version || "unknown"}`);
   console.log(`Writes: ${plan.writes ? "applied" : "none"}`);
-  for (const issue of plan.issues) {
-    console.log(`Issue: ${issue}`);
+  console.log(`Added: ${plan.summary.added}`);
+  console.log(`Changed: ${plan.summary.changed}`);
+  console.log(`Current-only: ${plan.summary.currentOnly}`);
+  console.log(`Unchanged: ${plan.summary.unchanged}`);
+  if (isApply) {
+    const appliedCount = (plan.applied || []).length;
+    const skippedCount = (plan.skipped || []).length;
+    const conflictCount = (plan.conflicts || []).length;
+    if (appliedCount === 0 && skippedCount === 0 && conflictCount === 0 && plan.files.length === 0) {
+      console.log("No changes to apply.");
+    }
+    if (appliedCount > 0) {
+      console.log(`Applied ${appliedCount} file(s).`);
+    }
+    if (skippedCount > 0) {
+      console.log(`Skipped ${skippedCount} current-only file(s).`);
+    }
+    if (conflictCount > 0) {
+      console.log(`Refused due to ${conflictCount} conflict(s).`);
+    }
+  }
+  const diagnostics = Array.isArray(plan.diagnostics) ? plan.diagnostics : [];
+  for (const diagnostic of diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+    if (diagnostic.step) {
+      console.log(`  step: ${diagnostic.step}`);
+    }
   }
   for (const conflict of plan.conflicts || []) {
     console.log(`Conflict: ${conflict.path}`);
@@ -546,10 +582,6 @@ function printTemplateUpdatePlan(plan) {
     console.log(`Skipped: ${skipped.path}`);
     console.log(`  reason: ${skipped.reason}`);
   }
-  console.log(`Added: ${plan.summary.added}`);
-  console.log(`Changed: ${plan.summary.changed}`);
-  console.log(`Current-only: ${plan.summary.currentOnly}`);
-  console.log(`Unchanged: ${plan.summary.unchanged}`);
   for (const file of plan.files) {
     console.log("");
     console.log(`${file.kind.toUpperCase()}: ${file.path}`);
@@ -573,9 +605,12 @@ function printTemplateUpdatePlan(plan) {
   if (plan.files.length === 0) {
     console.log("No template-owned file changes found.");
   }
-  if (!isApply) {
+  if (!isApply && !isCheck) {
     console.log("");
     console.log("This command did not write files. Review the plan before applying template updates.");
+  } else if (isCheck) {
+    console.log("");
+    console.log("This command did not write files.");
   }
 }
 
@@ -1219,23 +1254,54 @@ try {
 
   if (shouldTemplateUpdate) {
     const applyUpdate = args.includes("--apply");
+    const checkUpdate = args.includes("--check");
     const planUpdate = args.includes("--plan");
-    if (applyUpdate && planUpdate) {
-      throw new Error("Choose either `topogram template update --plan` or `topogram template update --apply`, not both.");
+    const updateModeCount = [applyUpdate, checkUpdate, planUpdate].filter(Boolean).length;
+    if (updateModeCount > 1) {
+      throw new Error("Choose one of `topogram template update --plan`, `topogram template update --check`, or `topogram template update --apply`.");
     }
-    if (!applyUpdate && !planUpdate) {
-      throw new Error("Template update requires `--plan` or `--apply`.");
+    if (updateModeCount === 0) {
+      throw new Error("Template update requires `--plan`, `--check`, or `--apply`.");
     }
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
       throw new Error("Cannot update template without topogram.project.json.");
     }
-    const update = (applyUpdate ? applyTemplateUpdate : buildTemplateUpdatePlan)({
-      projectRoot: projectConfigInfo.configDir,
-      projectConfig: projectConfigInfo.config,
-      templateName: templateIndex >= 0 ? templateName : null,
-      templatesRoot: TEMPLATES_ROOT
-    });
+    let update;
+    try {
+      update = (applyUpdate ? applyTemplateUpdate : checkUpdate ? buildTemplateUpdateCheck : buildTemplateUpdatePlan)({
+        projectRoot: projectConfigInfo.configDir,
+        projectConfig: projectConfigInfo.config,
+        templateName: templateIndex >= 0 ? templateName : null,
+        templatesRoot: TEMPLATES_ROOT
+      });
+    } catch (error) {
+      const message = messageFromError(error);
+      update = {
+        ok: false,
+        mode: applyUpdate ? "apply" : checkUpdate ? "check" : "plan",
+        writes: false,
+        current: {
+          id: typeof projectConfigInfo.config.template?.id === "string" ? projectConfigInfo.config.template.id : null,
+          version: typeof projectConfigInfo.config.template?.version === "string" ? projectConfigInfo.config.template.version : null
+        },
+        candidate: null,
+        compatible: false,
+        issues: [message],
+        diagnostics: [templateCheckDiagnostic({
+          code: "template_resolve_failed",
+          message,
+          path: templateIndex >= 0 && typeof templateName === "string" && path.isAbsolute(templateName) ? templateName : null,
+          suggestedFix: "Check the template path or package spec, and verify private registry authentication if this is a package template.",
+          step: "resolve-candidate"
+        })],
+        summary: { added: 0, changed: 0, currentOnly: 0, unchanged: 0 },
+        files: [],
+        applied: [],
+        skipped: [],
+        conflicts: []
+      };
+    }
     if (emitJson) {
       console.log(stableStringify(update));
     } else {

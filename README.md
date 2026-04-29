@@ -44,22 +44,28 @@ Plan or apply a template update:
 
 ```bash
 topogram template update --plan
-topogram template update --plan --template @attebury/topogram-template-todo@0.1.1
+topogram template update --check
+topogram template update --plan --template @attebury/topogram-template-todo@0.1.2
 topogram template update --plan --json
 topogram template update --apply
 ```
 
 The update plan compares template-owned files in the current project with the
 candidate template and reports added, changed, and current-only files.
-`--apply` writes only reviewed added/changed template-owned files, records a new
-`.topogram-template-files.json` baseline, skips deletes, and refuses to
-overwrite files that changed since the last trusted template-owned baseline.
+`--check` is the no-write CI guard: it exits nonzero when the project is not
+aligned with the recorded or supplied template. `--apply` writes only reviewed
+added/changed template-owned files, records a new `.topogram-template-files.json`
+baseline, skips deletes, and refuses to overwrite files that changed since the
+last trusted template-owned baseline. Human output summarizes no-op, applied,
+skipped, and conflict counts; JSON output includes structured diagnostics with
+codes, paths, suggested fixes, and workflow steps. If the baseline is missing,
+review the current template-owned files and run `topogram trust template`.
 
 Validate a reusable template pack:
 
 ```bash
 topogram template check ./my-template
-topogram template check @attebury/topogram-template-todo@0.1.1 --json
+topogram template check @attebury/topogram-template-todo@0.1.2 --json
 ```
 
 Template checks create a temporary starter, run `topogram check` behavior,

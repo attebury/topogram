@@ -48,6 +48,16 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  */
 
 /**
+ * @typedef {Object} TemplateUpdateDiagnostic
+ * @property {string} code
+ * @property {"error"|"warning"} severity
+ * @property {string} message
+ * @property {string|null} path
+ * @property {string|null} suggestedFix
+ * @property {string|null} step
+ */
+
+/**
  * @typedef {Object} ResolvedTemplate
  * @property {string} requested
  * @property {string} root
@@ -448,6 +458,31 @@ function projectTemplateMetadata(template) {
 }
 
 /**
+ * @param {Record<string, any>} input
+ * @returns {TemplateUpdateDiagnostic}
+ */
+function templateUpdateDiagnostic(input) {
+  return {
+    code: String(input.code || "template_update_failed"),
+    severity: input.severity === "warning" ? "warning" : "error",
+    message: String(input.message || "Template update failed."),
+    path: typeof input.path === "string" ? input.path : null,
+    suggestedFix: typeof input.suggestedFix === "string" ? input.suggestedFix : null,
+    step: typeof input.step === "string" ? input.step : null
+  };
+}
+
+/**
+ * @param {TemplateUpdateDiagnostic[]} diagnostics
+ * @returns {string[]}
+ */
+function issueMessagesFromDiagnostics(diagnostics) {
+  return diagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+}
+
+/**
  * @param {any} bytes
  * @returns {boolean}
  */
@@ -797,7 +832,7 @@ export function writeTemplateFilesManifest(projectRoot, projectConfig) {
 
 /**
  * @param {TemplateUpdatePlanOptions} options
- * @returns {{ ok: boolean, mode: "plan", writes: false, current: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }, candidate: { id: string, version: string, source: string, sourceSpec: string, requested: string }, compatible: boolean, issues: string[], summary: { added: number, changed: number, currentOnly: number, unchanged: number }, files: Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
+ * @returns {{ ok: boolean, mode: "plan", writes: false, current: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null }, candidate: { id: string, version: string, source: string, sourceSpec: string, requested: string }, compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: { added: number, changed: number, currentOnly: number, unchanged: number }, files: Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }> }}
  */
 export function buildTemplateUpdatePlan({
   projectRoot,
@@ -812,10 +847,16 @@ export function buildTemplateUpdatePlan({
   }
   const candidateTemplate = resolveTemplate(templateSpec, templatesRoot);
   const candidateMetadata = projectTemplateMetadata(candidateTemplate);
-  /** @type {string[]} */
-  const issues = [];
+  /** @type {TemplateUpdateDiagnostic[]} */
+  const diagnostics = [];
   if (currentTemplate.id && currentTemplate.id !== candidateMetadata.id) {
-    issues.push(`Candidate template id '${candidateMetadata.id}' does not match current template id '${currentTemplate.id}'.`);
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_id_mismatch",
+      message: `Candidate template id '${candidateMetadata.id}' does not match current template id '${currentTemplate.id}'.`,
+      path: path.join(projectRoot, "topogram.project.json"),
+      suggestedFix: "Use a template with the same id, or create a new project from the other template.",
+      step: "resolve-candidate"
+    }));
   }
   const candidateFiles = candidateTemplateFiles(candidateTemplate);
   const currentFiles = currentTemplateOwnedFiles(
@@ -868,6 +909,7 @@ export function buildTemplateUpdatePlan({
     currentOnly: visibleFiles.filter((file) => file.kind === "current-only").length,
     unchanged: files.filter((file) => file.kind === "unchanged").length
   };
+  const issues = issueMessagesFromDiagnostics(diagnostics);
   return {
     ok: issues.length === 0,
     mode: "plan",
@@ -888,8 +930,36 @@ export function buildTemplateUpdatePlan({
     },
     compatible: issues.length === 0,
     issues,
+    diagnostics,
     summary,
     files: visibleFiles
+  };
+}
+
+/**
+ * @param {TemplateUpdatePlanOptions} options
+ * @returns {{ ok: boolean, mode: "check", writes: false, current: ReturnType<typeof buildTemplateUpdatePlan>["current"], candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"], compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], files: ReturnType<typeof buildTemplateUpdatePlan>["files"] }}
+ */
+export function buildTemplateUpdateCheck(options) {
+  const plan = buildTemplateUpdatePlan(options);
+  const diagnostics = [...plan.diagnostics];
+  if (plan.ok && plan.files.length > 0) {
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_update_available",
+      message: `Template update has ${plan.files.length} template-owned file change(s).`,
+      path: options.projectRoot,
+      suggestedFix: "Run `topogram template update --plan` to review, then `topogram template update --apply` after approval.",
+      step: "check"
+    }));
+  }
+  const issues = issueMessagesFromDiagnostics(diagnostics);
+  return {
+    ...plan,
+    ok: issues.length === 0,
+    mode: "check",
+    writes: false,
+    issues,
+    diagnostics
   };
 }
 
@@ -927,7 +997,7 @@ function fileMatchesBaseline(baseline, currentHash) {
 
 /**
  * @param {TemplateUpdatePlanOptions} options
- * @returns {{ ok: boolean, mode: "apply", writes: boolean, current: ReturnType<typeof buildTemplateUpdatePlan>["current"], candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"], compatible: boolean, issues: string[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], applied: Array<{ path: string, kind: "added"|"changed" }>, skipped: Array<{ path: string, kind: "current-only", reason: string }>, conflicts: Array<{ path: string, reason: string }>, files: ReturnType<typeof buildTemplateUpdatePlan>["files"] }}
+ * @returns {{ ok: boolean, mode: "apply", writes: boolean, current: ReturnType<typeof buildTemplateUpdatePlan>["current"], candidate: ReturnType<typeof buildTemplateUpdatePlan>["candidate"], compatible: boolean, issues: string[], diagnostics: TemplateUpdateDiagnostic[], summary: ReturnType<typeof buildTemplateUpdatePlan>["summary"], applied: Array<{ path: string, kind: "added"|"changed" }>, skipped: Array<{ path: string, kind: "current-only", reason: string }>, conflicts: Array<{ path: string, reason: string }>, files: ReturnType<typeof buildTemplateUpdatePlan>["files"] }}
  */
 export function applyTemplateUpdate(options) {
   const plan = buildTemplateUpdatePlan(options);
@@ -937,8 +1007,10 @@ export function applyTemplateUpdate(options) {
   const skipped = [];
   /** @type {Array<{ path: string, reason: string }>} */
   const conflicts = [];
-  const issues = [...plan.issues];
+  /** @type {TemplateUpdateDiagnostic[]} */
+  const diagnostics = [...plan.diagnostics];
   if (!plan.ok) {
+    const issues = issueMessagesFromDiagnostics(diagnostics);
     return {
       ...plan,
       ok: false,
@@ -947,13 +1019,20 @@ export function applyTemplateUpdate(options) {
       applied,
       skipped,
       conflicts,
-      issues
+      issues,
+      diagnostics
     };
   }
 
   const baselineManifest = readTemplateFilesManifest(options.projectRoot);
   if (!baselineManifest) {
-    issues.push(`Cannot apply template update because ${TEMPLATE_FILES_MANIFEST} is missing. Review current template-owned files, then run 'topogram trust template' to record the baseline before applying template updates.`);
+    diagnostics.push(templateUpdateDiagnostic({
+      code: "template_baseline_missing",
+      message: `Cannot apply template update because ${TEMPLATE_FILES_MANIFEST} is missing. Review current template-owned files, then run 'topogram trust template' to record the baseline before applying template updates.`,
+      path: path.join(options.projectRoot, TEMPLATE_FILES_MANIFEST),
+      suggestedFix: "Review current template-owned files, then run `topogram trust template` to record the baseline before applying template updates.",
+      step: "baseline"
+    }));
   }
   const baselineByPath = new Map((baselineManifest?.files || []).map((file) => [file.path, file]));
   const currentHashes = currentTemplateOwnedFileHashes(options.projectRoot, options.projectConfig);
@@ -964,6 +1043,14 @@ export function applyTemplateUpdate(options) {
         kind: "current-only",
         reason: "Deletes are not applied by template update --apply in this milestone."
       });
+      diagnostics.push(templateUpdateDiagnostic({
+        code: "template_current_only_skipped",
+        severity: "warning",
+        message: `Skipped current-only file '${file.path}'. Deletes are not applied by template update --apply in this milestone.`,
+        path: path.join(options.projectRoot, file.path),
+        suggestedFix: "Delete the file manually after review if it should be removed from this project.",
+        step: "apply"
+      }));
       continue;
     }
     if (file.kind !== "added" && file.kind !== "changed") {
@@ -972,17 +1059,23 @@ export function applyTemplateUpdate(options) {
     const baseline = baselineByPath.get(file.path) || null;
     const currentHash = currentHashes.get(file.path) || null;
     if (!fileMatchesBaseline(baseline, currentHash)) {
+      const reason = baseline
+        ? "Current file differs from the last trusted template-owned baseline."
+        : "Current file is not part of the trusted template-owned baseline.";
       conflicts.push({
         path: file.path,
-        reason: baseline
-          ? "Current file differs from the last trusted template-owned baseline."
-          : "Current file is not part of the trusted template-owned baseline."
+        reason
       });
+      diagnostics.push(templateUpdateDiagnostic({
+        code: "template_update_conflict",
+        message: `Template update conflict in '${file.path}': ${reason}`,
+        path: path.join(options.projectRoot, file.path),
+        suggestedFix: "Review local edits; keep them manually or refresh the baseline with `topogram trust template` after review.",
+        step: "conflict-check"
+      }));
     }
   }
-  if (conflicts.length > 0) {
-    issues.push("Template update has conflicts. Review local edits before applying.");
-  }
+  const issues = issueMessagesFromDiagnostics(diagnostics);
   if (issues.length > 0) {
     return {
       ...plan,
@@ -992,7 +1085,8 @@ export function applyTemplateUpdate(options) {
       applied,
       skipped,
       conflicts,
-      issues
+      issues,
+      diagnostics
     };
   }
 
@@ -1025,6 +1119,7 @@ export function applyTemplateUpdate(options) {
     mode: "apply",
     writes: applied.length > 0,
     issues,
+    diagnostics,
     applied,
     skipped,
     conflicts
@@ -1049,6 +1144,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
       generate: "topogram generate",
       "template:status": "topogram template status",
       "template:update:plan": "topogram template update --plan",
+      "template:update:check": "topogram template update --check",
       "template:update:apply": "topogram template update --apply",
       "trust:status": "topogram trust status",
       "trust:diff": "topogram trust diff",

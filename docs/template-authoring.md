@@ -123,6 +123,7 @@ Review template changes first:
 
 ```bash
 topogram template update --plan
+topogram template update --check
 topogram template update --plan --template ./local-template
 topogram template update --plan --template @scope/topogram-template-name@0.2.0
 topogram template update --plan --json
@@ -139,11 +140,23 @@ template. It reports added, changed, and current-only files with hashes and text
 diffs where practical. Plan mode never writes files and never executes template
 implementation code.
 
+Check mode is the no-write guard for CI and consumer repos. It exits zero when
+the current project is aligned with the recorded or supplied template, and exits
+nonzero when a template update is available or the candidate is invalid. Use it
+when a workflow should fail until a human reviews and applies the update.
+
 Apply mode writes only reviewed added/changed template-owned files. It records a
 fresh `.topogram-template-files.json` baseline after a successful apply, skips
 current-only deletes in this milestone, and refuses to overwrite a file that no
 longer matches the last trusted template-owned baseline. Executable
 implementation trust is refreshed after a successful apply.
+
+Human output prints a compact summary before file diffs, including `No changes
+to apply.`, `Applied N file(s).`, `Skipped N current-only file(s).`, and
+`Refused due to N conflict(s).` JSON output includes `diagnostics[]` with
+`code`, `severity`, `message`, `path`, `suggestedFix`, and `step` for
+incompatible template IDs, missing baselines, local conflicts, skipped
+current-only deletes, and template resolution failures.
 
 For projects created before `.topogram-template-files.json` existed, review the
 current template-owned files and run `topogram trust template` once to record the
