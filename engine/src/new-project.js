@@ -565,6 +565,33 @@ function utf8ByteLength(value) {
 }
 
 /**
+ * @param {any} value
+ * @returns {any}
+ */
+function sortJsonValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(sortJsonValue);
+  }
+  if (value && typeof value === "object") {
+    /** @type {Record<string, any>} */
+    const sorted = {};
+    for (const key of Object.keys(value).sort((left, right) => left.localeCompare(right))) {
+      sorted[key] = sortJsonValue(value[key]);
+    }
+    return sorted;
+  }
+  return value;
+}
+
+/**
+ * @param {any} value
+ * @returns {string}
+ */
+function stableJsonStringify(value) {
+  return JSON.stringify(sortJsonValue(value), null, 2);
+}
+
+/**
  * @param {string} root
  * @param {string} currentDir
  * @param {string[]} files
@@ -644,7 +671,7 @@ function candidateTemplateFiles(template) {
   candidateProjectConfig.template = projectTemplateMetadata(template);
   files.set("topogram.project.json", {
     path: "topogram.project.json",
-    content: `${JSON.stringify(candidateProjectConfig, null, 2)}\n`,
+    content: `${stableJsonStringify(candidateProjectConfig)}\n`,
     absolutePath: null
   });
   return files;
@@ -653,9 +680,10 @@ function candidateTemplateFiles(template) {
 /**
  * @param {string} projectRoot
  * @param {boolean} includeImplementation
- * @returns {Map<string, { path: string, absolutePath: string }>}
+ * @param {Record<string, any>} projectConfig
+ * @returns {Map<string, { path: string, absolutePath: string|null, content: string|null }>}
  */
-function currentTemplateOwnedFiles(projectRoot, includeImplementation) {
+function currentTemplateOwnedFiles(projectRoot, includeImplementation, projectConfig) {
   const files = new Map();
   for (const rootName of includeImplementation ? ["topogram", "implementation"] : ["topogram"]) {
     const root = path.join(projectRoot, rootName);
@@ -668,7 +696,8 @@ function currentTemplateOwnedFiles(projectRoot, includeImplementation) {
     for (const relativePath of relativeFiles) {
       files.set(relativePath, {
         path: relativePath,
-        absolutePath: path.join(projectRoot, relativePath)
+        absolutePath: path.join(projectRoot, relativePath),
+        content: null
       });
     }
   }
@@ -676,7 +705,8 @@ function currentTemplateOwnedFiles(projectRoot, includeImplementation) {
   if (fs.existsSync(projectConfigPath)) {
     files.set("topogram.project.json", {
       path: "topogram.project.json",
-      absolutePath: projectConfigPath
+      absolutePath: null,
+      content: `${stableJsonStringify(projectConfig)}\n`
     });
   }
   return files;
@@ -707,7 +737,8 @@ export function buildTemplateUpdatePlan({
   const candidateFiles = candidateTemplateFiles(candidateTemplate);
   const currentFiles = currentTemplateOwnedFiles(
     projectRoot,
-    Boolean(projectConfig.implementation || currentTemplate.includesExecutableImplementation || candidateMetadata.includesExecutableImplementation)
+    Boolean(projectConfig.implementation || currentTemplate.includesExecutableImplementation || candidateMetadata.includesExecutableImplementation),
+    projectConfig
   );
   const allPaths = new Set([...candidateFiles.keys(), ...currentFiles.keys()]);
   /** @type {Array<{ path: string, kind: "added"|"changed"|"current-only"|"unchanged", current: { sha256: string, size: number }|null, candidate: { sha256: string, size: number }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }>} */
@@ -720,7 +751,7 @@ export function buildTemplateUpdatePlan({
       ? fileSnapshot(candidateFile.absolutePath, candidateFile.content)
       : null;
     const currentSnapshot = currentFile
-      ? fileSnapshot(currentFile.absolutePath)
+      ? fileSnapshot(currentFile.absolutePath, currentFile.content)
       : null;
     let kind = /** @type {"added"|"changed"|"current-only"|"unchanged"} */ ("unchanged");
     if (!currentSnapshot && candidateSnapshot) {
