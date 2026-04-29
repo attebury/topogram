@@ -93,6 +93,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --plan [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
   console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
@@ -106,6 +107,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
   console.log("  topogram template status");
+  console.log("  topogram template check web-api-db");
   console.log("  topogram template update --plan");
   console.log("  topogram import app ./existing-app --write");
   console.log("");
@@ -553,6 +555,151 @@ function printTemplateUpdatePlan(plan) {
   console.log("This command did not write files. Review the plan before applying template updates manually.");
 }
 
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {Record<string, any>} [details]
+ * @returns {{ name: string, ok: boolean, details: Record<string, any> }}
+ */
+function templateCheckStep(name, ok, details = {}) {
+  return { name, ok, details };
+}
+
+/**
+ * @param {string} templateSpec
+ * @returns {{ ok: boolean, templateSpec: string, projectRoot: string|null, steps: Array<{ name: string, ok: boolean, details: Record<string, any> }>, errors: string[] }}
+ */
+function buildTemplateCheckPayload(templateSpec) {
+  if (!templateSpec) {
+    throw new Error("topogram template check requires <template-spec-or-path>.");
+  }
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-"));
+  const projectRoot = path.join(runRoot, "starter");
+  /** @type {Array<{ name: string, ok: boolean, details: Record<string, any> }>} */
+  const steps = [];
+  /** @type {string[]} */
+  const errors = [];
+  let created = null;
+  try {
+    created = createNewProject({
+      targetPath: projectRoot,
+      templateName: templateSpec,
+      engineRoot: ENGINE_ROOT,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    steps.push(templateCheckStep("create-starter", true, {
+      template: created.templateName,
+      warnings: created.warnings.length
+    }));
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error));
+    steps.push(templateCheckStep("create-starter", false));
+    return { ok: false, templateSpec, projectRoot: null, steps, errors };
+  }
+
+  const projectConfigInfo = loadProjectConfig(projectRoot);
+  if (!projectConfigInfo) {
+    errors.push("Generated starter is missing topogram.project.json.");
+    steps.push(templateCheckStep("project-config", false));
+    return { ok: false, templateSpec, projectRoot, steps, errors };
+  }
+  steps.push(templateCheckStep("project-config", true, {
+    path: projectConfigInfo.configPath,
+    template: projectConfigInfo.config.template?.id || null
+  }));
+
+  const ast = parsePath(path.join(projectRoot, "topogram"));
+  const resolved = resolveWorkspace(ast);
+  const projectValidation = combineProjectValidationResults(
+    validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null),
+    validateProjectOutputOwnership(projectConfigInfo),
+    validateProjectImplementationTrust(projectConfigInfo)
+  );
+  const starterCheckOk = resolved.ok && projectValidation.ok;
+  steps.push(templateCheckStep("starter-check", starterCheckOk, {
+    files: ast.files.length,
+    statements: ast.files.flatMap((file) => file.statements).length
+  }));
+  if (!starterCheckOk) {
+    for (const error of [
+      ...(resolved.ok ? [] : resolved.validation.errors),
+      ...projectValidation.errors
+    ]) {
+      errors.push(error.message);
+    }
+  }
+
+  const implementationInfo = projectConfigInfo.config.implementation
+    ? {
+        config: projectConfigInfo.config.implementation,
+        configPath: projectConfigInfo.configPath,
+        configDir: projectConfigInfo.configDir
+      }
+    : null;
+  if (implementationInfo && implementationRequiresTrust(implementationInfo)) {
+    const trustStatus = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
+    steps.push(templateCheckStep("executable-implementation-trust", trustStatus.ok, {
+      requiresTrust: true,
+      trustPath: trustStatus.trustPath,
+      trustedFiles: trustStatus.trustRecord?.content?.files?.length || 0
+    }));
+    if (!trustStatus.ok) {
+      errors.push(...trustStatus.issues);
+    }
+  } else {
+    steps.push(templateCheckStep("executable-implementation-trust", true, {
+      requiresTrust: false
+    }));
+  }
+
+  try {
+    const updatePlan = buildTemplateUpdatePlan({
+      projectRoot,
+      projectConfig: projectConfigInfo.config,
+      templateName: null,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    steps.push(templateCheckStep("template-update-plan", updatePlan.ok, {
+      writes: updatePlan.writes,
+      added: updatePlan.summary.added,
+      changed: updatePlan.summary.changed,
+      currentOnly: updatePlan.summary.currentOnly
+    }));
+    if (!updatePlan.ok) {
+      errors.push(...updatePlan.issues);
+    }
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error));
+    steps.push(templateCheckStep("template-update-plan", false));
+  }
+
+  return {
+    ok: steps.every((step) => step.ok),
+    templateSpec,
+    projectRoot,
+    steps,
+    errors
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateCheckPayload>} payload
+ * @returns {void}
+ */
+function printTemplateCheckPayload(payload) {
+  console.log(payload.ok ? "Template check passed" : "Template check failed");
+  console.log(`Template spec: ${payload.templateSpec}`);
+  if (payload.projectRoot) {
+    console.log(`Temp starter: ${payload.projectRoot}`);
+  }
+  for (const step of payload.steps) {
+    console.log(`${step.ok ? "PASS" : "FAIL"} ${step.name}`);
+  }
+  for (const error of payload.errors) {
+    console.log(`Issue: ${error}`);
+  }
+}
+
 function workflowPresetSelectors({
   taskModeArtifact,
   providerId = null,
@@ -630,6 +777,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "check") {
+  commandArgs = { templateCheck: true, inputPath: args[2] };
 } else if (args[0] === "template" && args[1] === "update") {
   commandArgs = { templateUpdate: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "app") {
@@ -716,6 +865,7 @@ const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
+const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
@@ -771,7 +921,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -820,6 +970,16 @@ try {
       printTemplateStatus(status);
     }
     process.exit(status.ok ? 0 : 1);
+  }
+
+  if (shouldTemplateCheck) {
+    const payload = buildTemplateCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateCheckPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldTemplateUpdate) {

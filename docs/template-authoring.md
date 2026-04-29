@@ -138,6 +138,22 @@ template. It reports added, changed, and current-only files with hashes and text
 diffs where practical. It never writes files and never executes template
 implementation code.
 
+## Template Conformance
+
+Template authors can run a reusable conformance check:
+
+```bash
+topogram template check ./my-template
+topogram template check ./my-template --json
+topogram template check @scope/topogram-template-name@0.2.0
+```
+
+The command validates the manifest and required layout, creates a temporary
+starter, runs the same parse/project/trust checks as `topogram check`, verifies
+executable-template trust metadata, and verifies that the starter can produce a
+no-write template update plan. It does not compile generated apps and does not
+execute template implementation code.
+
 After reviewing intentional edits in `implementation/`, refresh the trust record:
 
 ```bash

@@ -24,6 +24,7 @@ topogram create ../my-app
 topogram check
 topogram generate
 topogram template status
+topogram template check ../my-template
 topogram template update --plan
 topogram trust template
 ```
@@ -92,6 +93,10 @@ changed files before refreshing trust.
 Template updates are plan-only in this pass. Use
 `topogram template update --plan [--template <spec>]` to compare the current
 project with a candidate template without writing files.
+
+Template authors can run `topogram template check <template-spec-or-path>` to
+validate manifest/layout, temporary starter creation, starter checks, trust
+metadata, and no-write update planning.
 
 Run the same gate directly:
 

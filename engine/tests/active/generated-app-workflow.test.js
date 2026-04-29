@@ -51,6 +51,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
+  assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
   assert.doesNotMatch(help.stdout, /query work-packet/);
 
@@ -130,6 +131,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
+  assert.equal(pkg.scripts["template:check"], "topogram template check .");
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
   assert.equal(pkg.scripts["trust:status"], "topogram trust status");
   assert.equal(pkg.scripts["trust:diff"], "topogram trust diff");
@@ -376,6 +378,45 @@ test("topogram template update emits a non-writing update plan", () => {
   assert.match(humanPlan.stdout, /Template update plan: ready for review/);
   assert.match(humanPlan.stdout, /Writes: none/);
   assert.match(humanPlan.stdout, /ADDED: topogram\/entities\/entity-note\.tg/);
+});
+
+test("topogram template check validates reusable template conformance", () => {
+  const check = runCli(["template", "check", builtInTemplateRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.templateSpec, builtInTemplateRoot);
+  assert.equal(payload.steps.find((step) => step.name === "create-starter").ok, true);
+  assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, true);
+  assert.equal(payload.steps.find((step) => step.name === "executable-implementation-trust").details.requiresTrust, true);
+  assert.equal(payload.steps.find((step) => step.name === "template-update-plan").details.writes, false);
+
+  const humanCheck = runCli(["template", "check", builtInTemplateRoot]);
+  assert.equal(humanCheck.status, 0, humanCheck.stderr || humanCheck.stdout);
+  assert.match(humanCheck.stdout, /Template check passed/);
+  assert.match(humanCheck.stdout, /PASS create-starter/);
+  assert.match(humanCheck.stdout, /PASS starter-check/);
+  assert.match(humanCheck.stdout, /PASS executable-implementation-trust/);
+  assert.match(humanCheck.stdout, /PASS template-update-plan/);
+});
+
+test("topogram template check reports invalid template conformance", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-invalid-"));
+  const templateRoot = path.join(root, "bad-template");
+  fs.mkdirSync(path.join(templateRoot, "topogram"), { recursive: true });
+  fs.writeFileSync(path.join(templateRoot, "topogram.project.json"), "{}\n", "utf8");
+  fs.writeFileSync(path.join(templateRoot, "topogram-template.json"), JSON.stringify({
+    id: "bad-template",
+    version: "0.1.0",
+    kind: "starter"
+  }, null, 2));
+
+  const check = runCli(["template", "check", templateRoot, "--json"]);
+  assert.notEqual(check.status, 0, check.stdout);
+  const payload = JSON.parse(check.stdout);
+  assert.equal(payload.ok, false);
+  assert.match(payload.errors.join("\n"), /topogramVersion/);
+  assert.equal(payload.steps.find((step) => step.name === "create-starter").ok, false);
 });
 
 test("topogram template update requires explicit plan mode", () => {

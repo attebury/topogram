@@ -51,6 +51,16 @@ The update plan compares template-owned files in the current project with the
 candidate template and reports added, changed, and current-only files. It does
 not overwrite local edits.
 
+Validate a reusable template pack:
+
+```bash
+topogram template check ./my-template
+topogram template check @attebury/topogram-template-todo@0.1.1 --json
+```
+
+Template checks create a temporary starter, run `topogram check` behavior,
+verify executable-template trust metadata, and verify a no-write update plan.
+
 To create a starter from a shared template pack:
 
 ```bash
