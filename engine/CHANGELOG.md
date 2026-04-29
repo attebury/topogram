@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.22 - 2026-04-29
+
+- Record catalog provenance when `topogram new --template <catalog-id>` resolves
+  a template alias to a package-backed template.
+- Preserve the catalog alias/source in project template metadata, template file
+  baselines, and executable implementation trust records.
+
 ## 0.2.21 - 2026-04-29
 
 - Add private catalog commands: `topogram catalog list`, `catalog check`, and
