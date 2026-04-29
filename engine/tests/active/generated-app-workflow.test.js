@@ -101,6 +101,7 @@ test("topogram new creates a generated app starter project", () => {
   assert.match(create.stdout, /npm run build/);
 
   const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
+  assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
   assert.equal(pkg.scripts.status, "topogram check");
   assert.equal(pkg.scripts.inspect, "topogram check --json");
   assert.equal(pkg.scripts.check, "topogram check");
@@ -111,9 +112,17 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
 
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
+
+  const explain = runNpm(["run", "explain"], projectRoot);
+  assert.equal(explain.status, 0, explain.stderr || explain.stdout);
+  assert.match(explain.stdout, /Topogram app workflow/);
+  assert.match(explain.stdout, /npm run status/);
+  assert.match(explain.stdout, /npm run build/);
+  assert.match(explain.stdout, /npm run verify/);
 
   const check = runNpm(["run", "status"], projectRoot);
   assert.equal(check.status, 0, check.stderr || check.stdout);

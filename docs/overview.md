@@ -31,6 +31,7 @@ Create a starter project outside `engine/`:
 npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
+npm run explain
 npm run status
 npm run build
 npm run verify
