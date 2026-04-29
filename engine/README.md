@@ -26,6 +26,12 @@ topogram build
 
 No global install or published npm package is assumed yet. Create generated projects outside `engine/`; this directory is source and test code.
 
+From the repo root, prefer:
+
+```bash
+npm run create -- ./my-topogram-app
+```
+
 ## Layout
 
 - `src/` - engine source

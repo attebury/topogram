@@ -12,13 +12,13 @@ Use Node 20+.
 
 ```bash
 cd topogram
-npm --prefix ./engine install
+npm install
 ```
 
 Create a starter project outside `engine/`:
 
 ```bash
-node ./engine/src/cli.js create ./my-topogram-app
+npm run create -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run status

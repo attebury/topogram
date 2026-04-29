@@ -614,8 +614,8 @@ try {
       : relativeProjectRoot;
     console.log(`  cd ${displayProjectRoot}`);
     console.log("  npm install");
-    console.log("  npm run check");
-    console.log("  npm run generate");
+    console.log("  npm run status");
+    console.log("  npm run build");
     console.log("  npm run verify");
     process.exit(0);
   }

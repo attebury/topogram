@@ -8,8 +8,8 @@ Use Node 20+.
 
 ```bash
 cd topogram
-npm --prefix ./engine install
-node ./engine/src/cli.js create ./my-topogram-app
+npm install
+npm run create -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run status
@@ -41,9 +41,10 @@ npm run app:runtime-check
 The engine is private and local to this repo, but it exposes the `topogram` bin for local demo consumption:
 
 ```bash
-topogram create ./my-app
-topogram check
-topogram build
+npm run create -- ./my-app
+cd ./my-app
+npm run status
+npm run build
 ```
 
 No global install or published npm package is assumed yet.

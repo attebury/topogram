@@ -19,8 +19,8 @@ For first use, run:
 
 ```bash
 cd topogram
-npm --prefix ./engine install
-node ./engine/src/cli.js create ./my-topogram-app
+npm install
+npm run create -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run status

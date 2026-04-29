@@ -97,6 +97,8 @@ test("topogram new creates a generated app starter project", () => {
   const create = runCli(["new", projectRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
+  assert.match(create.stdout, /npm run status/);
+  assert.match(create.stdout, /npm run build/);
 
   const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   assert.equal(pkg.scripts.status, "topogram check");
@@ -123,6 +125,16 @@ test("topogram new creates a generated app starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "services", "app_api")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "web", "app_sveltekit")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_postgres")), true);
+});
+
+test("repo root create script creates a generated app starter project outside engine", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-root-create-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runNpm(["run", "create", "--", projectRoot], repoRoot);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  assert.match(create.stdout, /Created Topogram project/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), true);
 });
 
 test("topogram new refuses to create generated projects inside engine", () => {
