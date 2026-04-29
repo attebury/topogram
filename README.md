@@ -47,7 +47,6 @@ npm run app:runtime-check
 - `engine/` - Topogram engine, CLI, tests, and fixtures
 - `engine/templates/` - starter Topogram workspaces for `topogram new`
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
-- `demos/generated/todo-demo-app/` - temporary in-repo generated app demo mirror until the private demo repo takes over consumer verification
 - `docs/` - terse first-use docs
 
 ## Engine
@@ -62,6 +61,8 @@ npm run generate
 ```
 
 Publishing is manual through the `Publish CLI Package` GitHub Actions workflow.
+
+The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
 
 ## License
 

@@ -1,3 +1,0 @@
-enum project_status {
-  values [active, archived]
-}

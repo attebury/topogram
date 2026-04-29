@@ -4,7 +4,7 @@ Topogram's current goal is simple: author a Topogram and generate a runnable app
 
 ## Current Scope
 
-The active scope is the private CLI package under `engine/`, engine-owned fixtures under `engine/tests/fixtures/`, and the temporary generated Todo demo mirror under `demos/generated/todo-demo-app/`.
+The active scope is the private CLI package under `engine/` and engine-owned fixtures under `engine/tests/fixtures/`. The generated Todo demo lives in the private `topogram-demo-todo` repo as the package-consumer test.
 
 ## First Run
 
@@ -73,4 +73,4 @@ Treat generated output as disposable. Change the Topogram, then regenerate.
 
 Engine fixtures should live under `engine/tests/fixtures/**`.
 
-The Todo demo is a product workflow proof and should move to the private demo repo as the long-term consumer test. Keep reusable engine tests close to the engine.
+The Todo demo is a product workflow proof in the private `topogram-demo-todo` repo. Keep reusable engine tests close to the engine.

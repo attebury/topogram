@@ -1,3 +1,0 @@
-enum export_job_status {
-  values [accepted, running, completed, failed, expired]
-}

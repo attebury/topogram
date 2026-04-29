@@ -59,4 +59,4 @@ apps/db/<db-id>/
 apps/native/<native-id>/
 ```
 
-The in-repo Todo demo currently mirrors this layout under `demos/generated/todo-demo-app/`, but it is expected to move to a private consumer repo.
+The private `topogram-demo-todo` repo mirrors this layout and owns generated demo verification as a package consumer.

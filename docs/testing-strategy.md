@@ -1,6 +1,6 @@
 # Testing Strategy
 
-Keep the test surface small while Topogram is rebuilt around engine-owned fixtures and generated demos.
+Keep the test surface small while Topogram is rebuilt around engine-owned fixtures and package-consumer demos.
 
 ## Engine
 
@@ -16,7 +16,7 @@ Engine regression fixtures belong under:
 engine/tests/fixtures/
 ```
 
-Engine tests must not import or reference `demos/generated/**`. The generated Todo app is a temporary demo-level verification target, not an engine dependency.
+Engine tests must not import or reference generated demo workspaces. Generated apps are consumer verification targets, not engine dependencies.
 
 ## CLI Package
 
@@ -28,19 +28,17 @@ npm run cli:check
 
 This packs `@attebury/topogram`, installs it into a disposable consumer project, creates a starter with the installed `topogram` binary, then checks and generates the starter.
 
-## Generated Todo Demo
+## Generated Todo Demo Consumer
 
-Run the compile check:
+The generated Todo demo lives in the private `topogram-demo-todo` repo. It consumes `@attebury/topogram` from GitHub Packages and owns the package-consumer workflow:
 
 ```bash
-cd ../demos/generated/todo-demo-app
+cd ../topogram-demo-todo
 npm install
 npm run check
 npm run generate
 npm run verify
 ```
-
-Long term, this check should move to the private todo-demo repo and consume `@attebury/topogram` from GitHub Packages.
 
 Run the smoke path when runtime services and local database state are available:
 

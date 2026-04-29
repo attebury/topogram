@@ -9,7 +9,6 @@ zero_sha="0000000000000000000000000000000000000000"
 
 is_excluded_path() {
   case "$1" in
-    demos/generated/*/app/*) return 0 ;;
     engine/tests/fixtures/expected/*) return 0 ;;
     *) return 1 ;;
   esac

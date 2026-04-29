@@ -5,7 +5,7 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through four 
 1. `Topogram graph`
 2. `realization`
 3. `renderer`
-4. `demo implementation`
+4. `implementation provider`
 
 ## Flow
 
@@ -14,7 +14,7 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through four 
 3. `engine/src/resolver` produces a resolved semantic graph.
 4. `engine/src/realization` derives target-ready realization objects from that graph.
 5. `engine/src/generator` renders files, bundles, and runtime scaffolds from those realizations.
-6. `demos/generated/*/implementation` supplies demo-specific reference behavior that should not live in the generic engine.
+6. Workspace `implementation/` modules supply project-specific reference behavior that should not live in the generic engine.
 
 ## Boundaries
 
@@ -28,8 +28,8 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through four 
 - Consumes realization objects and generic generator inputs.
 - Should be target-aware, not example-aware.
 
-`demos/generated/*/implementation`
-- Owns demo-specific runtime/reference behavior.
+Workspace `implementation/`
+- Owns project-specific runtime/reference behavior.
 - Can include seed data, custom page renderers, repository implementations, and runtime-check specifics.
 - Must not be treated as engine contracts.
 
@@ -50,4 +50,4 @@ Renderers should consume these contracts instead of rediscovering domain meaning
 The active repo proof target is intentionally small:
 
 - `engine/tests/fixtures/workspaces/app-basic`: engine-owned authoring-to-app fixture
-- `demos/generated/todo-demo-app`: canonical user-facing generated app demo
+- Private `topogram-demo-todo` repo: package-consumer generated app demo

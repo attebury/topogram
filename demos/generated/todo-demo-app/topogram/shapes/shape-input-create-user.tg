@@ -1,6 +1,0 @@
-shape shape_input_create_user from entity_user {
-  name "Create User Input"
-  description "Fields accepted when creating a user"
-  include [email, display_name, is_active]
-  status active
-}
