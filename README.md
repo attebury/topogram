@@ -32,9 +32,16 @@ npm run verify
 ```
 
 The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
-with two pages and one workflow doc. Other built-ins cover `hello-api`,
-`hello-db`, `web-api`, and `web-api-db`; inspect them with `topogram template
-list` or `topogram template show <id>`.
+with two pages and one workflow doc. Use `topogram template list` and
+`topogram template show <id>` to choose a starter:
+
+| Template | Stack | Use When |
+| --- | --- | --- |
+| `hello-web` | Vanilla HTML/CSS/JS | You want the smallest generated web app. |
+| `hello-api` | Hono | You want API topology without web or database surfaces. |
+| `hello-db` | SQLite | You want database lifecycle output only. |
+| `web-api` | React + Express | You want a web/API starter without a database. |
+| `web-api-db` | SvelteKit + Hono + Postgres | You want the heavier full-stack starter. |
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
@@ -58,13 +65,13 @@ topogram template show todo
 topogram template status --latest
 topogram template policy check
 topogram template policy init
-topogram template policy pin @attebury/topogram-template-todo@0.1.5
+topogram template policy pin @attebury/topogram-template-todo@0.1.6
 topogram template update --status
 topogram template update --recommend
 topogram template update --recommend --latest
 topogram template update --plan
 topogram template update --check
-topogram template update --plan --template @attebury/topogram-template-todo@0.1.5
+topogram template update --plan --template @attebury/topogram-template-todo@0.1.6
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
@@ -114,7 +121,7 @@ Validate a reusable template pack:
 
 ```bash
 topogram template check ./my-template
-topogram template check @attebury/topogram-template-todo@0.1.5 --json
+topogram template check @attebury/topogram-template-todo@0.1.6 --json
 ```
 
 Template checks create a temporary starter, run `topogram check` behavior,
@@ -182,7 +189,7 @@ npm run app:runtime
 ## Repo Layout
 
 - `engine/` - Topogram engine, CLI, tests, and fixtures
-- `engine/templates/` - minimal built-in starter template for `topogram new`
+- `engine/templates/` - built-in starter templates for `topogram new`
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `docs/` - terse first-use docs
 

@@ -170,6 +170,7 @@ function printUsage(options = {}) {
   console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
+  console.log("Default starter: hello-web. Run `topogram template list` to choose another starter.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -907,7 +908,8 @@ function buildTemplateListPayload(options = {}) {
 function printTemplateList(payload) {
   console.log("Available templates:");
   for (const template of payload.templates) {
-    console.log(`- ${template.id}@${template.version}`);
+    const defaultLabel = template.isDefault ? " (default)" : "";
+    console.log(`- ${template.id}@${template.version}${defaultLabel}`);
     console.log(`  source: ${template.source}`);
     console.log(`  name: ${template.name}`);
     if (template.package) {
@@ -915,6 +917,12 @@ function printTemplateList(payload) {
     }
     if (template.description) {
       console.log(`  description: ${template.description}`);
+    }
+    if (template.stack) {
+      console.log(`  stack: ${template.stack}`);
+    }
+    if (Array.isArray(template.surfaces) && template.surfaces.length > 0) {
+      console.log(`  surfaces: ${template.surfaces.join(", ")}`);
     }
     console.log(`  executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
   }
@@ -943,6 +951,11 @@ function buildTemplateShowPayload(id, source) {
         name: builtIn.name,
         version: builtIn.version,
         source: builtIn.source,
+        description: builtIn.description,
+        isDefault: builtIn.isDefault,
+        surfaces: builtIn.surfaces,
+        generators: builtIn.generators,
+        stack: builtIn.stack,
         includesExecutableImplementation: builtIn.includesExecutableImplementation
       },
       packageSpec: null,
@@ -1033,7 +1046,8 @@ function printTemplateShow(payload) {
   console.log(`Template: ${template.id}`);
   console.log(`Source: ${payload.source}`);
   if (template.name) {
-    console.log(`Name: ${template.name}`);
+    const defaultLabel = template.isDefault ? " (default)" : "";
+    console.log(`Name: ${template.name}${defaultLabel}`);
   }
   if (payload.catalog.source) {
     console.log(`Catalog: ${payload.catalog.source}`);
@@ -1043,6 +1057,15 @@ function printTemplateShow(payload) {
   }
   if (template.description) {
     console.log(`Description: ${template.description}`);
+  }
+  if (template.stack) {
+    console.log(`Stack: ${template.stack}`);
+  }
+  if (Array.isArray(template.surfaces) && template.surfaces.length > 0) {
+    console.log(`Surfaces: ${template.surfaces.join(", ")}`);
+  }
+  if (Array.isArray(template.generators) && template.generators.length > 0) {
+    console.log(`Generators: ${template.generators.join(", ")}`);
   }
   if (Array.isArray(template.tags) && template.tags.length > 0) {
     console.log(`Tags: ${template.tags.join(", ")}`);

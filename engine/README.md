@@ -52,7 +52,7 @@ npm run new -- ./my-topogram-app
 ## Layout
 
 - `src/` - engine source
-- `templates/` - minimal built-in starter template for `topogram new`
+- `templates/` - built-in starter templates for `topogram new`
 - `tests/active/` - retained active engine tests
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
@@ -79,10 +79,18 @@ Run the engine gate:
 npm run check
 ```
 
-Create a starter project from the built-in neutral Hello-resource template:
+Create a starter project from the default built-in `hello-web` template:
 
 ```bash
 npm run new -- ../my-topogram-app
+```
+
+Choose another built-in starter with the template commands:
+
+```bash
+topogram template list
+topogram template show web-api
+topogram new ../web-api-demo --template web-api
 ```
 
 Create a starter project from a shared template package:

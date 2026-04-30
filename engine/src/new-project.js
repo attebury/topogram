@@ -16,6 +16,23 @@ const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
 const MAX_TEXT_DIFF_BYTES = 256 * 1024;
 
+const GENERATOR_LABELS = new Map([
+  ["topogram/express", "Express"],
+  ["topogram/hono", "Hono"],
+  ["topogram/postgres", "Postgres"],
+  ["topogram/react", "React"],
+  ["topogram/sqlite", "SQLite"],
+  ["topogram/sveltekit", "SvelteKit"],
+  ["topogram/vanilla-web", "Vanilla HTML/CSS/JS"]
+]);
+
+const SURFACE_ORDER = new Map([
+  ["web", 10],
+  ["api", 20],
+  ["database", 30],
+  ["native", 40]
+]);
+
 /**
  * @typedef {Object} CreateNewProjectOptions
  * @property {string} targetPath
@@ -52,6 +69,13 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {string} topogramVersion
  * @property {boolean} [includesExecutableImplementation]
  * @property {string} [description]
+ */
+
+/**
+ * @typedef {Object} TemplateTopologySummary
+ * @property {string[]} surfaces
+ * @property {string[]} generators
+ * @property {string} stack
  */
 
 /**
@@ -269,19 +293,71 @@ function validateTemplateRoot(templateRoot) {
 }
 
 /**
+ * @param {string} generatorId
+ * @returns {string}
+ */
+function generatorLabel(generatorId) {
+  return GENERATOR_LABELS.get(generatorId) || generatorId.replace(/^topogram\//, "");
+}
+
+/**
+ * @param {string} templateRoot
+ * @returns {TemplateTopologySummary}
+ */
+function summarizeTemplateTopology(templateRoot) {
+  const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  const rawComponents = /** @type {any[]} */ (
+    Array.isArray(projectConfig.topology?.components) ? projectConfig.topology.components : []
+  );
+  /** @type {Array<Record<string, any>>} */
+  const components = [];
+  for (const component of rawComponents) {
+    if (component && typeof component === "object" && typeof component.type === "string") {
+      components.push(/** @type {Record<string, any>} */ (component));
+    }
+  }
+  const sortedComponents = [...components].sort((a, b) => {
+    const aOrder = SURFACE_ORDER.get(a.type) ?? 100;
+    const bOrder = SURFACE_ORDER.get(b.type) ?? 100;
+    return aOrder - bOrder;
+  });
+  const surfaces = [...new Set(sortedComponents.map((component) => String(component.type)))];
+  const generators = [
+    ...new Set(
+      sortedComponents
+        .map((component) => component.generator?.id)
+        .filter((generatorId) => typeof generatorId === "string")
+        .map((generatorId) => String(generatorId))
+    )
+  ];
+  return {
+    surfaces,
+    generators,
+    stack: generators.map(generatorLabel).join(" + ")
+  };
+}
+
+/**
  * @param {string} templatesRoot
- * @returns {Array<{ id: string, version: string, source: "builtin", name: string, includesExecutableImplementation: boolean, path: string }>}
+ * @returns {Array<{ id: string, version: string, source: "builtin", name: string, description: string|null, includesExecutableImplementation: boolean, isDefault: boolean, surfaces: string[], generators: string[], stack: string, path: string }>}
  */
 export function listBuiltInTemplates(templatesRoot) {
   return [...TEMPLATE_NAMES].sort((a, b) => a.localeCompare(b)).map((name) => {
     const templateRoot = path.join(templatesRoot, name);
     const manifest = validateTemplateRoot(templateRoot);
+    const topology = summarizeTemplateTopology(templateRoot);
     return {
       id: manifest.id,
       version: manifest.version,
       source: "builtin",
       name,
+      description: manifest.description || null,
       includesExecutableImplementation: Boolean(manifest.includesExecutableImplementation),
+      isDefault: name === DEFAULT_TEMPLATE_NAME,
+      surfaces: topology.surfaces,
+      generators: topology.generators,
+      stack: topology.stack,
       path: templateRoot
     };
   });

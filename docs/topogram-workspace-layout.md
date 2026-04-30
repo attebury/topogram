@@ -32,6 +32,9 @@ template packs use the same layout with `topogram-template.json`, `topogram/`,
 `topogram.project.json`, and optional trusted `implementation/` code. See
 `docs/template-authoring.md`.
 
+Use `topogram template list` for a quick stack/surface summary and
+`topogram template show <id>` for the exact `topogram new` command.
+
 ## Generated Workspace
 
 ```text

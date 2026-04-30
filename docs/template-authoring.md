@@ -64,9 +64,13 @@ topogram new ./web-api --template web-api
 topogram new ./web-api-db --template web-api-db
 ```
 
-`hello-web` is the default and uses vanilla HTML/CSS/JS. `web-api` uses React
-and Express. `web-api-db` remains the heavier SvelteKit, Hono, and Postgres
-starter.
+| Template | Surfaces | Stack | Notes |
+| --- | --- | --- | --- |
+| `hello-web` | web | Vanilla HTML/CSS/JS | Default starter, two pages, one workflow doc. |
+| `hello-api` | api | Hono | API-only topology. |
+| `hello-db` | database | SQLite | Database lifecycle output only. |
+| `web-api` | web, api | React + Express | Executable implementation starter without a database. |
+| `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
 
 Use a local template:
 
@@ -96,7 +100,7 @@ topogram new ./todo-demo --template todo
 ```
 
 Catalog aliases resolve to package specs such as
-`@attebury/topogram-template-todo@0.1.5`. The catalog is only an index; the
+`@attebury/topogram-template-todo@0.1.6`. The catalog is only an index; the
 template package remains the source of versioned starter content. See
 [Catalog](./catalog.md).
 

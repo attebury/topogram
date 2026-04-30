@@ -60,13 +60,13 @@ metadata. `topogram.project.json` records:
   "template": {
     "source": "package",
     "requested": "todo",
-    "sourceSpec": "@attebury/topogram-template-todo@0.1.5",
+    "sourceSpec": "@attebury/topogram-template-todo@0.1.6",
     "catalog": {
       "id": "todo",
       "source": "github:attebury/topograms/topograms.catalog.json",
       "package": "@attebury/topogram-template-todo",
-      "version": "0.1.5",
-      "packageSpec": "@attebury/topogram-template-todo@0.1.5"
+      "version": "0.1.6",
+      "packageSpec": "@attebury/topogram-template-todo@0.1.6"
     }
   }
 }
@@ -119,7 +119,7 @@ Set `TOPOGRAM_CATALOG_SOURCE=none` to list only built-in templates.
       "id": "todo",
       "kind": "template",
       "package": "@attebury/topogram-template-todo",
-      "defaultVersion": "0.1.5",
+      "defaultVersion": "0.1.6",
       "description": "Todo app starter",
       "tags": ["todo", "sveltekit", "hono", "postgres"],
       "trust": {

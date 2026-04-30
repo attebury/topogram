@@ -214,6 +214,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
   assert.match(help.stdout, /topogram template show todo/);
+  assert.match(help.stdout, /Default starter: hello-web/);
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
@@ -227,6 +228,13 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(listPayload.templates.some((template) => template.id === "topogram/hello-db" && template.source === "builtin"), true);
   assert.equal(listPayload.templates.some((template) => template.id === "topogram/web-api" && template.source === "builtin"), true);
   assert.equal(listPayload.templates.some((template) => template.id === "topogram/web-api-db" && template.source === "builtin"), true);
+  const helloWebTemplate = listPayload.templates.find((template) => template.id === "topogram/hello-web");
+  assert.equal(helloWebTemplate.isDefault, true);
+  assert.equal(helloWebTemplate.stack, "Vanilla HTML/CSS/JS");
+  assert.deepEqual(helloWebTemplate.surfaces, ["web"]);
+  const webApiTemplate = listPayload.templates.find((template) => template.id === "topogram/web-api");
+  assert.equal(webApiTemplate.stack, "React + Express");
+  assert.deepEqual(webApiTemplate.surfaces, ["web", "api"]);
 
   const check = runCli(["check", fixtureRoot]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -456,7 +464,17 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.equal(builtinPayload.ok, true);
   assert.equal(builtinPayload.source, "builtin");
   assert.equal(builtinPayload.template.id, "topogram/hello-web");
+  assert.equal(builtinPayload.template.description, "Vanilla HTML/CSS/JS starter with two pages and one workflow.");
+  assert.equal(builtinPayload.template.isDefault, true);
+  assert.equal(builtinPayload.template.stack, "Vanilla HTML/CSS/JS");
+  assert.deepEqual(builtinPayload.template.generators, ["topogram/vanilla-web"]);
+  assert.deepEqual(builtinPayload.template.surfaces, ["web"]);
   assert.equal(builtinPayload.commands.primary, "topogram new ./my-app --template hello-web");
+
+  const builtinHuman = runCli(["template", "show", "web-api"]);
+  assert.equal(builtinHuman.status, 0, builtinHuman.stderr || builtinHuman.stdout);
+  assert.match(builtinHuman.stdout, /Stack: React \+ Express/);
+  assert.match(builtinHuman.stdout, /Surfaces: web, api/);
 
   const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
@@ -543,11 +561,11 @@ test("package-backed template installs explain private package auth failures", (
     "npm",
     "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
   );
-  const create = runCli(["new", projectRoot, "--template", "@attebury/topogram-template-todo@0.1.5"], {
+  const create = runCli(["new", projectRoot, "--template", "@attebury/topogram-template-todo@0.1.6"], {
     env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(create.status, 0, create.stdout);
-  assert.match(create.stderr, /Authentication is required to install template package '@attebury\/topogram-template-todo@0\.1\.5'/);
+  assert.match(create.stderr, /Authentication is required to install template package '@attebury\/topogram-template-todo@0\.1\.6'/);
   assert.match(create.stderr, /NODE_AUTH_TOKEN/);
   assert.match(create.stderr, /Manage Actions access/);
 
