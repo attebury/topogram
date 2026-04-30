@@ -122,6 +122,9 @@ Set `TOPOGRAM_CATALOG_SOURCE=none` to list only built-in templates.
       "defaultVersion": "0.1.6",
       "description": "Todo app starter",
       "tags": ["todo", "sveltekit", "hono", "postgres"],
+      "surfaces": ["web", "api", "database"],
+      "generators": ["topogram/sveltekit", "topogram/hono", "topogram/postgres"],
+      "stack": "SvelteKit + Hono + Postgres",
       "trust": {
         "scope": "@attebury",
         "includesExecutableImplementation": true,
@@ -140,6 +143,10 @@ Required entry fields:
 - `defaultVersion` is the exact version or dist-tag used by default.
 - `description` is human-facing catalog text.
 - `tags` is an array of search/filter labels.
+- `surfaces` is an optional array used by `topogram template list/show` to
+  describe what the template creates without installing the package.
+- `generators` is an optional array of generator ids used by the template.
+- `stack` is an optional short human-facing stack label.
 - `trust.scope` names the package scope or trust boundary.
 - `trust.includesExecutableImplementation` is the visible v1 trust signal.
 

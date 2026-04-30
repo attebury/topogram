@@ -26,6 +26,9 @@ export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
  * @property {string} defaultVersion
  * @property {string} description
  * @property {string[]} tags
+ * @property {string[]} [surfaces]
+ * @property {string[]} [generators]
+ * @property {string} [stack]
  * @property {CatalogTrust} trust
  */
 
@@ -157,6 +160,9 @@ export function validateCatalog(value, source = "") {
     const defaultVersion = stringField(entry, "defaultVersion");
     const description = stringField(entry, "description");
     const tags = Array.isArray(entry.tags) ? entry.tags.map(String).filter(Boolean) : [];
+    const surfaces = Array.isArray(entry.surfaces) ? entry.surfaces.map(String).filter(Boolean) : [];
+    const generators = Array.isArray(entry.generators) ? entry.generators.map(String).filter(Boolean) : [];
+    const stack = stringField(entry, "stack");
     const trust = trustField(entry.trust);
 
     for (const field of ["id", "kind", "package", "defaultVersion", "description"]) {
@@ -235,6 +241,9 @@ export function validateCatalog(value, source = "") {
       defaultVersion,
       description,
       tags,
+      ...(surfaces.length > 0 ? { surfaces } : {}),
+      ...(generators.length > 0 ? { generators } : {}),
+      ...(stack ? { stack } : {}),
       trust: trust || { scope: "", includesExecutableImplementation: false }
     });
   });
@@ -455,7 +464,7 @@ export function catalogEntryPackageSpec(entry, version = null) {
 
 /**
  * @param {CatalogEntry} entry
- * @returns {{ id: string, version: string, source: "catalog", name: string, package: string, defaultVersion: string, description: string, tags: string[], includesExecutableImplementation: boolean, trust: CatalogTrust }}
+ * @returns {{ id: string, version: string, source: "catalog", name: string, package: string, defaultVersion: string, description: string, tags: string[], surfaces?: string[], generators?: string[], stack?: string, includesExecutableImplementation: boolean, trust: CatalogTrust }}
  */
 export function catalogTemplateListItem(entry) {
   return {
@@ -467,6 +476,9 @@ export function catalogTemplateListItem(entry) {
     defaultVersion: entry.defaultVersion,
     description: entry.description,
     tags: entry.tags,
+    ...(entry.surfaces ? { surfaces: entry.surfaces } : {}),
+    ...(entry.generators ? { generators: entry.generators } : {}),
+    ...(entry.stack ? { stack: entry.stack } : {}),
     includesExecutableImplementation: entry.trust.includesExecutableImplementation,
     trust: entry.trust
   };

@@ -78,6 +78,9 @@ function catalogEntry(overrides = {}) {
     defaultVersion: "0.1.0",
     description: "Todo starter",
     tags: ["todo", "demo"],
+    surfaces: ["web", "api", "database"],
+    generators: ["topogram/sveltekit", "topogram/hono", "topogram/postgres"],
+    stack: "SvelteKit + Hono + Postgres",
     trust: {
       scope: "@scope",
       includesExecutableImplementation: true,
@@ -470,12 +473,19 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.equal(builtinPayload.template.stack, "Vanilla HTML/CSS/JS");
   assert.deepEqual(builtinPayload.template.generators, ["topogram/vanilla-web"]);
   assert.deepEqual(builtinPayload.template.surfaces, ["web"]);
+  assert.deepEqual(builtinPayload.decision.surfaces, ["web"]);
+  assert.equal(builtinPayload.decision.stack, "Vanilla HTML/CSS/JS");
+  assert.deepEqual(builtinPayload.decision.generators, ["topogram/vanilla-web"]);
+  assert.equal(builtinPayload.decision.packageSpec, null);
+  assert.equal(builtinPayload.decision.executableImplementation, false);
   assert.equal(builtinPayload.commands.primary, "topogram new ./my-app --template hello-web");
 
   const builtinHuman = runCli(["template", "show", "web-api"]);
   assert.equal(builtinHuman.status, 0, builtinHuman.stderr || builtinHuman.stdout);
+  assert.match(builtinHuman.stdout, /What it creates:/);
   assert.match(builtinHuman.stdout, /Stack: React \+ Express/);
   assert.match(builtinHuman.stdout, /Surfaces: web, api/);
+  assert.match(builtinHuman.stdout, /Trust\/policy: Copies implementation\/ code/);
 
   const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
@@ -484,6 +494,11 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.equal(templatePayload.source, "catalog");
   assert.equal(templatePayload.template.kind, "template");
   assert.equal(templatePayload.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.deepEqual(templatePayload.decision.surfaces, ["web", "api", "database"]);
+  assert.equal(templatePayload.decision.stack, "SvelteKit + Hono + Postgres");
+  assert.deepEqual(templatePayload.decision.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
+  assert.equal(templatePayload.decision.executableImplementation, true);
+  assert.match(templatePayload.decision.trustImpact, /Copies implementation\/ code/);
   assert.equal(
     templatePayload.commands.primary,
     `topogram new ./my-app --template todo --catalog ${catalogPath}`
@@ -493,6 +508,11 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Template: todo/);
   assert.match(human.stdout, /Source: catalog/);
+  assert.match(human.stdout, /What it creates:/);
+  assert.match(human.stdout, /Surfaces: web, api, database/);
+  assert.match(human.stdout, /Stack: SvelteKit \+ Hono \+ Postgres/);
+  assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(human.stdout, /Trust\/policy: Copies implementation\/ code/);
   assert.match(human.stdout, /Recommended command:/);
   assert.match(human.stdout, /topogram new \.\/my-app --template todo/);
 

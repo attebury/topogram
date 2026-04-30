@@ -940,9 +940,51 @@ function printTemplateList(payload) {
 }
 
 /**
+ * @param {Record<string, any>} template
+ * @param {"builtin"|"catalog"} sourceKind
+ * @param {string|null} packageSpec
+ * @param {{ primary: string|null, followUp: string[] }} commands
+ * @returns {{ surfaces: string[], generators: string[], stack: string|null, packageSpec: string|null, packageName: string|null, version: string|null, executableImplementation: boolean, trustImpact: string, recommendedCommand: string|null, followUp: string[], notes: string[] }}
+ */
+function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
+  const trust = template.trust && typeof template.trust === "object" ? template.trust : null;
+  const executable = trust
+    ? Boolean(trust.includesExecutableImplementation)
+    : Boolean(template.includesExecutableImplementation);
+  const surfaces = Array.isArray(template.surfaces) ? template.surfaces : [];
+  const generators = Array.isArray(template.generators) ? template.generators : [];
+  const stack = typeof template.stack === "string" && template.stack ? template.stack : null;
+  const notes = [];
+  if (sourceKind === "catalog") {
+    notes.push("Catalog templates resolve to versioned package installs; the catalog is an index, not the template payload.");
+  }
+  if (surfaces.length === 0) {
+    notes.push("Surface metadata is not declared in this catalog entry.");
+  }
+  if (generators.length === 0) {
+    notes.push("Generator metadata is not declared in this catalog entry.");
+  }
+  return {
+    surfaces,
+    generators,
+    stack,
+    packageSpec,
+    packageName: template.package || (packageSpec ? packageNameFromPackageSpec(packageSpec) : null),
+    version: template.defaultVersion || template.version || null,
+    executableImplementation: executable,
+    trustImpact: executable
+      ? "Copies implementation/ code into the project; topogram new does not execute it, but topogram generate may load it after local trust is recorded."
+      : "No executable implementation trust is required for this template.",
+    recommendedCommand: commands.primary,
+    followUp: commands.followUp,
+    notes
+  };
+}
+
+/**
  * @param {string} id
  * @param {string|null} source
- * @returns {{ ok: boolean, source: "builtin"|"catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, source: "builtin"|"catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, decision: ReturnType<typeof templateDecisionSummary>|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
  */
 function buildTemplateShowPayload(id, source) {
   if (!id || id.startsWith("-")) {
@@ -950,32 +992,35 @@ function buildTemplateShowPayload(id, source) {
   }
   const builtIn = listBuiltInTemplates(TEMPLATES_ROOT).find((template) => template.id === id || template.name === id);
   if (builtIn) {
+    const commands = {
+      primary: `topogram new ./my-app --template ${shellCommandArg(builtIn.name)}`,
+      followUp: [
+        "cd ./my-app",
+        "npm install",
+        "npm run check",
+        "npm run generate"
+      ]
+    };
+    const template = {
+      id: builtIn.id,
+      name: builtIn.name,
+      version: builtIn.version,
+      source: builtIn.source,
+      description: builtIn.description,
+      isDefault: builtIn.isDefault,
+      surfaces: builtIn.surfaces,
+      generators: builtIn.generators,
+      stack: builtIn.stack,
+      includesExecutableImplementation: builtIn.includesExecutableImplementation
+    };
     return {
       ok: true,
       source: "builtin",
       catalog: { source: null, version: null },
-      template: {
-        id: builtIn.id,
-        name: builtIn.name,
-        version: builtIn.version,
-        source: builtIn.source,
-        description: builtIn.description,
-        isDefault: builtIn.isDefault,
-        surfaces: builtIn.surfaces,
-        generators: builtIn.generators,
-        stack: builtIn.stack,
-        includesExecutableImplementation: builtIn.includesExecutableImplementation
-      },
+      template,
       packageSpec: null,
-      commands: {
-        primary: `topogram new ./my-app --template ${shellCommandArg(builtIn.name)}`,
-        followUp: [
-          "cd ./my-app",
-          "npm install",
-          "npm run check",
-          "npm run generate"
-        ]
-      },
+      decision: templateDecisionSummary(template, "builtin", null, commands),
+      commands,
       diagnostics: [],
       errors: []
     };
@@ -992,6 +1037,7 @@ function buildTemplateShowPayload(id, source) {
       },
       template: null,
       packageSpec: null,
+      decision: null,
       commands: { primary: null, followUp: [] },
       diagnostics: catalogPayload.diagnostics,
       errors: catalogPayload.errors
@@ -1014,6 +1060,7 @@ function buildTemplateShowPayload(id, source) {
       },
       template: catalogPayload.entry,
       packageSpec: catalogPayload.packageSpec,
+      decision: null,
       commands: catalogPayload.commands,
       diagnostics: [...catalogPayload.diagnostics, diagnostic],
       errors: [diagnostic.message]
@@ -1028,6 +1075,7 @@ function buildTemplateShowPayload(id, source) {
     },
     template: catalogPayload.entry,
     packageSpec: catalogPayload.packageSpec,
+    decision: templateDecisionSummary(catalogPayload.entry, "catalog", catalogPayload.packageSpec, catalogPayload.commands),
     commands: catalogPayload.commands,
     diagnostics: catalogPayload.diagnostics,
     errors: []
@@ -1066,14 +1114,36 @@ function printTemplateShow(payload) {
   if (template.description) {
     console.log(`Description: ${template.description}`);
   }
-  if (template.stack) {
-    console.log(`Stack: ${template.stack}`);
+  if (payload.decision) {
+    console.log("");
+    console.log("What it creates:");
+    console.log(`  Surfaces: ${payload.decision.surfaces.join(", ") || "not declared"}`);
+    console.log(`  Stack: ${payload.decision.stack || "not declared"}`);
+    console.log(`  Generators: ${payload.decision.generators.join(", ") || "not declared"}`);
+    if (payload.decision.packageSpec) {
+      console.log(`  Package: ${payload.decision.packageSpec}`);
+    } else {
+      console.log("  Package: built-in");
+    }
+    console.log(`  Executable implementation: ${payload.decision.executableImplementation ? "yes" : "no"}`);
+    console.log(`  Trust/policy: ${payload.decision.trustImpact}`);
+    for (const note of payload.decision.notes) {
+      console.log(`  Note: ${note}`);
+    }
   }
-  if (Array.isArray(template.surfaces) && template.surfaces.length > 0) {
-    console.log(`Surfaces: ${template.surfaces.join(", ")}`);
+  const legacyStack = payload.decision?.stack || template.stack;
+  const legacySurfaces = payload.decision?.surfaces || template.surfaces;
+  const legacyGenerators = payload.decision?.generators || template.generators;
+  console.log("");
+  console.log("Details:");
+  if (legacyStack) {
+    console.log(`Stack: ${legacyStack}`);
   }
-  if (Array.isArray(template.generators) && template.generators.length > 0) {
-    console.log(`Generators: ${template.generators.join(", ")}`);
+  if (Array.isArray(legacySurfaces) && legacySurfaces.length > 0) {
+    console.log(`Surfaces: ${legacySurfaces.join(", ")}`);
+  }
+  if (Array.isArray(legacyGenerators) && legacyGenerators.length > 0) {
+    console.log(`Generators: ${legacyGenerators.join(", ")}`);
   }
   if (Array.isArray(template.tags) && template.tags.length > 0) {
     console.log(`Tags: ${template.tags.join(", ")}`);
