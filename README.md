@@ -14,6 +14,7 @@ export NODE_AUTH_TOKEN=<github-token-with-package-read>
 npm config set @attebury:registry https://npm.pkg.github.com
 npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
 npm install --save-dev @attebury/topogram
+npx topogram doctor
 ```
 
 Choose your starting point:
@@ -104,6 +105,7 @@ Inspect, plan, or apply a template update:
 ```bash
 topogram catalog list
 topogram catalog show todo
+topogram doctor
 topogram catalog doctor
 topogram catalog show hello
 topogram catalog check topograms.catalog.json
@@ -215,14 +217,15 @@ catalog source 404s. For private package consumers, configure `.npmrc` with the
 GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
 read access.
 
-Use `topogram catalog doctor` when setup is unclear. It checks catalog
-reachability, GitHub token or `gh auth` readiness for private GitHub catalog
-sources, and npm package access for each catalog entry:
+Use `topogram doctor` when setup is unclear. It checks Node.js, npm, GitHub
+Packages registry configuration, `NODE_AUTH_TOKEN`, Topogram CLI package
+access, catalog reachability, GitHub token or `gh auth` readiness for private
+GitHub catalog sources, and npm package access for each catalog entry:
 
 ```bash
-topogram catalog doctor
-topogram catalog doctor --json
-topogram catalog doctor --catalog ./topograms.catalog.json
+topogram doctor
+topogram doctor --json
+topogram doctor --catalog ./topograms.catalog.json
 ```
 
 Clean-machine private template flow:
@@ -233,6 +236,7 @@ npm config set @attebury:registry https://npm.pkg.github.com
 npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
 npm install --global @attebury/topogram
 gh auth login
+topogram doctor
 topogram template list
 topogram catalog show todo
 topogram new ./todo-demo --template todo
@@ -250,7 +254,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.43
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.44
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then

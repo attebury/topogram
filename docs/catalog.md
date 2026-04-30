@@ -42,6 +42,17 @@ topogram catalog doctor --catalog ./topograms.catalog.json
 `gh auth` readiness for private GitHub catalog sources, and checks each entry's
 package/version with npm. It is read-only and does not install packages.
 
+For a complete new-user setup check, prefer the top-level doctor:
+
+```bash
+topogram doctor
+topogram doctor --json
+topogram doctor --catalog ./topograms.catalog.json
+```
+
+`topogram doctor` also checks Node.js, npm, GitHub Packages registry
+configuration, `NODE_AUTH_TOKEN`, and access to the installed CLI package.
+
 Validate a local or remote catalog:
 
 ```bash

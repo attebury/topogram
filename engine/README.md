@@ -21,13 +21,14 @@ This lets source checkouts and private-package consumers call:
 
 ```bash
 topogram new ../my-app
+topogram doctor
 topogram check
 topogram generate
 topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
-topogram package update-cli 0.2.43
+topogram package update-cli 0.2.44
 topogram source status ../hello-topogram
 topogram template list
 topogram template status

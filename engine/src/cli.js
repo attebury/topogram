@@ -117,6 +117,7 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 
 function printUsage(options = {}) {
   const { all = false } = options;
+  console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram trust template [path]");
@@ -141,6 +142,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram new <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
+  console.log("  topogram doctor");
   console.log("  topogram new ./my-app");
   console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
@@ -160,7 +162,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.43");
+  console.log("  topogram package update-cli 0.2.44");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -585,7 +587,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.43.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.44.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -664,6 +666,263 @@ function printPackageUpdateCli(payload) {
   console.log(`  git commit -am "Update Topogram CLI to ${payload.requestedVersion}"`);
   console.log("  git push");
   console.log("  confirm Demo Verification passes");
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, githubPackages: { registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
+ */
+function buildDoctorPayload(source) {
+  const node = checkDoctorNode();
+  const npm = checkDoctorNpm();
+  const configuredRegistry = npm.available ? npmConfigGet("@attebury:registry") : null;
+  const registryConfigured = normalizeRegistryUrl(configuredRegistry) === normalizeRegistryUrl(GITHUB_PACKAGES_REGISTRY);
+  const registryDiagnostics = [];
+  if (npm.available && !registryConfigured) {
+    registryDiagnostics.push({
+      code: "github_packages_registry_not_configured",
+      severity: "error",
+      message: `npm is not configured to resolve @attebury packages from ${GITHUB_PACKAGES_REGISTRY}.`,
+      path: ".npmrc",
+      suggestedFix: "Run `npm config set @attebury:registry https://npm.pkg.github.com`, then rerun `topogram doctor`."
+    });
+  }
+  const packageSpec = `${CLI_PACKAGE_NAME}@${readInstalledCliPackageVersion()}`;
+  const packageAccess = npm.available
+    ? checkDoctorPackageAccess(packageSpec)
+    : {
+        ok: false,
+        checkedVersion: null,
+        diagnostics: [{
+          code: "npm_not_found",
+          severity: "error",
+          message: "npm is required to inspect the Topogram CLI package.",
+          path: null,
+          suggestedFix: "Install Node.js/npm, then rerun `topogram doctor`."
+        }]
+      };
+  const catalog = buildCatalogDoctorPayload(source);
+  const tokenDiagnostics = [];
+  if (!process.env.NODE_AUTH_TOKEN) {
+    tokenDiagnostics.push({
+      code: "node_auth_token_missing",
+      severity: "warning",
+      message: "NODE_AUTH_TOKEN is not set. npm may still work if GitHub Packages auth is configured globally.",
+      path: null,
+      suggestedFix: "Run with NODE_AUTH_TOKEN=<github-token-with-package-read> when npm needs GitHub Packages access."
+    });
+  }
+  const diagnostics = [
+    ...node.diagnostics,
+    ...npm.diagnostics,
+    ...registryDiagnostics,
+    ...tokenDiagnostics,
+    ...packageAccess.diagnostics,
+    ...catalog.diagnostics
+  ];
+  const errors = diagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    node,
+    npm,
+    githubPackages: {
+      registry: GITHUB_PACKAGES_REGISTRY,
+      configuredRegistry,
+      registryConfigured,
+      nodeAuthTokenEnv: Boolean(process.env.NODE_AUTH_TOKEN),
+      packageName: CLI_PACKAGE_NAME,
+      packageSpec,
+      packageAccess
+    },
+    catalog,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @returns {{ version: string, minimum: string, ok: boolean, diagnostics: any[] }}
+ */
+function checkDoctorNode() {
+  const version = process.version;
+  const minimum = "20.0.0";
+  const ok = compareSemver(version.replace(/^v/, ""), minimum) >= 0;
+  return {
+    version,
+    minimum: `>=${minimum}`,
+    ok,
+    diagnostics: ok ? [] : [{
+      code: "node_version_unsupported",
+      severity: "error",
+      message: `Topogram requires Node.js >=${minimum}; current version is ${version}.`,
+      path: null,
+      suggestedFix: "Install Node.js 20 or newer."
+    }]
+  };
+}
+
+/**
+ * @returns {{ available: boolean, version: string|null, diagnostics: any[] }}
+ */
+function checkDoctorNpm() {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const result = childProcess.spawnSync(npmBin, ["--version"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: process.env.PATH || ""
+    }
+  });
+  if (result.status === 0) {
+    return {
+      available: true,
+      version: String(result.stdout || "").trim() || null,
+      diagnostics: []
+    };
+  }
+  return {
+    available: false,
+    version: null,
+    diagnostics: [{
+      code: "npm_not_found",
+      severity: "error",
+      message: "npm was not found on PATH.",
+      path: null,
+      suggestedFix: "Install Node.js/npm, then rerun `topogram doctor`."
+    }]
+  };
+}
+
+/**
+ * @returns {string}
+ */
+function readInstalledCliPackageVersion() {
+  const packagePath = path.join(ENGINE_ROOT, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return "0.0.0";
+  }
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  return typeof pkg.version === "string" ? pkg.version : "0.0.0";
+}
+
+/**
+ * @param {string} key
+ * @returns {string|null}
+ */
+function npmConfigGet(key) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const result = childProcess.spawnSync(npmBin, ["config", "get", key], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: process.env.PATH || ""
+    }
+  });
+  if (result.status !== 0) {
+    return null;
+  }
+  const value = String(result.stdout || "").trim();
+  return value && value !== "undefined" && value !== "null" ? value : null;
+}
+
+/**
+ * @param {string|null} value
+ * @returns {string|null}
+ */
+function normalizeRegistryUrl(value) {
+  if (!value) {
+    return null;
+  }
+  return value.trim().replace(/\/+$/, "");
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ ok: boolean, checkedVersion: string|null, diagnostics: any[] }}
+ */
+function checkDoctorPackageAccess(packageSpec) {
+  const result = runNpmViewPackageSpec(packageSpec);
+  if (result.status === 0) {
+    return {
+      ok: true,
+      checkedVersion: String(result.stdout || "").trim().replace(/^"|"$/g, "") || null,
+      diagnostics: []
+    };
+  }
+  return {
+    ok: false,
+    checkedVersion: null,
+    diagnostics: [doctorPackageDiagnostic(packageSpec, result)]
+  };
+}
+
+/**
+ * @param {string} packageSpec
+ * @param {{ stdout?: string, stderr?: string, error?: Error }} result
+ * @returns {any}
+ */
+function doctorPackageDiagnostic(packageSpec, result) {
+  const diagnostic = catalogDoctorPackageDiagnostic({
+    id: CLI_PACKAGE_NAME,
+    kind: "package",
+    package: CLI_PACKAGE_NAME,
+    defaultVersion: packageSpec.slice(`${CLI_PACKAGE_NAME}@`.length)
+  }, packageSpec, result);
+  return {
+    ...diagnostic,
+    code: diagnostic.code.replace(/^catalog_package_/, "github_packages_"),
+    path: CLI_PACKAGE_NAME
+  };
+}
+
+/**
+ * @param {string} left
+ * @param {string} right
+ * @returns {number}
+ */
+function compareSemver(left, right) {
+  const leftParts = left.split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  const rightParts = right.split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  for (let index = 0; index < 3; index += 1) {
+    if (leftParts[index] > rightParts[index]) return 1;
+    if (leftParts[index] < rightParts[index]) return -1;
+  }
+  return 0;
+}
+
+/**
+ * @param {ReturnType<typeof buildDoctorPayload>} payload
+ * @returns {void}
+ */
+function printDoctor(payload) {
+  console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
+  console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
+  console.log(`npm: ${payload.npm.available ? `${payload.npm.version || "available"} (ok)` : "not found"}`);
+  console.log(`GitHub Packages registry: ${payload.githubPackages.registryConfigured ? "configured" : "not configured"}`);
+  if (payload.githubPackages.configuredRegistry) {
+    console.log(`Configured @attebury registry: ${payload.githubPackages.configuredRegistry}`);
+  }
+  console.log(`NODE_AUTH_TOKEN: ${payload.githubPackages.nodeAuthTokenEnv ? "set" : "not set"}`);
+  console.log(`CLI package access: ${payload.githubPackages.packageAccess.ok ? `${payload.githubPackages.packageSpec} ok` : `${payload.githubPackages.packageSpec} failed`}`);
+  console.log(`Catalog source: ${payload.catalog.source}`);
+  console.log(`Catalog reachable: ${payload.catalog.catalog.reachable ? "yes" : "no"}`);
+  if (payload.catalog.catalog.reachable) {
+    console.log(`Catalog entries: ${payload.catalog.catalog.entries}`);
+    const failedPackages = payload.catalog.packages.filter((item) => !item.ok).length;
+    console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
+  }
+  if (payload.diagnostics.length > 0) {
+    console.log("Diagnostics:");
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`- ${label}: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        console.log(`  Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
 }
 
 /**
@@ -2898,7 +3157,9 @@ function commandPath(index, fallback = "./topogram") {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "new" || args[0] === "create") {
+if (args[0] === "doctor") {
+  commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
+} else if (args[0] === "new" || args[0] === "create") {
   commandArgs = { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
@@ -3025,6 +3286,7 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
@@ -3143,6 +3405,16 @@ if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus |
 }
 
 try {
+  if (shouldDoctor) {
+    const payload = buildDoctorPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printDoctor(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
   if (shouldCatalogList) {
     const payload = buildCatalogListPayload(catalogSource || inputPath || null);
     if (emitJson) {

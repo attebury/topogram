@@ -128,6 +128,18 @@ function createFakeNpm(root) {
 const fs = require("node:fs");
 const path = require("node:path");
 const args = process.argv.slice(2);
+if (args[0] === "--version") {
+  process.stdout.write("10.0.0\\n");
+  process.exit(0);
+}
+if (args[0] === "config" && args[1] === "get") {
+  if (args[2] === "@attebury:registry") {
+    process.stdout.write((process.env.FAKE_NPM_ATTEBURY_REGISTRY || "https://npm.pkg.github.com") + "\\n");
+    process.exit(0);
+  }
+  process.stdout.write("undefined\\n");
+  process.exit(0);
+}
 function packageNameFromSpec(spec) {
   if (spec.startsWith("@")) {
     const [scope, rest] = spec.split("/");
@@ -430,6 +442,51 @@ test("topogram catalog doctor reports catalog and package access", () => {
   assert.equal(deniedPayload.packages.find((item) => item.id === "hello").diagnostics[0].code, "catalog_package_access_denied");
 });
 
+test("topogram doctor checks runtime, GitHub Packages, and catalog access", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-"));
+  const fakeNpmBin = createFakeNpm(root);
+  const catalogPath = createCatalog(root, [
+    catalogEntry()
+  ]);
+  const env = {
+    FAKE_NPM_LATEST_VERSION: "0.1.0",
+    NODE_AUTH_TOKEN: "test-token",
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const doctor = runCli(["doctor", "--catalog", catalogPath, "--json"], { env });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const payload = JSON.parse(doctor.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.node.ok, true);
+  assert.equal(payload.npm.available, true);
+  assert.equal(payload.githubPackages.registryConfigured, true);
+  assert.equal(payload.githubPackages.nodeAuthTokenEnv, true);
+  assert.equal(payload.githubPackages.packageAccess.ok, true);
+  assert.equal(payload.catalog.ok, true);
+
+  const human = runCli(["doctor", "--catalog", catalogPath], { env });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Topogram doctor passed/);
+  assert.match(human.stdout, /GitHub Packages registry: configured/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.44 ok/);
+  assert.match(human.stdout, /Catalog package access: ok/);
+
+  const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
+    env: {
+      ...env,
+      FAKE_NPM_ATTEBURY_REGISTRY: "undefined"
+    }
+  });
+  assert.notEqual(missingRegistry.status, 0, missingRegistry.stdout);
+  const missingRegistryPayload = JSON.parse(missingRegistry.stdout);
+  assert.equal(missingRegistryPayload.ok, false);
+  assert.equal(
+    missingRegistryPayload.diagnostics.some((diagnostic) => diagnostic.code === "github_packages_registry_not_configured"),
+    true
+  );
+});
+
 test("topogram catalog show describes template and topogram entries", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-show-"));
   const catalogPath = createCatalog(root, [
@@ -644,7 +701,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-template-todo@0.1.0": templateRoot
     }),
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.43",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.44",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
