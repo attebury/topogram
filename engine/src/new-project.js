@@ -1190,9 +1190,10 @@ function fileHash(file) {
 
 /**
  * @param {ResolvedTemplate} template
+ * @param {Record<string, any>|null} [currentProjectConfig]
  * @returns {Map<string, { path: string, content: string|null, absolutePath: string|null }>}
  */
-function candidateTemplateFiles(template) {
+function candidateTemplateFiles(template, currentProjectConfig = null) {
   const files = new Map();
   for (const rootName of ["topogram", "implementation"]) {
     const root = path.join(template.root, rootName);
@@ -1211,13 +1212,40 @@ function candidateTemplateFiles(template) {
     }
   }
   const candidateProjectConfig = JSON.parse(fs.readFileSync(path.join(template.root, "topogram.project.json"), "utf8"));
-  candidateProjectConfig.template = projectTemplateMetadata(template);
+  candidateProjectConfig.template = candidateProjectTemplateMetadata(template, currentProjectConfig);
   files.set("topogram.project.json", {
     path: "topogram.project.json",
     content: `${stableJsonStringify(candidateProjectConfig)}\n`,
     absolutePath: null
   });
   return files;
+}
+
+/**
+ * @param {ResolvedTemplate} template
+ * @param {Record<string, any>|null} currentProjectConfig
+ * @returns {ReturnType<typeof projectTemplateMetadata>}
+ */
+function candidateProjectTemplateMetadata(template, currentProjectConfig) {
+  const metadata = projectTemplateMetadata(template);
+  const currentTemplate = currentProjectConfig?.template || null;
+  if (!currentTemplate || currentTemplate.id !== metadata.id) {
+    return metadata;
+  }
+  if (typeof currentTemplate.requested === "string" && currentTemplate.requested) {
+    metadata.requested = currentTemplate.requested;
+  }
+  if (currentTemplate.catalog && typeof currentTemplate.catalog === "object") {
+    metadata.catalog = {
+      ...currentTemplate.catalog,
+      package: typeof currentTemplate.catalog.package === "string"
+        ? currentTemplate.catalog.package
+        : metadata.id,
+      version: metadata.version,
+      packageSpec: metadata.sourceSpec
+    };
+  }
+  return metadata;
 }
 
 /**
@@ -1377,7 +1405,7 @@ export function buildTemplateUpdatePlan({
       step: "resolve-candidate"
     }));
   }
-  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  const candidateFiles = candidateTemplateFiles(candidateTemplate, projectConfig);
   const currentFiles = currentTemplateOwnedFiles(
     projectRoot,
     Boolean(includesTemplateImplementation(projectConfig) || candidateMetadata.includesExecutableImplementation),
@@ -1792,7 +1820,7 @@ export function applyTemplateUpdateFileAction(options) {
   const currentTemplate = options.projectConfig.template || {};
   const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
   const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
-  const candidateFile = candidateTemplateFiles(candidateTemplate).get(relativePath);
+  const candidateFile = candidateTemplateFiles(candidateTemplate, options.projectConfig).get(relativePath);
   if (!candidateFile) {
     throw new Error(`Cannot accept missing candidate template file: ${relativePath}`);
   }
@@ -1837,7 +1865,7 @@ export function applyTemplateUpdate(options) {
   const currentTemplate = options.projectConfig.template || {};
   const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
   const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
-  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  const candidateFiles = candidateTemplateFiles(candidateTemplate, options.projectConfig);
   for (const file of plan.files) {
     if (file.kind !== "added" && file.kind !== "changed") {
       continue;

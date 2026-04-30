@@ -466,7 +466,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.45 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.46 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -700,7 +700,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.45",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.46",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -764,6 +764,17 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     doctorPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_check_skipped"),
     false
   );
+
+  const updateCheck = runCli(["template", "update", "--check", "--json"], { cwd: projectRoot, env });
+  assert.equal(updateCheck.status, 0, updateCheck.stderr || updateCheck.stdout);
+  const updatePayload = JSON.parse(updateCheck.stdout);
+  assert.deepEqual(updatePayload.summary, {
+    added: 0,
+    changed: 0,
+    currentOnly: 0,
+    unchanged: updatePayload.summary.unchanged
+  });
+  assert.equal(updatePayload.files.some((file) => file.path === "topogram.project.json" && file.kind === "changed"), false);
 });
 
 test("explicit catalogs can override built-in template names", () => {
