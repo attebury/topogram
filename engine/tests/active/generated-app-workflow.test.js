@@ -698,6 +698,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-template-todo@0.1.0": templateRoot
     }),
+    FAKE_NPM_LATEST_VERSION: "0.1.0",
+    NODE_AUTH_TOKEN: "test-token",
     TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.45",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
@@ -749,6 +751,19 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
   assert.match(humanStatus.stdout, /Requested: todo/);
   assert.match(humanStatus.stdout, /Catalog: todo from /);
+
+  const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const doctorPayload = JSON.parse(doctor.stdout);
+  assert.equal(doctorPayload.catalog.source, catalogPath);
+  assert.equal(doctorPayload.catalog.catalog.reachable, true);
+  assert.equal(doctorPayload.catalog.packages.length, 1);
+  assert.equal(doctorPayload.catalog.packages[0].packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(doctorPayload.catalog.packages[0].ok, true);
+  assert.equal(
+    doctorPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_check_skipped"),
+    false
+  );
 });
 
 test("explicit catalogs can override built-in template names", () => {
