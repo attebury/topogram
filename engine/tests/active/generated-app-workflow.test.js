@@ -220,7 +220,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
-  assert.match(help.stdout, /topogram template show todo/);
+  assert.doesNotMatch(help.stdout, /topogram template show todo/);
   assert.match(help.stdout, /Default starter: hello-web/);
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template policy explain/);

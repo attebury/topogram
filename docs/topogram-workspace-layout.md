@@ -33,7 +33,8 @@ template packs use the same layout with `topogram-template.json`, `topogram/`,
 `docs/template-authoring.md`.
 
 Use `topogram template list` for a quick stack/surface summary and
-`topogram template show <id>` for the exact `topogram new` command.
+`topogram catalog show <id>` to inspect catalog aliases and their recommended
+commands.
 
 ## Generated Workspace
 

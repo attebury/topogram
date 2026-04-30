@@ -30,13 +30,6 @@ topogram catalog show hello --json
 Template entries recommend `topogram new`. Pure topogram entries recommend
 `topogram catalog copy` plus `topogram source status`.
 
-Inspect a template alias directly:
-
-```bash
-topogram template show todo
-topogram template show todo --json
-```
-
 Validate a local or remote catalog:
 
 ```bash
@@ -48,7 +41,7 @@ Create a starter from a catalog template alias:
 
 ```bash
 topogram template list
-topogram template show todo
+topogram catalog show todo
 topogram new ./todo-demo --template todo
 ```
 
@@ -116,7 +109,7 @@ Use a local catalog while developing:
 
 ```bash
 topogram template list --catalog ./topograms.catalog.json
-topogram template show todo --catalog ./topograms.catalog.json
+topogram catalog show todo --catalog ./topograms.catalog.json
 topogram new ./app --template todo --catalog ./topograms.catalog.json
 topogram catalog copy hello ./hello-topogram --catalog ./topograms.catalog.json
 ```

@@ -73,13 +73,12 @@ npm run verify
 ```
 
 The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
-with two pages and one workflow doc. Use `topogram template list` and
-`topogram template show <id>` to choose a starter:
+with two pages and one workflow doc. Use `topogram template list` for a quick
+starter summary and `topogram catalog show <id>` to inspect catalog aliases:
 
 ```bash
 topogram template list
-topogram template show hello-web
-topogram template show todo
+topogram catalog show todo
 topogram new ./todo-demo --template todo
 TOPOGRAM_CATALOG_SOURCE=none topogram template list
 ```
@@ -110,7 +109,6 @@ topogram catalog check topograms.catalog.json
 topogram catalog copy hello ./hello-topogram
 topogram source status ./hello-topogram
 topogram template list
-topogram template show todo
 topogram template status --latest
 topogram template policy check
 topogram template policy init
@@ -191,8 +189,8 @@ The second form resolves `todo` through the private catalog at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
 templates and reusable topograms are still installed from versioned packages.
 Use `topogram catalog show <id>` to see what an entry is and which command to
-run next. Use `topogram template show <id>` when you already know the entry is
-a starter template and want the direct `topogram new` flow.
+run next. Use `topogram template list` when you only need a quick starter
+summary.
 Use `topogram catalog copy <id> <target>` for pure topogram entries that should
 be copied into a workspace for editing. Copied topograms include
 `.topogram-source.json`; run `topogram source status <target>` to compare the
@@ -225,7 +223,7 @@ npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
 npm install --global @attebury/topogram
 gh auth login
 topogram template list
-topogram template show todo
+topogram catalog show todo
 topogram new ./todo-demo --template todo
 cd ./todo-demo
 npm install

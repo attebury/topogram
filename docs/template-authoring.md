@@ -50,7 +50,6 @@ Use the default built-in neutral starter:
 
 ```bash
 topogram template list
-topogram template show hello-web
 topogram new ./my-app
 TOPOGRAM_CATALOG_SOURCE=none topogram template list
 ```
@@ -96,7 +95,7 @@ Use a private catalog alias:
 
 ```bash
 topogram template list
-topogram template show todo
+topogram catalog show todo
 topogram new ./todo-demo --template todo
 ```
 

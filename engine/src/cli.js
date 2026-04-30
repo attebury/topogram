@@ -129,7 +129,6 @@ function printUsage(options = {}) {
   console.log("   or: topogram package update-cli <version> [--json]");
   console.log("   or: topogram source status [path] [--json]");
   console.log("   or: topogram template list [--json]");
-  console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
@@ -149,7 +148,6 @@ function printUsage(options = {}) {
   console.log("");
   console.log("Template and catalog discovery:");
   console.log("  topogram template list");
-  console.log("  topogram template show todo");
   console.log("  topogram catalog list");
   console.log("  topogram catalog show todo");
   console.log("  topogram catalog check topograms.catalog.json");
@@ -185,6 +183,7 @@ function printUsage(options = {}) {
   console.log("");
   console.log("Legacy and internal commands:");
   console.log("Usage: topogram create <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
+  console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
@@ -1577,7 +1576,7 @@ function formatCatalogTemplateAliasError(templateName, catalogSource, error) {
   return [
     `Catalog template alias '${templateName}' could not be resolved from '${sourceLabel}'.`,
     reason,
-    "Run `topogram template list` to see available templates, or `topogram template show <id>` to inspect one template.",
+    "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
     "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
     "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
     "Use a built-in template such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
