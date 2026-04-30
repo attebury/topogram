@@ -138,25 +138,29 @@ function printUsage(options = {}) {
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
-  console.log("   or: topogram new <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|./local-template|@scope/template]");
-  console.log("   or: topogram create <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|./local-template|@scope/template]");
+  console.log("   or: topogram new <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
-  console.log("  topogram create ./my-app");
+  console.log("  topogram new ./my-app");
+  console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram generate");
-  console.log("  topogram trust template");
-  console.log("  topogram trust status");
-  console.log("  topogram trust diff");
+  console.log("");
+  console.log("Template and catalog discovery:");
+  console.log("  topogram template list");
+  console.log("  topogram template show todo");
   console.log("  topogram catalog list");
   console.log("  topogram catalog show todo");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
-  console.log("  topogram package update-cli 0.2.38");
   console.log("  topogram source status");
-  console.log("  topogram template list");
-  console.log("  topogram template show todo");
+  console.log("");
+  console.log("Template trust and updates:");
+  console.log("  topogram trust template");
+  console.log("  topogram trust status");
+  console.log("  topogram trust diff");
+  console.log("  topogram package update-cli 0.2.38");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -170,10 +174,9 @@ function printUsage(options = {}) {
   console.log("  topogram template update --plan");
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
-  console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
-  console.log("Default starter: hello-web. Run `topogram template list` to choose another starter.");
+  console.log("Default starter: hello-web. Run `topogram template list` for built-ins and catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -181,7 +184,9 @@ function printUsage(options = {}) {
   }
   console.log("");
   console.log("Legacy and internal commands:");
-  console.log("Usage: topogram validate <path>");
+  console.log("Usage: topogram create <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
+  console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
+  console.log("   or: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
@@ -909,7 +914,8 @@ function buildTemplateListPayload(options = {}) {
  * @returns {void}
  */
 function printTemplateList(payload) {
-  console.log("Templates:");
+  console.log("Template starters:");
+  console.log("Built-ins are bundled with the CLI; catalog aliases resolve to versioned package installs.");
   if (payload.catalog.source) {
     console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
   } else {
@@ -925,8 +931,8 @@ function printTemplateList(payload) {
       ? `topogram new ./my-app --template ${shellCommandArg(template.id)}`
       : `topogram new ./my-app --template ${shellCommandArg(template.name || template.id)}`;
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
-    console.log(`  ${template.source} | surfaces: ${surfaces} | stack: ${stack} | executable: ${template.includesExecutableImplementation ? "yes" : "no"}`);
-    console.log(`  ${command}`);
+    console.log(`  Source: ${template.source} | Surfaces: ${surfaces} | Stack: ${stack} | Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+    console.log(`  New: ${command}`);
   }
   for (const diagnostic of payload.diagnostics) {
     console.warn(`Warning: ${diagnostic.message}`);
@@ -1231,13 +1237,16 @@ function buildCatalogListPayload(source) {
  * @returns {void}
  */
 function printCatalogList(payload) {
+  console.log("Catalog entries:");
+  console.log("Template entries create starters with `topogram new`; topogram entries copy editable Topogram source.");
   console.log(`Catalog: ${payload.source}`);
   console.log(`Version: ${payload.catalog.version}`);
   for (const entry of payload.entries) {
     console.log(`- ${entry.id} (${entry.kind})`);
-    console.log(`  package: ${entry.package}@${entry.defaultVersion}`);
-    console.log(`  description: ${entry.description}`);
-    console.log(`  executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+    console.log(`  Package: ${entry.package}@${entry.defaultVersion}`);
+    console.log(`  Description: ${entry.description}`);
+    console.log(`  Trust scope: ${entry.trust.scope}`);
+    console.log(`  Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
   }
 }
 

@@ -20,7 +20,7 @@ The engine is the publishable private CLI package:
 This lets source checkouts and private-package consumers call:
 
 ```bash
-topogram create ../my-app
+topogram new ../my-app
 topogram check
 topogram generate
 topogram catalog list

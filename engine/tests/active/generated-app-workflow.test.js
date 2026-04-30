@@ -213,6 +213,10 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
+  assert.match(help.stdout, /topogram new <path> \[--template .*todo/);
+  assert.match(help.stdout, /topogram new \.\/my-app/);
+  assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
+  assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
@@ -221,8 +225,16 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template policy explain/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
+  assert.doesNotMatch(help.stdout, /topogram create \.\/my-app/);
+  assert.doesNotMatch(help.stdout, /topogram import app \.\/existing-app/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
   assert.doesNotMatch(help.stdout, /query work-packet/);
+
+  const fullHelp = runCli(["help", "all"]);
+  assert.equal(fullHelp.status, 0, fullHelp.stderr || fullHelp.stdout);
+  assert.match(fullHelp.stdout, /topogram create <path>/);
+  assert.match(fullHelp.stdout, /topogram import app <path>/);
+  assert.match(fullHelp.stdout, /query work-packet/);
 
   const templateList = runCli(["template", "list", "--json"]);
   assert.equal(templateList.status, 0, templateList.stderr || templateList.stdout);
@@ -455,16 +467,21 @@ test("topogram template list includes catalog template aliases", () => {
 
   const listHuman = runCli(["template", "list", "--catalog", catalogPath]);
   assert.equal(listHuman.status, 0, listHuman.stderr || listHuman.stdout);
-  assert.match(listHuman.stdout, /Templates:/);
+  assert.match(listHuman.stdout, /Template starters:/);
+  assert.match(listHuman.stdout, /Built-ins are bundled with the CLI; catalog aliases resolve to versioned package installs/);
   assert.match(listHuman.stdout, /topogram\/hello-web@0\.1\.0 \(default\)/);
-  assert.match(listHuman.stdout, /surfaces: web \| stack: Vanilla HTML\/CSS\/JS \| executable: no/);
+  assert.match(listHuman.stdout, /Source: builtin \| Surfaces: web \| Stack: Vanilla HTML\/CSS\/JS \| Executable implementation: no/);
   assert.match(listHuman.stdout, /todo@0\.1\.0/);
-  assert.match(listHuman.stdout, /surfaces: web, api, database \| stack: SvelteKit \+ Hono \+ Postgres \| executable: yes/);
+  assert.match(listHuman.stdout, /Source: catalog \| Surfaces: web, api, database \| Stack: SvelteKit \+ Hono \+ Postgres \| Executable implementation: yes/);
   assert.match(listHuman.stdout, /topogram new \.\/my-app --template todo/);
 
   const human = runCli(["catalog", "list", "--catalog", catalogPath]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Catalog entries:/);
+  assert.match(human.stdout, /Template entries create starters with `topogram new`/);
   assert.match(human.stdout, /todo \(template\)/);
+  assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(human.stdout, /Executable implementation: yes/);
   assert.match(human.stdout, /hello \(topogram\)/);
 });
 
@@ -662,6 +679,30 @@ test("package-backed template installs explain private package auth failures", (
   assert.notEqual(missing.status, 0, missing.stdout);
   assert.match(missing.stderr, /was not found, or the current token does not have access/);
   assert.match(missing.stderr, /Check the package name\/version/);
+
+  const forbiddenNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E403\nnpm error 403 Forbidden - permission denied\n"
+  );
+  const forbidden = runCli(["new", path.join(root, "forbidden"), "--template", "@attebury/topogram-template-todo@0.1.6"], {
+    env: { PATH: `${forbiddenNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(forbidden.status, 0, forbidden.stdout);
+  assert.match(forbidden.stderr, /Package access was denied while installing template package/);
+  assert.match(forbidden.stderr, /Manage Actions access/);
+
+  const integrityNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code EINTEGRITY\nnpm error integrity checksum failed\n"
+  );
+  const integrity = runCli(["new", path.join(root, "integrity"), "--template", "@attebury/topogram-template-todo@0.1.6"], {
+    env: { PATH: `${integrityNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(integrity.status, 0, integrity.stdout);
+  assert.match(integrity.stderr, /Package integrity failed while installing template package/);
+  assert.match(integrity.stderr, /published GitHub Packages tarball/);
 });
 
 test("private GitHub catalog failures explain auth and access setup", () => {
