@@ -707,20 +707,20 @@ test("topogram package update-cli updates consumer dependency and runs available
   });
   const fakeNpmBin = createFakeNpm(root);
   const runLog = path.join(root, "npm-run.log");
-  const update = runCli(["package", "update-cli", "0.2.36"], {
+  const update = runCli(["package", "update-cli", "0.2.37"], {
     cwd: projectRoot,
     env: {
-      FAKE_NPM_LATEST_VERSION: "0.2.36",
+      FAKE_NPM_LATEST_VERSION: "0.2.37",
       FAKE_NPM_RUN_LOG: runLog,
       NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
-  assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.36/);
+  assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.37/);
   assert.match(update.stdout, /Checks run: cli:surface, catalog:template-show, check/);
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.36");
-  assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.36");
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.37");
+  assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.37");
   assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
     "cli:surface",
     "catalog:template-show",
@@ -730,10 +730,10 @@ test("topogram package update-cli updates consumer dependency and runs available
   const minimalRoot = path.join(root, "minimal");
   fs.mkdirSync(minimalRoot, { recursive: true });
   writePackageJson(minimalRoot, { name: "minimal", private: true });
-  const minimal = runCli(["package", "update-cli", "0.2.36", "--json"], {
+  const minimal = runCli(["package", "update-cli", "0.2.37", "--json"], {
     cwd: minimalRoot,
     env: {
-      FAKE_NPM_LATEST_VERSION: "0.2.36",
+      FAKE_NPM_LATEST_VERSION: "0.2.37",
       NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
@@ -755,12 +755,12 @@ test("topogram package update-cli explains private package auth failures", () =>
     "npm",
     "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
   );
-  const update = runCli(["package", "update-cli", "0.2.36"], {
+  const update = runCli(["package", "update-cli", "0.2.37"], {
     cwd: projectRoot,
     env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(update.status, 0, update.stdout);
-  assert.match(update.stderr, /Authentication is required to inspect @attebury\/topogram@0\.2\.36/);
+  assert.match(update.stderr, /Authentication is required to inspect @attebury\/topogram@0\.2\.37/);
   assert.match(update.stderr, /NODE_AUTH_TOKEN/);
   assert.match(update.stderr, /Manage Actions access/);
 });
