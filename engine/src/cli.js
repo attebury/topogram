@@ -120,6 +120,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram catalog list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram source status [path] [--json]");
@@ -143,6 +144,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
   console.log("  topogram catalog list");
+  console.log("  topogram catalog show todo");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
   console.log("  topogram source status");
@@ -772,6 +774,128 @@ function printCatalogList(payload) {
     console.log(`  package: ${entry.package}@${entry.defaultVersion}`);
     console.log(`  description: ${entry.description}`);
     console.log(`  executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+}
+
+/**
+ * @param {string} id
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, catalog: { version: string }, entry: any|null, packageSpec: string|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogShowPayload(id, source) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram catalog show requires <id>.");
+  }
+  const loaded = loadCatalog(source || null);
+  const entry = findCatalogEntry(loaded.catalog, id, null);
+  if (!entry) {
+    const diagnostic = {
+      code: "catalog_entry_not_found",
+      severity: "error",
+      message: `Catalog entry '${id}' was not found in ${loaded.source}.`,
+      path: loaded.source,
+      suggestedFix: "Run `topogram catalog list` to see available entries."
+    };
+    return {
+      ok: false,
+      source: loaded.source,
+      catalog: { version: loaded.catalog.version },
+      entry: null,
+      packageSpec: null,
+      commands: { primary: null, followUp: [] },
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  return {
+    ok: true,
+    source: loaded.source,
+    catalog: { version: loaded.catalog.version },
+    entry,
+    packageSpec: catalogEntryPackageSpec(entry),
+    commands: catalogShowCommands(entry, loaded.source),
+    diagnostics: loaded.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {any} entry
+ * @param {string} source
+ * @returns {{ primary: string, followUp: string[] }}
+ */
+function catalogShowCommands(entry, source) {
+  const catalogOption = source === catalogSourceOrDefault(null)
+    ? ""
+    : ` --catalog ${shellCommandArg(source)}`;
+  if (entry.kind === "template") {
+    const target = "./my-app";
+    return {
+      primary: `topogram new ${target} --template ${shellCommandArg(entry.id)}${catalogOption}`,
+      followUp: [
+        `cd ${target}`,
+        "npm install",
+        "npm run check",
+        "npm run generate"
+      ]
+    };
+  }
+  const target = `./${entry.id}-topogram`;
+  return {
+    primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
+    followUp: [
+      `topogram source status ${target}`,
+      `topogram check ${target}`
+    ]
+  };
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function shellCommandArg(value) {
+  return /^[A-Za-z0-9_./:@=-]+$/.test(value) ? value : JSON.stringify(value);
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogShowPayload>} payload
+ * @returns {void}
+ */
+function printCatalogShow(payload) {
+  if (!payload.ok || !payload.entry) {
+    console.log("Catalog entry not found.");
+    console.log(`Catalog: ${payload.source}`);
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+    }
+    return;
+  }
+  const { entry } = payload;
+  console.log(`Catalog entry: ${entry.id}`);
+  console.log(`Kind: ${entry.kind}`);
+  console.log(`Catalog: ${payload.source}`);
+  console.log(`Package: ${payload.packageSpec}`);
+  console.log(`Description: ${entry.description}`);
+  console.log(`Tags: ${entry.tags.join(", ") || "none"}`);
+  console.log(`Trust scope: ${entry.trust.scope}`);
+  console.log(`Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  if (entry.trust.notes) {
+    console.log(`Trust notes: ${entry.trust.notes}`);
+  }
+  console.log("");
+  console.log("Recommended command:");
+  console.log(`  ${payload.commands.primary}`);
+  if (payload.commands.followUp.length > 0) {
+    console.log("Follow-up:");
+    for (const command of payload.commands.followUp) {
+      console.log(`  ${command}`);
+    }
+  }
+  if (entry.kind === "topogram") {
+    console.log("");
+    console.log(`${TOPOGRAM_SOURCE_FILE} will record copy provenance. Local edits are allowed.`);
   }
 }
 
@@ -1833,6 +1957,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "catalog" && args[1] === "list") {
   commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+} else if (args[0] === "catalog" && args[1] === "show") {
+  commandArgs = { catalogShow: true, inputPath: args[2] };
 } else if (args[0] === "catalog" && args[1] === "check") {
   commandArgs = { catalogCheck: true, inputPath: args[2] };
 } else if (args[0] === "catalog" && args[1] === "copy") {
@@ -1937,6 +2063,7 @@ const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldCatalogList = Boolean(commandArgs?.catalogList);
+const shouldCatalogShow = Boolean(commandArgs?.catalogShow);
 const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
 const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
@@ -2016,6 +2143,12 @@ if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus |
   process.exit(1);
 }
 
+if (shouldCatalogShow && !inputPath) {
+  console.error("Missing required <id>.");
+  printUsage();
+  process.exit(1);
+}
+
 if (shouldCatalogCheck && !inputPath) {
   console.error("Missing required <path-or-url>.");
   printUsage();
@@ -2041,6 +2174,16 @@ try {
       printCatalogList(payload);
     }
     process.exit(0);
+  }
+
+  if (shouldCatalogShow) {
+    const payload = buildCatalogShowPayload(inputPath, catalogSource);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldCatalogCheck) {

@@ -24,6 +24,7 @@ topogram create ../my-app
 topogram check
 topogram generate
 topogram catalog list
+topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
 topogram source status ../hello-topogram
@@ -91,7 +92,9 @@ topogram new ../todo-demo --template todo
 
 Catalog aliases resolve through the private catalog index at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is package
-backed; executable starter content still lives in template packages. Pure
+backed; executable starter content still lives in template packages. Use
+`topogram catalog show <id>` to inspect an entry and get the correct `new` or
+`copy` command for that kind. Pure
 topogram catalog entries can be copied for editing with
 `topogram catalog copy <id> <target>`. Copied topogram projects record
 `.topogram-source.json`; inspect local drift from that import baseline with

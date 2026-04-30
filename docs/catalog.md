@@ -19,6 +19,17 @@ topogram catalog list
 topogram catalog list --json
 ```
 
+Inspect one catalog entry and its recommended command:
+
+```bash
+topogram catalog show todo
+topogram catalog show hello
+topogram catalog show hello --json
+```
+
+Template entries recommend `topogram new`. Pure topogram entries recommend
+`topogram catalog copy` plus `topogram source status`.
+
 Validate a local or remote catalog:
 
 ```bash

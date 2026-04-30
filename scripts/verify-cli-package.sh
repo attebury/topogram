@@ -63,6 +63,7 @@ node --input-type=module -e '
   fs.writeFileSync(process.argv[1], `${JSON.stringify(catalog, null, 2)}\n`);
 ' "$CATALOG_FILE"
 "$TOPOGRAM_BIN" catalog check "$CATALOG_FILE" >/dev/null
+"$TOPOGRAM_BIN" catalog show smoke --catalog "$CATALOG_FILE" --json >/dev/null
 "$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
 
 echo "Creating a starter with the packed CLI..."
