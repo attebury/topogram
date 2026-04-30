@@ -153,7 +153,7 @@ function printUsage(options = {}) {
   console.log("  topogram catalog show todo");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
-  console.log("  topogram package update-cli 0.2.34");
+  console.log("  topogram package update-cli 0.2.35");
   console.log("  topogram source status");
   console.log("  topogram template list");
   console.log("  topogram template show todo");
@@ -579,7 +579,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.34.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.35.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
