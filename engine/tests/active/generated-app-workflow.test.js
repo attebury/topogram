@@ -567,6 +567,15 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   const create = runCli(["new", projectRoot, "--template", "todo", "--catalog", catalogPath], { env });
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Template: @scope\/topogram-template-todo/);
+  assert.match(create.stdout, /Source: package/);
+  assert.match(create.stdout, /Source spec: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(create.stdout, /Catalog: todo from /);
+  assert.match(create.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(create.stdout, /Executable implementation: yes/);
+  assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
+  assert.match(create.stdout, /Trust: \.topogram-template-trust\.json/);
+  assert.match(create.stdout, /npm run template:policy:explain/);
+  assert.match(create.stdout, /npm run trust:status/);
   const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
   assert.equal(projectConfig.template.id, "@scope/topogram-template-todo");
   assert.equal(projectConfig.template.source, "package");
@@ -888,6 +897,13 @@ test("topogram new defaults to the hello-web starter", () => {
   const create = runCli(["new", projectRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Template: topogram\/hello-web/);
+  assert.match(create.stdout, /Source: builtin/);
+  assert.match(create.stdout, /Executable implementation: no/);
+  assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
+  assert.match(create.stdout, /Template files: \.topogram-template-files\.json/);
+  assert.doesNotMatch(create.stdout, /Trust: \.topogram-template-trust\.json/);
+  assert.doesNotMatch(create.stdout, /npm run template:policy:explain/);
+  assert.doesNotMatch(create.stdout, /npm run trust:status/);
   assert.equal(create.stderr, "");
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), false);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), false);
@@ -972,6 +988,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["template:status"], "topogram template status");
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");
+  assert.equal(pkg.scripts["template:policy:explain"], "topogram template policy explain");
   assert.equal(pkg.scripts["template:update:status"], "topogram template update --status");
   assert.equal(pkg.scripts["template:update:recommend"], "topogram template update --recommend");
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
@@ -987,6 +1004,11 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["app:runtime"], "npm --prefix ./app run runtime");
 
   assert.match(create.stderr, /copied implementation\/ code/);
+  assert.match(create.stdout, /Executable implementation: yes/);
+  assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
+  assert.match(create.stdout, /Trust: \.topogram-template-trust\.json/);
+  assert.match(create.stdout, /npm run template:policy:explain/);
+  assert.match(create.stdout, /npm run trust:status/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-task.tg")), false);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);
@@ -995,6 +1017,13 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
+  const readme = fs.readFileSync(path.join(projectRoot, "README.md"), "utf8");
+  assert.match(readme, /Template: `topogram\/web-api-db@/);
+  assert.match(readme, /Executable implementation: `yes`/);
+  assert.match(readme, /npm run template:policy:explain/);
+  assert.match(readme, /npm run trust:status/);
+  const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
+  assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
   assert.equal(projectConfig.template.requested, "web-api-db");

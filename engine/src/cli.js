@@ -934,6 +934,57 @@ function printTemplateList(payload) {
 }
 
 /**
+ * @param {ReturnType<typeof createNewProject>} result
+ * @param {string} cwd
+ * @returns {string}
+ */
+function displayProjectRootForNewProject(result, cwd) {
+  const relativeProjectRoot = path.relative(cwd, result.projectRoot);
+  return !relativeProjectRoot || relativeProjectRoot.startsWith("..")
+    ? result.projectRoot
+    : relativeProjectRoot;
+}
+
+/**
+ * @param {ReturnType<typeof createNewProject>} result
+ * @param {string} cwd
+ * @returns {void}
+ */
+function printNewProjectResult(result, cwd) {
+  const template = result.template || {};
+  console.log(`Created Topogram project at ${result.projectRoot}.`);
+  console.log(`Template: ${result.templateName}`);
+  console.log(`Source: ${template.source || "unknown"}`);
+  if (template.sourceSpec) {
+    console.log(`Source spec: ${template.sourceSpec}`);
+  }
+  if (template.catalog) {
+    console.log(`Catalog: ${template.catalog.id} from ${template.catalog.source}`);
+    console.log(`Package: ${template.catalog.packageSpec}`);
+  }
+  console.log(`Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+  console.log("Policy: topogram.template-policy.json");
+  console.log("Template files: .topogram-template-files.json");
+  if (template.includesExecutableImplementation) {
+    console.log("Trust: .topogram-template-trust.json");
+  }
+  for (const warning of result.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${displayProjectRootForNewProject(result, cwd)}`);
+  console.log("  npm install");
+  console.log("  npm run check");
+  if (template.includesExecutableImplementation) {
+    console.log("  npm run template:policy:explain");
+    console.log("  npm run trust:status");
+  }
+  console.log("  npm run generate");
+  console.log("  npm run verify");
+}
+
+/**
  * @param {Record<string, any>} template
  * @param {"builtin"|"catalog"} sourceKind
  * @param {string|null} packageSpec
@@ -2850,22 +2901,7 @@ try {
       engineRoot: ENGINE_ROOT,
       templatesRoot: TEMPLATES_ROOT
     });
-    console.log(`Created Topogram project at ${result.projectRoot}.`);
-    console.log(`Template: ${result.templateName}`);
-    for (const warning of result.warnings) {
-      console.warn(`Warning: ${warning}`);
-    }
-    console.log("");
-    console.log("Next steps:");
-    const relativeProjectRoot = path.relative(process.cwd(), result.projectRoot);
-    const displayProjectRoot = !relativeProjectRoot || relativeProjectRoot.startsWith("..")
-      ? result.projectRoot
-      : relativeProjectRoot;
-    console.log(`  cd ${displayProjectRoot}`);
-    console.log("  npm install");
-    console.log("  npm run check");
-    console.log("  npm run generate");
-    console.log("  npm run verify");
+    printNewProjectResult(result, process.cwd());
     process.exit(0);
   }
 
