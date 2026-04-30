@@ -28,7 +28,7 @@ topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
-topogram package update-cli 0.2.44
+topogram package update-cli 0.2.45
 topogram source status ../hello-topogram
 topogram template list
 topogram template status
@@ -83,6 +83,10 @@ Create a starter project from the default built-in `hello-web` template:
 
 ```bash
 npm run new -- ../my-topogram-app
+cd ../my-topogram-app
+npm install
+npm run doctor
+npm run check
 ```
 
 Choose another built-in starter with the template commands:

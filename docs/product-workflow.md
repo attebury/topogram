@@ -32,6 +32,7 @@ npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run explain
+npm run doctor
 npm run check
 npm run generate
 npm run verify

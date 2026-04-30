@@ -118,8 +118,10 @@ npm --prefix "$STARTER_DIR" install >/dev/null
 npm --prefix "$STARTER_TEMPLATE_DIR" install >/dev/null
 
 echo "Checking and generating the starter..."
+npm --prefix "$STARTER_DIR" run doctor
 npm --prefix "$STARTER_DIR" run check
 npm --prefix "$STARTER_DIR" run generate
+npm --prefix "$STARTER_TEMPLATE_DIR" run doctor
 npm --prefix "$STARTER_TEMPLATE_DIR" run check
 npm --prefix "$STARTER_TEMPLATE_DIR" run generate
 

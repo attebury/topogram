@@ -303,9 +303,6 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const statusAlias = runCli(["status", fixtureRoot]);
   assert.notEqual(statusAlias.status, 0, statusAlias.stdout);
 
-  const doctorAlias = runCli(["doctor", fixtureRoot]);
-  assert.notEqual(doctorAlias.status, 0, doctorAlias.stdout);
-
   const buildAlias = runCli(["build", fixtureRoot, "--out", outputRoot]);
   assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
 });
@@ -469,7 +466,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.44 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.45 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -701,7 +698,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-template-todo@0.1.0": templateRoot
     }),
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.44",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.45",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -715,6 +712,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(create.stdout, /Executable implementation: yes/);
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
   assert.match(create.stdout, /Trust: \.topogram-template-trust\.json/);
+  assert.match(create.stdout, /npm run doctor/);
   assert.match(create.stdout, /npm run template:policy:explain/);
   assert.match(create.stdout, /npm run trust:status/);
   const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
@@ -841,6 +839,7 @@ test("package-backed template installs explain private package auth failures", (
   assert.match(create.stderr, /Authentication is required to install template package '@attebury\/topogram-template-todo@0\.1\.6'/);
   assert.match(create.stderr, /NODE_AUTH_TOKEN/);
   assert.match(create.stderr, /Manage Actions access/);
+  assert.match(create.stderr, /topogram doctor/);
 
   const missingNpmBin = createFailingCommand(
     root,
@@ -853,6 +852,7 @@ test("package-backed template installs explain private package auth failures", (
   assert.notEqual(missing.status, 0, missing.stdout);
   assert.match(missing.stderr, /was not found, or the current token does not have access/);
   assert.match(missing.stderr, /Check the package name\/version/);
+  assert.match(missing.stderr, /topogram doctor/);
 
   const forbiddenNpmBin = createFailingCommand(
     root,
@@ -865,6 +865,7 @@ test("package-backed template installs explain private package auth failures", (
   assert.notEqual(forbidden.status, 0, forbidden.stdout);
   assert.match(forbidden.stderr, /Package access was denied while installing template package/);
   assert.match(forbidden.stderr, /Manage Actions access/);
+  assert.match(forbidden.stderr, /topogram doctor/);
 
   const integrityNpmBin = createFailingCommand(
     root,
@@ -916,6 +917,7 @@ test("topogram package update-cli updates consumer dependency and runs available
     private: true,
     scripts: {
       "cli:surface": "node -e true",
+      "doctor": "node -e true",
       "catalog:show": "node -e true",
       "catalog:template-show": "node -e true",
       "check": "node -e true"
@@ -943,11 +945,12 @@ test("topogram package update-cli updates consumer dependency and runs available
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
   assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.37/);
-  assert.match(update.stdout, /Checks run: cli:surface, catalog:show, catalog:template-show, check/);
+  assert.match(update.stdout, /Checks run: cli:surface, doctor, catalog:show, catalog:template-show, check/);
   assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.37");
   assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.37");
   assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
     "cli:surface",
+    "doctor",
     "catalog:show",
     "catalog:template-show",
     "check"
@@ -968,7 +971,7 @@ test("topogram package update-cli updates consumer dependency and runs available
   const minimalPayload = JSON.parse(minimal.stdout);
   assert.equal(minimalPayload.ok, true);
   assert.deepEqual(minimalPayload.scriptsRun, []);
-  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "catalog:show", "catalog:template-show", "check"]);
+  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"]);
 });
 
 test("topogram package update-cli explains private package auth failures", () => {
@@ -1157,6 +1160,7 @@ test("topogram new defaults to the hello-web starter", () => {
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
   assert.match(create.stdout, /Template files: \.topogram-template-files\.json/);
   assert.doesNotMatch(create.stdout, /Trust: \.topogram-template-trust\.json/);
+  assert.match(create.stdout, /npm run doctor/);
   assert.doesNotMatch(create.stdout, /npm run template:policy:explain/);
   assert.doesNotMatch(create.stdout, /npm run trust:status/);
   assert.equal(create.stderr, "");
@@ -1227,11 +1231,13 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
+  assert.match(create.stdout, /npm run doctor/);
   assert.match(create.stdout, /npm run check/);
   assert.match(create.stdout, /npm run generate/);
 
   const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
+  assert.equal(pkg.scripts.doctor, "topogram doctor");
   assert.equal(pkg.scripts.check, "topogram check");
   assert.equal(pkg.scripts["check:json"], "topogram check --json");
   assert.equal(pkg.scripts.generate, "topogram generate");
@@ -1259,6 +1265,13 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["app:probe"], "npm run app:smoke && npm run app:runtime-check");
   assert.equal(pkg.scripts["app:runtime"], "npm --prefix ./app run runtime");
 
+  const doctor = runCli(["doctor", "--json"], { cwd: projectRoot });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const doctorPayload = JSON.parse(doctor.stdout);
+  assert.equal(doctorPayload.githubPackages.required, false);
+  assert.equal(doctorPayload.githubPackages.packageAccess.ok, true);
+  assert.equal(doctorPayload.catalog.ok, true);
+
   assert.match(create.stderr, /copied implementation\/ code/);
   assert.match(create.stdout, /Executable implementation: yes/);
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
@@ -1276,9 +1289,11 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const readme = fs.readFileSync(path.join(projectRoot, "README.md"), "utf8");
   assert.match(readme, /Template: `topogram\/web-api-db@/);
   assert.match(readme, /Executable implementation: `yes`/);
+  assert.match(readme, /npm run doctor/);
   assert.match(readme, /npm run template:policy:explain/);
   assert.match(readme, /npm run trust:status/);
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
+  assert.match(explainScript, /npm run doctor/);
   assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");

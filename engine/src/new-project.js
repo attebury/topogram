@@ -455,6 +455,7 @@ function formatPackageInstallError(templateSpec, result) {
   const npmrcHint = "Ensure this project has an .npmrc with @attebury:registry=https://npm.pkg.github.com and //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}.";
   const packageAccessHint = "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.";
   const authHint = "Set NODE_AUTH_TOKEN to a GitHub token with package read access, or configure npm auth for GitHub Packages.";
+  const doctorHint = "Run `topogram doctor` to check Node.js, npm, GitHub Packages, and catalog access.";
   if (result.error?.code === "ENOENT") {
     return [
       `Failed to install template package '${templateSpec}': npm was not found.`,
@@ -467,6 +468,7 @@ function formatPackageInstallError(templateSpec, result) {
       authHint,
       npmrcHint,
       packageAccessHint,
+      doctorHint,
       output
     ].filter(Boolean).join("\n");
   }
@@ -475,6 +477,7 @@ function formatPackageInstallError(templateSpec, result) {
       `Package access was denied while installing template package '${templateSpec}'.`,
       authHint,
       packageAccessHint,
+      doctorHint,
       output
     ].filter(Boolean).join("\n");
   }
@@ -483,6 +486,7 @@ function formatPackageInstallError(templateSpec, result) {
       `Template package '${templateSpec}' was not found, or the current token does not have access to it.`,
       "Check the package name/version and GitHub Packages access.",
       packageAccessHint,
+      doctorHint,
       output
     ].filter(Boolean).join("\n");
   }
@@ -1879,6 +1883,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
     type: "module",
     scripts: {
       explain: "node ./scripts/explain.mjs",
+      doctor: "topogram doctor",
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
@@ -1927,6 +1932,7 @@ Topogram app workflow
    topogram.project.json
 
 2. Validate:
+   npm run doctor
    npm run check
 
 3. Regenerate:
@@ -1947,6 +1953,7 @@ Or run self-contained local runtime verification:
 
 Useful inspection:
    npm run check:json
+   npm run doctor
    npm run template:status
    npm run template:policy:check
    npm run template:policy:explain
@@ -1975,6 +1982,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
   const workflowCommands = [
     "npm install",
     "npm run explain",
+    "npm run doctor",
     "npm run check",
     "npm run template:policy:check",
     ...(template.includesExecutableImplementation ? [
