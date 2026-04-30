@@ -129,6 +129,8 @@ topogram template update --apply
 topogram template update --accept-current topogram/entities/entity-greeting.tg
 topogram template update --accept-candidate topogram/entities/entity-greeting.tg --template ./next-template
 topogram template update --delete-current topogram/entities/old-resource.tg --template ./next-template
+topogram template detach
+topogram template detach --dry-run --json
 ```
 
 The update plan compares template-owned files in the current project with the
@@ -144,6 +146,13 @@ Human output summarizes no-op, applied, skipped, and conflict counts; JSON outpu
 includes structured diagnostics with codes, paths, suggested fixes, and workflow
 steps. If the baseline is missing, review the current template-owned files and
 run `topogram trust template`.
+
+Use `topogram template detach` when a maintained app should stop tracking the
+starter template. Detach removes the `template` block from `topogram.project.json`
+and removes `.topogram-template-files.json`. It preserves
+`.topogram-template-trust.json` when executable `implementation/` config remains,
+so generation still requires trusted local implementation content. Pass
+`--remove-policy` when the project should also remove `topogram.template-policy.json`.
 
 `topogram.template-policy.json` is the project-owned template allow policy.
 New starters create one automatically. Use `topogram template policy check` in
@@ -257,7 +266,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.49
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.50
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then

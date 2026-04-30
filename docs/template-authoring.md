@@ -128,11 +128,19 @@ package's Manage Actions access settings.
 Consumer repos can update their Topogram CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.49
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.50
 ```
 
 The command updates `@attebury/topogram`, then runs any available consumer
 scripts named `cli:surface`, `catalog:template-show`, and `check`.
+
+Maintained apps can intentionally leave the template update workflow with
+`topogram template detach`. Detach removes template provenance from
+`topogram.project.json` and removes the template baseline file. It keeps
+executable implementation trust when `implementation/` remains configured, so
+generation safety is still enforced independently of template metadata. Use
+`--dry-run --json` for review and `--remove-policy` when the project should also
+delete `topogram.template-policy.json`.
 
 ## Trust Policy
 
