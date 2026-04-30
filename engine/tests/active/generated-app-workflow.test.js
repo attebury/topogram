@@ -216,6 +216,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram template show todo/);
   assert.match(help.stdout, /Default starter: hello-web/);
   assert.match(help.stdout, /topogram template status --latest/);
+  assert.match(help.stdout, /topogram template policy explain/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
   assert.doesNotMatch(help.stdout, /query work-packet/);
@@ -1141,6 +1142,18 @@ test("topogram template policy init and check manage project policy", () => {
   const checkPayload = JSON.parse(check.stdout);
   assert.equal(checkPayload.ok, true);
   assert.deepEqual(checkPayload.diagnostics, []);
+
+  const explain = runCli(["template", "policy", "explain", "--json"], { cwd: projectRoot });
+  assert.equal(explain.status, 0, explain.stderr || explain.stdout);
+  const explainPayload = JSON.parse(explain.stdout);
+  assert.equal(explainPayload.ok, true);
+  assert.equal(explainPayload.template.id, "topogram/web-api-db");
+  assert.equal(explainPayload.rules.some((rule) => rule.name === "allowed-template-id" && rule.ok), true);
+
+  const humanExplain = runCli(["template", "policy", "explain"], { cwd: projectRoot });
+  assert.equal(humanExplain.status, 0, humanExplain.stderr || humanExplain.stdout);
+  assert.match(humanExplain.stdout, /Template policy explain: allowed/);
+  assert.match(humanExplain.stdout, /PASS allowed-template-id/);
 });
 
 test("topogram template policy pin records a reviewed template version", () => {
@@ -1522,6 +1535,52 @@ test("topogram template policy denies disallowed sources, executable templates, 
   const versionDenied = runCli(["template", "update", "--status", "--json"], { cwd: projectRoot });
   assert.notEqual(versionDenied.status, 0, versionDenied.stdout);
   assert.equal(JSON.parse(versionDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "template_version_mismatch"), true);
+});
+
+test("topogram template policy explain checks package scope from source spec", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-explain-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.template.id = "@attebury/topogram-template-todo";
+  projectConfig.template.version = "0.1.6";
+  projectConfig.template.source = "package";
+  projectConfig.template.requested = "todo";
+  projectConfig.template.sourceSpec = "@evil/topogram-template-todo@0.1.6";
+  projectConfig.template.catalog = {
+    id: "todo",
+    source: "./topograms.catalog.json",
+    package: "@evil/topogram-template-todo",
+    version: "0.1.6",
+    packageSpec: "@evil/topogram-template-todo@0.1.6"
+  };
+  writeJson(projectConfigPath, projectConfig);
+
+  const policyPath = path.join(projectRoot, "topogram.template-policy.json");
+  const policy = readJson(policyPath);
+  policy.allowedTemplateIds = ["@attebury/topogram-template-todo"];
+  policy.allowedPackageScopes = ["@attebury"];
+  policy.executableImplementation = "allow";
+  policy.pinnedVersions = { "@attebury/topogram-template-todo": "0.1.6" };
+  writeJson(policyPath, policy);
+
+  const check = runCli(["template", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.diagnostics.some((diagnostic) => diagnostic.code === "template_package_scope_denied"), true);
+
+  const explain = runCli(["template", "policy", "explain", "--json"], { cwd: projectRoot });
+  assert.notEqual(explain.status, 0, explain.stdout);
+  const explainPayload = JSON.parse(explain.stdout);
+  assert.equal(explainPayload.package.scope, "@evil");
+  assert.equal(explainPayload.catalog.packageSpec, "@evil/topogram-template-todo@0.1.6");
+  const scopeRule = explainPayload.rules.find((rule) => rule.name === "allowed-package-scope");
+  assert.equal(scopeRule.ok, false);
+  assert.equal(scopeRule.actual, "@evil");
+  assert.equal(scopeRule.expected, "@attebury");
 });
 
 test("topogram template check enforces caller template policy when present", () => {

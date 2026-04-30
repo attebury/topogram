@@ -197,6 +197,8 @@ project. Existing projects can create or refresh one from their current
 topogram template policy init
 topogram template policy check
 topogram template policy check --json
+topogram template policy explain
+topogram template policy explain --json
 topogram template policy pin @scope/topogram-template-name@0.1.0
 ```
 
@@ -204,18 +206,24 @@ Policy check succeeds with a warning when the file is missing so older projects
 can adopt it incrementally. When the file exists, template update/status/check
 commands enforce it before comparing candidate files. `allowedSources` controls
 `builtin`, `local`, and package templates. `allowedTemplateIds` keeps updates on
-the expected template family. `allowedPackageScopes` limits package templates to
-trusted npm scopes. `executableImplementation` may be `allow`, `warn`, or
-`deny`. `pinnedVersions` can force a reviewed exact template version until a
-human updates the pin.
+the expected template family. `allowedPackageScopes` limits package templates by
+the actual package source spec recorded in `topogram.project.json`, not only by
+the template id. `executableImplementation` may be `allow`, `warn`, or `deny`.
+`pinnedVersions` can force a reviewed exact template version until a human
+updates the pin.
+
+Use `topogram template policy explain` when a human or agent needs a readable
+rule-by-rule answer to why the current template is allowed or denied. It reports
+source, template id, package scope, executable implementation, pinned version,
+and catalog provenance when the project came from a catalog alias.
 
 Use `topogram template policy pin <template-id@version>` after reviewing a
 candidate template. The command updates `pinnedVersions`, ensures the template id
 is allowed, and records the package scope for scoped package templates.
 
-This policy does not prove package identity or sign templates yet. Treat it as
-the v1 guardrail that makes template intent explicit and gives agents a single
-file to inspect before changing template-owned project files.
+This policy does not sign templates yet. Treat it as the v1 guardrail that makes
+template intent explicit, checks package-backed source scope, and gives agents a
+single file to inspect before changing template-owned project files.
 
 ## Template Updates
 

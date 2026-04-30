@@ -98,8 +98,10 @@ run `topogram trust template`.
 New starters create one automatically. Use `topogram template policy check` in
 projects and CI to verify the current template metadata against allowed sources,
 template ids, package scopes, executable-template policy, and optional pinned
-versions. Use `topogram template policy init` to create or refresh the policy
-from the current `topogram.project.json`.
+versions. Use `topogram template policy explain` when a human or agent needs to
+see each rule, the actual template/package values, catalog provenance, and the
+next command to fix a denial. Use `topogram template policy init` to create or
+refresh the policy from the current `topogram.project.json`.
 After reviewing a candidate template, use `topogram template policy pin
 <template-id@version>` to record the reviewed exact version without hand-editing
 the policy file.

@@ -230,6 +230,18 @@ export function packageNameFromSpec(spec) {
 }
 
 /**
+ * @param {string|null|undefined} spec
+ * @returns {string|null}
+ */
+export function packageScopeFromSpec(spec) {
+  if (!spec) {
+    return null;
+  }
+  const packageName = packageNameFromSpec(spec);
+  return packageName.startsWith("@") ? packageName.split("/")[0] : null;
+}
+
+/**
  * @param {unknown} value
  * @returns {TemplateManifest}
  */
@@ -739,7 +751,9 @@ export function loadTemplatePolicy(projectRoot) {
  */
 function defaultTemplatePolicyForTemplate(template) {
   const allowedPackageScopes = [];
-  const idScope = template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null;
+  const idScope = template.source === "package"
+    ? packageScopeFromSpec(template.packageSpec || template.requested)
+    : null;
   if (template.source === "package" && idScope) {
     allowedPackageScopes.push(idScope);
   }
@@ -770,7 +784,15 @@ export function writeTemplatePolicy(projectRoot, policy) {
  */
 export function writeTemplatePolicyForProject(projectRoot, projectConfig) {
   const current = currentTemplateMetadata(projectConfig);
-  const allowedPackageScopes = current.id?.startsWith("@") ? [current.id.split("/")[0]] : [];
+  /** @type {string[]} */
+  const allowedPackageScopes = [];
+  if (current.source === "package") {
+    const currentScope = packageScopeFromSpec(current.sourceSpec) ||
+      (current.id?.startsWith("@") ? current.id.split("/")[0] : null);
+    if (currentScope) {
+      allowedPackageScopes.push(currentScope);
+    }
+  }
   return writeTemplatePolicy(projectRoot, {
     version: "0.1",
     allowedSources: ["builtin", "local", "package"],
@@ -802,7 +824,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_source_denied",
       message: `Template source '${template.source}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
       path: policyInfo.path,
-      suggestedFix: "Add the source to allowedSources or choose an allowed template.",
+      suggestedFix: `Run \`topogram template policy init\` to reset from the current project, or add '${template.source}' to allowedSources after review.`,
       step
     }));
   }
@@ -811,18 +833,19 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_id_denied",
       message: `Template '${template.manifest.id}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
       path: policyInfo.path,
-      suggestedFix: "Add the template id to allowedTemplateIds or choose an allowed template.",
+      suggestedFix: `Run \`topogram template policy pin ${template.manifest.id}@${template.manifest.version}\` after review, or choose an allowed template.`,
       step
     }));
   }
   if (template.source === "package" && policy.allowedPackageScopes && policy.allowedPackageScopes.length > 0) {
-    const scope = template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null;
+    const scope = packageScopeFromSpec(template.packageSpec || template.requested) ||
+      (template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null);
     if (!scope || !policy.allowedPackageScopes.includes(scope)) {
       diagnostics.push(templateUpdateDiagnostic({
         code: "template_package_scope_denied",
         message: `Template package scope '${scope || "(unscoped)"}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
         path: policyInfo.path,
-        suggestedFix: "Add the package scope to allowedPackageScopes or choose an allowed package template.",
+        suggestedFix: `Add '${scope || "(unscoped)"}' to allowedPackageScopes after review, or choose a package from an allowed scope.`,
         step
       }));
     }
@@ -833,7 +856,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_version_mismatch",
       message: `Template '${template.manifest.id}' is pinned to version '${pinnedVersion}', but candidate version is '${template.manifest.version}'.`,
       path: policyInfo.path,
-      suggestedFix: "Update pinnedVersions after review, or use the pinned template version.",
+      suggestedFix: `Run \`topogram template policy pin ${template.manifest.id}@${template.manifest.version}\` after review, or use version '${pinnedVersion}'.`,
       step
     }));
   }
@@ -843,7 +866,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
         code: "template_executable_denied",
         message: `Template '${template.manifest.id}' includes executable implementation code, which is denied by ${TEMPLATE_POLICY_FILE}.`,
         path: policyInfo.path,
-        suggestedFix: "Use a non-executable template or change executableImplementation after review.",
+        suggestedFix: "Use a non-executable template, or set executableImplementation to 'allow' after reviewing implementation/.",
         step
       }));
     } else if (policy.executableImplementation === "warn") {

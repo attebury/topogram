@@ -130,9 +130,14 @@ template versions:
 
 ```bash
 topogram template policy check
+topogram template policy explain
 topogram template policy init
 topogram template policy pin @scope/template@0.2.0
 ```
+
+Use `topogram template policy explain` for a rule-by-rule view of the current
+project template, package scope, catalog provenance, executable implementation
+setting, and pinned version state.
 
 Use `topogram template status --latest` and `topogram template update --latest`
 only for package-backed templates when an explicit registry lookup is desired.
