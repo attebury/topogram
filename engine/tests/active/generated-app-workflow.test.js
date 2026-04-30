@@ -855,6 +855,27 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   };
 
   const targetRoot = path.join(root, "copied");
+  const humanTargetRoot = path.join(root, "copied-human");
+  const humanCopy = runCli(["catalog", "copy", "hello", humanTargetRoot, "--catalog", catalogPath], { env });
+  assert.equal(humanCopy.status, 0, humanCopy.stderr || humanCopy.stdout);
+  assert.match(humanCopy.stdout, /Copied catalog topogram 'hello'/);
+  assert.match(humanCopy.stdout, /Package: @scope\/topogram-hello@0\.1\.0/);
+  assert.match(humanCopy.stdout, /Source provenance: .*\.topogram-source\.json/);
+  assert.match(humanCopy.stdout, /Files: \d+/);
+  assert.match(humanCopy.stdout, /\.topogram-source\.json records import provenance only\. Local edits are allowed\./);
+  assert.match(humanCopy.stdout, /Next steps:/);
+  assert.match(humanCopy.stdout, /topogram source status/);
+  assert.match(humanCopy.stdout, /topogram check/);
+  assert.match(humanCopy.stdout, /topogram generate/);
+  assert.equal(fs.existsSync(path.join(humanTargetRoot, ".topogram-source.json")), true);
+
+  const humanSourceStatus = runCli(["source", "status"], { cwd: humanTargetRoot });
+  assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
+  assert.match(humanSourceStatus.stdout, /Topogram source: clean/);
+  assert.match(humanSourceStatus.stdout, /Catalog: hello from /);
+  assert.match(humanSourceStatus.stdout, /Package: @scope\/topogram-hello@0\.1\.0/);
+  assert.match(humanSourceStatus.stdout, /Changed: 0/);
+
   const copy = runCli(["catalog", "copy", "hello", targetRoot, "--catalog", catalogPath, "--json"], { env });
   assert.equal(copy.status, 0, copy.stderr || copy.stdout);
   const payload = JSON.parse(copy.stdout);

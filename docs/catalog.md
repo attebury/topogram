@@ -79,8 +79,18 @@ alias and catalog source for auditability.
 Copy a pure topogram package for editing:
 
 ```bash
+topogram catalog show hello
 topogram catalog copy hello ./hello-topogram
 topogram catalog copy hello ./hello-topogram --version 0.1.0
+cd ./hello-topogram
+topogram source status
+topogram check
+topogram generate
+```
+
+To inspect provenance from outside the copied project:
+
+```bash
 topogram source status ./hello-topogram
 topogram source status ./hello-topogram --json
 ```

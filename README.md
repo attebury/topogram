@@ -181,7 +181,18 @@ Use `topogram catalog copy <id> <target>` for pure topogram entries that should
 be copied into a workspace for editing. Copied topograms include
 `.topogram-source.json`; run `topogram source status <target>` to compare the
 current files to the import baseline. This is provenance only: local edits are
-allowed. See [Catalog](./docs/catalog.md).
+allowed, and it does not block `topogram check` or `topogram generate`:
+
+```bash
+topogram catalog show hello
+topogram catalog copy hello ./hello-topogram
+cd ./hello-topogram
+topogram source status
+topogram check
+topogram generate
+```
+
+See [Catalog](./docs/catalog.md).
 
 Private catalog and template package failures are normalized into actionable
 messages for missing auth, missing package access, missing package/version, and

@@ -1439,6 +1439,13 @@ function printCatalogCopy(payload) {
   console.log(`Package: ${payload.packageSpec}`);
   console.log(`Source provenance: ${payload.provenancePath}`);
   console.log(`Files: ${payload.files.length}`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
+  console.log("  topogram source status");
+  console.log("  topogram check");
+  console.log("  topogram generate");
 }
 
 /**

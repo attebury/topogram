@@ -111,7 +111,7 @@ topogram catalog entries can be copied for editing with
 `topogram catalog copy <id> <target>`. Copied topogram projects record
 `.topogram-source.json`; inspect local drift from that import baseline with
 `topogram source status <target>`. This metadata is provenance only and does not
-block local edits.
+block local edits, checks, or generation.
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 
