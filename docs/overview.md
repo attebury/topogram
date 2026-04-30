@@ -87,5 +87,6 @@ Treat generated output as disposable. Change the Topogram, then regenerate.
 Engine fixtures should live under `engine/tests/fixtures/**`.
 
 The Todo demo is a product workflow proof in the private `topogram-demo-todo` repo. Keep reusable engine tests close to the engine; Todo runtime semantics belong in the demo/template repos.
-The catalog index is validated with `topogram catalog check`; package contents
-remain owned by their template or topogram package repos.
+The catalog index is validated with `topogram catalog check`; private catalog
+and package access can be diagnosed with `topogram catalog doctor`. Package
+contents remain owned by their template or topogram package repos.

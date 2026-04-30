@@ -104,6 +104,7 @@ Inspect, plan, or apply a template update:
 ```bash
 topogram catalog list
 topogram catalog show todo
+topogram catalog doctor
 topogram catalog show hello
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ./hello-topogram
@@ -213,6 +214,16 @@ messages for missing auth, missing package access, missing package/version, and
 catalog source 404s. For private package consumers, configure `.npmrc` with the
 GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
 read access.
+
+Use `topogram catalog doctor` when setup is unclear. It checks catalog
+reachability, GitHub token or `gh auth` readiness for private GitHub catalog
+sources, and npm package access for each catalog entry:
+
+```bash
+topogram catalog doctor
+topogram catalog doctor --json
+topogram catalog doctor --catalog ./topograms.catalog.json
+```
 
 Clean-machine private template flow:
 

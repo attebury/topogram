@@ -124,6 +124,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram trust diff [path] [--json]");
   console.log("   or: topogram catalog list [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram package update-cli <version> [--json]");
@@ -150,6 +151,7 @@ function printUsage(options = {}) {
   console.log("  topogram template list");
   console.log("  topogram catalog list");
   console.log("  topogram catalog show todo");
+  console.log("  topogram catalog doctor");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
   console.log("  topogram source status");
@@ -612,7 +614,7 @@ function buildPackageUpdateCliPayload(version, options = {}) {
   }
   const packageJson = readPackageJsonForUpdate(cwd);
   const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts : {};
-  const candidateScripts = ["cli:surface", "catalog:template-show", "check"];
+  const candidateScripts = ["cli:surface", "catalog:show", "catalog:template-show", "check"];
   const scriptsRun = [];
   const skippedScripts = [];
   for (const scriptName of candidateScripts) {
@@ -1386,6 +1388,269 @@ function printCatalogShow(payload) {
   if (entry.kind === "topogram") {
     console.log("");
     console.log(`${TOPOGRAM_SOURCE_FILE} will record copy provenance only. Local edits are allowed.`);
+  }
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, auth: { githubTokenEnv: boolean, ghTokenEnv: boolean, ghCli: { checked: boolean, available: boolean, authenticated: boolean, reason: string|null } }, catalog: { reachable: boolean, version: string|null, entries: number }, packages: Array<{ id: string, kind: string, package: string, version: string, packageSpec: string, ok: boolean, checkedVersion: string|null, diagnostics: any[] }>, diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogDoctorPayload(source) {
+  const resolvedSource = catalogSourceOrDefault(source || null);
+  const auth = buildCatalogDoctorAuth(resolvedSource);
+  const diagnostics = [];
+  const packages = [];
+  let loaded = null;
+  try {
+    loaded = loadCatalog(source || null);
+  } catch (error) {
+    const diagnostic = {
+      code: "catalog_unreachable",
+      severity: "error",
+      message: messageFromError(error),
+      path: resolvedSource,
+      suggestedFix: catalogDoctorSourceFix(resolvedSource)
+    };
+    return {
+      ok: false,
+      source: resolvedSource,
+      auth,
+      catalog: {
+        reachable: false,
+        version: null,
+        entries: 0
+      },
+      packages,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  diagnostics.push(...loaded.diagnostics);
+  for (const entry of loaded.catalog.entries) {
+    packages.push(checkCatalogDoctorPackage(entry));
+  }
+  const packageDiagnostics = packages.flatMap((entry) => entry.diagnostics);
+  const allDiagnostics = [...diagnostics, ...packageDiagnostics];
+  const errors = allDiagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    source: loaded.source,
+    auth,
+    catalog: {
+      reachable: true,
+      version: loaded.catalog.version,
+      entries: loaded.catalog.entries.length
+    },
+    packages,
+    diagnostics: allDiagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {string} source
+ * @returns {{ githubTokenEnv: boolean, ghTokenEnv: boolean, ghCli: { checked: boolean, available: boolean, authenticated: boolean, reason: string|null } }}
+ */
+function buildCatalogDoctorAuth(source) {
+  const shouldCheckGh = source.startsWith("github:");
+  const ghCli = {
+    checked: shouldCheckGh,
+    available: false,
+    authenticated: false,
+    reason: null
+  };
+  if (shouldCheckGh) {
+    const result = childProcess.spawnSync("gh", ["auth", "token"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "",
+        PATH: process.env.PATH || ""
+      }
+    });
+    ghCli.available = result.error?.code !== "ENOENT";
+    ghCli.authenticated = result.status === 0 && Boolean(String(result.stdout || "").trim());
+    if (!ghCli.available) {
+      ghCli.reason = "GitHub CLI (gh) is not installed or not on PATH.";
+    } else if (!ghCli.authenticated) {
+      ghCli.reason = (result.stderr || result.stdout || result.error?.message || "gh auth token failed.").trim();
+    }
+  }
+  return {
+    githubTokenEnv: Boolean(process.env.GITHUB_TOKEN),
+    ghTokenEnv: Boolean(process.env.GH_TOKEN),
+    ghCli
+  };
+}
+
+/**
+ * @param {any} entry
+ * @returns {{ id: string, kind: string, package: string, version: string, packageSpec: string, ok: boolean, checkedVersion: string|null, diagnostics: any[] }}
+ */
+function checkCatalogDoctorPackage(entry) {
+  const packageSpec = catalogEntryPackageSpec(entry);
+  const result = runNpmViewPackageSpec(packageSpec);
+  if (result.status === 0) {
+    const checkedVersion = String(result.stdout || "").trim().replace(/^"|"$/g, "");
+    return {
+      id: entry.id,
+      kind: entry.kind,
+      package: entry.package,
+      version: entry.defaultVersion,
+      packageSpec,
+      ok: checkedVersion === entry.defaultVersion,
+      checkedVersion: checkedVersion || null,
+      diagnostics: checkedVersion === entry.defaultVersion ? [] : [{
+        code: "catalog_package_version_mismatch",
+        severity: "error",
+        message: `Catalog entry '${entry.id}' expected ${packageSpec}, but npm returned '${checkedVersion || "(empty)"}'.`,
+        path: entry.id,
+        suggestedFix: "Check defaultVersion in the catalog, or publish the referenced package version."
+      }]
+    };
+  }
+  const diagnostic = catalogDoctorPackageDiagnostic(entry, packageSpec, result);
+  return {
+    id: entry.id,
+    kind: entry.kind,
+    package: entry.package,
+    version: entry.defaultVersion,
+    packageSpec,
+    ok: false,
+    checkedVersion: null,
+    diagnostics: [diagnostic]
+  };
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ status: number|null, stdout: string, stderr: string, error?: Error }}
+ */
+function runNpmViewPackageSpec(packageSpec) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const localNpmConfig = path.join(process.cwd(), ".npmrc");
+  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
+    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
+    : {};
+  return childProcess.spawnSync(npmBin, ["view", packageSpec, "version", "--json"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      ...npmConfigEnv,
+      PATH: process.env.PATH || ""
+    }
+  });
+}
+
+/**
+ * @param {any} entry
+ * @param {string} packageSpec
+ * @param {{ stdout?: string, stderr?: string, error?: Error }} result
+ * @returns {any}
+ */
+function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  if (result.error?.message && result.error.message.includes("ENOENT")) {
+    return {
+      code: "npm_not_found",
+      severity: "error",
+      message: "npm is required to check catalog package access.",
+      path: entry.id,
+      suggestedFix: "Install npm with Node.js, then rerun `topogram catalog doctor`."
+    };
+  }
+  if (/\b(401|e401|authentication|auth token|login)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_auth_required",
+      severity: "error",
+      message: `Authentication is required to inspect package '${packageSpec}'.`,
+      path: entry.id,
+      suggestedFix: "Configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access."
+    };
+  }
+  if (/\b(403|e403|forbidden|permission|denied)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_access_denied",
+      severity: "error",
+      message: `Package access was denied for '${packageSpec}'.`,
+      path: entry.id,
+      suggestedFix: "Grant the consuming repository access under the package's Manage Actions access settings, or use a token with package read access."
+    };
+  }
+  if (/\b(404|e404|not found)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_not_found",
+      severity: "error",
+      message: `Package '${packageSpec}' was not found, or the current npm token cannot see it.`,
+      path: entry.id,
+      suggestedFix: "Check the package name/version and GitHub Packages access."
+    };
+  }
+  return {
+    code: "catalog_package_check_failed",
+    severity: "error",
+    message: `Failed to inspect package '${packageSpec}'.${output ? `\n${output}` : ""}`,
+    path: entry.id,
+    suggestedFix: "Run `npm view <package>@<version> version --json` with the same npm auth configuration to debug package access."
+  };
+}
+
+/**
+ * @param {string} source
+ * @returns {string}
+ */
+function catalogDoctorSourceFix(source) {
+  if (source.startsWith("github:")) {
+    return "Set GITHUB_TOKEN or GH_TOKEN with repository read access, run `gh auth login`, or pass --catalog ./topograms.catalog.json.";
+  }
+  if (source.startsWith("http://") || source.startsWith("https://")) {
+    return "Check the catalog URL and token access, or pass --catalog ./topograms.catalog.json.";
+  }
+  return "Check the local catalog path and run `topogram catalog check <path>`.";
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogDoctorPayload>} payload
+ * @returns {void}
+ */
+function printCatalogDoctor(payload) {
+  console.log(payload.ok ? "Catalog doctor passed." : "Catalog doctor found issues.");
+  console.log(`Source: ${payload.source}`);
+  if (payload.source.startsWith("github:")) {
+    const tokenStatus = payload.auth.githubTokenEnv || payload.auth.ghTokenEnv ? "yes" : "no";
+    const ghStatus = payload.auth.ghCli.checked
+      ? `${payload.auth.ghCli.authenticated ? "authenticated" : "not authenticated"}${payload.auth.ghCli.reason ? ` (${payload.auth.ghCli.reason})` : ""}`
+      : "not checked";
+    console.log(`GitHub token env: ${tokenStatus}`);
+    console.log(`gh auth: ${ghStatus}`);
+  }
+  console.log(`Catalog reachable: ${payload.catalog.reachable ? "yes" : "no"}`);
+  if (payload.catalog.reachable) {
+    console.log(`Version: ${payload.catalog.version}`);
+    console.log(`Entries: ${payload.catalog.entries}`);
+  }
+  if (payload.packages.length > 0) {
+    console.log("Packages:");
+    for (const item of payload.packages) {
+      console.log(`- ${item.id} (${item.kind}): ${item.packageSpec} ${item.ok ? "ok" : "failed"}`);
+      for (const diagnostic of item.diagnostics) {
+        console.log(`  Error: ${diagnostic.message}`);
+        if (diagnostic.suggestedFix) {
+          console.log(`  Fix: ${diagnostic.suggestedFix}`);
+        }
+      }
+    }
+  }
+  const packageIds = new Set(payload.packages.map((item) => item.id));
+  for (const diagnostic of payload.diagnostics.filter((item) => !item.path || !packageIds.has(item.path))) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`Fix: ${diagnostic.suggestedFix}`);
+    }
   }
 }
 
@@ -2649,6 +2914,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
 } else if (args[0] === "catalog" && args[1] === "show") {
   commandArgs = { catalogShow: true, inputPath: args[2] };
+} else if (args[0] === "catalog" && args[1] === "doctor") {
+  commandArgs = { catalogDoctor: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
 } else if (args[0] === "catalog" && args[1] === "check") {
   commandArgs = { catalogCheck: true, inputPath: args[2] };
 } else if (args[0] === "catalog" && args[1] === "copy") {
@@ -2760,6 +3027,7 @@ const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldCatalogList = Boolean(commandArgs?.catalogList);
 const shouldCatalogShow = Boolean(commandArgs?.catalogShow);
+const shouldCatalogDoctor = Boolean(commandArgs?.catalogDoctor);
 const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
 const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
@@ -2887,6 +3155,16 @@ try {
       console.log(stableStringify(payload));
     } else {
       printCatalogShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogDoctor) {
+    const payload = buildCatalogDoctorPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogDoctor(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }

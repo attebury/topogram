@@ -30,6 +30,18 @@ topogram catalog show hello --json
 Template entries recommend `topogram new`. Pure topogram entries recommend
 `topogram catalog copy` plus `topogram source status`.
 
+Check private catalog and package access:
+
+```bash
+topogram catalog doctor
+topogram catalog doctor --json
+topogram catalog doctor --catalog ./topograms.catalog.json
+```
+
+`catalog doctor` loads and validates the catalog, reports GitHub token or
+`gh auth` readiness for private GitHub catalog sources, and checks each entry's
+package/version with npm. It is read-only and does not install packages.
+
 Validate a local or remote catalog:
 
 ```bash

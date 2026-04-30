@@ -138,6 +138,10 @@ function packageNameFromSpec(spec) {
   return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
 }
 if (args[0] === "view") {
+  if (process.env.FAKE_NPM_VIEW_FAIL_SPEC && args[1].includes(process.env.FAKE_NPM_VIEW_FAIL_SPEC)) {
+    process.stderr.write(process.env.FAKE_NPM_VIEW_FAIL_OUTPUT || "npm ERR! 403 Forbidden\\n");
+    process.exit(1);
+  }
   process.stdout.write(JSON.stringify(process.env.FAKE_NPM_LATEST_VERSION || "0.2.0") + "\\n");
   process.exit(0);
 }
@@ -372,6 +376,58 @@ test("topogram catalog check validates catalog schema", () => {
   assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_surface_unknown"), true);
   assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_generators_invalid"), true);
   assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_stack_invalid"), true);
+});
+
+test("topogram catalog doctor reports catalog and package access", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-doctor-"));
+  const fakeNpmBin = createFakeNpm(root);
+  const catalogPath = createCatalog(root, [
+    catalogEntry(),
+    catalogEntry({
+      id: "hello",
+      kind: "topogram",
+      package: "@scope/topogram-hello",
+      defaultVersion: "0.1.0",
+      description: "Hello topogram",
+      tags: ["hello"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    })
+  ]);
+  const env = {
+    FAKE_NPM_LATEST_VERSION: "0.1.0",
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const doctor = runCli(["catalog", "doctor", "--catalog", catalogPath, "--json"], { env });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const payload = JSON.parse(doctor.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.catalog.reachable, true);
+  assert.equal(payload.catalog.entries, 2);
+  assert.equal(payload.packages.length, 2);
+  assert.equal(payload.packages.every((item) => item.ok), true);
+  assert.equal(payload.packages[0].packageSpec, "@scope/topogram-template-todo@0.1.0");
+
+  const human = runCli(["catalog", "doctor", "--catalog", catalogPath], { env });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Catalog doctor passed/);
+  assert.match(human.stdout, /Catalog reachable: yes/);
+  assert.match(human.stdout, /@scope\/topogram-template-todo@0\.1\.0 ok/);
+
+  const denied = runCli(["catalog", "doctor", "--catalog", catalogPath, "--json"], {
+    env: {
+      ...env,
+      FAKE_NPM_VIEW_FAIL_SPEC: "@scope/topogram-hello@0.1.0",
+      FAKE_NPM_VIEW_FAIL_OUTPUT: "npm ERR! 403 Forbidden"
+    }
+  });
+  assert.notEqual(denied.status, 0, denied.stdout);
+  const deniedPayload = JSON.parse(denied.stdout);
+  assert.equal(deniedPayload.ok, false);
+  assert.equal(deniedPayload.packages.find((item) => item.id === "hello").diagnostics[0].code, "catalog_package_access_denied");
 });
 
 test("topogram catalog show describes template and topogram entries", () => {
@@ -752,6 +808,7 @@ test("topogram package update-cli updates consumer dependency and runs available
     private: true,
     scripts: {
       "cli:surface": "node -e true",
+      "catalog:show": "node -e true",
       "catalog:template-show": "node -e true",
       "check": "node -e true"
     },
@@ -778,11 +835,12 @@ test("topogram package update-cli updates consumer dependency and runs available
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
   assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.37/);
-  assert.match(update.stdout, /Checks run: cli:surface, catalog:template-show, check/);
+  assert.match(update.stdout, /Checks run: cli:surface, catalog:show, catalog:template-show, check/);
   assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.37");
   assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.37");
   assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
     "cli:surface",
+    "catalog:show",
     "catalog:template-show",
     "check"
   ]);
@@ -802,7 +860,7 @@ test("topogram package update-cli updates consumer dependency and runs available
   const minimalPayload = JSON.parse(minimal.stdout);
   assert.equal(minimalPayload.ok, true);
   assert.deepEqual(minimalPayload.scriptsRun, []);
-  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "catalog:template-show", "check"]);
+  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "catalog:show", "catalog:template-show", "check"]);
 });
 
 test("topogram package update-cli explains private package auth failures", () => {
