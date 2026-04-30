@@ -54,3 +54,10 @@ Then, from another terminal while the app is still running:
 npm run app:smoke
 npm run app:runtime-check
 ```
+
+Use the self-contained local runtime command when you want the generated stack
+started and stopped for the probe:
+
+```bash
+npm run app:runtime
+```

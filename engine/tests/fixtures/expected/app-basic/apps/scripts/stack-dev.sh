@@ -6,7 +6,9 @@ PIDS=()
 
 node "$SCRIPT_DIR/guard-ports.mjs" stack
 
-bash "$SCRIPT_DIR/bootstrap-db.sh"
+if [[ "${TOPOGRAM_SKIP_STACK_BOOTSTRAP:-false}" != "true" ]]; then
+  bash "$SCRIPT_DIR/bootstrap-db.sh"
+fi
 
 bash "$SCRIPT_DIR/services/app_api-dev.sh" &
 PIDS+=($!)

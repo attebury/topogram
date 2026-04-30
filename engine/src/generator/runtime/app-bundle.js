@@ -84,6 +84,7 @@ function buildAppBundlePlan(graph, options = {}) {
       bootstrap: "./scripts/bootstrap.sh",
       dev: "./scripts/dev.sh",
       compile: "./scripts/compile-check.sh",
+      runtime: "./scripts/runtime.sh",
       smoke: "./scripts/smoke.sh",
       runtimeCheck: "./scripts/runtime-check.sh",
       deployCheck: "./scripts/deploy-check.sh"
@@ -198,9 +199,12 @@ It includes:
    - \`bash ${plan.commands.dev.replace("./", "")}\`
 4. Compile-check it:
    - \`bash ${plan.commands.compile.replace("./", "")}\`
-5. With the app still running, run richer staged runtime checks in another terminal:
+5. Run self-contained local runtime verification:
+   - \`bash ${plan.commands.runtime.replace("./", "")}\`
+
+Or, with the app still running, run richer staged runtime checks in another terminal:
    - \`bash ${plan.commands.runtimeCheck.replace("./", "")}\`
-6. With the app still running, run the lightweight smoke check:
+Then run the lightweight smoke check:
    - \`bash ${plan.commands.smoke.replace("./", "")}\`
 
 ## Golden Path
@@ -213,8 +217,7 @@ For the default generated bundle:
 4. Open the web app at \`${urls.web}${plan.runtimeReference.smoke.webPath}\`
 5. Confirm the seeded "${plan.runtimeReference.appBundle.demoContainerName}" and "${plan.runtimeReference.appBundle.demoPrimaryTitle}" flow through the stack
 6. Run \`bash ${plan.commands.compile.replace("./", "")}\`
-7. Run \`bash ${plan.commands.runtimeCheck.replace("./", "")}\`
-8. Run \`bash ${plan.commands.smoke.replace("./", "")}\`
+7. Run \`bash ${plan.commands.runtime.replace("./", "")}\`
 
 ## Deployment
 
@@ -232,6 +235,7 @@ For the default generated bundle:
 - The generated server exposes \`GET /health\` for liveness and \`GET /ready\` for DB-backed readiness
 - \`compile/\` is self-contained and does not require the app to be running
 - \`smoke/\` and \`runtime-check/\` are probes against a running local stack
+- \`scripts/runtime.sh\` starts the local stack, waits for readiness, runs the probes, and stops the stack
 `;
 }
 
@@ -244,6 +248,7 @@ function renderAppBundlePackageJson() {
       bootstrap: "bash ./scripts/bootstrap.sh",
       dev: "bash ./scripts/dev.sh",
       compile: "bash ./scripts/compile-check.sh",
+      runtime: "bash ./scripts/runtime.sh",
       "runtime-check": "bash ./scripts/runtime-check.sh",
       smoke: "bash ./scripts/smoke.sh",
       probe: "npm run smoke && npm run runtime-check",
@@ -262,6 +267,108 @@ function renderAppBundleBootstrapScript() {
 
 function renderAppBundleDevScript() {
   return renderNestedBundleShellScript("apps", "scripts/stack-dev.sh");
+}
+
+function renderAppBundleRuntimeScript() {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+STACK_PID=""
+
+. "$SCRIPT_DIR/load-env.sh"
+
+cleanup() {
+  if [[ -n "$STACK_PID" ]]; then
+    kill "$STACK_PID" >/dev/null 2>&1 || true
+    wait "$STACK_PID" >/dev/null 2>&1 || true
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+bash "$SCRIPT_DIR/bootstrap.sh"
+
+TOPOGRAM_SKIP_STACK_BOOTSTRAP=true bash "$SCRIPT_DIR/dev.sh" &
+STACK_PID=$!
+
+node "$SCRIPT_DIR/wait-for-stack.mjs"
+bash "$SCRIPT_DIR/smoke.sh"
+bash "$SCRIPT_DIR/runtime-check.sh"
+`;
+}
+
+function renderAppBundleWaitForStackScript(plan) {
+  const topology = {
+    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
+    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+  };
+  const ports = runtimePorts(plan.runtimeReference, topology);
+  const urls = runtimeUrls(plan.runtimeReference, topology);
+  const endpoints = [
+    ...(plan.projections.api ? [
+      { label: "api health", url: `${urls.api}/health`, expectJson: "ok" },
+      { label: "api readiness", url: `${urls.api}/ready`, expectJson: "ready" }
+    ] : []),
+    ...(plan.projections.ui ? [
+      { label: "web app", url: `${urls.web}${plan.runtimeReference.smoke.webPath || "/"}` }
+    ] : [])
+  ];
+  return `const endpoints = ${JSON.stringify(endpoints, null, 2)};
+const timeoutMs = Number(process.env.TOPOGRAM_RUNTIME_WAIT_MS || "60000");
+const intervalMs = Number(process.env.TOPOGRAM_RUNTIME_WAIT_INTERVAL_MS || "500");
+const startedAt = Date.now();
+
+function envUrl(url) {
+  return String(url)
+    .replace("http://localhost:${ports.server}", process.env.TOPOGRAM_API_BASE_URL || process.env.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:${ports.server}")
+    .replace("http://localhost:${ports.web}", process.env.TOPOGRAM_WEB_BASE_URL || process.env.PUBLIC_TOPOGRAM_WEB_BASE_URL || \`http://localhost:\${process.env.WEB_PORT || "${ports.web}"}\`);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function isReady(endpoint) {
+  const url = envUrl(endpoint.url);
+  try {
+    const response = await fetch(url);
+    if (response.status !== 200) {
+      return { ok: false, message: \`\${endpoint.label} returned \${response.status}\` };
+    }
+    if (endpoint.expectJson) {
+      const body = await response.json().catch(() => null);
+      if (body?.[endpoint.expectJson] !== true) {
+        return { ok: false, message: \`\${endpoint.label} did not report \${endpoint.expectJson}=true\` };
+      }
+    }
+    return { ok: true };
+  } catch (error) {
+    const code = error?.cause?.code || error?.code || (error instanceof Error ? error.message : String(error));
+    return { ok: false, message: \`\${endpoint.label} not reachable: \${code}\` };
+  }
+}
+
+if (endpoints.length === 0) {
+  console.log("No runtime endpoints are configured; skipping readiness wait.");
+  process.exit(0);
+}
+
+let lastMessage = "";
+while (Date.now() - startedAt < timeoutMs) {
+  const results = await Promise.all(endpoints.map((endpoint) => isReady(endpoint)));
+  if (results.every((result) => result.ok)) {
+    console.log("Generated stack is ready.");
+    process.exit(0);
+  }
+  lastMessage = results.filter((result) => !result.ok).map((result) => result.message).join("; ");
+  await sleep(intervalMs);
+}
+
+console.error(\`Generated stack did not become ready within \${timeoutMs}ms. \${lastMessage}\`);
+process.exit(1);
+`;
 }
 
 function renderAppBundleSmokeScript() {
@@ -316,6 +423,8 @@ export function generateAppBundle(graph, options = {}) {
     "scripts/load-env.sh": renderAppBundleLoadEnvScript(),
     "scripts/bootstrap.sh": renderAppBundleBootstrapScript(),
     "scripts/dev.sh": renderAppBundleDevScript(),
+    "scripts/runtime.sh": renderAppBundleRuntimeScript(),
+    "scripts/wait-for-stack.mjs": renderAppBundleWaitForStackScript(plan),
     "scripts/compile-check.sh": renderAppBundleCompileScript(),
     "scripts/runtime-check.sh": renderAppBundleRuntimeCheckScript(),
     "scripts/smoke.sh": renderAppBundleSmokeScript(),

@@ -415,7 +415,9 @@ PIDS=()
 
 node "$SCRIPT_DIR/guard-ports.mjs" stack
 
-bash "$SCRIPT_DIR/bootstrap-db.sh"
+if [[ "\${TOPOGRAM_SKIP_STACK_BOOTSTRAP:-false}" != "true" ]]; then
+  bash "$SCRIPT_DIR/bootstrap-db.sh"
+fi
 
 ${startLines.length ? startLines.join("\n") : 'echo "No long-running dev services are configured."'}
 

@@ -22,9 +22,12 @@ It includes:
    - `bash scripts/dev.sh`
 4. Compile-check it:
    - `bash scripts/compile-check.sh`
-5. With the app still running, run richer staged runtime checks in another terminal:
+5. Run self-contained local runtime verification:
+   - `bash scripts/runtime.sh`
+
+Or, with the app still running, run richer staged runtime checks in another terminal:
    - `bash scripts/runtime-check.sh`
-6. With the app still running, run the lightweight smoke check:
+Then run the lightweight smoke check:
    - `bash scripts/smoke.sh`
 
 ## Golden Path
@@ -37,8 +40,7 @@ For the default generated bundle:
 4. Open the web app at `http://localhost:5173/tasks`
 5. Confirm the seeded "Demo Project" and "Seeded Demo Task" flow through the stack
 6. Run `bash scripts/compile-check.sh`
-7. Run `bash scripts/runtime-check.sh`
-8. Run `bash scripts/smoke.sh`
+7. Run `bash scripts/runtime.sh`
 
 ## Deployment
 
@@ -56,3 +58,4 @@ For the default generated bundle:
 - The generated server exposes `GET /health` for liveness and `GET /ready` for DB-backed readiness
 - `compile/` is self-contained and does not require the app to be running
 - `smoke/` and `runtime-check/` are probes against a running local stack
+- `scripts/runtime.sh` starts the local stack, waits for readiness, runs the probes, and stops the stack

@@ -198,6 +198,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
     "app-bundle-plan.json",
     "scripts/bootstrap.sh",
     "scripts/compile-check.sh",
+    "scripts/runtime.sh",
+    "scripts/wait-for-stack.mjs",
     "scripts/runtime-check.sh"
   ]) {
     assert.equal(
@@ -657,6 +659,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["app:runtime-check"], "npm --prefix ./app run runtime-check");
   assert.equal(pkg.scripts["app:check"], "npm run app:compile");
   assert.equal(pkg.scripts["app:probe"], "npm run app:smoke && npm run app:runtime-check");
+  assert.equal(pkg.scripts["app:runtime"], "npm --prefix ./app run runtime");
 
   assert.match(create.stderr, /copied implementation\/ code/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
@@ -726,6 +729,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(explain.stdout, /npm run generate/);
   assert.match(explain.stdout, /npm run verify/);
   assert.match(explain.stdout, /npm run app:probe/);
+  assert.match(explain.stdout, /npm run app:runtime/);
 
   const check = runNpm(["run", "check"], projectRoot);
   assert.equal(check.status, 0, check.stderr || check.stdout);

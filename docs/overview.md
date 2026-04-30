@@ -54,6 +54,12 @@ npm run app:smoke
 npm run app:runtime-check
 ```
 
+Or let the generated app start, probe, and stop its local stack:
+
+```bash
+npm run app:runtime
+```
+
 ## Where To Edit
 
 Edit the Topogram model here:

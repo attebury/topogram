@@ -155,6 +155,12 @@ npm run app:smoke
 npm run app:runtime-check
 ```
 
+For a self-contained local runtime pass that starts and stops the generated stack:
+
+```bash
+npm run app:runtime
+```
+
 ## Repo Layout
 
 - `engine/` - Topogram engine, CLI, tests, and fixtures
