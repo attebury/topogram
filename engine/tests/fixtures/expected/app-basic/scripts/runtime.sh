@@ -7,9 +7,18 @@ STACK_PID=""
 
 . "$SCRIPT_DIR/load-env.sh"
 
+kill_tree() {
+  local pid="$1"
+  local child
+  while IFS= read -r child; do
+    [[ -n "$child" ]] && kill_tree "$child"
+  done < <(pgrep -P "$pid" 2>/dev/null || true)
+  kill "$pid" >/dev/null 2>&1 || true
+}
+
 cleanup() {
   if [[ -n "$STACK_PID" ]]; then
-    kill "$STACK_PID" >/dev/null 2>&1 || true
+    kill_tree "$STACK_PID"
     wait "$STACK_PID" >/dev/null 2>&1 || true
   fi
 }

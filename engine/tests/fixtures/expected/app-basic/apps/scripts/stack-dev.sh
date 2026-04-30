@@ -15,9 +15,20 @@ PIDS+=($!)
 bash "$SCRIPT_DIR/web/app_sveltekit-dev.sh" &
 PIDS+=($!)
 
+kill_tree() {
+  local pid="$1"
+  local child
+  while IFS= read -r child; do
+    [[ -n "$child" ]] && kill_tree "$child"
+  done < <(pgrep -P "$pid" 2>/dev/null || true)
+  kill "$pid" >/dev/null 2>&1 || true
+}
+
 cleanup() {
   if [[ "${#PIDS[@]}" -gt 0 ]]; then
-    kill "${PIDS[@]}" >/dev/null 2>&1 || true
+    for pid in "${PIDS[@]}"; do
+      kill_tree "$pid"
+    done
   fi
 }
 
