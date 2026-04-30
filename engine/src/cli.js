@@ -1241,12 +1241,20 @@ function printCatalogList(payload) {
   console.log("Template entries create starters with `topogram new`; topogram entries copy editable Topogram source.");
   console.log(`Catalog: ${payload.source}`);
   console.log(`Version: ${payload.catalog.version}`);
+  const catalogOption = payload.source === catalogSourceOrDefault(null)
+    ? ""
+    : ` --catalog ${shellCommandArg(payload.source)}`;
   for (const entry of payload.entries) {
     console.log(`- ${entry.id} (${entry.kind})`);
     console.log(`  Package: ${entry.package}@${entry.defaultVersion}`);
     console.log(`  Description: ${entry.description}`);
     console.log(`  Trust scope: ${entry.trust.scope}`);
     console.log(`  Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+    if (entry.kind === "template") {
+      console.log(`  New: topogram new ./my-app --template ${shellCommandArg(entry.id)}${catalogOption}`);
+    } else {
+      console.log(`  Copy: topogram catalog copy ${shellCommandArg(entry.id)} ./${entry.id}-topogram${catalogOption}`);
+    }
   }
 }
 
@@ -1317,8 +1325,10 @@ function catalogShowCommands(entry, source) {
   return {
     primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
     followUp: [
-      `topogram source status ${target}`,
-      `topogram check ${target}`
+      `cd ${target}`,
+      "topogram source status",
+      "topogram check",
+      "topogram generate"
     ]
   };
 }
@@ -1348,12 +1358,20 @@ function printCatalogShow(payload) {
   const { entry } = payload;
   console.log(`Catalog entry: ${entry.id}`);
   console.log(`Kind: ${entry.kind}`);
+  if (entry.kind === "template") {
+    console.log("Action: creates a starter app workspace with `topogram new`.");
+  } else {
+    console.log("Action: copies editable Topogram source with `topogram catalog copy`.");
+    console.log("Executable implementation: no (topogram entries cannot include implementation/ in v1).");
+  }
   console.log(`Catalog: ${payload.source}`);
   console.log(`Package: ${payload.packageSpec}`);
   console.log(`Description: ${entry.description}`);
   console.log(`Tags: ${entry.tags.join(", ") || "none"}`);
   console.log(`Trust scope: ${entry.trust.scope}`);
-  console.log(`Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  if (entry.kind === "template") {
+    console.log(`Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  }
   if (entry.trust.notes) {
     console.log(`Trust notes: ${entry.trust.notes}`);
   }
@@ -1368,7 +1386,7 @@ function printCatalogShow(payload) {
   }
   if (entry.kind === "topogram") {
     console.log("");
-    console.log(`${TOPOGRAM_SOURCE_FILE} will record copy provenance. Local edits are allowed.`);
+    console.log(`${TOPOGRAM_SOURCE_FILE} will record copy provenance only. Local edits are allowed.`);
   }
 }
 
@@ -1454,10 +1472,11 @@ function printCatalogCopy(payload) {
  */
 function printTopogramSourceStatus(payload) {
   if (!payload.exists) {
-    console.log("Topogram source: missing");
+    console.log("Topogram source status: no provenance");
     console.log(`Expected: ${payload.path}`);
+    console.log(`${TOPOGRAM_SOURCE_FILE} was not found. This workspace may not have been copied from a catalog topogram entry.`);
   } else {
-    console.log(`Topogram source: ${payload.status}`);
+    console.log(`Topogram source status: ${payload.status}`);
     console.log(`File: ${payload.path}`);
     if (payload.source?.catalog?.id) {
       console.log(`Catalog: ${payload.source.catalog.id}${payload.source.catalog.source ? ` from ${payload.source.catalog.source}` : ""}`);
@@ -1479,6 +1498,14 @@ function printTopogramSourceStatus(payload) {
   }
   console.log("");
   console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log("This status does not block `topogram check` or `topogram generate`.");
+  if (!payload.exists) {
+    console.log("Next: use `topogram catalog copy <id> <target>` to create a workspace with source provenance.");
+  } else if (payload.status === "changed") {
+    console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
+  } else {
+    console.log("Next: run `topogram check` or `topogram generate`.");
+  }
 }
 
 /**

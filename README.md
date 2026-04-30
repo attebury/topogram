@@ -14,8 +14,24 @@ export NODE_AUTH_TOKEN=<github-token-with-package-read>
 npm config set @attebury:registry https://npm.pkg.github.com
 npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
 npm install --save-dev @attebury/topogram
+```
+
+Choose your starting point:
+
+```bash
+# Built-in starter, no catalog access required.
+npx topogram new ./hello-web
+
+# Catalog template alias, installs a versioned template package.
 npx topogram template list
 npx topogram new ./my-app --template todo
+
+# Pure Topogram source copy, for editing before generation.
+npx topogram catalog show hello
+npx topogram catalog copy hello ./hello-topogram
+cd ./hello-topogram
+npx topogram source status
+npx topogram check
 ```
 
 For executable templates, review the copied `implementation/` directory before

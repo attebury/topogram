@@ -106,6 +106,12 @@ The source file is provenance only. Users and agents may edit copied topogram
 files after import; this status command reports drift but does not block checks,
 generation, or local maintenance.
 
+Human `source status` output always includes this distinction and suggested next
+steps. Clean copied source can move directly to `topogram check` or
+`topogram generate`. Changed source should be reviewed first, then checked and
+generated when ready. Missing provenance means the workspace was not created by
+`topogram catalog copy`, or the provenance file was removed.
+
 Use a local catalog while developing:
 
 ```bash

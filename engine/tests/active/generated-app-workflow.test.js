@@ -415,17 +415,25 @@ test("topogram catalog show describes template and topogram entries", () => {
     `topogram catalog copy hello ./hello-topogram --catalog ${catalogPath}`
   );
   assert.deepEqual(topogramPayload.commands.followUp, [
-    "topogram source status ./hello-topogram",
-    "topogram check ./hello-topogram"
+    "cd ./hello-topogram",
+    "topogram source status",
+    "topogram check",
+    "topogram generate"
   ]);
 
   const human = runCli(["catalog", "show", "hello", "--catalog", catalogPath]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Catalog entry: hello/);
   assert.match(human.stdout, /Kind: topogram/);
+  assert.match(human.stdout, /Action: copies editable Topogram source/);
+  assert.match(human.stdout, /Executable implementation: no \(topogram entries cannot include implementation\/ in v1\)/);
   assert.match(human.stdout, /Recommended command:/);
   assert.match(human.stdout, /topogram catalog copy hello \.\/hello-topogram/);
-  assert.match(human.stdout, /\.topogram-source\.json will record copy provenance/);
+  assert.match(human.stdout, /cd \.\/hello-topogram/);
+  assert.match(human.stdout, /topogram source status/);
+  assert.match(human.stdout, /topogram check/);
+  assert.match(human.stdout, /topogram generate/);
+  assert.match(human.stdout, /\.topogram-source\.json will record copy provenance only/);
 
   const missing = runCli(["catalog", "show", "missing", "--catalog", catalogPath, "--json"]);
   assert.notEqual(missing.status, 0, missing.stdout);
@@ -482,7 +490,9 @@ test("topogram template list includes catalog template aliases", () => {
   assert.match(human.stdout, /todo \(template\)/);
   assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
   assert.match(human.stdout, /Executable implementation: yes/);
+  assert.match(human.stdout, /New: topogram new \.\/my-app --template todo/);
   assert.match(human.stdout, /hello \(topogram\)/);
+  assert.match(human.stdout, /Copy: topogram catalog copy hello \.\/hello-topogram/);
 });
 
 test("topogram template show describes built-in and catalog templates", () => {
@@ -871,10 +881,13 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
 
   const humanSourceStatus = runCli(["source", "status"], { cwd: humanTargetRoot });
   assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
-  assert.match(humanSourceStatus.stdout, /Topogram source: clean/);
+  assert.match(humanSourceStatus.stdout, /Topogram source status: clean/);
   assert.match(humanSourceStatus.stdout, /Catalog: hello from /);
   assert.match(humanSourceStatus.stdout, /Package: @scope\/topogram-hello@0\.1\.0/);
   assert.match(humanSourceStatus.stdout, /Changed: 0/);
+  assert.match(humanSourceStatus.stdout, /\.topogram-source\.json records import provenance only\. Local edits are allowed\./);
+  assert.match(humanSourceStatus.stdout, /This status does not block `topogram check` or `topogram generate`\./);
+  assert.match(humanSourceStatus.stdout, /Next: run `topogram check` or `topogram generate`\./);
 
   const copy = runCli(["catalog", "copy", "hello", targetRoot, "--catalog", catalogPath, "--json"], { env });
   assert.equal(copy.status, 0, copy.stderr || copy.stdout);
@@ -918,12 +931,26 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   assert.deepEqual(changedPayload.content.added, ["topogram/entities/entity-local-note.tg"]);
   assert.deepEqual(changedPayload.content.removed, ["README.md"]);
 
+  const changedHumanStatus = runCli(["source", "status"], { cwd: targetRoot });
+  assert.equal(changedHumanStatus.status, 0, changedHumanStatus.stderr || changedHumanStatus.stdout);
+  assert.match(changedHumanStatus.stdout, /Topogram source status: changed/);
+  assert.match(changedHumanStatus.stdout, /Changed: 1/);
+  assert.match(changedHumanStatus.stdout, /Added: 1/);
+  assert.match(changedHumanStatus.stdout, /Removed: 1/);
+  assert.match(changedHumanStatus.stdout, /Next: review the listed files, then run `topogram check` and `topogram generate` when ready\./);
+
   const missingStatus = runCli(["source", "status", path.join(root, "no-provenance"), "--json"]);
   assert.equal(missingStatus.status, 0, missingStatus.stderr || missingStatus.stdout);
   const missingPayload = JSON.parse(missingStatus.stdout);
   assert.equal(missingPayload.exists, false);
   assert.equal(missingPayload.status, "missing");
   assert.match(missingPayload.diagnostics[0].message, /\.topogram-source\.json was not found/);
+
+  const missingHumanStatus = runCli(["source", "status", path.join(root, "no-provenance")]);
+  assert.equal(missingHumanStatus.status, 0, missingHumanStatus.stderr || missingHumanStatus.stdout);
+  assert.match(missingHumanStatus.stdout, /Topogram source status: no provenance/);
+  assert.match(missingHumanStatus.stdout, /\.topogram-source\.json was not found/);
+  assert.match(missingHumanStatus.stdout, /Next: use `topogram catalog copy <id> <target>`/);
 
   const unsafeTarget = path.join(root, "unsafe-copy");
   const unsafe = runCli(["catalog", "copy", "unsafe-package", unsafeTarget, "--catalog", catalogPath], { env });
