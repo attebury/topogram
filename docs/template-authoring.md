@@ -121,6 +121,15 @@ integrity mismatch. For local runs, set `NODE_AUTH_TOKEN` to a token that can
 read GitHub Packages. For CI, confirm both the `.npmrc` token wiring and the
 package's Manage Actions access settings.
 
+Consumer repos can update their Topogram CLI dependency with:
+
+```bash
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.33
+```
+
+The command updates `@attebury/topogram`, then runs any available consumer
+scripts named `cli:surface`, `catalog:template-show`, and `check`.
+
 ## Trust Policy
 
 Template packs are copied into the target project. Package install uses

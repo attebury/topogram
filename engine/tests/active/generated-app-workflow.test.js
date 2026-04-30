@@ -139,8 +139,33 @@ if (args[0] === "view") {
   process.exit(0);
 }
 if (args[0] === "install") {
-  const prefix = args[args.indexOf("--prefix") + 1];
+  const prefixIndex = args.indexOf("--prefix");
   const spec = args[args.length - 1];
+  if (prefixIndex < 0) {
+    const packageName = packageNameFromSpec(spec).replace(/\\\\/g, "/");
+    const versionMatch = spec.match(/@\\^?([^@/]+)$/);
+    const version = versionMatch ? versionMatch[1] : "0.0.0";
+    const packagePath = path.join(process.cwd(), "package.json");
+    const pkg = fs.existsSync(packagePath) ? JSON.parse(fs.readFileSync(packagePath, "utf8")) : {};
+    pkg.devDependencies = { ...(pkg.devDependencies || {}), [packageName]: spec.startsWith(packageName + "@") ? spec.slice(packageName.length + 1) : spec };
+    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2) + "\\n");
+    const lockPath = path.join(process.cwd(), "package-lock.json");
+    fs.writeFileSync(lockPath, JSON.stringify({
+      name: pkg.name || "consumer",
+      lockfileVersion: 3,
+      requires: true,
+      packages: {
+        "": { name: pkg.name || "consumer", devDependencies: pkg.devDependencies },
+        ["node_modules/" + packageName]: {
+          version,
+          dev: true,
+          bin: { topogram: "src/cli.js" }
+        }
+      }
+    }, null, 2) + "\\n");
+    process.exit(0);
+  }
+  const prefix = args[prefixIndex + 1];
   const packageMap = process.env.FAKE_NPM_PACKAGES ? JSON.parse(process.env.FAKE_NPM_PACKAGES) : {};
   const source = packageMap[spec] ||
     packageMap[packageNameFromSpec(spec)] ||
@@ -152,6 +177,13 @@ if (args[0] === "install") {
   const target = path.join(prefix, "node_modules", packageNameFromSpec(spec));
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.cpSync(source, target, { recursive: true });
+  process.exit(0);
+}
+if (args[0] === "run") {
+  if (process.env.FAKE_NPM_RUN_LOG) {
+    fs.appendFileSync(process.env.FAKE_NPM_RUN_LOG, args[1] + "\\n", "utf8");
+  }
+  process.stdout.write("ran " + args[1] + "\\n");
   process.exit(0);
 }
 process.stderr.write("Unexpected fake npm command: " + args.join(" ") + "\\n");
@@ -558,6 +590,88 @@ test("private GitHub catalog failures explain auth and access setup", () => {
   assert.notEqual(missing.status, 0, missing.stdout);
   assert.match(missing.stderr, /Catalog source 'github:attebury\/topograms\/topograms\.catalog\.json' was not found/);
   assert.match(missing.stderr, /repository read access/);
+});
+
+test("topogram package update-cli updates consumer dependency and runs available checks", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    scripts: {
+      "cli:surface": "node -e true",
+      "catalog:template-show": "node -e true",
+      "check": "node -e true"
+    },
+    devDependencies: {
+      "@attebury/topogram": "^0.2.32"
+    }
+  });
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "consumer",
+    lockfileVersion: 3,
+    requires: true,
+    packages: {}
+  });
+  const fakeNpmBin = createFakeNpm(root);
+  const runLog = path.join(root, "npm-run.log");
+  const update = runCli(["package", "update-cli", "0.2.33"], {
+    cwd: projectRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.33",
+      FAKE_NPM_RUN_LOG: runLog,
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.33/);
+  assert.match(update.stdout, /Checks run: cli:surface, catalog:template-show, check/);
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.33");
+  assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.33");
+  assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
+    "cli:surface",
+    "catalog:template-show",
+    "check"
+  ]);
+
+  const minimalRoot = path.join(root, "minimal");
+  fs.mkdirSync(minimalRoot, { recursive: true });
+  writePackageJson(minimalRoot, { name: "minimal", private: true });
+  const minimal = runCli(["package", "update-cli", "0.2.33", "--json"], {
+    cwd: minimalRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.33",
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(minimal.status, 0, minimal.stderr || minimal.stdout);
+  const minimalPayload = JSON.parse(minimal.stdout);
+  assert.equal(minimalPayload.ok, true);
+  assert.deepEqual(minimalPayload.scriptsRun, []);
+  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "catalog:template-show", "check"]);
+});
+
+test("topogram package update-cli explains private package auth failures", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-auth-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, { name: "consumer", private: true });
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
+  );
+  const update = runCli(["package", "update-cli", "0.2.33"], {
+    cwd: projectRoot,
+    env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(update.status, 0, update.stdout);
+  assert.match(update.stderr, /Authentication is required to inspect @attebury\/topogram@0\.2\.33/);
+  assert.match(update.stderr, /NODE_AUTH_TOKEN/);
+  assert.match(update.stderr, /Manage Actions access/);
 });
 
 test("topogram catalog copy installs pure topogram packages and rejects implementation code", () => {

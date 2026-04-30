@@ -147,6 +147,16 @@ catalog source 404s. For private package consumers, configure `.npmrc` with the
 GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
 read access.
 
+Consumer repos can update their CLI dependency with:
+
+```bash
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.33
+```
+
+The command verifies the published package, runs `npm install --save-dev`, then
+runs available consumer checks: `cli:surface`, `catalog:template-show`, and
+`check`.
+
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
 For local runtime verification, run:
