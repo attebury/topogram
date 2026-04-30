@@ -909,7 +909,7 @@ function buildTemplateListPayload(options = {}) {
  * @returns {void}
  */
 function printTemplateList(payload) {
-  console.log("Available templates:");
+  console.log("Templates:");
   if (payload.catalog.source) {
     console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
   } else {
@@ -917,22 +917,16 @@ function printTemplateList(payload) {
   }
   for (const template of payload.templates) {
     const defaultLabel = template.isDefault ? " (default)" : "";
+    const stack = template.stack || "not declared";
+    const surfaces = Array.isArray(template.surfaces) && template.surfaces.length > 0
+      ? template.surfaces.join(", ")
+      : "not declared";
+    const command = template.source === "catalog"
+      ? `topogram new ./my-app --template ${shellCommandArg(template.id)}`
+      : `topogram new ./my-app --template ${shellCommandArg(template.name || template.id)}`;
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
-    console.log(`  source: ${template.source}`);
-    console.log(`  name: ${template.name}`);
-    if (template.package) {
-      console.log(`  package: ${template.package}@${template.defaultVersion || template.version}`);
-    }
-    if (template.description) {
-      console.log(`  description: ${template.description}`);
-    }
-    if (template.stack) {
-      console.log(`  stack: ${template.stack}`);
-    }
-    if (Array.isArray(template.surfaces) && template.surfaces.length > 0) {
-      console.log(`  surfaces: ${template.surfaces.join(", ")}`);
-    }
-    console.log(`  executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+    console.log(`  ${template.source} | surfaces: ${surfaces} | stack: ${stack} | executable: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+    console.log(`  ${command}`);
   }
   for (const diagnostic of payload.diagnostics) {
     console.warn(`Warning: ${diagnostic.message}`);
@@ -944,7 +938,7 @@ function printTemplateList(payload) {
  * @param {"builtin"|"catalog"} sourceKind
  * @param {string|null} packageSpec
  * @param {{ primary: string|null, followUp: string[] }} commands
- * @returns {{ surfaces: string[], generators: string[], stack: string|null, packageSpec: string|null, packageName: string|null, version: string|null, executableImplementation: boolean, trustImpact: string, recommendedCommand: string|null, followUp: string[], notes: string[] }}
+ * @returns {{ surfaces: string[], generators: string[], stack: string|null, packageSpec: string|null, packageName: string|null, version: string|null, executableImplementation: boolean, policyImpact: string, recommendedCommand: string|null, followUp: string[], notes: string[] }}
  */
 function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
   const trust = template.trust && typeof template.trust === "object" ? template.trust : null;
@@ -972,7 +966,7 @@ function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
     packageName: template.package || (packageSpec ? packageNameFromPackageSpec(packageSpec) : null),
     version: template.defaultVersion || template.version || null,
     executableImplementation: executable,
-    trustImpact: executable
+    policyImpact: executable
       ? "Copies implementation/ code into the project; topogram new does not execute it, but topogram generate may load it after local trust is recorded."
       : "No executable implementation trust is required for this template.",
     recommendedCommand: commands.primary,
@@ -1126,25 +1120,13 @@ function printTemplateShow(payload) {
       console.log("  Package: built-in");
     }
     console.log(`  Executable implementation: ${payload.decision.executableImplementation ? "yes" : "no"}`);
-    console.log(`  Trust/policy: ${payload.decision.trustImpact}`);
+    console.log(`  Policy impact: ${payload.decision.policyImpact}`);
     for (const note of payload.decision.notes) {
       console.log(`  Note: ${note}`);
     }
   }
-  const legacyStack = payload.decision?.stack || template.stack;
-  const legacySurfaces = payload.decision?.surfaces || template.surfaces;
-  const legacyGenerators = payload.decision?.generators || template.generators;
   console.log("");
   console.log("Details:");
-  if (legacyStack) {
-    console.log(`Stack: ${legacyStack}`);
-  }
-  if (Array.isArray(legacySurfaces) && legacySurfaces.length > 0) {
-    console.log(`Surfaces: ${legacySurfaces.join(", ")}`);
-  }
-  if (Array.isArray(legacyGenerators) && legacyGenerators.length > 0) {
-    console.log(`Generators: ${legacyGenerators.join(", ")}`);
-  }
   if (Array.isArray(template.tags) && template.tags.length > 0) {
     console.log(`Tags: ${template.tags.join(", ")}`);
   }

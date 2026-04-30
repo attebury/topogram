@@ -35,6 +35,14 @@ The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
 with two pages and one workflow doc. Use `topogram template list` and
 `topogram template show <id>` to choose a starter:
 
+```bash
+topogram template list
+topogram template show hello-web
+topogram template show todo
+topogram new ./todo-demo --template todo
+TOPOGRAM_CATALOG_SOURCE=none topogram template list
+```
+
 | Template | Stack | Use When |
 | --- | --- | --- |
 | `hello-web` | Vanilla HTML/CSS/JS | You want the smallest generated web app. |

@@ -10,6 +10,7 @@ import { installPackageSpec } from "./new-project.js";
 export const DEFAULT_CATALOG_SOURCE = "github:attebury/topograms/topograms.catalog.json";
 export const CATALOG_FILE_NAME = "topograms.catalog.json";
 export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
+const KNOWN_CATALOG_SURFACES = new Set(["web", "api", "database", "native"]);
 
 /**
  * @typedef {Object} CatalogTrust
@@ -216,6 +217,44 @@ export function validateCatalog(value, source = "") {
         message: `Catalog entry '${id || entryPath}' is missing required tags array.`,
         path: source || null,
         suggestedFix: "Add tags as an array of strings."
+      }));
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, "surfaces") && !Array.isArray(entry.surfaces)) {
+      diagnostics.push(catalogDiagnostic({
+        code: "catalog_optional_surfaces_invalid",
+        severity: "warning",
+        message: `Catalog entry '${id || entryPath}' surfaces should be an array of surface ids.`,
+        path: source || null,
+        suggestedFix: "Use surfaces such as [\"web\"], [\"api\"], [\"database\"], or [\"native\"]."
+      }));
+    }
+    for (const surface of surfaces) {
+      if (!KNOWN_CATALOG_SURFACES.has(surface)) {
+        diagnostics.push(catalogDiagnostic({
+          code: "catalog_optional_surface_unknown",
+          severity: "warning",
+          message: `Catalog entry '${id || entryPath}' has unknown surface '${surface}'.`,
+          path: source || null,
+          suggestedFix: "Use known surface ids: web, api, database, native."
+        }));
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, "generators") && !Array.isArray(entry.generators)) {
+      diagnostics.push(catalogDiagnostic({
+        code: "catalog_optional_generators_invalid",
+        severity: "warning",
+        message: `Catalog entry '${id || entryPath}' generators should be an array of generator ids.`,
+        path: source || null,
+        suggestedFix: "Use generator ids such as [\"topogram/sveltekit\", \"topogram/hono\"]."
+      }));
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, "stack") && typeof entry.stack !== "string") {
+      diagnostics.push(catalogDiagnostic({
+        code: "catalog_optional_stack_invalid",
+        severity: "warning",
+        message: `Catalog entry '${id || entryPath}' stack should be a string.`,
+        path: source || null,
+        suggestedFix: "Use a short stack label such as \"SvelteKit + Hono + Postgres\"."
       }));
     }
     if (!trust) {

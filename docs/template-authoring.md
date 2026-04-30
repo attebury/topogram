@@ -52,6 +52,7 @@ Use the default built-in neutral starter:
 topogram template list
 topogram template show hello-web
 topogram new ./my-app
+TOPOGRAM_CATALOG_SOURCE=none topogram template list
 ```
 
 Built-in starters:

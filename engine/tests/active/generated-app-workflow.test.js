@@ -345,6 +345,21 @@ test("topogram catalog check validates catalog schema", () => {
     JSON.parse(executableTopogram.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_topogram_executable_not_supported"),
     true
   );
+
+  const optionalMetadataCatalog = createCatalog(path.join(root, "optional-metadata"), [
+    catalogEntry({
+      surfaces: ["web", "spaceship"],
+      generators: "topogram/hono",
+      stack: ["Hono"]
+    })
+  ]);
+  const optionalMetadata = runCli(["catalog", "check", optionalMetadataCatalog, "--json"]);
+  assert.equal(optionalMetadata.status, 0, optionalMetadata.stderr || optionalMetadata.stdout);
+  const optionalPayload = JSON.parse(optionalMetadata.stdout);
+  assert.equal(optionalPayload.ok, true);
+  assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_surface_unknown"), true);
+  assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_generators_invalid"), true);
+  assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_stack_invalid"), true);
 });
 
 test("topogram catalog show describes template and topogram entries", () => {
@@ -438,6 +453,15 @@ test("topogram template list includes catalog template aliases", () => {
   assert.equal(todoTemplate.package, "@scope/topogram-template-todo");
   assert.equal(payload.templates.some((template) => template.id === "hello"), false);
 
+  const listHuman = runCli(["template", "list", "--catalog", catalogPath]);
+  assert.equal(listHuman.status, 0, listHuman.stderr || listHuman.stdout);
+  assert.match(listHuman.stdout, /Templates:/);
+  assert.match(listHuman.stdout, /topogram\/hello-web@0\.1\.0 \(default\)/);
+  assert.match(listHuman.stdout, /surfaces: web \| stack: Vanilla HTML\/CSS\/JS \| executable: no/);
+  assert.match(listHuman.stdout, /todo@0\.1\.0/);
+  assert.match(listHuman.stdout, /surfaces: web, api, database \| stack: SvelteKit \+ Hono \+ Postgres \| executable: yes/);
+  assert.match(listHuman.stdout, /topogram new \.\/my-app --template todo/);
+
   const human = runCli(["catalog", "list", "--catalog", catalogPath]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /todo \(template\)/);
@@ -485,7 +509,7 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.match(builtinHuman.stdout, /What it creates:/);
   assert.match(builtinHuman.stdout, /Stack: React \+ Express/);
   assert.match(builtinHuman.stdout, /Surfaces: web, api/);
-  assert.match(builtinHuman.stdout, /Trust\/policy: Copies implementation\/ code/);
+  assert.match(builtinHuman.stdout, /Policy impact: Copies implementation\/ code/);
 
   const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
@@ -498,7 +522,7 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.equal(templatePayload.decision.stack, "SvelteKit + Hono + Postgres");
   assert.deepEqual(templatePayload.decision.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
   assert.equal(templatePayload.decision.executableImplementation, true);
-  assert.match(templatePayload.decision.trustImpact, /Copies implementation\/ code/);
+  assert.match(templatePayload.decision.policyImpact, /Copies implementation\/ code/);
   assert.equal(
     templatePayload.commands.primary,
     `topogram new ./my-app --template todo --catalog ${catalogPath}`
@@ -512,7 +536,8 @@ test("topogram template show describes built-in and catalog templates", () => {
   assert.match(human.stdout, /Surfaces: web, api, database/);
   assert.match(human.stdout, /Stack: SvelteKit \+ Hono \+ Postgres/);
   assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
-  assert.match(human.stdout, /Trust\/policy: Copies implementation\/ code/);
+  assert.match(human.stdout, /Policy impact: Copies implementation\/ code/);
+  assert.doesNotMatch(human.stdout, /Details:\nStack:/);
   assert.match(human.stdout, /Recommended command:/);
   assert.match(human.stdout, /topogram new \.\/my-app --template todo/);
 
