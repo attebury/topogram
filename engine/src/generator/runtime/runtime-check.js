@@ -207,8 +207,8 @@ async function fetchWithStackHint(url, init, label) {
 
 function resolveCheckPath(pathTemplate) {
   return String(pathTemplate || "")
-    .replace(/\$env:([A-Z0-9_]+)/g, (_, name) => encodeURIComponent(envValue(name)))
-    .replace(/\$state:primary_id/g, encodeURIComponent(String(state.latestPrimary?.id || state.createdPrimary?.id || "")));
+    .replace(/\\$env:([A-Z0-9_]+)/g, (_, name) => encodeURIComponent(envValue(name)))
+    .replace(/\\$state:primary_id/g, encodeURIComponent(String(state.latestPrimary?.id || state.createdPrimary?.id || "")));
 }
 
 function authToken() {
