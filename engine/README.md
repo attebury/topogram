@@ -28,7 +28,7 @@ topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
-topogram package update-cli 0.2.48
+topogram package update-cli 0.2.49
 topogram source status ../hello-topogram
 topogram template list
 topogram template status
@@ -115,7 +115,9 @@ topogram catalog entries can be copied for editing with
 `topogram catalog copy <id> <target>`. Copied topogram projects record
 `.topogram-source.json`; inspect local drift from that import baseline with
 `topogram source status <target>`. This metadata is provenance only and does not
-block local edits, checks, or generation.
+block local edits, checks, or generation. Template baseline divergence means the
+local project owns those edits; executable implementation trust is the separate
+state that can block generation until reviewed.
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 

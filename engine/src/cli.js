@@ -163,7 +163,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.48");
+  console.log("  topogram package update-cli 0.2.49");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -588,7 +588,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.48.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.49.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -2173,7 +2173,7 @@ function templateBaselineFileHash(projectRoot, relativePath) {
 
 /**
  * @param {string} projectRoot
- * @returns {{ exists: boolean, path: string, status: "missing"|"clean"|"changed", content: { changed: string[], added: string[], removed: string[] }, trustedFiles: number }}
+ * @returns {{ exists: boolean, path: string, status: "missing"|"clean"|"changed", state: "missing"|"matches-template"|"diverged", meaning: "no-template-baseline"|"matches-template-baseline"|"local-project-owns-changes", changedAllowed: boolean, localOwnership: boolean, blocksCheck: boolean, blocksGenerate: boolean, nextCommand: string|null, content: { changed: string[], added: string[], removed: string[] }, trustedFiles: number }}
  */
 function buildTemplateOwnedBaselineStatus(projectRoot) {
   const manifestPath = path.join(projectRoot, ".topogram-template-files.json");
@@ -2182,6 +2182,13 @@ function buildTemplateOwnedBaselineStatus(projectRoot) {
       exists: false,
       path: manifestPath,
       status: "missing",
+      state: "missing",
+      meaning: "no-template-baseline",
+      changedAllowed: true,
+      localOwnership: false,
+      blocksCheck: false,
+      blocksGenerate: false,
+      nextCommand: null,
       content: { changed: [], added: [], removed: [] },
       trustedFiles: 0
     };
@@ -2205,10 +2212,19 @@ function buildTemplateOwnedBaselineStatus(projectRoot) {
       changed.push(relativePath);
     }
   }
+  const status = changed.length || removed.length ? "changed" : "clean";
+  const diverged = status === "changed";
   return {
     exists: true,
     path: manifestPath,
-    status: changed.length || removed.length ? "changed" : "clean",
+    status,
+    state: diverged ? "diverged" : "matches-template",
+    meaning: diverged ? "local-project-owns-changes" : "matches-template-baseline",
+    changedAllowed: true,
+    localOwnership: diverged,
+    blocksCheck: false,
+    blocksGenerate: false,
+    nextCommand: diverged ? "topogram template update --check" : null,
     content: {
       changed: changed.sort((a, b) => a.localeCompare(b)),
       added: [],
@@ -2290,6 +2306,7 @@ function buildProjectSourceStatus(projectRoot) {
         : null,
       package: packageStatus,
       trust,
+      templateBaseline: baseline,
       templateOwnedBaseline: baseline,
       diagnostics: projectDiagnostics
     },
@@ -2346,9 +2363,13 @@ function printTopogramSourceStatus(payload) {
   }
   if (payload.project?.templateOwnedBaseline) {
     const baseline = payload.project.templateOwnedBaseline;
-    console.log(`Template-owned baseline: ${baseline.status} (${baseline.trustedFiles} file(s))`);
-    console.log(`Template-owned changed: ${baseline.content.changed.length}`);
-    console.log(`Template-owned removed: ${baseline.content.removed.length}`);
+    const blockLabel = baseline.blocksCheck || baseline.blocksGenerate
+      ? "may block workflow"
+      : "does not block check/generate";
+    console.log(`Template baseline: ${baseline.state} (${baseline.trustedFiles} file(s), ${blockLabel})`);
+    console.log(`Template baseline meaning: ${baseline.meaning}`);
+    console.log(`Template baseline changed: ${baseline.content.changed.length}`);
+    console.log(`Template baseline removed: ${baseline.content.removed.length}`);
   }
   for (const kind of ["changed", "added", "removed"]) {
     const files = payload.content[kind] || [];
@@ -2378,14 +2399,14 @@ function printTopogramSourceStatus(payload) {
   console.log("");
   console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
   console.log("This status does not block `topogram check` or `topogram generate`.");
-  if (!payload.exists) {
-    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
-  } else if (payload.status === "changed") {
-    console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
-  } else if (payload.project?.trust?.status === "review-required") {
+  if (payload.project?.trust?.status === "review-required") {
     console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
-  } else if (payload.project?.templateOwnedBaseline?.status === "changed") {
-    console.log("Next: review template-owned file changes, then run `topogram template update --check`.");
+  } else if (payload.exists && payload.status === "changed") {
+    console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
+  } else if (payload.project?.templateOwnedBaseline?.state === "diverged") {
+    console.log("Next: local template-derived changes are owned by this project. Run `topogram template update --check` only when reviewing upstream template changes.");
+  } else if (!payload.exists) {
+    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
   } else {
     console.log("Next: run `topogram check` or `topogram generate`.");
   }

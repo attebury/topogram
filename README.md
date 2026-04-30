@@ -199,7 +199,9 @@ Use `topogram catalog copy <id> <target>` for pure topogram entries that should
 be copied into a workspace for editing. Copied topograms include
 `.topogram-source.json`; run `topogram source status <target>` to compare the
 current files to the import baseline. This is provenance only: local edits are
-allowed, and it does not block `topogram check` or `topogram generate`:
+allowed, and it does not block `topogram check` or `topogram generate`.
+Template-created projects also report whether their template baseline still
+matches or has diverged into local project-owned changes:
 
 ```bash
 topogram catalog show hello
@@ -255,7 +257,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.48
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.49
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then

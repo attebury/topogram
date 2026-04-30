@@ -466,7 +466,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.48 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.49 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -700,7 +700,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.48",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.49",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -770,6 +770,11 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(sourcePayload.project.trust.status, "trusted");
   assert.equal(sourcePayload.project.trust.content.trustedDigest, sourcePayload.project.trust.content.currentDigest);
   assert.equal(sourcePayload.project.templateOwnedBaseline.status, "clean");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.state, "matches-template");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.meaning, "matches-template-baseline");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.blocksCheck, false);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.blocksGenerate, false);
+  assert.deepEqual(sourcePayload.project.templateBaseline, sourcePayload.project.templateOwnedBaseline);
   assert.ok(sourcePayload.project.templateOwnedBaseline.trustedFiles > 0);
 
   const humanSourceStatus = runCli(["source", "status"], { cwd: projectRoot, env });
@@ -779,7 +784,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(humanSourceStatus.stdout, /Template: @scope\/topogram-template-todo@0\.1\.0/);
   assert.match(humanSourceStatus.stdout, /Executable implementation: yes/);
   assert.match(humanSourceStatus.stdout, /Implementation trust: trusted/);
-  assert.match(humanSourceStatus.stdout, /Template-owned baseline: clean/);
+  assert.match(humanSourceStatus.stdout, /Template baseline: matches-template/);
+  assert.match(humanSourceStatus.stdout, /Template baseline meaning: matches-template-baseline/);
 
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
@@ -1386,6 +1392,27 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(fileManifest.template.version, projectConfig.template.version);
   assert.ok(fileManifest.files.some((file) => file.path === "topogram.project.json"));
   assert.ok(fileManifest.files.some((file) => file.path === "topogram/entities/entity-greeting.tg"));
+
+  fs.appendFileSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg"), "\n# Local maintained-app note.\n", "utf8");
+  const sourceStatus = runCli(["source", "status", "--json"], { cwd: projectRoot });
+  assert.equal(sourceStatus.status, 0, sourceStatus.stderr || sourceStatus.stdout);
+  const sourcePayload = JSON.parse(sourceStatus.stdout);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.status, "changed");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.state, "diverged");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.meaning, "local-project-owns-changes");
+  assert.equal(sourcePayload.project.templateOwnedBaseline.localOwnership, true);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.changedAllowed, true);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.blocksCheck, false);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.blocksGenerate, false);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.nextCommand, "topogram template update --check");
+  assert.deepEqual(sourcePayload.project.templateBaseline, sourcePayload.project.templateOwnedBaseline);
+  assert.deepEqual(sourcePayload.project.templateOwnedBaseline.content.changed, ["topogram/entities/entity-greeting.tg"]);
+  const humanSourceStatus = runCli(["source", "status"], { cwd: projectRoot });
+  assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
+  assert.match(humanSourceStatus.stdout, /Template baseline: diverged/);
+  assert.match(humanSourceStatus.stdout, /Template baseline meaning: local-project-owns-changes/);
+  assert.match(humanSourceStatus.stdout, /does not block check\/generate/);
+  assert.match(humanSourceStatus.stdout, /local template-derived changes are owned by this project/);
 
   const templateStatus = runCli(["template", "status", "--json"], { cwd: projectRoot });
   assert.equal(templateStatus.status, 0, templateStatus.stderr || templateStatus.stdout);

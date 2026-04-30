@@ -120,7 +120,9 @@ removed paths.
 
 The source file is provenance only. Users and agents may edit copied topogram
 files after import; this status command reports drift but does not block checks,
-generation, or local maintenance.
+generation, or local maintenance. Template-created projects also report a
+template baseline. If that baseline is `diverged`, the project owns those local
+changes; it is update-review context, not a validity failure.
 
 Human `source status` output always includes this distinction and suggested next
 steps. Clean copied source can move directly to `topogram check` or
