@@ -6,6 +6,31 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 
 Use Node 20+.
 
+For a private-package consumer project, configure GitHub Packages access and
+install the CLI as a project dependency:
+
+```bash
+export NODE_AUTH_TOKEN=<github-token-with-package-read>
+npm config set @attebury:registry https://npm.pkg.github.com
+npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
+npm install --save-dev @attebury/topogram
+npx topogram template list
+npx topogram new ./my-app --template todo
+```
+
+For executable templates, review the copied `implementation/` directory before
+generation, then use:
+
+```bash
+cd ./my-app
+npm run template:policy:explain
+npm run trust:status
+npm run check
+npm run generate
+```
+
+For source checkout development, use the repo scripts below.
+
 To run the disposable generated-app smoke test:
 
 ```bash
@@ -189,7 +214,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.37
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.38
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then

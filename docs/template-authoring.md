@@ -129,7 +129,7 @@ package's Manage Actions access settings.
 Consumer repos can update their Topogram CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.37
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.38
 ```
 
 The command updates `@attebury/topogram`, then runs any available consumer
