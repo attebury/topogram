@@ -204,18 +204,21 @@ TOPOGRAM_SEED_DEMO=true
 `;
 }
 
-function renderEnvironmentPackageJson() {
+function renderEnvironmentPackageJson(plan) {
+  const scripts = {
+    "db:bootstrap": "bash ./scripts/bootstrap-db.sh",
+    "dev:server": "bash ./scripts/server-dev.sh",
+    "dev:web": "bash ./scripts/web-dev.sh",
+    dev: "bash ./scripts/stack-dev.sh"
+  };
+  if (plan.orchestration.usesDocker) {
+    scripts["docker:db"] = "bash ./scripts/docker-db.sh";
+    scripts["docker:stack"] = "bash ./scripts/docker-stack.sh";
+  }
   return `${JSON.stringify({
     name: "topogram-runtime-stack",
     private: true,
-    scripts: {
-      "db:bootstrap": "bash ./scripts/bootstrap-db.sh",
-      "dev:server": "bash ./scripts/server-dev.sh",
-      "dev:web": "bash ./scripts/web-dev.sh",
-      dev: "bash ./scripts/stack-dev.sh",
-      "docker:db": "bash ./scripts/docker-db.sh",
-      "docker:stack": "bash ./scripts/docker-stack.sh"
-    }
+    scripts
   }, null, 2)}\n`;
 }
 
@@ -520,7 +523,7 @@ export function generateEnvironmentBundle(graph, options = {}) {
     ".env.example": renderEnvironmentEnvExample(plan),
     ".gitignore": "node_modules/\n.env\npostgres-data/\n",
     "README.md": renderEnvironmentReadme(plan),
-    "package.json": renderEnvironmentPackageJson(),
+    "package.json": renderEnvironmentPackageJson(plan),
     "scripts/load-env.sh": renderEnvironmentLoadEnvScript(),
     "scripts/bootstrap-db.sh": renderEnvironmentBootstrapDbScript(plan),
     "scripts/server-dev.sh": renderEnvironmentServerDevScript(plan),

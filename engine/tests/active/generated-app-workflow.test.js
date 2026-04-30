@@ -203,6 +203,12 @@ test("public authoring-to-app commands check and generate app bundles", () => {
     );
   }
 
+  const runtimePackageJson = readJson(path.join(outputRoot, "apps", "package.json"));
+  assert.equal(runtimePackageJson.scripts["docker:db"], undefined);
+  assert.equal(runtimePackageJson.scripts["docker:stack"], undefined);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "scripts", "docker-db.sh")), false);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "scripts", "docker-stack.sh")), false);
+
   const statusAlias = runCli(["status", fixtureRoot]);
   assert.notEqual(statusAlias.status, 0, statusAlias.stdout);
 
