@@ -1723,7 +1723,8 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "app:compile": "npm --prefix ./app run compile",
       "app:smoke": "npm --prefix ./app run smoke",
       "app:runtime-check": "npm --prefix ./app run runtime-check",
-      "app:check": "npm run app:compile && npm run app:smoke && npm run app:runtime-check"
+      "app:check": "npm run app:compile",
+      "app:probe": "npm run app:smoke && npm run app:runtime-check"
     },
     devDependencies: {
       [cliDependency.name]: cliDependency.spec
@@ -1758,6 +1759,9 @@ Topogram app workflow
 5. Run locally:
    npm run bootstrap
    npm run dev
+
+6. Probe the running app from another terminal:
+   npm run app:probe
 
 Useful inspection:
    npm run check:json

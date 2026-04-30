@@ -25,6 +25,8 @@ test("runtime smoke bundle exposes stable script and README contracts", () => {
   assert.match(bundle["README.md"], /`ver_runtime_smoke`/);
   assert.match(bundle[".env.example"], /TOPOGRAM_API_BASE_URL=http:\/\/localhost:3000/);
   assert.match(bundle[".env.example"], /TOPOGRAM_WEB_BASE_URL=http:\/\/localhost:5173/);
+  assert.match(bundle["scripts/smoke.mjs"], /Start the generated stack with 'npm run dev'/);
+  assert.match(bundle["scripts/smoke.mjs"], /npm run app:dev/);
 });
 
 test("runtime smoke and compile plans keep required check contracts stable", () => {

@@ -146,6 +146,11 @@ For local runtime verification, run:
 ```bash
 npm run bootstrap
 npm run dev
+```
+
+Then, from another terminal while the app is still running:
+
+```bash
 npm run app:smoke
 npm run app:runtime-check
 ```

@@ -37,6 +37,6 @@ npm run generate
 npm run verify
 ```
 
-Run `npm run app:smoke` and `npm run app:runtime-check` when local services are ready.
+Run `npm run app:smoke` and `npm run app:runtime-check` from another terminal while `npm run dev` is running.
 
 For folder ownership, see [Topogram Workspace Layout](./topogram-workspace-layout.md).

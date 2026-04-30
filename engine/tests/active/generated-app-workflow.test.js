@@ -652,6 +652,11 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["template:update:apply"], "topogram template update --apply");
   assert.equal(pkg.scripts["trust:status"], "topogram trust status");
   assert.equal(pkg.scripts["trust:diff"], "topogram trust diff");
+  assert.equal(pkg.scripts["app:compile"], "npm --prefix ./app run compile");
+  assert.equal(pkg.scripts["app:smoke"], "npm --prefix ./app run smoke");
+  assert.equal(pkg.scripts["app:runtime-check"], "npm --prefix ./app run runtime-check");
+  assert.equal(pkg.scripts["app:check"], "npm run app:compile");
+  assert.equal(pkg.scripts["app:probe"], "npm run app:smoke && npm run app:runtime-check");
 
   assert.match(create.stderr, /copied implementation\/ code/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram", "entities", "entity-greeting.tg")), true);
@@ -720,6 +725,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(explain.stdout, /npm run check/);
   assert.match(explain.stdout, /npm run generate/);
   assert.match(explain.stdout, /npm run verify/);
+  assert.match(explain.stdout, /npm run app:probe/);
 
   const check = runNpm(["run", "check"], projectRoot);
   assert.equal(check.status, 0, check.stderr || check.stdout);

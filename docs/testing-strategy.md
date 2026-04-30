@@ -46,6 +46,11 @@ Run the smoke path when runtime services and local database state are available:
 ```bash
 npm run bootstrap
 npm run dev
+```
+
+Then, from another terminal while the app is still running:
+
+```bash
 npm run app:smoke
 npm run app:runtime-check
 ```

@@ -45,6 +45,28 @@ function webBase() {
   return envValue(plan.env.webBase);
 }
 
+function stackStartHint() {
+  return "Start the generated stack with 'npm run dev' from the app bundle, or 'npm run app:dev' from the project root, then rerun this command.";
+}
+
+function describeFetchError(error) {
+  if (error?.cause?.code) {
+    return error.cause.code;
+  }
+  if (Array.isArray(error?.cause?.errors) && error.cause.errors.length > 0) {
+    return [...new Set(error.cause.errors.map((entry) => entry.code).filter(Boolean))].join(", ");
+  }
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function fetchWithStackHint(url, init, label) {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    throw new Error(`${label} is not reachable at ${url.toString()}. ${stackStartHint()} Original error: ${describeFetchError(error)}`);
+  }
+}
+
 function resolveCheckPath(pathTemplate) {
   return String(pathTemplate || "")
     .replace(/$env:([A-Z0-9_]+)/g, (_, name) => encodeURIComponent(envValue(name)))
@@ -223,11 +245,11 @@ async function requestContract(capabilityId, { payload = null, pathParams = null
     requestHeaders.set("content-type", "application/json");
     body = JSON.stringify(payload);
   }
-  const response = await fetch(url, {
+  const response = await fetchWithStackHint(url, {
     method: contract.endpoint.method,
     headers: requestHeaders,
     body
-  });
+  }, "api service");
   const responseBody = await parseResponseBody(response);
   return { contract, response, responseBody, url: url.toString() };
 }
@@ -258,7 +280,7 @@ async function runCheck(definition) {
       const missing = plan.env.required.filter((name) => !envValue(name));
       assertCondition(missing.length === 0, `Missing required environment variables: ${missing.join(", ")}`);
     } else if (definition.kind === "web_contract") {
-      const response = await fetch(new URL(resolveCheckPath(definition.path), webBase()));
+      const response = await fetchWithStackHint(new URL(resolveCheckPath(definition.path), webBase()), undefined, "web app");
       const body = await response.text();
       assertCondition(response.status === definition.expectStatus, `web readiness expected ${definition.expectStatus}, got ${response.status}`);
       assertCondition(body.includes(definition.expectText), `web readiness did not include expected text: ${definition.expectText}`);
@@ -274,12 +296,12 @@ async function runCheck(definition) {
         assertCondition(!bodyText.includes(definition.expectNotText), `browser check unexpectedly included text: ${definition.expectNotText}`);
       }
     } else if (definition.kind === "api_health") {
-      const response = await fetch(new URL(definition.path, apiBase()));
+      const response = await fetchWithStackHint(new URL(definition.path, apiBase()), undefined, "api service");
       const responseBody = await parseResponseBody(response);
       assertCondition(response.status === definition.expectStatus, `api health expected ${definition.expectStatus}, got ${response.status}`);
       assertCondition(responseBody?.ok === definition.expectOk, "api health did not report ok");
     } else if (definition.kind === "api_ready") {
-      const response = await fetch(new URL(definition.path, apiBase()));
+      const response = await fetchWithStackHint(new URL(definition.path, apiBase()), undefined, "api service");
       const responseBody = await parseResponseBody(response);
       assertCondition(response.status === definition.expectStatus, `api readiness expected ${definition.expectStatus}, got ${response.status}`);
       assertCondition(responseBody?.ready === definition.expectReady, "api readiness did not report ready");
