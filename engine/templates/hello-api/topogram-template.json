@@ -1,0 +1,8 @@
+{
+  "id": "topogram/hello-api",
+  "version": "0.1.0",
+  "kind": "starter",
+  "description": "Hono API-only starter.",
+  "topogramVersion": "0.1",
+  "includesExecutableImplementation": false
+}

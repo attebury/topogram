@@ -1,0 +1,39 @@
+{
+  "version": "0.1",
+  "implementation": {
+    "id": "web-api-db-template",
+    "module": "./implementation/index.js",
+    "export": "WEB_API_DB_IMPLEMENTATION"
+  },
+  "outputs": {
+    "app": {
+      "path": "./app",
+      "ownership": "generated"
+    }
+  },
+  "topology": {
+    "components": [
+      {
+        "id": "app_api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/express",
+          "version": "1"
+        },
+        "port": 3000
+      },
+      {
+        "id": "app_react",
+        "type": "web",
+        "projection": "proj_ui_web",
+        "generator": {
+          "id": "topogram/react",
+          "version": "1"
+        },
+        "port": 5173,
+        "api": "app_api"
+      }
+    ]
+  }
+}

@@ -25,7 +25,12 @@ engine/templates/
 ```
 
 Templates are copied by `topogram new`. They are product starters, not regression fixtures.
-The built-in template is a neutral Hello-resource starter. Shared template packs use the same layout with `topogram-template.json`, `topogram/`, `topogram.project.json`, and optional trusted `implementation/` code. See `docs/template-authoring.md`.
+The default built-in template is `hello-web`, a vanilla HTML/CSS/JS starter with
+two pages and one workflow doc. Additional built-ins cover API-only, DB-only,
+React/Express web/API, and SvelteKit/Hono/Postgres web/API/DB starts. Shared
+template packs use the same layout with `topogram-template.json`, `topogram/`,
+`topogram.project.json`, and optional trusted `implementation/` code. See
+`docs/template-authoring.md`.
 
 ## Generated Workspace
 

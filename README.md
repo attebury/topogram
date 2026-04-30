@@ -31,14 +31,18 @@ npm run generate
 npm run verify
 ```
 
-The built-in starter is a neutral Hello-resource app with one API, one SvelteKit
-web surface, and one Postgres database projection. Executable templates record
-local trust in `.topogram-template-trust.json`; refresh it with
-`topogram trust template` after reviewing copied or edited `implementation/`
-code. The same command records the `.topogram-template-files.json` baseline used
-by template update apply. Use `topogram template status` for the lifecycle summary, then
-`topogram trust status` and `topogram trust diff` to inspect changed files
-before refreshing trust.
+The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
+with two pages and one workflow doc. Other built-ins cover `hello-api`,
+`hello-db`, `web-api`, and `web-api-db`; inspect them with `topogram template
+list`.
+
+Executable templates such as `web-api` and `web-api-db` record local trust in
+`.topogram-template-trust.json`; refresh it with `topogram trust template` after
+reviewing copied or edited `implementation/` code. The same command records the
+`.topogram-template-files.json` baseline used by template update apply. Use
+`topogram template status` for the lifecycle summary, then `topogram trust
+status` and `topogram trust diff` to inspect changed files before refreshing
+trust.
 
 Inspect, plan, or apply a template update:
 

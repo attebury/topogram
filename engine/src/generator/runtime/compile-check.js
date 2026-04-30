@@ -8,8 +8,23 @@ import {
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeBundleFiles } from "./bundle-shared.js";
 
+function compileCheckName(graph, options = {}) {
+  try {
+    return getExampleImplementation(graph, options).runtime.reference.compileCheck.name;
+  } catch {
+    return "Topogram Compile Check";
+  }
+}
+
+function runtimeReferenceFor(graph, options = {}) {
+  try {
+    return getExampleImplementation(graph, options).runtime.reference;
+  } catch {
+    return { environment: { databaseName: "topogram_app", envExample: "" }, demoEnv: { userId: "" }, ports: { server: 3000, web: 5173 } };
+  }
+}
+
 function buildCompileCheckPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const apiChecks = topology.apiComponents.map((component, index) => ({
@@ -34,11 +49,11 @@ function buildCompileCheckPlan(graph, options = {}) {
   ]);
   return {
     type: "compile_check_plan",
-    name: runtimeReference.compileCheck.name,
+    name: compileCheckName(graph, options),
     projections: {
-      api: apiProjection.id,
-      ui: uiProjection.id,
-      db: dbProjection.id
+      api: apiProjection?.id || null,
+      ui: uiProjection?.id || null,
+      db: dbProjection?.id || null
     },
     topology: {
       components: topology.components.map((component) => ({
@@ -53,10 +68,11 @@ function buildCompileCheckPlan(graph, options = {}) {
 }
 
 function renderCompileCheckEnvExample(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
+  const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
+  const { dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const urls = runtimeUrls(runtimeReference, topology);
-  if (runtimeReference.localDbProjectionId === "proj_db_sqlite") {
+  if (dbProjection?.platform === "db_sqlite") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
 PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeReference.demoEnv.userId}
@@ -71,8 +87,7 @@ ${runtimeReference.environment.envExample || ""}
 }
 
 function renderCompileCheckReadme(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
-  return `# ${runtimeReference.compileCheck.name.replace("Plan", "Bundle")}
+  return `# ${compileCheckName(graph, options).replace("Plan", "Bundle")}
 
 This bundle verifies that the generated server and web projects typecheck and build.
 
@@ -105,6 +120,9 @@ function renderCompileCheckScript(plan) {
     "fi",
     ""
   ];
+  if (plan.checks.length === 0) {
+    lines.push('echo "No API or web components are configured; compile check is a no-op."');
+  }
   for (const check of plan.checks) {
     const label = check.id.includes("web")
       ? check.id.includes("build") ? "Building generated web" : "Checking generated web"

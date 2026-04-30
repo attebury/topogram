@@ -1,0 +1,23 @@
+{
+  "version": "0.1",
+  "outputs": {
+    "app": {
+      "path": "./app",
+      "ownership": "generated"
+    }
+  },
+  "topology": {
+    "components": [
+      {
+        "id": "app_api",
+        "type": "api",
+        "projection": "proj_api",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        },
+        "port": 3000
+      }
+    ]
+  }
+}

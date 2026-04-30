@@ -23,8 +23,27 @@ import {
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderLoadEnvScript, renderNestedBundleShellScript } from "./bundle-shared.js";
 
+function runtimeReferenceFor(graph, options = {}) {
+  try {
+    return structuredClone(getExampleImplementation(graph, options).runtime.reference);
+  } catch {
+    return {
+      appBundle: {
+        name: "Topogram App Bundle",
+        demoContainerName: "Hello workflow",
+        demoPrimaryTitle: "Hello page"
+      },
+      environment: { databaseName: "topogram_app", envExample: "" },
+      ports: { server: 3000, web: 5173 },
+      demoEnv: { userId: "11111111-1111-4111-8111-111111111111" },
+      smoke: { webPath: "/", expectText: "Topogram" },
+      runtimeCheck: {}
+    };
+  }
+}
+
 function buildAppBundlePlan(graph, options = {}) {
-  const runtimeReference = structuredClone(getExampleImplementation(graph, options).runtime.reference);
+  const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const environmentProfile = options.profileId || "local_process";
@@ -41,9 +60,9 @@ function buildAppBundlePlan(graph, options = {}) {
     type: "app_bundle_plan",
     name: runtimeReference.appBundle.name,
     projections: {
-      api: apiProjection.id,
-      ui: uiProjection.id,
-      db: dbProjection.id
+      api: apiProjection?.id || null,
+      ui: uiProjection?.id || null,
+      db: dbProjection?.id || null
     },
     topology: {
       components: topology.components.map((component) => ({
@@ -92,6 +111,19 @@ function renderAppBundleEnvExample(plan) {
   };
   const ports = runtimePorts(plan.runtimeReference, topology);
   const urls = runtimeUrls(plan.runtimeReference, topology);
+  if (!plan.projections.dbPlatform) {
+    return `# App bundle defaults
+TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
+TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
+
+# Local runtime defaults
+${plan.projections.api ? `SERVER_PORT=${ports.server}\n` : ""}${plan.projections.ui ? `WEB_PORT=${ports.web}\n` : ""}${plan.projections.api && plan.projections.ui ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
+TOPOGRAM_DEMO_USER_ID=${demo.userId}
+${plan.runtimeReference.environment.envExample || ""}
+
+# Smoke-test defaults
+${plan.projections.api ? `TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.projections.ui ? `TOPOGRAM_WEB_BASE_URL=${urls.web}\n` : ""}`;
+  }
   if (plan.projections.dbPlatform === "db_sqlite") {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
@@ -246,13 +278,31 @@ function renderAppBundleDeployCheckScript() {
   return renderNestedBundleShellScript("deploy", "scripts/deploy-check.sh");
 }
 
+function noopBundle(name, message) {
+  return {
+    "README.md": `# ${name}\n\n${message}\n`,
+    "scripts/check.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`,
+    "scripts/smoke.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`,
+    "scripts/deploy-check.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`
+  };
+}
+
 export function generateAppBundle(graph, options = {}) {
   const plan = buildAppBundlePlan(graph, options);
-  plan.projections.dbPlatform = getDefaultEnvironmentProjections(graph, options).dbProjection.platform;
+  const topology = resolveRuntimeTopology(graph, options);
+  const projections = getDefaultEnvironmentProjections(graph, options);
+  plan.projections.dbPlatform = projections.dbProjection?.platform || null;
+  const fullStack = topology.apiComponents.length > 0 && topology.webComponents.length > 0 && topology.dbComponents.length > 0;
   const envBundle = generateEnvironmentBundle(graph, { ...options, profileId: plan.profiles.environment });
-  const deployBundle = generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment });
-  const smokeBundle = generateRuntimeSmokeBundle(graph, options);
-  const runtimeCheckBundle = generateRuntimeCheckBundle(graph, options);
+  const deployBundle = fullStack
+    ? generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment })
+    : noopBundle("Deployment Check", "No deployment bundle is generated for this partial topology.");
+  const smokeBundle = fullStack
+    ? generateRuntimeSmokeBundle(graph, options)
+    : noopBundle("Runtime Smoke", "No runtime smoke bundle is generated for this partial topology.");
+  const runtimeCheckBundle = fullStack
+    ? generateRuntimeCheckBundle(graph, options)
+    : noopBundle("Runtime Check", "No runtime check bundle is generated for this partial topology.");
   const compileBundle = generateCompileCheckBundle(graph, options);
 
   const files = {

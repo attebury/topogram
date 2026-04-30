@@ -2,6 +2,7 @@
 
 import { generateExpressServer } from "../surfaces/services/express.js";
 import { generateHonoServer } from "../surfaces/services/hono.js";
+import { generateStatelessServer } from "../surfaces/services/stateless.js";
 import { generateWebApp } from "../surfaces/web/index.js";
 import { generateApiContractGraph } from "../api.js";
 import { generateDbLifecycleBundleForProjection } from "../surfaces/databases/lifecycle-shared.js";
@@ -300,25 +301,24 @@ export function pickDefaultUiWebProjection(graph) {
 /**
  * @param {ResolvedGraph} graph
  * @param {RuntimeGenerationOptions} [options]
- * @returns {{ apiProjection: RuntimeStatement, uiProjection: RuntimeStatement, dbProjection: RuntimeStatement }}
+ * @returns {{ apiProjection: RuntimeStatement|null, uiProjection: RuntimeStatement|null, dbProjection: RuntimeStatement|null }}
  */
 export function getDefaultEnvironmentProjections(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const apiProjection = topology.primaryApi?.projection ||
+  const dbCandidates = graph.byKind.projection?.filter((projection) => ["db_postgres", "db_sqlite"].includes(projection.platform)) || [];
+  const apiProjection = /** @type {RuntimeStatement|null} */ (topology.primaryApi?.projection ||
     (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
     apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||
-    apiProjectionCandidates(graph)[0];
-  const uiProjection = topology.primaryWeb?.projection || pickDefaultUiWebProjection(graph);
-  const dbProjection = topology.primaryDb?.projection || getDefaultBackendDbProjection(graph, options);
-
-  if (!apiProjection) {
-    throw new Error("Environment generation requires at least one API projection");
-  }
-  if (!uiProjection) {
-    throw new Error("Environment generation requires at least one ui_web projection");
-  }
-  if (!dbProjection) {
-    throw new Error("Environment generation requires at least one DB projection");
+    apiProjectionCandidates(graph)[0] ||
+    null);
+  const uiProjection = /** @type {RuntimeStatement|null} */ (topology.primaryWeb?.projection || pickDefaultUiWebProjection(graph) || null);
+  let dbProjection = /** @type {RuntimeStatement|null} */ (topology.primaryDb?.projection || null);
+  if (!dbProjection && dbCandidates.length > 0) {
+    try {
+      dbProjection = getDefaultBackendDbProjection(graph, options);
+    } catch {
+      dbProjection = /** @type {RuntimeStatement|null} */ (dbCandidates[0] || null);
+    }
   }
 
   return { apiProjection, uiProjection, dbProjection };
@@ -334,6 +334,9 @@ export function generateServerBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.apiComponents.find((entry) => entry.projection.id === projectionId);
   const profile = generatorProfile(component?.generator?.id, "hono");
+  if (component && !component.databaseComponent) {
+    return generateStatelessServer(graph, { ...options, projectionId, component, profile });
+  }
   const dbProjectionId = component?.databaseComponent?.projection?.id || options.dbProjectionId;
   const generatorOptions = { ...options, projectionId, dbProjectionId, component };
   return profile === "express"

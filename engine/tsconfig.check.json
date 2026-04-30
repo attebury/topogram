@@ -15,6 +15,7 @@
     "./tests/types/check-globals.d.ts",
     "./src/generator/surfaces/services/express.d.ts",
     "./src/generator/surfaces/services/hono.d.ts",
+    "./src/generator/surfaces/services/stateless.d.ts",
     "./src/generator/surfaces/web/index.d.ts",
     "./src/generator/api.d.ts",
     "./src/generator/surfaces/databases/lifecycle-shared.d.ts",

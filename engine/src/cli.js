@@ -132,8 +132,8 @@ function printUsage(options = {}) {
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
-  console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
-  console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
+  console.log("   or: topogram new <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|./local-template|@scope/template]");
+  console.log("   or: topogram create <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram create ./my-app");
@@ -154,7 +154,7 @@ function printUsage(options = {}) {
   console.log("  topogram template policy init");
   console.log("  topogram template policy check");
   console.log("  topogram template policy pin @scope/template@0.2.0");
-  console.log("  topogram template check web-api-db");
+  console.log("  topogram template check hello-web");
   console.log("  topogram template update --status");
   console.log("  topogram template update --recommend");
   console.log("  topogram template update --recommend --latest");
@@ -1044,8 +1044,9 @@ function resolveCatalogTemplateAlias(templateName, source = null) {
  * @returns {boolean}
  */
 function isCatalogAliasCandidate(templateName) {
+  const builtInTemplates = new Set(["hello-api", "hello-db", "hello-web", "web-api", "web-api-db"]);
   return Boolean(templateName) &&
-    templateName !== "web-api-db" &&
+    !builtInTemplates.has(templateName) &&
     !templateName.startsWith("@") &&
     !templateName.startsWith("./") &&
     !templateName.startsWith("../") &&
@@ -2111,7 +2112,7 @@ const providerId = providerIndex >= 0 ? args[providerIndex + 1] : null;
 const presetIndex = args.indexOf("--preset");
 const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
 const templateIndex = args.indexOf("--template");
-const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "web-api-db";
+const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "hello-web";
 const catalogIndex = args.indexOf("--catalog");
 const catalogSource = catalogIndex >= 0 && args[catalogIndex + 1] && !args[catalogIndex + 1].startsWith("-")
   ? args[catalogIndex + 1]
@@ -4109,18 +4110,23 @@ try {
   const ast = parsePath(inputPath);
 
   if (generateTarget) {
-    const implementation = targetRequiresImplementationProvider(generateTarget)
-      ? await loadImplementationProvider(inputPath)
+    const projectRoot = normalizeProjectRoot(inputPath);
+    const explicitProjectConfig = loadProjectConfig(projectRoot) || loadProjectConfig(inputPath);
+    const implementationOptionalTargets = new Set(["app-bundle-plan", "app-bundle", "environment-plan", "environment-bundle", "compile-check-plan", "compile-check-bundle"]);
+    const shouldLoadImplementation = targetRequiresImplementationProvider(generateTarget) &&
+      (!implementationOptionalTargets.has(generateTarget) || Boolean(explicitProjectConfig?.config?.implementation));
+    const implementation = shouldLoadImplementation
+      ? await loadImplementationProvider(explicitProjectConfig?.configDir || projectRoot)
       : null;
-    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget)
+    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget) || explicitProjectConfig
       ? resolveWorkspace(ast)
       : null;
     if (resolvedForConfig && !resolvedForConfig.ok) {
       console.error(formatValidationErrors(resolvedForConfig.validation));
       process.exit(1);
     }
-    const projectConfigInfo = targetRequiresImplementationProvider(generateTarget)
-      ? projectConfigOrDefault(inputPath, resolvedForConfig.graph, implementation)
+    const projectConfigInfo = resolvedForConfig
+      ? (explicitProjectConfig || projectConfigOrDefault(projectRoot, resolvedForConfig.graph, implementation))
       : null;
     const projectConfigValidation = projectConfigInfo
       ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph)

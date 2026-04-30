@@ -46,12 +46,26 @@ For npm or GitHub Packages, keep the package payload narrow:
 
 ## Usage
 
-Use the built-in neutral starter:
+Use the default built-in neutral starter:
 
 ```bash
 topogram template list
 topogram new ./my-app
 ```
+
+Built-in starters:
+
+```bash
+topogram new ./hello-web
+topogram new ./hello-api --template hello-api
+topogram new ./hello-db --template hello-db
+topogram new ./web-api --template web-api
+topogram new ./web-api-db --template web-api-db
+```
+
+`hello-web` is the default and uses vanilla HTML/CSS/JS. `web-api` uses React
+and Express. `web-api-db` remains the heavier SvelteKit, Hono, and Postgres
+starter.
 
 Use a local template:
 

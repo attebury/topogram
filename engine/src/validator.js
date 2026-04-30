@@ -2744,7 +2744,7 @@ function validateProjectionGeneratorDefaults(errors, statement, fieldMap) {
       pushError(errors, `Projection ${statement.id} generator_defaults is missing a value for '${key}'`, entry.loc);
       continue;
     }
-    if (key === "profile" && !["sveltekit", "react", "swiftui", "postgres_sql", "sqlite_sql", "prisma", "drizzle"].includes(value)) {
+    if (key === "profile" && !["vanilla", "sveltekit", "react", "swiftui", "postgres_sql", "sqlite_sql", "prisma", "drizzle"].includes(value)) {
       pushError(errors, `Projection ${statement.id} generator_defaults has unsupported profile '${value}'`, entry.loc);
     }
     if (key === "language" && !["typescript", "javascript", "swift", "sql"].includes(value)) {

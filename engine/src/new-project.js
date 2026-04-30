@@ -9,7 +9,8 @@ import path from "node:path";
 import { writeTemplateTrustRecord } from "./template-trust.js";
 
 const CLI_PACKAGE_NAME = "@attebury/topogram";
-const TEMPLATE_NAMES = new Set(["web-api-db"]);
+const DEFAULT_TEMPLATE_NAME = "hello-web";
+const TEMPLATE_NAMES = new Set(["hello-api", "hello-db", "hello-web", "web-api", "web-api-db"]);
 const TEMPLATE_MANIFEST = "topogram-template.json";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
@@ -1809,7 +1810,7 @@ Generated app code is written to \`app/\`.
  */
 export function createNewProject({
   targetPath,
-  templateName = "web-api-db",
+  templateName = DEFAULT_TEMPLATE_NAME,
   engineRoot,
   templatesRoot,
   templateProvenance = null

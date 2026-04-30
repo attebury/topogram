@@ -13,6 +13,9 @@ import {
 import { mergeNamedBundles, renderEnvAwareShellScript, renderLoadEnvScript, renderRootShellScript } from "./bundle-shared.js";
 
 function generatorProfile(projection, fallback) {
+  if (!projection) {
+    return fallback;
+  }
   for (const entry of projection.generatorDefaults || []) {
     if (entry.key === "profile" && entry.value != null) {
       return entry.value;
@@ -21,21 +24,33 @@ function generatorProfile(projection, fallback) {
   return fallback;
 }
 
+function runtimeReferenceFor(graph, options = {}) {
+  try {
+    return getExampleImplementation(graph, options).runtime.reference;
+  } catch {
+    return {
+      environment: { name: "Topogram Runtime", databaseName: "topogram_app", envExample: "" },
+      ports: { server: 3000, web: 5173 },
+      demoEnv: { userId: "11111111-1111-4111-8111-111111111111" }
+    };
+  }
+}
+
 function buildEnvironmentPlan(graph, options = {}) {
-  const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
+  const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
-  const dbLifecycle = generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id });
-  const profile = options.profileId || (dbProjection.platform === "db_sqlite" ? "local_process" : "local_docker");
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
+  const profile = options.profileId || (dbProjection?.platform === "db_sqlite" || !dbProjection ? "local_process" : "local_docker");
   const usesDocker = profile === "local_docker";
   const webProfile = generatorProfile(uiProjection, "sveltekit");
-  const isSqlite = dbProjection.platform === "db_sqlite";
+  const isSqlite = dbProjection?.platform === "db_sqlite";
   const ports = runtimePorts(runtimeReference, topology);
 
   return {
     type: "environment_plan",
     environment: {
-      id: `${apiProjection.id}__${uiProjection.id}__${dbProjection.id}`,
+      id: [apiProjection?.id, uiProjection?.id, dbProjection?.id].filter(Boolean).join("__") || "topogram_runtime",
       name: runtimeReference.environment.name,
       mode: "local_dev",
       profile
@@ -53,17 +68,17 @@ function buildEnvironmentPlan(graph, options = {}) {
     },
     projections: {
       api: {
-        id: apiProjection.id,
-        platform: apiProjection.platform
+        id: apiProjection?.id || null,
+        platform: apiProjection?.platform || null
       },
       ui: {
-        id: uiProjection.id,
-        platform: uiProjection.platform
+        id: uiProjection?.id || null,
+        platform: uiProjection?.platform || null
       },
       db: {
-        id: dbProjection.id,
-        platform: dbProjection.platform,
-        profile: dbProjection.generatorDefaults?.profile || dbProjection.profile || null
+        id: dbProjection?.id || null,
+        platform: dbProjection?.platform || null,
+        profile: dbProjection?.generatorDefaults?.profile || dbProjection?.profile || null
       }
     },
     generators: {
@@ -74,21 +89,23 @@ function buildEnvironmentPlan(graph, options = {}) {
     runtimeProfiles: {
       server: "hono",
       web: webProfile,
-      orm: dbLifecycle.runtimeProfile,
-      database: dbLifecycle.dbProfile
+      orm: dbLifecycle?.runtimeProfile || null,
+      database: dbLifecycle?.dbProfile || null
     },
     orchestration: {
       usesDocker,
-      database: isSqlite
+      database: !dbProjection
+        ? "none"
+        : isSqlite
         ? "local_process_sqlite"
         : usesDocker
           ? "docker_postgres"
           : "local_process_postgres"
     },
     directories: {
-      server: topology.serviceDir(topology.primaryApi),
-      web: topology.webDir(topology.primaryWeb),
-      db: topology.dbDir(topology.primaryDb),
+      server: topology.primaryApi ? topology.serviceDir(topology.primaryApi) : null,
+      web: topology.primaryWeb ? topology.webDir(topology.primaryWeb) : null,
+      db: topology.primaryDb ? topology.dbDir(topology.primaryDb) : null,
       scripts: "scripts"
     },
     components: {
@@ -98,7 +115,9 @@ function buildEnvironmentPlan(graph, options = {}) {
         port: component.port || ports.server,
         dir: topology.serviceDir(component),
         database: component.database,
-        databaseEnv: dbEnvVarsForComponent(component.databaseComponent, { primary: component.databaseComponent?.id === topology.primaryDb?.id })
+        databaseEnv: component.databaseComponent
+          ? dbEnvVarsForComponent(component.databaseComponent, { primary: component.databaseComponent?.id === topology.primaryDb?.id })
+          : null
       })),
       webs: topology.webComponents.map((component) => ({
         id: component.id,
@@ -117,7 +136,7 @@ function buildEnvironmentPlan(graph, options = {}) {
       }))
     },
     ports: {
-      database: isSqlite ? null : topology.primaryDb?.port || 5432,
+      database: !dbProjection || isSqlite ? null : topology.primaryDb?.port || 5432,
       server: ports.server,
       web: ports.web
     },
@@ -160,6 +179,18 @@ function renderEnvironmentEnvExample(plan) {
     })
     .filter(Boolean)
     .join("\n");
+  const commonLines = `# Environment profile
+TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
+
+# Local stack ports
+${plan.components.apis.length ? `SERVER_PORT=${plan.ports.server}\n` : ""}${plan.components.webs.length ? `WEB_PORT=${plan.ports.web}\n` : ""}${plan.components.webs.length && plan.components.apis.length ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.components.webs.length ? `TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
+TOPOGRAM_DEMO_USER_ID=${demo.userId}
+${plan.runtimeReference.environment.envExample || ""}
+TOPOGRAM_SEED_DEMO=true
+`;
+  if (!plan.projections.db.platform) {
+    return commonLines;
+  }
   if (plan.projections.db.platform === "db_sqlite") {
     return `# Environment profile
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
@@ -223,6 +254,9 @@ function renderEnvironmentPackageJson(plan) {
 }
 
 function apiDatabaseExportLines(component) {
+  if (!component?.databaseEnv) {
+    return [];
+  }
   const env = component.databaseEnv;
   return [
     `if [[ -n "\${${env.databaseUrl}:-}" ]]; then export DATABASE_URL="\${${env.databaseUrl}}"; fi`,
@@ -231,7 +265,12 @@ function apiDatabaseExportLines(component) {
 }
 
 function renderEnvironmentReadme(plan) {
-  const localProcessNotes = plan.projections.db.platform === "db_sqlite"
+  const hasDb = plan.components.databases.length > 0;
+  const hasApi = plan.components.apis.length > 0;
+  const hasWeb = plan.components.webs.length > 0;
+  const localProcessNotes = !hasDb
+    ? "- This bundle has no generated database surface."
+    : plan.projections.db.platform === "db_sqlite"
     ? "- SQLite is file-backed for this bundle; no separate DB server is required."
     : `- Make sure the Postgres server is already running before \`${plan.commands.bootstrapDb}\`.\n- \`DATABASE_URL\` and \`DATABASE_ADMIN_URL\` should point at your local or managed Postgres instance.`;
   const dockerSection = plan.orchestration.usesDocker
@@ -250,16 +289,13 @@ ${localProcessNotes}
 
 This bundle packages the generated runtime into one local environment:
 
-- \`services/<api-id>/\`: generated API service scaffolds
-- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : "SvelteKit"} web scaffolds
-- \`db/<db-id>/\`: generated DB lifecycle bundles
-${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : plan.projections.db.platform === "db_sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)"}
+${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.platform === "db_sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
 
 ## Quick Start
 
 1. Copy \`.env.example\` to \`.env\` if you want to customize defaults
 2. Start the database:
-   - ${plan.projections.db.platform === "db_sqlite" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
+   - ${!hasDb ? "not applicable" : plan.projections.db.platform === "db_sqlite" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
 3. Bootstrap or migrate the database:
    - \`${plan.commands.bootstrapDb}\`
 4. Start the stack:
@@ -275,8 +311,8 @@ ${dockerSection}
 
 ## Notes
 
-- The generated server expects ${plan.projections.db.platform === "db_sqlite" ? "SQLite plus Prisma." : "Postgres plus Prisma."}
-- The generated web app talks to \`PUBLIC_TOPOGRAM_API_BASE_URL\`.
+- ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.platform === "db_sqlite" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
+- ${hasWeb && hasApi ? "The generated web app talks to `PUBLIC_TOPOGRAM_API_BASE_URL`." : hasWeb ? "The generated web app is standalone." : "No web surface is generated."}
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`.
 - The DB lifecycle scripts remain the source of truth for greenfield bootstrap and brownfield migration.
 `;
@@ -298,6 +334,11 @@ function renderEnvironmentBootstrapDbScript(plan) {
     return `(cd "$ROOT_DIR/${component.dir}" && TOPOGRAM_ENV_FILE=/dev/null ${assignments} bash ./scripts/db-bootstrap-or-migrate.sh)`;
   });
   const primaryApi = plan.components.apis[0];
+  if (plan.components.databases.length === 0) {
+    return renderEnvAwareShellScript([
+      'echo "No database components are configured; skipping DB bootstrap."'
+    ]);
+  }
   return renderEnvAwareShellScript([
     `if [[ "\${TOPOGRAM_ENVIRONMENT_PROFILE:-${plan.environment.profile}}" == "local_docker" ]]; then`,
     "  if ! command -v docker >/dev/null 2>&1; then",
@@ -310,7 +351,9 @@ function renderEnvironmentBootstrapDbScript(plan) {
     ...dbBootstrapLines,
     'if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then',
     ...apiDatabaseExportLines(primaryApi),
-    `(cd "$ROOT_DIR/${primaryApi.dir}" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)`,
+    ...(primaryApi?.database
+      ? [`(cd "$ROOT_DIR/${primaryApi.dir}" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)`]
+      : ['echo "No DB-backed API component is configured; skipping demo seed."']),
     "fi"
   ]);
 }
@@ -323,6 +366,9 @@ function componentScriptOptions() {
 }
 
 function renderEnvironmentServerDevScript(plan, component = plan.components.apis[0], options = {}) {
+  if (!component) {
+    return renderEnvAwareShellScript(['echo "No API components are configured."']);
+  }
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} api`,
@@ -333,18 +379,21 @@ function renderEnvironmentServerDevScript(plan, component = plan.components.apis
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
     "npm install",
-    "npm exec -- prisma generate --schema prisma/schema.prisma",
+    ...(component.database ? ["npm exec -- prisma generate --schema prisma/schema.prisma"] : []),
     "npm run dev"
   ], options.componentScript ? componentScriptOptions() : {});
 }
 
 function renderEnvironmentWebDevScript(plan, component = plan.components.webs[0], options = {}) {
+  if (!component) {
+    return renderEnvAwareShellScript(['echo "No web components are configured."']);
+  }
   const apiComponent = plan.components.apis.find((entry) => entry.id === component.api) || plan.components.apis[0];
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} web`,
     "",
-    `export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiComponent.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiComponent.port}}}}"`,
+    ...(apiComponent ? [`export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiComponent.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiComponent.port}}}}"`] : []),
     `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}},http://127.0.0.1:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}}}"`,
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
@@ -368,7 +417,7 @@ node "$SCRIPT_DIR/guard-ports.mjs" stack
 
 bash "$SCRIPT_DIR/bootstrap-db.sh"
 
-${startLines.join("\n")}
+${startLines.length ? startLines.join("\n") : 'echo "No long-running dev services are configured."'}
 
 cleanup() {
   if [[ "\${#PIDS[@]}" -gt 0 ]]; then
@@ -377,7 +426,7 @@ cleanup() {
 }
 
 trap cleanup EXIT INT TERM
-wait
+${startLines.length ? "wait" : ""}
 `;
 }
 

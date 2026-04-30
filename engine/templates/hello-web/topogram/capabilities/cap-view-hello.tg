@@ -1,0 +1,9 @@
+capability cap_view_hello {
+  name "View Hello"
+  description "Views the hello starter pages"
+
+  actors [actor_visitor]
+  output [shape_output_hello]
+
+  status active
+}

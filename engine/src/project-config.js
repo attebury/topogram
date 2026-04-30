@@ -156,16 +156,17 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
     projections.find((projection) => projection.platform === "db_sqlite");
   const ports = runtimeReference.ports || {};
   const dbGenerator = dbProjection?.platform === "db_sqlite" ? "topogram/sqlite" : "topogram/postgres";
+  const dbComponentId = dbProjection?.platform === "db_sqlite" ? "app_sqlite" : "app_postgres";
   /** @type {RuntimeTopologyComponent[]} */
   const components = [
-    ...(apiProjection && dbProjection
+    ...(apiProjection
       ? [{
           id: "app_api",
           type: /** @type {"api"} */ ("api"),
           projection: apiProjection.id,
           generator: { id: "topogram/hono", version: "1" },
           port: ports.server || 3000,
-          database: "app_postgres"
+          ...(dbProjection ? { database: dbComponentId } : {})
         }]
       : []),
     ...(webProjection
@@ -175,12 +176,12 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
           projection: webProjection.id,
           generator: { id: "topogram/sveltekit", version: "1" },
           port: ports.web || 5173,
-          api: "app_api"
+          ...(apiProjection ? { api: "app_api" } : {})
         }]
       : []),
     ...(dbProjection
       ? [{
-          id: "app_postgres",
+          id: dbComponentId,
           type: /** @type {"database"} */ ("database"),
           projection: dbProjection.id,
           generator: { id: dbGenerator, version: "1" },
@@ -384,16 +385,12 @@ function validateTopologyReferences(errors, components) {
       }
     }
     if (component.type === "api") {
-      if (!component.database) {
-        pushError(errors, `${componentLabel(component)} must reference a database component`);
-      } else if (byId.get(component.database)?.type !== "database") {
+      if (component.database && byId.get(component.database)?.type !== "database") {
         pushError(errors, `${componentLabel(component)} references missing database component '${component.database}'`);
       }
     }
     if (component.type === "web") {
-      if (!component.api) {
-        pushError(errors, `${componentLabel(component)} must reference an api component`);
-      } else if (byId.get(component.api)?.type !== "api") {
+      if (component.api && byId.get(component.api)?.type !== "api") {
         pushError(errors, `${componentLabel(component)} references missing api component '${component.api}'`);
       }
     }
