@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import childProcess from "node:child_process";
+import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -162,7 +163,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.46");
+  console.log("  topogram package update-cli 0.2.47");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -587,7 +588,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.46.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.47.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -953,6 +954,56 @@ function checkDoctorPackageAccess(packageSpec) {
 }
 
 /**
+ * @param {string} spec
+ * @returns {string|null}
+ */
+function registryPackageNameFromSpec(spec) {
+  if (!spec || spec.startsWith(".") || spec.startsWith("/") || spec.startsWith("file:") || spec.endsWith(".tgz")) {
+    return null;
+  }
+  if (spec.startsWith("@")) {
+    const parts = spec.split("/");
+    if (parts.length < 2) {
+      return null;
+    }
+    return `${parts[0]}/${parts[1].replace(/@[^@]+$/, "")}`;
+  }
+  return spec.replace(/@[^@]+$/, "");
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ ok: boolean, package: string|null, packageSpec: string, currentVersion: string|null, latestVersion: string|null, current: boolean|null, diagnostics: any[] }}
+ */
+function checkTemplatePackageStatus(packageSpec) {
+  const packageName = registryPackageNameFromSpec(packageSpec);
+  if (!packageName) {
+    return {
+      ok: true,
+      package: null,
+      packageSpec,
+      currentVersion: null,
+      latestVersion: null,
+      current: null,
+      diagnostics: []
+    };
+  }
+  const access = checkDoctorPackageAccess(packageSpec);
+  const latest = checkDoctorPackageAccess(`${packageName}@latest`);
+  const currentVersion = access.checkedVersion;
+  const latestVersion = latest.checkedVersion;
+  return {
+    ok: access.ok && latest.ok,
+    package: packageName,
+    packageSpec,
+    currentVersion,
+    latestVersion,
+    current: currentVersion && latestVersion ? currentVersion === latestVersion : null,
+    diagnostics: [...access.diagnostics, ...latest.diagnostics]
+  };
+}
+
+/**
  * @param {string} packageSpec
  * @param {{ stdout?: string, stderr?: string, error?: Error }} result
  * @returns {any}
@@ -1009,6 +1060,9 @@ function printDoctor(payload) {
     console.log(`Catalog entries: ${payload.catalog.catalog.entries}`);
     const failedPackages = payload.catalog.packages.filter((item) => !item.ok).length;
     console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
+  }
+  if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.githubPackages.required) {
+    console.log("Project provenance: run `topogram source status` for catalog, template, trust, and baseline details.");
   }
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
@@ -2088,7 +2142,162 @@ function printCatalogCopy(payload) {
 }
 
 /**
- * @param {ReturnType<typeof buildTopogramSourceStatus>} payload
+ * @param {string} filePath
+ * @returns {{ sha256: string, size: number }}
+ */
+function projectFileHash(filePath) {
+  const bytes = fs.readFileSync(filePath);
+  return {
+    sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
+    size: bytes.length
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} relativePath
+ * @returns {{ sha256: string, size: number }}
+ */
+function templateBaselineFileHash(projectRoot, relativePath) {
+  const filePath = path.join(projectRoot, relativePath);
+  if (relativePath === "topogram.project.json") {
+    const content = `${stableStringify(JSON.parse(fs.readFileSync(filePath, "utf8")))}\n`;
+    return {
+      sha256: crypto.createHash("sha256").update(content).digest("hex"),
+      size: Buffer.byteLength(content)
+    };
+  }
+  return projectFileHash(filePath);
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {{ exists: boolean, path: string, status: "missing"|"clean"|"changed", content: { changed: string[], added: string[], removed: string[] }, trustedFiles: number }}
+ */
+function buildTemplateOwnedBaselineStatus(projectRoot) {
+  const manifestPath = path.join(projectRoot, ".topogram-template-files.json");
+  if (!fs.existsSync(manifestPath)) {
+    return {
+      exists: false,
+      path: manifestPath,
+      status: "missing",
+      content: { changed: [], added: [], removed: [] },
+      trustedFiles: 0
+    };
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const trustedFiles = Array.isArray(manifest.files) ? manifest.files : [];
+  const changed = [];
+  const removed = [];
+  for (const file of trustedFiles) {
+    const relativePath = String(file.path || "");
+    if (!relativePath) {
+      continue;
+    }
+    const absolutePath = path.join(projectRoot, relativePath);
+    if (!fs.existsSync(absolutePath)) {
+      removed.push(relativePath);
+      continue;
+    }
+    const current = templateBaselineFileHash(projectRoot, relativePath);
+    if (current.sha256 !== file.sha256 || current.size !== file.size) {
+      changed.push(relativePath);
+    }
+  }
+  return {
+    exists: true,
+    path: manifestPath,
+    status: changed.length || removed.length ? "changed" : "clean",
+    content: {
+      changed: changed.sort((a, b) => a.localeCompare(b)),
+      added: [],
+      removed: removed.sort((a, b) => a.localeCompare(b))
+    },
+    trustedFiles: trustedFiles.length
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {ReturnType<typeof buildTopogramSourceStatus> & { project: Record<string, any> }}
+ */
+function buildProjectSourceStatus(projectRoot) {
+  const resolvedRoot = normalizeProjectRoot(projectRoot);
+  const sourceStatus = buildTopogramSourceStatus(resolvedRoot);
+  const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(resolvedRoot));
+  const template = projectConfigInfo?.config?.template || null;
+  const baseline = buildTemplateOwnedBaselineStatus(resolvedRoot);
+  let trust = {
+    requiresTrust: false,
+    ok: true,
+    status: "not-required",
+    path: path.join(resolvedRoot, TEMPLATE_TRUST_FILE),
+    template: null,
+    implementation: null,
+    content: { trustedDigest: null, currentDigest: null, changed: [], added: [], removed: [] },
+    issues: []
+  };
+  if (projectConfigInfo?.config?.implementation) {
+    const trustStatus = getTemplateTrustStatus({
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    }, projectConfigInfo.config);
+    trust = {
+      requiresTrust: trustStatus.requiresTrust,
+      ok: trustStatus.ok,
+      status: trustStatus.requiresTrust ? (trustStatus.ok ? "trusted" : "review-required") : "not-required",
+      path: trustStatus.trustPath,
+      template: trustStatus.template,
+      implementation: trustStatus.implementation,
+      content: trustStatus.content,
+      issues: trustStatus.issues
+    };
+  }
+  const packageStatus = template?.sourceSpec
+    ? checkTemplatePackageStatus(template.sourceSpec)
+    : null;
+  const projectDiagnostics = [];
+  if (!projectConfigInfo) {
+    projectDiagnostics.push({
+      code: "project_config_missing",
+      severity: "warning",
+      message: "topogram.project.json was not found.",
+      path: path.join(resolvedRoot, "topogram.project.json"),
+      suggestedFix: "Run `topogram check` from a Topogram project root."
+    });
+  }
+  return {
+    ...sourceStatus,
+    project: {
+      root: resolvedRoot,
+      config: projectConfigInfo
+        ? { exists: true, path: projectConfigInfo.configPath }
+        : { exists: false, path: path.join(resolvedRoot, "topogram.project.json") },
+      catalog: template?.catalog || sourceStatus.source?.catalog || null,
+      template: template
+        ? {
+            id: template.id || null,
+            version: template.version || null,
+            requested: template.requested || null,
+            source: template.source || null,
+            sourceSpec: template.sourceSpec || null,
+            includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
+              ? template.includesExecutableImplementation
+              : null
+          }
+        : null,
+      package: packageStatus,
+      trust,
+      templateOwnedBaseline: baseline,
+      diagnostics: projectDiagnostics
+    },
+    diagnostics: [...sourceStatus.diagnostics, ...projectDiagnostics]
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildProjectSourceStatus>} payload
  * @returns {void}
  */
 function printTopogramSourceStatus(payload) {
@@ -2106,6 +2315,40 @@ function printTopogramSourceStatus(payload) {
       console.log(`Package: ${payload.source.package.spec}`);
     }
   }
+  if (payload.project?.config?.exists) {
+    console.log(`Project config: ${payload.project.config.path}`);
+  }
+  if (payload.project?.catalog?.id) {
+    console.log(`Project catalog: ${payload.project.catalog.id}${payload.project.catalog.source ? ` from ${payload.project.catalog.source}` : ""}`);
+  }
+  if (payload.project?.template?.id) {
+    console.log(`Template: ${payload.project.template.id}@${payload.project.template.version || "unknown"}`);
+    console.log(`Template source: ${payload.project.template.sourceSpec || payload.project.template.source || "unknown"}`);
+    console.log(`Executable implementation: ${payload.project.template.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+  if (payload.project?.package?.package) {
+    const packageStatus = payload.project.package;
+    const currentLabel = packageStatus.current === null ? "unknown" : (packageStatus.current ? "current" : "update available");
+    console.log(`Template package: ${packageStatus.packageSpec} (${packageStatus.ok ? "reachable" : "unreachable"}, ${currentLabel})`);
+    if (packageStatus.latestVersion) {
+      console.log(`Latest template package version: ${packageStatus.latestVersion}`);
+    }
+  }
+  if (payload.project?.trust) {
+    console.log(`Implementation trust: ${payload.project.trust.status}`);
+    if (payload.project.trust.content.trustedDigest) {
+      console.log(`Trusted digest: ${payload.project.trust.content.trustedDigest}`);
+    }
+    if (payload.project.trust.content.currentDigest) {
+      console.log(`Current digest: ${payload.project.trust.content.currentDigest}`);
+    }
+  }
+  if (payload.project?.templateOwnedBaseline) {
+    const baseline = payload.project.templateOwnedBaseline;
+    console.log(`Template-owned baseline: ${baseline.status} (${baseline.trustedFiles} file(s))`);
+    console.log(`Template-owned changed: ${baseline.content.changed.length}`);
+    console.log(`Template-owned removed: ${baseline.content.removed.length}`);
+  }
   for (const kind of ["changed", "added", "removed"]) {
     const files = payload.content[kind] || [];
     console.log(`${kind[0].toUpperCase()}${kind.slice(1)}: ${files.length}`);
@@ -2117,13 +2360,31 @@ function printTopogramSourceStatus(payload) {
     const label = diagnostic.severity === "warning" ? "Warning" : "Error";
     console.log(`${label}: ${diagnostic.message}`);
   }
+  if (payload.project?.package?.diagnostics?.length) {
+    for (const diagnostic of payload.project.package.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        console.log(`Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+  if (payload.project?.trust?.issues?.length) {
+    for (const issue of payload.project.trust.issues) {
+      console.log(`Issue: ${issue}`);
+    }
+  }
   console.log("");
   console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
   console.log("This status does not block `topogram check` or `topogram generate`.");
   if (!payload.exists) {
-    console.log("Next: use `topogram catalog copy <id> <target>` to create a workspace with source provenance.");
+    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
   } else if (payload.status === "changed") {
     console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
+  } else if (payload.project?.trust?.status === "review-required") {
+    console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
+  } else if (payload.project?.templateOwnedBaseline?.status === "changed") {
+    console.log("Next: review template-owned file changes, then run `topogram template update --check`.");
   } else {
     console.log("Next: run `topogram check` or `topogram generate`.");
   }
@@ -3577,7 +3838,7 @@ try {
   }
 
   if (shouldSourceStatus) {
-    const payload = buildTopogramSourceStatus(normalizeProjectRoot(inputPath));
+    const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath));
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {

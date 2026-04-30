@@ -466,7 +466,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.46 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.47 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -700,7 +700,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.46",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.47",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -752,6 +752,34 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(humanStatus.stdout, /Requested: todo/);
   assert.match(humanStatus.stdout, /Catalog: todo from /);
 
+  const sourceStatus = runCli(["source", "status", "--json"], { cwd: projectRoot, env });
+  assert.equal(sourceStatus.status, 0, sourceStatus.stderr || sourceStatus.stdout);
+  const sourcePayload = JSON.parse(sourceStatus.stdout);
+  assert.equal(sourcePayload.exists, false);
+  assert.equal(sourcePayload.project.catalog.id, "todo");
+  assert.equal(sourcePayload.project.catalog.source, catalogPath);
+  assert.equal(sourcePayload.project.template.id, "@scope/topogram-template-todo");
+  assert.equal(sourcePayload.project.template.requested, "todo");
+  assert.equal(sourcePayload.project.template.sourceSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(sourcePayload.project.template.includesExecutableImplementation, true);
+  assert.equal(sourcePayload.project.package.package, "@scope/topogram-template-todo");
+  assert.equal(sourcePayload.project.package.currentVersion, "0.1.0");
+  assert.equal(sourcePayload.project.package.latestVersion, "0.1.0");
+  assert.equal(sourcePayload.project.package.current, true);
+  assert.equal(sourcePayload.project.trust.status, "trusted");
+  assert.equal(sourcePayload.project.trust.content.trustedDigest, sourcePayload.project.trust.content.currentDigest);
+  assert.equal(sourcePayload.project.templateOwnedBaseline.status, "clean");
+  assert.ok(sourcePayload.project.templateOwnedBaseline.trustedFiles > 0);
+
+  const humanSourceStatus = runCli(["source", "status"], { cwd: projectRoot, env });
+  assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
+  assert.match(humanSourceStatus.stdout, /Topogram source status: no provenance/);
+  assert.match(humanSourceStatus.stdout, /Project catalog: todo from /);
+  assert.match(humanSourceStatus.stdout, /Template: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(humanSourceStatus.stdout, /Executable implementation: yes/);
+  assert.match(humanSourceStatus.stdout, /Implementation trust: trusted/);
+  assert.match(humanSourceStatus.stdout, /Template-owned baseline: clean/);
+
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   const doctorPayload = JSON.parse(doctor.stdout);
@@ -764,6 +792,10 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     doctorPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_check_skipped"),
     false
   );
+
+  const humanDoctor = runCli(["doctor"], { cwd: projectRoot, env });
+  assert.equal(humanDoctor.status, 0, humanDoctor.stderr || humanDoctor.stdout);
+  assert.match(humanDoctor.stdout, /Project provenance: run `topogram source status`/);
 
   const updateCheck = runCli(["template", "update", "--check", "--json"], { cwd: projectRoot, env });
   assert.equal(updateCheck.status, 0, updateCheck.stderr || updateCheck.stdout);
