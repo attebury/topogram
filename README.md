@@ -45,6 +45,8 @@ Inspect, plan, or apply a template update:
 ```bash
 topogram catalog list
 topogram catalog check topograms.catalog.json
+topogram catalog copy hello ./hello-topogram
+topogram source status ./hello-topogram
 topogram template list
 topogram template status --latest
 topogram template policy check
@@ -124,7 +126,10 @@ The second form resolves `todo` through the private catalog at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
 templates and reusable topograms are still installed from versioned packages.
 Use `topogram catalog copy <id> <target>` for pure topogram entries that should
-be copied into a workspace for editing. See [Catalog](./docs/catalog.md).
+be copied into a workspace for editing. Copied topograms include
+`.topogram-source.json`; run `topogram source status <target>` to compare the
+current files to the import baseline. This is provenance only: local edits are
+allowed. See [Catalog](./docs/catalog.md).
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 

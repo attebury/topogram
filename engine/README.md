@@ -25,6 +25,8 @@ topogram check
 topogram generate
 topogram catalog list
 topogram catalog check topograms.catalog.json
+topogram catalog copy hello ../hello-topogram
+topogram source status ../hello-topogram
 topogram template list
 topogram template status
 topogram template policy check
@@ -91,7 +93,10 @@ Catalog aliases resolve through the private catalog index at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is package
 backed; executable starter content still lives in template packages. Pure
 topogram catalog entries can be copied for editing with
-`topogram catalog copy <id> <target>`.
+`topogram catalog copy <id> <target>`. Copied topogram projects record
+`.topogram-source.json`; inspect local drift from that import baseline with
+`topogram source status <target>`. This metadata is provenance only and does not
+block local edits.
 
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 

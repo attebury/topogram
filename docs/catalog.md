@@ -62,7 +62,20 @@ Copy a pure topogram package for editing:
 ```bash
 topogram catalog copy hello ./hello-topogram
 topogram catalog copy hello ./hello-topogram --version 0.1.0
+topogram source status ./hello-topogram
+topogram source status ./hello-topogram --json
 ```
+
+`catalog copy` writes `.topogram-source.json` in the target workspace. That
+file records the catalog id/source, package spec/version, copy time,
+non-executable trust metadata, and SHA-256 hashes for imported `topogram/`,
+`topogram.project.json`, and `README.md` files. `topogram source status` compares
+the current files with that import baseline and reports changed, added, and
+removed paths.
+
+The source file is provenance only. Users and agents may edit copied topogram
+files after import; this status command reports drift but does not block checks,
+generation, or local maintenance.
 
 Use a local catalog while developing:
 
