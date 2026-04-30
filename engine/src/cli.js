@@ -910,6 +910,11 @@ function buildTemplateListPayload(options = {}) {
  */
 function printTemplateList(payload) {
   console.log("Available templates:");
+  if (payload.catalog.source) {
+    console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
+  } else {
+    console.log("Catalog: disabled");
+  }
   for (const template of payload.templates) {
     const defaultLabel = template.isDefault ? " (default)" : "";
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
@@ -1368,13 +1373,13 @@ function resolveCatalogTemplateAlias(templateName, source = null) {
   }
   const catalogSource = catalogSourceOrDefault(source);
   if (isCatalogSourceDisabled(catalogSource)) {
-    return { templateName, provenance: null };
+    throw new Error(formatCatalogTemplateAliasError(templateName, catalogSource, null));
   }
   try {
     const loaded = loadCatalog(catalogSource);
     const entry = findCatalogEntry(loaded.catalog, templateName, "template");
     if (!entry) {
-      return { templateName, provenance: null };
+      throw new Error(formatCatalogTemplateAliasError(templateName, loaded.source, null));
     }
     const packageSpec = catalogEntryPackageSpec(entry);
     return {
@@ -1388,10 +1393,11 @@ function resolveCatalogTemplateAlias(templateName, source = null) {
       }
     };
   } catch (error) {
-    if (source || process.env.TOPOGRAM_CATALOG_SOURCE) {
+    const message = messageFromError(error);
+    if (message.startsWith(`Catalog template alias '${templateName}'`)) {
       throw error;
     }
-    return { templateName, provenance: null };
+    throw new Error(formatCatalogTemplateAliasError(templateName, catalogSource, error));
   }
 }
 
@@ -1409,6 +1415,27 @@ function isCatalogAliasCandidate(templateName) {
     !path.isAbsolute(templateName) &&
     !templateName.includes("/") &&
     !templateName.endsWith(".tgz");
+}
+
+/**
+ * @param {string} templateName
+ * @param {string|null} catalogSource
+ * @param {unknown} error
+ * @returns {string}
+ */
+function formatCatalogTemplateAliasError(templateName, catalogSource, error) {
+  const sourceLabel = catalogSource || "disabled catalog";
+  const reason = error
+    ? messageFromError(error)
+    : `No template entry named '${templateName}' was found in the catalog.`;
+  return [
+    `Catalog template alias '${templateName}' could not be resolved from '${sourceLabel}'.`,
+    reason,
+    "Run `topogram template list` to see available templates, or `topogram template show <id>` to inspect one template.",
+    "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
+    "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
+    "Use a built-in template such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
+  ].filter(Boolean).join("\n");
 }
 
 /**

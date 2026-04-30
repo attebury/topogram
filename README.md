@@ -156,6 +156,28 @@ catalog source 404s. For private package consumers, configure `.npmrc` with the
 GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
 read access.
 
+Clean-machine private template flow:
+
+```bash
+export NODE_AUTH_TOKEN=<github-token-with-package-read>
+npm config set @attebury:registry https://npm.pkg.github.com
+npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
+npm install --global @attebury/topogram
+gh auth login
+topogram template list
+topogram template show todo
+topogram new ./todo-demo --template todo
+cd ./todo-demo
+npm install
+npm run check
+npm run generate
+npm run verify
+```
+
+If `topogram new --template todo` fails before npm runs, fix catalog access:
+set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate `gh`. If it resolves the
+catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
+
 Consumer repos can update their CLI dependency with:
 
 ```bash

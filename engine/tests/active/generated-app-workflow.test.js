@@ -554,6 +554,33 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(humanStatus.stdout, /Catalog: todo from /);
 });
 
+test("topogram new explains catalog alias resolution failures", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-errors-"));
+  const source = "github:attebury/topograms/topograms.catalog.json";
+  const authGhBin = createFailingCommand(
+    root,
+    "gh",
+    "gh: Requires authentication (HTTP 401)\n"
+  );
+  const auth = runCli(["new", path.join(root, "auth"), "--template", "todo", "--catalog", source], {
+    env: { PATH: `${authGhBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(auth.status, 0, auth.stdout);
+  assert.match(auth.stderr, /Catalog template alias 'todo' could not be resolved/);
+  assert.match(auth.stderr, /Authentication is required to read private catalog/);
+  assert.match(auth.stderr, /GITHUB_TOKEN or GH_TOKEN/);
+  assert.match(auth.stderr, /NODE_AUTH_TOKEN/);
+
+  const catalogPath = createCatalog(root, [
+    catalogEntry({ id: "other", package: "@scope/topogram-template-other" })
+  ]);
+  const missing = runCli(["new", path.join(root, "missing"), "--template", "todo", "--catalog", catalogPath]);
+  assert.notEqual(missing.status, 0, missing.stdout);
+  assert.match(missing.stderr, /No template entry named 'todo' was found in the catalog/);
+  assert.match(missing.stderr, /topogram template list/);
+  assert.match(missing.stderr, /@attebury\/topogram-template-todo@0\.1\.6/);
+});
+
 test("package-backed template installs explain private package auth failures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-auth-errors-"));
   const projectRoot = path.join(root, "starter");
