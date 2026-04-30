@@ -1917,6 +1917,8 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "check:json": "topogram check --json",
       generate: "topogram generate",
       "template:status": "topogram template status",
+      "template:detach": "topogram template detach",
+      "template:detach:dry-run": "topogram template detach --dry-run",
       "template:policy:check": "topogram template policy check",
       "template:policy:explain": "topogram template policy explain",
       "template:update:status": "topogram template update --status",
@@ -1986,6 +1988,7 @@ Useful inspection:
    npm run doctor
    npm run source:status
    npm run template:status
+   npm run template:detach:dry-run
    npm run template:policy:check
    npm run template:policy:explain
    npm run template:update:status

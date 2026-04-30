@@ -466,7 +466,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.50 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.51 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -700,7 +700,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.50",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.51",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -1316,6 +1316,8 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
+  assert.equal(pkg.scripts["template:detach"], "topogram template detach");
+  assert.equal(pkg.scripts["template:detach:dry-run"], "topogram template detach --dry-run");
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");
   assert.equal(pkg.scripts["template:policy:explain"], "topogram template policy explain");
@@ -1365,6 +1367,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
   assert.match(explainScript, /npm run doctor/);
   assert.match(explainScript, /npm run source:status/);
+  assert.match(explainScript, /npm run template:detach:dry-run/);
   assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
