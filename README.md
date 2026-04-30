@@ -255,7 +255,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.47
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.48
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then

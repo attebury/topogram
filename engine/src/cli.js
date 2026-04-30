@@ -163,7 +163,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.47");
+  console.log("  topogram package update-cli 0.2.48");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -588,7 +588,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.47.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.48.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -1393,6 +1393,7 @@ function printNewProjectResult(result, cwd) {
   console.log(`  cd ${displayProjectRootForNewProject(result, cwd)}`);
   console.log("  npm install");
   console.log("  npm run doctor");
+  console.log("  npm run source:status");
   console.log("  npm run check");
   if (template.includesExecutableImplementation) {
     console.log("  npm run template:policy:explain");
@@ -2254,7 +2255,7 @@ function buildProjectSourceStatus(projectRoot) {
       issues: trustStatus.issues
     };
   }
-  const packageStatus = template?.sourceSpec
+  const packageStatus = template?.source === "package" && template.sourceSpec
     ? checkTemplatePackageStatus(template.sourceSpec)
     : null;
   const projectDiagnostics = [];

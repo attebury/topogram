@@ -1912,6 +1912,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
     scripts: {
       explain: "node ./scripts/explain.mjs",
       doctor: "topogram doctor",
+      "source:status": "topogram source status",
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
@@ -1961,6 +1962,7 @@ Topogram app workflow
 
 2. Validate:
    npm run doctor
+   npm run source:status
    npm run check
 
 3. Regenerate:
@@ -1982,6 +1984,7 @@ Or run self-contained local runtime verification:
 Useful inspection:
    npm run check:json
    npm run doctor
+   npm run source:status
    npm run template:status
    npm run template:policy:check
    npm run template:policy:explain
@@ -2011,6 +2014,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
     "npm install",
     "npm run explain",
     "npm run doctor",
+    "npm run source:status",
     "npm run check",
     "npm run template:policy:check",
     ...(template.includesExecutableImplementation ? [
