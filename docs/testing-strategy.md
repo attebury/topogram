@@ -41,6 +41,10 @@ npm run generate
 npm run verify
 ```
 
+Its normal GitHub Actions demo gate owns the generated Todo app compile and
+runtime proof. Engine CI should keep validating engine fixtures and CLI package
+behavior, not Todo-specific app semantics.
+
 Run the smoke path when runtime services and local database state are available:
 
 ```bash

@@ -125,6 +125,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram source status [path] [--json]");
   console.log("   or: topogram template list [--json]");
+  console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
@@ -149,6 +150,7 @@ function printUsage(options = {}) {
   console.log("  topogram catalog copy hello ./hello-topogram");
   console.log("  topogram source status");
   console.log("  topogram template list");
+  console.log("  topogram template show todo");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -740,6 +742,156 @@ function printTemplateList(payload) {
   }
   for (const diagnostic of payload.diagnostics) {
     console.warn(`Warning: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {string} id
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: "builtin"|"catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ */
+function buildTemplateShowPayload(id, source) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram template show requires <id>.");
+  }
+  const builtIn = listBuiltInTemplates(TEMPLATES_ROOT).find((template) => template.id === id || template.name === id);
+  if (builtIn) {
+    return {
+      ok: true,
+      source: "builtin",
+      catalog: { source: null, version: null },
+      template: {
+        id: builtIn.id,
+        name: builtIn.name,
+        version: builtIn.version,
+        source: builtIn.source,
+        includesExecutableImplementation: builtIn.includesExecutableImplementation
+      },
+      packageSpec: null,
+      commands: {
+        primary: `topogram new ./my-app --template ${shellCommandArg(builtIn.name)}`,
+        followUp: [
+          "cd ./my-app",
+          "npm install",
+          "npm run check",
+          "npm run generate"
+        ]
+      },
+      diagnostics: [],
+      errors: []
+    };
+  }
+
+  const catalogPayload = buildCatalogShowPayload(id, source);
+  if (!catalogPayload.ok || !catalogPayload.entry) {
+    return {
+      ok: false,
+      source: "catalog",
+      catalog: {
+        source: catalogPayload.source,
+        version: catalogPayload.catalog.version
+      },
+      template: null,
+      packageSpec: null,
+      commands: { primary: null, followUp: [] },
+      diagnostics: catalogPayload.diagnostics,
+      errors: catalogPayload.errors
+    };
+  }
+  if (catalogPayload.entry.kind !== "template") {
+    const diagnostic = {
+      code: "catalog_entry_not_template",
+      severity: "error",
+      message: `Catalog entry '${id}' is a ${catalogPayload.entry.kind}, not a template.`,
+      path: catalogPayload.source,
+      suggestedFix: "Use `topogram catalog show` for non-template catalog entries."
+    };
+    return {
+      ok: false,
+      source: "catalog",
+      catalog: {
+        source: catalogPayload.source,
+        version: catalogPayload.catalog.version
+      },
+      template: catalogPayload.entry,
+      packageSpec: catalogPayload.packageSpec,
+      commands: catalogPayload.commands,
+      diagnostics: [...catalogPayload.diagnostics, diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  return {
+    ok: true,
+    source: "catalog",
+    catalog: {
+      source: catalogPayload.source,
+      version: catalogPayload.catalog.version
+    },
+    template: catalogPayload.entry,
+    packageSpec: catalogPayload.packageSpec,
+    commands: catalogPayload.commands,
+    diagnostics: catalogPayload.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateShowPayload>} payload
+ * @returns {void}
+ */
+function printTemplateShow(payload) {
+  if (!payload.ok || !payload.template) {
+    console.log("Template not found.");
+    if (payload.catalog.source) {
+      console.log(`Catalog: ${payload.catalog.source}`);
+    }
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+    }
+    return;
+  }
+  const template = payload.template;
+  console.log(`Template: ${template.id}`);
+  console.log(`Source: ${payload.source}`);
+  if (template.name) {
+    console.log(`Name: ${template.name}`);
+  }
+  if (payload.catalog.source) {
+    console.log(`Catalog: ${payload.catalog.source}`);
+  }
+  if (payload.packageSpec) {
+    console.log(`Package: ${payload.packageSpec}`);
+  }
+  if (template.description) {
+    console.log(`Description: ${template.description}`);
+  }
+  if (Array.isArray(template.tags) && template.tags.length > 0) {
+    console.log(`Tags: ${template.tags.join(", ")}`);
+  }
+  if (template.trust?.scope) {
+    console.log(`Trust scope: ${template.trust.scope}`);
+  }
+  const executable = template.trust
+    ? template.trust.includesExecutableImplementation
+    : template.includesExecutableImplementation;
+  console.log(`Executable implementation: ${executable ? "yes" : "no"}`);
+  if (template.trust?.notes) {
+    console.log(`Trust notes: ${template.trust.notes}`);
+  }
+  console.log("");
+  console.log("Recommended command:");
+  console.log(`  ${payload.commands.primary}`);
+  if (payload.commands.followUp.length > 0) {
+    console.log("Follow-up:");
+    for (const command of payload.commands.followUp) {
+      console.log(`  ${command}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    if (diagnostic.severity === "warning") {
+      console.warn(`Warning: ${diagnostic.message}`);
+    }
   }
 }
 
@@ -1968,6 +2120,8 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { sourceStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
+} else if (args[0] === "template" && args[1] === "show") {
+  commandArgs = { templateShow: true, inputPath: args[2] };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
@@ -2069,6 +2223,7 @@ const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
 const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
+const shouldTemplateShow = Boolean(commandArgs?.templateShow);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
 const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
@@ -2144,7 +2299,7 @@ if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus |
   process.exit(1);
 }
 
-if (shouldCatalogShow && !inputPath) {
+if ((shouldCatalogShow || shouldTemplateShow) && !inputPath) {
   console.error("Missing required <id>.");
   printUsage();
   process.exit(1);
@@ -2256,6 +2411,16 @@ try {
       printTemplateList(payload);
     }
     process.exit(0);
+  }
+
+  if (shouldTemplateShow) {
+    const payload = buildTemplateShowPayload(inputPath, catalogSource);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldTemplateStatus) {

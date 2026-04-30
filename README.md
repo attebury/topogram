@@ -34,7 +34,7 @@ npm run verify
 The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
 with two pages and one workflow doc. Other built-ins cover `hello-api`,
 `hello-db`, `web-api`, and `web-api-db`; inspect them with `topogram template
-list`.
+list` or `topogram template show <id>`.
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
@@ -54,16 +54,17 @@ topogram catalog check topograms.catalog.json
 topogram catalog copy hello ./hello-topogram
 topogram source status ./hello-topogram
 topogram template list
+topogram template show todo
 topogram template status --latest
 topogram template policy check
 topogram template policy init
-topogram template policy pin @attebury/topogram-template-todo@0.1.2
+topogram template policy pin @attebury/topogram-template-todo@0.1.5
 topogram template update --status
 topogram template update --recommend
 topogram template update --recommend --latest
 topogram template update --plan
 topogram template update --check
-topogram template update --plan --template @attebury/topogram-template-todo@0.1.2
+topogram template update --plan --template @attebury/topogram-template-todo@0.1.5
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
@@ -113,7 +114,7 @@ Validate a reusable template pack:
 
 ```bash
 topogram template check ./my-template
-topogram template check @attebury/topogram-template-todo@0.1.2 --json
+topogram template check @attebury/topogram-template-todo@0.1.5 --json
 ```
 
 Template checks create a temporary starter, run `topogram check` behavior,
@@ -132,7 +133,8 @@ The second form resolves `todo` through the private catalog at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
 templates and reusable topograms are still installed from versioned packages.
 Use `topogram catalog show <id>` to see what an entry is and which command to
-run next.
+run next. Use `topogram template show <id>` when you already know the entry is
+a starter template and want the direct `topogram new` flow.
 Use `topogram catalog copy <id> <target>` for pure topogram entries that should
 be copied into a workspace for editing. Copied topograms include
 `.topogram-source.json`; run `topogram source status <target>` to compare the
@@ -184,8 +186,12 @@ Before publishing, run `npm run release:prepare -- <version>` and commit the
 updated `engine/package.json` and `engine/package-lock.json`. See
 [Releasing](./docs/releasing.md).
 
-The generated Todo demo now lives in the private `topogram-demo-todo` repo and consumes the published `@attebury/topogram` package.
-The Todo starter source lives in the private `topogram-template-todo` repo and publishes as `@attebury/topogram-template-todo`.
+This repo owns the CLI package, engine validation, catalog mechanics, and
+stack-neutral built-in starters. Todo product behavior is intentionally outside
+the engine: the generated Todo demo lives in the private `topogram-demo-todo`
+repo and consumes the published `@attebury/topogram` package; the Todo starter
+source lives in the private `topogram-template-todo` repo and publishes as
+`@attebury/topogram-template-todo`.
 See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
 See [Catalog](./docs/catalog.md) for private catalog layout and commands.
 

@@ -169,6 +169,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
+  assert.match(help.stdout, /topogram template show todo/);
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template check <template-spec-or-path>/);
   assert.doesNotMatch(help.stdout, /topogram build \[path\]/);
@@ -385,6 +386,56 @@ test("topogram template list includes catalog template aliases", () => {
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /todo \(template\)/);
   assert.match(human.stdout, /hello \(topogram\)/);
+});
+
+test("topogram template show describes built-in and catalog templates", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-show-"));
+  const catalogPath = createCatalog(root, [
+    catalogEntry(),
+    catalogEntry({
+      id: "hello",
+      kind: "topogram",
+      package: "@scope/topogram-hello",
+      defaultVersion: "0.1.0",
+      description: "Hello topogram",
+      tags: ["hello"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    })
+  ]);
+
+  const builtin = runCli(["template", "show", "hello-web", "--json"]);
+  assert.equal(builtin.status, 0, builtin.stderr || builtin.stdout);
+  const builtinPayload = JSON.parse(builtin.stdout);
+  assert.equal(builtinPayload.ok, true);
+  assert.equal(builtinPayload.source, "builtin");
+  assert.equal(builtinPayload.template.id, "topogram/hello-web");
+  assert.equal(builtinPayload.commands.primary, "topogram new ./my-app --template hello-web");
+
+  const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
+  assert.equal(template.status, 0, template.stderr || template.stdout);
+  const templatePayload = JSON.parse(template.stdout);
+  assert.equal(templatePayload.ok, true);
+  assert.equal(templatePayload.source, "catalog");
+  assert.equal(templatePayload.template.kind, "template");
+  assert.equal(templatePayload.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(
+    templatePayload.commands.primary,
+    `topogram new ./my-app --template todo --catalog ${catalogPath}`
+  );
+
+  const human = runCli(["template", "show", "todo", "--catalog", catalogPath]);
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Template: todo/);
+  assert.match(human.stdout, /Source: catalog/);
+  assert.match(human.stdout, /Recommended command:/);
+  assert.match(human.stdout, /topogram new \.\/my-app --template todo/);
+
+  const nonTemplate = runCli(["template", "show", "hello", "--catalog", catalogPath, "--json"]);
+  assert.notEqual(nonTemplate.status, 0, nonTemplate.stdout);
+  assert.equal(JSON.parse(nonTemplate.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_entry_not_template"), true);
 });
 
 test("topogram new resolves catalog template aliases to package specs", () => {

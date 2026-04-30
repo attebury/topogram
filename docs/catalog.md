@@ -30,6 +30,13 @@ topogram catalog show hello --json
 Template entries recommend `topogram new`. Pure topogram entries recommend
 `topogram catalog copy` plus `topogram source status`.
 
+Inspect a template alias directly:
+
+```bash
+topogram template show todo
+topogram template show todo --json
+```
+
 Validate a local or remote catalog:
 
 ```bash
@@ -41,6 +48,7 @@ Create a starter from a catalog template alias:
 
 ```bash
 topogram template list
+topogram template show todo
 topogram new ./todo-demo --template todo
 ```
 
@@ -52,13 +60,13 @@ metadata. `topogram.project.json` records:
   "template": {
     "source": "package",
     "requested": "todo",
-    "sourceSpec": "@attebury/topogram-template-todo@0.1.2",
+    "sourceSpec": "@attebury/topogram-template-todo@0.1.5",
     "catalog": {
       "id": "todo",
       "source": "github:attebury/topograms/topograms.catalog.json",
       "package": "@attebury/topogram-template-todo",
-      "version": "0.1.2",
-      "packageSpec": "@attebury/topogram-template-todo@0.1.2"
+      "version": "0.1.5",
+      "packageSpec": "@attebury/topogram-template-todo@0.1.5"
     }
   }
 }
@@ -92,6 +100,7 @@ Use a local catalog while developing:
 
 ```bash
 topogram template list --catalog ./topograms.catalog.json
+topogram template show todo --catalog ./topograms.catalog.json
 topogram new ./app --template todo --catalog ./topograms.catalog.json
 topogram catalog copy hello ./hello-topogram --catalog ./topograms.catalog.json
 ```
@@ -110,7 +119,7 @@ Set `TOPOGRAM_CATALOG_SOURCE=none` to list only built-in templates.
       "id": "todo",
       "kind": "template",
       "package": "@attebury/topogram-template-todo",
-      "defaultVersion": "0.1.2",
+      "defaultVersion": "0.1.5",
       "description": "Todo app starter",
       "tags": ["todo", "sveltekit", "hono", "postgres"],
       "trust": {

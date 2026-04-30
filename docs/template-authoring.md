@@ -50,6 +50,7 @@ Use the default built-in neutral starter:
 
 ```bash
 topogram template list
+topogram template show hello-web
 topogram new ./my-app
 ```
 
@@ -90,11 +91,12 @@ Use a private catalog alias:
 
 ```bash
 topogram template list
+topogram template show todo
 topogram new ./todo-demo --template todo
 ```
 
 Catalog aliases resolve to package specs such as
-`@attebury/topogram-template-todo@0.1.2`. The catalog is only an index; the
+`@attebury/topogram-template-todo@0.1.5`. The catalog is only an index; the
 template package remains the source of versioned starter content. See
 [Catalog](./catalog.md).
 

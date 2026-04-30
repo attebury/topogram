@@ -29,6 +29,7 @@ topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
 topogram source status ../hello-topogram
 topogram template list
+topogram template show todo
 topogram template status
 topogram template policy check
 topogram template policy pin @scope/template@0.2.0
@@ -94,7 +95,9 @@ Catalog aliases resolve through the private catalog index at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is package
 backed; executable starter content still lives in template packages. Use
 `topogram catalog show <id>` to inspect an entry and get the correct `new` or
-`copy` command for that kind. Pure
+`copy` command for that kind. Use `topogram template show <id>` when the entry
+is known to be a starter template and you want the direct `topogram new` flow.
+Pure
 topogram catalog entries can be copied for editing with
 `topogram catalog copy <id> <target>`. Copied topogram projects record
 `.topogram-source.json`; inspect local drift from that import baseline with
