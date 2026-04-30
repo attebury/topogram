@@ -644,6 +644,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-template-todo@0.1.0": templateRoot
     }),
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.43",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -671,6 +672,10 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     version: "0.1.0",
     packageSpec: "@scope/topogram-template-todo@0.1.0"
   });
+  assert.equal(
+    readText(path.join(projectRoot, ".npmrc")),
+    "@attebury:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n"
+  );
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
   const fileManifest = readJson(path.join(projectRoot, ".topogram-template-files.json"));
   assert.equal(fileManifest.template.requested, "todo");
@@ -689,6 +694,52 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
   assert.match(humanStatus.stdout, /Requested: todo/);
   assert.match(humanStatus.stdout, /Catalog: todo from /);
+});
+
+test("explicit catalogs can override built-in template names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-builtin-name-"));
+  const templateRoot = copyBuiltInTemplate(root, "hello-web-template");
+  const manifestPath = path.join(templateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.id = "@scope/topogram-starter-hello-web";
+  manifest.version = "0.1.0";
+  writeJson(manifestPath, manifest);
+  const catalogPath = createCatalog(root, [
+    catalogEntry({
+      id: "hello-web",
+      package: "@scope/topogram-starter-hello-web",
+      description: "Catalog hello web starter",
+      surfaces: ["web"],
+      generators: ["topogram/vanilla-web"],
+      stack: "Vanilla HTML/CSS/JS",
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: true
+      }
+    })
+  ]);
+  const fakeNpmBin = createFakeNpm(root);
+  const env = {
+    FAKE_NPM_PACKAGES: JSON.stringify({
+      "@scope/topogram-starter-hello-web@0.1.0": templateRoot
+    }),
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const catalogProjectRoot = path.join(root, "catalog-starter");
+  const catalogCreate = runCli(["new", catalogProjectRoot, "--template", "hello-web", "--catalog", catalogPath], { env });
+  assert.equal(catalogCreate.status, 0, catalogCreate.stderr || catalogCreate.stdout);
+  assert.match(catalogCreate.stdout, /Template: @scope\/topogram-starter-hello-web/);
+  assert.match(catalogCreate.stdout, /Source: package/);
+  assert.match(catalogCreate.stdout, /Catalog: hello-web from /);
+  assert.equal(readJson(path.join(catalogProjectRoot, "topogram.project.json")).template.catalog.id, "hello-web");
+
+  const builtinProjectRoot = path.join(root, "builtin-starter");
+  const builtinCreate = runCli(["new", builtinProjectRoot, "--template", "hello-web"], { env });
+  assert.equal(builtinCreate.status, 0, builtinCreate.stderr || builtinCreate.stdout);
+  assert.match(builtinCreate.stdout, /Template: topogram\/hello-web/);
+  assert.match(builtinCreate.stdout, /Source: builtin/);
+  assert.equal(readJson(path.join(builtinProjectRoot, "topogram.project.json")).template.catalog, undefined);
 });
 
 test("topogram new explains catalog alias resolution failures", () => {
@@ -1132,6 +1183,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts.build, undefined);
   assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
   assert.equal(pkg.devDependencies.topogram, undefined);
+  assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");

@@ -189,6 +189,33 @@ function cliDependencyForProject(projectRoot, engineRoot) {
 }
 
 /**
+ * @param {{ name: string, spec: string }} cliDependency
+ * @returns {boolean}
+ */
+function needsGitHubPackagesNpmConfig(cliDependency) {
+  return cliDependency.name.startsWith("@attebury/") &&
+    !cliDependency.spec.startsWith("file:") &&
+    !cliDependency.spec.startsWith(".");
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {{ name: string, spec: string }} cliDependency
+ * @returns {void}
+ */
+function writeProjectNpmConfig(projectRoot, cliDependency) {
+  if (!needsGitHubPackagesNpmConfig(cliDependency)) {
+    return;
+  }
+  const contents = [
+    "@attebury:registry=https://npm.pkg.github.com",
+    "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}",
+    ""
+  ].join("\n");
+  fs.writeFileSync(path.join(projectRoot, ".npmrc"), contents, "utf8");
+}
+
+/**
  * @param {string} parent
  * @param {string} child
  * @returns {boolean}
@@ -1882,6 +1909,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
     }
   };
   fs.writeFileSync(path.join(projectRoot, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+  writeProjectNpmConfig(projectRoot, cliDependency);
 }
 
 /**

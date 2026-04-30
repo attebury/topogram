@@ -160,7 +160,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.42");
+  console.log("  topogram package update-cli 0.2.43");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy init");
@@ -585,7 +585,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.42.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.43.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -1778,7 +1778,7 @@ function printTopogramSourceStatus(payload) {
  * @returns {{ templateName: string, provenance: { id: string, source: string, package: string, version: string, packageSpec: string }|null }}
  */
 function resolveCatalogTemplateAlias(templateName, source = null) {
-  if (!isCatalogAliasCandidate(templateName)) {
+  if (!isCatalogAliasCandidate(templateName, source)) {
     return { templateName, provenance: null };
   }
   const catalogSource = catalogSourceOrDefault(source);
@@ -1813,12 +1813,16 @@ function resolveCatalogTemplateAlias(templateName, source = null) {
 
 /**
  * @param {string} templateName
+ * @param {string|null} source
  * @returns {boolean}
  */
-function isCatalogAliasCandidate(templateName) {
+function isCatalogAliasCandidate(templateName, source = null) {
   const builtInTemplates = new Set(["hello-api", "hello-db", "hello-web", "web-api", "web-api-db"]);
+  const explicitCatalogSource = typeof source === "string" &&
+    source.trim() !== "" &&
+    !isCatalogSourceDisabled(source);
   return Boolean(templateName) &&
-    !builtInTemplates.has(templateName) &&
+    (explicitCatalogSource || !builtInTemplates.has(templateName)) &&
     !templateName.startsWith("@") &&
     !templateName.startsWith("./") &&
     !templateName.startsWith("../") &&
