@@ -161,6 +161,18 @@ process.exit(1);
   return binDir;
 }
 
+function createFailingCommand(root, name, stderr, status = 1) {
+  const binDir = path.join(root, `bin-${name}-${Math.random().toString(16).slice(2)}`);
+  fs.mkdirSync(binDir, { recursive: true });
+  const commandPath = path.join(binDir, name);
+  fs.writeFileSync(commandPath, `#!/usr/bin/env node
+process.stderr.write(${JSON.stringify(stderr)});
+process.exit(${status});
+`, "utf8");
+  fs.chmodSync(commandPath, 0o755);
+  return binDir;
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
@@ -489,6 +501,63 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
   assert.match(humanStatus.stdout, /Requested: todo/);
   assert.match(humanStatus.stdout, /Catalog: todo from /);
+});
+
+test("package-backed template installs explain private package auth failures", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-auth-errors-"));
+  const projectRoot = path.join(root, "starter");
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
+  );
+  const create = runCli(["new", projectRoot, "--template", "@attebury/topogram-template-todo@0.1.5"], {
+    env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /Authentication is required to install template package '@attebury\/topogram-template-todo@0\.1\.5'/);
+  assert.match(create.stderr, /NODE_AUTH_TOKEN/);
+  assert.match(create.stderr, /Manage Actions access/);
+
+  const missingNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E404\nnpm error 404 Not Found - GET https://npm.pkg.github.com/@attebury%2ftopogram-template-todo - not_found\n"
+  );
+  const missing = runCli(["new", path.join(root, "missing"), "--template", "@attebury/topogram-template-todo@9.9.9"], {
+    env: { PATH: `${missingNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(missing.status, 0, missing.stdout);
+  assert.match(missing.stderr, /was not found, or the current token does not have access/);
+  assert.match(missing.stderr, /Check the package name\/version/);
+});
+
+test("private GitHub catalog failures explain auth and access setup", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-auth-errors-"));
+  const source = "github:attebury/topograms/topograms.catalog.json";
+  const authGhBin = createFailingCommand(
+    root,
+    "gh",
+    "gh: Requires authentication (HTTP 401)\n"
+  );
+  const auth = runCli(["catalog", "list", "--catalog", source], {
+    env: { PATH: `${authGhBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(auth.status, 0, auth.stdout);
+  assert.match(auth.stderr, /Authentication is required to read private catalog/);
+  assert.match(auth.stderr, /GITHUB_TOKEN or GH_TOKEN/);
+
+  const missingGhBin = createFailingCommand(
+    root,
+    "gh",
+    "gh: Not Found (HTTP 404)\n"
+  );
+  const missing = runCli(["catalog", "list", "--catalog", source], {
+    env: { PATH: `${missingGhBin}${path.delimiter}${process.env.PATH || ""}` }
+  });
+  assert.notEqual(missing.status, 0, missing.stdout);
+  assert.match(missing.stderr, /Catalog source 'github:attebury\/topograms\/topograms\.catalog\.json' was not found/);
+  assert.match(missing.stderr, /repository read access/);
 });
 
 test("topogram catalog copy installs pure topogram packages and rejects implementation code", () => {

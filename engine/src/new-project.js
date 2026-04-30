@@ -320,15 +320,65 @@ export function installPackageSpec(templateSpec) {
     }
   );
   if (result.status !== 0) {
-    throw new Error(
-      `Failed to install template package '${templateSpec}'.\n${result.stderr || result.stdout}`.trim()
-    );
+    throw new Error(formatPackageInstallError(templateSpec, result));
   }
   const packageRoot = path.join(installRoot, "node_modules", packageNameFromSpec(templateSpec));
   if (fs.existsSync(packageRoot)) {
     return packageRoot;
   }
   return findInstalledTemplatePackageRoot(installRoot, templateSpec);
+}
+
+/**
+ * @param {string} templateSpec
+ * @param {any} result
+ * @returns {string}
+ */
+function formatPackageInstallError(templateSpec, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  const npmrcHint = "Ensure this project has an .npmrc with @attebury:registry=https://npm.pkg.github.com and //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}.";
+  const packageAccessHint = "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.";
+  const authHint = "Set NODE_AUTH_TOKEN to a GitHub token with package read access, or configure npm auth for GitHub Packages.";
+  if (result.error?.code === "ENOENT") {
+    return [
+      `Failed to install template package '${templateSpec}': npm was not found.`,
+      "Install Node.js/npm and retry."
+    ].join("\n");
+  }
+  if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
+    return [
+      `Authentication is required to install template package '${templateSpec}' from GitHub Packages.`,
+      authHint,
+      npmrcHint,
+      packageAccessHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\be403\b/.test(normalized) || normalized.includes("forbidden") || normalized.includes("permission")) {
+    return [
+      `Package access was denied while installing template package '${templateSpec}'.`,
+      authHint,
+      packageAccessHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\b(e404|404)\b/.test(normalized) || normalized.includes("not found")) {
+    return [
+      `Template package '${templateSpec}' was not found, or the current token does not have access to it.`,
+      "Check the package name/version and GitHub Packages access.",
+      packageAccessHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\beintegrity\b/.test(normalized) || normalized.includes("integrity checksum failed")) {
+    return [
+      `Package integrity failed while installing template package '${templateSpec}'.`,
+      "Refresh package-lock.json from the published GitHub Packages tarball instead of a local npm pack tarball.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  return `Failed to install template package '${templateSpec}'.\n${output || "unknown error"}`.trim();
 }
 
 /**

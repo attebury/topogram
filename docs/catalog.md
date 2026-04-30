@@ -177,6 +177,11 @@ Set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate locally with:
 gh auth login
 ```
 
+Catalog auth failures are reported separately from missing catalog paths. A
+401/403 means the token or local `gh` session cannot read the private catalog
+repo. A 404 means the `github:owner/repo/path` source is wrong, or the current
+token cannot see that repo.
+
 For GitHub Actions consumers that need private packages, grant package access
 from the package page:
 

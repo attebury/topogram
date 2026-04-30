@@ -115,6 +115,12 @@ package page:
 3. Under Manage Actions access, add the consumer repository.
 4. Grant Read access.
 
+If `topogram new` cannot install a private template package, the CLI reports
+whether npm saw an auth failure, access denial, missing package/version, or
+integrity mismatch. For local runs, set `NODE_AUTH_TOKEN` to a token that can
+read GitHub Packages. For CI, confirm both the `.npmrc` token wiring and the
+package's Manage Actions access settings.
+
 ## Trust Policy
 
 Template packs are copied into the target project. Package install uses

@@ -370,12 +370,44 @@ function readGithubCatalogText(source) {
     }
   });
   if (result.status !== 0) {
-    const reason = result.error?.message || result.stderr || result.stdout || "unknown error";
-    throw new Error(
-      `Failed to read catalog '${source}' with gh api. Set GITHUB_TOKEN or GH_TOKEN, or run gh auth login.\n${reason}`.trim()
-    );
+    throw new Error(formatGithubCatalogError(source, result));
   }
   return Buffer.from(result.stdout.replace(/\s+/g, ""), "base64").toString("utf8");
+}
+
+/**
+ * @param {string} source
+ * @param {any} result
+ * @returns {string}
+ */
+function formatGithubCatalogError(source, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  if (result.error?.code === "ENOENT") {
+    return [
+      `GitHub CLI (gh) is required to read catalog '${source}'.`,
+      "Install gh, or set TOPOGRAM_CATALOG_SOURCE to a local topograms.catalog.json file."
+    ].join("\n");
+  }
+  if (/\b(401|403)\b/.test(normalized) || normalized.includes("authentication") || normalized.includes("not logged in") || normalized.includes("forbidden")) {
+    return [
+      `Authentication is required to read private catalog '${source}'.`,
+      "Set GITHUB_TOKEN or GH_TOKEN with repository read access, or run gh auth login.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\b404\b/.test(normalized) || normalized.includes("not found")) {
+    return [
+      `Catalog source '${source}' was not found, or the current token does not have repository access.`,
+      "Check the github:owner/repo/path source and grant repository read access to the token or GitHub Actions workflow.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  return [
+    `Failed to read catalog '${source}' with gh api.`,
+    "Set GITHUB_TOKEN or GH_TOKEN, or run gh auth login.",
+    output || "unknown error"
+  ].join("\n");
 }
 
 /**

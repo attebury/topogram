@@ -141,6 +141,12 @@ be copied into a workspace for editing. Copied topograms include
 current files to the import baseline. This is provenance only: local edits are
 allowed. See [Catalog](./docs/catalog.md).
 
+Private catalog and template package failures are normalized into actionable
+messages for missing auth, missing package access, missing package/version, and
+catalog source 404s. For private package consumers, configure `.npmrc` with the
+GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
+read access.
+
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
 For local runtime verification, run:
