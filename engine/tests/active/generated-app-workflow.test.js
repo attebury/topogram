@@ -1318,6 +1318,105 @@ test("topogram package update-cli --latest resolves latest and updates version c
   assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
 });
 
+test("topogram package update-cli falls back to GitHub API for private package inspection", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-gh-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "consumer",
+    lockfileVersion: 3,
+    requires: true,
+    packages: {
+      "": {
+        name: "consumer",
+        devDependencies: {
+          "@attebury/topogram": "^0.2.37"
+        }
+      },
+      "node_modules/@attebury/topogram": {
+        version: "0.2.37",
+        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/local-pack-sha",
+        integrity: "sha512-local-pack-integrity",
+        dev: true
+      }
+    }
+  });
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+  );
+  const fakeGhBin = createFakeGh(root, ["0.2.38", "0.2.37"]);
+  const update = runCli(["package", "update-cli", "0.2.38", "--json"], {
+    cwd: projectRoot,
+    env: {
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  const payload = JSON.parse(update.stdout);
+  assert.equal(payload.packageCheckSource, "github-api");
+  assert.equal(payload.dependencyUpdatedBy, "manifest-lockfile");
+  assert.equal(payload.checkedVersion, "0.2.38");
+  assert.equal(payload.versionConventionUpdated, true);
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_check_via_github_api"),
+    true
+  );
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.38");
+  const lockEntry = readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"];
+  assert.equal(lockEntry.version, "0.2.38");
+  assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "resolved"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "integrity"), false);
+  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
+});
+
+test("topogram package update-cli --latest falls back to GitHub API latest lookup", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-latest-gh-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+  );
+  const fakeGhBin = createFakeGh(root, ["0.2.39", "0.2.38"]);
+  const update = runCli(["package", "update-cli", "--latest", "--json"], {
+    cwd: projectRoot,
+    env: {
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  const payload = JSON.parse(update.stdout);
+  assert.equal(payload.requestedLatest, true);
+  assert.equal(payload.requestedVersion, "0.2.39");
+  assert.equal(payload.packageCheckSource, "github-api");
+  assert.equal(payload.dependencyUpdatedBy, "manifest-lockfile");
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_latest_via_github_api"),
+    true
+  );
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.39");
+  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.39\n");
+});
+
 test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-cli-lock-"));
   const projectRoot = path.join(root, "consumer");
@@ -1553,9 +1652,10 @@ test("topogram package update-cli explains private package auth failures", () =>
     "npm",
     "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
   );
+  const fakeGhBin = createFailingCommand(root, "gh", "gh api failed\n");
   const update = runCli(["package", "update-cli", "0.2.37"], {
     cwd: projectRoot,
-    env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
+    env: { PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(update.status, 0, update.stdout);
   assert.match(update.stderr, /Authentication is required to inspect @attebury\/topogram@0\.2\.37/);

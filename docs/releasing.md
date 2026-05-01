@@ -55,6 +55,12 @@ version and rerun their verification. Consumer repos that include
 NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
 ```
 
+If local npm auth is unavailable, `topogram package update-cli` can confirm the
+requested CLI version through the GitHub Packages API via `gh api` and update
+the consumer manifests directly. That fallback is only for rollout bookkeeping:
+`npm install` and `npm ci` still need GitHub Packages auth for private package
+downloads.
+
 After the package is published, the release tag exists, and known consumer pins
 have been rolled, run the strict release gate:
 

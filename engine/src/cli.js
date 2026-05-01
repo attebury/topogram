@@ -727,16 +727,18 @@ function latestTemplateInfo(template) {
 /**
  * @param {string} requested
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm"|"github-api", dependencyUpdatedBy: "npm-install"|"manifest-lockfile", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildPackageUpdateCliPayload(requested, options = {}) {
   const cwd = options.cwd || process.cwd();
   const requestedLatest = requested === "latest" || requested === "--latest";
-  const version = requestedLatest ? latestTopogramCliVersion(cwd) : requested;
+  const diagnostics = [];
+  const version = requestedLatest
+    ? resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics)
+    : requested;
   if (!isPackageVersion(version)) {
     throw new Error("topogram package update-cli requires <version> or --latest, for example 0.2.57.");
   }
-  const diagnostics = [];
   if (!process.env.NODE_AUTH_TOKEN) {
     diagnostics.push({
       code: "node_auth_token_missing",
@@ -749,17 +751,54 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const exactSpec = `${CLI_PACKAGE_NAME}@${version}`;
   const dependencySpec = `${CLI_PACKAGE_NAME}@^${version}`;
   const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  let checkedVersion = null;
+  let packageCheckSource = "npm";
   if (view.status !== 0) {
-    throw new Error(formatPackageUpdateNpmError(exactSpec, "inspect", view));
-  }
-  const checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
-  if (checkedVersion !== version) {
-    throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
+    const fallback = topogramCliVersionExistsFromGithubApi(cwd, version);
+    if (!fallback.ok || !fallback.exists) {
+      throw new Error([
+        formatPackageUpdateNpmError(exactSpec, "inspect", view),
+        `GitHub API fallback also failed: ${fallback.message || `${exactSpec} was not found.`}`
+      ].filter(Boolean).join("\n"));
+    }
+    packageCheckSource = "github-api";
+    checkedVersion = version;
+    diagnostics.push({
+      code: "package_update_cli_check_via_github_api",
+      severity: "warning",
+      message: `npm package inspection failed, but GitHub Packages API confirmed ${exactSpec}.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+      cause: formatPackageUpdateNpmError(exactSpec, "inspect", view)
+    });
+  } else {
+    checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
+    if (checkedVersion !== version) {
+      throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
+    }
   }
   const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
-  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
-  if (install.status !== 0) {
-    throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
+  let dependencyUpdatedBy = "npm-install";
+  if (packageCheckSource === "npm") {
+    const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+    if (install.status !== 0) {
+      if (!isPackageUpdateNpmAuthFailure(install)) {
+        throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
+      }
+      dependencyUpdatedBy = "manifest-lockfile";
+      updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+      diagnostics.push({
+        code: "package_update_cli_install_manifest_fallback",
+        severity: "warning",
+        message: `npm install failed due to package auth, so ${CLI_PACKAGE_NAME} files were updated directly.`,
+        path: cwd,
+        suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+        cause: formatPackageUpdateNpmError(dependencySpec, "install", install)
+      });
+    }
+  } else {
+    dependencyUpdatedBy = "manifest-lockfile";
+    updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
   }
   const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
@@ -785,6 +824,8 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
     requestedLatest,
     dependencySpec,
     checkedVersion,
+    packageCheckSource,
+    dependencyUpdatedBy,
     lockfileSanitized,
     versionConventionUpdated: versionConvention.updated,
     versionConventionPath: versionConvention.path,
@@ -809,8 +850,8 @@ function printPackageUpdateCli(payload) {
   if (payload.requestedLatest) {
     console.log(`Resolved latest version: ${payload.requestedVersion}`);
   }
-  console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion}`);
-  console.log(`Installed dependency: ${payload.dependencySpec}`);
+  console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion} via ${payload.packageCheckSource}`);
+  console.log(`Updated dependency: ${payload.dependencySpec} via ${payload.dependencyUpdatedBy}`);
   if (payload.lockfileSanitized) {
     console.log("Lockfile: refreshed existing @attebury/topogram entry from registry metadata");
   }
@@ -1606,9 +1647,38 @@ function latestTopogramCliVersion(cwd) {
 
 /**
  * @param {string} cwd
- * @returns {{ ok: boolean, version: string|null, message: string|null }}
+ * @param {Array<Record<string, any>>} diagnostics
+ * @returns {string}
  */
-function latestTopogramCliVersionFromGithubApi(cwd) {
+function resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics) {
+  try {
+    return latestTopogramCliVersion(cwd);
+  } catch (error) {
+    const npmMessage = messageFromError(error);
+    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
+    if (!fallback.ok || !fallback.version) {
+      throw new Error([
+        npmMessage,
+        `GitHub API fallback also failed: ${fallback.message || "unknown error"}`
+      ].filter(Boolean).join("\n"));
+    }
+    diagnostics.push({
+      code: "package_update_cli_latest_via_github_api",
+      severity: "warning",
+      message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+      cause: npmMessage
+    });
+    return fallback.version;
+  }
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, versions: string[], message: string|null }}
+ */
+function topogramCliVersionsFromGithubApi(cwd) {
   const result = childProcess.spawnSync("gh", [
     "api",
     "-H",
@@ -1622,7 +1692,7 @@ function latestTopogramCliVersionFromGithubApi(cwd) {
   if (result.status !== 0) {
     return {
       ok: false,
-      version: null,
+      versions: [],
       message: String(result.stderr || result.stdout || "gh api failed").trim()
     };
   }
@@ -1632,13 +1702,47 @@ function latestTopogramCliVersionFromGithubApi(cwd) {
   } catch (error) {
     return {
       ok: false,
-      version: null,
+      versions: [],
       message: `GitHub Packages API returned invalid JSON: ${messageFromError(error)}`
     };
   }
-  const version = Array.isArray(versions)
-    ? versions.map((item) => item?.name).find((name) => isPackageVersion(name))
-    : null;
+  return {
+    ok: true,
+    versions: Array.isArray(versions)
+      ? versions.map((item) => item?.name).filter((name) => isPackageVersion(name))
+      : [],
+    message: null
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} version
+ * @returns {{ ok: boolean, exists: boolean, version: string|null, message: string|null }}
+ */
+function topogramCliVersionExistsFromGithubApi(cwd, version) {
+  const result = topogramCliVersionsFromGithubApi(cwd);
+  if (!result.ok) {
+    return { ok: false, exists: false, version: null, message: result.message };
+  }
+  return {
+    ok: true,
+    exists: result.versions.includes(version),
+    version: result.versions.includes(version) ? version : null,
+    message: result.versions.includes(version) ? null : `${CLI_PACKAGE_NAME}@${version} was not found via GitHub Packages API.`
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, version: string|null, message: string|null }}
+ */
+function latestTopogramCliVersionFromGithubApi(cwd) {
+  const result = topogramCliVersionsFromGithubApi(cwd);
+  if (!result.ok) {
+    return { ok: false, version: null, message: result.message };
+  }
+  const version = result.versions[0] || null;
   if (!version) {
     return {
       ok: false,
@@ -1799,11 +1903,73 @@ function readPackageJsonForUpdate(cwd) {
 }
 
 /**
+ * @param {string} cwd
+ * @param {string} version
+ * @param {string} dependencySpec
+ * @returns {{ packageJsonUpdated: boolean, lockfileUpdated: boolean }}
+ */
+function updateTopogramCliDependencyFiles(cwd, version, dependencySpec) {
+  const packagePath = path.join(cwd, "package.json");
+  const packageJson = readPackageJsonForUpdate(cwd);
+  packageJson.devDependencies = packageJson.devDependencies && typeof packageJson.devDependencies === "object"
+    ? packageJson.devDependencies
+    : {};
+  packageJson.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  if (packageJson.dependencies && typeof packageJson.dependencies === "object") {
+    delete packageJson.dependencies[CLI_PACKAGE_NAME];
+  }
+  fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+
+  const lockPath = path.join(cwd, "package-lock.json");
+  if (!fs.existsSync(lockPath)) {
+    return { packageJsonUpdated: true, lockfileUpdated: false };
+  }
+  const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+  lock.packages = lock.packages && typeof lock.packages === "object" ? lock.packages : {};
+  lock.packages[""] = lock.packages[""] && typeof lock.packages[""] === "object" ? lock.packages[""] : {};
+  lock.packages[""].devDependencies = lock.packages[""].devDependencies && typeof lock.packages[""].devDependencies === "object"
+    ? lock.packages[""].devDependencies
+    : {};
+  lock.packages[""].devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  if (lock.packages[""].dependencies && typeof lock.packages[""].dependencies === "object") {
+    delete lock.packages[""].dependencies[CLI_PACKAGE_NAME];
+  }
+  const entryPath = `node_modules/${CLI_PACKAGE_NAME}`;
+  const existingEntry = lock.packages[entryPath] && typeof lock.packages[entryPath] === "object"
+    ? lock.packages[entryPath]
+    : {};
+  lock.packages[entryPath] = {
+    ...existingEntry,
+    version,
+    dev: true,
+    license: existingEntry.license || "Apache-2.0",
+    bin: existingEntry.bin || { topogram: "src/cli.js" },
+    engines: existingEntry.engines || { node: ">=20" }
+  };
+  delete lock.packages[entryPath].resolved;
+  delete lock.packages[entryPath].integrity;
+  fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
+  return { packageJsonUpdated: true, lockfileUpdated: true };
+}
+
+/**
  * @param {string} value
  * @returns {boolean}
  */
 function isPackageVersion(value) {
   return /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(value);
+}
+
+/**
+ * @param {any} result
+ * @returns {boolean}
+ */
+function isPackageUpdateNpmAuthFailure(result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  return /\b(e401|eneedauth)\b/.test(normalized) ||
+    normalized.includes("unauthenticated") ||
+    normalized.includes("authentication required");
 }
 
 /**
@@ -1818,7 +1984,7 @@ function formatPackageUpdateNpmError(spec, step, result) {
   if (result.error?.code === "ENOENT") {
     return "npm was not found. Install Node.js/npm and retry.";
   }
-  if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
+  if (isPackageUpdateNpmAuthFailure(result)) {
     return [
       `Authentication is required to ${step} ${spec}.`,
       "Run with NODE_AUTH_TOKEN=<github-token-with-package-read>, or configure npm auth for GitHub Packages.",
