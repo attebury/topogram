@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK_ROOT="$ROOT_DIR/.tmp/installed-cli-first-use"
 NPM_CACHE_DIR="$ROOT_DIR/.tmp/npm-cache"
 CLI_PACKAGE_SPEC="${TOPOGRAM_CLI_PACKAGE_SPEC:-@attebury/topogram@latest}"
+STARTER_TEMPLATE_SPEC="${TOPOGRAM_FIRST_USE_TEMPLATE_SPEC:-hello-web}"
 
 mkdir -p "$WORK_ROOT" "$NPM_CACHE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
@@ -52,10 +53,10 @@ if [[ "$DISABLED_OUTPUT" != *"The default starter 'hello-web' is catalog-backed"
   exit 1
 fi
 
-echo "Creating hello-web from the default catalog..."
+echo "Creating hello-web starter..."
 (
   cd "$CONSUMER_DIR"
-  "$TOPOGRAM_BIN" new ./hello-web --template hello-web
+  "$TOPOGRAM_BIN" new ./hello-web --template "$STARTER_TEMPLATE_SPEC"
 )
 
 STARTER_DIR="$CONSUMER_DIR/hello-web"
