@@ -133,6 +133,18 @@ contract includes a top-level `components` map for the referenced component
 contracts. Concrete web projections inherit component usage from shared UI
 projections they realize.
 
+SvelteKit generation also consumes supported `ui_components` bindings when a
+template implementation opts into the packaged helper. Supported patterns render
+component-marked Svelte markup for `summary_stats`, `resource_table`,
+`data_grid_view`, `board_view`, and `calendar_view`:
+
+```js
+import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
+```
+
+React and vanilla web generators still emit component usage in contracts only.
+Their concrete component rendering is intentionally not implemented yet.
+
 ## Query Integration
 
 `--component <id>` is a first-class selector across the agent-facing query family. Examples:

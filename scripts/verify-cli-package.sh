@@ -44,6 +44,38 @@ fi
 echo "Checking installed CLI help..."
 "$TOPOGRAM_BIN" --help >/dev/null
 
+echo "Checking installed template helper imports..."
+(
+  cd "$CONSUMER_DIR"
+  node --input-type=module -e '
+    import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
+    const rendered = renderSvelteKitComponentRegion(
+      {
+        components: [
+          {
+            region: "results",
+            component: { id: "component_grid", name: "Grid" }
+          }
+        ]
+      },
+      "results",
+      {
+        componentContracts: {
+          component_grid: { patterns: ["resource_table"] }
+        },
+        itemsExpression: "data.items",
+        useTypescript: true
+      }
+    );
+    if (!rendered.includes(`data-topogram-component="component_grid"`)) {
+      throw new Error("Expected SvelteKit helper to render component marker.");
+    }
+    if (!rendered.includes("data.items")) {
+      throw new Error("Expected SvelteKit helper to preserve items expression.");
+    }
+  '
+)
+
 echo "Checking installed CLI catalog commands..."
 node --input-type=module -e '
   import fs from "node:fs";
