@@ -2437,8 +2437,10 @@ test("topogram template policy init and check manage project policy", () => {
 
   const humanExplain = runCli(["template", "policy", "explain"], { cwd: projectRoot });
   assert.equal(humanExplain.status, 0, humanExplain.stderr || humanExplain.stdout);
-  assert.match(humanExplain.stdout, /Template policy explain: allowed/);
-  assert.match(humanExplain.stdout, /PASS allowed-template-id/);
+  assert.match(humanExplain.stdout, /Template policy: allowed/);
+  assert.match(humanExplain.stdout, /Decision: the current template is allowed by this project's template policy\./);
+  assert.match(humanExplain.stdout, /Policy checks:/);
+  assert.match(humanExplain.stdout, /PASS Allowed template id/);
 });
 
 test("topogram template policy pin records a reviewed template version", () => {
@@ -2866,6 +2868,14 @@ test("topogram template policy explain checks package scope from source spec", (
   assert.equal(scopeRule.ok, false);
   assert.equal(scopeRule.actual, "@evil");
   assert.equal(scopeRule.expected, "@attebury");
+
+  const humanExplain = runCli(["template", "policy", "explain"], { cwd: projectRoot });
+  assert.notEqual(humanExplain.status, 0, humanExplain.stdout);
+  assert.match(humanExplain.stdout, /Template policy: denied/);
+  assert.match(humanExplain.stdout, /Decision: the current template is blocked by this project's template policy\./);
+  assert.match(humanExplain.stdout, /FAIL Allowed package scope/);
+  assert.match(humanExplain.stdout, /actual: @evil/);
+  assert.match(humanExplain.stdout, /expected: @attebury/);
 });
 
 test("topogram template check enforces caller template policy when present", () => {

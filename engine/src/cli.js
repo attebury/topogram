@@ -4380,6 +4380,21 @@ function templatePolicyRule(name, ok, actual, expected, message, fix = null) {
 }
 
 /**
+ * @param {string} name
+ * @returns {string}
+ */
+function templatePolicyRuleLabel(name) {
+  return ({
+    "policy-file": "Policy file",
+    "allowed-source": "Allowed source",
+    "allowed-template-id": "Allowed template id",
+    "allowed-package-scope": "Allowed package scope",
+    "pinned-version": "Pinned version",
+    "executable-implementation": "Executable implementation"
+  })[name] || name;
+}
+
+/**
  * @param {string} projectPath
  * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, template: any, catalog: any, package: any, rules: Array<{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
  */
@@ -4483,9 +4498,12 @@ function buildTemplatePolicyExplainPayload(projectPath) {
  * @returns {void}
  */
 function printTemplatePolicyExplainPayload(payload) {
-  console.log(payload.ok ? "Template policy explain: allowed" : "Template policy explain: denied");
-  console.log(`Policy: ${payload.path}`);
-  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  console.log(payload.ok ? "Template policy: allowed" : "Template policy: denied");
+  console.log(payload.ok
+    ? "Decision: the current template is allowed by this project's template policy."
+    : "Decision: the current template is blocked by this project's template policy.");
+  console.log(`Policy file: ${payload.path}`);
+  console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
   if (payload.template) {
     console.log(`Template: ${payload.template.id}@${payload.template.version}`);
     console.log(`Source: ${payload.template.source}`);
@@ -4502,8 +4520,12 @@ function printTemplatePolicyExplainPayload(payload) {
   if (payload.package) {
     console.log(`Package scope: ${payload.package.scope || "(unscoped)"}`);
   }
+  if (payload.rules.length > 0) {
+    console.log("");
+    console.log("Policy checks:");
+  }
   for (const rule of payload.rules) {
-    console.log(`${rule.ok ? "PASS" : "FAIL"} ${rule.name}: ${rule.message}`);
+    console.log(`${rule.ok ? "PASS" : "FAIL"} ${templatePolicyRuleLabel(rule.name)}: ${rule.message}`);
     console.log(`  actual: ${rule.actual}`);
     console.log(`  expected: ${rule.expected}`);
     if (!rule.ok && rule.fix) {
