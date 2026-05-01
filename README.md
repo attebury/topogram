@@ -97,7 +97,8 @@ Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
 reviewing copied or edited `implementation/` code. The same command records the
 `.topogram-template-files.json` baseline used by template update apply. Use
-`topogram template status` for the lifecycle summary, then `topogram trust
+`topogram template explain` for the plain-language lifecycle summary,
+`topogram template status` for compact trust metadata, then `topogram trust
 status` and `topogram trust diff` to inspect changed files before refreshing
 trust.
 
@@ -113,6 +114,7 @@ topogram catalog check topograms.catalog.json
 topogram catalog copy hello ./hello-topogram
 topogram source status ./hello-topogram
 topogram template list
+topogram template explain
 topogram template status --latest
 topogram template policy check
 topogram template policy init
@@ -153,6 +155,8 @@ and removes `.topogram-template-files.json`. It preserves
 `.topogram-template-trust.json` when executable `implementation/` config remains,
 so generation still requires trusted local implementation content. Pass
 `--remove-policy` when the project should also remove `topogram.template-policy.json`.
+After detach, the project owns its files; Topogram no longer tries to match the
+starter template, and template update commands are no longer the edit path.
 
 `topogram.template-policy.json` is the project-owned template allow policy.
 New starters create one automatically. Use `topogram template policy check` in

@@ -1916,6 +1916,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
+      "template:explain": "topogram template explain",
       "template:status": "topogram template status",
       "template:detach": "topogram template detach",
       "template:detach:dry-run": "topogram template detach --dry-run",
@@ -1965,6 +1966,7 @@ Topogram app workflow
 2. Validate:
    npm run doctor
    npm run source:status
+   npm run template:explain
    npm run check
 
 3. Regenerate:
@@ -1987,6 +1989,7 @@ Useful inspection:
    npm run check:json
    npm run doctor
    npm run source:status
+   npm run template:explain
    npm run template:status
    npm run template:detach:dry-run
    npm run template:policy:check
@@ -2018,6 +2021,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
     "npm run explain",
     "npm run doctor",
     "npm run source:status",
+    "npm run template:explain",
     "npm run check",
     "npm run template:policy:check",
     ...(template.includesExecutableImplementation ? [

@@ -134,6 +134,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram package update-cli <version> [--json]");
   console.log("   or: topogram source status [path] [--json]");
   console.log("   or: topogram template list [--json]");
+  console.log("   or: topogram template explain [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
   console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
@@ -167,6 +168,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
   console.log("  topogram package update-cli 0.2.51");
+  console.log("  topogram template explain");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template detach");
@@ -1284,6 +1286,139 @@ function printTemplateStatus(payload) {
 
 /**
  * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
+ * @returns {{ ok: boolean, projectRoot: string, projectConfigPath: string|null, attached: boolean, ownership: "template-attached"|"project-owned", template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, baseline: ReturnType<typeof buildTemplateOwnedBaselineStatus>, source: ReturnType<typeof buildProjectSourceStatus>, commands: { status: string, detachDryRun: string|null, detach: string|null, updateCheck: string|null, trustStatus: string|null, trustTemplate: string|null, check: string, generate: string }, summary: string[], diagnostics: any[], errors: string[] }}
+ */
+function buildTemplateExplainPayload(projectConfigInfo) {
+  const template = templateMetadataFromProjectConfig(projectConfigInfo.config);
+  const attached = Boolean(template.id);
+  const projectRoot = projectConfigInfo.configDir;
+  const baseline = buildTemplateOwnedBaselineStatus(projectRoot);
+  const source = buildProjectSourceStatus(projectRoot);
+  /** @type {ReturnType<typeof getTemplateTrustStatus>|null} */
+  let trust = null;
+  if (projectConfigInfo.config.implementation) {
+    trust = getTemplateTrustStatus({
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    }, projectConfigInfo.config);
+  }
+  const summary = [];
+  if (attached) {
+    summary.push("This project is still attached to its starter template.");
+    summary.push("Local edits are allowed; template update checks are opt-in.");
+  } else {
+    summary.push("This project is detached from starter-template update tracking.");
+    summary.push("The project owns its Topogram files and template updates no longer apply.");
+  }
+  if (baseline.state === "diverged") {
+    summary.push("Template-derived files have local changes; those changes are project-owned.");
+  } else if (baseline.state === "matches-template") {
+    summary.push("Template-derived files still match the recorded template baseline.");
+  }
+  if (trust?.requiresTrust && trust.ok) {
+    summary.push("Executable implementation trust is retained and currently matches reviewed files.");
+  } else if (trust?.requiresTrust && !trust.ok) {
+    summary.push("Executable implementation changed since it was trusted and needs review.");
+  } else {
+    summary.push("No executable implementation trust review is required.");
+  }
+  return {
+    ok: trust ? trust.ok : true,
+    projectRoot,
+    projectConfigPath: projectConfigInfo.configPath,
+    attached,
+    ownership: attached ? "template-attached" : "project-owned",
+    template,
+    trust,
+    baseline,
+    source,
+    commands: {
+      status: "topogram source status",
+      detachDryRun: attached ? "topogram template detach --dry-run" : null,
+      detach: attached ? "topogram template detach" : null,
+      updateCheck: attached ? "topogram template update --check" : null,
+      trustStatus: trust?.requiresTrust ? "topogram trust status" : null,
+      trustTemplate: trust?.requiresTrust && !trust.ok ? "topogram trust template" : null,
+      check: "topogram check",
+      generate: "topogram generate"
+    },
+    summary,
+    diagnostics: source.diagnostics,
+    errors: trust && !trust.ok ? trust.issues : []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateExplainPayload>} payload
+ * @returns {void}
+ */
+function printTemplateExplain(payload) {
+  console.log(`Template lifecycle: ${payload.attached ? "attached" : "detached"}`);
+  console.log(`Ownership: ${payload.ownership}`);
+  console.log(`Project: ${payload.projectRoot}`);
+  if (payload.projectConfigPath) {
+    console.log(`Project config: ${payload.projectConfigPath}`);
+  }
+  if (payload.template.id) {
+    console.log(`Template: ${payload.template.id}@${payload.template.version || "unknown"}`);
+    console.log(`Requested: ${payload.template.requested || "unknown"}`);
+    console.log(`Source: ${payload.template.sourceSpec || payload.template.source || "unknown"}`);
+    if (payload.template.catalog) {
+      console.log(`Catalog: ${payload.template.catalog.id || "unknown"} from ${payload.template.catalog.source || "unknown"}`);
+    }
+  } else {
+    console.log("Template: none");
+  }
+  console.log(`Template baseline: ${payload.baseline.state}`);
+  console.log(`Template baseline meaning: ${payload.baseline.meaning}`);
+  if (payload.baseline.content.changed.length > 0) {
+    console.log(`Template baseline changed files: ${payload.baseline.content.changed.length}`);
+  }
+  if (payload.baseline.content.removed.length > 0) {
+    console.log(`Template baseline removed files: ${payload.baseline.content.removed.length}`);
+  }
+  if (payload.trust) {
+    console.log(`Implementation trust: ${payload.trust.requiresTrust ? (payload.trust.ok ? "trusted" : "review required") : "not required"}`);
+    if (payload.trust.implementation.module) {
+      console.log(`Implementation: ${payload.trust.implementation.module}`);
+    }
+  } else {
+    console.log("Implementation trust: not required");
+  }
+  console.log("");
+  console.log("Summary:");
+  for (const line of payload.summary) {
+    console.log(`- ${line}`);
+  }
+  console.log("");
+  console.log("Useful commands:");
+  console.log(`  ${payload.commands.status}`);
+  if (payload.commands.detachDryRun) {
+    console.log(`  ${payload.commands.detachDryRun}`);
+  }
+  if (payload.commands.detach) {
+    console.log(`  ${payload.commands.detach}`);
+  }
+  if (payload.commands.updateCheck) {
+    console.log(`  ${payload.commands.updateCheck}`);
+  }
+  if (payload.commands.trustStatus) {
+    console.log(`  ${payload.commands.trustStatus}`);
+  }
+  if (payload.commands.trustTemplate) {
+    console.log(`  ${payload.commands.trustTemplate}`);
+  }
+  console.log(`  ${payload.commands.check}`);
+  console.log(`  ${payload.commands.generate}`);
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
  * @param {{ dryRun?: boolean, removePolicy?: boolean }} [options]
  * @returns {{ ok: boolean, detached: boolean, dryRun: boolean, projectConfigPath: string, removedTemplate: Record<string, any>|null, implementationTrust: { retained: boolean, removed: boolean, path: string, reason: string }, removedFiles: string[], plannedRemovals: string[], preservedFiles: string[], diagnostics: any[], errors: any[] }}
  */
@@ -1533,6 +1668,7 @@ function printNewProjectResult(result, cwd) {
   console.log("  npm install");
   console.log("  npm run doctor");
   console.log("  npm run source:status");
+  console.log("  npm run template:explain");
   console.log("  npm run check");
   if (template.includesExecutableImplementation) {
     console.log("  npm run template:policy:explain");
@@ -2478,9 +2614,13 @@ function printTopogramSourceStatus(payload) {
     console.log(`Project catalog: ${payload.project.catalog.id}${payload.project.catalog.source ? ` from ${payload.project.catalog.source}` : ""}`);
   }
   if (payload.project?.template?.id) {
+    console.log("Template attachment: attached");
     console.log(`Template: ${payload.project.template.id}@${payload.project.template.version || "unknown"}`);
     console.log(`Template source: ${payload.project.template.sourceSpec || payload.project.template.source || "unknown"}`);
     console.log(`Executable implementation: ${payload.project.template.includesExecutableImplementation ? "yes" : "no"}`);
+  } else if (payload.project?.config?.exists) {
+    console.log("Template attachment: detached");
+    console.log("Template ownership: project-owned");
   }
   if (payload.project?.package?.package) {
     const packageStatus = payload.project.package;
@@ -2506,6 +2646,9 @@ function printTopogramSourceStatus(payload) {
       : "does not block check/generate";
     console.log(`Template baseline: ${baseline.state} (${baseline.trustedFiles} file(s), ${blockLabel})`);
     console.log(`Template baseline meaning: ${baseline.meaning}`);
+    if (baseline.localOwnership) {
+      console.log("Template baseline ownership: local project owns these changes");
+    }
     console.log(`Template baseline changed: ${baseline.content.changed.length}`);
     console.log(`Template baseline removed: ${baseline.content.removed.length}`);
   }
@@ -2536,6 +2679,7 @@ function printTopogramSourceStatus(payload) {
   }
   console.log("");
   console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log("Template attachment is project metadata. Detaching makes the project fully owned by this workspace.");
   console.log("This status does not block `topogram check` or `topogram generate`.");
   if (payload.project?.trust?.status === "review-required") {
     console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
@@ -3712,6 +3856,8 @@ if (args[0] === "doctor") {
   commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "show") {
   commandArgs = { templateShow: true, inputPath: args[2] };
+} else if (args[0] === "template" && args[1] === "explain") {
+  commandArgs = { templateExplain: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "template" && args[1] === "detach") {
@@ -3821,6 +3967,7 @@ const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
 const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateShow = Boolean(commandArgs?.templateShow);
+const shouldTemplateExplain = Boolean(commandArgs?.templateExplain);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
 const shouldTemplateDetach = Boolean(commandArgs?.templateDetach);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
@@ -3892,7 +4039,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -3922,7 +4069,7 @@ if (shouldPackageUpdateCli && !inputPath) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -4039,6 +4186,20 @@ try {
       console.log(stableStringify(payload));
     } else {
       printTemplateShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldTemplateExplain) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot explain template lifecycle without topogram.project.json.");
+    }
+    const payload = buildTemplateExplainPayload(projectConfigInfo);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateExplain(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }

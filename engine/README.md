@@ -31,6 +31,7 @@ topogram catalog copy hello ../hello-topogram
 topogram package update-cli 0.2.51
 topogram source status ../hello-topogram
 topogram template list
+topogram template explain
 topogram template status
 topogram template policy check
 topogram template policy pin @scope/template@0.2.0

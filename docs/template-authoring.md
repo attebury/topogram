@@ -139,8 +139,10 @@ Maintained apps can intentionally leave the template update workflow with
 `topogram.project.json` and removes the template baseline file. It keeps
 executable implementation trust when `implementation/` remains configured, so
 generation safety is still enforced independently of template metadata. Use
-`--dry-run --json` for review and `--remove-policy` when the project should also
-delete `topogram.template-policy.json`.
+`topogram template explain` to see whether a project is attached or detached,
+what trust remains, and which command to run next. Use `--dry-run --json` for
+review and `--remove-policy` when the project should also delete
+`topogram.template-policy.json`.
 
 ## Trust Policy
 

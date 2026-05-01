@@ -236,6 +236,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram template list/);
+  assert.match(help.stdout, /topogram template explain/);
   assert.doesNotMatch(help.stdout, /topogram template show todo/);
   assert.match(help.stdout, /Default starter: hello-web/);
   assert.match(help.stdout, /topogram template status --latest/);
@@ -1299,6 +1300,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(create.stdout, /Created Topogram project/);
   assert.match(create.stdout, /npm run doctor/);
   assert.match(create.stdout, /npm run source:status/);
+  assert.match(create.stdout, /npm run template:explain/);
   assert.match(create.stdout, /npm run check/);
   assert.match(create.stdout, /npm run generate/);
 
@@ -1316,6 +1318,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
+  assert.equal(pkg.scripts["template:explain"], "topogram template explain");
   assert.equal(pkg.scripts["template:detach"], "topogram template detach");
   assert.equal(pkg.scripts["template:detach:dry-run"], "topogram template detach --dry-run");
   assert.equal(pkg.scripts["template:check"], undefined);
@@ -1357,16 +1360,32 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
+  const templateExplain = runCli(["template", "explain", "--json"], { cwd: projectRoot });
+  assert.equal(templateExplain.status, 0, templateExplain.stderr || templateExplain.stdout);
+  const templateExplainPayload = JSON.parse(templateExplain.stdout);
+  assert.equal(templateExplainPayload.attached, true);
+  assert.equal(templateExplainPayload.ownership, "template-attached");
+  assert.equal(templateExplainPayload.template.id, "topogram/web-api-db");
+  assert.equal(templateExplainPayload.baseline.state, "matches-template");
+  assert.equal(templateExplainPayload.commands.detachDryRun, "topogram template detach --dry-run");
+  assert.equal(templateExplainPayload.commands.detach, "topogram template detach");
+  const humanTemplateExplain = runCli(["template", "explain"], { cwd: projectRoot });
+  assert.equal(humanTemplateExplain.status, 0, humanTemplateExplain.stderr || humanTemplateExplain.stdout);
+  assert.match(humanTemplateExplain.stdout, /Template lifecycle: attached/);
+  assert.match(humanTemplateExplain.stdout, /Ownership: template-attached/);
+  assert.match(humanTemplateExplain.stdout, /topogram template detach --dry-run/);
   const readme = fs.readFileSync(path.join(projectRoot, "README.md"), "utf8");
   assert.match(readme, /Template: `topogram\/web-api-db@/);
   assert.match(readme, /Executable implementation: `yes`/);
   assert.match(readme, /npm run doctor/);
   assert.match(readme, /npm run source:status/);
+  assert.match(readme, /npm run template:explain/);
   assert.match(readme, /npm run template:policy:explain/);
   assert.match(readme, /npm run trust:status/);
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
   assert.match(explainScript, /npm run doctor/);
   assert.match(explainScript, /npm run source:status/);
+  assert.match(explainScript, /npm run template:explain/);
   assert.match(explainScript, /npm run template:detach:dry-run/);
   assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
@@ -1505,8 +1524,25 @@ test("topogram template detach removes template tracking without bypassing imple
 
   const humanSourceStatus = runCli(["source", "status"], { cwd: projectRoot });
   assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
+  assert.match(humanSourceStatus.stdout, /Template attachment: detached/);
+  assert.match(humanSourceStatus.stdout, /Template ownership: project-owned/);
   assert.match(humanSourceStatus.stdout, /Template baseline: missing/);
   assert.match(humanSourceStatus.stdout, /Implementation trust: trusted/);
+
+  const detachedExplain = runCli(["template", "explain", "--json"], { cwd: projectRoot });
+  assert.equal(detachedExplain.status, 0, detachedExplain.stderr || detachedExplain.stdout);
+  const detachedExplainPayload = JSON.parse(detachedExplain.stdout);
+  assert.equal(detachedExplainPayload.attached, false);
+  assert.equal(detachedExplainPayload.ownership, "project-owned");
+  assert.equal(detachedExplainPayload.template.id, null);
+  assert.equal(detachedExplainPayload.commands.detach, null);
+  assert.equal(detachedExplainPayload.trust.ok, true);
+
+  const detachedHumanExplain = runCli(["template", "explain"], { cwd: projectRoot });
+  assert.equal(detachedHumanExplain.status, 0, detachedHumanExplain.stderr || detachedHumanExplain.stdout);
+  assert.match(detachedHumanExplain.stdout, /Template lifecycle: detached/);
+  assert.match(detachedHumanExplain.stdout, /Ownership: project-owned/);
+  assert.doesNotMatch(detachedHumanExplain.stdout, /topogram template detach --dry-run/);
 
   const templateStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(templateStatus.status, 0, templateStatus.stderr || templateStatus.stdout);
