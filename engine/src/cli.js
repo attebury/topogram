@@ -79,6 +79,7 @@ import {
   loadCatalog,
   TOPOGRAM_SOURCE_FILE
 } from "./catalog.js";
+import { resolveCatalogTemplateAlias } from "./cli/catalog-alias.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -1065,6 +1066,26 @@ function compareSemver(left, right) {
  * @param {ReturnType<typeof buildDoctorPayload>} payload
  * @returns {void}
  */
+function printDoctorSetupGuidance(payload) {
+  console.log("Setup guidance:");
+  if (payload.githubPackages.required) {
+    console.log(`- CLI package auth: configure @attebury packages for ${payload.githubPackages.registry} and provide NODE_AUTH_TOKEN, or run npm login for GitHub Packages.`);
+  } else {
+    console.log("- CLI package auth: skipped because this project uses a local Topogram CLI dependency.");
+  }
+  if (isCatalogSourceDisabled(payload.catalog.source)) {
+    console.log("- Catalog auth: skipped because catalog discovery is disabled for this project.");
+  } else {
+    console.log("- Catalog auth: provide GITHUB_TOKEN or GH_TOKEN for private catalog access; locally, `gh auth login` is also supported.");
+  }
+  console.log("- Template package auth: private template packages need NODE_AUTH_TOKEN during npm install in generated projects.");
+  console.log("- Catalog disabled mode: TOPOGRAM_CATALOG_SOURCE=none skips catalog aliases, including the default hello-web starter.");
+}
+
+/**
+ * @param {ReturnType<typeof buildDoctorPayload>} payload
+ * @returns {void}
+ */
 function printDoctor(payload) {
   console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
   console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
@@ -1088,6 +1109,7 @@ function printDoctor(payload) {
   if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.githubPackages.required) {
     console.log("Project provenance: run `topogram source status --local` for catalog, template, trust, and baseline details.");
   }
+  printDoctorSetupGuidance(payload);
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
     for (const diagnostic of payload.diagnostics) {
@@ -2683,87 +2705,6 @@ function printTopogramSourceStatus(payload) {
   } else {
     console.log("Next: run `topogram check` or `topogram generate`.");
   }
-}
-
-/**
- * @param {string} templateName
- * @param {string|null} source
- * @returns {{ templateName: string, provenance: { id: string, source: string, package: string, version: string, packageSpec: string }|null }}
- */
-function resolveCatalogTemplateAlias(templateName, source = null) {
-  if (!isCatalogAliasCandidate(templateName, source)) {
-    return { templateName, provenance: null };
-  }
-  const catalogSource = catalogSourceOrDefault(source);
-  if (isCatalogSourceDisabled(catalogSource)) {
-    throw new Error(formatCatalogTemplateAliasError(templateName, catalogSource, null));
-  }
-  try {
-    const loaded = loadCatalog(catalogSource);
-    const entry = findCatalogEntry(loaded.catalog, templateName, "template");
-    if (!entry) {
-      throw new Error(formatCatalogTemplateAliasError(templateName, loaded.source, null));
-    }
-    const packageSpec = catalogEntryPackageSpec(entry);
-    return {
-      templateName: packageSpec,
-      provenance: {
-        id: entry.id,
-        source: loaded.source,
-        package: entry.package,
-        version: entry.defaultVersion,
-        packageSpec
-      }
-    };
-  } catch (error) {
-    const message = messageFromError(error);
-    if (message.startsWith(`Catalog template alias '${templateName}'`)) {
-      throw error;
-    }
-    throw new Error(formatCatalogTemplateAliasError(templateName, catalogSource, error));
-  }
-}
-
-/**
- * @param {string} templateName
- * @param {string|null} source
- * @returns {boolean}
- */
-function isCatalogAliasCandidate(templateName, source = null) {
-  void source;
-  return Boolean(templateName) &&
-    !templateName.startsWith("@") &&
-    !templateName.startsWith("./") &&
-    !templateName.startsWith("../") &&
-    !path.isAbsolute(templateName) &&
-    !templateName.includes("/") &&
-    !templateName.endsWith(".tgz");
-}
-
-/**
- * @param {string} templateName
- * @param {string|null} catalogSource
- * @param {unknown} error
- * @returns {string}
- */
-function formatCatalogTemplateAliasError(templateName, catalogSource, error) {
-  const sourceLabel = catalogSource || "disabled catalog";
-  const catalogDisabled = isCatalogSourceDisabled(catalogSource);
-  const reason = error
-    ? messageFromError(error)
-    : catalogDisabled
-      ? "Catalog access is disabled, so catalog template aliases cannot be resolved."
-    : `No template entry named '${templateName}' was found in the catalog.`;
-  return [
-    `Catalog template alias '${templateName}' could not be resolved from '${sourceLabel}'.`,
-    reason,
-    templateName === "hello-web" ? "The default starter 'hello-web' is catalog-backed. Enable catalog access, or pass --template with a local path or full package spec." : null,
-    catalogDisabled ? "Unset TOPOGRAM_CATALOG_SOURCE=none, pass --catalog <source>, or use an explicit local path/package spec." : null,
-    "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
-    catalogDisabled ? null : "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
-    "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
-    "Use a catalog alias such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
-  ].filter(Boolean).join("\n");
 }
 
 /**
