@@ -123,6 +123,7 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
+  console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("Usage: topogram release status [--json] [--strict]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
@@ -154,6 +155,7 @@ function printUsage(options = {}) {
   console.log("Common commands:");
   console.log("  topogram version");
   console.log("  topogram doctor");
+  console.log("  topogram setup package-auth");
   console.log("  topogram release status");
   console.log("  topogram new ./my-app");
   console.log("  topogram new --list-templates");
@@ -196,6 +198,7 @@ function printUsage(options = {}) {
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
   console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
+  console.log("Run `topogram help <command>` for command-specific help.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
     return;
@@ -336,6 +339,134 @@ function printCatalogHelp() {
   console.log("  topogram catalog copy hello ./hello-topogram");
 }
 
+function printDoctorHelp() {
+  console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Checks local runtime, npm, GitHub Packages auth hints, CLI lockfile metadata, and catalog access.");
+  console.log("");
+  console.log("Related setup commands:");
+  console.log("  topogram setup package-auth");
+  console.log("  topogram setup catalog-auth");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram doctor");
+  console.log("  topogram doctor --json");
+  console.log("  topogram doctor --catalog ./topograms.catalog.json");
+  console.log("  topogram catalog doctor");
+  console.log("");
+  console.log("Use `catalog doctor` when you only want catalog/package-access diagnostics. Use `doctor --catalog` for the full environment check plus catalog diagnostics.");
+}
+
+function printSetupHelp() {
+  console.log("Usage: topogram setup package-auth|catalog-auth");
+  console.log("");
+  console.log("Prints setup guidance for private GitHub Packages and catalog access. This command does not write credentials.");
+  console.log("");
+  console.log("Commands:");
+  console.log("  topogram setup package-auth");
+  console.log("  topogram setup catalog-auth");
+}
+
+function printPackageAuthSetup() {
+  console.log("Topogram package auth setup");
+  console.log("");
+  console.log("Topogram CLI and template packages are published to GitHub Packages.");
+  console.log("");
+  console.log("Local setup:");
+  console.log("  npm config set @attebury:registry https://npm.pkg.github.com");
+  console.log("  export NODE_AUTH_TOKEN=<github-token-with-package-read>");
+  console.log("  npm install");
+  console.log("");
+  console.log("GitHub Actions setup:");
+  console.log("  permissions:");
+  console.log("    contents: read");
+  console.log("    packages: read");
+  console.log("  env:");
+  console.log("    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
+  console.log("");
+  console.log("If a consumer repo cannot read a private package, grant it access under the package settings Manage Actions access section.");
+  console.log("Run `topogram doctor` after setup.");
+}
+
+function printCatalogAuthSetup() {
+  console.log("Topogram catalog auth setup");
+  console.log("");
+  console.log("Private catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
+  console.log("");
+  console.log("Local setup:");
+  console.log("  gh auth login");
+  console.log("  topogram catalog list");
+  console.log("");
+  console.log("GitHub Actions setup:");
+  console.log("  permissions:");
+  console.log("    contents: read");
+  console.log("  env:");
+  console.log("    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
+  console.log("");
+  console.log("For private catalog repos, grant the workflow token or PAT read access to the catalog repository.");
+  console.log("Run `topogram catalog doctor` after setup.");
+}
+
+function printPackageHelp() {
+  console.log("Usage: topogram package update-cli <version|--latest> [--json]");
+  console.log("");
+  console.log("Updates a consumer project to a Topogram CLI version and runs available verification scripts.");
+  console.log("");
+  console.log("Behavior:");
+  console.log("  - npm package inspection and install are used when auth is configured.");
+  console.log("  - If npm inspection fails but GitHub Packages API confirms the version, package files are updated directly.");
+  console.log("  - Direct file updates do not prove npm install auth. Run npm install or CI afterward.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram package update-cli 0.3.4");
+  console.log("  topogram package update-cli --latest");
+  console.log("  topogram package update-cli --latest --json");
+  console.log("");
+  console.log("Auth help:");
+  console.log("  topogram setup package-auth");
+}
+
+function printReleaseHelp() {
+  console.log("Usage: topogram release status [--json] [--strict]");
+  console.log("");
+  console.log("Checks the local CLI version, latest published package version, release tag, and known consumer pins.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram release status");
+  console.log("  topogram release status --json");
+  console.log("  topogram release status --strict");
+  console.log("");
+  console.log("Release preparation and publishing are repo-level tasks in the Topogram source checkout:");
+  console.log("  npm run release:prepare -- <version>");
+  console.log("  npm run release:check");
+  console.log("  GitHub Actions: Publish CLI Package");
+}
+
+function printSourceHelp() {
+  console.log("Usage: topogram source status [path] [--local|--remote] [--json]");
+  console.log("");
+  console.log("Reports source provenance, template attachment state, and whether local edits affect template-owned files.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram source status");
+  console.log("  topogram source status --local");
+  console.log("  topogram source status --remote");
+  console.log("  topogram source status --json");
+}
+
+function printCheckHelp() {
+  console.log("Usage: topogram check [path] [--json]");
+  console.log("");
+  console.log("Validates Topogram files, project configuration, topology, generator compatibility, output ownership, and template policy.");
+  console.log("");
+  console.log("Defaults: path is ./topogram.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram check");
+  console.log("  topogram check --json");
+  console.log("  topogram check ./topogram");
+}
+
 function printCommandHelp(command) {
   if (command === "new" || command === "create") {
     printNewHelp();
@@ -351,6 +482,30 @@ function printCommandHelp(command) {
   }
   if (command === "catalog") {
     printCatalogHelp();
+    return true;
+  }
+  if (command === "doctor") {
+    printDoctorHelp();
+    return true;
+  }
+  if (command === "setup") {
+    printSetupHelp();
+    return true;
+  }
+  if (command === "package") {
+    printPackageHelp();
+    return true;
+  }
+  if (command === "release") {
+    printReleaseHelp();
+    return true;
+  }
+  if (command === "source") {
+    printSourceHelp();
+    return true;
+  }
+  if (command === "check") {
+    printCheckHelp();
     return true;
   }
   return false;
@@ -4581,6 +4736,21 @@ if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || a
 if (args[0] === "help-all") {
   printUsage({ all: true });
   process.exit(0);
+}
+
+if (args[0] === "setup" && args[1] === "package-auth") {
+  printPackageAuthSetup();
+  process.exit(0);
+}
+
+if (args[0] === "setup" && args[1] === "catalog-auth") {
+  printCatalogAuthSetup();
+  process.exit(0);
+}
+
+if (args[0] === "setup") {
+  printSetupHelp();
+  process.exit(args[1] ? 1 : 0);
 }
 
 function commandPath(index, fallback = "./topogram") {

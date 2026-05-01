@@ -41,6 +41,16 @@ npm run generate
 npm run verify
 ```
 
+For command help and private package/catalog setup guidance:
+
+```bash
+topogram help new
+topogram help package
+topogram help release
+topogram setup package-auth
+topogram setup catalog-auth
+```
+
 Use the local runtime checks when local services are ready:
 
 ```bash

@@ -1,6 +1,7 @@
 # Releasing Topogram CLI
 
 The CLI package is `@attebury/topogram`. Releases are manual and publish to GitHub Packages.
+Run `topogram help release` for the CLI release-status command surface.
 
 ## Prepare
 
@@ -60,6 +61,9 @@ requested CLI version through the GitHub Packages API via `gh api` and update
 the consumer manifests directly. That fallback is only for rollout bookkeeping:
 `npm install` and `npm ci` still need GitHub Packages auth for private package
 downloads.
+
+Use `topogram setup package-auth` when a local or CI environment needs package
+read setup guidance.
 
 After the package is published, the release tag exists, and known consumer pins
 have been rolled, run the strict release gate:

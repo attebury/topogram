@@ -297,6 +297,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram generate \[path\]/);
   assert.match(help.stdout, /topogram new <path> \[--template .*todo/);
   assert.match(help.stdout, /topogram release status/);
+  assert.match(help.stdout, /topogram setup package-auth/);
   assert.match(help.stdout, /topogram package update-cli <version\|--latest>/);
   assert.match(help.stdout, /topogram new \.\/my-app/);
   assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
@@ -350,6 +351,41 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(catalogHelp.status, 0, catalogHelp.stderr || catalogHelp.stdout);
   assert.match(catalogHelp.stdout, /Usage: topogram catalog list/);
   assert.match(catalogHelp.stdout, /topogram catalog copy hello \.\/hello-topogram/);
+
+  const doctorHelp = runCli(["help", "doctor"]);
+  assert.equal(doctorHelp.status, 0, doctorHelp.stderr || doctorHelp.stdout);
+  assert.match(doctorHelp.stdout, /Usage: topogram doctor/);
+  assert.match(doctorHelp.stdout, /topogram setup package-auth/);
+  assert.match(doctorHelp.stdout, /Use `catalog doctor` when you only want catalog/);
+
+  const packageHelp = runCli(["package", "--help"]);
+  assert.equal(packageHelp.status, 0, packageHelp.stderr || packageHelp.stdout);
+  assert.match(packageHelp.stdout, /Usage: topogram package update-cli <version\|--latest>/);
+  assert.match(packageHelp.stdout, /GitHub Packages API confirms the version/);
+
+  const releaseHelp = runCli(["release", "--help"]);
+  assert.equal(releaseHelp.status, 0, releaseHelp.stderr || releaseHelp.stdout);
+  assert.match(releaseHelp.stdout, /Usage: topogram release status/);
+  assert.match(releaseHelp.stdout, /npm run release:prepare -- <version>/);
+
+  const sourceHelp = runCli(["source", "--help"]);
+  assert.equal(sourceHelp.status, 0, sourceHelp.stderr || sourceHelp.stdout);
+  assert.match(sourceHelp.stdout, /Usage: topogram source status/);
+  assert.match(sourceHelp.stdout, /topogram source status --remote/);
+
+  const setupHelp = runCli(["setup", "--help"]);
+  assert.equal(setupHelp.status, 0, setupHelp.stderr || setupHelp.stdout);
+  assert.match(setupHelp.stdout, /Usage: topogram setup package-auth\|catalog-auth/);
+
+  const packageAuth = runCli(["setup", "package-auth"]);
+  assert.equal(packageAuth.status, 0, packageAuth.stderr || packageAuth.stdout);
+  assert.match(packageAuth.stdout, /npm config set @attebury:registry https:\/\/npm\.pkg\.github\.com/);
+  assert.match(packageAuth.stdout, /Manage Actions access/);
+
+  const catalogAuth = runCli(["setup", "catalog-auth"]);
+  assert.equal(catalogAuth.status, 0, catalogAuth.stderr || catalogAuth.stdout);
+  assert.match(catalogAuth.stdout, /gh auth login/);
+  assert.match(catalogAuth.stdout, /topogram catalog doctor/);
 
   const templateList = runCli(["template", "list", "--json"]);
   assert.equal(templateList.status, 0, templateList.stderr || templateList.stdout);
