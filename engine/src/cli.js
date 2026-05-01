@@ -167,7 +167,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.54");
+  console.log("  topogram package update-cli <version>");
   console.log("  topogram template explain");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
@@ -594,7 +594,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.54.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.57.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];

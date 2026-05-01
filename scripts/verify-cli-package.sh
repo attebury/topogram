@@ -23,6 +23,10 @@ if [[ ! -f "$PACKAGE_TARBALL" ]]; then
   echo "Expected package tarball was not created: $PACKAGE_TARBALL" >&2
   exit 1
 fi
+if tar -tf "$PACKAGE_TARBALL" | grep -q '^package/templates/'; then
+  echo "Packed CLI must not include product starter template directories." >&2
+  exit 1
+fi
 
 echo "Installing packed CLI into a consumer project..."
 (
@@ -65,6 +69,26 @@ node --input-type=module -e '
 "$TOPOGRAM_BIN" catalog check "$CATALOG_FILE" >/dev/null
 "$TOPOGRAM_BIN" catalog show smoke --catalog "$CATALOG_FILE" --json >/dev/null
 "$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
+
+echo "Checking catalog-disabled default starter guidance..."
+set +e
+DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" new ./no-catalog-default 2>&1)"
+DISABLED_STATUS=$?
+set -e
+if [[ "$DISABLED_STATUS" -eq 0 ]]; then
+  echo "Expected catalog-disabled default starter creation to fail." >&2
+  exit 1
+fi
+if [[ "$DISABLED_OUTPUT" != *"The default starter 'hello-web' is catalog-backed"* ]]; then
+  echo "Expected catalog-disabled guidance to explain the catalog-backed default starter." >&2
+  echo "$DISABLED_OUTPUT" >&2
+  exit 1
+fi
+if [[ "$DISABLED_OUTPUT" == *"For the private default catalog"* ]]; then
+  echo "Catalog-disabled guidance should not suggest private catalog auth before enabling a catalog." >&2
+  echo "$DISABLED_OUTPUT" >&2
+  exit 1
+fi
 
 echo "Packing a template pack..."
 cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"

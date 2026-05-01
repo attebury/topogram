@@ -156,7 +156,9 @@ topogram catalog copy hello ./hello-topogram --catalog ./topograms.catalog.json
 ```
 
 Set `TOPOGRAM_CATALOG_SOURCE=none` only when you intentionally want to skip
-catalog discovery; `topogram template list` will then show no shared starters.
+catalog discovery; `topogram template list` will then show no shared starters,
+and `topogram new ./my-app` cannot resolve the default catalog-backed
+`hello-web` starter unless you pass a local template path or full package spec.
 
 ## Schema
 

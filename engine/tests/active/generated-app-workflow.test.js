@@ -664,7 +664,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.54",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram.2.57",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 

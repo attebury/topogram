@@ -6,6 +6,8 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 
 Use Node 20+.
 
+### First-Use Prerequisites
+
 For a private-package consumer project, configure GitHub Packages access and
 install the CLI as a project dependency:
 
@@ -16,6 +18,17 @@ npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
 npm install --save-dev @attebury/topogram
 npx topogram doctor
 ```
+
+Catalog aliases such as `hello-web`, `web-api-db`, and `todo` are resolved
+through the `attebury/topograms` catalog. Local runs can provide catalog access
+with `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth login`; package installs still need
+`NODE_AUTH_TOKEN` when reading private GitHub Packages.
+
+`TOPOGRAM_CATALOG_SOURCE=none` intentionally disables catalog discovery. In
+that mode, `topogram template list` shows no shared starters and
+`topogram new ./my-app` cannot resolve the default `hello-web` alias. Pass
+`--catalog <source>`, or use `--template` with a local template path or full
+package spec.
 
 Choose your starting point:
 
@@ -281,7 +294,7 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli 0.2.54
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
 ```
 
 The command verifies the published package, runs `npm install --save-dev`, then
