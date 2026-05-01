@@ -36,7 +36,7 @@ settings.
 Check the release and known consumer pins:
 
 ```bash
-topogram release status
+npm run release:status
 ```
 
 The status output includes a `consumerPins` summary for the known package
@@ -54,3 +54,16 @@ version and rerun their verification. Consumer repos that include
 ```bash
 NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
 ```
+
+After the package is published, the release tag exists, and known consumer pins
+have been rolled, run the strict release gate:
+
+```bash
+npm run release:status:strict
+```
+
+You can also run the manual GitHub Actions workflow `Release Status`. It checks
+out `topogram` plus the known consumer repos and runs the same strict gate. If a
+consumer repo is private and the default workflow token cannot read it, add a
+`TOPOGRAM_RELEASE_STATUS_TOKEN` repository secret with read access to those
+repos.
