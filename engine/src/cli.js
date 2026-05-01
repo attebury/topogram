@@ -2748,14 +2748,19 @@ function isCatalogAliasCandidate(templateName, source = null) {
  */
 function formatCatalogTemplateAliasError(templateName, catalogSource, error) {
   const sourceLabel = catalogSource || "disabled catalog";
+  const catalogDisabled = isCatalogSourceDisabled(catalogSource);
   const reason = error
     ? messageFromError(error)
+    : catalogDisabled
+      ? "Catalog access is disabled, so catalog template aliases cannot be resolved."
     : `No template entry named '${templateName}' was found in the catalog.`;
   return [
     `Catalog template alias '${templateName}' could not be resolved from '${sourceLabel}'.`,
     reason,
+    templateName === "hello-web" ? "The default starter 'hello-web' is catalog-backed. Enable catalog access, or pass --template with a local path or full package spec." : null,
+    catalogDisabled ? "Unset TOPOGRAM_CATALOG_SOURCE=none, pass --catalog <source>, or use an explicit local path/package spec." : null,
     "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
-    "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
+    catalogDisabled ? null : "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
     "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
     "Use a catalog alias such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
   ].filter(Boolean).join("\n");

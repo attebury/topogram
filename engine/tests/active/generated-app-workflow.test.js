@@ -858,6 +858,13 @@ test("catalog aliases resolve starter names", () => {
 
 test("topogram new explains catalog alias resolution failures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-errors-"));
+  const disabled = runCli(["new", path.join(root, "disabled"), "--catalog", "none"]);
+  assert.notEqual(disabled.status, 0, disabled.stdout);
+  assert.match(disabled.stderr, /Catalog access is disabled/);
+  assert.match(disabled.stderr, /The default starter 'hello-web' is catalog-backed/);
+  assert.match(disabled.stderr, /Unset TOPOGRAM_CATALOG_SOURCE=none/);
+  assert.doesNotMatch(disabled.stderr, /For the private default catalog/);
+
   const source = "github:attebury/topograms/topograms.catalog.json";
   const authGhBin = createFailingCommand(
     root,
