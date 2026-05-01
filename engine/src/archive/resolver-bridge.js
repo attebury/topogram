@@ -36,15 +36,23 @@ export function loadArchive(workspaceRoot) {
         errors.push(`${file}: entry id='${raw.id}' has kind '${raw.kind}', expected '${expectedKind}'`);
         continue;
       }
-      entries.push({
-        ...raw,
-        archived: true,
-        archivedMeta: raw.archived || {}
-      });
+      entries.push(normalizeArchivedEntry(raw));
     }
   }
   const byId = new Map(entries.map((e) => [e.id, e]));
   return { entries, byId, errors };
+}
+
+function normalizeArchivedEntry(raw) {
+  const fields = raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields) ? raw.fields : {};
+  return {
+    ...fields,
+    ...raw,
+    fields,
+    archived: true,
+    archivedMeta: raw.archived || {},
+    updated: raw.updated || fields.updated || raw.archived?.at || null
+  };
 }
 
 export function mergeArchivedIntoGraph(graph, archive) {

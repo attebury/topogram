@@ -1,6 +1,6 @@
 // SDLC history sidecar.
 //
-// Stored at `<workspaceRoot>/topogram/.topogram-sdlc-history.json` as a
+// Stored at `<topogram-root>/.topogram-sdlc-history.json` as a
 // JSON object keyed by statement id. Each entry is an append-only array of
 // transition records:
 //
@@ -17,11 +17,12 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { topogramRootForSdlc } from "./paths.js";
 
 const HISTORY_FILENAME = ".topogram-sdlc-history.json";
 
 export function historyPath(workspaceRoot) {
-  return path.join(workspaceRoot, "topogram", HISTORY_FILENAME);
+  return path.join(topogramRootForSdlc(workspaceRoot), HISTORY_FILENAME);
 }
 
 export function readHistory(workspaceRoot) {

@@ -130,6 +130,7 @@ export function archiveEligibleStatements(resolved, options = {}) {
   const wantStatuses = options.statuses ? new Set(options.statuses) : null;
   const eligible = [];
   for (const s of resolved.graph.statements) {
+    if (s.archived) continue;
     if (!isArchivableKind(s.kind)) continue;
     if (!isArchivableStatus(s.kind, s.status)) continue;
     if (wantStatuses && !wantStatuses.has(s.status)) continue;

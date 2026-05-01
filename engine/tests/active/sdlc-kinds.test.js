@@ -146,6 +146,7 @@ test("sdlc-board groups by status with SDLC summarizers", () => {
   assert.ok(board.board.pitch);
   // task is in-progress, so it appears in that lane
   assert.equal(board.board.task["in-progress"].length, 1);
+  assert.equal(board.board.bug.open.some((bug) => bug.id === "bug_legacy_audit_corruption"), false);
 });
 
 test("sdlc-traceability-matrix walks pitch → req → AC → task → verification", () => {
@@ -169,7 +170,8 @@ test("sdlc-release-notes assembles approved pitches + done tasks + verified bugs
   assert.equal(notes.type, "sdlc_release_notes");
   assert.equal(notes.app_version, "1.0.0");
   assert.equal(notes.counts.pitches, 1);
-  assert.equal(notes.counts.bugs, 1);
+  assert.equal(notes.counts.bugs, 2);
+  assert.deepEqual(notes.bugs.map((bug) => bug.id).sort(), ["bug_audit_drops_silently", "bug_legacy_audit_corruption"]);
 });
 
 test("legal transitions: task can move unclaimed → claimed → in-progress → done", () => {
@@ -231,6 +233,21 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
   }
 });
 
+test("transitionStatement accepts an explicit topogram root without nested history", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const topogramRoot = path.join(tempRoot, "topogram");
+    const result = transitionStatement(topogramRoot, "task_implement_audit_writer", "done", {
+      actor: "agent-test"
+    });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.equal(fs.existsSync(path.join(topogramRoot, ".topogram-sdlc-history.json")), true);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("sdlc check surfaces DoD warnings and ok when satisfied", () => {
   const ast = parsePath(fixtureRoot);
   const resolved = resolveWorkspace(ast);
@@ -257,6 +274,19 @@ test("archive bridge loads JSONL fixture entries", () => {
   assert.equal(archive.entries.length, 1);
   assert.equal(archive.entries[0].id, "bug_legacy_audit_corruption");
   assert.equal(archive.entries[0].archived, true);
+  assert.equal(archive.entries[0].severity, "medium");
+});
+
+test("resolver fails validation when archive JSONL is malformed", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    fs.writeFileSync(path.join(tempRoot, "topogram", "_archive", "bugs-2027.jsonl"), "{not-json}\n", "utf8");
+    const resolved = resolveWorkspace(parsePath(tempRoot));
+    assert.equal(resolved.ok, false);
+    assert.ok(resolved.validation.errors.some((error) => error.message.includes("Invalid SDLC archive")));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test("archiveEligibleStatements identifies terminal-status artifacts", () => {
@@ -286,6 +316,33 @@ test("archiveStatement moves a verified bug to year-bucketed JSONL", () => {
   }
 });
 
+test("archiveStatement accepts an explicit topogram root without nested archive", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const topogramRoot = path.join(tempRoot, "topogram");
+    const result = archiveStatement(topogramRoot, "bug_audit_drops_silently", { by: "test" });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.match(result.archiveFile, /topogram\/_archive\/bugs-\d{4}\.jsonl$/);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("archived bugs participate in traceability after active source is archived", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const archiveResult = archiveStatement(tempRoot, "bug_audit_drops_silently", { by: "test" });
+    assert.equal(archiveResult.ok, true, JSON.stringify(archiveResult, null, 2));
+    const resolved = resolveWorkspace(parsePath(tempRoot));
+    assert.equal(resolved.ok, true, JSON.stringify(resolved.validation, null, 2));
+    const matrix = generateSdlcTraceabilityMatrix(resolved.graph);
+    assert.deepEqual(matrix.rows[0].bugs.map((bug) => bug.id), ["bug_audit_drops_silently"]);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("release dry-run reports release notes + planned doc/archive mutations", () => {
   const tempRoot = copyFixtureToTemp();
   try {
@@ -298,6 +355,51 @@ test("release dry-run reports release notes + planned doc/archive mutations", ()
     assert.ok(result.archive.candidates.includes("bug_audit_drops_silently"));
     // Dry run — nothing actually written
     assert.equal(fs.existsSync(path.join(tempRoot, "topogram", "bugs", "audit-drops-silently.tg")), true);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("release accepts an explicit topogram root without nested archive", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const topogramRoot = path.join(tempRoot, "topogram");
+    const result = runRelease(topogramRoot, { appVersion: "1.0.0", actor: "release-test" });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.ok(result.archive.candidates.includes("bug_audit_drops_silently"));
+    assert.equal(fs.existsSync(path.join(topogramRoot, "_archive")), true);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("release stamps only missing or older comparable document app versions", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const docsRoot = path.join(tempRoot, "topogram", "docs", "reference");
+    fs.mkdirSync(docsRoot, { recursive: true });
+    const writeDoc = (slug, appVersionLine) => {
+      const appVersion = appVersionLine ? `${appVersionLine}\n` : "";
+      fs.writeFileSync(
+        path.join(docsRoot, `${slug}.md`),
+        `---\nid: doc_${slug.replace(/-/g, "_")}\nkind: reference\ntitle: "${slug}"\nstatus: draft\n${appVersion}---\n\nBody\n`,
+        "utf8"
+      );
+    };
+    writeDoc("missing", "");
+    writeDoc("older", "app_version: 1.12.9");
+    writeDoc("older-beta", "app_version: 1.12.0-beta");
+    writeDoc("equal", "app_version: 1.13");
+    writeDoc("newer", "app_version: v1.14.0");
+    writeDoc("incomparable", "app_version: next-release");
+
+    const result = runRelease(path.join(tempRoot, "topogram"), { appVersion: "1.13.0", dryRun: true });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    const updated = result.document_app_version_updates
+      .map((entry) => path.basename(entry.file, ".md"))
+      .sort();
+    assert.deepEqual(updated, ["missing", "older", "older-beta"]);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

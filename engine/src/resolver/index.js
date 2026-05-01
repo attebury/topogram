@@ -14,6 +14,7 @@ import { enrichRequirement } from "./enrich/requirement.js";
 import { enrichAcceptanceCriterion } from "./enrich/acceptance-criterion.js";
 import { enrichTask } from "./enrich/task.js";
 import { enrichBug } from "./enrich/bug.js";
+import { loadArchive, mergeArchivedIntoGraph } from "../archive/resolver-bridge.js";
 
 function groupBy(items, keyFn) {
   const grouped = {};
@@ -2061,6 +2062,27 @@ export function resolveWorkspace(workspaceAst) {
     };
   }
 
+  const archive = loadArchive(workspaceAst.root);
+  if (archive.errors.length > 0) {
+    const archiveErrors = archive.errors.map((message) => ({
+      message: `Invalid SDLC archive: ${message}`,
+      loc: {
+        file: workspaceAst.root,
+        start: { line: 1, column: 1, offset: 0 },
+        end: { line: 1, column: 1, offset: 0 }
+      }
+    }));
+    return {
+      ok: false,
+      validation: {
+        ...validation,
+        ok: false,
+        errorCount: validation.errorCount + archiveErrors.length,
+        errors: [...validation.errors, ...archiveErrors]
+      }
+    };
+  }
+
   const errors = [];
   const registry = buildRegistry(workspaceAst, errors);
   const statements = workspaceAst.files.flatMap((file) => file.statements);
@@ -2385,14 +2407,16 @@ export function resolveWorkspace(workspaceAst) {
   });
   const finalByKind = groupBy(finalStatements, (statement) => statement.kind);
 
+  const graph = mergeArchivedIntoGraph({
+    root: workspaceAst.root,
+    statements: finalStatements,
+    byKind: finalByKind,
+    docs: (workspaceAst.docs || []).filter((doc) => !doc.parseError).map(normalizeDoc)
+  }, archive);
+
   return {
     ok: true,
     validation,
-    graph: {
-      root: workspaceAst.root,
-      statements: finalStatements,
-      byKind: finalByKind,
-      docs: (workspaceAst.docs || []).filter((doc) => !doc.parseError).map(normalizeDoc)
-    }
+    graph
   };
 }

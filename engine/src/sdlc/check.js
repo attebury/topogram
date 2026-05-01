@@ -22,7 +22,7 @@ const SDLC_KINDS = new Set([
 
 function checkBlockingReciprocity(graph) {
   const warnings = [];
-  const tasks = graph.byKind?.task || [];
+  const tasks = (graph.byKind?.task || []).filter((task) => !task.archived);
   const tasksById = new Map(tasks.map((t) => [t.id, t]));
   for (const task of tasks) {
     for (const ref of task.blocks || []) {
@@ -52,6 +52,7 @@ export function checkWorkspace(workspaceRoot, resolved) {
   const byId = new Map(resolved.graph.statements.map((s) => [s.id, s]));
 
   for (const statement of resolved.graph.statements) {
+    if (statement.archived) continue;
     if (!SDLC_KINDS.has(statement.kind)) continue;
 
     const drift = detectDriftedStatus(history, statement);

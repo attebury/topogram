@@ -14,6 +14,33 @@ import { resolveWorkspace } from "../resolver/index.js";
 import { generateSdlcReleaseNotes } from "../generator/sdlc/release-notes.js";
 import { archiveBatch, archiveEligibleStatements } from "../archive/archive.js";
 
+function parseComparableVersion(value) {
+  if (value == null || value === "") return null;
+  const match = String(value).trim().match(/^v?(\d+(?:\.\d+)*)(?:[-+].*)?$/i);
+  if (!match) return null;
+  return match[1].split(".").map((part) => Number.parseInt(part, 10));
+}
+
+function compareVersions(left, right) {
+  const leftParts = parseComparableVersion(left);
+  const rightParts = parseComparableVersion(right);
+  if (!leftParts || !rightParts) return null;
+  const length = Math.max(leftParts.length, rightParts.length);
+  for (let i = 0; i < length; i += 1) {
+    const leftPart = leftParts[i] ?? 0;
+    const rightPart = rightParts[i] ?? 0;
+    if (leftPart < rightPart) return -1;
+    if (leftPart > rightPart) return 1;
+  }
+  return 0;
+}
+
+function shouldStampDocVersion(existingVersion, appVersion) {
+  if (existingVersion == null || existingVersion === "") return true;
+  const comparison = compareVersions(existingVersion, appVersion);
+  return comparison === -1;
+}
+
 function stampDocsWithVersion(docs, appVersion, options = {}) {
   const planned = [];
   const FRONTMATTER_RE = /^---\n([\s\S]*?)\n---\n/;
@@ -28,7 +55,8 @@ function stampDocsWithVersion(docs, appVersion, options = {}) {
     const match = raw.match(FRONTMATTER_RE);
     if (!match) continue;
     const frontmatter = match[1];
-    if (frontmatter.includes(`app_version: ${appVersion}`)) continue;
+    const existingVersion = doc.metadata?.app_version || null;
+    if (!shouldStampDocVersion(existingVersion, appVersion)) continue;
 
     const updated = frontmatter.includes("app_version:")
       ? frontmatter.replace(/app_version:.*$/m, `app_version: ${appVersion}`)

@@ -1,6 +1,7 @@
 // Year-bucketed JSONL archive I/O.
 //
-// File layout: `<workspaceRoot>/topogram/_archive/{kind}s-{year}.jsonl`
+// File layout: `<project-or-topogram-root>/topogram/_archive/{kind}s-{year}.jsonl`
+// or `<topogram-root>/_archive/{kind}s-{year}.jsonl`
 // (e.g. `tasks-2026.jsonl`, `bugs-2026.jsonl`).
 //
 // Each line is a self-contained archived statement. The format is JSONL so
@@ -8,11 +9,12 @@
 
 import { existsSync, mkdirSync, readFileSync, appendFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { topogramRootForSdlc } from "../sdlc/paths.js";
 
 const ARCHIVE_DIR = "_archive";
 
 export function archiveDir(workspaceRoot) {
-  return path.join(workspaceRoot, "topogram", ARCHIVE_DIR);
+  return path.join(topogramRootForSdlc(workspaceRoot), ARCHIVE_DIR);
 }
 
 export function archiveFileFor(workspaceRoot, kind, year) {
