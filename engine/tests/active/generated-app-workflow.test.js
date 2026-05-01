@@ -12,6 +12,7 @@ const expectedRoot = path.join(engineRoot, "tests", "fixtures", "expected", "app
 const builtInTemplateRoot = path.join(engineRoot, "templates", "web-api-db");
 const npmCacheRoot = path.join(os.tmpdir(), "topogram-generated-app-workflow-npm-cache");
 fs.mkdirSync(npmCacheRoot, { recursive: true });
+const cliPackageVersion = JSON.parse(fs.readFileSync(path.join(engineRoot, "package.json"), "utf8")).version;
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [path.join(engineRoot, "src", "cli.js"), ...args], {
@@ -468,7 +469,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.54 ok/);
+  assert.match(human.stdout, new RegExp(`CLI package access: @attebury/topogram@${cliPackageVersion.replaceAll(".", "\\.")} ok`));
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
