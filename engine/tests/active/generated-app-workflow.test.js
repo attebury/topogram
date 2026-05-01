@@ -467,7 +467,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
   assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.53 ok/);
+  assert.match(human.stdout, /CLI package access: @attebury\/topogram@0\.2\.54 ok/);
   assert.match(human.stdout, /Catalog package access: ok/);
 
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
@@ -701,7 +701,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.53",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram@0.2.54",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 

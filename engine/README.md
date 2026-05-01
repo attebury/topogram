@@ -28,7 +28,7 @@ topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
-topogram package update-cli 0.2.53
+topogram package update-cli 0.2.54
 topogram source status ../hello-topogram --local
 topogram template list
 topogram template explain
