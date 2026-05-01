@@ -64,6 +64,8 @@ Create a starter from a catalog template alias:
 
 ```bash
 topogram template list
+topogram catalog show hello-web
+topogram new ./hello-web --template hello-web
 topogram catalog show todo
 topogram new ./todo-demo --template todo
 ```
@@ -91,6 +93,17 @@ metadata. `topogram.project.json` records:
 `sourceSpec` remains the package spec used by template update, latest-version
 checks, and trust policy. `requested` and `catalog` preserve the human-facing
 alias and catalog source for auditability.
+
+Package-backed catalog starters install `@attebury/topogram` from GitHub
+Packages in the generated project. The generated `.npmrc` reads
+`${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read the package:
+
+```bash
+cd ./hello-web
+NODE_AUTH_TOKEN=<github-token-with-package-read> npm install
+npm run check
+npm run generate
+```
 
 Copy a pure topogram package for editing:
 

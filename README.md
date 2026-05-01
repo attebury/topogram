@@ -25,7 +25,11 @@ npx topogram new ./hello-web
 
 # Catalog template alias, installs a versioned template package.
 npx topogram template list
-npx topogram new ./my-app --template todo
+npx topogram new ./hello-web --template hello-web
+cd ./hello-web
+NODE_AUTH_TOKEN="$NODE_AUTH_TOKEN" npm install
+npm run check
+npm run generate
 
 # Pure Topogram source copy, for editing before generation.
 npx topogram catalog show hello
@@ -92,6 +96,13 @@ TOPOGRAM_CATALOG_SOURCE=none topogram template list
 | `hello-db` | SQLite | You want database lifecycle output only. |
 | `web-api` | React + Express | You want a web/API starter without a database. |
 | `web-api-db` | SvelteKit + Hono + Postgres | You want the heavier full-stack starter. |
+
+The built-ins are convenience defaults bundled with the CLI. The package-backed
+starter templates in `topogram-starters` are the canonical shared starter
+examples and are surfaced through the `attebury/topograms` catalog. Generated
+projects include a project `.npmrc` that reads `${NODE_AUTH_TOKEN}`, so run
+`npm install` with a token that can read GitHub Packages when the CLI dependency
+comes from `@attebury/topogram`.
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
@@ -200,9 +211,10 @@ To create a starter from a shared template pack:
 ```bash
 topogram new ./todo-demo --template @attebury/topogram-template-todo
 topogram new ./todo-demo --template todo
+topogram new ./hello-web --template hello-web
 ```
 
-The second form resolves `todo` through the private catalog at
+The catalog alias forms resolve through the private catalog at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
 templates and reusable topograms are still installed from versioned packages.
 Use `topogram catalog show <id>` to see what an entry is and which command to
