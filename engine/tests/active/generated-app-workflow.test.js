@@ -426,6 +426,13 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(generatedTaskListPage, /class="component-card component-table"/);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte")), true);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "calendar", "+page.svelte")), true);
+  const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
+  assert.equal(coverage.type, "generation_coverage");
+  assert.equal(coverage.summary.routed_screens, 15);
+  assert.equal(coverage.summary.rendered_screens, 15);
+  assert.deepEqual(coverage.screens.filter((screen) => screen.renderer === "fallback").map((screen) => screen.id), ["task_board", "task_calendar"]);
+  assert.equal(coverage.summary.rendered_component_usages, 1);
+  assert.deepEqual(coverage.diagnostics, []);
 
   for (const relativePath of [
     ".topogram-generated.json",
@@ -488,6 +495,12 @@ test("sveltekit fallback routes render projection ui_components for unrendered s
   assert.match(boardPage, /data-topogram-component="component_ui_data_grid"/);
   assert.match(boardPage, /class="component-card component-table"/);
   assert.doesNotMatch(boardPage, /Sample rows/);
+  const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
+  const boardCoverage = coverage.screens.find((screen) => screen.id === "task_board");
+  assert.equal(boardCoverage.renderer, "fallback");
+  assert.equal(boardCoverage.component_usages[0].component, "component_ui_data_grid");
+  assert.equal(boardCoverage.component_usages[0].rendered, true);
+  assert.deepEqual(coverage.diagnostics, []);
 });
 
 test("topogram generate honors explicit artifact targets", () => {

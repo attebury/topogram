@@ -134,6 +134,9 @@ Svelte or React pages so callback parameters are emitted with explicit types.
 The SvelteKit generator also emits fallback pages for routed screens your
 implementation does not render; those pages use `ui_components` regions before
 falling back to generic sample list markup.
+It also writes `src/lib/topogram/generation-coverage.json`, which lists the
+screen routes and component usages that were rendered by the implementation or
+by fallback generation.
 Vanilla web templates should still treat `ui_components` as contract metadata
 until a concrete helper exists.
 

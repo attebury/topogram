@@ -74,6 +74,14 @@ function isDynamicRoute(route) {
   return String(route || "").split("/").some((segment) => segment.startsWith(":"));
 }
 
+function screenRoutePagePath(screen) {
+  return `${routePathToSvelteKitDirectory(screen.route)}/+page.svelte`;
+}
+
+function screenComponentUsages(screen) {
+  return Array.isArray(screen?.components) ? screen.components : [];
+}
+
 function buildGenericSvelteKitScreenFiles(screen, contract, useTypescript) {
   const files = {};
   const routeDir = routePathToSvelteKitDirectory(screen.route);
@@ -150,6 +158,90 @@ ${renderedRegions || `    ${defaultCollection}`}
 </main>
 `;
   return files;
+}
+
+function buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds) {
+  const diagnostics = [];
+  const screens = (contract.screens || [])
+    .filter((screen) => Boolean(screen.route) && screen.route !== "/")
+    .map((screen) => {
+      const pagePath = screenRoutePagePath(screen);
+      const contents = files[pagePath] || "";
+      const rendered = Boolean(contents);
+      const renderer = fallbackScreenIds.has(screen.id)
+        ? "fallback"
+        : rendered
+          ? "implementation"
+          : "missing";
+      if (!rendered) {
+        diagnostics.push({
+          code: "screen_route_not_rendered",
+          severity: "error",
+          screen: screen.id,
+          route: screen.route,
+          message: `Screen '${screen.id}' has route '${screen.route}' but no SvelteKit page was generated.`,
+          suggested_fix: "Render the route in the implementation provider or allow the SvelteKit fallback generator to create it."
+        });
+      }
+      const componentUsages = screenComponentUsages(screen).map((usage) => {
+        const componentId = usage.component?.id || null;
+        const marker = componentId ? `data-topogram-component="${componentId}"` : null;
+        const usageRendered = Boolean(marker && contents.includes(marker));
+        if (componentId && rendered && !usageRendered) {
+          diagnostics.push({
+            code: "component_usage_not_rendered",
+            severity: "warning",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            component: componentId,
+            message: `Screen '${screen.id}' uses component '${componentId}' but the generated SvelteKit page does not contain its component marker.`,
+            suggested_fix: "Render the component region with renderSvelteKitComponentRegion or add a supported component pattern."
+          });
+        }
+        return {
+          component: componentId,
+          region: usage.region || null,
+          rendered: usageRendered,
+          marker
+        };
+      });
+      return {
+        id: screen.id,
+        route: screen.route,
+        page: pagePath,
+        rendered,
+        renderer,
+        component_usages: componentUsages
+      };
+    });
+
+  return {
+    type: "generation_coverage",
+    surface: "web",
+    generator: "topogram/sveltekit",
+    projection: {
+      id: contract.projection.id,
+      name: contract.projection.name,
+      platform: contract.projection.platform
+    },
+    summary: {
+      routed_screens: screens.length,
+      rendered_screens: screens.filter((screen) => screen.rendered).length,
+      implementation_screens: screens.filter((screen) => screen.renderer === "implementation").length,
+      fallback_screens: screens.filter((screen) => screen.renderer === "fallback").length,
+      component_usages: screens.reduce((total, screen) => total + screen.component_usages.length, 0),
+      rendered_component_usages: screens.reduce(
+        (total, screen) => total + screen.component_usages.filter((usage) => usage.rendered).length,
+        0
+      ),
+      diagnostics: diagnostics.length,
+      errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length,
+      warnings: diagnostics.filter((diagnostic) => diagnostic.severity === "warning").length
+    },
+    screens,
+    diagnostics
+  };
 }
 
 function resolveNavLinks(contract, webReference) {
@@ -309,13 +401,16 @@ function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
     ));
   }
 
+  const fallbackScreenIds = new Set();
   for (const screen of contract.screens || []) {
     if (!screen.route || screen.route === "/") continue;
     const routeDir = routePathToSvelteKitDirectory(screen.route);
     if (files[`${routeDir}/+page.svelte`]) continue;
+    fallbackScreenIds.add(screen.id);
     Object.assign(files, buildGenericSvelteKitScreenFiles(screen, contract, useTypescript));
   }
 
+  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds), null, 2)}\n`;
   files["src/lib/topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   return files;
 }

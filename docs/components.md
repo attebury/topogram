@@ -176,6 +176,13 @@ component regions before falling back to sample list markup. Supported patterns
 render component-marked markup for `summary_stats`, `resource_table`,
 `data_grid_view`, `board_view`, and `calendar_view`.
 
+Generated SvelteKit apps include a coverage artifact at
+`src/lib/topogram/generation-coverage.json`. It records every routed screen,
+whether the page came from the implementation provider or the engine fallback,
+and whether each `ui_components` usage produced component-marked markup. Treat
+warnings in that file as places where projection intent exists but generated UI
+did not fully realize it.
+
 Template implementations can call the packaged helpers directly when they need
 custom route structure:
 
