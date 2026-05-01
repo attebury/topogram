@@ -22,7 +22,11 @@ function workspaceFromSource(source) {
 }
 
 function makeBaselineCopy() {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-baseline-"));
+  return makeWorkspaceCopy("topogram-component-baseline-");
+}
+
+function makeWorkspaceCopy(prefix) {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   function copyRecursive(src, dst) {
     fs.mkdirSync(dst, { recursive: true });
     for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
@@ -39,6 +43,18 @@ function makeBaselineCopy() {
   return tempRoot;
 }
 
+function removeDataGridComponentUsage(workspaceRoot) {
+  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-shared.tg");
+  const source = fs.readFileSync(projectionPath, "utf8");
+  fs.writeFileSync(
+    projectionPath,
+    source.replace(
+      /\n  ui_components \{\n    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n  \}\n/,
+      "\n"
+    )
+  );
+}
+
 test("component kind validates and resolves from the app fixture", () => {
   const ast = parsePath(fixtureRoot);
   const validation = validateWorkspace(ast);
@@ -51,6 +67,25 @@ test("component kind validates and resolves from the app fixture", () => {
   assert.equal(component.componentContract.id, "component_ui_data_grid");
   assert.equal(component.componentContract.props[0].name, "rows");
   assert.deepEqual(component.componentContract.patterns, ["resource_table", "data_grid_view"]);
+  assert.deepEqual(component.componentContract.behaviors, [
+    {
+      kind: "selection",
+      directives: {
+        mode: "multi",
+        state: "selected_ids",
+        emits: "row_select"
+      },
+      source: "structured"
+    },
+    {
+      kind: "sorting",
+      directives: {
+        fields: ["title", "status", "created_at"],
+        default: ["created_at", "desc"]
+      },
+      source: "structured"
+    }
+  ]);
 });
 
 test("component validator rejects missing props and status", () => {
@@ -96,6 +131,67 @@ component component_invalid_refs {
   assert.match(messages, /region 'not_a_region' is not supported/);
 });
 
+test("component validator rejects invalid behavior shorthand and structured bindings", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Payload"
+  description "Payload"
+  status active
+}
+
+component component_invalid_behaviors {
+  name "Invalid Behaviors"
+  description "Invalid behavior contracts"
+  props {
+    selected_ids array optional default []
+  }
+  events {
+    row_select shape_event_payload
+  }
+  behavior [selecion]
+  behaviors {
+    selection mode sometimes state missing_state emits missing_event
+    sorting unknown true
+  }
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /behavior 'selecion' is not supported/);
+  assert.match(messages, /behavior 'selection' references unknown prop 'missing_state'/);
+  assert.match(messages, /behavior 'selection' references unknown event 'missing_event'/);
+  assert.match(messages, /behavior 'selection' has invalid mode 'sometimes'/);
+  assert.match(messages, /behavior 'sorting' has unsupported directive 'unknown'/);
+});
+
+test("component validator rejects removed consumers field", () => {
+  const ast = workspaceFromSource(`
+projection proj_ui_shared {
+  name "Shared UI"
+  description "Shared UI projection"
+  platform ui_shared
+  realizes []
+  outputs [ui_contract]
+  status active
+}
+
+component component_removed_consumers {
+  name "Removed Consumers"
+  description "Consumers used to point projection usage in the wrong direction"
+  props {
+    rows array required
+  }
+  consumers [proj_ui_shared]
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  assert.match(validation.errors.map((error) => error.message).join("\n"), /Field 'consumers' is not allowed/);
+});
+
 test("ui-component-contract generator emits selected and workspace contracts", () => {
   const ast = parsePath(fixtureRoot);
   const selected = generateWorkspace(ast, {
@@ -111,6 +207,176 @@ test("ui-component-contract generator emits selected and workspace contracts", (
   assert.equal(all.artifact.component_ui_data_grid.id, "component_ui_data_grid");
 });
 
+test("projection ui_components resolve component placement and bindings", () => {
+  const ast = parsePath(fixtureRoot);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const resolved = resolveWorkspace(ast);
+  assert.equal(resolved.ok, true);
+  const projection = resolved.graph.byKind.projection.find((entry) => entry.id === "proj_ui_shared");
+  assert.ok(projection);
+  assert.deepEqual(projection.uiComponents, [
+    {
+      type: "ui_component_binding",
+      screenId: "task_list",
+      region: "results",
+      component: {
+        id: "component_ui_data_grid",
+        kind: "component"
+      },
+      dataBindings: [
+        {
+          prop: "rows",
+          source: {
+            id: "cap_list_tasks",
+            kind: "capability"
+          }
+        }
+      ],
+      eventBindings: [
+        {
+          event: "row_select",
+          action: "navigate",
+          target: {
+            id: "task_detail",
+            kind: "screen"
+          }
+        }
+      ],
+      raw: [
+        "screen",
+        "task_list",
+        "region",
+        "results",
+        "component",
+        "component_ui_data_grid",
+        "data",
+        "rows",
+        "from",
+        "cap_list_tasks",
+        "event",
+        "row_select",
+        "navigate",
+        "task_detail"
+      ],
+      loc: projection.uiComponents[0].loc
+    }
+  ]);
+
+  const slice = generateWorkspace(ast, {
+    target: "context-slice",
+    projectionId: "proj_ui_shared"
+  });
+  assert.equal(slice.ok, true);
+  assert.deepEqual(slice.artifact.depends_on.components, ["component_ui_data_grid"]);
+  assert.equal(slice.artifact.related.components[0].id, "component_ui_data_grid");
+
+  const concreteSlice = generateWorkspace(ast, {
+    target: "context-slice",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(concreteSlice.ok, true);
+  assert.deepEqual(concreteSlice.artifact.depends_on.components, ["component_ui_data_grid"]);
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
+  const taskList = webContract.artifact.screens.find((screen) => screen.id === "task_list");
+  assert.deepEqual(taskList.components, [
+    {
+      type: "ui_component_usage",
+      region: "results",
+      component: {
+        id: "component_ui_data_grid",
+        name: "Data Grid",
+        category: "collection",
+        version: "1.0"
+      },
+      dataBindings: [
+        {
+          prop: "rows",
+          source: {
+            id: "cap_list_tasks",
+            kind: "capability"
+          }
+        }
+      ],
+      eventBindings: [
+        {
+          event: "row_select",
+          action: "navigate",
+          target: {
+            id: "task_detail",
+            kind: "screen"
+          }
+        }
+      ]
+    }
+  ]);
+});
+
+test("projection ui_components validate component props, events, and navigation targets", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  props {
+    rows array required
+  }
+  events {
+    row_select shape_event_payload
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data missing_rows from cap_list_items event missing_select navigate item_detail
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /references unknown prop 'missing_rows'/);
+  assert.match(messages, /references unknown event 'missing_select'/);
+  assert.match(messages, /references unknown navigation target 'item_detail'/);
+});
+
 test("component prop defaults preserve real values", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
@@ -122,6 +388,35 @@ test("component prop defaults preserve real values", () => {
   assert.deepEqual(props.selected_ids.defaultValue, []);
   assert.equal(props.loading.defaultValue, false);
   assert.equal(typeof props.loading.defaultValue, "boolean");
+});
+
+test("component approvals are resolved and emitted in contracts", () => {
+  const ast = workspaceFromSource(`
+component component_requires_approval {
+  name "Approval Component"
+  description "Needs design and security review"
+  props {
+    label string required
+  }
+  approvals [design, security]
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const resolved = resolveWorkspace(ast);
+  assert.equal(resolved.ok, true);
+  const component = resolved.graph.byKind.component.find((entry) => entry.id === "component_requires_approval");
+  assert.deepEqual(component.approvals, ["design", "security"]);
+  assert.deepEqual(component.componentContract.approvals, ["design", "security"]);
+
+  const result = generateWorkspace(ast, {
+    target: "ui-component-contract",
+    componentId: "component_requires_approval"
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.artifact.approvals, ["design", "security"]);
 });
 
 test("component prop defaults coerce booleans, numbers, lists, and null", () => {
@@ -170,10 +465,11 @@ test("ui-component-contract throws on unknown component id", () => {
 });
 
 test("context-diff reports component additions and modifications", () => {
-  const baselineRoot = makeBaselineCopy();
+    const baselineRoot = makeBaselineCopy();
   try {
     const baselineComponentPath = path.join(baselineRoot, "components", "component-ui-data-grid.tg");
     fs.unlinkSync(baselineComponentPath);
+    removeDataGridComponentUsage(baselineRoot);
 
     const additiveAst = parsePath(fixtureRoot);
     const additive = generateWorkspace(additiveAst, {
@@ -207,6 +503,30 @@ test("context-diff reports component additions and modifications", () => {
   }
 });
 
+test("context-diff reports projection impact for removed components from baseline", () => {
+  const currentRoot = makeWorkspaceCopy("topogram-component-current-");
+  try {
+    fs.unlinkSync(path.join(currentRoot, "components", "component-ui-data-grid.tg"));
+    removeDataGridComponentUsage(currentRoot);
+
+    const currentAst = parsePath(currentRoot);
+    const result = generateWorkspace(currentAst, {
+      target: "context-diff",
+      fromTopogramPath: fixtureRoot
+    });
+    assert.equal(result.ok, true);
+    const dataGridRemoved = (result.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
+    assert.ok(dataGridRemoved, "expected removed component entry");
+    assert.equal(dataGridRemoved.classification, "removed");
+    assert.deepEqual(
+      result.artifact.affected_generated_surfaces.projections.map((projection) => projection.id),
+      ["proj_ui_shared", "proj_ui_web", "proj_ui_web_react"]
+    );
+  } finally {
+    fs.rmSync(currentRoot, { recursive: true, force: true });
+  }
+});
+
 test("context-slice with --component focuses on the component contract closure", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
@@ -226,6 +546,135 @@ test("context-slice with --component focuses on the component contract closure",
   );
   assert.equal(result.artifact.review_boundary.automation_class, "review_required");
   assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
+});
+
+test("context-slice with --component preserves dependency references by kind", () => {
+  const ast = workspaceFromSource(`
+entity entity_dep {
+  name "Dependency Entity"
+  description "Dependency entity"
+  fields {
+    id string required
+  }
+  status active
+}
+
+shape shape_dep from entity_dep {
+  name "Dependency Shape"
+  description "Dependency shape"
+  status active
+}
+
+capability cap_dep {
+  name "Dependency Capability"
+  description "Dependency capability"
+  status active
+}
+
+capability cap_shape {
+  name "Shape Capability"
+  description "Capability that exposes the dependency shape"
+  output [shape_dep]
+  status active
+}
+
+projection proj_direct {
+  name "Direct Projection"
+  description "Direct projection dependency"
+  platform ui_shared
+  realizes [cap_dep]
+  outputs [ui_contract]
+  status active
+}
+
+projection proj_from_cap {
+  name "Capability Projection"
+  description "Projection expanded from capability dependency"
+  platform ui_shared
+  realizes [cap_dep]
+  outputs [ui_contract]
+  status active
+}
+
+projection proj_from_entity {
+  name "Entity Projection"
+  description "Projection expanded from entity dependency"
+  platform db_sqlite
+  realizes [entity_dep]
+  outputs [db_contract]
+  db_tables {
+    entity_dep table deps
+  }
+  status active
+}
+
+projection proj_from_shape {
+  name "Shape Projection"
+  description "Projection expanded from shape dependency"
+  platform ui_shared
+  realizes [cap_shape]
+  outputs [ui_contract]
+  status active
+}
+
+component component_other {
+  name "Other Component"
+  description "Other component"
+  props {
+    label string required
+  }
+  status active
+}
+
+component component_dep_test {
+  name "Dependency Component"
+  description "Component with dependencies across statement kinds"
+  props {
+    rows array required
+  }
+  dependencies [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+  status active
+}
+
+verification ver_component_dependencies {
+  name "Component dependency verification"
+  description "Covers dependency-driven component context"
+  validates [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+  method smoke
+  scenarios [component_dependency_context]
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    componentId: "component_dep_test"
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.artifact.depends_on.shapes, ["shape_dep"]);
+  assert.deepEqual(result.artifact.depends_on.entities, ["entity_dep"]);
+  assert.deepEqual(result.artifact.depends_on.capabilities, ["cap_dep"]);
+  assert.deepEqual(result.artifact.depends_on.components, ["component_other"]);
+  assert.deepEqual(result.artifact.depends_on.projections, [
+    "proj_direct",
+    "proj_from_cap",
+    "proj_from_entity",
+    "proj_from_shape"
+  ]);
+  assert.deepEqual(result.artifact.depends_on.verifications, ["ver_component_dependencies"]);
+  assert.equal(result.artifact.related.shapes[0].id, "shape_dep");
+  assert.equal(result.artifact.related.entities[0].id, "entity_dep");
+  assert.equal(result.artifact.related.capabilities[0].id, "cap_dep");
+  assert.equal(result.artifact.related.components[0].id, "component_other");
+  assert.deepEqual(result.artifact.related.projections.map((projection) => projection.id), [
+    "proj_direct",
+    "proj_from_cap",
+    "proj_from_entity",
+    "proj_from_shape"
+  ]);
+  assert.deepEqual(result.artifact.verification_targets.verification_ids, ["ver_component_dependencies"]);
 });
 
 test("context-slice rejects unknown component id", () => {

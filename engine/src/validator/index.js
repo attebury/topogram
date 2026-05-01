@@ -274,13 +274,12 @@ function validateFieldShapes(errors, statement, fieldMap) {
     "regions",
     "lookups",
     "dependencies",
-    "consumers",
     "approvals"
   ]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -419,7 +418,6 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
     input: ["shape"],
     output: ["shape"],
     dependencies: [...STATEMENT_KINDS],
-    consumers: [...STATEMENT_KINDS],
     realizes: ["capability", "projection", "entity"],
     validates: [...STATEMENT_KINDS],
     observes: [...STATEMENT_KINDS],
@@ -1958,6 +1956,30 @@ function collectAvailableUiScreenIds(statement, fieldMap, registry) {
   return available;
 }
 
+function collectProjectionUiRegionKeys(statement) {
+  const keys = new Set();
+  for (const entry of blockEntries(getFieldValue(statement, "ui_screen_regions"))) {
+    const tokens = blockSymbolItems(entry).map((item) => item.value);
+    if (tokens[0] === "screen" && tokens[1] && tokens[2] === "region" && tokens[3]) {
+      keys.add(`${tokens[1]}:${tokens[3]}`);
+    }
+  }
+  return keys;
+}
+
+function collectAvailableUiRegionKeys(statement, registry) {
+  const available = collectProjectionUiRegionKeys(statement);
+  for (const targetId of symbolValues(getFieldValue(statement, "realizes"))) {
+    const target = registry.get(targetId);
+    if (target?.kind === "projection") {
+      for (const key of collectProjectionUiRegionKeys(target)) {
+        available.add(key);
+      }
+    }
+  }
+  return available;
+}
+
 function parseUiDirectiveMap(tokens, startIndex, errors, statement, entry, context) {
   const directives = new Map();
 
@@ -2406,6 +2428,115 @@ function validateProjectionUiScreenRegions(errors, statement, fieldMap, registry
     }
     if (directives.has("state") && !["loading", "empty", "error", "unauthorized", "not_found", "success"].includes(directives.get("state"))) {
       pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid state '${directives.get("state")}'`, entry.loc);
+    }
+  }
+}
+
+function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
+  if (statement.kind !== "projection") {
+    return;
+  }
+
+  const componentsField = fieldMap.get("ui_components")?.[0];
+  if (!componentsField || componentsField.value.type !== "block") {
+    return;
+  }
+
+  const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
+  const availableRegions = collectAvailableUiRegionKeys(statement, registry);
+
+  for (const entry of componentsField.value.entries) {
+    const tokens = blockSymbolItems(entry).map((item) => item.value);
+    const [screenKeyword, screenId, regionKeyword, regionName, componentKeyword, componentId] = tokens;
+
+    if (screenKeyword !== "screen") {
+      pushError(errors, `Projection ${statement.id} ui_components entries must start with 'screen'`, entry.loc);
+      continue;
+    }
+    if (!availableScreens.has(screenId)) {
+      pushError(errors, `Projection ${statement.id} ui_components references unknown screen '${screenId}'`, entry.loc);
+    }
+    if (regionKeyword !== "region") {
+      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' must use 'region'`, entry.loc);
+    }
+    if (!UI_REGION_KINDS.has(regionName || "")) {
+      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' has invalid region '${regionName}'`, entry.loc);
+    } else if (!availableRegions.has(`${screenId}:${regionName}`)) {
+      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' references undeclared region '${regionName}'`, entry.loc);
+    }
+    if (componentKeyword !== "component") {
+      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' must use 'component'`, entry.loc);
+    }
+
+    const component = registry.get(componentId);
+    if (!component) {
+      pushError(errors, `Projection ${statement.id} ui_components references missing component '${componentId}'`, entry.loc);
+      continue;
+    }
+    if (component.kind !== "component") {
+      pushError(errors, `Projection ${statement.id} ui_components must reference a component, found ${component.kind} '${component.id}'`, entry.loc);
+      continue;
+    }
+
+    const propNames = new Set(blockEntries(getFieldValue(component, "props"))
+      .map((propEntry) => propEntry.items[0])
+      .filter((item) => item?.type === "symbol")
+      .map((item) => item.value));
+    const eventNames = new Set(blockEntries(getFieldValue(component, "events"))
+      .map((eventEntry) => eventEntry.items[0])
+      .filter((item) => item?.type === "symbol")
+      .map((item) => item.value));
+
+    for (let i = 6; i < tokens.length;) {
+      const directive = tokens[i];
+      if (directive === "data") {
+        const propName = tokens[i + 1];
+        const fromKeyword = tokens[i + 2];
+        const sourceId = tokens[i + 3];
+        if (!propName || fromKeyword !== "from" || !sourceId) {
+          pushError(errors, `Projection ${statement.id} ui_components data bindings must use 'data <prop> from <source>'`, entry.loc);
+          break;
+        }
+        if (!propNames.has(propName)) {
+          pushError(errors, `Projection ${statement.id} ui_components references unknown prop '${propName}' on component '${componentId}'`, entry.loc);
+        }
+        const source = registry.get(sourceId);
+        if (!source || !["capability", "projection", "shape", "entity"].includes(source.kind)) {
+          pushError(errors, `Projection ${statement.id} ui_components data binding for '${propName}' references missing source '${sourceId}'`, entry.loc);
+        }
+        i += 4;
+        continue;
+      }
+
+      if (directive === "event") {
+        const eventName = tokens[i + 1];
+        const action = tokens[i + 2];
+        const targetId = tokens[i + 3];
+        if (!eventName || !action || !targetId) {
+          pushError(errors, `Projection ${statement.id} ui_components event bindings must use 'event <event> <navigate|action> <target>'`, entry.loc);
+          break;
+        }
+        if (!eventNames.has(eventName)) {
+          pushError(errors, `Projection ${statement.id} ui_components references unknown event '${eventName}' on component '${componentId}'`, entry.loc);
+        }
+        if (action === "navigate") {
+          if (!availableScreens.has(targetId)) {
+            pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' references unknown navigation target '${targetId}'`, entry.loc);
+          }
+        } else if (action === "action") {
+          const target = registry.get(targetId);
+          if (!target || target.kind !== "capability") {
+            pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' references missing capability action '${targetId}'`, entry.loc);
+          }
+        } else {
+          pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' has unsupported action '${action}'`, entry.loc);
+        }
+        i += 4;
+        continue;
+      }
+
+      pushError(errors, `Projection ${statement.id} ui_components has unknown directive '${directive}'`, entry.loc);
+      break;
     }
   }
 }
@@ -3208,6 +3339,7 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionUiAppShell(errors, statement, fieldMap);
       validateProjectionUiNavigation(errors, statement, fieldMap, registry);
       validateProjectionUiScreenRegions(errors, statement, fieldMap, registry);
+      validateProjectionUiComponents(errors, statement, fieldMap, registry);
       validateProjectionUiWeb(errors, statement, fieldMap, registry);
       validateProjectionUiIos(errors, statement, fieldMap, registry);
       validateProjectionDbTables(errors, statement, fieldMap, registry);

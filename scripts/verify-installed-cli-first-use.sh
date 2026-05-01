@@ -82,6 +82,26 @@ fi
 echo "Installing, checking, and generating the starter..."
 npm --prefix "$STARTER_DIR" install >/dev/null
 npm --prefix "$STARTER_DIR" run check
+
+echo "Checking explicit component contract generation..."
+ARTIFACT_CWD="$RUN_DIR/component-contract-check"
+mkdir -p "$ARTIFACT_CWD"
+(
+  cd "$ARTIFACT_CWD"
+  "$TOPOGRAM_BIN" generate "$ROOT_DIR/engine/tests/fixtures/workspaces/app-basic" --generate ui-component-contract --component component_ui_data_grid --json > component-contract.json
+  if [[ -e app ]]; then
+    echo "Explicit artifact generation unexpectedly wrote ./app." >&2
+    exit 1
+  fi
+  node --input-type=module - component-contract.json <<'NODE'
+import fs from "node:fs";
+const payload = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+if (payload.id !== "component_ui_data_grid" || payload.type !== "component_contract") {
+  throw new Error(`Expected selected component contract, got ${JSON.stringify(payload)}`);
+}
+NODE
+)
+
 npm --prefix "$STARTER_DIR" run generate
 
 if [[ ! -f "$STARTER_DIR/app/.topogram-generated.json" ]]; then

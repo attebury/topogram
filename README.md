@@ -311,13 +311,17 @@ catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
 ```
 
-The command verifies the published package, refreshes stale
-`@attebury/topogram` lockfile tarball metadata when needed, runs `npm install
---save-dev`, then runs available consumer checks: `cli:surface`, `doctor`,
-`catalog:show`, `catalog:template-show`, and `check`.
+The command resolves the latest published CLI package, updates
+`@attebury/topogram`, refreshes stale lockfile tarball metadata when needed,
+updates `topogram-cli.version` when the consumer repo has that convention file,
+then runs available checks when dependencies were installed or already current:
+`cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, and `check`.
+If npm auth is missing and the command falls back to direct file updates through
+the GitHub Packages API, it skips local checks until `npm install`, `npm ci`, or
+CI refreshes `node_modules`.
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 

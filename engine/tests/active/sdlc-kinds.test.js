@@ -29,7 +29,7 @@ import { generateSdlcReleaseNotes } from "../../src/generator/sdlc/release-notes
 import { generateSdlcTraceabilityMatrix } from "../../src/generator/sdlc/traceability-matrix.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
+const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "sdlc-basic");
 
 function workspaceFromSource(source) {
   return {

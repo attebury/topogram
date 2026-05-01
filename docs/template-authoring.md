@@ -120,6 +120,19 @@ topogram generate ./topogram --generate ui-component-contract --component compon
 
 See [Components](./components.md) for the full grammar and pack roadmap.
 
+SvelteKit template implementations can render supported component usage with the
+stable packaged helper:
+
+```js
+import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
+```
+
+Pass the screen contract, region, top-level component contracts, and the data
+expression for that screen. Set `useTypescript: true` when generating
+TypeScript Svelte pages so callback parameters are emitted with explicit types.
+React and vanilla web templates should still treat `ui_components` as contract
+metadata until their concrete helpers exist.
+
 Private package consumers need registry auth in `.npmrc`:
 
 ```text
@@ -144,13 +157,20 @@ package's Manage Actions access settings.
 Consumer repos can update their Topogram CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
 ```
 
 The command updates `@attebury/topogram`, refreshes stale lockfile tarball
 metadata for the CLI package when needed, then runs any available consumer
 scripts named `cli:surface`, `doctor`, `catalog:show`,
-`catalog:template-show`, and `check`.
+`catalog:template-show`, and `check` when dependencies were installed or
+already current.
+If npm package inspection fails because local npm auth is unavailable, the
+command can confirm the version through the GitHub Packages API and update the
+consumer files directly. That does not prove install auth and skips local
+verification scripts until `npm install`, `npm ci`, or CI refreshes
+`node_modules`; use `topogram setup package-auth` for local and CI package-read
+setup guidance.
 
 Maintained apps can intentionally leave the template update workflow with
 `topogram template detach`. Detach removes template provenance from

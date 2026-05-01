@@ -94,6 +94,7 @@ const CLI_PACKAGE_NAME = "@attebury/topogram";
 const GITHUB_PACKAGES_REGISTRY = "https://npm.pkg.github.com";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
+const KNOWN_CLI_CONSUMER_REPOS = ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"];
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -122,8 +123,11 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
+  console.log("Usage: topogram setup package-auth|catalog-auth");
+  console.log("Usage: topogram release status [--json] [--strict]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
+  console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
@@ -132,11 +136,11 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
-  console.log("   or: topogram package update-cli <version> [--json]");
+  console.log("   or: topogram package update-cli <version|--latest> [--json]");
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
-  console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template status [path] [--latest] [--json]");
   console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
@@ -151,6 +155,8 @@ function printUsage(options = {}) {
   console.log("Common commands:");
   console.log("  topogram version");
   console.log("  topogram doctor");
+  console.log("  topogram setup package-auth");
+  console.log("  topogram release status");
   console.log("  topogram new ./my-app");
   console.log("  topogram new --list-templates");
   console.log("  topogram new ./my-app --template todo");
@@ -172,7 +178,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli <version>");
+  console.log("  topogram package update-cli --latest");
   console.log("  topogram template explain");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
@@ -192,6 +198,7 @@ function printUsage(options = {}) {
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
   console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
+  console.log("Run `topogram help <command>` for command-specific help.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
     return;
@@ -246,6 +253,266 @@ function printUsage(options = {}) {
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
+}
+
+function printNewHelp() {
+  console.log("Usage: topogram new <path> [--template <alias|package|path>] [--catalog <path-or-source>]");
+  console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Creates a new editable Topogram workspace from a template package or local template path.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram new ./my-app");
+  console.log("  topogram new --list-templates");
+  console.log("  topogram new ./my-app --template hello-web");
+  console.log("  topogram new ./my-app --template ./local-template");
+  console.log("  topogram new ./my-app --template @scope/topogram-template");
+  console.log("");
+  console.log("Default template: hello-web from the configured catalog.");
+}
+
+function printGenerateHelp() {
+  console.log("Usage: topogram generate [path] [--out <path>]");
+  console.log("   or: topogram generate app [path] [--out <path>]");
+  console.log("   or: topogram generate [path] --generate <target> [--json]");
+  console.log("   or: topogram generate [path] --generate <target> --write [--out-dir <path>]");
+  console.log("");
+  console.log("Defaults: path is ./topogram and app generation writes ./app.");
+  console.log("Explicit --generate targets print JSON by default and write files only with --write.");
+  console.log("");
+  console.log("Common artifact targets:");
+  console.log("  ui-component-contract");
+  console.log("  context-slice");
+  console.log("  context-diff");
+  console.log("  verification-targets");
+  console.log("");
+  console.log("Selectors:");
+  console.log("  --component <id>");
+  console.log("  --capability <id>");
+  console.log("  --projection <id>");
+  console.log("  --entity <id>");
+  console.log("  --journey <id>");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram generate");
+  console.log("  topogram generate ./topogram --out ./app");
+  console.log("  topogram generate app ./topogram --out ./app");
+  console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
+  console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
+}
+
+function printTemplateHelp() {
+  console.log("Usage: topogram template list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram template explain [path] [--json]");
+  console.log("   or: topogram template status [path] [--latest] [--json]");
+  console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
+  console.log("   or: topogram template check <template-spec-or-path> [--json]");
+  console.log("   or: topogram template policy init [path] [--json]");
+  console.log("   or: topogram template policy check [path] [--json]");
+  console.log("   or: topogram template policy explain [path] [--json]");
+  console.log("   or: topogram template policy pin <template-id@version> [path] [--json]");
+  console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
+  console.log("");
+  console.log("Template commands inspect catalog-backed starters, project provenance, trust policy, and update plans.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram template list");
+  console.log("  topogram template explain");
+  console.log("  topogram template status");
+  console.log("  topogram template status --latest");
+  console.log("  topogram template policy check");
+  console.log("  topogram template check ./local-template");
+  console.log("  topogram template update --recommend");
+}
+
+function printCatalogHelp() {
+  console.log("Usage: topogram catalog list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog check <path-or-url> [--json]");
+  console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Catalog commands inspect the shared Topogram index. The catalog is an index; templates and topograms resolve to versioned packages.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram catalog list");
+  console.log("  topogram catalog show hello-web");
+  console.log("  topogram catalog doctor");
+  console.log("  topogram catalog check topograms.catalog.json");
+  console.log("  topogram catalog copy hello ./hello-topogram");
+}
+
+function printDoctorHelp() {
+  console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Checks local runtime, npm, GitHub Packages auth hints, CLI lockfile metadata, and catalog access.");
+  console.log("");
+  console.log("Related setup commands:");
+  console.log("  topogram setup package-auth");
+  console.log("  topogram setup catalog-auth");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram doctor");
+  console.log("  topogram doctor --json");
+  console.log("  topogram doctor --catalog ./topograms.catalog.json");
+  console.log("  topogram catalog doctor");
+  console.log("");
+  console.log("Use `catalog doctor` when you only want catalog/package-access diagnostics. Use `doctor --catalog` for the full environment check plus catalog diagnostics.");
+}
+
+function printSetupHelp() {
+  console.log("Usage: topogram setup package-auth|catalog-auth");
+  console.log("");
+  console.log("Prints setup guidance for private GitHub Packages and catalog access. This command does not write credentials.");
+  console.log("");
+  console.log("Commands:");
+  console.log("  topogram setup package-auth");
+  console.log("  topogram setup catalog-auth");
+}
+
+function printPackageAuthSetup() {
+  console.log("Topogram package auth setup");
+  console.log("");
+  console.log("Topogram CLI and template packages are published to GitHub Packages.");
+  console.log("");
+  console.log("Local setup:");
+  console.log("  npm config set @attebury:registry https://npm.pkg.github.com");
+  console.log("  export NODE_AUTH_TOKEN=<github-token-with-package-read>");
+  console.log("  npm install");
+  console.log("");
+  console.log("GitHub Actions setup:");
+  console.log("  permissions:");
+  console.log("    contents: read");
+  console.log("    packages: read");
+  console.log("  env:");
+  console.log("    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
+  console.log("");
+  console.log("If a consumer repo cannot read a private package, grant it access under the package settings Manage Actions access section.");
+  console.log("Run `topogram doctor` after setup.");
+}
+
+function printCatalogAuthSetup() {
+  console.log("Topogram catalog auth setup");
+  console.log("");
+  console.log("Private catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
+  console.log("");
+  console.log("Local setup:");
+  console.log("  gh auth login");
+  console.log("  topogram catalog list");
+  console.log("");
+  console.log("GitHub Actions setup:");
+  console.log("  permissions:");
+  console.log("    contents: read");
+  console.log("  env:");
+  console.log("    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
+  console.log("");
+  console.log("For private catalog repos, grant the workflow token or PAT read access to the catalog repository.");
+  console.log("Run `topogram catalog doctor` after setup.");
+}
+
+function printPackageHelp() {
+  console.log("Usage: topogram package update-cli <version|--latest> [--json]");
+  console.log("");
+  console.log("Updates a consumer project to a Topogram CLI version and runs verification when dependencies are current.");
+  console.log("");
+  console.log("Behavior:");
+  console.log("  - npm package inspection and install are used when auth is configured.");
+  console.log("  - If npm inspection fails but GitHub Packages API confirms the version, package files are updated directly.");
+  console.log("  - Direct file updates skip local verification scripts because node_modules may still contain the old CLI.");
+  console.log("  - Direct file updates do not prove npm install auth. Run npm install or CI afterward.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram package update-cli 0.3.5");
+  console.log("  topogram package update-cli --latest");
+  console.log("  topogram package update-cli --latest --json");
+  console.log("");
+  console.log("Auth help:");
+  console.log("  topogram setup package-auth");
+}
+
+function printReleaseHelp() {
+  console.log("Usage: topogram release status [--json] [--strict]");
+  console.log("");
+  console.log("Checks the local CLI version, latest published package version, release tag, and known consumer pins.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram release status");
+  console.log("  topogram release status --json");
+  console.log("  topogram release status --strict");
+  console.log("");
+  console.log("Release preparation and publishing are repo-level tasks in the Topogram source checkout:");
+  console.log("  npm run release:prepare -- <version>");
+  console.log("  npm run release:check");
+  console.log("  GitHub Actions: Publish CLI Package");
+}
+
+function printSourceHelp() {
+  console.log("Usage: topogram source status [path] [--local|--remote] [--json]");
+  console.log("");
+  console.log("Reports source provenance, template attachment state, and whether local edits affect template-owned files.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram source status");
+  console.log("  topogram source status --local");
+  console.log("  topogram source status --remote");
+  console.log("  topogram source status --json");
+}
+
+function printCheckHelp() {
+  console.log("Usage: topogram check [path] [--json]");
+  console.log("");
+  console.log("Validates Topogram files, project configuration, topology, generator compatibility, output ownership, and template policy.");
+  console.log("");
+  console.log("Defaults: path is ./topogram.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram check");
+  console.log("  topogram check --json");
+  console.log("  topogram check ./topogram");
+}
+
+function printCommandHelp(command) {
+  if (command === "new" || command === "create") {
+    printNewHelp();
+    return true;
+  }
+  if (command === "generate") {
+    printGenerateHelp();
+    return true;
+  }
+  if (command === "template") {
+    printTemplateHelp();
+    return true;
+  }
+  if (command === "catalog") {
+    printCatalogHelp();
+    return true;
+  }
+  if (command === "doctor") {
+    printDoctorHelp();
+    return true;
+  }
+  if (command === "setup") {
+    printSetupHelp();
+    return true;
+  }
+  if (command === "package") {
+    printPackageHelp();
+    return true;
+  }
+  if (command === "release") {
+    printReleaseHelp();
+    return true;
+  }
+  if (command === "source") {
+    printSourceHelp();
+    return true;
+  }
+  if (command === "check") {
+    printCheckHelp();
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -617,16 +884,20 @@ function latestTemplateInfo(template) {
 }
 
 /**
- * @param {string} version
+ * @param {string} requested
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, lockfileSanitized: boolean, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm"|"github-api", dependencyUpdatedBy: "npm-install"|"manifest-lockfile"|"version-convention", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
-function buildPackageUpdateCliPayload(version, options = {}) {
-  if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.57.");
-  }
+function buildPackageUpdateCliPayload(requested, options = {}) {
   const cwd = options.cwd || process.cwd();
+  const requestedLatest = requested === "latest" || requested === "--latest";
   const diagnostics = [];
+  const version = requestedLatest
+    ? resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics)
+    : requested;
+  if (!isPackageVersion(version)) {
+    throw new Error("topogram package update-cli requires <version> or --latest.");
+  }
   if (!process.env.NODE_AUTH_TOKEN) {
     diagnostics.push({
       code: "node_auth_token_missing",
@@ -639,41 +910,97 @@ function buildPackageUpdateCliPayload(version, options = {}) {
   const exactSpec = `${CLI_PACKAGE_NAME}@${version}`;
   const dependencySpec = `${CLI_PACKAGE_NAME}@^${version}`;
   const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  let checkedVersion = null;
+  let packageCheckSource = "npm";
   if (view.status !== 0) {
-    throw new Error(formatPackageUpdateNpmError(exactSpec, "inspect", view));
-  }
-  const checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
-  if (checkedVersion !== version) {
-    throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
+    const fallback = topogramCliVersionExistsFromGithubApi(cwd, version);
+    if (!fallback.ok || !fallback.exists) {
+      throw new Error([
+        formatPackageUpdateNpmError(exactSpec, "inspect", view),
+        `GitHub API fallback also failed: ${fallback.message || `${exactSpec} was not found.`}`
+      ].filter(Boolean).join("\n"));
+    }
+    packageCheckSource = "github-api";
+    checkedVersion = version;
+    diagnostics.push({
+      code: "package_update_cli_check_via_github_api",
+      severity: "warning",
+      message: `npm package inspection failed, but GitHub Packages API confirmed ${exactSpec}.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+      cause: formatPackageUpdateNpmError(exactSpec, "inspect", view)
+    });
+  } else {
+    checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
+    if (checkedVersion !== version) {
+      throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
+    }
   }
   const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
-  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
-  if (install.status !== 0) {
-    throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
+  let dependencyUpdatedBy = "npm-install";
+  if (packageCheckSource === "npm") {
+    const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+    if (install.status !== 0) {
+      if (!isPackageUpdateNpmAuthFailure(install)) {
+        throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
+      }
+      const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+      dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
+      diagnostics.push({
+        code: "package_update_cli_install_manifest_fallback",
+        severity: "warning",
+        message: updateResult.packageJsonUpdated
+          ? `npm install failed due to package auth, so ${CLI_PACKAGE_NAME} files were updated directly.`
+          : `npm install failed due to package auth, so only topogram-cli.version will be updated.`,
+        path: cwd,
+        suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+        cause: formatPackageUpdateNpmError(dependencySpec, "install", install)
+      });
+    }
+  } else {
+    const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+    dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
   }
+  const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
   const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts : {};
   const candidateScripts = ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"];
   const scriptsRun = [];
   const skippedScripts = [];
-  for (const scriptName of candidateScripts) {
-    if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+  if (dependencyUpdatedBy !== "npm-install") {
+    skippedScripts.push(...candidateScripts);
+    diagnostics.push({
+      code: "package_update_cli_checks_skipped_after_file_update",
+      severity: "warning",
+      message: "Consumer verification scripts were skipped because package files were updated without refreshing installed node_modules.",
+      path: cwd,
+      suggestedFix: "Run npm install or npm ci with GitHub Packages auth, then rerun consumer verification."
+    });
+  } else {
+    for (const scriptName of candidateScripts) {
+      if (!Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+        skippedScripts.push(scriptName);
+        continue;
+      }
       const result = runNpmForPackageUpdate(["run", scriptName], cwd);
       if (result.status !== 0) {
         throw new Error(formatPackageUpdateNpmError(`npm run ${scriptName}`, "check", result));
       }
       scriptsRun.push(scriptName);
-    } else {
-      skippedScripts.push(scriptName);
     }
   }
   return {
     ok: true,
     packageName: CLI_PACKAGE_NAME,
     requestedVersion: version,
+    requestedLatest,
     dependencySpec,
     checkedVersion,
+    packageCheckSource,
+    dependencyUpdatedBy,
     lockfileSanitized,
+    versionConventionUpdated: versionConvention.updated,
+    versionConventionPath: versionConvention.path,
     scriptsRun,
     skippedScripts,
     diagnostics,
@@ -692,10 +1019,16 @@ function printPackageUpdateCli(payload) {
     }
   }
   console.log(`Updated ${payload.packageName} to ^${payload.requestedVersion}.`);
-  console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion}`);
-  console.log(`Installed dependency: ${payload.dependencySpec}`);
+  if (payload.requestedLatest) {
+    console.log(`Resolved latest version: ${payload.requestedVersion}`);
+  }
+  console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion} via ${payload.packageCheckSource}`);
+  console.log(`Updated dependency: ${payload.dependencySpec} via ${payload.dependencyUpdatedBy}`);
   if (payload.lockfileSanitized) {
     console.log("Lockfile: refreshed existing @attebury/topogram entry from registry metadata");
+  }
+  if (payload.versionConventionUpdated) {
+    console.log(`Version convention: updated ${payload.versionConventionPath}`);
   }
   console.log(`Checks run: ${payload.scriptsRun.join(", ") || "none"}`);
   if (payload.skippedScripts.length > 0) {
@@ -710,8 +1043,292 @@ function printPackageUpdateCli(payload) {
 }
 
 /**
+ * @param {{ cwd?: string }} [options]
+ * @returns {{ ok: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: { tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumers: Array<{ name: string, path: string, version: string|null, found: boolean, matchesLocal: boolean|null }>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ */
+function buildReleaseStatusPayload(options = {}) {
+  const cwd = options.cwd || process.cwd();
+  const strict = Boolean(options.strict);
+  const localVersion = readInstalledCliPackageVersion();
+  const diagnostics = [];
+  let latestVersion = null;
+  try {
+    latestVersion = latestTopogramCliVersion(cwd);
+  } catch (error) {
+    const npmMessage = messageFromError(error);
+    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
+    if (fallback.ok && fallback.version) {
+      latestVersion = fallback.version;
+      diagnostics.push({
+        code: "release_latest_via_github_api",
+        severity: "warning",
+        message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
+        path: CLI_PACKAGE_NAME,
+        suggestedFix: "Configure npm auth for GitHub Packages when you need install-facing registry verification.",
+        cause: npmMessage
+      });
+    } else {
+      diagnostics.push({
+        code: "release_latest_unavailable",
+        severity: "warning",
+        message: `${npmMessage}\nGitHub API fallback also failed: ${fallback.message || "unknown error"}`,
+        path: CLI_PACKAGE_NAME,
+        suggestedFix: "Check GitHub Packages auth, then rerun `topogram release status`."
+      });
+    }
+  }
+  const git = inspectReleaseGitTag(localVersion, cwd);
+  diagnostics.push(...git.diagnostics);
+  const consumers = discoverTopogramCliVersionConsumers(cwd).map((consumer) => ({
+    ...consumer,
+    matchesLocal: consumer.version ? consumer.version === localVersion : null
+  }));
+  const consumerPins = summarizeConsumerPins(consumers);
+  const currentPublished = latestVersion ? latestVersion === localVersion : null;
+  if (strict) {
+    diagnostics.push(...releaseStatusStrictDiagnostics({
+      localVersion,
+      latestVersion,
+      currentPublished,
+      git,
+      consumerPins
+    }));
+  }
+  const errors = diagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    strict,
+    packageName: CLI_PACKAGE_NAME,
+    localVersion,
+    latestVersion,
+    currentPublished,
+    git,
+    consumerPins,
+    consumers,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {{
+ *   localVersion: string,
+ *   latestVersion: string|null,
+ *   currentPublished: boolean|null,
+ *   git: ReturnType<typeof inspectReleaseGitTag>,
+ *   consumerPins: ReturnType<typeof summarizeConsumerPins>
+ * }} release
+ * @returns {Array<{ code: string, severity: "error", message: string, path: string, suggestedFix: string }>}
+ */
+function releaseStatusStrictDiagnostics(release) {
+  const diagnostics = [];
+  if (release.currentPublished !== true) {
+    diagnostics.push({
+      code: "release_latest_not_current",
+      severity: "error",
+      message: release.latestVersion
+        ? `${CLI_PACKAGE_NAME}@${release.localVersion} is not the latest published version (${release.latestVersion}).`
+        : `Latest published ${CLI_PACKAGE_NAME} version could not be verified.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Publish the current CLI package version or fix GitHub Packages auth, then rerun `topogram release status --strict`."
+    });
+  }
+  if (release.git.local !== true) {
+    diagnostics.push({
+      code: "release_local_tag_missing",
+      severity: "error",
+      message: `Release tag ${release.git.tag} is missing locally.`,
+      path: release.git.tag,
+      suggestedFix: `Fetch or create the local ${release.git.tag} tag before treating this release as complete.`
+    });
+  }
+  if (release.git.remote !== true) {
+    diagnostics.push({
+      code: "release_remote_tag_missing",
+      severity: "error",
+      message: `Release tag ${release.git.tag} is missing on origin.`,
+      path: release.git.tag,
+      suggestedFix: `Push or create the remote ${release.git.tag} tag before treating this release as complete.`
+    });
+  }
+  if (release.consumerPins.allKnownPinned !== true) {
+    diagnostics.push({
+      code: "release_consumer_pins_not_current",
+      severity: "error",
+      message: `Known consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
+      path: "topogram-cli.version",
+      suggestedFix: "Roll known consumer repositories to the current CLI version before treating this release as complete."
+    });
+  }
+  return diagnostics;
+}
+
+/**
+ * @param {ReturnType<typeof buildReleaseStatusPayload>} payload
+ * @returns {void}
+ */
+function printReleaseStatus(payload) {
+  console.log(payload.ok ? "Topogram release status passed." : "Topogram release status found issues.");
+  if (payload.strict) {
+    console.log("Strict: enabled");
+  }
+  console.log(`Package: ${payload.packageName}`);
+  console.log(`Local version: ${payload.localVersion}`);
+  console.log(`Latest published: ${payload.latestVersion || "unknown"}${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`);
+  console.log(`Git tag: ${payload.git.tag} local=${labelBoolean(payload.git.local)} remote=${labelBoolean(payload.git.remote)}`);
+  console.log(
+    `Consumer pins: ${payload.consumerPins.pinned}/${payload.consumerPins.known} pinned, ` +
+    `${payload.consumerPins.matching} matching, ${payload.consumerPins.differing} differing, ${payload.consumerPins.missing} missing`
+  );
+  for (const consumer of payload.consumers) {
+    const status = consumer.matchesLocal === true
+      ? "matches"
+      : consumer.matchesLocal === false
+        ? "differs"
+        : "missing";
+    console.log(`- ${consumer.name}: ${consumer.version || "missing"} (${status})`);
+  }
+  if (payload.diagnostics.length > 0) {
+    console.log("Diagnostics:");
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`- ${label}: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        console.log(`  Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+}
+
+/**
+ * @param {boolean|null} value
+ * @returns {string}
+ */
+function labelBoolean(value) {
+  return value === true ? "yes" : value === false ? "no" : "unknown";
+}
+
+/**
+ * @param {string} version
+ * @param {string} cwd
+ * @returns {{ tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }}
+ */
+function inspectReleaseGitTag(version, cwd) {
+  const tag = `topogram-v${version}`;
+  const diagnostics = [];
+  let local = null;
+  let remote = null;
+  const localResult = childProcess.spawnSync("git", ["tag", "--list", tag], {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (localResult.status === 0) {
+    local = String(localResult.stdout || "").trim() === tag;
+  } else {
+    diagnostics.push({
+      code: "release_local_tag_unavailable",
+      severity: "warning",
+      message: `Could not inspect local git tag ${tag}.`,
+      path: cwd,
+      suggestedFix: "Run from a git checkout with git available."
+    });
+  }
+  const remoteResult = childProcess.spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`], {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (remoteResult.status === 0) {
+    remote = true;
+  } else if (remoteResult.status === 2) {
+    remote = false;
+  } else {
+    diagnostics.push({
+      code: "release_remote_tag_unavailable",
+      severity: "warning",
+      message: `Could not inspect remote git tag ${tag}.`,
+      path: cwd,
+      suggestedFix: "Check git remote access, then rerun `topogram release status`."
+    });
+  }
+  return { tag, local, remote, diagnostics };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {Array<{ name: string, path: string, version: string|null, found: boolean }>}
+ */
+function discoverTopogramCliVersionConsumers(cwd) {
+  const roots = [];
+  for (const root of [cwd, REPO_ROOT, path.dirname(REPO_ROOT)]) {
+    const resolved = path.resolve(root);
+    if (!roots.includes(resolved)) {
+      roots.push(resolved);
+    }
+  }
+  const consumers = [];
+  for (const name of KNOWN_CLI_CONSUMER_REPOS) {
+    let found = null;
+    for (const root of roots) {
+      const consumerRoot = path.join(root, name);
+      const versionPath = path.join(consumerRoot, "topogram-cli.version");
+      if (fs.existsSync(consumerRoot) && !fs.existsSync(versionPath)) {
+        found = {
+          name,
+          path: versionPath,
+          version: null,
+          found: false
+        };
+        break;
+      }
+      if (!fs.existsSync(versionPath)) {
+        continue;
+      }
+      found = {
+        name,
+        path: versionPath,
+        version: fs.readFileSync(versionPath, "utf8").trim() || null,
+        found: true
+      };
+      break;
+    }
+    consumers.push(found || {
+      name,
+      path: path.join(roots[0], name, "topogram-cli.version"),
+      version: null,
+      found: false
+    });
+  }
+  return consumers;
+}
+
+/**
+ * @param {Array<{ name: string, version: string|null, found: boolean, matchesLocal: boolean|null }>} consumers
+ * @returns {{ known: number, pinned: number, matching: number, differing: number, missing: number, allKnownPinned: boolean, matchingNames: string[], differingNames: string[], missingNames: string[] }}
+ */
+function summarizeConsumerPins(consumers) {
+  const matchingNames = consumers.filter((consumer) => consumer.matchesLocal === true).map((consumer) => consumer.name);
+  const differingNames = consumers.filter((consumer) => consumer.matchesLocal === false).map((consumer) => consumer.name);
+  const missingNames = consumers.filter((consumer) => !consumer.found || !consumer.version).map((consumer) => consumer.name);
+  return {
+    known: consumers.length,
+    pinned: consumers.filter((consumer) => consumer.found && consumer.version).length,
+    matching: matchingNames.length,
+    differing: differingNames.length,
+    missing: missingNames.length,
+    allKnownPinned: consumers.length > 0 && differingNames.length === 0 && missingNames.length === 0,
+    matchingNames,
+    differingNames,
+    missingNames
+  };
+}
+
+/**
  * @param {string|null} source
- * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, githubPackages: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, githubPackages: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
  */
 function buildDoctorPayload(source) {
   const projectCliDependency = readProjectCliDependencySpec(process.cwd());
@@ -750,6 +1367,7 @@ function buildDoctorPayload(source) {
         diagnostics: []
       };
   const catalog = buildDoctorCatalogPayload(source);
+  const lockfile = inspectTopogramCliLockfile(process.cwd());
   const tokenDiagnostics = [];
   if (githubPackagesRequired && !process.env.NODE_AUTH_TOKEN) {
     tokenDiagnostics.push({
@@ -766,6 +1384,7 @@ function buildDoctorPayload(source) {
     ...registryDiagnostics,
     ...tokenDiagnostics,
     ...packageAccess.diagnostics,
+    ...lockfile.diagnostics,
     ...catalog.diagnostics
   ];
   const errors = diagnostics
@@ -786,6 +1405,7 @@ function buildDoctorPayload(source) {
       packageSpec,
       packageAccess
     },
+    lockfile,
     catalog,
     diagnostics,
     errors
@@ -1132,6 +1752,9 @@ function printDoctor(payload) {
   }
   console.log(`NODE_AUTH_TOKEN: ${payload.githubPackages.nodeAuthTokenEnv ? "set" : "not set"}`);
   console.log(`CLI package access: ${payload.githubPackages.required ? (payload.githubPackages.packageAccess.ok ? `${payload.githubPackages.packageSpec} ok` : `${payload.githubPackages.packageSpec} failed`) : "not checked"}`);
+  if (payload.lockfile.checked && payload.lockfile.packageVersion) {
+    console.log(`CLI lockfile: ${payload.lockfile.packageVersion}${payload.lockfile.refreshRecommended ? " (refresh recommended)" : " (ok)"}`);
+  }
   console.log(`Catalog source: ${payload.catalog.source}`);
   console.log(`Catalog reachable: ${payload.catalog.catalog.reachable ? "yes" : "no"}`);
   if (payload.catalog.catalog.reachable) {
@@ -1178,6 +1801,149 @@ function runNpmForPackageUpdate(args, cwd) {
 }
 
 /**
+ * @param {string} cwd
+ * @returns {string}
+ */
+function latestTopogramCliVersion(cwd) {
+  const result = runNpmForPackageUpdate(["view", CLI_PACKAGE_NAME, "version", "--json", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  if (result.status !== 0) {
+    throw new Error(formatPackageUpdateNpmError(`${CLI_PACKAGE_NAME}@latest`, "inspect", result));
+  }
+  const raw = String(result.stdout || "").trim();
+  const version = raw.startsWith("\"") ? JSON.parse(raw) : raw;
+  if (!isPackageVersion(version)) {
+    throw new Error(`npm returned invalid latest version '${version || "(empty)"}' for ${CLI_PACKAGE_NAME}.`);
+  }
+  return version;
+}
+
+/**
+ * @param {string} cwd
+ * @param {Array<Record<string, any>>} diagnostics
+ * @returns {string}
+ */
+function resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics) {
+  try {
+    return latestTopogramCliVersion(cwd);
+  } catch (error) {
+    const npmMessage = messageFromError(error);
+    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
+    if (!fallback.ok || !fallback.version) {
+      throw new Error([
+        npmMessage,
+        `GitHub API fallback also failed: ${fallback.message || "unknown error"}`
+      ].filter(Boolean).join("\n"));
+    }
+    diagnostics.push({
+      code: "package_update_cli_latest_via_github_api",
+      severity: "warning",
+      message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
+      cause: npmMessage
+    });
+    return fallback.version;
+  }
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, versions: string[], message: string|null }}
+ */
+function topogramCliVersionsFromGithubApi(cwd) {
+  const result = childProcess.spawnSync("gh", [
+    "api",
+    "-H",
+    "Accept: application/vnd.github+json",
+    "/users/attebury/packages/npm/topogram/versions?per_page=30"
+  ], {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      versions: [],
+      message: String(result.stderr || result.stdout || "gh api failed").trim()
+    };
+  }
+  let versions;
+  try {
+    versions = JSON.parse(String(result.stdout || "[]"));
+  } catch (error) {
+    return {
+      ok: false,
+      versions: [],
+      message: `GitHub Packages API returned invalid JSON: ${messageFromError(error)}`
+    };
+  }
+  return {
+    ok: true,
+    versions: Array.isArray(versions)
+      ? versions.map((item) => item?.name).filter((name) => isPackageVersion(name))
+      : [],
+    message: null
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} version
+ * @returns {{ ok: boolean, exists: boolean, version: string|null, message: string|null }}
+ */
+function topogramCliVersionExistsFromGithubApi(cwd, version) {
+  const result = topogramCliVersionsFromGithubApi(cwd);
+  if (!result.ok) {
+    return { ok: false, exists: false, version: null, message: result.message };
+  }
+  return {
+    ok: true,
+    exists: result.versions.includes(version),
+    version: result.versions.includes(version) ? version : null,
+    message: result.versions.includes(version) ? null : `${CLI_PACKAGE_NAME}@${version} was not found via GitHub Packages API.`
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, version: string|null, message: string|null }}
+ */
+function latestTopogramCliVersionFromGithubApi(cwd) {
+  const result = topogramCliVersionsFromGithubApi(cwd);
+  if (!result.ok) {
+    return { ok: false, version: null, message: result.message };
+  }
+  const version = result.versions[0] || null;
+  if (!version) {
+    return {
+      ok: false,
+      version: null,
+      message: "GitHub Packages API returned no valid package versions."
+    };
+  }
+  return {
+    ok: true,
+    version,
+    message: null
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} version
+ * @returns {{ updated: boolean, path: string|null }}
+ */
+function writeTopogramCliVersionConventionIfPresent(cwd, version) {
+  const versionPath = path.join(cwd, "topogram-cli.version");
+  if (!fs.existsSync(versionPath)) {
+    return { updated: false, path: null };
+  }
+  fs.writeFileSync(versionPath, `${version}\n`, "utf8");
+  return { updated: true, path: versionPath };
+}
+
+/**
  * Remove stale tarball metadata for the CLI package before npm installs the
  * requested version. GitHub Packages can repack publish metadata, so copying a
  * local npm-pack resolved URL or integrity into a consumer lockfile can make
@@ -1215,6 +1981,89 @@ function sanitizeTopogramLockForPackageUpdate(cwd, version) {
 
 /**
  * @param {string} cwd
+ * @returns {{ checked: boolean, path: string, packageVersion: string|null, dependencySpec: string|null, hasTarballMetadata: boolean, resolvedVersion: string|null, refreshRecommended: boolean, diagnostics: Array<Record<string, any>> }}
+ */
+function inspectTopogramCliLockfile(cwd) {
+  const lockPath = path.join(cwd, "package-lock.json");
+  const result = {
+    checked: false,
+    path: lockPath,
+    packageVersion: null,
+    dependencySpec: readProjectCliDependencySpec(cwd),
+    hasTarballMetadata: false,
+    resolvedVersion: null,
+    refreshRecommended: false,
+    diagnostics: []
+  };
+  if (!fs.existsSync(lockPath)) {
+    return result;
+  }
+  result.checked = true;
+  try {
+    const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+    const entry = lock?.packages?.[`node_modules/${CLI_PACKAGE_NAME}`];
+    if (!entry || typeof entry !== "object") {
+      return result;
+    }
+    result.packageVersion = typeof entry.version === "string" ? entry.version : null;
+    const resolved = typeof entry.resolved === "string" ? entry.resolved : null;
+    result.resolvedVersion = resolved ? resolvedTopogramCliVersion(resolved) : null;
+    result.hasTarballMetadata = Object.prototype.hasOwnProperty.call(entry, "resolved") ||
+      Object.prototype.hasOwnProperty.call(entry, "integrity");
+    const conventionVersion = readTopogramCliVersionConvention(cwd);
+    const resolvedVersionMismatch = Boolean(result.packageVersion && result.resolvedVersion && result.resolvedVersion !== result.packageVersion);
+    const localTarballMetadata = Boolean(resolved && (/^file:/.test(resolved) || /\.tgz(?:$|[?#])/.test(resolved)));
+    result.refreshRecommended = Boolean(
+      result.packageVersion &&
+      conventionVersion &&
+      conventionVersion === result.packageVersion &&
+      (resolvedVersionMismatch || localTarballMetadata)
+    );
+    if (result.refreshRecommended) {
+      result.diagnostics.push({
+        code: "topogram_cli_lockfile_refresh_available",
+        severity: "warning",
+        message: "package-lock.json contains stale Topogram CLI tarball metadata for the pinned version.",
+        path: lockPath,
+        suggestedFix: `Run \`topogram package update-cli ${result.packageVersion}\` to refresh from GitHub Packages registry metadata.`
+      });
+    }
+  } catch (error) {
+    result.diagnostics.push({
+      code: "topogram_cli_lockfile_unreadable",
+      severity: "warning",
+      message: `Could not inspect package-lock.json: ${messageFromError(error)}`,
+      path: lockPath,
+      suggestedFix: "Regenerate package-lock.json with npm install."
+    });
+  }
+  return result;
+}
+
+/**
+ * @param {string} resolved
+ * @returns {string|null}
+ */
+function resolvedTopogramCliVersion(resolved) {
+  const match = resolved.match(/\/download\/@attebury\/topogram\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * @param {string} cwd
+ * @returns {string|null}
+ */
+function readTopogramCliVersionConvention(cwd) {
+  const versionPath = path.join(cwd, "topogram-cli.version");
+  if (!fs.existsSync(versionPath)) {
+    return null;
+  }
+  const value = fs.readFileSync(versionPath, "utf8").trim();
+  return value || null;
+}
+
+/**
+ * @param {string} cwd
  * @returns {Record<string, any>}
  */
 function readPackageJsonForUpdate(cwd) {
@@ -1226,11 +2075,96 @@ function readPackageJsonForUpdate(cwd) {
 }
 
 /**
+ * @param {string} cwd
+ * @param {string} version
+ * @param {string} dependencySpec
+ * @returns {{ packageJsonUpdated: boolean, lockfileUpdated: boolean }}
+ */
+function updateTopogramCliDependencyFiles(cwd, version, dependencySpec) {
+  const packagePath = path.join(cwd, "package.json");
+  const packageJson = readPackageJsonForUpdate(cwd);
+  const hasDevDependency = packageJson.devDependencies &&
+    typeof packageJson.devDependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(packageJson.devDependencies, CLI_PACKAGE_NAME);
+  const hasDependency = packageJson.dependencies &&
+    typeof packageJson.dependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(packageJson.dependencies, CLI_PACKAGE_NAME);
+  const hasVersionConvention = fs.existsSync(path.join(cwd, "topogram-cli.version"));
+  const shouldUpdatePackageJson = hasDevDependency || hasDependency || !hasVersionConvention;
+  if (!shouldUpdatePackageJson) {
+    return { packageJsonUpdated: false, lockfileUpdated: false };
+  }
+  if (hasDependency && !hasDevDependency) {
+    packageJson.dependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  } else {
+    packageJson.devDependencies = packageJson.devDependencies && typeof packageJson.devDependencies === "object"
+      ? packageJson.devDependencies
+      : {};
+    packageJson.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  }
+  if (hasDevDependency && packageJson.dependencies && typeof packageJson.dependencies === "object") {
+    delete packageJson.dependencies[CLI_PACKAGE_NAME];
+  }
+  fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+
+  const lockPath = path.join(cwd, "package-lock.json");
+  if (!fs.existsSync(lockPath)) {
+    return { packageJsonUpdated: true, lockfileUpdated: false };
+  }
+  const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+  lock.packages = lock.packages && typeof lock.packages === "object" ? lock.packages : {};
+  lock.packages[""] = lock.packages[""] && typeof lock.packages[""] === "object" ? lock.packages[""] : {};
+  const rootEntry = lock.packages[""];
+  const lockHasDependency = rootEntry.dependencies &&
+    typeof rootEntry.dependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(rootEntry.dependencies, CLI_PACKAGE_NAME);
+  if (lockHasDependency && !hasDevDependency) {
+    rootEntry.dependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  } else {
+    rootEntry.devDependencies = rootEntry.devDependencies && typeof rootEntry.devDependencies === "object"
+      ? rootEntry.devDependencies
+      : {};
+    rootEntry.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  }
+  if ((hasDevDependency || !lockHasDependency) && rootEntry.dependencies && typeof rootEntry.dependencies === "object") {
+    delete lock.packages[""].dependencies[CLI_PACKAGE_NAME];
+  }
+  const entryPath = `node_modules/${CLI_PACKAGE_NAME}`;
+  const existingEntry = lock.packages[entryPath] && typeof lock.packages[entryPath] === "object"
+    ? lock.packages[entryPath]
+    : {};
+  lock.packages[entryPath] = {
+    ...existingEntry,
+    version,
+    dev: true,
+    license: existingEntry.license || "Apache-2.0",
+    bin: existingEntry.bin || { topogram: "src/cli.js" },
+    engines: existingEntry.engines || { node: ">=20" }
+  };
+  delete lock.packages[entryPath].resolved;
+  delete lock.packages[entryPath].integrity;
+  fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
+  return { packageJsonUpdated: true, lockfileUpdated: true };
+}
+
+/**
  * @param {string} value
  * @returns {boolean}
  */
 function isPackageVersion(value) {
   return /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(value);
+}
+
+/**
+ * @param {any} result
+ * @returns {boolean}
+ */
+function isPackageUpdateNpmAuthFailure(result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  return /\b(e401|eneedauth)\b/.test(normalized) ||
+    normalized.includes("unauthenticated") ||
+    normalized.includes("authentication required");
 }
 
 /**
@@ -1245,7 +2179,7 @@ function formatPackageUpdateNpmError(spec, step, result) {
   if (result.error?.code === "ENOENT") {
     return "npm was not found. Install Node.js/npm and retry.";
   }
-  if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
+  if (isPackageUpdateNpmAuthFailure(result)) {
     return [
       `Authentication is required to ${step} ${spec}.`,
       "Run with NODE_AUTH_TOKEN=<github-token-with-package-read>, or configure npm auth for GitHub Packages.",
@@ -1326,9 +2260,9 @@ function printTemplateStatus(payload) {
   if (!payload.template.id) {
     console.log("Template status: detached");
   } else if (payload.trust?.requiresTrust) {
-    console.log(payload.ok ? "Template status: trusted" : "Template status: review required");
+    console.log(`Template status: attached; implementation trust: ${payload.ok ? "trusted" : "review required"}`);
   } else {
-    console.log("Template status: no executable implementation trust needed");
+    console.log("Template status: attached; implementation trust: not required");
   }
   if (payload.template.id) {
     console.log(`Template: ${payload.template.id}@${payload.template.version || "unknown"}`);
@@ -2494,7 +3428,7 @@ function printCatalogCopy(payload) {
   console.log(`Package: ${payload.packageSpec}`);
   console.log(`Source provenance: ${payload.provenancePath}`);
   console.log(`Files: ${payload.files.length}`);
-  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
@@ -2779,9 +3713,10 @@ function printTopogramSourceStatus(payload) {
     }
   }
   console.log("");
-  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
-  console.log("Template attachment is project metadata. Detaching makes the project fully owned by this workspace.");
-  console.log("This status does not block `topogram check` or `topogram generate`.");
+  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
+  console.log("Template attachment controls update tracking. Detaching makes the project fully owned by this workspace.");
+  console.log("Template baseline drift does not block `topogram check` or `topogram generate`.");
+  console.log("Implementation trust is separate and can block check/generate when review is required.");
   if (payload.project?.trust?.status === "review-required") {
     console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
   } else if (payload.exists && payload.status === "changed") {
@@ -3447,6 +4382,21 @@ function templatePolicyRule(name, ok, actual, expected, message, fix = null) {
 }
 
 /**
+ * @param {string} name
+ * @returns {string}
+ */
+function templatePolicyRuleLabel(name) {
+  return ({
+    "policy-file": "Policy file",
+    "allowed-source": "Allowed source",
+    "allowed-template-id": "Allowed template id",
+    "allowed-package-scope": "Allowed package scope",
+    "pinned-version": "Pinned version",
+    "executable-implementation": "Executable implementation"
+  })[name] || name;
+}
+
+/**
  * @param {string} projectPath
  * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, template: any, catalog: any, package: any, rules: Array<{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
  */
@@ -3550,9 +4500,12 @@ function buildTemplatePolicyExplainPayload(projectPath) {
  * @returns {void}
  */
 function printTemplatePolicyExplainPayload(payload) {
-  console.log(payload.ok ? "Template policy explain: allowed" : "Template policy explain: denied");
-  console.log(`Policy: ${payload.path}`);
-  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  console.log(payload.ok ? "Template policy: allowed" : "Template policy: denied");
+  console.log(payload.ok
+    ? "Decision: the current template is allowed by this project's template policy."
+    : "Decision: the current template is blocked by this project's template policy.");
+  console.log(`Policy file: ${payload.path}`);
+  console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
   if (payload.template) {
     console.log(`Template: ${payload.template.id}@${payload.template.version}`);
     console.log(`Source: ${payload.template.source}`);
@@ -3569,8 +4522,12 @@ function printTemplatePolicyExplainPayload(payload) {
   if (payload.package) {
     console.log(`Package scope: ${payload.package.scope || "(unscoped)"}`);
   }
+  if (payload.rules.length > 0) {
+    console.log("");
+    console.log("Policy checks:");
+  }
   for (const rule of payload.rules) {
-    console.log(`${rule.ok ? "PASS" : "FAIL"} ${rule.name}: ${rule.message}`);
+    console.log(`${rule.ok ? "PASS" : "FAIL"} ${templatePolicyRuleLabel(rule.name)}: ${rule.message}`);
     console.log(`  actual: ${rule.actual}`);
     console.log(`  expected: ${rule.expected}`);
     if (!rule.ok && rule.fix) {
@@ -3828,6 +4785,14 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
+if (args[0] === "help" && args[1] && args[1] !== "all" && printCommandHelp(args[1])) {
+  process.exit(0);
+}
+
+if (args[0] !== "version" && (args.includes("--help") || args.includes("-h")) && printCommandHelp(args[0])) {
+  process.exit(0);
+}
+
 if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || args.includes("-h") || args[0] === "help") {
   printUsage({ all: args[1] === "all" || args.includes("--all") });
   process.exit(args.length === 0 ? 1 : 0);
@@ -3836,6 +4801,21 @@ if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || a
 if (args[0] === "help-all") {
   printUsage({ all: true });
   process.exit(0);
+}
+
+if (args[0] === "setup" && args[1] === "package-auth") {
+  printPackageAuthSetup();
+  process.exit(0);
+}
+
+if (args[0] === "setup" && args[1] === "catalog-auth") {
+  printCatalogAuthSetup();
+  process.exit(0);
+}
+
+if (args[0] === "setup") {
+  printSetupHelp();
+  process.exit(args[1] ? 1 : 0);
 }
 
 function commandPath(index, fallback = "./topogram") {
@@ -3849,6 +4829,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { version: true, inputPath: null };
 } else if (args[0] === "doctor") {
   commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
+} else if (args[0] === "release" && args[1] === "status") {
+  commandArgs = { releaseStatus: true, inputPath: null };
 } else if (args[0] === "new" || args[0] === "create") {
   commandArgs = args.includes("--list-templates")
     ? { templateList: true, inputPath: null }
@@ -3859,6 +4841,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
+} else if (args[0] === "generate" && args.indexOf("--generate") >= 0) {
+  commandArgs = { inputPath: commandPath(1) };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {
@@ -3878,7 +4862,7 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "catalog" && args[1] === "copy") {
   commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
 } else if (args[0] === "package" && args[1] === "update-cli") {
-  commandArgs = { packageUpdateCli: true, inputPath: args[2] };
+  commandArgs = { packageUpdateCli: true, inputPath: args.includes("--latest") ? "latest" : args[2] };
 } else if (args[0] === "source" && args[1] === "status") {
   commandArgs = { sourceStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "list") {
@@ -4006,8 +4990,10 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const strictReleaseStatus = args.includes("--strict");
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
+const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
@@ -4177,6 +5163,16 @@ try {
       console.log(stableStringify(payload));
     } else {
       printDoctor(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldReleaseStatus) {
+    const payload = buildReleaseStatusPayload({ strict: strictReleaseStatus });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printReleaseStatus(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }
@@ -4553,7 +5549,7 @@ try {
     } else if (!status.requiresTrust) {
       console.log("No local implementation trust record needed for this project.");
     } else {
-      console.log(status.ok ? "Template trust status: trusted" : "Template trust status: review required");
+      console.log(status.ok ? "Implementation trust status: trusted" : "Implementation trust status: review required");
       if (status.template.id) {
         console.log(`Template: ${status.template.id}@${status.template.version || "unknown"}`);
       }

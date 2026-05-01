@@ -21,6 +21,65 @@ const COMPONENT_CATEGORIES = new Set([
   "service"
 ]);
 
+const COMPONENT_BEHAVIOR_KINDS = new Set([
+  "selection",
+  "sorting",
+  "filtering",
+  "search",
+  "pagination",
+  "grouping",
+  "drag_drop",
+  "inline_edit",
+  "bulk_action",
+  "optimistic_update",
+  "realtime_update",
+  "keyboard_navigation"
+]);
+
+const COMPONENT_BEHAVIOR_DIRECTIVES = {
+  selection: new Set(["mode", "state", "emits"]),
+  sorting: new Set(["fields", "default"]),
+  filtering: new Set(["fields"]),
+  search: new Set(["fields"]),
+  pagination: new Set(["mode", "page_size"]),
+  grouping: new Set(["fields"]),
+  drag_drop: new Set(["axis", "reorder"]),
+  inline_edit: new Set(["fields", "submit", "emits"]),
+  bulk_action: new Set(["actions", "state", "emits"]),
+  optimistic_update: new Set(["actions", "rollback"]),
+  realtime_update: new Set(["source", "merge"]),
+  keyboard_navigation: new Set(["scope", "shortcuts"])
+};
+
+function tokenValue(token) {
+  return token?.value ?? null;
+}
+
+function tokenValues(token) {
+  if (!token) {
+    return [];
+  }
+  if (token.type === "list") {
+    return token.items.map((item) => item.value).filter((value) => value != null);
+  }
+  const value = tokenValue(token);
+  return value == null ? [] : [value];
+}
+
+function componentPropNames(statement) {
+  return new Set(blockEntries(getFieldValue(statement, "props"))
+    .map((entry) => entry.items[0])
+    .filter((item) => item?.type === "symbol")
+    .map((item) => item.value));
+}
+
+function componentEventNames(statement) {
+  return new Set(blockEntries(getFieldValue(statement, "events"))
+    .map((entry) => entry.items[0])
+    .filter((item) => item?.type === "symbol")
+    .map((item) => item.value));
+}
+
 function validateComponentCategory(errors, statement, fieldMap) {
   const field = fieldMap.get("category")?.[0];
   if (!field) {
@@ -119,6 +178,67 @@ function validateSymbolList(errors, statement, fieldMap, key, allowed, label) {
   }
 }
 
+function validateComponentBehaviors(errors, statement, fieldMap) {
+  validateSymbolList(errors, statement, fieldMap, "behavior", COMPONENT_BEHAVIOR_KINDS, "behavior");
+
+  const field = fieldMap.get("behaviors")?.[0];
+  if (!field || field.value.type !== "block") {
+    return;
+  }
+
+  const propNames = componentPropNames(statement);
+  const eventNames = componentEventNames(statement);
+
+  for (const entry of field.value.entries) {
+    const [kindToken, ...rest] = entry.items;
+    const kind = tokenValue(kindToken);
+    if (!kind || kindToken.type !== "symbol") {
+      pushError(errors, `Component ${statement.id} behaviors entries must start with a behavior kind`, entry.loc);
+      continue;
+    }
+    if (!COMPONENT_BEHAVIOR_KINDS.has(kind)) {
+      pushError(errors, `Component ${statement.id} behavior '${kind}' is not supported`, entry.loc);
+      continue;
+    }
+
+    const allowedDirectives = COMPONENT_BEHAVIOR_DIRECTIVES[kind] || new Set();
+    for (let i = 0; i < rest.length; i += 2) {
+      const directiveToken = rest[i];
+      const valueToken = rest[i + 1];
+      const directive = tokenValue(directiveToken);
+      if (!directive || directiveToken.type !== "symbol") {
+        pushError(errors, `Component ${statement.id} behavior '${kind}' directives must use symbol keys`, entry.loc);
+        continue;
+      }
+      if (!valueToken) {
+        pushError(errors, `Component ${statement.id} behavior '${kind}' is missing a value for '${directive}'`, directiveToken.loc);
+        continue;
+      }
+      if (!allowedDirectives.has(directive)) {
+        pushError(errors, `Component ${statement.id} behavior '${kind}' has unsupported directive '${directive}'`, directiveToken.loc);
+        continue;
+      }
+
+      if (directive === "state" && !propNames.has(tokenValue(valueToken))) {
+        pushError(errors, `Component ${statement.id} behavior '${kind}' references unknown prop '${tokenValue(valueToken)}' for '${directive}'`, valueToken.loc);
+      }
+      if (directive === "emits") {
+        for (const eventName of tokenValues(valueToken)) {
+          if (!eventNames.has(eventName)) {
+            pushError(errors, `Component ${statement.id} behavior '${kind}' references unknown event '${eventName}' for '${directive}'`, valueToken.loc);
+          }
+        }
+      }
+      if (kind === "selection" && directive === "mode" && !["single", "multi", "none"].includes(tokenValue(valueToken))) {
+        pushError(errors, `Component ${statement.id} behavior 'selection' has invalid mode '${tokenValue(valueToken)}'`, valueToken.loc);
+      }
+      if (kind === "pagination" && directive === "mode" && !["cursor", "paged", "infinite", "none"].includes(tokenValue(valueToken))) {
+        pushError(errors, `Component ${statement.id} behavior 'pagination' has invalid mode '${tokenValue(valueToken)}'`, valueToken.loc);
+      }
+    }
+  }
+}
+
 export function validateComponent(errors, statement, fieldMap, registry) {
   if (statement.kind !== "component") {
     return;
@@ -128,6 +248,7 @@ export function validateComponent(errors, statement, fieldMap, registry) {
   validateComponentProps(errors, statement);
   validateComponentEvents(errors, statement, registry);
   validateComponentSlots(errors, statement);
+  validateComponentBehaviors(errors, statement, fieldMap);
   validateSymbolList(errors, statement, fieldMap, "patterns", UI_PATTERN_KINDS, "pattern");
   validateSymbolList(errors, statement, fieldMap, "regions", UI_REGION_KINDS, "region");
 }

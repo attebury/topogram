@@ -96,17 +96,28 @@ function changedIdsForDiffSections(diff) {
   return stableSortedStrings(ids);
 }
 
-function collectAffectedProjectionIds(graph, diff) {
+function collectAffectedProjectionIds(graph, baselineGraph, diff) {
   const changedCapabilities = stableSortedStrings((diff.capabilities || []).map((entry) => entry.id));
   const changedEntities = stableSortedStrings((diff.entities || []).map((entry) => entry.id));
   const changedProjections = stableSortedStrings((diff.projections || []).map((entry) => entry.id));
-  const changedComponents = stableSortedStrings((diff.components || []).map((entry) => entry.id));
+  const changedComponentProjections = stableSortedStrings((diff.components || []).flatMap((entry) => {
+    if (entry.classification === "additive") {
+      return relatedProjectionsForComponent(graph, entry.id);
+    }
+    if (entry.classification === "removed") {
+      return relatedProjectionsForComponent(baselineGraph, entry.id);
+    }
+    return [
+      ...relatedProjectionsForComponent(graph, entry.id),
+      ...relatedProjectionsForComponent(baselineGraph, entry.id)
+    ];
+  }));
 
   return stableSortedStrings([
     ...changedProjections,
     ...changedCapabilities.flatMap((id) => relatedProjectionsForCapability(graph, id)),
     ...changedEntities.flatMap((id) => relatedProjectionsForEntity(graph, id)),
-    ...changedComponents.flatMap((id) => relatedProjectionsForComponent(graph, id))
+    ...changedComponentProjections
   ]);
 }
 
@@ -193,7 +204,7 @@ export function generateContextDiff(graph, options = {}) {
     bugs: diff.bugs || []
   };
   const affectedCapabilities = collectAffectedCapabilityIds(graph, diff);
-  const affectedProjections = collectAffectedProjectionIds(graph, diff);
+  const affectedProjections = collectAffectedProjectionIds(graph, baselineGraph, diff);
   const affectedVerifications = collectAffectedVerificationIds(graph, diff);
   const changedSemanticIds = changedIdsForDiffSections(diff);
   const affectedMaintainedStories = maintainedProofMetadata(graph).filter((item) => {
@@ -218,7 +229,7 @@ export function generateContextDiff(graph, options = {}) {
     ...diff,
     affected_generated_surfaces: {
       capabilities: affectedCapabilities.map((id) => summarizeById(graph, id)).filter(Boolean),
-      projections: affectedProjections.map((id) => summarizeById(graph, id)).filter(Boolean),
+      projections: affectedProjections.map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id)).filter(Boolean),
       workflows: stableSortedStrings((diff.workflows || []).map((entry) => entry.id)).map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id)).filter(Boolean),
       journeys: stableSortedStrings((diff.journeys || []).map((entry) => entry.id)).map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id)).filter(Boolean)
     },

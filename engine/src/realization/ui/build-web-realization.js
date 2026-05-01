@@ -33,6 +33,7 @@ export function buildWebRealization(graph, options = {}) {
         projection: null,
         realizes: [],
         outputs: [],
+        components: {},
         screens: []
       };
 
@@ -68,6 +69,7 @@ export function buildWebRealization(graph, options = {}) {
       : null,
     generatorDefaults: generatorDefaultsMap(projection),
     outputs: projection.outputs,
+    components: sharedContract.components || {},
     appShell: sharedContract.appShell || null,
     navigation: {
       groups: sharedContract.navigation?.groups || [],

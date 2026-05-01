@@ -1,0 +1,62 @@
+name: Release Status
+
+on:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: "Fail unless the package, release tag, and known consumer pins are current"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release-status:
+    name: Release status
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout topogram
+        uses: actions/checkout@v6
+        with:
+          path: topogram
+          fetch-depth: 0
+      - name: Checkout starters consumer
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-starters
+          path: topogram-starters
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout Todo template consumer
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-template-todo
+          path: topogram-template-todo
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout Todo demo consumer
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-demo-todo
+          path: topogram-demo-todo
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@attebury"
+      - name: Run release status
+        working-directory: topogram
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ inputs.strict }}" == "true" ]]; then
+            npm run release:status:strict
+          else
+            npm run release:status
+          fi

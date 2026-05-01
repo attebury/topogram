@@ -182,7 +182,7 @@ export const FIELD_SPECS = {
   },
   component: {
     required: ["name", "description", "props", "status"],
-    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "patterns", "regions", "lookups", "dependencies", "consumers", "version", "approvals", "status"]
+    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "behaviors", "patterns", "regions", "lookups", "dependencies", "version", "approvals", "status"]
   },
   decision: {
     required: ["name", "description", "status"],
@@ -220,6 +220,7 @@ export const FIELD_SPECS = {
       "ui_app_shell",
       "ui_navigation",
       "ui_screen_regions",
+      "ui_components",
       "db_tables",
       "db_columns",
       "db_keys",

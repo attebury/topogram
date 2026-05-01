@@ -30,7 +30,8 @@ topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
-topogram package update-cli <version>
+topogram release status
+topogram package update-cli --latest
 topogram source status ../hello-topogram --local
 topogram source status ../hello-topogram --remote
 topogram template list
