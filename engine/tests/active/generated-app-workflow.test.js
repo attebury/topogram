@@ -3001,6 +3001,44 @@ test("topogram template update apply refuses local template-owned conflicts", ()
   assert.match(humanApply.stdout, /Conflict: topogram\/entities\/entity-greeting\.tg/);
 });
 
+test("topogram template update conflict detection works with pinned candidate version", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-pinned-conflict-"));
+  const projectRoot = path.join(root, "starter");
+  const nextTemplateRoot = path.join(root, "next-template");
+  const relativeFile = "topogram/entities/entity-greeting.tg";
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
+
+  const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.version = "0.1.1-conflict-proof";
+  writeJson(manifestPath, manifest);
+
+  const policyPath = path.join(projectRoot, "topogram.template-policy.json");
+  const policy = readJson(policyPath);
+  policy.pinnedVersions = { ...(policy.pinnedVersions || {}), [manifest.id]: manifest.version };
+  writeJson(policyPath, policy);
+
+  fs.appendFileSync(path.join(projectRoot, relativeFile), "\n# local pinned conflict edit\n", "utf8");
+  fs.appendFileSync(path.join(nextTemplateRoot, relativeFile), "\n# candidate pinned conflict edit\n", "utf8");
+
+  const apply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.notEqual(apply.status, 0, apply.stdout);
+  const payload = JSON.parse(apply.stdout);
+  assert.equal(payload.mode, "apply");
+  assert.equal(payload.writes, false);
+  assert.equal(payload.compatible, true);
+  assert.equal(payload.candidate.version, manifest.version);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_version_mismatch"), false);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_update_conflict"), true);
+  assert.equal(payload.conflicts.some((conflict) => conflict.path === relativeFile), true);
+
+  const currentText = fs.readFileSync(path.join(projectRoot, relativeFile), "utf8");
+  assert.match(currentText, /# local pinned conflict edit/);
+  assert.doesNotMatch(currentText, /# candidate pinned conflict edit/);
+});
+
 test("topogram trust template records template-owned baseline for update apply", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-baseline-"));
   const projectRoot = path.join(root, "starter");

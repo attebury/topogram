@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- None currently.
+
+## 0.3.11 - 2026-05-01
+
 - Add `domain` statement kind for grouping the spec by business slice
   (FIS, RNF, DrugTrac, etc.). Identifier prefix `dom_`. Required fields:
   `name`, `description`, `status`. Optional: `in_scope`, `out_of_scope`,
