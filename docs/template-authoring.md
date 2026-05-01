@@ -46,12 +46,30 @@ For npm or GitHub Packages, keep the package payload narrow:
 
 ## Usage
 
-Use the built-in neutral starter:
+Use the default catalog-backed neutral starter:
 
 ```bash
 topogram template list
 topogram new ./my-app
 ```
+
+Catalog starter aliases:
+
+```bash
+topogram new ./hello-web
+topogram new ./hello-api --template hello-api
+topogram new ./hello-db --template hello-db
+topogram new ./web-api --template web-api
+topogram new ./web-api-db --template web-api-db
+```
+
+| Template | Surfaces | Stack | Notes |
+| --- | --- | --- | --- |
+| `hello-web` | web | Vanilla HTML/CSS/JS | Default starter, two pages, one workflow doc. |
+| `hello-api` | api | Hono | API-only topology. |
+| `hello-db` | database | SQLite | Database lifecycle output only. |
+| `web-api` | web, api | React + Express | Executable implementation starter without a database. |
+| `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
 
 Use a local template:
 
@@ -72,6 +90,19 @@ Use a private GitHub Packages template:
 topogram new ./todo-demo --template @attebury/topogram-template-todo
 ```
 
+Use a private catalog alias:
+
+```bash
+topogram template list
+topogram catalog show todo
+topogram new ./todo-demo --template todo
+```
+
+Catalog aliases resolve to package specs such as
+`@attebury/topogram-template-todo@0.1.6`. The catalog is only an index; the
+template package remains the source of versioned starter content. See
+[Catalog](./catalog.md).
+
 Private package consumers need registry auth in `.npmrc`:
 
 ```text
@@ -86,6 +117,31 @@ package page:
 2. Go to Package settings.
 3. Under Manage Actions access, add the consumer repository.
 4. Grant Read access.
+
+If `topogram new` cannot install a private template package, the CLI reports
+whether npm saw an auth failure, access denial, missing package/version, or
+integrity mismatch. For local runs, set `NODE_AUTH_TOKEN` to a token that can
+read GitHub Packages. For CI, confirm both the `.npmrc` token wiring and the
+package's Manage Actions access settings.
+
+Consumer repos can update their Topogram CLI dependency with:
+
+```bash
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
+```
+
+The command updates `@attebury/topogram`, then runs any available consumer
+scripts named `cli:surface`, `catalog:template-show`, and `check`.
+
+Maintained apps can intentionally leave the template update workflow with
+`topogram template detach`. Detach removes template provenance from
+`topogram.project.json` and removes the template baseline file. It keeps
+executable implementation trust when `implementation/` remains configured, so
+generation safety is still enforced independently of template metadata. Use
+`topogram template explain` to see whether a project is attached or detached,
+what trust remains, and which command to run next. Use `--dry-run --json` for
+review and `--remove-policy` when the project should also delete
+`topogram.template-policy.json`.
 
 ## Trust Policy
 
@@ -121,8 +177,8 @@ latest-version checks are not performed by default.
 
 `topogram template status --latest` is the opt-in registry check for
 package-backed templates. It reports the recorded version, latest package
-version, and the candidate package spec to compare. It does not support local or
-built-in templates.
+version, and the candidate package spec to compare. It does not support local
+templates.
 
 ## Template Allow Policy
 
@@ -132,7 +188,7 @@ human or agent can use for checks and updates:
 ```json
 {
   "version": "0.1",
-  "allowedSources": ["builtin", "local", "package"],
+  "allowedSources": ["local", "package"],
   "allowedTemplateIds": ["@scope/topogram-template-name"],
   "allowedPackageScopes": ["@scope"],
   "executableImplementation": "allow",
@@ -150,25 +206,33 @@ project. Existing projects can create or refresh one from their current
 topogram template policy init
 topogram template policy check
 topogram template policy check --json
+topogram template policy explain
+topogram template policy explain --json
 topogram template policy pin @scope/topogram-template-name@0.1.0
 ```
 
 Policy check succeeds with a warning when the file is missing so older projects
 can adopt it incrementally. When the file exists, template update/status/check
 commands enforce it before comparing candidate files. `allowedSources` controls
-`builtin`, `local`, and package templates. `allowedTemplateIds` keeps updates on
-the expected template family. `allowedPackageScopes` limits package templates to
-trusted npm scopes. `executableImplementation` may be `allow`, `warn`, or
-`deny`. `pinnedVersions` can force a reviewed exact template version until a
-human updates the pin.
+local and package templates. `allowedTemplateIds` keeps updates on the expected
+template family. `allowedPackageScopes` limits package templates by the actual
+package source spec recorded in `topogram.project.json`, not only by the
+template id. `executableImplementation` may be `allow`, `warn`, or `deny`.
+`pinnedVersions` can force a reviewed exact template version until a human
+updates the pin.
+
+Use `topogram template policy explain` when a human or agent needs a readable
+rule-by-rule answer to why the current template is allowed or denied. It reports
+source, template id, package scope, executable implementation, pinned version,
+and catalog provenance when the project came from a catalog alias.
 
 Use `topogram template policy pin <template-id@version>` after reviewing a
 candidate template. The command updates `pinnedVersions`, ensures the template id
 is allowed, and records the package scope for scoped package templates.
 
-This policy does not prove package identity or sign templates yet. Treat it as
-the v1 guardrail that makes template intent explicit and gives agents a single
-file to inspect before changing template-owned project files.
+This policy does not sign templates yet. Treat it as the v1 guardrail that makes
+template intent explicit, checks package-backed source scope, and gives agents a
+single file to inspect before changing template-owned project files.
 
 ## Template Updates
 

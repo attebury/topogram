@@ -2,11 +2,14 @@
   "name": "topogram-app-bundle",
   "private": true,
   "scripts": {
+    "check": "npm run compile",
     "bootstrap": "bash ./scripts/bootstrap.sh",
     "dev": "bash ./scripts/dev.sh",
     "compile": "bash ./scripts/compile-check.sh",
+    "runtime": "bash ./scripts/runtime.sh",
     "runtime-check": "bash ./scripts/runtime-check.sh",
     "smoke": "bash ./scripts/smoke.sh",
+    "probe": "npm run smoke && npm run runtime-check",
     "deploy:check": "bash ./scripts/deploy-check.sh"
   }
 }

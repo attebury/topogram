@@ -157,6 +157,17 @@ test("project config validation catches unknown generators, duplicate ports, and
   assert.match(result.errors.map((error) => error.message).join("\n"), /missing api component/);
 });
 
+test("project config validation allows optional api database and web api references", () => {
+  const graph = appBasicGraph();
+  const config = appBasicProjectConfig();
+  delete config.topology.components[0].database;
+  delete config.topology.components[1].api;
+
+  const result = validateProjectConfig(config, graph);
+
+  assert.equal(result.ok, true);
+});
+
 test("project config validation catches incompatible and planned generators", () => {
   const graph = appBasicGraph();
   const incompatible = appBasicProjectConfig();

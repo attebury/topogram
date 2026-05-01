@@ -248,6 +248,7 @@
     "bootstrap": "./scripts/bootstrap.sh",
     "dev": "./scripts/dev.sh",
     "compile": "./scripts/compile-check.sh",
+    "runtime": "./scripts/runtime.sh",
     "smoke": "./scripts/smoke.sh",
     "runtimeCheck": "./scripts/runtime-check.sh",
     "deployCheck": "./scripts/deploy-check.sh"

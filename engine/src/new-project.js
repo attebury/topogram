@@ -9,11 +9,28 @@ import path from "node:path";
 import { writeTemplateTrustRecord } from "./template-trust.js";
 
 const CLI_PACKAGE_NAME = "@attebury/topogram";
-const TEMPLATE_NAMES = new Set(["web-api-db"]);
+const DEFAULT_TEMPLATE_NAME = "hello-web";
 const TEMPLATE_MANIFEST = "topogram-template.json";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
 const MAX_TEXT_DIFF_BYTES = 256 * 1024;
+
+const GENERATOR_LABELS = new Map([
+  ["topogram/express", "Express"],
+  ["topogram/hono", "Hono"],
+  ["topogram/postgres", "Postgres"],
+  ["topogram/react", "React"],
+  ["topogram/sqlite", "SQLite"],
+  ["topogram/sveltekit", "SvelteKit"],
+  ["topogram/vanilla-web", "Vanilla HTML/CSS/JS"]
+]);
+
+const SURFACE_ORDER = new Map([
+  ["web", 10],
+  ["api", 20],
+  ["database", 30],
+  ["native", 40]
+]);
 
 /**
  * @typedef {Object} CreateNewProjectOptions
@@ -21,6 +38,7 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {string} [templateName]
  * @property {string} engineRoot
  * @property {string} templatesRoot
+ * @property {CatalogTemplateProvenance|null} [templateProvenance]
  */
 
 /**
@@ -53,9 +71,16 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  */
 
 /**
+ * @typedef {Object} TemplateTopologySummary
+ * @property {string[]} surfaces
+ * @property {string[]} generators
+ * @property {string} stack
+ */
+
+/**
  * @typedef {Object} TemplatePolicy
  * @property {string} version
- * @property {Array<"builtin"|"local"|"package">} allowedSources
+ * @property {Array<"local"|"package">} allowedSources
  * @property {string[]} allowedTemplateIds
  * @property {string[]} [allowedPackageScopes]
  * @property {"allow"|"warn"|"deny"} executableImplementation
@@ -85,8 +110,17 @@ const MAX_TEXT_DIFF_BYTES = 256 * 1024;
  * @property {string} requested
  * @property {string} root
  * @property {TemplateManifest} manifest
- * @property {"builtin"|"local"|"package"} source
+ * @property {"local"|"package"} source
  * @property {string|null} packageSpec
+ */
+
+/**
+ * @typedef {Object} CatalogTemplateProvenance
+ * @property {string} id
+ * @property {string} source
+ * @property {string} package
+ * @property {string} version
+ * @property {string} packageSpec
  */
 
 /**
@@ -154,6 +188,33 @@ function cliDependencyForProject(projectRoot, engineRoot) {
 }
 
 /**
+ * @param {{ name: string, spec: string }} cliDependency
+ * @returns {boolean}
+ */
+function needsGitHubPackagesNpmConfig(cliDependency) {
+  return cliDependency.name.startsWith("@attebury/") &&
+    !cliDependency.spec.startsWith("file:") &&
+    !cliDependency.spec.startsWith(".");
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {{ name: string, spec: string }} cliDependency
+ * @returns {void}
+ */
+function writeProjectNpmConfig(projectRoot, cliDependency) {
+  if (!needsGitHubPackagesNpmConfig(cliDependency)) {
+    return;
+  }
+  const contents = [
+    "@attebury:registry=https://npm.pkg.github.com",
+    "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}",
+    ""
+  ].join("\n");
+  fs.writeFileSync(path.join(projectRoot, ".npmrc"), contents, "utf8");
+}
+
+/**
  * @param {string} parent
  * @param {string} child
  * @returns {boolean}
@@ -178,7 +239,7 @@ function isLocalTemplateSpec(value) {
  * @param {string} spec
  * @returns {string}
  */
-function packageNameFromSpec(spec) {
+export function packageNameFromSpec(spec) {
   if (spec.startsWith("@")) {
     const segments = spec.split("/");
     if (segments.length < 2) {
@@ -192,6 +253,18 @@ function packageNameFromSpec(spec) {
   }
   const versionIndex = spec.indexOf("@");
   return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
+}
+
+/**
+ * @param {string|null|undefined} spec
+ * @returns {string|null}
+ */
+export function packageScopeFromSpec(spec) {
+  if (!spec) {
+    return null;
+  }
+  const packageName = packageNameFromSpec(spec);
+  return packageName.startsWith("@") ? packageName.split("/")[0] : null;
 }
 
 /**
@@ -258,29 +331,56 @@ function validateTemplateRoot(templateRoot) {
 }
 
 /**
- * @param {string} templatesRoot
- * @returns {Array<{ id: string, version: string, source: "builtin", name: string, includesExecutableImplementation: boolean, path: string }>}
+ * @param {string} generatorId
+ * @returns {string}
  */
-export function listBuiltInTemplates(templatesRoot) {
-  return [...TEMPLATE_NAMES].sort((a, b) => a.localeCompare(b)).map((name) => {
-    const templateRoot = path.join(templatesRoot, name);
-    const manifest = validateTemplateRoot(templateRoot);
-    return {
-      id: manifest.id,
-      version: manifest.version,
-      source: "builtin",
-      name,
-      includesExecutableImplementation: Boolean(manifest.includesExecutableImplementation),
-      path: templateRoot
-    };
+function generatorLabel(generatorId) {
+  return GENERATOR_LABELS.get(generatorId) || generatorId.replace(/^topogram\//, "");
+}
+
+/**
+ * @param {string} templateRoot
+ * @returns {TemplateTopologySummary}
+ */
+function summarizeTemplateTopology(templateRoot) {
+  const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  const rawComponents = /** @type {any[]} */ (
+    Array.isArray(projectConfig.topology?.components) ? projectConfig.topology.components : []
+  );
+  /** @type {Array<Record<string, any>>} */
+  const components = [];
+  for (const component of rawComponents) {
+    if (component && typeof component === "object" && typeof component.type === "string") {
+      components.push(/** @type {Record<string, any>} */ (component));
+    }
+  }
+  const sortedComponents = [...components].sort((a, b) => {
+    const aOrder = SURFACE_ORDER.get(a.type) ?? 100;
+    const bOrder = SURFACE_ORDER.get(b.type) ?? 100;
+    return aOrder - bOrder;
   });
+  const surfaces = [...new Set(sortedComponents.map((component) => String(component.type)))];
+  const generators = [
+    ...new Set(
+      sortedComponents
+        .map((component) => component.generator?.id)
+        .filter((generatorId) => typeof generatorId === "string")
+        .map((generatorId) => String(generatorId))
+    )
+  ];
+  return {
+    surfaces,
+    generators,
+    stack: generators.map(generatorLabel).join(" + ")
+  };
 }
 
 /**
  * @param {string} templateSpec
  * @returns {string}
  */
-function installTemplatePackage(templateSpec) {
+export function installPackageSpec(templateSpec) {
   const installRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-"));
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
   const localNpmConfig = path.join(process.cwd(), ".npmrc");
@@ -309,15 +409,69 @@ function installTemplatePackage(templateSpec) {
     }
   );
   if (result.status !== 0) {
-    throw new Error(
-      `Failed to install template package '${templateSpec}'.\n${result.stderr || result.stdout}`.trim()
-    );
+    throw new Error(formatPackageInstallError(templateSpec, result));
   }
   const packageRoot = path.join(installRoot, "node_modules", packageNameFromSpec(templateSpec));
   if (fs.existsSync(packageRoot)) {
     return packageRoot;
   }
   return findInstalledTemplatePackageRoot(installRoot, templateSpec);
+}
+
+/**
+ * @param {string} templateSpec
+ * @param {any} result
+ * @returns {string}
+ */
+function formatPackageInstallError(templateSpec, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  const npmrcHint = "Ensure this project has an .npmrc with @attebury:registry=https://npm.pkg.github.com and //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}.";
+  const packageAccessHint = "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.";
+  const authHint = "Set NODE_AUTH_TOKEN to a GitHub token with package read access, or configure npm auth for GitHub Packages.";
+  const doctorHint = "Run `topogram doctor` to check Node.js, npm, GitHub Packages, and catalog access.";
+  if (result.error?.code === "ENOENT") {
+    return [
+      `Failed to install template package '${templateSpec}': npm was not found.`,
+      "Install Node.js/npm and retry."
+    ].join("\n");
+  }
+  if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
+    return [
+      `Authentication is required to install template package '${templateSpec}' from GitHub Packages.`,
+      authHint,
+      npmrcHint,
+      packageAccessHint,
+      doctorHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\be403\b/.test(normalized) || normalized.includes("forbidden") || normalized.includes("permission")) {
+    return [
+      `Package access was denied while installing template package '${templateSpec}'.`,
+      authHint,
+      packageAccessHint,
+      doctorHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\b(e404|404)\b/.test(normalized) || normalized.includes("not found")) {
+    return [
+      `Template package '${templateSpec}' was not found, or the current token does not have access to it.`,
+      "Check the package name/version and GitHub Packages access.",
+      packageAccessHint,
+      doctorHint,
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\beintegrity\b/.test(normalized) || normalized.includes("integrity checksum failed")) {
+    return [
+      `Package integrity failed while installing template package '${templateSpec}'.`,
+      "Refresh package-lock.json from the published GitHub Packages tarball instead of a local npm pack tarball.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  return `Failed to install template package '${templateSpec}'.\n${output || "unknown error"}`.trim();
 }
 
 /**
@@ -363,19 +517,7 @@ function findInstalledTemplatePackageRoot(installRoot, templateSpec) {
  * @returns {ResolvedTemplate}
  */
 export function resolveTemplate(templateName, templatesRoot) {
-  if (TEMPLATE_NAMES.has(templateName)) {
-    const templateRoot = path.join(templatesRoot, templateName);
-    if (!fs.existsSync(templateRoot)) {
-      throw new Error(`Template '${templateName}' is not installed at '${templateRoot}'.`);
-    }
-    return {
-      requested: templateName,
-      root: templateRoot,
-      manifest: validateTemplateRoot(templateRoot),
-      source: "builtin",
-      packageSpec: null
-    };
-  }
+  void templatesRoot;
 
   if (isLocalTemplateSpec(templateName)) {
     const templateRoot = path.resolve(templateName);
@@ -383,7 +525,7 @@ export function resolveTemplate(templateName, templatesRoot) {
       throw new Error(`Local template path '${templateName}' does not exist.`);
     }
     if (!fs.statSync(templateRoot).isDirectory()) {
-      const packageTemplateRoot = installTemplatePackage(templateName);
+      const packageTemplateRoot = installPackageSpec(templateName);
       return {
         requested: templateName,
         root: packageTemplateRoot,
@@ -401,7 +543,7 @@ export function resolveTemplate(templateName, templatesRoot) {
     };
   }
 
-  const templateRoot = installTemplatePackage(templateName);
+  const templateRoot = installPackageSpec(templateName);
   if (!fs.existsSync(templateRoot)) {
     throw new Error(`Template package '${templateName}' did not install to '${templateRoot}'.`);
   }
@@ -473,30 +615,37 @@ function copyTopogramWorkspace(templateRoot, projectRoot) {
 /**
  * @param {string} projectRoot
  * @param {ResolvedTemplate} template
+ * @param {CatalogTemplateProvenance|null} [templateProvenance]
  * @returns {Record<string, any>}
  */
-function writeProjectTemplateMetadata(projectRoot, template) {
+function writeProjectTemplateMetadata(projectRoot, template, templateProvenance = null) {
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  projectConfig.template = projectTemplateMetadata(template);
+  projectConfig.template = projectTemplateMetadata(template, templateProvenance);
   fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
   return projectConfig;
 }
 
 /**
  * @param {ResolvedTemplate} template
- * @returns {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean }}
+ * @param {CatalogTemplateProvenance|null} [templateProvenance]
+ * @returns {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean, catalog?: CatalogTemplateProvenance }}
  */
-function projectTemplateMetadata(template) {
-  return {
+function projectTemplateMetadata(template, templateProvenance = null) {
+  /** @type {{ id: string, version: string, source: string, requested: string, sourceSpec: string, sourceRoot: string|null, includesExecutableImplementation: boolean, catalog?: CatalogTemplateProvenance }} */
+  const metadata = {
     id: template.manifest.id,
     version: template.manifest.version,
     source: template.source,
-    requested: template.requested,
+    requested: templateProvenance?.id || template.requested,
     sourceSpec: template.packageSpec || template.requested,
     sourceRoot: template.source === "local" ? template.root : null,
     includesExecutableImplementation: Boolean(template.manifest.includesExecutableImplementation)
   };
+  if (templateProvenance) {
+    metadata.catalog = templateProvenance;
+  }
+  return metadata;
 }
 
 /**
@@ -525,8 +674,8 @@ function validateTemplatePolicy(value, policyPath) {
   }
   const policy = /** @type {Record<string, unknown>} */ (value);
   const version = typeof policy.version === "string" && policy.version ? policy.version : "0.1";
-  const allowedSources = Array.isArray(policy.allowedSources) ? policy.allowedSources : ["builtin", "local", "package"];
-  const invalidSource = allowedSources.find((source) => !["builtin", "local", "package"].includes(String(source)));
+  const allowedSources = Array.isArray(policy.allowedSources) ? policy.allowedSources : ["local", "package"];
+  const invalidSource = allowedSources.find((source) => !["local", "package"].includes(String(source)));
   if (invalidSource) {
     throw new Error(`${policyPath} has invalid allowedSources value '${String(invalidSource)}'.`);
   }
@@ -544,7 +693,7 @@ function validateTemplatePolicy(value, policyPath) {
     : {};
   return {
     version,
-    allowedSources: /** @type {Array<"builtin"|"local"|"package">} */ (allowedSources),
+    allowedSources: /** @type {Array<"local"|"package">} */ (allowedSources),
     allowedTemplateIds,
     allowedPackageScopes,
     executableImplementation,
@@ -595,13 +744,15 @@ export function loadTemplatePolicy(projectRoot) {
  */
 function defaultTemplatePolicyForTemplate(template) {
   const allowedPackageScopes = [];
-  const idScope = template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null;
+  const idScope = template.source === "package"
+    ? packageScopeFromSpec(template.packageSpec || template.requested)
+    : null;
   if (template.source === "package" && idScope) {
     allowedPackageScopes.push(idScope);
   }
   return {
     version: "0.1",
-    allowedSources: ["builtin", "local", "package"],
+    allowedSources: ["local", "package"],
     allowedTemplateIds: [template.manifest.id],
     allowedPackageScopes,
     executableImplementation: "allow",
@@ -626,10 +777,18 @@ export function writeTemplatePolicy(projectRoot, policy) {
  */
 export function writeTemplatePolicyForProject(projectRoot, projectConfig) {
   const current = currentTemplateMetadata(projectConfig);
-  const allowedPackageScopes = current.id?.startsWith("@") ? [current.id.split("/")[0]] : [];
+  /** @type {string[]} */
+  const allowedPackageScopes = [];
+  if (current.source === "package") {
+    const currentScope = packageScopeFromSpec(current.sourceSpec) ||
+      (current.id?.startsWith("@") ? current.id.split("/")[0] : null);
+    if (currentScope) {
+      allowedPackageScopes.push(currentScope);
+    }
+  }
   return writeTemplatePolicy(projectRoot, {
     version: "0.1",
-    allowedSources: ["builtin", "local", "package"],
+    allowedSources: ["local", "package"],
     allowedTemplateIds: current.id ? [current.id] : [],
     allowedPackageScopes,
     executableImplementation: "allow",
@@ -658,7 +817,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_source_denied",
       message: `Template source '${template.source}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
       path: policyInfo.path,
-      suggestedFix: "Add the source to allowedSources or choose an allowed template.",
+      suggestedFix: `Run \`topogram template policy init\` to reset from the current project, or add '${template.source}' to allowedSources after review.`,
       step
     }));
   }
@@ -667,18 +826,19 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_id_denied",
       message: `Template '${template.manifest.id}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
       path: policyInfo.path,
-      suggestedFix: "Add the template id to allowedTemplateIds or choose an allowed template.",
+      suggestedFix: `Run \`topogram template policy pin ${template.manifest.id}@${template.manifest.version}\` after review, or choose an allowed template.`,
       step
     }));
   }
   if (template.source === "package" && policy.allowedPackageScopes && policy.allowedPackageScopes.length > 0) {
-    const scope = template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null;
+    const scope = packageScopeFromSpec(template.packageSpec || template.requested) ||
+      (template.manifest.id.startsWith("@") ? template.manifest.id.split("/")[0] : null);
     if (!scope || !policy.allowedPackageScopes.includes(scope)) {
       diagnostics.push(templateUpdateDiagnostic({
         code: "template_package_scope_denied",
         message: `Template package scope '${scope || "(unscoped)"}' is not allowed by ${TEMPLATE_POLICY_FILE}.`,
         path: policyInfo.path,
-        suggestedFix: "Add the package scope to allowedPackageScopes or choose an allowed package template.",
+        suggestedFix: `Add '${scope || "(unscoped)"}' to allowedPackageScopes after review, or choose a package from an allowed scope.`,
         step
       }));
     }
@@ -689,7 +849,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
       code: "template_version_mismatch",
       message: `Template '${template.manifest.id}' is pinned to version '${pinnedVersion}', but candidate version is '${template.manifest.version}'.`,
       path: policyInfo.path,
-      suggestedFix: "Update pinnedVersions after review, or use the pinned template version.",
+      suggestedFix: `Run \`topogram template policy pin ${template.manifest.id}@${template.manifest.version}\` after review, or use version '${pinnedVersion}'.`,
       step
     }));
   }
@@ -699,7 +859,7 @@ export function templatePolicyDiagnosticsForTemplate(policyInfo, template, step)
         code: "template_executable_denied",
         message: `Template '${template.manifest.id}' includes executable implementation code, which is denied by ${TEMPLATE_POLICY_FILE}.`,
         path: policyInfo.path,
-        suggestedFix: "Use a non-executable template or change executableImplementation after review.",
+        suggestedFix: "Use a non-executable template, or set executableImplementation to 'allow' after reviewing implementation/.",
         step
       }));
     } else if (policy.executableImplementation === "warn") {
@@ -992,9 +1152,10 @@ function fileHash(file) {
 
 /**
  * @param {ResolvedTemplate} template
+ * @param {Record<string, any>|null} [currentProjectConfig]
  * @returns {Map<string, { path: string, content: string|null, absolutePath: string|null }>}
  */
-function candidateTemplateFiles(template) {
+function candidateTemplateFiles(template, currentProjectConfig = null) {
   const files = new Map();
   for (const rootName of ["topogram", "implementation"]) {
     const root = path.join(template.root, rootName);
@@ -1013,13 +1174,40 @@ function candidateTemplateFiles(template) {
     }
   }
   const candidateProjectConfig = JSON.parse(fs.readFileSync(path.join(template.root, "topogram.project.json"), "utf8"));
-  candidateProjectConfig.template = projectTemplateMetadata(template);
+  candidateProjectConfig.template = candidateProjectTemplateMetadata(template, currentProjectConfig);
   files.set("topogram.project.json", {
     path: "topogram.project.json",
     content: `${stableJsonStringify(candidateProjectConfig)}\n`,
     absolutePath: null
   });
   return files;
+}
+
+/**
+ * @param {ResolvedTemplate} template
+ * @param {Record<string, any>|null} currentProjectConfig
+ * @returns {ReturnType<typeof projectTemplateMetadata>}
+ */
+function candidateProjectTemplateMetadata(template, currentProjectConfig) {
+  const metadata = projectTemplateMetadata(template);
+  const currentTemplate = currentProjectConfig?.template || null;
+  if (!currentTemplate || currentTemplate.id !== metadata.id) {
+    return metadata;
+  }
+  if (typeof currentTemplate.requested === "string" && currentTemplate.requested) {
+    metadata.requested = currentTemplate.requested;
+  }
+  if (currentTemplate.catalog && typeof currentTemplate.catalog === "object") {
+    metadata.catalog = {
+      ...currentTemplate.catalog,
+      package: typeof currentTemplate.catalog.package === "string"
+        ? currentTemplate.catalog.package
+        : metadata.id,
+      version: metadata.version,
+      packageSpec: metadata.sourceSpec
+    };
+  }
+  return metadata;
 }
 
 /**
@@ -1109,7 +1297,8 @@ export function writeTemplateFilesManifest(projectRoot, projectConfig) {
       version: projectConfig.template?.version || null,
       source: projectConfig.template?.source || null,
       sourceSpec: projectConfig.template?.sourceSpec || null,
-      requested: projectConfig.template?.requested || null
+      requested: projectConfig.template?.requested || null,
+      catalog: projectConfig.template?.catalog || null
     },
     files: fileRecords
   };
@@ -1178,7 +1367,7 @@ export function buildTemplateUpdatePlan({
       step: "resolve-candidate"
     }));
   }
-  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  const candidateFiles = candidateTemplateFiles(candidateTemplate, projectConfig);
   const currentFiles = currentTemplateOwnedFiles(
     projectRoot,
     Boolean(includesTemplateImplementation(projectConfig) || candidateMetadata.includesExecutableImplementation),
@@ -1593,7 +1782,7 @@ export function applyTemplateUpdateFileAction(options) {
   const currentTemplate = options.projectConfig.template || {};
   const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
   const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
-  const candidateFile = candidateTemplateFiles(candidateTemplate).get(relativePath);
+  const candidateFile = candidateTemplateFiles(candidateTemplate, options.projectConfig).get(relativePath);
   if (!candidateFile) {
     throw new Error(`Cannot accept missing candidate template file: ${relativePath}`);
   }
@@ -1638,7 +1827,7 @@ export function applyTemplateUpdate(options) {
   const currentTemplate = options.projectConfig.template || {};
   const templateSpec = options.templateName || currentTemplate.sourceSpec || currentTemplate.requested || currentTemplate.id;
   const candidateTemplate = resolveTemplate(templateSpec, options.templatesRoot);
-  const candidateFiles = candidateTemplateFiles(candidateTemplate);
+  const candidateFiles = candidateTemplateFiles(candidateTemplate, options.projectConfig);
   for (const file of plan.files) {
     if (file.kind !== "added" && file.kind !== "changed") {
       continue;
@@ -1684,11 +1873,18 @@ function writeProjectPackage(projectRoot, engineRoot) {
     type: "module",
     scripts: {
       explain: "node ./scripts/explain.mjs",
+      doctor: "topogram doctor",
+      "source:status": "topogram source status --local",
+      "source:status:remote": "topogram source status --remote",
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
+      "template:explain": "topogram template explain",
       "template:status": "topogram template status",
+      "template:detach": "topogram template detach",
+      "template:detach:dry-run": "topogram template detach --dry-run",
       "template:policy:check": "topogram template policy check",
+      "template:policy:explain": "topogram template policy explain",
       "template:update:status": "topogram template update --status",
       "template:update:recommend": "topogram template update --recommend",
       "template:update:plan": "topogram template update --plan",
@@ -1704,13 +1900,16 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "app:compile": "npm --prefix ./app run compile",
       "app:smoke": "npm --prefix ./app run smoke",
       "app:runtime-check": "npm --prefix ./app run runtime-check",
-      "app:check": "npm run app:compile && npm run app:smoke && npm run app:runtime-check"
+      "app:check": "npm run app:compile",
+      "app:probe": "npm run app:smoke && npm run app:runtime-check",
+      "app:runtime": "npm --prefix ./app run runtime"
     },
     devDependencies: {
       [cliDependency.name]: cliDependency.spec
     }
   };
   fs.writeFileSync(path.join(projectRoot, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+  writeProjectNpmConfig(projectRoot, cliDependency);
 }
 
 /**
@@ -1728,6 +1927,9 @@ Topogram app workflow
    topogram.project.json
 
 2. Validate:
+   npm run doctor
+   npm run source:status
+   npm run template:explain
    npm run check
 
 3. Regenerate:
@@ -1740,10 +1942,22 @@ Topogram app workflow
    npm run bootstrap
    npm run dev
 
+6. Probe the running app from another terminal:
+   npm run app:probe
+
+Or run self-contained local runtime verification:
+   npm run app:runtime
+
 Useful inspection:
    npm run check:json
+   npm run doctor
+   npm run source:status
+   npm run source:status:remote
+   npm run template:explain
    npm run template:status
+   npm run template:detach:dry-run
    npm run template:policy:check
+   npm run template:policy:explain
    npm run template:update:status
    npm run template:update:recommend
    npm run template:update:plan
@@ -1760,40 +1974,69 @@ console.log(message.trimEnd());
 
 /**
  * @param {string} projectRoot
- * @param {string} templateName
+ * @param {Record<string, any>} projectConfig
  * @returns {void}
  */
-function writeProjectReadme(projectRoot, templateName) {
+function writeProjectReadme(projectRoot, projectConfig) {
+  const template = projectConfig.template || {};
+  const templateName = template.id || "unknown";
+  const workflowCommands = [
+    "npm install",
+    "npm run explain",
+    "npm run doctor",
+    "npm run source:status",
+    "npm run template:explain",
+    "npm run check",
+    "npm run template:policy:check",
+    ...(template.includesExecutableImplementation ? [
+      "npm run template:policy:explain",
+      "npm run trust:status"
+    ] : []),
+    "npm run generate",
+    "npm run verify"
+  ];
+  const provenanceLines = [];
+  provenanceLines.push(`- Template: \`${templateName}@${template.version || "unknown"}\``);
+  provenanceLines.push(`- Source: \`${template.source || "unknown"}\``);
+  if (template.sourceSpec) {
+    provenanceLines.push(`- Source spec: \`${template.sourceSpec}\``);
+  }
+  if (template.catalog) {
+    provenanceLines.push(`- Catalog: \`${template.catalog.id}\` from \`${template.catalog.source}\``);
+    provenanceLines.push(`- Package: \`${template.catalog.packageSpec}\``);
+  }
+  provenanceLines.push(`- Executable implementation: \`${template.includesExecutableImplementation ? "yes" : "no"}\``);
   const readme = `# ${packageNameFromPath(projectRoot)}
 
-Generated by \`topogram new\` from the \`${templateName}\` template.
+Generated by \`topogram new\`.
+
+## Template
+
+${provenanceLines.join("\n")}
 
 ## Workflow
 
 \`\`\`bash
-npm install
-npm run explain
-npm run check
-npm run template:policy:check
-npm run generate
-npm run verify
+${workflowCommands.join("\n")}
 \`\`\`
 
 Edit \`topogram/\` and \`topogram.project.json\`, then regenerate with \`npm run generate\`.
 Generated app code is written to \`app/\`.
+${template.includesExecutableImplementation ? "\nThis template copied `implementation/` code. `topogram new` did not execute it; review `implementation/`, `topogram.template-policy.json`, and `.topogram-template-trust.json` before regenerating after edits.\n" : ""}
 `;
   fs.writeFileSync(path.join(projectRoot, "README.md"), readme, "utf8");
 }
 
 /**
  * @param {CreateNewProjectOptions} options
- * @returns {{ projectRoot: string, templateName: string, topogramPath: string, appPath: string, warnings: string[] }}
+ * @returns {{ projectRoot: string, templateName: string, template: Record<string, any>, topogramPath: string, appPath: string, warnings: string[] }}
  */
 export function createNewProject({
   targetPath,
-  templateName = "web-api-db",
+  templateName = DEFAULT_TEMPLATE_NAME,
   engineRoot,
-  templatesRoot
+  templatesRoot,
+  templateProvenance = null
 }) {
   if (!targetPath) {
     throw new Error("topogram new requires <path>.");
@@ -1804,10 +2047,10 @@ export function createNewProject({
 
   ensureCreatableProjectRoot(projectRoot);
   copyTopogramWorkspace(template.root, projectRoot);
-  const projectConfig = writeProjectTemplateMetadata(projectRoot, template);
+  const projectConfig = writeProjectTemplateMetadata(projectRoot, template, templateProvenance);
   writeProjectPackage(projectRoot, engineRoot);
   writeExplainScript(projectRoot);
-  writeProjectReadme(projectRoot, template.manifest.id);
+  writeProjectReadme(projectRoot, projectConfig);
   writeTemplateFilesManifest(projectRoot, projectConfig);
   writeTemplatePolicy(projectRoot, defaultTemplatePolicyForTemplate(template));
 
@@ -1824,6 +2067,7 @@ export function createNewProject({
   return {
     projectRoot,
     templateName: template.manifest.id,
+    template: projectConfig.template,
     topogramPath: path.join(projectRoot, "topogram"),
     appPath: path.join(projectRoot, "app"),
     warnings

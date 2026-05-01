@@ -4,7 +4,9 @@ Topogram's current goal is simple: author a Topogram and generate a runnable app
 
 ## Current Scope
 
-The active scope is the private CLI package under `engine/` and engine-owned fixtures under `engine/tests/fixtures/`. The generated Todo demo lives in the private `topogram-demo-todo` repo as the package-consumer test.
+The active scope is the private CLI package under `engine/` and engine-owned fixtures under `engine/tests/fixtures/`. The generated Todo demo lives in the private `topogram-demo-todo` repo as the package-consumer compile/runtime test.
+The private `attebury/topograms` repo owns the catalog index that maps stable
+ids like `todo` to versioned template or topogram packages.
 
 ## First Run
 
@@ -33,6 +35,7 @@ npm run new -- ./my-topogram-app
 cd ./my-topogram-app
 npm install
 npm run explain
+npm run doctor
 npm run check
 npm run generate
 npm run verify
@@ -43,8 +46,19 @@ Use the local runtime checks when local services are ready:
 ```bash
 npm run bootstrap
 npm run dev
+```
+
+Then, from another terminal while the app is still running:
+
+```bash
 npm run app:smoke
 npm run app:runtime-check
+```
+
+Or let the generated app start, probe, and stop its local stack:
+
+```bash
+npm run app:runtime
 ```
 
 ## Where To Edit
@@ -73,4 +87,7 @@ Treat generated output as disposable. Change the Topogram, then regenerate.
 
 Engine fixtures should live under `engine/tests/fixtures/**`.
 
-The Todo demo is a product workflow proof in the private `topogram-demo-todo` repo. Keep reusable engine tests close to the engine.
+The Todo demo is a product workflow proof in the private `topogram-demo-todo` repo. Keep reusable engine tests close to the engine; Todo runtime semantics belong in the demo/template repos.
+The catalog index is validated with `topogram catalog check`; private catalog
+and package access can be diagnosed with `topogram catalog doctor`. Package
+contents remain owned by their template or topogram package repos.

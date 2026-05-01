@@ -12,6 +12,7 @@ RUN_DIR="$(mktemp -d "$WORK_ROOT/run.XXXXXX")"
 PACK_DIR="$RUN_DIR/pack"
 CONSUMER_DIR="$RUN_DIR/consumer"
 TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
+CATALOG_FILE="$RUN_DIR/topograms.catalog.json"
 mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR"
 
 echo "Packing @attebury/topogram..."
@@ -20,6 +21,10 @@ PACKAGE_TARBALL="$PACK_DIR/$PACK_NAME"
 
 if [[ ! -f "$PACKAGE_TARBALL" ]]; then
   echo "Expected package tarball was not created: $PACKAGE_TARBALL" >&2
+  exit 1
+fi
+if tar -tf "$PACKAGE_TARBALL" | grep -q '^package/templates/'; then
+  echo "Packed CLI must not include product starter template directories." >&2
   exit 1
 fi
 
@@ -39,14 +44,54 @@ fi
 echo "Checking installed CLI help..."
 "$TOPOGRAM_BIN" --help >/dev/null
 
-echo "Creating a starter with the packed CLI..."
-(
-  cd "$CONSUMER_DIR"
-  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter
-)
+echo "Checking installed CLI catalog commands..."
+node --input-type=module -e '
+  import fs from "node:fs";
+  const catalog = {
+    version: "0.1",
+    entries: [
+      {
+        id: "smoke",
+        kind: "template",
+        package: "@attebury/topogram-template-smoke",
+        defaultVersion: "0.1.0",
+        description: "Smoke template",
+        tags: ["smoke"],
+        trust: {
+          scope: "@attebury",
+          includesExecutableImplementation: true
+        }
+      }
+    ]
+  };
+  fs.writeFileSync(process.argv[1], `${JSON.stringify(catalog, null, 2)}\n`);
+' "$CATALOG_FILE"
+"$TOPOGRAM_BIN" catalog check "$CATALOG_FILE" >/dev/null
+"$TOPOGRAM_BIN" catalog show smoke --catalog "$CATALOG_FILE" --json >/dev/null
+"$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
+
+echo "Checking catalog-disabled default starter guidance..."
+set +e
+DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" new ./no-catalog-default 2>&1)"
+DISABLED_STATUS=$?
+set -e
+if [[ "$DISABLED_STATUS" -eq 0 ]]; then
+  echo "Expected catalog-disabled default starter creation to fail." >&2
+  exit 1
+fi
+if [[ "$DISABLED_OUTPUT" != *"The default starter 'hello-web' is catalog-backed"* ]]; then
+  echo "Expected catalog-disabled guidance to explain the catalog-backed default starter." >&2
+  echo "$DISABLED_OUTPUT" >&2
+  exit 1
+fi
+if [[ "$DISABLED_OUTPUT" == *"For the private default catalog"* ]]; then
+  echo "Catalog-disabled guidance should not suggest private catalog auth before enabling a catalog." >&2
+  echo "$DISABLED_OUTPUT" >&2
+  exit 1
+fi
 
 echo "Packing a template pack..."
-cp -R "$ENGINE_DIR/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
+cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
 (
   cd "$TEMPLATE_PACKAGE_DIR"
   node --input-type=module -e '
@@ -68,6 +113,12 @@ if [[ ! -f "$TEMPLATE_TARBALL" ]]; then
   echo "Expected template tarball was not created: $TEMPLATE_TARBALL" >&2
   exit 1
 fi
+
+echo "Creating a starter with the packed CLI and local fixture template..."
+(
+  cd "$CONSUMER_DIR"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter --template "$ENGINE_DIR/tests/fixtures/templates/hello-web"
+)
 
 echo "Creating a starter with the packed template..."
 (
@@ -91,8 +142,19 @@ npm --prefix "$STARTER_DIR" install >/dev/null
 npm --prefix "$STARTER_TEMPLATE_DIR" install >/dev/null
 
 echo "Checking and generating the starter..."
+npm --prefix "$STARTER_DIR" run doctor
+npm --prefix "$STARTER_DIR" run source:status
+npm --prefix "$STARTER_DIR" run template:explain
+npm --prefix "$STARTER_DIR" run template:detach:dry-run
+npm --prefix "$STARTER_DIR" run template:detach
+npm --prefix "$STARTER_DIR" run source:status
+npm --prefix "$STARTER_DIR" run template:explain
 npm --prefix "$STARTER_DIR" run check
 npm --prefix "$STARTER_DIR" run generate
+npm --prefix "$STARTER_TEMPLATE_DIR" run doctor
+npm --prefix "$STARTER_TEMPLATE_DIR" run source:status
+npm --prefix "$STARTER_TEMPLATE_DIR" run template:explain
+npm --prefix "$STARTER_TEMPLATE_DIR" run template:detach:dry-run
 npm --prefix "$STARTER_TEMPLATE_DIR" run check
 npm --prefix "$STARTER_TEMPLATE_DIR" run generate
 

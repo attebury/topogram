@@ -41,19 +41,19 @@
     {
       "id": "server_typecheck",
       "cwd": "services/app_api",
-      "install": "npm install",
+      "install": "npm install --no-audit --no-fund",
       "command": "npm run check"
     },
     {
       "id": "web_typecheck",
       "cwd": "web/app_sveltekit",
-      "install": "npm install",
+      "install": "npm install --no-audit --no-fund",
       "command": "npm run check"
     },
     {
       "id": "web_build",
       "cwd": "web/app_sveltekit",
-      "install": "npm install",
+      "install": "npm install --no-audit --no-fund",
       "command": "npm run build"
     }
   ]

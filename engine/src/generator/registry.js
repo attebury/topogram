@@ -27,6 +27,13 @@ export const GENERATOR_MANIFESTS = [
     profile: "express"
   },
   {
+    id: "topogram/vanilla-web",
+    version: "1",
+    targetKind: "web",
+    projectionPlatforms: ["ui_web"],
+    profile: "vanilla"
+  },
+  {
     id: "topogram/sveltekit",
     version: "1",
     targetKind: "web",

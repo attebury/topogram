@@ -1,0 +1,6 @@
+actor actor_visitor {
+  name "Visitor"
+  description "Person viewing the generated hello web starter"
+
+  status active
+}

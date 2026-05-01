@@ -28,4 +28,9 @@ The workflow verifies the engine and packed CLI before publishing. It does not m
 
 ## After Publish
 
+Confirm the `Installed CLI First Use` workflow passes. It installs the published
+CLI and creates `hello-web` through the private catalog, so the `topogram` repo
+must have Read access under the starter package's Manage Actions access
+settings.
+
 Update package consumers, starting with `topogram-demo-todo`, to the published version and rerun their verification.

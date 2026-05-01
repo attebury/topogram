@@ -1,0 +1,8 @@
+{
+  "id": "topogram/hello-web",
+  "version": "0.1.0",
+  "kind": "starter",
+  "description": "Vanilla HTML/CSS/JS starter with two pages and one workflow.",
+  "topogramVersion": "0.1",
+  "includesExecutableImplementation": false
+}

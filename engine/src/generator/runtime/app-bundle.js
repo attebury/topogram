@@ -23,8 +23,27 @@ import {
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderLoadEnvScript, renderNestedBundleShellScript } from "./bundle-shared.js";
 
+function runtimeReferenceFor(graph, options = {}) {
+  try {
+    return structuredClone(getExampleImplementation(graph, options).runtime.reference);
+  } catch {
+    return {
+      appBundle: {
+        name: "Topogram App Bundle",
+        demoContainerName: "Hello workflow",
+        demoPrimaryTitle: "Hello page"
+      },
+      environment: { databaseName: "topogram_app", envExample: "" },
+      ports: { server: 3000, web: 5173 },
+      demoEnv: { userId: "11111111-1111-4111-8111-111111111111" },
+      smoke: { webPath: "/", expectText: "Topogram" },
+      runtimeCheck: {}
+    };
+  }
+}
+
 function buildAppBundlePlan(graph, options = {}) {
-  const runtimeReference = structuredClone(getExampleImplementation(graph, options).runtime.reference);
+  const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const environmentProfile = options.profileId || "local_process";
@@ -41,9 +60,9 @@ function buildAppBundlePlan(graph, options = {}) {
     type: "app_bundle_plan",
     name: runtimeReference.appBundle.name,
     projections: {
-      api: apiProjection.id,
-      ui: uiProjection.id,
-      db: dbProjection.id
+      api: apiProjection?.id || null,
+      ui: uiProjection?.id || null,
+      db: dbProjection?.id || null
     },
     topology: {
       components: topology.components.map((component) => ({
@@ -65,6 +84,7 @@ function buildAppBundlePlan(graph, options = {}) {
       bootstrap: "./scripts/bootstrap.sh",
       dev: "./scripts/dev.sh",
       compile: "./scripts/compile-check.sh",
+      runtime: "./scripts/runtime.sh",
       smoke: "./scripts/smoke.sh",
       runtimeCheck: "./scripts/runtime-check.sh",
       deployCheck: "./scripts/deploy-check.sh"
@@ -92,6 +112,19 @@ function renderAppBundleEnvExample(plan) {
   };
   const ports = runtimePorts(plan.runtimeReference, topology);
   const urls = runtimeUrls(plan.runtimeReference, topology);
+  if (!plan.projections.dbPlatform) {
+    return `# App bundle defaults
+TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
+TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
+
+# Local runtime defaults
+${plan.projections.api ? `SERVER_PORT=${ports.server}\n` : ""}${plan.projections.ui ? `WEB_PORT=${ports.web}\n` : ""}${plan.projections.api && plan.projections.ui ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
+TOPOGRAM_DEMO_USER_ID=${demo.userId}
+${plan.runtimeReference.environment.envExample || ""}
+
+# Smoke-test defaults
+${plan.projections.api ? `TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.projections.ui ? `TOPOGRAM_WEB_BASE_URL=${urls.web}\n` : ""}`;
+  }
   if (plan.projections.dbPlatform === "db_sqlite") {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
@@ -166,9 +199,12 @@ It includes:
    - \`bash ${plan.commands.dev.replace("./", "")}\`
 4. Compile-check it:
    - \`bash ${plan.commands.compile.replace("./", "")}\`
-5. Run richer staged runtime checks:
+5. Run self-contained local runtime verification:
+   - \`bash ${plan.commands.runtime.replace("./", "")}\`
+
+Or, with the app still running, run richer staged runtime checks in another terminal:
    - \`bash ${plan.commands.runtimeCheck.replace("./", "")}\`
-6. Run the lightweight smoke check:
+Then run the lightweight smoke check:
    - \`bash ${plan.commands.smoke.replace("./", "")}\`
 
 ## Golden Path
@@ -181,8 +217,7 @@ For the default generated bundle:
 4. Open the web app at \`${urls.web}${plan.runtimeReference.smoke.webPath}\`
 5. Confirm the seeded "${plan.runtimeReference.appBundle.demoContainerName}" and "${plan.runtimeReference.appBundle.demoPrimaryTitle}" flow through the stack
 6. Run \`bash ${plan.commands.compile.replace("./", "")}\`
-7. Run \`bash ${plan.commands.runtimeCheck.replace("./", "")}\`
-8. Run \`bash ${plan.commands.smoke.replace("./", "")}\`
+7. Run \`bash ${plan.commands.runtime.replace("./", "")}\`
 
 ## Deployment
 
@@ -198,8 +233,9 @@ For the default generated bundle:
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`
 - You can regenerate other environment or deployment profiles from the Topogram source project
 - The generated server exposes \`GET /health\` for liveness and \`GET /ready\` for DB-backed readiness
-- Use \`smoke/\` when you want a quick "is the stack basically working?" check
-- Use \`runtime-check/\` when you want staged readiness plus deeper API flow coverage
+- \`compile/\` is self-contained and does not require the app to be running
+- \`smoke/\` and \`runtime-check/\` are probes against a running local stack
+- \`scripts/runtime.sh\` starts the local stack, waits for readiness, runs the probes, and stops the stack
 `;
 }
 
@@ -208,11 +244,14 @@ function renderAppBundlePackageJson() {
     name: "topogram-app-bundle",
     private: true,
     scripts: {
+      check: "npm run compile",
       bootstrap: "bash ./scripts/bootstrap.sh",
       dev: "bash ./scripts/dev.sh",
       compile: "bash ./scripts/compile-check.sh",
+      runtime: "bash ./scripts/runtime.sh",
       "runtime-check": "bash ./scripts/runtime-check.sh",
       smoke: "bash ./scripts/smoke.sh",
+      probe: "npm run smoke && npm run runtime-check",
       "deploy:check": "bash ./scripts/deploy-check.sh"
     }
   }, null, 2)}\n`;
@@ -228,6 +267,117 @@ function renderAppBundleBootstrapScript() {
 
 function renderAppBundleDevScript() {
   return renderNestedBundleShellScript("apps", "scripts/stack-dev.sh");
+}
+
+function renderAppBundleRuntimeScript() {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+STACK_PID=""
+
+. "$SCRIPT_DIR/load-env.sh"
+
+kill_tree() {
+  local pid="$1"
+  local child
+  while IFS= read -r child; do
+    [[ -n "$child" ]] && kill_tree "$child"
+  done < <(pgrep -P "$pid" 2>/dev/null || true)
+  kill "$pid" >/dev/null 2>&1 || true
+}
+
+cleanup() {
+  if [[ -n "$STACK_PID" ]]; then
+    kill_tree "$STACK_PID"
+    wait "$STACK_PID" >/dev/null 2>&1 || true
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+bash "$SCRIPT_DIR/bootstrap.sh"
+
+TOPOGRAM_SKIP_STACK_BOOTSTRAP=true bash "$SCRIPT_DIR/dev.sh" &
+STACK_PID=$!
+
+node "$SCRIPT_DIR/wait-for-stack.mjs"
+bash "$SCRIPT_DIR/smoke.sh"
+bash "$SCRIPT_DIR/runtime-check.sh"
+`;
+}
+
+function renderAppBundleWaitForStackScript(plan) {
+  const topology = {
+    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
+    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+  };
+  const ports = runtimePorts(plan.runtimeReference, topology);
+  const urls = runtimeUrls(plan.runtimeReference, topology);
+  const endpoints = [
+    ...(plan.projections.api ? [
+      { label: "api health", url: `${urls.api}/health`, expectJson: "ok" },
+      { label: "api readiness", url: `${urls.api}/ready`, expectJson: "ready" }
+    ] : []),
+    ...(plan.projections.ui ? [
+      { label: "web app", url: `${urls.web}${plan.runtimeReference.smoke.webPath || "/"}` }
+    ] : [])
+  ];
+  return `const endpoints = ${JSON.stringify(endpoints, null, 2)};
+const timeoutMs = Number(process.env.TOPOGRAM_RUNTIME_WAIT_MS || "60000");
+const intervalMs = Number(process.env.TOPOGRAM_RUNTIME_WAIT_INTERVAL_MS || "500");
+const startedAt = Date.now();
+
+function envUrl(url) {
+  return String(url)
+    .replace("http://localhost:${ports.server}", process.env.TOPOGRAM_API_BASE_URL || process.env.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:${ports.server}")
+    .replace("http://localhost:${ports.web}", process.env.TOPOGRAM_WEB_BASE_URL || process.env.PUBLIC_TOPOGRAM_WEB_BASE_URL || \`http://localhost:\${process.env.WEB_PORT || "${ports.web}"}\`);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function isReady(endpoint) {
+  const url = envUrl(endpoint.url);
+  try {
+    const response = await fetch(url);
+    if (response.status !== 200) {
+      return { ok: false, message: \`\${endpoint.label} returned \${response.status}\` };
+    }
+    if (endpoint.expectJson) {
+      const body = await response.json().catch(() => null);
+      if (body?.[endpoint.expectJson] !== true) {
+        return { ok: false, message: \`\${endpoint.label} did not report \${endpoint.expectJson}=true\` };
+      }
+    }
+    return { ok: true };
+  } catch (error) {
+    const code = error?.cause?.code || error?.code || (error instanceof Error ? error.message : String(error));
+    return { ok: false, message: \`\${endpoint.label} not reachable: \${code}\` };
+  }
+}
+
+if (endpoints.length === 0) {
+  console.log("No runtime endpoints are configured; skipping readiness wait.");
+  process.exit(0);
+}
+
+let lastMessage = "";
+while (Date.now() - startedAt < timeoutMs) {
+  const results = await Promise.all(endpoints.map((endpoint) => isReady(endpoint)));
+  if (results.every((result) => result.ok)) {
+    console.log("Generated stack is ready.");
+    process.exit(0);
+  }
+  lastMessage = results.filter((result) => !result.ok).map((result) => result.message).join("; ");
+  await sleep(intervalMs);
+}
+
+console.error(\`Generated stack did not become ready within \${timeoutMs}ms. \${lastMessage}\`);
+process.exit(1);
+`;
 }
 
 function renderAppBundleSmokeScript() {
@@ -246,13 +396,31 @@ function renderAppBundleDeployCheckScript() {
   return renderNestedBundleShellScript("deploy", "scripts/deploy-check.sh");
 }
 
+function noopBundle(name, message) {
+  return {
+    "README.md": `# ${name}\n\n${message}\n`,
+    "scripts/check.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`,
+    "scripts/smoke.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`,
+    "scripts/deploy-check.sh": `#!/usr/bin/env bash\nset -euo pipefail\necho ${JSON.stringify(message)}\n`
+  };
+}
+
 export function generateAppBundle(graph, options = {}) {
   const plan = buildAppBundlePlan(graph, options);
-  plan.projections.dbPlatform = getDefaultEnvironmentProjections(graph, options).dbProjection.platform;
+  const topology = resolveRuntimeTopology(graph, options);
+  const projections = getDefaultEnvironmentProjections(graph, options);
+  plan.projections.dbPlatform = projections.dbProjection?.platform || null;
+  const fullStack = topology.apiComponents.length > 0 && topology.webComponents.length > 0 && topology.dbComponents.length > 0;
   const envBundle = generateEnvironmentBundle(graph, { ...options, profileId: plan.profiles.environment });
-  const deployBundle = generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment });
-  const smokeBundle = generateRuntimeSmokeBundle(graph, options);
-  const runtimeCheckBundle = generateRuntimeCheckBundle(graph, options);
+  const deployBundle = fullStack
+    ? generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment })
+    : noopBundle("Deployment Check", "No deployment bundle is generated for this partial topology.");
+  const smokeBundle = fullStack
+    ? generateRuntimeSmokeBundle(graph, options)
+    : noopBundle("Runtime Smoke", "No runtime smoke bundle is generated for this partial topology.");
+  const runtimeCheckBundle = fullStack
+    ? generateRuntimeCheckBundle(graph, options)
+    : noopBundle("Runtime Check", "No runtime check bundle is generated for this partial topology.");
   const compileBundle = generateCompileCheckBundle(graph, options);
 
   const files = {
@@ -264,6 +432,8 @@ export function generateAppBundle(graph, options = {}) {
     "scripts/load-env.sh": renderAppBundleLoadEnvScript(),
     "scripts/bootstrap.sh": renderAppBundleBootstrapScript(),
     "scripts/dev.sh": renderAppBundleDevScript(),
+    "scripts/runtime.sh": renderAppBundleRuntimeScript(),
+    "scripts/wait-for-stack.mjs": renderAppBundleWaitForStackScript(plan),
     "scripts/compile-check.sh": renderAppBundleCompileScript(),
     "scripts/runtime-check.sh": renderAppBundleRuntimeCheckScript(),
     "scripts/smoke.sh": renderAppBundleSmokeScript(),

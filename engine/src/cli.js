@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import childProcess from "node:child_process";
+import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,8 +19,8 @@ import {
   buildTemplateUpdatePlan,
   buildTemplateUpdateStatus,
   createNewProject,
-  listBuiltInTemplates,
   loadTemplatePolicy,
+  packageScopeFromSpec,
   resolveTemplate,
   templatePolicyDiagnosticsForTemplate,
   writeTemplatePolicy,
@@ -67,6 +68,19 @@ import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
 import {
+  catalogEntryPackageSpec,
+  catalogSourceOrDefault,
+  catalogTemplateListItem,
+  buildTopogramSourceStatus,
+  checkCatalogSource,
+  copyCatalogTopogramEntry,
+  findCatalogEntry,
+  isCatalogSourceDisabled,
+  loadCatalog,
+  TOPOGRAM_SOURCE_FILE
+} from "./catalog.js";
+import { resolveCatalogTemplateAlias } from "./cli/catalog-alias.js";
+import {
   formatProjectConfigErrors,
   loadProjectConfig,
   outputOwnershipForPath,
@@ -76,6 +90,10 @@ import {
 } from "./project-config.js";
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
+const CLI_PACKAGE_NAME = "@attebury/topogram";
+const GITHUB_PACKAGES_REGISTRY = "https://npm.pkg.github.com";
+const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
+const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -102,46 +120,75 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 
 function printUsage(options = {}) {
   const { all = false } = options;
+  console.log("Usage: topogram version [--json]");
+  console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
+  console.log("   or: topogram catalog list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog check <path-or-url> [--json]");
+  console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram package update-cli <version> [--json]");
+  console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
+  console.log("   or: topogram template explain [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
+  console.log("   or: topogram template policy explain [path] [--json]");
   console.log("   or: topogram template policy pin [template-id@version] [path] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
-  console.log("   or: topogram new <path> [--template web-api-db|./local-template|@scope/template]");
-  console.log("   or: topogram create <path> [--template web-api-db|./local-template|@scope/template]");
+  console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
-  console.log("  topogram create ./my-app");
+  console.log("  topogram version");
+  console.log("  topogram doctor");
+  console.log("  topogram new ./my-app");
+  console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram generate");
+  console.log("");
+  console.log("Template and catalog discovery:");
+  console.log("  topogram template list");
+  console.log("  topogram catalog list");
+  console.log("  topogram catalog show todo");
+  console.log("  topogram catalog doctor");
+  console.log("  topogram catalog check topograms.catalog.json");
+  console.log("  topogram catalog copy hello ./hello-topogram");
+  console.log("  topogram source status --local");
+  console.log("  topogram source status --remote");
+  console.log("");
+  console.log("Template trust and updates:");
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram template list");
+  console.log("  topogram package update-cli <version>");
+  console.log("  topogram template explain");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
+  console.log("  topogram template detach");
   console.log("  topogram template policy init");
   console.log("  topogram template policy check");
+  console.log("  topogram template policy explain");
   console.log("  topogram template policy pin @scope/template@0.2.0");
-  console.log("  topogram template check web-api-db");
+  console.log("  topogram template check ./local-template");
   console.log("  topogram template update --status");
   console.log("  topogram template update --recommend");
   console.log("  topogram template update --recommend --latest");
   console.log("  topogram template update --plan");
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
-  console.log("  topogram import app ./existing-app --write");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
+  console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -149,7 +196,10 @@ function printUsage(options = {}) {
   }
   console.log("");
   console.log("Legacy and internal commands:");
-  console.log("Usage: topogram validate <path>");
+  console.log("Usage: topogram create <path> [--template hello-web|todo|./local-template|@scope/template]");
+  console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
+  console.log("   or: topogram validate <path>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
@@ -194,6 +244,28 @@ function printUsage(options = {}) {
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
 }
 
+/**
+ * @returns {{ packageName: string, version: string, executablePath: string, nodeVersion: string }}
+ */
+function buildVersionPayload() {
+  return {
+    packageName: CLI_PACKAGE_NAME,
+    version: readInstalledCliPackageVersion(),
+    executablePath: path.resolve(process.argv[1] || fileURLToPath(import.meta.url)),
+    nodeVersion: process.version
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildVersionPayload>} payload
+ * @returns {void}
+ */
+function printVersion(payload) {
+  console.log(`Topogram CLI: ${payload.packageName}@${payload.version}`);
+  console.log(`Executable: ${payload.executablePath}`);
+  console.log(`Node: ${payload.nodeVersion}`);
+}
+
 function summarize(workspaceAst) {
   const statements = workspaceAst.files.flatMap((file) => file.statements);
   const byKind = new Map();
@@ -215,6 +287,14 @@ function normalizeTopogramPath(inputPath) {
   }
   const candidate = path.join(absolute, "topogram");
   return fs.existsSync(candidate) ? candidate : absolute;
+}
+
+function normalizeProjectRoot(inputPath) {
+  const absolute = path.resolve(inputPath);
+  if (path.basename(absolute) === "topogram") {
+    return path.dirname(absolute);
+  }
+  return absolute;
 }
 
 function isSameOrInside(parent, child) {
@@ -432,7 +512,7 @@ function combineProjectValidationResults(...results) {
 
 /**
  * @param {Record<string, any>|null|undefined} projectConfig
- * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, includesExecutableImplementation: boolean|null }}
+ * @returns {{ id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog: Record<string, any>|null, includesExecutableImplementation: boolean|null }}
  */
 function templateMetadataFromProjectConfig(projectConfig) {
   const template = projectConfig?.template || {};
@@ -443,6 +523,9 @@ function templateMetadataFromProjectConfig(projectConfig) {
     sourceSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null,
     requested: typeof template.requested === "string" ? template.requested : null,
     sourceRoot: typeof template.sourceRoot === "string" ? template.sourceRoot : null,
+    catalog: template.catalog && typeof template.catalog === "object" && !Array.isArray(template.catalog)
+      ? template.catalog
+      : null,
     includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
       ? template.includesExecutableImplementation
       : null
@@ -530,6 +613,626 @@ function latestTemplateInfo(template) {
 }
 
 /**
+ * @param {string} version
+ * @param {{ cwd?: string }} [options]
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ */
+function buildPackageUpdateCliPayload(version, options = {}) {
+  if (!isPackageVersion(version)) {
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.57.");
+  }
+  const cwd = options.cwd || process.cwd();
+  const diagnostics = [];
+  if (!process.env.NODE_AUTH_TOKEN) {
+    diagnostics.push({
+      code: "node_auth_token_missing",
+      severity: "warning",
+      message: "NODE_AUTH_TOKEN is not set. npm may still work if GitHub Packages auth is configured globally.",
+      path: null,
+      suggestedFix: "Run with NODE_AUTH_TOKEN=<github-token-with-package-read> when npm needs GitHub Packages access."
+    });
+  }
+  const exactSpec = `${CLI_PACKAGE_NAME}@${version}`;
+  const dependencySpec = `${CLI_PACKAGE_NAME}@^${version}`;
+  const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  if (view.status !== 0) {
+    throw new Error(formatPackageUpdateNpmError(exactSpec, "inspect", view));
+  }
+  const checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
+  if (checkedVersion !== version) {
+    throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
+  }
+  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec], cwd);
+  if (install.status !== 0) {
+    throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
+  }
+  const packageJson = readPackageJsonForUpdate(cwd);
+  const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts : {};
+  const candidateScripts = ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"];
+  const scriptsRun = [];
+  const skippedScripts = [];
+  for (const scriptName of candidateScripts) {
+    if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+      const result = runNpmForPackageUpdate(["run", scriptName], cwd);
+      if (result.status !== 0) {
+        throw new Error(formatPackageUpdateNpmError(`npm run ${scriptName}`, "check", result));
+      }
+      scriptsRun.push(scriptName);
+    } else {
+      skippedScripts.push(scriptName);
+    }
+  }
+  return {
+    ok: true,
+    packageName: CLI_PACKAGE_NAME,
+    requestedVersion: version,
+    dependencySpec,
+    checkedVersion,
+    scriptsRun,
+    skippedScripts,
+    diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildPackageUpdateCliPayload>} payload
+ * @returns {void}
+ */
+function printPackageUpdateCli(payload) {
+  for (const diagnostic of payload.diagnostics) {
+    if (diagnostic.severity === "warning") {
+      console.warn(`Warning: ${diagnostic.message}`);
+    }
+  }
+  console.log(`Updated ${payload.packageName} to ^${payload.requestedVersion}.`);
+  console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion}`);
+  console.log(`Installed dependency: ${payload.dependencySpec}`);
+  console.log(`Checks run: ${payload.scriptsRun.join(", ") || "none"}`);
+  if (payload.skippedScripts.length > 0) {
+    console.log(`Checks skipped: ${payload.skippedScripts.join(", ")}`);
+  }
+  console.log("");
+  console.log("Next steps:");
+  console.log("  git diff package.json package-lock.json");
+  console.log(`  git commit -am "Update Topogram CLI to ${payload.requestedVersion}"`);
+  console.log("  git push");
+  console.log("  confirm Demo Verification passes");
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, githubPackages: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
+ */
+function buildDoctorPayload(source) {
+  const projectCliDependency = readProjectCliDependencySpec(process.cwd());
+  const githubPackagesRequired = !isLocalCliDependencySpec(projectCliDependency);
+  const node = checkDoctorNode();
+  const npm = checkDoctorNpm();
+  const configuredRegistry = npm.available && githubPackagesRequired ? npmConfigGet("@attebury:registry") : null;
+  const registryConfigured = !githubPackagesRequired ||
+    normalizeRegistryUrl(configuredRegistry) === normalizeRegistryUrl(GITHUB_PACKAGES_REGISTRY);
+  const registryDiagnostics = [];
+  if (githubPackagesRequired && npm.available && !registryConfigured) {
+    registryDiagnostics.push({
+      code: "github_packages_registry_not_configured",
+      severity: "error",
+      message: `npm is not configured to resolve @attebury packages from ${GITHUB_PACKAGES_REGISTRY}.`,
+      path: ".npmrc",
+      suggestedFix: "Run `npm config set @attebury:registry https://npm.pkg.github.com`, then rerun `topogram doctor`."
+    });
+  }
+  const packageSpec = githubPackagesRequired ? `${CLI_PACKAGE_NAME}@${readInstalledCliPackageVersion()}` : null;
+  const packageAccess = githubPackagesRequired && npm.available
+    ? checkDoctorPackageAccess(packageSpec)
+    : githubPackagesRequired ? {
+        ok: false,
+        checkedVersion: null,
+        diagnostics: [{
+          code: "npm_not_found",
+          severity: "error",
+          message: "npm is required to inspect the Topogram CLI package.",
+          path: null,
+          suggestedFix: "Install Node.js/npm, then rerun `topogram doctor`."
+        }]
+      } : {
+        ok: true,
+        checkedVersion: null,
+        diagnostics: []
+      };
+  const catalog = buildDoctorCatalogPayload(source);
+  const tokenDiagnostics = [];
+  if (githubPackagesRequired && !process.env.NODE_AUTH_TOKEN) {
+    tokenDiagnostics.push({
+      code: "node_auth_token_missing",
+      severity: "warning",
+      message: "NODE_AUTH_TOKEN is not set. npm may still work if GitHub Packages auth is configured globally.",
+      path: null,
+      suggestedFix: "Run with NODE_AUTH_TOKEN=<github-token-with-package-read> when npm needs GitHub Packages access."
+    });
+  }
+  const diagnostics = [
+    ...node.diagnostics,
+    ...npm.diagnostics,
+    ...registryDiagnostics,
+    ...tokenDiagnostics,
+    ...packageAccess.diagnostics,
+    ...catalog.diagnostics
+  ];
+  const errors = diagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    node,
+    npm,
+    githubPackages: {
+      required: githubPackagesRequired,
+      reason: githubPackagesRequired ? null : `Project uses local CLI dependency '${projectCliDependency}'.`,
+      registry: GITHUB_PACKAGES_REGISTRY,
+      configuredRegistry,
+      registryConfigured,
+      nodeAuthTokenEnv: Boolean(process.env.NODE_AUTH_TOKEN),
+      packageName: CLI_PACKAGE_NAME,
+      packageSpec,
+      packageAccess
+    },
+    catalog,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {string|null} source
+ * @returns {ReturnType<typeof buildCatalogDoctorPayload>}
+ */
+function buildDoctorCatalogPayload(source) {
+  const resolvedSource = resolveDoctorCatalogSource(source);
+  if (isCatalogSourceDisabled(resolvedSource)) {
+    return {
+      ok: true,
+      source: resolvedSource,
+      auth: buildCatalogDoctorAuth(resolvedSource),
+      catalog: {
+        reachable: false,
+        version: null,
+        entries: 0
+      },
+      packages: [],
+      diagnostics: [{
+        code: "catalog_check_skipped",
+        severity: "warning",
+        message: "Catalog access check was skipped for this project.",
+        path: null,
+        suggestedFix: "Pass --catalog <source> to check a catalog explicitly."
+      }],
+      errors: []
+    };
+  }
+  return buildCatalogDoctorPayload(resolvedSource);
+}
+
+/**
+ * @param {string|null} source
+ * @returns {string}
+ */
+function resolveDoctorCatalogSource(source) {
+  if (source) {
+    return source;
+  }
+  const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(process.cwd()));
+  if (projectConfigInfo) {
+    const catalog = projectConfigInfo.config?.template?.catalog;
+    if (catalog && typeof catalog.source === "string" && catalog.source) {
+      return catalog.source;
+    }
+    return "none";
+  }
+  return catalogSourceOrDefault(null);
+}
+
+/**
+ * @param {string} cwd
+ * @returns {string|null}
+ */
+function readProjectCliDependencySpec(cwd) {
+  const packagePath = path.join(cwd, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return null;
+  }
+  try {
+    const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+    const dependencies = {
+      ...(pkg.dependencies && typeof pkg.dependencies === "object" ? pkg.dependencies : {}),
+      ...(pkg.devDependencies && typeof pkg.devDependencies === "object" ? pkg.devDependencies : {})
+    };
+    const spec = dependencies[CLI_PACKAGE_NAME];
+    return typeof spec === "string" && spec ? spec : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {string|null} spec
+ * @returns {boolean}
+ */
+function isLocalCliDependencySpec(spec) {
+  if (!spec) {
+    return false;
+  }
+  return spec.startsWith("file:") ||
+    spec.startsWith(".") ||
+    spec.startsWith("/") ||
+    spec.endsWith(".tgz");
+}
+
+/**
+ * @returns {{ version: string, minimum: string, ok: boolean, diagnostics: any[] }}
+ */
+function checkDoctorNode() {
+  const version = process.version;
+  const minimum = "20.0.0";
+  const ok = compareSemver(version.replace(/^v/, ""), minimum) >= 0;
+  return {
+    version,
+    minimum: `>=${minimum}`,
+    ok,
+    diagnostics: ok ? [] : [{
+      code: "node_version_unsupported",
+      severity: "error",
+      message: `Topogram requires Node.js >=${minimum}; current version is ${version}.`,
+      path: null,
+      suggestedFix: "Install Node.js 20 or newer."
+    }]
+  };
+}
+
+/**
+ * @returns {{ available: boolean, version: string|null, diagnostics: any[] }}
+ */
+function checkDoctorNpm() {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const result = childProcess.spawnSync(npmBin, ["--version"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: process.env.PATH || ""
+    }
+  });
+  if (result.status === 0) {
+    return {
+      available: true,
+      version: String(result.stdout || "").trim() || null,
+      diagnostics: []
+    };
+  }
+  return {
+    available: false,
+    version: null,
+    diagnostics: [{
+      code: "npm_not_found",
+      severity: "error",
+      message: "npm was not found on PATH.",
+      path: null,
+      suggestedFix: "Install Node.js/npm, then rerun `topogram doctor`."
+    }]
+  };
+}
+
+/**
+ * @returns {string}
+ */
+function readInstalledCliPackageVersion() {
+  const packagePath = path.join(ENGINE_ROOT, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return "0.0.0";
+  }
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  return typeof pkg.version === "string" ? pkg.version : "0.0.0";
+}
+
+/**
+ * @param {string} key
+ * @returns {string|null}
+ */
+function npmConfigGet(key) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const result = childProcess.spawnSync(npmBin, ["config", "get", key], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: process.env.PATH || ""
+    }
+  });
+  if (result.status !== 0) {
+    return null;
+  }
+  const value = String(result.stdout || "").trim();
+  return value && value !== "undefined" && value !== "null" ? value : null;
+}
+
+/**
+ * @param {string|null} value
+ * @returns {string|null}
+ */
+function normalizeRegistryUrl(value) {
+  if (!value) {
+    return null;
+  }
+  return value.trim().replace(/\/+$/, "");
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ ok: boolean, checkedVersion: string|null, diagnostics: any[] }}
+ */
+function checkDoctorPackageAccess(packageSpec) {
+  const result = runNpmViewPackageSpec(packageSpec);
+  if (result.status === 0) {
+    return {
+      ok: true,
+      checkedVersion: String(result.stdout || "").trim().replace(/^"|"$/g, "") || null,
+      diagnostics: []
+    };
+  }
+  return {
+    ok: false,
+    checkedVersion: null,
+    diagnostics: [doctorPackageDiagnostic(packageSpec, result)]
+  };
+}
+
+/**
+ * @param {string} spec
+ * @returns {string|null}
+ */
+function registryPackageNameFromSpec(spec) {
+  if (!spec || spec.startsWith(".") || spec.startsWith("/") || spec.startsWith("file:") || spec.endsWith(".tgz")) {
+    return null;
+  }
+  if (spec.startsWith("@")) {
+    const parts = spec.split("/");
+    if (parts.length < 2) {
+      return null;
+    }
+    return `${parts[0]}/${parts[1].replace(/@[^@]+$/, "")}`;
+  }
+  return spec.replace(/@[^@]+$/, "");
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ ok: boolean, package: string|null, packageSpec: string, currentVersion: string|null, latestVersion: string|null, current: boolean|null, diagnostics: any[] }}
+ */
+function checkTemplatePackageStatus(packageSpec) {
+  const packageName = registryPackageNameFromSpec(packageSpec);
+  if (!packageName) {
+    return {
+      ok: true,
+      package: null,
+      packageSpec,
+      currentVersion: null,
+      latestVersion: null,
+      current: null,
+      diagnostics: []
+    };
+  }
+  const access = checkDoctorPackageAccess(packageSpec);
+  const latest = checkDoctorPackageAccess(`${packageName}@latest`);
+  const currentVersion = access.checkedVersion;
+  const latestVersion = latest.checkedVersion;
+  return {
+    ok: access.ok && latest.ok,
+    package: packageName,
+    packageSpec,
+    currentVersion,
+    latestVersion,
+    current: currentVersion && latestVersion ? currentVersion === latestVersion : null,
+    diagnostics: [...access.diagnostics, ...latest.diagnostics]
+  };
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ checked: false, ok: null, package: string|null, packageSpec: string, currentVersion: null, latestVersion: null, current: null, reason: string, diagnostics: any[] }}
+ */
+function localTemplatePackageStatus(packageSpec) {
+  return {
+    checked: false,
+    ok: null,
+    package: registryPackageNameFromSpec(packageSpec),
+    packageSpec,
+    currentVersion: null,
+    latestVersion: null,
+    current: null,
+    reason: "Package registry checks were skipped because --local was used.",
+    diagnostics: []
+  };
+}
+
+/**
+ * @param {string} packageSpec
+ * @param {{ stdout?: string, stderr?: string, error?: Error }} result
+ * @returns {any}
+ */
+function doctorPackageDiagnostic(packageSpec, result) {
+  const diagnostic = catalogDoctorPackageDiagnostic({
+    id: CLI_PACKAGE_NAME,
+    kind: "package",
+    package: CLI_PACKAGE_NAME,
+    defaultVersion: packageSpec.slice(`${CLI_PACKAGE_NAME}@`.length)
+  }, packageSpec, result);
+  return {
+    ...diagnostic,
+    code: diagnostic.code.replace(/^catalog_package_/, "github_packages_"),
+    path: CLI_PACKAGE_NAME
+  };
+}
+
+/**
+ * @param {string} left
+ * @param {string} right
+ * @returns {number}
+ */
+function compareSemver(left, right) {
+  const leftParts = left.split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  const rightParts = right.split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  for (let index = 0; index < 3; index += 1) {
+    if (leftParts[index] > rightParts[index]) return 1;
+    if (leftParts[index] < rightParts[index]) return -1;
+  }
+  return 0;
+}
+
+/**
+ * @param {ReturnType<typeof buildDoctorPayload>} payload
+ * @returns {void}
+ */
+function printDoctorSetupGuidance(payload) {
+  console.log("Setup guidance:");
+  if (payload.githubPackages.required) {
+    console.log(`- CLI package auth: configure @attebury packages for ${payload.githubPackages.registry} and provide NODE_AUTH_TOKEN, or run npm login for GitHub Packages.`);
+  } else {
+    console.log("- CLI package auth: skipped because this project uses a local Topogram CLI dependency.");
+  }
+  if (isCatalogSourceDisabled(payload.catalog.source)) {
+    console.log("- Catalog auth: skipped because catalog discovery is disabled for this project.");
+  } else {
+    console.log("- Catalog auth: provide GITHUB_TOKEN or GH_TOKEN for private catalog access; locally, `gh auth login` is also supported.");
+  }
+  console.log("- Template package auth: private template packages need NODE_AUTH_TOKEN during npm install in generated projects.");
+  console.log("- Catalog disabled mode: TOPOGRAM_CATALOG_SOURCE=none skips catalog aliases, including the default hello-web starter.");
+}
+
+/**
+ * @param {ReturnType<typeof buildDoctorPayload>} payload
+ * @returns {void}
+ */
+function printDoctor(payload) {
+  console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
+  console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
+  console.log(`npm: ${payload.npm.available ? `${payload.npm.version || "available"} (ok)` : "not found"}`);
+  console.log(`GitHub Packages registry: ${payload.githubPackages.required ? (payload.githubPackages.registryConfigured ? "configured" : "not configured") : "not required"}`);
+  if (payload.githubPackages.reason) {
+    console.log(`GitHub Packages reason: ${payload.githubPackages.reason}`);
+  }
+  if (payload.githubPackages.configuredRegistry) {
+    console.log(`Configured @attebury registry: ${payload.githubPackages.configuredRegistry}`);
+  }
+  console.log(`NODE_AUTH_TOKEN: ${payload.githubPackages.nodeAuthTokenEnv ? "set" : "not set"}`);
+  console.log(`CLI package access: ${payload.githubPackages.required ? (payload.githubPackages.packageAccess.ok ? `${payload.githubPackages.packageSpec} ok` : `${payload.githubPackages.packageSpec} failed`) : "not checked"}`);
+  console.log(`Catalog source: ${payload.catalog.source}`);
+  console.log(`Catalog reachable: ${payload.catalog.catalog.reachable ? "yes" : "no"}`);
+  if (payload.catalog.catalog.reachable) {
+    console.log(`Catalog entries: ${payload.catalog.catalog.entries}`);
+    const failedPackages = payload.catalog.packages.filter((item) => !item.ok).length;
+    console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
+  }
+  if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.githubPackages.required) {
+    console.log("Project provenance: run `topogram source status --local` for catalog, template, trust, and baseline details.");
+  }
+  printDoctorSetupGuidance(payload);
+  if (payload.diagnostics.length > 0) {
+    console.log("Diagnostics:");
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`- ${label}: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        console.log(`  Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+}
+
+/**
+ * @param {string[]} args
+ * @param {string} cwd
+ * @returns {any}
+ */
+function runNpmForPackageUpdate(args, cwd) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const localNpmConfig = path.join(cwd, ".npmrc");
+  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
+    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
+    : {};
+  return childProcess.spawnSync(npmBin, args, {
+    cwd,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      ...npmConfigEnv,
+      PATH: process.env.PATH || ""
+    }
+  });
+}
+
+/**
+ * @param {string} cwd
+ * @returns {Record<string, any>}
+ */
+function readPackageJsonForUpdate(cwd) {
+  const packagePath = path.join(cwd, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    throw new Error("topogram package update-cli must be run from a package directory with package.json.");
+  }
+  return JSON.parse(fs.readFileSync(packagePath, "utf8"));
+}
+
+/**
+ * @param {string} value
+ * @returns {boolean}
+ */
+function isPackageVersion(value) {
+  return /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(value);
+}
+
+/**
+ * @param {string} spec
+ * @param {"inspect"|"install"|"check"} step
+ * @param {any} result
+ * @returns {string}
+ */
+function formatPackageUpdateNpmError(spec, step, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  if (result.error?.code === "ENOENT") {
+    return "npm was not found. Install Node.js/npm and retry.";
+  }
+  if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
+    return [
+      `Authentication is required to ${step} ${spec}.`,
+      "Run with NODE_AUTH_TOKEN=<github-token-with-package-read>, or configure npm auth for GitHub Packages.",
+      "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\be403\b/.test(normalized) || normalized.includes("forbidden") || normalized.includes("permission")) {
+    return [
+      `Package access was denied while trying to ${step} ${spec}.`,
+      "Check GitHub Packages read access and Manage Actions access for the consumer repo.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\b(e404|404)\b/.test(normalized) || normalized.includes("not found")) {
+    return [
+      `${spec} was not found, or the current token does not have access to it.`,
+      "Check the package version and GitHub Packages access.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  if (/\beintegrity\b/.test(normalized) || normalized.includes("integrity checksum failed")) {
+    return [
+      `Package integrity failed while trying to ${step} ${spec}.`,
+      "Regenerate package-lock.json from the published GitHub Packages tarball.",
+      output
+    ].filter(Boolean).join("\n");
+  }
+  return `Failed to ${step} ${spec}.\n${output || "unknown error"}`.trim();
+}
+
+/**
  * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
  * @param {{ latest?: boolean }} [options]
  * @returns {{ ok: boolean, template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, latest: { checked: boolean, supported?: boolean, packageName?: string|null, version?: string|null, isCurrent?: boolean|null, candidateSpec?: string|null, reason: string|null }, recommendations: string[] }}
@@ -576,7 +1279,7 @@ function buildTemplateStatusPayload(projectConfigInfo, options = {}) {
  */
 function printTemplateStatus(payload) {
   if (!payload.template.id) {
-    console.log("Template status: no template metadata");
+    console.log("Template status: detached");
   } else if (payload.trust?.requiresTrust) {
     console.log(payload.ok ? "Template status: trusted" : "Template status: review required");
   } else {
@@ -593,6 +1296,9 @@ function printTemplateStatus(payload) {
   }
   if (payload.template.requested) {
     console.log(`Requested: ${payload.template.requested}`);
+  }
+  if (payload.template.catalog) {
+    console.log(`Catalog: ${payload.template.catalog.id || "unknown"} from ${payload.template.catalog.source || "unknown"}`);
   }
   if (payload.template.sourceRoot) {
     console.log(`Source root: ${payload.template.sourceRoot}`);
@@ -643,12 +1349,312 @@ function printTemplateStatus(payload) {
 }
 
 /**
- * @returns {{ ok: boolean, templates: ReturnType<typeof listBuiltInTemplates> }}
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
+ * @returns {{ ok: boolean, projectRoot: string, projectConfigPath: string|null, attached: boolean, ownership: "template-attached"|"project-owned", template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, baseline: ReturnType<typeof buildTemplateOwnedBaselineStatus>, source: ReturnType<typeof buildTopogramSourceStatus>, commands: { status: string, detachDryRun: string|null, detach: string|null, updateCheck: string|null, trustStatus: string|null, trustTemplate: string|null, check: string, generate: string }, summary: string[], diagnostics: any[], errors: string[] }}
  */
-function buildTemplateListPayload() {
+function buildTemplateExplainPayload(projectConfigInfo) {
+  const template = templateMetadataFromProjectConfig(projectConfigInfo.config);
+  const attached = Boolean(template.id);
+  const projectRoot = projectConfigInfo.configDir;
+  const baseline = buildTemplateOwnedBaselineStatus(projectRoot);
+  const source = buildTopogramSourceStatus(projectRoot);
+  /** @type {ReturnType<typeof getTemplateTrustStatus>|null} */
+  let trust = null;
+  if (projectConfigInfo.config.implementation) {
+    trust = getTemplateTrustStatus({
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    }, projectConfigInfo.config);
+  }
+  const summary = [];
+  if (attached) {
+    summary.push("This project is still attached to its starter template.");
+    summary.push("Local edits are allowed; template update checks are opt-in.");
+  } else {
+    summary.push("This project is detached from starter-template update tracking.");
+    summary.push("The project owns its Topogram files and template updates no longer apply.");
+  }
+  if (baseline.state === "diverged") {
+    summary.push("Template-derived files have local changes; those changes are project-owned.");
+  } else if (baseline.state === "matches-template") {
+    summary.push("Template-derived files still match the recorded template baseline.");
+  }
+  if (trust?.requiresTrust && trust.ok) {
+    summary.push("Executable implementation trust is retained and currently matches reviewed files.");
+  } else if (trust?.requiresTrust && !trust.ok) {
+    summary.push("Executable implementation changed since it was trusted and needs review.");
+  } else {
+    summary.push("No executable implementation trust review is required.");
+  }
+  return {
+    ok: trust ? trust.ok : true,
+    projectRoot,
+    projectConfigPath: projectConfigInfo.configPath,
+    attached,
+    ownership: attached ? "template-attached" : "project-owned",
+    template,
+    trust,
+    baseline,
+    source,
+    commands: {
+      status: "topogram source status --local",
+      detachDryRun: attached ? "topogram template detach --dry-run" : null,
+      detach: attached ? "topogram template detach" : null,
+      updateCheck: attached ? "topogram template update --check" : null,
+      trustStatus: trust?.requiresTrust ? "topogram trust status" : null,
+      trustTemplate: trust?.requiresTrust && !trust.ok ? "topogram trust template" : null,
+      check: "topogram check",
+      generate: "topogram generate"
+    },
+    summary,
+    diagnostics: source.diagnostics,
+    errors: trust && !trust.ok ? trust.issues : []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateExplainPayload>} payload
+ * @returns {void}
+ */
+function printTemplateExplain(payload) {
+  console.log(`Template lifecycle: ${payload.attached ? "attached" : "detached"}`);
+  console.log(`Ownership: ${payload.ownership}`);
+  console.log(`Project: ${payload.projectRoot}`);
+  if (payload.projectConfigPath) {
+    console.log(`Project config: ${payload.projectConfigPath}`);
+  }
+  if (payload.template.id) {
+    console.log(`Template: ${payload.template.id}@${payload.template.version || "unknown"}`);
+    console.log(`Requested: ${payload.template.requested || "unknown"}`);
+    console.log(`Source: ${payload.template.sourceSpec || payload.template.source || "unknown"}`);
+    if (payload.template.catalog) {
+      console.log(`Catalog: ${payload.template.catalog.id || "unknown"} from ${payload.template.catalog.source || "unknown"}`);
+    }
+  } else {
+    console.log("Template: none");
+  }
+  console.log(`Template baseline: ${payload.baseline.state}`);
+  console.log(`Template baseline meaning: ${payload.baseline.meaning}`);
+  if (payload.baseline.content.changed.length > 0) {
+    console.log(`Template baseline changed files: ${payload.baseline.content.changed.length}`);
+  }
+  if (payload.baseline.content.removed.length > 0) {
+    console.log(`Template baseline removed files: ${payload.baseline.content.removed.length}`);
+  }
+  if (payload.trust) {
+    console.log(`Implementation trust: ${payload.trust.requiresTrust ? (payload.trust.ok ? "trusted" : "review required") : "not required"}`);
+    if (payload.trust.implementation.module) {
+      console.log(`Implementation: ${payload.trust.implementation.module}`);
+    }
+  } else {
+    console.log("Implementation trust: not required");
+  }
+  console.log("");
+  console.log("Summary:");
+  for (const line of payload.summary) {
+    console.log(`- ${line}`);
+  }
+  console.log("");
+  console.log("Useful commands:");
+  console.log(`  ${payload.commands.status}`);
+  if (payload.commands.detachDryRun) {
+    console.log(`  ${payload.commands.detachDryRun}`);
+  }
+  if (payload.commands.detach) {
+    console.log(`  ${payload.commands.detach}`);
+  }
+  if (payload.commands.updateCheck) {
+    console.log(`  ${payload.commands.updateCheck}`);
+  }
+  if (payload.commands.trustStatus) {
+    console.log(`  ${payload.commands.trustStatus}`);
+  }
+  if (payload.commands.trustTemplate) {
+    console.log(`  ${payload.commands.trustTemplate}`);
+  }
+  console.log(`  ${payload.commands.check}`);
+  console.log(`  ${payload.commands.generate}`);
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
+ * @param {{ dryRun?: boolean, removePolicy?: boolean }} [options]
+ * @returns {{ ok: boolean, detached: boolean, dryRun: boolean, projectConfigPath: string, removedTemplate: Record<string, any>|null, implementationTrust: { retained: boolean, removed: boolean, path: string, reason: string }, removedFiles: string[], plannedRemovals: string[], preservedFiles: string[], diagnostics: any[], errors: any[] }}
+ */
+function buildTemplateDetachPayload(projectConfigInfo, options = {}) {
+  const dryRun = Boolean(options.dryRun);
+  const removePolicy = Boolean(options.removePolicy);
+  const projectRoot = projectConfigInfo.configDir;
+  const projectConfigPath = projectConfigInfo.configPath || path.join(projectRoot, "topogram.project.json");
+  const nextConfig = JSON.parse(JSON.stringify(projectConfigInfo.config || {}));
+  const removedTemplate = nextConfig.template && typeof nextConfig.template === "object" && !Array.isArray(nextConfig.template)
+    ? nextConfig.template
+    : null;
+  const removedFiles = [];
+  const plannedRemovals = [];
+  const preservedFiles = [];
+  const diagnostics = [];
+
+  if (removedTemplate) {
+    delete nextConfig.template;
+  }
+
+  const manifestPath = path.join(projectRoot, TEMPLATE_FILES_MANIFEST);
+  const policyPath = path.join(projectRoot, TEMPLATE_POLICY_FILE);
+  const trustPath = path.join(projectRoot, TEMPLATE_TRUST_FILE);
+  const implementationRemains = Boolean(projectConfigInfo.config?.implementation);
+
+  const maybeRemove = (filePath) => {
+    if (!fs.existsSync(filePath)) {
+      return;
+    }
+    plannedRemovals.push(filePath);
+    if (!dryRun) {
+      fs.rmSync(filePath);
+      removedFiles.push(filePath);
+    }
+  };
+
+  maybeRemove(manifestPath);
+  if (removePolicy) {
+    maybeRemove(policyPath);
+  } else if (fs.existsSync(policyPath)) {
+    preservedFiles.push(policyPath);
+  }
+
+  const implementationTrust = {
+    retained: false,
+    removed: false,
+    path: trustPath,
+    reason: "not-present"
+  };
+  if (fs.existsSync(trustPath)) {
+    if (implementationRemains) {
+      implementationTrust.retained = true;
+      implementationTrust.reason = "implementation-remains";
+      preservedFiles.push(trustPath);
+    } else {
+      implementationTrust.removed = !dryRun;
+      implementationTrust.reason = "no-implementation-config";
+      plannedRemovals.push(trustPath);
+      if (!dryRun) {
+        fs.rmSync(trustPath);
+        removedFiles.push(trustPath);
+      }
+    }
+  }
+
+  if (!removedTemplate) {
+    diagnostics.push({
+      code: "template_already_detached",
+      severity: "warning",
+      message: "topogram.project.json has no template metadata.",
+      path: projectConfigPath,
+      suggestedFix: "No detach action is required."
+    });
+  }
+
+  if (!dryRun && removedTemplate) {
+    fs.writeFileSync(projectConfigPath, `${stableStringify(nextConfig)}\n`, "utf8");
+  }
+
   return {
     ok: true,
-    templates: listBuiltInTemplates(TEMPLATES_ROOT)
+    detached: Boolean(removedTemplate),
+    dryRun,
+    projectConfigPath,
+    removedTemplate,
+    implementationTrust,
+    removedFiles,
+    plannedRemovals,
+    preservedFiles,
+    diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateDetachPayload>} payload
+ * @returns {void}
+ */
+function printTemplateDetachPayload(payload) {
+  if (payload.dryRun) {
+    console.log(payload.detached ? "Template detach plan ready." : "Template detach plan: already detached.");
+  } else {
+    console.log(payload.detached ? "Template detached." : "Template already detached.");
+  }
+  console.log(`Project config: ${payload.projectConfigPath}`);
+  if (payload.removedTemplate?.id) {
+    console.log(`Removed template metadata: ${payload.removedTemplate.id}@${payload.removedTemplate.version || "unknown"}`);
+  }
+  if (payload.plannedRemovals.length > 0) {
+    console.log(payload.dryRun ? "Would remove:" : "Removed:");
+    for (const filePath of (payload.dryRun ? payload.plannedRemovals : payload.removedFiles)) {
+      console.log(`- ${filePath}`);
+    }
+  }
+  if (payload.preservedFiles.length > 0) {
+    console.log("Preserved:");
+    for (const filePath of payload.preservedFiles) {
+      console.log(`- ${filePath}`);
+    }
+  }
+  if (payload.implementationTrust.retained) {
+    console.log("Implementation trust retained because implementation config remains.");
+  } else if (payload.implementationTrust.removed) {
+    console.log("Implementation trust removed because no implementation config remains.");
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+  console.log("Next: run `topogram source status --local`, then `topogram check`.");
+}
+
+/**
+ * @param {{ catalogSource?: string|null }} [options]
+ * @returns {{ ok: boolean, catalog: { source: string|null, loaded: boolean }, templates: Array<Record<string, any>>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ */
+function buildTemplateListPayload(options = {}) {
+  const catalogSource = catalogSourceOrDefault(options.catalogSource || null);
+  /** @type {Array<Record<string, any>>} */
+  const templates = [];
+  /** @type {Array<Record<string, any>>} */
+  const diagnostics = [];
+  let catalogLoaded = false;
+  if (!isCatalogSourceDisabled(catalogSource)) {
+    try {
+      const loaded = loadCatalog(catalogSource);
+      catalogLoaded = true;
+      templates.push(
+        ...loaded.catalog.entries
+          .filter((entry) => entry.kind === "template")
+          .map((entry) => catalogTemplateListItem(entry))
+      );
+    } catch (error) {
+      diagnostics.push({
+        code: "catalog_unavailable",
+        severity: "warning",
+        message: messageFromError(error),
+        path: catalogSource,
+        suggestedFix: "Run `topogram catalog list` after authenticating, or pass a local template path/package spec directly."
+      });
+    }
+  }
+  return {
+    ok: true,
+    catalog: {
+      source: isCatalogSourceDisabled(catalogSource) ? null : catalogSource,
+      loaded: catalogLoaded
+    },
+    templates,
+    diagnostics,
+    errors: []
   };
 }
 
@@ -657,12 +1663,1071 @@ function buildTemplateListPayload() {
  * @returns {void}
  */
 function printTemplateList(payload) {
-  console.log("Available templates:");
+  console.log("Template starters:");
+  console.log("Catalog aliases resolve to versioned package installs. Local paths and full package specs can also be used with `topogram new`.");
+  if (payload.catalog.source) {
+    console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
+  } else {
+    console.log("Catalog: disabled");
+  }
   for (const template of payload.templates) {
-    console.log(`- ${template.id}@${template.version}`);
-    console.log(`  source: ${template.source}`);
-    console.log(`  name: ${template.name}`);
-    console.log(`  executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+    const defaultLabel = template.isDefault ? " (default)" : "";
+    const stack = template.stack || "not declared";
+    const surfaces = Array.isArray(template.surfaces) && template.surfaces.length > 0
+      ? template.surfaces.join(", ")
+      : "not declared";
+    const command = `topogram new ./my-app --template ${shellCommandArg(template.id)}`;
+    console.log(`- ${template.id}@${template.version}${defaultLabel}`);
+    console.log(`  Source: ${template.source} | Surfaces: ${surfaces} | Stack: ${stack} | Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+    console.log(`  New: ${command}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    console.warn(`Warning: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {ReturnType<typeof createNewProject>} result
+ * @param {string} cwd
+ * @returns {string}
+ */
+function displayProjectRootForNewProject(result, cwd) {
+  const relativeProjectRoot = path.relative(cwd, result.projectRoot);
+  return !relativeProjectRoot || relativeProjectRoot.startsWith("..")
+    ? result.projectRoot
+    : relativeProjectRoot;
+}
+
+/**
+ * @param {ReturnType<typeof createNewProject>} result
+ * @param {string} cwd
+ * @returns {void}
+ */
+function printNewProjectResult(result, cwd) {
+  const template = result.template || {};
+  console.log(`Created Topogram project at ${result.projectRoot}.`);
+  console.log(`Template: ${result.templateName}`);
+  console.log(`Source: ${template.source || "unknown"}`);
+  if (template.sourceSpec) {
+    console.log(`Source spec: ${template.sourceSpec}`);
+  }
+  if (template.catalog) {
+    console.log(`Catalog: ${template.catalog.id} from ${template.catalog.source}`);
+    console.log(`Package: ${template.catalog.packageSpec}`);
+  }
+  console.log(`Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
+  console.log("Policy: topogram.template-policy.json");
+  console.log("Template files: .topogram-template-files.json");
+  if (template.includesExecutableImplementation) {
+    console.log("Trust: .topogram-template-trust.json");
+  }
+  for (const warning of result.warnings) {
+    console.warn(`Warning: ${warning}`);
+  }
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${displayProjectRootForNewProject(result, cwd)}`);
+  console.log("  npm install");
+  console.log("  npm run doctor");
+  console.log("  npm run source:status");
+  console.log("  npm run template:explain");
+  console.log("  npm run check");
+  if (template.includesExecutableImplementation) {
+    console.log("  npm run template:policy:explain");
+    console.log("  npm run trust:status");
+  }
+  console.log("  npm run generate");
+  console.log("  npm run verify");
+}
+
+/**
+ * @param {Record<string, any>} template
+ * @param {"catalog"} sourceKind
+ * @param {string|null} packageSpec
+ * @param {{ primary: string|null, followUp: string[] }} commands
+ * @returns {{ surfaces: string[], generators: string[], stack: string|null, packageSpec: string|null, packageName: string|null, version: string|null, executableImplementation: boolean, policyImpact: string, recommendedCommand: string|null, followUp: string[], notes: string[] }}
+ */
+function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
+  const trust = template.trust && typeof template.trust === "object" ? template.trust : null;
+  const executable = trust
+    ? Boolean(trust.includesExecutableImplementation)
+    : Boolean(template.includesExecutableImplementation);
+  const surfaces = Array.isArray(template.surfaces) ? template.surfaces : [];
+  const generators = Array.isArray(template.generators) ? template.generators : [];
+  const stack = typeof template.stack === "string" && template.stack ? template.stack : null;
+  const notes = [];
+  if (sourceKind === "catalog") {
+    notes.push("Catalog templates resolve to versioned package installs; the catalog is an index, not the template payload.");
+  }
+  if (surfaces.length === 0) {
+    notes.push("Surface metadata is not declared in this catalog entry.");
+  }
+  if (generators.length === 0) {
+    notes.push("Generator metadata is not declared in this catalog entry.");
+  }
+  return {
+    surfaces,
+    generators,
+    stack,
+    packageSpec,
+    packageName: template.package || (packageSpec ? packageNameFromPackageSpec(packageSpec) : null),
+    version: template.defaultVersion || template.version || null,
+    executableImplementation: executable,
+    policyImpact: executable
+      ? "Copies implementation/ code into the project; topogram new does not execute it, but topogram generate may load it after local trust is recorded."
+      : "No executable implementation trust is required for this template.",
+    recommendedCommand: commands.primary,
+    followUp: commands.followUp,
+    notes
+  };
+}
+
+/**
+ * @param {string} id
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: "catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, decision: ReturnType<typeof templateDecisionSummary>|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ */
+function buildTemplateShowPayload(id, source) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram template show requires <id>.");
+  }
+  const catalogPayload = buildCatalogShowPayload(id, source);
+  if (!catalogPayload.ok || !catalogPayload.entry) {
+    return {
+      ok: false,
+      source: "catalog",
+      catalog: {
+        source: catalogPayload.source,
+        version: catalogPayload.catalog.version
+      },
+      template: null,
+      packageSpec: null,
+      decision: null,
+      commands: { primary: null, followUp: [] },
+      diagnostics: catalogPayload.diagnostics,
+      errors: catalogPayload.errors
+    };
+  }
+  if (catalogPayload.entry.kind !== "template") {
+    const diagnostic = {
+      code: "catalog_entry_not_template",
+      severity: "error",
+      message: `Catalog entry '${id}' is a ${catalogPayload.entry.kind}, not a template.`,
+      path: catalogPayload.source,
+      suggestedFix: "Use `topogram catalog show` for non-template catalog entries."
+    };
+    return {
+      ok: false,
+      source: "catalog",
+      catalog: {
+        source: catalogPayload.source,
+        version: catalogPayload.catalog.version
+      },
+      template: catalogPayload.entry,
+      packageSpec: catalogPayload.packageSpec,
+      decision: null,
+      commands: catalogPayload.commands,
+      diagnostics: [...catalogPayload.diagnostics, diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  return {
+    ok: true,
+    source: "catalog",
+    catalog: {
+      source: catalogPayload.source,
+      version: catalogPayload.catalog.version
+    },
+    template: catalogPayload.entry,
+    packageSpec: catalogPayload.packageSpec,
+    decision: templateDecisionSummary(catalogPayload.entry, "catalog", catalogPayload.packageSpec, catalogPayload.commands),
+    commands: catalogPayload.commands,
+    diagnostics: catalogPayload.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateShowPayload>} payload
+ * @returns {void}
+ */
+function printTemplateShow(payload) {
+  if (!payload.ok || !payload.template) {
+    console.log("Template not found.");
+    if (payload.catalog.source) {
+      console.log(`Catalog: ${payload.catalog.source}`);
+    }
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+    }
+    return;
+  }
+  const template = payload.template;
+  console.log(`Template: ${template.id}`);
+  console.log(`Source: ${payload.source}`);
+  if (template.name) {
+    const defaultLabel = template.isDefault ? " (default)" : "";
+    console.log(`Name: ${template.name}${defaultLabel}`);
+  }
+  if (payload.catalog.source) {
+    console.log(`Catalog: ${payload.catalog.source}`);
+  }
+  if (payload.packageSpec) {
+    console.log(`Package: ${payload.packageSpec}`);
+  }
+  if (template.description) {
+    console.log(`Description: ${template.description}`);
+  }
+  if (payload.decision) {
+    console.log("");
+    console.log("What it creates:");
+    console.log(`  Surfaces: ${payload.decision.surfaces.join(", ") || "not declared"}`);
+    console.log(`  Stack: ${payload.decision.stack || "not declared"}`);
+    console.log(`  Generators: ${payload.decision.generators.join(", ") || "not declared"}`);
+    console.log(`  Package: ${payload.decision.packageSpec || "not declared"}`);
+    console.log(`  Executable implementation: ${payload.decision.executableImplementation ? "yes" : "no"}`);
+    console.log(`  Policy impact: ${payload.decision.policyImpact}`);
+    for (const note of payload.decision.notes) {
+      console.log(`  Note: ${note}`);
+    }
+  }
+  console.log("");
+  console.log("Details:");
+  if (Array.isArray(template.tags) && template.tags.length > 0) {
+    console.log(`Tags: ${template.tags.join(", ")}`);
+  }
+  if (template.trust?.scope) {
+    console.log(`Trust scope: ${template.trust.scope}`);
+  }
+  const executable = template.trust
+    ? template.trust.includesExecutableImplementation
+    : template.includesExecutableImplementation;
+  console.log(`Executable implementation: ${executable ? "yes" : "no"}`);
+  if (template.trust?.notes) {
+    console.log(`Trust notes: ${template.trust.notes}`);
+  }
+  console.log("");
+  console.log("Recommended command:");
+  console.log(`  ${payload.commands.primary}`);
+  if (payload.commands.followUp.length > 0) {
+    console.log("Follow-up:");
+    for (const command of payload.commands.followUp) {
+      console.log(`  ${command}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    if (diagnostic.severity === "warning") {
+      console.warn(`Warning: ${diagnostic.message}`);
+    }
+  }
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, catalog: any, entries: any[], diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogListPayload(source) {
+  const loaded = loadCatalog(source || null);
+  return {
+    ok: true,
+    source: loaded.source,
+    catalog: {
+      version: loaded.catalog.version,
+      entries: loaded.catalog.entries.length
+    },
+    entries: loaded.catalog.entries,
+    diagnostics: loaded.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogListPayload>} payload
+ * @returns {void}
+ */
+function printCatalogList(payload) {
+  console.log("Catalog entries:");
+  console.log("Template entries create starters with `topogram new`; topogram entries copy editable Topogram source.");
+  console.log(`Catalog: ${payload.source}`);
+  console.log(`Version: ${payload.catalog.version}`);
+  const catalogOption = payload.source === catalogSourceOrDefault(null)
+    ? ""
+    : ` --catalog ${shellCommandArg(payload.source)}`;
+  for (const entry of payload.entries) {
+    console.log(`- ${entry.id} (${entry.kind})`);
+    console.log(`  Package: ${entry.package}@${entry.defaultVersion}`);
+    console.log(`  Description: ${entry.description}`);
+    console.log(`  Trust scope: ${entry.trust.scope}`);
+    console.log(`  Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+    if (entry.kind === "template") {
+      console.log(`  New: topogram new ./my-app --template ${shellCommandArg(entry.id)}${catalogOption}`);
+    } else {
+      console.log(`  Copy: topogram catalog copy ${shellCommandArg(entry.id)} ./${entry.id}-topogram${catalogOption}`);
+    }
+  }
+}
+
+/**
+ * @param {string} id
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, catalog: { version: string }, entry: any|null, packageSpec: string|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogShowPayload(id, source) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram catalog show requires <id>.");
+  }
+  const loaded = loadCatalog(source || null);
+  const entry = findCatalogEntry(loaded.catalog, id, null);
+  if (!entry) {
+    const diagnostic = {
+      code: "catalog_entry_not_found",
+      severity: "error",
+      message: `Catalog entry '${id}' was not found in ${loaded.source}.`,
+      path: loaded.source,
+      suggestedFix: "Run `topogram catalog list` to see available entries."
+    };
+    return {
+      ok: false,
+      source: loaded.source,
+      catalog: { version: loaded.catalog.version },
+      entry: null,
+      packageSpec: null,
+      commands: { primary: null, followUp: [] },
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  return {
+    ok: true,
+    source: loaded.source,
+    catalog: { version: loaded.catalog.version },
+    entry,
+    packageSpec: catalogEntryPackageSpec(entry),
+    commands: catalogShowCommands(entry, loaded.source),
+    diagnostics: loaded.diagnostics,
+    errors: []
+  };
+}
+
+/**
+ * @param {any} entry
+ * @param {string} source
+ * @returns {{ primary: string, followUp: string[] }}
+ */
+function catalogShowCommands(entry, source) {
+  const catalogOption = source === catalogSourceOrDefault(null)
+    ? ""
+    : ` --catalog ${shellCommandArg(source)}`;
+  if (entry.kind === "template") {
+    const target = "./my-app";
+    return {
+      primary: `topogram new ${target} --template ${shellCommandArg(entry.id)}${catalogOption}`,
+      followUp: [
+        `cd ${target}`,
+        "npm install",
+        "npm run check",
+        "npm run generate"
+      ]
+    };
+  }
+  const target = `./${entry.id}-topogram`;
+  return {
+    primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
+    followUp: [
+      `cd ${target}`,
+      "topogram source status --local",
+      "topogram check",
+      "topogram generate"
+    ]
+  };
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function shellCommandArg(value) {
+  return /^[A-Za-z0-9_./:@=-]+$/.test(value) ? value : JSON.stringify(value);
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogShowPayload>} payload
+ * @returns {void}
+ */
+function printCatalogShow(payload) {
+  if (!payload.ok || !payload.entry) {
+    console.log("Catalog entry not found.");
+    console.log(`Catalog: ${payload.source}`);
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+    }
+    return;
+  }
+  const { entry } = payload;
+  console.log(`Catalog entry: ${entry.id}`);
+  console.log(`Kind: ${entry.kind}`);
+  if (entry.kind === "template") {
+    console.log("Action: creates a starter app workspace with `topogram new`.");
+  } else {
+    console.log("Action: copies editable Topogram source with `topogram catalog copy`.");
+    console.log("Executable implementation: no (topogram entries cannot include implementation/ in v1).");
+  }
+  console.log(`Catalog: ${payload.source}`);
+  console.log(`Package: ${payload.packageSpec}`);
+  console.log(`Description: ${entry.description}`);
+  console.log(`Tags: ${entry.tags.join(", ") || "none"}`);
+  console.log(`Trust scope: ${entry.trust.scope}`);
+  if (entry.kind === "template") {
+    console.log(`Executable implementation: ${entry.trust.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+  if (entry.trust.notes) {
+    console.log(`Trust notes: ${entry.trust.notes}`);
+  }
+  console.log("");
+  console.log("Recommended command:");
+  console.log(`  ${payload.commands.primary}`);
+  if (payload.commands.followUp.length > 0) {
+    console.log("Follow-up:");
+    for (const command of payload.commands.followUp) {
+      console.log(`  ${command}`);
+    }
+  }
+  if (entry.kind === "topogram") {
+    console.log("");
+    console.log(`${TOPOGRAM_SOURCE_FILE} will record copy provenance only. Local edits are allowed.`);
+  }
+}
+
+/**
+ * @param {string|null} source
+ * @returns {{ ok: boolean, source: string, auth: { githubTokenEnv: boolean, ghTokenEnv: boolean, ghCli: { checked: boolean, available: boolean, authenticated: boolean, reason: string|null } }, catalog: { reachable: boolean, version: string|null, entries: number }, packages: Array<{ id: string, kind: string, package: string, version: string, packageSpec: string, ok: boolean, checkedVersion: string|null, diagnostics: any[] }>, diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogDoctorPayload(source) {
+  const resolvedSource = catalogSourceOrDefault(source || null);
+  const auth = buildCatalogDoctorAuth(resolvedSource);
+  const diagnostics = [];
+  const packages = [];
+  let loaded = null;
+  try {
+    loaded = loadCatalog(source || null);
+  } catch (error) {
+    const diagnostic = {
+      code: "catalog_unreachable",
+      severity: "error",
+      message: messageFromError(error),
+      path: resolvedSource,
+      suggestedFix: catalogDoctorSourceFix(resolvedSource)
+    };
+    return {
+      ok: false,
+      source: resolvedSource,
+      auth,
+      catalog: {
+        reachable: false,
+        version: null,
+        entries: 0
+      },
+      packages,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  diagnostics.push(...loaded.diagnostics);
+  for (const entry of loaded.catalog.entries) {
+    packages.push(checkCatalogDoctorPackage(entry));
+  }
+  const packageDiagnostics = packages.flatMap((entry) => entry.diagnostics);
+  const allDiagnostics = [...diagnostics, ...packageDiagnostics];
+  const errors = allDiagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    source: loaded.source,
+    auth,
+    catalog: {
+      reachable: true,
+      version: loaded.catalog.version,
+      entries: loaded.catalog.entries.length
+    },
+    packages,
+    diagnostics: allDiagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {string} source
+ * @returns {{ githubTokenEnv: boolean, ghTokenEnv: boolean, ghCli: { checked: boolean, available: boolean, authenticated: boolean, reason: string|null } }}
+ */
+function buildCatalogDoctorAuth(source) {
+  const shouldCheckGh = source.startsWith("github:");
+  const ghCli = {
+    checked: shouldCheckGh,
+    available: false,
+    authenticated: false,
+    reason: null
+  };
+  if (shouldCheckGh) {
+    const result = childProcess.spawnSync("gh", ["auth", "token"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "",
+        PATH: process.env.PATH || ""
+      }
+    });
+    ghCli.available = result.error?.code !== "ENOENT";
+    ghCli.authenticated = result.status === 0 && Boolean(String(result.stdout || "").trim());
+    if (!ghCli.available) {
+      ghCli.reason = "GitHub CLI (gh) is not installed or not on PATH.";
+    } else if (!ghCli.authenticated) {
+      ghCli.reason = (result.stderr || result.stdout || result.error?.message || "gh auth token failed.").trim();
+    }
+  }
+  return {
+    githubTokenEnv: Boolean(process.env.GITHUB_TOKEN),
+    ghTokenEnv: Boolean(process.env.GH_TOKEN),
+    ghCli
+  };
+}
+
+/**
+ * @param {any} entry
+ * @returns {{ id: string, kind: string, package: string, version: string, packageSpec: string, ok: boolean, checkedVersion: string|null, diagnostics: any[] }}
+ */
+function checkCatalogDoctorPackage(entry) {
+  const packageSpec = catalogEntryPackageSpec(entry);
+  const result = runNpmViewPackageSpec(packageSpec);
+  if (result.status === 0) {
+    const checkedVersion = String(result.stdout || "").trim().replace(/^"|"$/g, "");
+    return {
+      id: entry.id,
+      kind: entry.kind,
+      package: entry.package,
+      version: entry.defaultVersion,
+      packageSpec,
+      ok: checkedVersion === entry.defaultVersion,
+      checkedVersion: checkedVersion || null,
+      diagnostics: checkedVersion === entry.defaultVersion ? [] : [{
+        code: "catalog_package_version_mismatch",
+        severity: "error",
+        message: `Catalog entry '${entry.id}' expected ${packageSpec}, but npm returned '${checkedVersion || "(empty)"}'.`,
+        path: entry.id,
+        suggestedFix: "Check defaultVersion in the catalog, or publish the referenced package version."
+      }]
+    };
+  }
+  const diagnostic = catalogDoctorPackageDiagnostic(entry, packageSpec, result);
+  return {
+    id: entry.id,
+    kind: entry.kind,
+    package: entry.package,
+    version: entry.defaultVersion,
+    packageSpec,
+    ok: false,
+    checkedVersion: null,
+    diagnostics: [diagnostic]
+  };
+}
+
+/**
+ * @param {string} packageSpec
+ * @returns {{ status: number|null, stdout: string, stderr: string, error?: Error }}
+ */
+function runNpmViewPackageSpec(packageSpec) {
+  const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+  const localNpmConfig = path.join(process.cwd(), ".npmrc");
+  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
+    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
+    : {};
+  return childProcess.spawnSync(npmBin, ["view", packageSpec, "version", "--json"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      ...npmConfigEnv,
+      PATH: process.env.PATH || ""
+    }
+  });
+}
+
+/**
+ * @param {any} entry
+ * @param {string} packageSpec
+ * @param {{ stdout?: string, stderr?: string, error?: Error }} result
+ * @returns {any}
+ */
+function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
+  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+  const normalized = output.toLowerCase();
+  if (result.error?.message && result.error.message.includes("ENOENT")) {
+    return {
+      code: "npm_not_found",
+      severity: "error",
+      message: "npm is required to check catalog package access.",
+      path: entry.id,
+      suggestedFix: "Install npm with Node.js, then rerun `topogram catalog doctor`."
+    };
+  }
+  if (/\b(401|e401|authentication|auth token|login)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_auth_required",
+      severity: "error",
+      message: `Authentication is required to inspect package '${packageSpec}'.`,
+      path: entry.id,
+      suggestedFix: "Configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access."
+    };
+  }
+  if (/\b(403|e403|forbidden|permission|denied)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_access_denied",
+      severity: "error",
+      message: `Package access was denied for '${packageSpec}'.`,
+      path: entry.id,
+      suggestedFix: "Grant the consuming repository access under the package's Manage Actions access settings, or use a token with package read access."
+    };
+  }
+  if (/\b(404|e404|not found)\b/.test(normalized)) {
+    return {
+      code: "catalog_package_not_found",
+      severity: "error",
+      message: `Package '${packageSpec}' was not found, or the current npm token cannot see it.`,
+      path: entry.id,
+      suggestedFix: "Check the package name/version and GitHub Packages access."
+    };
+  }
+  return {
+    code: "catalog_package_check_failed",
+    severity: "error",
+    message: `Failed to inspect package '${packageSpec}'.${output ? `\n${output}` : ""}`,
+    path: entry.id,
+    suggestedFix: "Run `npm view <package>@<version> version --json` with the same npm auth configuration to debug package access."
+  };
+}
+
+/**
+ * @param {string} source
+ * @returns {string}
+ */
+function catalogDoctorSourceFix(source) {
+  if (source.startsWith("github:")) {
+    return "Set GITHUB_TOKEN or GH_TOKEN with repository read access, run `gh auth login`, or pass --catalog ./topograms.catalog.json.";
+  }
+  if (source.startsWith("http://") || source.startsWith("https://")) {
+    return "Check the catalog URL and token access, or pass --catalog ./topograms.catalog.json.";
+  }
+  return "Check the local catalog path and run `topogram catalog check <path>`.";
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogDoctorPayload>} payload
+ * @returns {void}
+ */
+function printCatalogDoctor(payload) {
+  console.log(payload.ok ? "Catalog doctor passed." : "Catalog doctor found issues.");
+  console.log(`Source: ${payload.source}`);
+  if (payload.source.startsWith("github:")) {
+    const tokenStatus = payload.auth.githubTokenEnv || payload.auth.ghTokenEnv ? "yes" : "no";
+    const ghStatus = payload.auth.ghCli.checked
+      ? `${payload.auth.ghCli.authenticated ? "authenticated" : "not authenticated"}${payload.auth.ghCli.reason ? ` (${payload.auth.ghCli.reason})` : ""}`
+      : "not checked";
+    console.log(`GitHub token env: ${tokenStatus}`);
+    console.log(`gh auth: ${ghStatus}`);
+  }
+  console.log(`Catalog reachable: ${payload.catalog.reachable ? "yes" : "no"}`);
+  if (payload.catalog.reachable) {
+    console.log(`Version: ${payload.catalog.version}`);
+    console.log(`Entries: ${payload.catalog.entries}`);
+  }
+  if (payload.packages.length > 0) {
+    console.log("Packages:");
+    for (const item of payload.packages) {
+      console.log(`- ${item.id} (${item.kind}): ${item.packageSpec} ${item.ok ? "ok" : "failed"}`);
+      for (const diagnostic of item.diagnostics) {
+        console.log(`  Error: ${diagnostic.message}`);
+        if (diagnostic.suggestedFix) {
+          console.log(`  Fix: ${diagnostic.suggestedFix}`);
+        }
+      }
+    }
+  }
+  const packageIds = new Set(payload.packages.map((item) => item.id));
+  for (const diagnostic of payload.diagnostics.filter((item) => !item.path || !packageIds.has(item.path))) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`Fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {string} source
+ * @returns {ReturnType<typeof checkCatalogSource>}
+ */
+function buildCatalogCheckPayload(source) {
+  if (!source) {
+    throw new Error("topogram catalog check requires <path-or-url>.");
+  }
+  return checkCatalogSource(source);
+}
+
+/**
+ * @param {ReturnType<typeof checkCatalogSource>} payload
+ * @returns {void}
+ */
+function printCatalogCheck(payload) {
+  console.log(payload.ok ? "Catalog check passed." : "Catalog check failed.");
+  console.log(`Source: ${payload.source}`);
+  if (payload.catalog) {
+    console.log(`Version: ${payload.catalog.version}`);
+    console.log(`Entries: ${payload.catalog.entries.length}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+}
+
+/**
+ * @param {string} id
+ * @param {string} targetPath
+ * @param {{ source?: string|null, version?: string|null }} options
+ * @returns {{ ok: boolean, source: string, id: string, kind: "topogram", packageSpec: string, targetPath: string, provenancePath: string, files: string[], diagnostics: any[], errors: string[] }}
+ */
+function buildCatalogCopyPayload(id, targetPath, options) {
+  if (!id || id.startsWith("-")) {
+    throw new Error("topogram catalog copy requires <id>.");
+  }
+  if (!targetPath || targetPath.startsWith("-")) {
+    throw new Error("topogram catalog copy requires <target>.");
+  }
+  const loaded = loadCatalog(options.source || null);
+  const entry = findCatalogEntry(loaded.catalog, id, "topogram");
+  if (!entry) {
+    throw new Error(`Catalog topogram entry '${id}' was not found in ${loaded.source}.`);
+  }
+  const copied = copyCatalogTopogramEntry(entry, targetPath, {
+    catalogSource: loaded.source,
+    version: options.version || null
+  });
+  return {
+    source: loaded.source,
+    ...copied,
+    diagnostics: [],
+    errors: []
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildCatalogCopyPayload>} payload
+ * @returns {void}
+ */
+function printCatalogCopy(payload) {
+  console.log(`Copied catalog topogram '${payload.id}' to ${payload.targetPath}.`);
+  console.log(`Package: ${payload.packageSpec}`);
+  console.log(`Source provenance: ${payload.provenancePath}`);
+  console.log(`Files: ${payload.files.length}`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
+  console.log("  topogram source status --local");
+  console.log("  topogram check");
+  console.log("  topogram generate");
+}
+
+/**
+ * @param {string} filePath
+ * @returns {{ sha256: string, size: number }}
+ */
+function projectFileHash(filePath) {
+  const bytes = fs.readFileSync(filePath);
+  return {
+    sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
+    size: bytes.length
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} relativePath
+ * @returns {{ sha256: string, size: number }}
+ */
+function templateBaselineFileHash(projectRoot, relativePath) {
+  const filePath = path.join(projectRoot, relativePath);
+  if (relativePath === "topogram.project.json") {
+    const content = `${stableStringify(JSON.parse(fs.readFileSync(filePath, "utf8")))}\n`;
+    return {
+      sha256: crypto.createHash("sha256").update(content).digest("hex"),
+      size: Buffer.byteLength(content)
+    };
+  }
+  return projectFileHash(filePath);
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {{ exists: boolean, path: string, status: "missing"|"clean"|"changed", state: "missing"|"matches-template"|"diverged", meaning: "no-template-baseline"|"matches-template-baseline"|"local-project-owns-changes", changedAllowed: boolean, localOwnership: boolean, blocksCheck: boolean, blocksGenerate: boolean, nextCommand: string|null, content: { changed: string[], added: string[], removed: string[] }, trustedFiles: number }}
+ */
+function buildTemplateOwnedBaselineStatus(projectRoot) {
+  const manifestPath = path.join(projectRoot, ".topogram-template-files.json");
+  if (!fs.existsSync(manifestPath)) {
+    return {
+      exists: false,
+      path: manifestPath,
+      status: "missing",
+      state: "missing",
+      meaning: "no-template-baseline",
+      changedAllowed: true,
+      localOwnership: false,
+      blocksCheck: false,
+      blocksGenerate: false,
+      nextCommand: null,
+      content: { changed: [], added: [], removed: [] },
+      trustedFiles: 0
+    };
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const trustedFiles = Array.isArray(manifest.files) ? manifest.files : [];
+  const changed = [];
+  const removed = [];
+  for (const file of trustedFiles) {
+    const relativePath = String(file.path || "");
+    if (!relativePath) {
+      continue;
+    }
+    const absolutePath = path.join(projectRoot, relativePath);
+    if (!fs.existsSync(absolutePath)) {
+      removed.push(relativePath);
+      continue;
+    }
+    const current = templateBaselineFileHash(projectRoot, relativePath);
+    if (current.sha256 !== file.sha256 || current.size !== file.size) {
+      changed.push(relativePath);
+    }
+  }
+  const status = changed.length || removed.length ? "changed" : "clean";
+  const diverged = status === "changed";
+  return {
+    exists: true,
+    path: manifestPath,
+    status,
+    state: diverged ? "diverged" : "matches-template",
+    meaning: diverged ? "local-project-owns-changes" : "matches-template-baseline",
+    changedAllowed: true,
+    localOwnership: diverged,
+    blocksCheck: false,
+    blocksGenerate: false,
+    nextCommand: diverged ? "topogram template update --check" : null,
+    content: {
+      changed: changed.sort((a, b) => a.localeCompare(b)),
+      added: [],
+      removed: removed.sort((a, b) => a.localeCompare(b))
+    },
+    trustedFiles: trustedFiles.length
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {{ local?: boolean }} [options]
+ * @returns {ReturnType<typeof buildTopogramSourceStatus> & { project: Record<string, any> }}
+ */
+function buildProjectSourceStatus(projectRoot, options = {}) {
+  const resolvedRoot = normalizeProjectRoot(projectRoot);
+  const sourceStatus = buildTopogramSourceStatus(resolvedRoot);
+  const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(resolvedRoot));
+  const template = projectConfigInfo?.config?.template || null;
+  const baseline = buildTemplateOwnedBaselineStatus(resolvedRoot);
+  let trust = {
+    requiresTrust: false,
+    ok: true,
+    status: "not-required",
+    path: path.join(resolvedRoot, TEMPLATE_TRUST_FILE),
+    template: null,
+    implementation: null,
+    content: { trustedDigest: null, currentDigest: null, changed: [], added: [], removed: [] },
+    issues: []
+  };
+  if (projectConfigInfo?.config?.implementation) {
+    const trustStatus = getTemplateTrustStatus({
+      config: projectConfigInfo.config.implementation,
+      configPath: projectConfigInfo.configPath,
+      configDir: projectConfigInfo.configDir
+    }, projectConfigInfo.config);
+    trust = {
+      requiresTrust: trustStatus.requiresTrust,
+      ok: trustStatus.ok,
+      status: trustStatus.requiresTrust ? (trustStatus.ok ? "trusted" : "review-required") : "not-required",
+      path: trustStatus.trustPath,
+      template: trustStatus.template,
+      implementation: trustStatus.implementation,
+      content: trustStatus.content,
+      issues: trustStatus.issues
+    };
+  }
+  const packageStatus = template?.source === "package" && template.sourceSpec
+    ? (options.local ? localTemplatePackageStatus(template.sourceSpec) : checkTemplatePackageStatus(template.sourceSpec))
+    : null;
+  const projectDiagnostics = [];
+  if (!projectConfigInfo) {
+    projectDiagnostics.push({
+      code: "project_config_missing",
+      severity: "warning",
+      message: "topogram.project.json was not found.",
+      path: path.join(resolvedRoot, "topogram.project.json"),
+      suggestedFix: "Run `topogram check` from a Topogram project root."
+    });
+  }
+  return {
+    ...sourceStatus,
+    project: {
+      root: resolvedRoot,
+      config: projectConfigInfo
+        ? { exists: true, path: projectConfigInfo.configPath }
+        : { exists: false, path: path.join(resolvedRoot, "topogram.project.json") },
+      catalog: template?.catalog || sourceStatus.source?.catalog || null,
+      template: template
+        ? {
+            id: template.id || null,
+            version: template.version || null,
+            requested: template.requested || null,
+            source: template.source || null,
+            sourceSpec: template.sourceSpec || null,
+            includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
+              ? template.includesExecutableImplementation
+              : null
+          }
+        : null,
+      package: packageStatus,
+      packageChecks: {
+        mode: options.local ? "local" : "remote",
+        skipped: Boolean(options.local),
+        reason: options.local ? "Package registry checks were skipped because --local was used." : null
+      },
+      trust,
+      templateBaseline: baseline,
+      diagnostics: projectDiagnostics
+    },
+    diagnostics: [...sourceStatus.diagnostics, ...projectDiagnostics]
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildProjectSourceStatus>} payload
+ * @returns {void}
+ */
+function printTopogramSourceStatus(payload) {
+  if (payload.project?.package && payload.project?.packageChecks?.mode === "remote") {
+    console.log("Package checks: remote. Use --local to skip registry access.");
+  } else if (payload.project?.package && payload.project?.packageChecks?.mode === "local") {
+    console.log("Package checks: local. Registry access skipped.");
+  }
+  if (!payload.exists) {
+    console.log("Topogram source status: no provenance");
+    console.log(`Expected: ${payload.path}`);
+    console.log(`${TOPOGRAM_SOURCE_FILE} was not found. This workspace may not have been copied from a catalog topogram entry.`);
+  } else {
+    console.log(`Topogram source status: ${payload.status}`);
+    console.log(`File: ${payload.path}`);
+    if (payload.source?.catalog?.id) {
+      console.log(`Catalog: ${payload.source.catalog.id}${payload.source.catalog.source ? ` from ${payload.source.catalog.source}` : ""}`);
+    }
+    if (payload.source?.package?.spec) {
+      console.log(`Package: ${payload.source.package.spec}`);
+    }
+  }
+  if (payload.project?.config?.exists) {
+    console.log(`Project config: ${payload.project.config.path}`);
+  }
+  if (payload.project?.catalog?.id) {
+    console.log(`Project catalog: ${payload.project.catalog.id}${payload.project.catalog.source ? ` from ${payload.project.catalog.source}` : ""}`);
+  }
+  if (payload.project?.template?.id) {
+    console.log("Template attachment: attached");
+    console.log(`Template: ${payload.project.template.id}@${payload.project.template.version || "unknown"}`);
+    console.log(`Template source: ${payload.project.template.sourceSpec || payload.project.template.source || "unknown"}`);
+    console.log(`Executable implementation: ${payload.project.template.includesExecutableImplementation ? "yes" : "no"}`);
+  } else if (payload.project?.config?.exists) {
+    console.log("Template attachment: detached");
+    console.log("Template ownership: project-owned");
+  }
+  if (payload.project?.package?.package) {
+    const packageStatus = payload.project.package;
+    if (packageStatus.checked === false) {
+      console.log(`Template package: ${packageStatus.packageSpec} (not checked, local mode)`);
+    } else {
+      const currentLabel = packageStatus.current === null ? "unknown" : (packageStatus.current ? "current" : "update available");
+      console.log(`Template package: ${packageStatus.packageSpec} (${packageStatus.ok ? "reachable" : "unreachable"}, ${currentLabel})`);
+      if (packageStatus.latestVersion) {
+        console.log(`Latest template package version: ${packageStatus.latestVersion}`);
+      }
+    }
+  }
+  if (payload.project?.trust) {
+    console.log(`Implementation trust: ${payload.project.trust.status}`);
+    if (payload.project.trust.content.trustedDigest) {
+      console.log(`Trusted digest: ${payload.project.trust.content.trustedDigest}`);
+    }
+    if (payload.project.trust.content.currentDigest) {
+      console.log(`Current digest: ${payload.project.trust.content.currentDigest}`);
+    }
+  }
+  if (payload.project?.templateBaseline) {
+    const baseline = payload.project.templateBaseline;
+    const blockLabel = baseline.blocksCheck || baseline.blocksGenerate
+      ? "may block workflow"
+      : "does not block check/generate";
+    console.log(`Template baseline: ${baseline.state} (${baseline.trustedFiles} file(s), ${blockLabel})`);
+    console.log(`Template baseline meaning: ${baseline.meaning}`);
+    if (baseline.localOwnership) {
+      console.log("Template baseline ownership: local project owns these changes");
+    }
+    console.log(`Template baseline changed: ${baseline.content.changed.length}`);
+    console.log(`Template baseline removed: ${baseline.content.removed.length}`);
+  }
+  for (const kind of ["changed", "added", "removed"]) {
+    const files = payload.content[kind] || [];
+    console.log(`${kind[0].toUpperCase()}${kind.slice(1)}: ${files.length}`);
+    for (const file of files) {
+      console.log(`- ${file}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+  }
+  if (payload.project?.package?.diagnostics?.length) {
+    for (const diagnostic of payload.project.package.diagnostics) {
+      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      console.log(`${label}: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        console.log(`Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+  if (payload.project?.trust?.issues?.length) {
+    for (const issue of payload.project.trust.issues) {
+      console.log(`Issue: ${issue}`);
+    }
+  }
+  console.log("");
+  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log("Template attachment is project metadata. Detaching makes the project fully owned by this workspace.");
+  console.log("This status does not block `topogram check` or `topogram generate`.");
+  if (payload.project?.trust?.status === "review-required") {
+    console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
+  } else if (payload.exists && payload.status === "changed") {
+    console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
+  } else if (payload.project?.templateBaseline?.state === "diverged") {
+    console.log("Next: local template-derived changes are owned by this project. Run `topogram template update --check` only when reviewing upstream template changes.");
+  } else if (!payload.exists) {
+    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
+  } else {
+    console.log("Next: run `topogram check` or `topogram generate`.");
   }
 }
 
@@ -1230,6 +3295,30 @@ function buildTemplateCheckPayload(templateSpec) {
 }
 
 /**
+ * @param {ReturnType<typeof loadProjectConfig>} projectConfigInfo
+ * @returns {{ requested: string, root: string, manifest: { id: string, version: string, kind: string, topogramVersion: string, includesExecutableImplementation: boolean }, source: "local"|"package", packageSpec: string|null }}
+ */
+function currentPolicyTemplate(projectConfigInfo) {
+  const template = projectConfigInfo?.config.template || {};
+  const source = template.source === "local" || template.source === "package"
+    ? template.source
+    : "local";
+  return {
+    requested: typeof template.requested === "string" ? template.requested : String(template.id || "unknown"),
+    root: projectConfigInfo?.configDir || process.cwd(),
+    manifest: {
+      id: typeof template.id === "string" ? template.id : "unknown",
+      version: typeof template.version === "string" ? template.version : "unknown",
+      kind: "starter",
+      topogramVersion: "*",
+      includesExecutableImplementation: Boolean(template.includesExecutableImplementation)
+    },
+    source,
+    packageSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null
+  };
+}
+
+/**
  * @param {string} projectPath
  * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
  */
@@ -1265,23 +3354,7 @@ function buildTemplatePolicyCheckPayload(projectPath) {
       step: "policy"
     }));
   } else if (policyInfo.policy) {
-    const template = projectConfigInfo.config.template || {};
-    const source = template.source === "builtin" || template.source === "local" || template.source === "package"
-      ? template.source
-      : "builtin";
-    const currentTemplate = {
-      requested: typeof template.requested === "string" ? template.requested : String(template.id || "unknown"),
-      root: projectConfigInfo.configDir,
-      manifest: {
-        id: typeof template.id === "string" ? template.id : "unknown",
-        version: typeof template.version === "string" ? template.version : "unknown",
-        kind: "starter",
-        topogramVersion: "*",
-        includesExecutableImplementation: Boolean(template.includesExecutableImplementation)
-      },
-      source,
-      packageSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null
-    };
+    const currentTemplate = currentPolicyTemplate(projectConfigInfo);
     diagnostics.push(...templatePolicyDiagnosticsForTemplate(policyInfo, currentTemplate, "policy")
       .map((diagnostic) => templateCheckDiagnostic(diagnostic)));
   }
@@ -1294,6 +3367,159 @@ function buildTemplatePolicyCheckPayload(projectPath) {
     diagnostics,
     errors
   };
+}
+
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {string} actual
+ * @param {string} expected
+ * @param {string} message
+ * @param {string|null} fix
+ * @returns {{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }}
+ */
+function templatePolicyRule(name, ok, actual, expected, message, fix = null) {
+  return { name, ok, actual, expected, message, fix };
+}
+
+/**
+ * @param {string} projectPath
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, template: any, catalog: any, package: any, rules: Array<{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+function buildTemplatePolicyExplainPayload(projectPath) {
+  const check = buildTemplatePolicyCheckPayload(projectPath);
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    return {
+      ...check,
+      template: null,
+      catalog: null,
+      package: null,
+      rules: []
+    };
+  }
+  const templateMetadata = projectConfigInfo.config.template || {};
+  const currentTemplate = currentPolicyTemplate(projectConfigInfo);
+  const policy = check.policy;
+  const packageScope = currentTemplate.source === "package"
+    ? packageScopeFromSpec(currentTemplate.packageSpec || currentTemplate.requested)
+    : null;
+  const rules = [];
+  rules.push(templatePolicyRule(
+    "policy-file",
+    check.exists,
+    check.exists ? "present" : "missing",
+    "present",
+    check.exists
+      ? "Project has a template policy file."
+      : "Project has no template policy file; template operations are permissive until one is defined.",
+    check.exists ? null : "Run `topogram template policy init`."
+  ));
+  if (policy) {
+    rules.push(templatePolicyRule(
+      "allowed-source",
+      policy.allowedSources.length === 0 || policy.allowedSources.includes(currentTemplate.source),
+      currentTemplate.source,
+      policy.allowedSources.length > 0 ? policy.allowedSources.join(", ") : "(any)",
+      "Current template source must be allowed by allowedSources.",
+      `Add '${currentTemplate.source}' to allowedSources after review, or run \`topogram template policy init\`.`
+    ));
+    rules.push(templatePolicyRule(
+      "allowed-template-id",
+      policy.allowedTemplateIds.length === 0 || policy.allowedTemplateIds.includes(currentTemplate.manifest.id),
+      currentTemplate.manifest.id,
+      policy.allowedTemplateIds.length > 0 ? policy.allowedTemplateIds.join(", ") : "(any)",
+      "Current template id must be allowed by allowedTemplateIds.",
+      `Run \`topogram template policy pin ${currentTemplate.manifest.id}@${currentTemplate.manifest.version}\` after review.`
+    ));
+    if (currentTemplate.source === "package") {
+      rules.push(templatePolicyRule(
+        "allowed-package-scope",
+        !policy.allowedPackageScopes ||
+          policy.allowedPackageScopes.length === 0 ||
+          Boolean(packageScope && policy.allowedPackageScopes.includes(packageScope)),
+        packageScope || "(unscoped)",
+        policy.allowedPackageScopes && policy.allowedPackageScopes.length > 0 ? policy.allowedPackageScopes.join(", ") : "(any)",
+        "Package-backed template source must be in an allowed package scope.",
+        `Add '${packageScope || "(unscoped)"}' to allowedPackageScopes after review.`
+      ));
+    }
+    const pinnedVersion = policy.pinnedVersions?.[currentTemplate.manifest.id] || null;
+    rules.push(templatePolicyRule(
+      "pinned-version",
+      !pinnedVersion || pinnedVersion === currentTemplate.manifest.version,
+      currentTemplate.manifest.version,
+      pinnedVersion || "(unpinned)",
+      "Pinned version must match the current template version when a pin exists.",
+      `Run \`topogram template policy pin ${currentTemplate.manifest.id}@${currentTemplate.manifest.version}\` after review.`
+    ));
+    rules.push(templatePolicyRule(
+      "executable-implementation",
+      !currentTemplate.manifest.includesExecutableImplementation || policy.executableImplementation !== "deny",
+      currentTemplate.manifest.includesExecutableImplementation ? "yes" : "no",
+      policy.executableImplementation,
+      "Executable template implementation must be allowed when implementation/ is present.",
+      "Review implementation/, then set executableImplementation to 'allow' or choose a non-executable template."
+    ));
+  }
+  return {
+    ...check,
+    template: {
+      id: currentTemplate.manifest.id,
+      version: currentTemplate.manifest.version,
+      source: currentTemplate.source,
+      requested: currentTemplate.requested,
+      sourceSpec: currentTemplate.packageSpec,
+      includesExecutableImplementation: currentTemplate.manifest.includesExecutableImplementation
+    },
+    catalog: templateMetadata.catalog || null,
+    package: currentTemplate.source === "package" ? {
+      spec: currentTemplate.packageSpec,
+      scope: packageScope
+    } : null,
+    rules
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplatePolicyExplainPayload>} payload
+ * @returns {void}
+ */
+function printTemplatePolicyExplainPayload(payload) {
+  console.log(payload.ok ? "Template policy explain: allowed" : "Template policy explain: denied");
+  console.log(`Policy: ${payload.path}`);
+  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  if (payload.template) {
+    console.log(`Template: ${payload.template.id}@${payload.template.version}`);
+    console.log(`Source: ${payload.template.source}`);
+    console.log(`Requested: ${payload.template.requested}`);
+    if (payload.template.sourceSpec) {
+      console.log(`Source spec: ${payload.template.sourceSpec}`);
+    }
+    console.log(`Executable implementation: ${payload.template.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+  if (payload.catalog?.id) {
+    console.log(`Catalog: ${payload.catalog.id} from ${payload.catalog.source || "unknown"}`);
+    console.log(`Catalog package: ${payload.catalog.packageSpec || payload.catalog.package || "unknown"}`);
+  }
+  if (payload.package) {
+    console.log(`Package scope: ${payload.package.scope || "(unscoped)"}`);
+  }
+  for (const rule of payload.rules) {
+    console.log(`${rule.ok ? "PASS" : "FAIL"} ${rule.name}: ${rule.message}`);
+    console.log(`  actual: ${rule.actual}`);
+    console.log(`  expected: ${rule.expected}`);
+    if (!rule.ok && rule.fix) {
+      console.log(`  fix: ${rule.fix}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
 }
 
 /**
@@ -1534,7 +3760,7 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
-if (args.length === 0 || args.includes("--help") || args.includes("-h") || args[0] === "help") {
+if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || args.includes("-h") || args[0] === "help") {
   printUsage({ all: args[1] === "all" || args.includes("--all") });
   process.exit(args.length === 0 ? 1 : 0);
 }
@@ -1551,7 +3777,11 @@ function commandPath(index, fallback = "./topogram") {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "new" || args[0] === "create") {
+if (args[0] === "version" || args[0] === "--version") {
+  commandArgs = { version: true, inputPath: null };
+} else if (args[0] === "doctor") {
+  commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
+} else if (args[0] === "new" || args[0] === "create") {
   commandArgs = { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
@@ -1567,14 +3797,36 @@ if (args[0] === "new" || args[0] === "create") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "diff") {
   commandArgs = { trustDiff: true, inputPath: commandPath(2) };
+} else if (args[0] === "catalog" && args[1] === "list") {
+  commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+} else if (args[0] === "catalog" && args[1] === "show") {
+  commandArgs = { catalogShow: true, inputPath: args[2] };
+} else if (args[0] === "catalog" && args[1] === "doctor") {
+  commandArgs = { catalogDoctor: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+} else if (args[0] === "catalog" && args[1] === "check") {
+  commandArgs = { catalogCheck: true, inputPath: args[2] };
+} else if (args[0] === "catalog" && args[1] === "copy") {
+  commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
+} else if (args[0] === "package" && args[1] === "update-cli") {
+  commandArgs = { packageUpdateCli: true, inputPath: args[2] };
+} else if (args[0] === "source" && args[1] === "status") {
+  commandArgs = { sourceStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
+} else if (args[0] === "template" && args[1] === "show") {
+  commandArgs = { templateShow: true, inputPath: args[2] };
+} else if (args[0] === "template" && args[1] === "explain") {
+  commandArgs = { templateExplain: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "status") {
   commandArgs = { templateStatus: true, inputPath: commandPath(2) };
+} else if (args[0] === "template" && args[1] === "detach") {
+  commandArgs = { templateDetach: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
   commandArgs = { templatePolicyInit: true, inputPath: commandPath(3) };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "check") {
   commandArgs = { templatePolicyCheck: true, inputPath: commandPath(3) };
+} else if (args[0] === "template" && args[1] === "policy" && args[2] === "explain") {
+  commandArgs = { templatePolicyExplain: true, inputPath: commandPath(3) };
 } else if (args[0] === "template" && args[1] === "policy" && args[2] === "pin") {
   commandArgs = { templatePolicyPin: true, templatePolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null, inputPath: commandPath(4) };
 } else if (args[0] === "template" && args[1] === "check") {
@@ -1660,14 +3912,27 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const shouldVersion = Boolean(commandArgs?.version);
+const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
+const shouldCatalogList = Boolean(commandArgs?.catalogList);
+const shouldCatalogShow = Boolean(commandArgs?.catalogShow);
+const shouldCatalogDoctor = Boolean(commandArgs?.catalogDoctor);
+const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
+const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
+const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
+const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
+const shouldTemplateShow = Boolean(commandArgs?.templateShow);
+const shouldTemplateExplain = Boolean(commandArgs?.templateExplain);
 const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
+const shouldTemplateDetach = Boolean(commandArgs?.templateDetach);
 const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
 const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
+const shouldTemplatePolicyExplain = Boolean(commandArgs?.templatePolicyExplain);
 const shouldTemplatePolicyPin = Boolean(commandArgs?.templatePolicyPin);
 const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
@@ -1708,7 +3973,15 @@ const providerId = providerIndex >= 0 ? args[providerIndex + 1] : null;
 const presetIndex = args.indexOf("--preset");
 const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
 const templateIndex = args.indexOf("--template");
-const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "web-api-db";
+const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "hello-web";
+const catalogIndex = args.indexOf("--catalog");
+const catalogSource = catalogIndex >= 0 && args[catalogIndex + 1] && !args[catalogIndex + 1].startsWith("-")
+  ? args[catalogIndex + 1]
+  : null;
+const versionIndex = args.indexOf("--version");
+const requestedVersion = versionIndex >= 0 && args[versionIndex + 1] && !args[versionIndex + 1].startsWith("-")
+  ? args[versionIndex + 1]
+  : null;
 const useLatestTemplate = args.includes("--latest");
 const bundleIndex = args.indexOf("--bundle");
 const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
@@ -1726,51 +3999,189 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCatalogShow || shouldTemplateShow) && !inputPath) {
+  console.error("Missing required <id>.");
+  printUsage();
+  process.exit(1);
+}
+
+if (shouldCatalogCheck && !inputPath) {
+  console.error("Missing required <path-or-url>.");
+  printUsage();
+  process.exit(1);
+}
+
+if (shouldCatalogCopy && (!commandArgs?.catalogId || !inputPath)) {
+  console.error("Missing required <id> or <target>.");
+  printUsage();
+  process.exit(1);
+}
+
+if (shouldPackageUpdateCli && !inputPath) {
+  console.error("Missing required <version>.");
+  printUsage();
+  process.exit(1);
+}
+
+if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
 try {
+  if (shouldVersion) {
+    const payload = buildVersionPayload();
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printVersion(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldDoctor) {
+    const payload = buildDoctorPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printDoctor(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogList) {
+    const payload = buildCatalogListPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogList(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldCatalogShow) {
+    const payload = buildCatalogShowPayload(inputPath, catalogSource);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogDoctor) {
+    const payload = buildCatalogDoctorPayload(catalogSource || inputPath || null);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogDoctor(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogCheck) {
+    const payload = buildCatalogCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldCatalogCopy) {
+    const payload = buildCatalogCopyPayload(commandArgs.catalogId, inputPath, {
+      source: catalogSource,
+      version: requestedVersion
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printCatalogCopy(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldPackageUpdateCli) {
+    const payload = buildPackageUpdateCliPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printPackageUpdateCli(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldSourceStatus) {
+    const sourceStatusRemote = args.includes("--remote");
+    const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath), {
+      local: args.includes("--local") && !sourceStatusRemote
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTopogramSourceStatus(payload);
+    }
+    process.exit(0);
+  }
+
   if (commandArgs?.newProject) {
+    const projectRoot = path.resolve(inputPath);
+    const relativeToEngine = path.relative(ENGINE_ROOT, projectRoot);
+    if (relativeToEngine === "" || (!relativeToEngine.startsWith("..") && !path.isAbsolute(relativeToEngine))) {
+      throw new Error(
+        `Refusing to create a generated project inside the engine directory. Use a path outside engine, for example '../${path.basename(projectRoot)}'.`
+      );
+    }
+    const resolvedTemplate = resolveCatalogTemplateAlias(templateName, catalogSource);
     const result = createNewProject({
       targetPath: inputPath,
-      templateName,
+      templateName: resolvedTemplate.templateName,
+      templateProvenance: resolvedTemplate.provenance,
       engineRoot: ENGINE_ROOT,
       templatesRoot: TEMPLATES_ROOT
     });
-    console.log(`Created Topogram project at ${result.projectRoot}.`);
-    console.log(`Template: ${result.templateName}`);
-    for (const warning of result.warnings) {
-      console.warn(`Warning: ${warning}`);
-    }
-    console.log("");
-    console.log("Next steps:");
-    const relativeProjectRoot = path.relative(process.cwd(), result.projectRoot);
-    const displayProjectRoot = !relativeProjectRoot || relativeProjectRoot.startsWith("..")
-      ? result.projectRoot
-      : relativeProjectRoot;
-    console.log(`  cd ${displayProjectRoot}`);
-    console.log("  npm install");
-    console.log("  npm run check");
-    console.log("  npm run generate");
-    console.log("  npm run verify");
+    printNewProjectResult(result, process.cwd());
     process.exit(0);
   }
 
   if (shouldTemplateList) {
-    const payload = buildTemplateListPayload();
+    const payload = buildTemplateListPayload({ catalogSource });
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {
       printTemplateList(payload);
     }
     process.exit(0);
+  }
+
+  if (shouldTemplateShow) {
+    const payload = buildTemplateShowPayload(inputPath, catalogSource);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldTemplateExplain) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot explain template lifecycle without topogram.project.json.");
+    }
+    const payload = buildTemplateExplainPayload(projectConfigInfo);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateExplain(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldTemplateStatus) {
@@ -1785,6 +4196,23 @@ try {
       printTemplateStatus(status);
     }
     process.exit(status.ok ? 0 : 1);
+  }
+
+  if (shouldTemplateDetach) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot detach template metadata without topogram.project.json.");
+    }
+    const payload = buildTemplateDetachPayload(projectConfigInfo, {
+      dryRun: args.includes("--dry-run"),
+      removePolicy: args.includes("--remove-policy")
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplateDetachPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldTemplatePolicyInit) {
@@ -1816,6 +4244,16 @@ try {
       console.log(stableStringify(payload));
     } else {
       printTemplatePolicyCheckPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldTemplatePolicyExplain) {
+    const payload = buildTemplatePolicyExplainPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printTemplatePolicyExplainPayload(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }
@@ -1868,6 +4306,9 @@ try {
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
       throw new Error("Cannot update template without topogram.project.json.");
+    }
+    if (!projectConfigInfo.config.template?.id && !projectConfigInfo.config.template?.sourceSpec) {
+      throw new Error("Cannot update template because this project is detached from template metadata.");
     }
     const requestedTemplateName = templateIndex >= 0
       ? templateName
@@ -3625,18 +6066,23 @@ try {
   const ast = parsePath(inputPath);
 
   if (generateTarget) {
-    const implementation = targetRequiresImplementationProvider(generateTarget)
-      ? await loadImplementationProvider(inputPath)
+    const projectRoot = normalizeProjectRoot(inputPath);
+    const explicitProjectConfig = loadProjectConfig(projectRoot) || loadProjectConfig(inputPath);
+    const implementationOptionalTargets = new Set(["app-bundle-plan", "app-bundle", "environment-plan", "environment-bundle", "compile-check-plan", "compile-check-bundle"]);
+    const shouldLoadImplementation = targetRequiresImplementationProvider(generateTarget) &&
+      (!implementationOptionalTargets.has(generateTarget) || Boolean(explicitProjectConfig?.config?.implementation));
+    const implementation = shouldLoadImplementation
+      ? await loadImplementationProvider(explicitProjectConfig?.configDir || projectRoot)
       : null;
-    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget)
+    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget) || explicitProjectConfig
       ? resolveWorkspace(ast)
       : null;
     if (resolvedForConfig && !resolvedForConfig.ok) {
       console.error(formatValidationErrors(resolvedForConfig.validation));
       process.exit(1);
     }
-    const projectConfigInfo = targetRequiresImplementationProvider(generateTarget)
-      ? projectConfigOrDefault(inputPath, resolvedForConfig.graph, implementation)
+    const projectConfigInfo = resolvedForConfig
+      ? (explicitProjectConfig || projectConfigOrDefault(projectRoot, resolvedForConfig.graph, implementation))
       : null;
     const projectConfigValidation = projectConfigInfo
       ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph)

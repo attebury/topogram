@@ -6,6 +6,7 @@ import { generatorDefaultsMap, getProjection } from "../shared.js";
 import { generatorProfile } from "../../registry.js";
 import { generateReactApp } from "./react.js";
 import { generateSvelteKitApp } from "./sveltekit.js";
+import { generateVanillaWebApp } from "./vanilla.js";
 import {
   generateUiWebContract,
   generateUiWebDebug
@@ -14,9 +15,10 @@ import {
 export function generateWebApp(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
   const profile = generatorProfile(options.component?.generator?.id, null) || generatorDefaultsMap(projection).profile || "sveltekit";
-  return profile === "react"
-    ? generateReactApp(graph, options)
-    : generateSvelteKitApp(graph, options);
+  if (profile === "vanilla") {
+    return generateVanillaWebApp(graph, options);
+  }
+  return profile === "react" ? generateReactApp(graph, options) : generateSvelteKitApp(graph, options);
 }
 
 export function generateWebTarget(target, graph, options = {}) {
