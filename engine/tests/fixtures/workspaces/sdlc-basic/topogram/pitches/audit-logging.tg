@@ -1,0 +1,14 @@
+pitch pitch_audit_logging {
+  name "Add audit logging"
+  description "Capture every state mutation for compliance"
+  appetite "small"
+  problem "Reviewers cannot trace who changed what"
+  solution_sketch "Append to audit_log on every write"
+  rabbit_holes "Avoid full event-sourcing — keep it simple"
+  no_go_areas "No external SIEM integration in v1"
+  affects [cap_record_audit, entity_audit_log]
+  decisions [decision_audit_format]
+  domain dom_app
+  priority high
+  status approved
+}

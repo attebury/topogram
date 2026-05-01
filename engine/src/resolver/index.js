@@ -9,6 +9,11 @@ import {
   validateWorkspace,
   valueAsArray
 } from "../validator.js";
+import { enrichPitch } from "./enrich/pitch.js";
+import { enrichRequirement } from "./enrich/requirement.js";
+import { enrichAcceptanceCriterion } from "./enrich/acceptance-criterion.js";
+import { enrichTask } from "./enrich/task.js";
+import { enrichBug } from "./enrich/bug.js";
 
 function groupBy(items, keyFn) {
   const grouped = {};
@@ -42,6 +47,29 @@ function resolveReferenceList(registry, value) {
     id,
     target: toRef(resolveReference(registry, id))
   }));
+}
+
+function resolveDomainTag(statement, registry) {
+  const domainField = statement.fields.find((field) => field.key === "domain");
+  if (!domainField || domainField.value.type !== "symbol") {
+    return null;
+  }
+  const id = domainField.value.value;
+  return {
+    id,
+    target: toRef(resolveReference(registry, id))
+  };
+}
+
+function normalizeDomainScopeList(statement, key) {
+  const field = statement.fields.find((f) => f.key === key);
+  if (!field) return [];
+  const items = field.value.type === "list" || field.value.type === "sequence"
+    ? field.value.items
+    : [field.value];
+  return items
+    .map((item) => (item.type === "string" || item.type === "symbol" ? item.value : null))
+    .filter((value) => value !== null);
 }
 
 function normalizeSequence(items) {
@@ -1736,7 +1764,8 @@ export function normalizeStatement(statement, registry) {
         fields: normalizeFieldsBlock(statement),
         keys: parseKeyBlock(statement),
         relations: parseRelationBlock(statement, registry),
-        invariants: parseInvariantBlock(statement)
+        invariants: parseInvariantBlock(statement),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "shape":
       return {
@@ -1758,7 +1787,8 @@ export function normalizeStatement(statement, registry) {
         updates: resolveReferenceList(registry, getFieldValue(statement, "updates")),
         deletes: resolveReferenceList(registry, getFieldValue(statement, "deletes")),
         input: resolveReferenceList(registry, getFieldValue(statement, "input")),
-        output: resolveReferenceList(registry, getFieldValue(statement, "output"))
+        output: resolveReferenceList(registry, getFieldValue(statement, "output")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "component":
       return {
@@ -1786,14 +1816,29 @@ export function normalizeStatement(statement, registry) {
         conditionNode: getFieldValue(statement, "condition") ? parseRuleExpression(getFieldValue(statement, "condition")) : null,
         requirement: valueAsArray(getFieldValue(statement, "requirement")).map((item) => item.value),
         requirementNode: getFieldValue(statement, "requirement") ? parseRuleExpression(getFieldValue(statement, "requirement")) : null,
+        fromRequirement: getFieldValue(statement, "from_requirement")
+          ? {
+              id: symbolValue(getFieldValue(statement, "from_requirement")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "from_requirement"))))
+            }
+          : null,
         severity: symbolValue(getFieldValue(statement, "severity")),
-        sourceOfTruth: resolveReferenceList(registry, getFieldValue(statement, "source_of_truth"))
+        sourceOfTruth: resolveReferenceList(registry, getFieldValue(statement, "source_of_truth")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "decision":
       return {
         ...base,
         context: symbolValues(getFieldValue(statement, "context")),
-        consequences: symbolValues(getFieldValue(statement, "consequences"))
+        consequences: symbolValues(getFieldValue(statement, "consequences")),
+        pitch: getFieldValue(statement, "pitch")
+          ? {
+              id: symbolValue(getFieldValue(statement, "pitch")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "pitch"))))
+            }
+          : null,
+        supersedes: resolveReferenceList(registry, getFieldValue(statement, "supersedes")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "projection":
       return {
@@ -1839,27 +1884,127 @@ export function normalizeStatement(statement, registry) {
         ...base,
         inputs: resolveReferenceList(registry, getFieldValue(statement, "inputs")),
         steps: symbolValues(getFieldValue(statement, "steps")),
-        outputs: symbolValues(getFieldValue(statement, "outputs"))
+        outputs: symbolValues(getFieldValue(statement, "outputs")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "verification":
       return {
         ...base,
         validates: resolveReferenceList(registry, getFieldValue(statement, "validates")),
         method: symbolValue(getFieldValue(statement, "method")),
-        scenarios: symbolValues(getFieldValue(statement, "scenarios"))
+        scenarios: symbolValues(getFieldValue(statement, "scenarios")),
+        requirementRefs: resolveReferenceList(registry, getFieldValue(statement, "requirement_refs")),
+        acceptanceRefs: resolveReferenceList(registry, getFieldValue(statement, "acceptance_refs")),
+        fixesBugs: resolveReferenceList(registry, getFieldValue(statement, "fixes_bugs")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "operation":
       return {
         ...base,
         observes: resolveReferenceList(registry, getFieldValue(statement, "observes")),
         metrics: symbolValues(getFieldValue(statement, "metrics")),
-        alerts: symbolValues(getFieldValue(statement, "alerts"))
+        alerts: symbolValues(getFieldValue(statement, "alerts")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "term":
       return {
         ...base,
         aliases: symbolValues(getFieldValue(statement, "aliases")),
         excludes: symbolValues(getFieldValue(statement, "excludes"))
+      };
+    case "domain":
+      return {
+        ...base,
+        inScope: normalizeDomainScopeList(statement, "in_scope"),
+        outOfScope: normalizeDomainScopeList(statement, "out_of_scope"),
+        owners: resolveReferenceList(registry, getFieldValue(statement, "owners")),
+        parentDomain: getFieldValue(statement, "parent_domain")
+          ? {
+              id: symbolValue(getFieldValue(statement, "parent_domain")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "parent_domain"))))
+            }
+          : null,
+        aliases: normalizeDomainScopeList(statement, "aliases")
+      };
+    case "pitch":
+      return {
+        ...base,
+        priority: symbolValue(getFieldValue(statement, "priority")),
+        appetite: stringValue(getFieldValue(statement, "appetite")) || symbolValue(getFieldValue(statement, "appetite")),
+        problem: stringValue(getFieldValue(statement, "problem")),
+        solutionSketch: stringValue(getFieldValue(statement, "solution_sketch")),
+        rabbitHoles: stringValue(getFieldValue(statement, "rabbit_holes")) || symbolValues(getFieldValue(statement, "rabbit_holes")),
+        noGoAreas: stringValue(getFieldValue(statement, "no_go_areas")) || symbolValues(getFieldValue(statement, "no_go_areas")),
+        affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
+        decisions: resolveReferenceList(registry, getFieldValue(statement, "decisions")),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
+      };
+    case "requirement":
+      return {
+        ...base,
+        priority: symbolValue(getFieldValue(statement, "priority")),
+        pitch: getFieldValue(statement, "pitch")
+          ? {
+              id: symbolValue(getFieldValue(statement, "pitch")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "pitch"))))
+            }
+          : null,
+        affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
+        introducesRules: resolveReferenceList(registry, getFieldValue(statement, "introduces_rules")),
+        respectsRules: resolveReferenceList(registry, getFieldValue(statement, "respects_rules")),
+        supersedes: resolveReferenceList(registry, getFieldValue(statement, "supersedes")),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
+      };
+    case "acceptance_criterion":
+      return {
+        ...base,
+        requirement: getFieldValue(statement, "requirement")
+          ? {
+              id: symbolValue(getFieldValue(statement, "requirement")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "requirement"))))
+            }
+          : null,
+        supersedes: resolveReferenceList(registry, getFieldValue(statement, "supersedes")),
+        updated: stringValue(getFieldValue(statement, "updated"))
+      };
+    case "task":
+      return {
+        ...base,
+        priority: symbolValue(getFieldValue(statement, "priority")),
+        workType: symbolValue(getFieldValue(statement, "work_type")),
+        affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
+        satisfies: resolveReferenceList(registry, getFieldValue(statement, "satisfies")),
+        acceptanceRefs: resolveReferenceList(registry, getFieldValue(statement, "acceptance_refs")),
+        blocks: resolveReferenceList(registry, getFieldValue(statement, "blocks")),
+        blockedBy: resolveReferenceList(registry, getFieldValue(statement, "blocked_by")),
+        claimedBy: resolveReferenceList(registry, getFieldValue(statement, "claimed_by")),
+        introducesDecisions: resolveReferenceList(registry, getFieldValue(statement, "introduces_decisions")),
+        modifies: resolveReferenceList(registry, getFieldValue(statement, "modifies")),
+        introduces: resolveReferenceList(registry, getFieldValue(statement, "introduces")),
+        removes: resolveReferenceList(registry, getFieldValue(statement, "removes")),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
+      };
+    case "bug":
+      return {
+        ...base,
+        priority: symbolValue(getFieldValue(statement, "priority")),
+        severity: symbolValue(getFieldValue(statement, "severity")),
+        affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
+        violates: resolveReferenceList(registry, getFieldValue(statement, "violates")),
+        surfacesRule: resolveReferenceList(registry, getFieldValue(statement, "surfaces_rule")),
+        introducedIn: resolveReferenceList(registry, getFieldValue(statement, "introduced_in")),
+        fixedIn: resolveReferenceList(registry, getFieldValue(statement, "fixed_in")),
+        fixedInRelease: stringValue(getFieldValue(statement, "fixed_in_release")) || symbolValue(getFieldValue(statement, "fixed_in_release")),
+        fixedInVerification: resolveReferenceList(registry, getFieldValue(statement, "fixed_in_verification")),
+        reproduction: stringValue(getFieldValue(statement, "reproduction")),
+        modifies: resolveReferenceList(registry, getFieldValue(statement, "modifies")),
+        introduces: resolveReferenceList(registry, getFieldValue(statement, "introduces")),
+        removes: resolveReferenceList(registry, getFieldValue(statement, "removes")),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     default:
       return {
@@ -1893,6 +2038,14 @@ function normalizeDoc(doc) {
     reviewRequired: doc.metadata.review_required ?? false,
     provenance: [...(doc.metadata.provenance || [])],
     tags: [...(doc.metadata.tags || [])],
+    domain: doc.metadata.domain || null,
+    appVersion: doc.metadata.app_version || null,
+    audience: doc.metadata.audience || null,
+    priority: doc.metadata.priority || null,
+    version: doc.metadata.version || null,
+    affects: [...(doc.metadata.affects || [])],
+    satisfies: [...(doc.metadata.satisfies || [])],
+    approvals: [...(doc.metadata.approvals || [])],
     file: doc.file,
     relativePath: doc.relativePath,
     body: doc.body
@@ -1913,6 +2066,163 @@ export function resolveWorkspace(workspaceAst) {
   const statements = workspaceAst.files.flatMap((file) => file.statements);
   const resolvedStatements = statements.map((statement) => normalizeStatement(statement, registry));
   const byId = new Map(resolvedStatements.map((statement) => [statement.id, statement]));
+
+  // Build domain.members back-links by reverse-indexing tagged statements.
+  // Members are grouped per kind so consumers can ask for `domain.members.capabilities`
+  // without re-walking the registry. Phase 2 extends with SDLC kinds; documents
+  // are folded in below from workspaceAst.docs[].metadata.domain.
+  const domainMembersById = new Map();
+  for (const statement of resolvedStatements) {
+    if (statement.kind === "domain") {
+      domainMembersById.set(statement.id, {
+        capabilities: [],
+        entities: [],
+        rules: [],
+        verifications: [],
+        orchestrations: [],
+        operations: [],
+        decisions: [],
+        pitches: [],
+        requirements: [],
+        tasks: [],
+        bugs: [],
+        documents: []
+      });
+    }
+  }
+  const memberKindToBucket = {
+    capability: "capabilities",
+    entity: "entities",
+    rule: "rules",
+    verification: "verifications",
+    orchestration: "orchestrations",
+    operation: "operations",
+    decision: "decisions",
+    pitch: "pitches",
+    requirement: "requirements",
+    task: "tasks",
+    bug: "bugs"
+  };
+  for (const statement of resolvedStatements) {
+    const bucketKey = memberKindToBucket[statement.kind];
+    if (!bucketKey || !statement.resolvedDomain) {
+      continue;
+    }
+    const members = domainMembersById.get(statement.resolvedDomain.id);
+    if (members) {
+      members[bucketKey].push(statement.id);
+    }
+  }
+  // Fold tagged documents into domain.members.documents.
+  for (const doc of workspaceAst.docs || []) {
+    if (doc.parseError) continue;
+    const domainId = doc.metadata?.domain;
+    if (!domainId) continue;
+    const members = domainMembersById.get(domainId);
+    if (members && doc.metadata.id) {
+      members.documents.push(doc.metadata.id);
+    }
+  }
+  for (const members of domainMembersById.values()) {
+    for (const bucket of Object.values(members)) {
+      bucket.sort();
+    }
+  }
+
+  // Phase 2: build SDLC back-link indices in a single pass over the resolved
+  // statements. Each index maps `targetId -> [sourceId,...]`.
+  const sdlcIndex = {
+    requirementsByPitch: new Map(),
+    decisionsByPitch: new Map(),
+    acsByRequirement: new Map(),
+    tasksBySatisfiedRequirement: new Map(),
+    tasksByAcceptanceRef: new Map(),
+    verificationsByRequirementRef: new Map(),
+    verificationsByAcceptanceRef: new Map(),
+    verificationsFixingBug: new Map(),
+    supersededByRequirements: new Map(),
+    supersededByAcs: new Map(),
+    documentsBySatisfies: new Map(),
+    rulesByFromRequirement: new Map(),
+    tasksThatBlockTarget: new Map(),
+    tasksBlockedByTarget: new Map(),
+    affectedByPitches: new Map(),
+    affectedByRequirements: new Map(),
+    affectedByTasks: new Map(),
+    affectedByBugs: new Map(),
+    introducedRulesByRequirement: new Map(),
+    respectedRulesByRequirement: new Map(),
+    rulesViolatedByBug: new Map(),
+    rulesSurfacedByBug: new Map(),
+    decisionsIntroducedByTask: new Map()
+  };
+  function pushIndex(map, key, value) {
+    if (!key || !value) return;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(value);
+  }
+  function pushIndexFromList(map, list, value) {
+    if (!Array.isArray(list)) return;
+    for (const ref of list) {
+      const key = typeof ref === "string" ? ref : ref?.id;
+      pushIndex(map, key, value);
+    }
+  }
+  for (const statement of resolvedStatements) {
+    switch (statement.kind) {
+      case "requirement":
+        pushIndex(sdlcIndex.requirementsByPitch, statement.pitch?.id, statement.id);
+        pushIndexFromList(sdlcIndex.affectedByRequirements, statement.affects, statement.id);
+        pushIndexFromList(sdlcIndex.introducedRulesByRequirement, statement.introducesRules, statement.id);
+        pushIndexFromList(sdlcIndex.respectedRulesByRequirement, statement.respectsRules, statement.id);
+        pushIndexFromList(sdlcIndex.supersededByRequirements, statement.supersedes, statement.id);
+        break;
+      case "acceptance_criterion":
+        pushIndex(sdlcIndex.acsByRequirement, statement.requirement?.id, statement.id);
+        pushIndexFromList(sdlcIndex.supersededByAcs, statement.supersedes, statement.id);
+        break;
+      case "decision":
+        pushIndex(sdlcIndex.decisionsByPitch, statement.pitch?.id, statement.id);
+        break;
+      case "rule":
+        pushIndex(sdlcIndex.rulesByFromRequirement, statement.fromRequirement?.id, statement.id);
+        break;
+      case "pitch":
+        pushIndexFromList(sdlcIndex.affectedByPitches, statement.affects, statement.id);
+        break;
+      case "task":
+        pushIndexFromList(sdlcIndex.affectedByTasks, statement.affects, statement.id);
+        pushIndexFromList(sdlcIndex.tasksBySatisfiedRequirement, statement.satisfies, statement.id);
+        pushIndexFromList(sdlcIndex.tasksByAcceptanceRef, statement.acceptanceRefs, statement.id);
+        pushIndexFromList(sdlcIndex.decisionsIntroducedByTask, statement.introducesDecisions, statement.id);
+        pushIndexFromList(sdlcIndex.tasksThatBlockTarget, statement.blocks, statement.id);
+        pushIndexFromList(sdlcIndex.tasksBlockedByTarget, statement.blockedBy, statement.id);
+        break;
+      case "bug":
+        pushIndexFromList(sdlcIndex.affectedByBugs, statement.affects, statement.id);
+        pushIndexFromList(sdlcIndex.rulesViolatedByBug, statement.violates, statement.id);
+        pushIndexFromList(sdlcIndex.rulesSurfacedByBug, statement.surfacesRule, statement.id);
+        break;
+      case "verification":
+        pushIndexFromList(sdlcIndex.verificationsByRequirementRef, statement.requirementRefs, statement.id);
+        pushIndexFromList(sdlcIndex.verificationsByAcceptanceRef, statement.acceptanceRefs, statement.id);
+        pushIndexFromList(sdlcIndex.verificationsFixingBug, statement.fixesBugs, statement.id);
+        break;
+      default:
+        break;
+    }
+  }
+  // Documents `satisfies` frontmatter is folded in from workspaceAst.docs.
+  for (const doc of workspaceAst.docs || []) {
+    if (doc.parseError) continue;
+    const satisfies = doc.metadata?.satisfies;
+    if (!satisfies || !doc.metadata.id) continue;
+    const ids = Array.isArray(satisfies) ? satisfies : [satisfies];
+    for (const id of ids) {
+      pushIndex(sdlcIndex.documentsBySatisfies, id, doc.metadata.id);
+    }
+  }
+
   const enrichedStatements = resolvedStatements.map((statement) => {
     switch (statement.kind) {
       case "shape":
@@ -1965,12 +2275,105 @@ export function resolveWorkspace(workspaceAst) {
           ...statement,
           vocabulary: buildTermVocabulary(statement)
         };
+      case "domain":
+        return {
+          ...statement,
+          members: domainMembersById.get(statement.id) || {
+            capabilities: [],
+            entities: [],
+            rules: [],
+            verifications: [],
+            orchestrations: [],
+            operations: [],
+            decisions: [],
+            pitches: [],
+            requirements: [],
+            tasks: [],
+            bugs: [],
+            documents: []
+          }
+        };
+      case "pitch":
+        return {
+          ...statement,
+          ...enrichPitch(statement, sdlcIndex)
+        };
+      case "requirement":
+        return {
+          ...statement,
+          ...enrichRequirement(statement, sdlcIndex)
+        };
+      case "acceptance_criterion":
+        return {
+          ...statement,
+          ...enrichAcceptanceCriterion(statement, sdlcIndex)
+        };
+      case "task":
+        return {
+          ...statement,
+          ...enrichTask(statement, sdlcIndex)
+        };
+      case "bug":
+        return {
+          ...statement,
+          ...enrichBug(statement, sdlcIndex)
+        };
       default:
         return statement;
     }
   });
-  const byKind = groupBy(enrichedStatements, (statement) => statement.kind);
-  const finalStatements = enrichedStatements.map((statement) => {
+
+  // After per-kind enrichment, add `affectedBy*` lists onto the targets
+  // (capability/entity/rule/projection/component/orchestration/operation) and
+  // the change-tracking lists onto the carrier kinds (rule, decision).
+  const affectedByPitches = sdlcIndex.affectedByPitches;
+  const affectedByRequirements = sdlcIndex.affectedByRequirements;
+  const affectedByTasks = sdlcIndex.affectedByTasks;
+  const affectedByBugs = sdlcIndex.affectedByBugs;
+  const introducedRulesByRequirement = sdlcIndex.introducedRulesByRequirement;
+  const respectedRulesByRequirement = sdlcIndex.respectedRulesByRequirement;
+  const rulesViolatedByBug = sdlcIndex.rulesViolatedByBug;
+  const rulesSurfacedByBug = sdlcIndex.rulesSurfacedByBug;
+  const decisionsIntroducedByTask = sdlcIndex.decisionsIntroducedByTask;
+  const sortedOr = (map, key) => (map.get(key) || []).slice().sort();
+  const enrichedWithAffected = enrichedStatements.map((statement) => {
+    switch (statement.kind) {
+      case "capability":
+      case "entity":
+      case "projection":
+      case "component":
+      case "orchestration":
+      case "operation":
+        return {
+          ...statement,
+          affectedByPitches: sortedOr(affectedByPitches, statement.id),
+          affectedByRequirements: sortedOr(affectedByRequirements, statement.id),
+          affectedByTasks: sortedOr(affectedByTasks, statement.id),
+          affectedByBugs: sortedOr(affectedByBugs, statement.id)
+        };
+      case "rule":
+        return {
+          ...statement,
+          affectedByPitches: sortedOr(affectedByPitches, statement.id),
+          affectedByRequirements: sortedOr(affectedByRequirements, statement.id),
+          affectedByTasks: sortedOr(affectedByTasks, statement.id),
+          affectedByBugs: sortedOr(affectedByBugs, statement.id),
+          introducedByRequirements: sortedOr(introducedRulesByRequirement, statement.id),
+          respectedByRequirements: sortedOr(respectedRulesByRequirement, statement.id),
+          violatedByBugs: sortedOr(rulesViolatedByBug, statement.id),
+          surfacedByBugs: sortedOr(rulesSurfacedByBug, statement.id)
+        };
+      case "decision":
+        return {
+          ...statement,
+          introducedByTasks: sortedOr(decisionsIntroducedByTask, statement.id)
+        };
+      default:
+        return statement;
+    }
+  });
+  const byKind = groupBy(enrichedWithAffected, (statement) => statement.kind);
+  const finalStatements = enrichedWithAffected.map((statement) => {
     if (statement.kind !== "shape") {
       return statement;
     }

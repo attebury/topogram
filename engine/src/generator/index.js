@@ -16,6 +16,7 @@ import { generateDbTarget } from "./surfaces/databases/index.js";
 import { generateAppTarget } from "./surfaces/index.js";
 import { generateRuntimeTarget } from "./runtime/index.js";
 import { generateContextTarget } from "./context/index.js";
+import { generateSdlcTarget } from "./sdlc/index.js";
 import { buildOutputFiles } from "./output.js";
 
 function okResult(target, artifact) {
@@ -108,9 +109,21 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "context-slice" ||
     target === "context-bundle" ||
     target === "context-report" ||
-    target === "context-task-mode"
+    target === "context-task-mode" ||
+    target === "domain-coverage" ||
+    target === "domain-list" ||
+    target === "domain-page"
   ) {
     return okResult(target, generateContextTarget(target, graph, options));
+  }
+
+  if (
+    target === "sdlc-board" ||
+    target === "sdlc-doc-page" ||
+    target === "sdlc-release-notes" ||
+    target === "sdlc-traceability-matrix"
+  ) {
+    return okResult(target, generateSdlcTarget(target, graph, options));
   }
 
   if (

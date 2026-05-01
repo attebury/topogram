@@ -2,6 +2,112 @@
 
 ## Unreleased
 
+- Add `domain` statement kind for grouping the spec by business slice
+  (FIS, RNF, DrugTrac, etc.). Identifier prefix `dom_`. Required fields:
+  `name`, `description`, `status`. Optional: `in_scope`, `out_of_scope`,
+  `owners`, `parent_domain`, `aliases`. Validator enforces identifier
+  prefix, scope-list shapes, owner refs (`actor`|`role`), parent_domain
+  refs, and parent-domain cycle detection.
+- Add optional singular `domain` field on `capability`, `entity`, `rule`,
+  `verification`, `orchestration`, `operation`, and `decision`. Cross-kind
+  validator hard-errors on unknown ids and wrong-kind references.
+- Resolver populates `resolvedDomain` on each tagged statement and a
+  reverse-indexed `members` block on each `domain` (capabilities,
+  entities, rules, verifications, orchestrations, operations, decisions).
+- `context-slice --domain <id>` returns a focused subgraph
+  (`focus.kind === "domain"`, members summarized, projections that
+  realize any of its capabilities, plus a `domain_surface` review
+  boundary). The same `--domain` selector flows through
+  `verification-targets`, `change-plan`, `review-packet`, and the rest
+  of the query family.
+- `query domain-coverage --domain <id>` emits a per-platform realization
+  matrix (capabilities × platforms) plus the projections involved.
+- `query domain-list` lists all domains with member counts for navigation.
+- New `domain-coverage` and `domain-page` generator targets. The latter
+  emits markdown summaries at `topogram/docs-generated/domains/{slug}.md`
+  per domain (members, in/out-of-scope, per-platform coverage table).
+- `context-diff` now emits a `domains` section.
+- `workspace-docs` recognizes a singular `domain:` frontmatter field on
+  documents; the validator checks the reference.
+- New docs: `docs/domains.md` (full guide); `docs/grammar.md` updated
+  with the `domain` row and the optional-field paragraph;
+  `docs/topogram-workspace-layout.md` appends a "Domain organization"
+  subsection.
+- New fixture `engine/tests/fixtures/domains/feedlot/` (3 domains,
+  10 capabilities, 12 entities, 4 cross-platform projections) and
+  golden tests at `engine/tests/active/domain-kind.test.js`.
+
+### SDLC layer (Phase 2)
+
+- Add five new SDLC statement kinds: `pitch` (`pitch_`), `requirement`
+  (`req_`), `acceptance_criterion` (`ac_`), `task` (`task_`), and `bug`
+  (`bug_`). Plus a markdown-only `document` (`doc_`) kind via
+  `workspace-docs.js`. Each kind has its own status set, identifier
+  pattern, required/allowed fields, and per-kind validator.
+- Generalize `validateStatus` into a per-kind status table
+  (`STATUS_SETS_BY_KIND`) so `decision` (existing) and the new SDLC
+  kinds (`pitch`, `requirement`, `acceptance_criterion`, `task`, `bug`)
+  each enforce their own status sequences.
+- Extend existing kinds: `verification` gains `requirement_refs`,
+  `acceptance_refs`, `fixes_bugs`; `decision` gains `pitch`,
+  `supersedes`; `rule` gains `from_requirement`. All validate via the
+  generalized cross-reference checker.
+- Resolver builds 20+ new SDLC back-link arrays
+  (`pitch.requirements`, `requirement.acceptanceCriteria`,
+  `acceptance_criterion.tasks`, `task.blockingMe`, `bug.verifiedBy`,
+  `rule.introducedByRequirements`, `rule.violatedByBugs`,
+  `decision.introducedByTasks`, `capability.affectedByPitches`,
+  `capability.affectedByRequirements`, `capability.affectedByTasks`,
+  `capability.affectedByBugs`, etc.) so consumers can traverse the
+  shape-the-work → ship → defect → verification chain without
+  re-walking the graph.
+- Extend `domain.members` with SDLC arrays (`pitches`, `requirements`,
+  `tasks`, `bugs`, `documents`).
+- Six new `context-slice` selectors: `--pitch`, `--requirement`,
+  `--acceptance`, `--task`, `--bug`, `--document`. Each returns the
+  same shape as existing slices (focus + summary + depends_on + related
+  + verification + write_scope + review_boundary) with kind-appropriate
+  review-boundary reasons (`pitch_scope`, `requirement_scope`,
+  `task_scope`, `bug_scope`, `document_scope`).
+- `context-diff` folds SDLC artifact changes into a new `sdlc` section
+  covering pitch/requirement/AC/task/bug deltas.
+- New `engine/src/sdlc/` core module: per-kind state machines under
+  `transitions/`, per-kind DoD checks under `dod/`, history sidecar
+  (`.topogram-sdlc-history.json`) for transition records, default-active
+  status filtering, and a top-level orchestrator that surgically rewrites
+  `.tg` `status` fields without disturbing surrounding formatting.
+- New `engine/src/archive/` module: year-bucketed JSONL archive
+  (`topogram/_archive/{kind}s-{year}.jsonl`), resolver bridge that
+  auto-loads frozen entries at workspace-parse time so traceability
+  still sees them, plus `archive` / `unarchive` / `compact` operations.
+- New CLI subcommand group: `topogram sdlc transition <id> <status>`,
+  `sdlc check`, `sdlc explain <id>` (with structured `next_action`
+  output), `sdlc archive`, `sdlc unarchive`, `sdlc compact`,
+  `sdlc new <kind> <slug>`, `sdlc adopt`, plus `topogram release`
+  for atomic changelog assembly + document `app_version` stamping +
+  archive trigger (with `--dry-run`).
+- Four new generator targets: `sdlc-board` (kanban with `--kind`
+  filter), `sdlc-doc-page` (rendered markdown per document with
+  cross-ref sidebar), `sdlc-release-notes` (assembled from approved
+  pitches + done tasks + verified bugs in a release window), and
+  `sdlc-traceability-matrix` (pitch → req → AC → task/bug →
+  verification table with gap detection).
+- `workspace-docs` extended: 7 new `DOC_KINDS` (`user-guide`, `api`,
+  `architecture`, `operations`, `getting-started`, `reference`,
+  `development`); 3 new `DOC_STATUSES` (`review`, `published`,
+  `archived`); `app_version`, `audience`, `priority`, `version`,
+  `affects`, `satisfies`, `approvals` frontmatter fields.
+- New docs: `docs/sdlc.md` (kinds, lifecycles, slices, release flow,
+  agent-loop pattern), `docs/lifecycles.md` (per-kind state diagrams
+  and DoD reference), and the SDLC layout subsection in
+  `docs/topogram-workspace-layout.md`.
+- New fixture `engine/tests/fixtures/workspaces/app-basic/` with one
+  pitch + requirement + AC + task + bug + archived JSONL bug, plus 21
+  golden tests at `engine/tests/active/sdlc-kinds.test.js` covering
+  validators, resolver back-links, six new slice selectors, three
+  generators (board/release-notes/traceability), state-machine
+  transitions, DoD rules, archive load/save, transition round-trips
+  (rewrite + history sidecar), and release dry-run output.
 - Add `projection.ui_components` so projections explicitly own component
   placement and wiring. Component usage validates screen, region, component,
   prop, event, data-source, and event-target references.

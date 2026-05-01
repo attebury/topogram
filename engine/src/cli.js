@@ -221,7 +221,9 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--domain <id>]");
+  console.log("   or: node ./src/cli.js query domain-list <path>");
+  console.log("   or: node ./src/cli.js query domain-coverage <path> --domain <id>");
   console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
   console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
@@ -4766,6 +4768,7 @@ function importAdoptOnlyRequested({
   entityId,
   journeyId,
   surfaceId,
+  domainId,
   fromTopogramPath
 } = {}) {
   return modeId === "import-adopt" && !(
@@ -4776,6 +4779,7 @@ function importAdoptOnlyRequested({
     entityId ||
     journeyId ||
     surfaceId ||
+    domainId ||
     fromTopogramPath
   );
 }
@@ -4913,6 +4917,10 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { generateTarget: "context-diff", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "slice") {
   commandArgs = { generateTarget: "context-slice", inputPath: args[2] };
+} else if (args[0] === "query" && args[1] === "domain-coverage") {
+  commandArgs = { queryName: "domain-coverage", inputPath: args[2] };
+} else if (args[0] === "query" && args[1] === "domain-list") {
+  commandArgs = { queryName: "domain-list", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "review-boundary") {
   commandArgs = { queryName: "review-boundary", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "write-scope") {
@@ -4957,6 +4965,26 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { queryName: "auth-hints", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "auth-review-packet") {
   commandArgs = { queryName: "auth-review-packet", inputPath: args[2] };
+} else if (args[0] === "sdlc" && args[1] === "transition") {
+  const sdlcInput = args[4] && !args[4].startsWith("--") ? args[4] : ".";
+  commandArgs = { sdlcCommand: "transition", inputPath: sdlcInput, sdlcId: args[2], sdlcTargetStatus: args[3] };
+} else if (args[0] === "sdlc" && args[1] === "check") {
+  commandArgs = { sdlcCommand: "check", inputPath: args[2] || "." };
+} else if (args[0] === "sdlc" && args[1] === "explain") {
+  const sdlcInput = args[3] && !args[3].startsWith("--") ? args[3] : ".";
+  commandArgs = { sdlcCommand: "explain", sdlcId: args[2], inputPath: sdlcInput };
+} else if (args[0] === "sdlc" && args[1] === "archive") {
+  commandArgs = { sdlcCommand: "archive", inputPath: args[2] || "." };
+} else if (args[0] === "sdlc" && args[1] === "unarchive") {
+  commandArgs = { sdlcCommand: "unarchive", sdlcId: args[2], inputPath: args[3] || "." };
+} else if (args[0] === "sdlc" && args[1] === "compact") {
+  commandArgs = { sdlcCommand: "compact", sdlcArchiveFile: args[2] };
+} else if (args[0] === "sdlc" && args[1] === "new") {
+  commandArgs = { sdlcCommand: "new", sdlcNewKind: args[2], sdlcNewSlug: args[3], inputPath: args[4] || "." };
+} else if (args[0] === "sdlc" && args[1] === "adopt") {
+  commandArgs = { sdlcCommand: "adopt", inputPath: args[2] || "." };
+} else if (args[0] === "release") {
+  commandArgs = { sdlcCommand: "release", inputPath: args[1] || "." };
 }
 if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath")) {
   inputPath = commandArgs.inputPath;
@@ -5016,10 +5044,41 @@ const journeyIndex = args.indexOf("--journey");
 const journeyId = journeyIndex >= 0 ? args[journeyIndex + 1] : null;
 const surfaceIndex = args.indexOf("--surface");
 const surfaceId = surfaceIndex >= 0 ? args[surfaceIndex + 1] : null;
+const domainIndex = args.indexOf("--domain");
+const domainId = domainIndex >= 0 ? args[domainIndex + 1] : null;
 const seamIndex = args.indexOf("--seam");
 const seamId = seamIndex >= 0 ? args[seamIndex + 1] : null;
 const taskIndex = args.indexOf("--task");
 const taskId = taskIndex >= 0 ? args[taskIndex + 1] : null;
+const pitchIndex = args.indexOf("--pitch");
+const pitchId = pitchIndex >= 0 ? args[pitchIndex + 1] : null;
+const requirementIndex = args.indexOf("--requirement");
+const requirementId = requirementIndex >= 0 ? args[requirementIndex + 1] : null;
+const acceptanceIndex = args.indexOf("--acceptance");
+const acceptanceId = acceptanceIndex >= 0 ? args[acceptanceIndex + 1] : null;
+const bugIndex = args.indexOf("--bug");
+const bugId = bugIndex >= 0 ? args[bugIndex + 1] : null;
+const documentIndex = args.indexOf("--document");
+const documentId = documentIndex >= 0 ? args[documentIndex + 1] : null;
+const sdlcKindIndex = args.indexOf("--kind");
+const sdlcKind = sdlcKindIndex >= 0 ? args[sdlcKindIndex + 1] : null;
+const sdlcStatusIndex = args.indexOf("--status");
+const sdlcStatus = sdlcStatusIndex >= 0 ? args[sdlcStatusIndex + 1] : null;
+const sdlcNoteIndex = args.indexOf("--note");
+const sdlcNote = sdlcNoteIndex >= 0 ? args[sdlcNoteIndex + 1] : null;
+const sdlcActorIndex = args.indexOf("--actor");
+const sdlcActor = sdlcActorIndex >= 0 ? args[sdlcActorIndex + 1] : null;
+const sdlcAppVersionIndex = args.indexOf("--app-version");
+const sdlcAppVersion = sdlcAppVersionIndex >= 0 ? args[sdlcAppVersionIndex + 1] : null;
+const sdlcSinceIndex = args.indexOf("--since-tag");
+const sdlcSinceTag = sdlcSinceIndex >= 0 ? args[sdlcSinceIndex + 1] : null;
+const sdlcBeforeIndex = args.indexOf("--before");
+const sdlcBefore = sdlcBeforeIndex >= 0 ? args[sdlcBeforeIndex + 1] : null;
+const sdlcDryRun = args.includes("--dry-run");
+const sdlcStrict = args.includes("--strict");
+const sdlcIncludeArchived = args.includes("--include-archived");
+const sdlcIncludeHistory = args.includes("--history") || args.includes("--include-history");
+const sdlcBrief = args.includes("--brief");
 const profileIndex = args.indexOf("--profile");
 const profileId = profileIndex >= 0 ? args[profileIndex + 1] : null;
 const providerIndex = args.indexOf("--provider");
@@ -5716,6 +5775,32 @@ try {
     process.exit(0);
   }
 
+  if (commandArgs?.queryName === "domain-list") {
+    const ast = parsePath(inputPath);
+    const result = generateWorkspace(ast, { target: "domain-list" });
+    if (!result.ok) {
+      console.error(formatValidationErrors(result.validation));
+      process.exit(1);
+    }
+    console.log(stableStringify(result.artifact));
+    process.exit(0);
+  }
+
+  if (commandArgs?.queryName === "domain-coverage") {
+    if (!domainId) {
+      console.error("query domain-coverage requires --domain <id>");
+      process.exit(2);
+    }
+    const ast = parsePath(inputPath);
+    const result = generateWorkspace(ast, { target: "domain-coverage", domainId });
+    if (!result.ok) {
+      console.error(formatValidationErrors(result.validation));
+      process.exit(1);
+    }
+    console.log(stableStringify(result.artifact));
+    process.exit(0);
+  }
+
   if (commandArgs?.queryName === "seam-check") {
     const ast = parsePath(inputPath);
     const resolved = resolveWorkspace(ast);
@@ -5772,7 +5857,8 @@ try {
       componentId,
       entityId,
       journeyId,
-      surfaceId
+      surfaceId,
+      domainId
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -5791,7 +5877,7 @@ try {
 
   if (commandArgs?.queryName === "write-scope") {
     const ast = parsePath(inputPath);
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
 
     if (modeId || (!hasSelector && !fromTopogramPath)) {
       const effectiveModeId = modeId || "verification";
@@ -5805,6 +5891,7 @@ try {
         entityId,
         journeyId,
         surfaceId,
+        domainId,
         fromTopogramPath
       });
       if (!result.ok) {
@@ -5851,7 +5938,8 @@ try {
       componentId,
       entityId,
       journeyId,
-      surfaceId
+      surfaceId,
+      domainId
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -5870,7 +5958,7 @@ try {
 
   if (commandArgs?.queryName === "verification-targets") {
     const ast = parsePath(inputPath);
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
 
     if (modeId || (!hasSelector && !fromTopogramPath)) {
       const effectiveModeId = modeId || "verification";
@@ -5884,6 +5972,7 @@ try {
         entityId,
         journeyId,
         surfaceId,
+        domainId,
         fromTopogramPath
       });
       if (!result.ok) {
@@ -5941,7 +6030,8 @@ try {
       componentId,
       entityId,
       journeyId,
-      surfaceId
+      surfaceId,
+      domainId
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -5975,6 +6065,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
@@ -5982,7 +6073,7 @@ try {
       process.exit(1);
     }
 
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
@@ -5992,7 +6083,8 @@ try {
           componentId,
           entityId,
           journeyId,
-          surfaceId
+          surfaceId,
+          domainId
         })
       : null;
     if (sliceResult && !sliceResult.ok) {
@@ -6081,9 +6173,9 @@ try {
   if (commandArgs?.queryName === "risk-summary") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, domainId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -6141,13 +6233,14 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
@@ -6157,7 +6250,8 @@ try {
           componentId,
           entityId,
           journeyId,
-          surfaceId
+          surfaceId,
+          domainId
         })
       : null;
     if (sliceResult && !sliceResult.ok) {
@@ -6225,9 +6319,9 @@ try {
   if (commandArgs?.queryName === "canonical-writes") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, domainId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -6249,6 +6343,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
@@ -6262,9 +6357,9 @@ try {
   if (commandArgs?.queryName === "proceed-decision") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, domainId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -6336,13 +6431,14 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
@@ -6352,7 +6448,8 @@ try {
           componentId,
           entityId,
           journeyId,
-          surfaceId
+          surfaceId,
+          domainId
         })
       : null;
     if (sliceResult && !sliceResult.ok) {
@@ -6422,9 +6519,9 @@ try {
   if (commandArgs?.queryName === "review-packet") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, domainId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -6477,13 +6574,14 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
@@ -6493,7 +6591,8 @@ try {
           componentId,
           entityId,
           journeyId,
-          surfaceId
+          surfaceId,
+          domainId
         })
       : null;
     if (sliceResult && !sliceResult.ok) {
@@ -6568,6 +6667,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!result.ok) {
@@ -6634,6 +6734,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!result.ok) {
@@ -6699,6 +6800,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
@@ -6706,7 +6808,7 @@ try {
       process.exit(1);
     }
 
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
@@ -6716,7 +6818,8 @@ try {
           componentId,
           entityId,
           journeyId,
-          surfaceId
+          surfaceId,
+          domainId
         })
       : null;
     if (sliceResult && !sliceResult.ok) {
@@ -6794,6 +6897,7 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       fromTopogramPath
     });
     if (!taskModeResult.ok) {
@@ -7107,6 +7211,106 @@ try {
     process.exit(0);
   }
 
+  if (commandArgs?.sdlcCommand) {
+    const sdlcRoot = path.resolve(inputPath || ".");
+    if (commandArgs.sdlcCommand === "transition") {
+      const { transitionStatement } = await import("./sdlc/transition.js");
+      const result = transitionStatement(sdlcRoot, commandArgs.sdlcId, commandArgs.sdlcTargetStatus, {
+        actor: sdlcActor,
+        note: sdlcNote,
+        dryRun: sdlcDryRun
+      });
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "check") {
+      const { checkWorkspace } = await import("./sdlc/check.js");
+      const ast = parsePath(sdlcRoot);
+      const resolved = resolveWorkspace(ast);
+      if (!resolved.ok) {
+        console.error(formatValidationErrors(resolved.validation));
+        process.exit(1);
+      }
+      const result = checkWorkspace(sdlcRoot, resolved);
+      console.log(stableStringify(result));
+      process.exit(sdlcStrict && (!result.ok || result.warnings.length > 0) ? 1 : 0);
+    }
+    if (commandArgs.sdlcCommand === "explain") {
+      const { explain } = await import("./sdlc/explain.js");
+      const ast = parsePath(sdlcRoot);
+      const resolved = resolveWorkspace(ast);
+      if (!resolved.ok) {
+        console.error(formatValidationErrors(resolved.validation));
+        process.exit(1);
+      }
+      const result = explain(sdlcRoot, resolved, commandArgs.sdlcId, {
+        includeHistory: sdlcIncludeHistory
+      });
+      if (sdlcBrief && result.ok) {
+        console.log(stableStringify({
+          id: result.id,
+          status: result.status,
+          next_action: result.next_action
+        }));
+      } else {
+        console.log(stableStringify(result));
+      }
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "archive") {
+      const { archiveBatch, archiveEligibleStatements } = await import("./archive/archive.js");
+      const ast = parsePath(sdlcRoot);
+      const resolved = resolveWorkspace(ast);
+      if (!resolved.ok) {
+        console.error(formatValidationErrors(resolved.validation));
+        process.exit(1);
+      }
+      const ids = archiveEligibleStatements(resolved, {
+        before: sdlcBefore,
+        statuses: sdlcStatus ? sdlcStatus.split(",") : null
+      });
+      const result = archiveBatch(sdlcRoot, ids, { dryRun: sdlcDryRun, by: sdlcActor, reason: sdlcNote });
+      console.log(stableStringify({ candidates: ids, ...result }));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "unarchive") {
+      const { unarchive } = await import("./archive/unarchive.js");
+      const result = unarchive(sdlcRoot, commandArgs.sdlcId, {});
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "compact") {
+      const { compact } = await import("./archive/compact.js");
+      const result = compact(path.resolve(commandArgs.sdlcArchiveFile));
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "new") {
+      const { scaffoldNew } = await import("./sdlc/scaffold.js");
+      const result = scaffoldNew(sdlcRoot, commandArgs.sdlcNewKind, commandArgs.sdlcNewSlug);
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "adopt") {
+      const { sdlcAdopt } = await import("./sdlc/adopt.js");
+      const result = sdlcAdopt(sdlcRoot);
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    if (commandArgs.sdlcCommand === "release") {
+      const { runRelease } = await import("./sdlc/release.js");
+      const result = runRelease(sdlcRoot, {
+        appVersion: sdlcAppVersion,
+        sinceTag: sdlcSinceTag,
+        dryRun: sdlcDryRun,
+        actor: sdlcActor
+      });
+      console.log(stableStringify(result));
+      process.exit(result.ok ? 0 : 1);
+    }
+    throw new Error(`Unknown sdlc command '${commandArgs.sdlcCommand}'`);
+  }
+
   if (commandArgs?.queryName === "auth-review-packet") {
     if (!bundleSlug) {
       throw new Error("query auth-review-packet requires --bundle <slug>.");
@@ -7184,7 +7388,17 @@ try {
       entityId,
       journeyId,
       surfaceId,
+      domainId,
       taskId,
+      pitchId,
+      requirementId,
+      acceptanceId,
+      bugId,
+      documentId,
+      kind: sdlcKind,
+      appVersion: sdlcAppVersion,
+      sinceTag: sdlcSinceTag,
+      includeArchived: sdlcIncludeArchived,
       modeId,
       profileId,
       fromSnapshot: fromSnapshotPath ? JSON.parse(fs.readFileSync(fromSnapshotPath, "utf8")) : null,

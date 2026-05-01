@@ -1,0 +1,10 @@
+requirement req_audit_persistence {
+  name "Audit log persists across restarts"
+  description "Audit rows must survive process restarts"
+  pitch pitch_audit_logging
+  affects [entity_audit_log, cap_record_audit]
+  introduces_rules [rule_audit_required]
+  domain dom_app
+  priority high
+  status approved
+}

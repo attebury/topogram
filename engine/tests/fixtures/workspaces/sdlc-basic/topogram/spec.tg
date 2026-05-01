@@ -1,0 +1,50 @@
+# Minimum spec surface so SDLC artifacts have something to reference.
+entity entity_audit_log {
+  name "Audit Log"
+  description "Append-only record of user actions"
+  domain dom_app
+  fields {
+    id string required
+    actor string required
+    action string required
+    occurred_at string required
+  }
+  status active
+}
+
+capability cap_record_audit {
+  name "Record audit"
+  description "Append a row to the audit log"
+  domain dom_app
+  actors [actor_dev]
+  creates [entity_audit_log]
+  status active
+}
+
+rule rule_audit_required {
+  name "Audit required"
+  description "Every state mutation must produce an audit row"
+  applies_to [cap_record_audit]
+  severity error
+  domain dom_app
+  status active
+}
+
+verification verification_audit_persists {
+  name "Audit persists"
+  description "Verify audit rows survive a restart"
+  validates [cap_record_audit]
+  method runtime
+  scenarios [smoke]
+  domain dom_app
+  status active
+}
+
+decision decision_audit_format {
+  name "JSON audit format"
+  description "Use JSON-line format for audit rows"
+  context ["compliance"]
+  consequences ["readable_by_grep"]
+  domain dom_app
+  status accepted
+}

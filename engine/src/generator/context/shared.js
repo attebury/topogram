@@ -540,7 +540,14 @@ export function workspaceInventory(graph) {
     entities: stableSortedStrings((graph.byKind.entity || []).map((item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map((item) => item.id)),
     components: stableSortedStrings((graph.byKind.component || []).map((item) => item.id)),
-    verifications: stableSortedStrings((graph.byKind.verification || []).map((item) => item.id))
+    verifications: stableSortedStrings((graph.byKind.verification || []).map((item) => item.id)),
+    domains: stableSortedStrings((graph.byKind.domain || []).map((item) => item.id)),
+    pitches: stableSortedStrings((graph.byKind.pitch || []).map((item) => item.id)),
+    requirements: stableSortedStrings((graph.byKind.requirement || []).map((item) => item.id)),
+    acceptance_criteria: stableSortedStrings((graph.byKind.acceptance_criterion || []).map((item) => item.id)),
+    tasks: stableSortedStrings((graph.byKind.task || []).map((item) => item.id)),
+    bugs: stableSortedStrings((graph.byKind.bug || []).map((item) => item.id)),
+    documents: stableSortedStrings((graph.docs || []).map((doc) => doc.id))
   };
 }
 
@@ -552,16 +559,174 @@ export function ensureContextSelection(options = {}) {
     options.componentId ? ["component", options.componentId] : null,
     options.entityId ? ["entity", options.entityId] : null,
     options.journeyId ? ["journey", options.journeyId] : null,
-    options.surfaceId ? ["surface", options.surfaceId] : null
+    options.surfaceId ? ["surface", options.surfaceId] : null,
+    options.domainId ? ["domain", options.domainId] : null,
+    options.pitchId ? ["pitch", options.pitchId] : null,
+    options.requirementId ? ["requirement", options.requirementId] : null,
+    options.acceptanceId ? ["acceptance_criterion", options.acceptanceId] : null,
+    options.taskId ? ["task", options.taskId] : null,
+    options.bugId ? ["bug", options.bugId] : null,
+    options.documentId ? ["document", options.documentId] : null
   ].filter(Boolean);
 
   if (selectors.length !== 1) {
-    throw new Error("Context selection requires exactly one of --capability, --workflow, --projection, --component, --entity, --journey, or --surface");
+    throw new Error(
+      "Context selection requires exactly one of --capability, --workflow, --projection, --component, --entity, --journey, --surface, --domain, --pitch, --requirement, --acceptance, --task, --bug, or --document"
+    );
   }
 
   return {
     kind: selectors[0][0],
     id: selectors[0][1]
+  };
+}
+
+export function domainById(graph, domainId) {
+  return (graph?.byKind?.domain || []).find((domain) => domain.id === domainId) || null;
+}
+
+export function summarizeDomain(domain) {
+  if (!domain) return null;
+  const members = domain.members || {};
+  return {
+    id: domain.id,
+    kind: "domain",
+    name: domain.name,
+    description: domain.description,
+    status: domain.status,
+    in_scope: [...(domain.inScope || [])],
+    out_of_scope: [...(domain.outOfScope || [])],
+    aliases: [...(domain.aliases || [])],
+    parent_domain: domain.parentDomain ? domain.parentDomain.id : null,
+    members_count: Object.values(members).reduce((total, list) => total + list.length, 0)
+  };
+}
+
+export function domainsByStatement(graph) {
+  const map = new Map();
+  for (const statement of (graph?.statements || [])) {
+    if (statement.resolvedDomain && statement.resolvedDomain.id) {
+      map.set(statement.id, statement.resolvedDomain.id);
+    }
+  }
+  return map;
+}
+
+export function relatedCapabilitiesForDomain(graph, domainId) {
+  const domain = domainById(graph, domainId);
+  if (!domain) return [];
+  return [...(domain.members?.capabilities || [])].sort();
+}
+
+export function relatedEntitiesForDomain(graph, domainId) {
+  const domain = domainById(graph, domainId);
+  if (!domain) return [];
+  return [...(domain.members?.entities || [])].sort();
+}
+
+export function relatedRulesForDomain(graph, domainId) {
+  const domain = domainById(graph, domainId);
+  if (!domain) return [];
+  return [...(domain.members?.rules || [])].sort();
+}
+
+export function relatedVerificationsForDomain(graph, domainId) {
+  const domain = domainById(graph, domainId);
+  if (!domain) return [];
+  return [...(domain.members?.verifications || [])].sort();
+}
+
+export function relatedProjectionsForDomain(graph, domainId) {
+  const capabilityIds = new Set(relatedCapabilitiesForDomain(graph, domainId));
+  if (capabilityIds.size === 0) return [];
+  const projectionIds = (graph?.byKind?.projection || [])
+    .filter((projection) => (projection.realizes || []).some((entry) => capabilityIds.has(entry.id)))
+    .map((projection) => projection.id);
+  return stableSortedStrings(projectionIds);
+}
+
+// Phase 2 SDLC look-up helpers. Mirror the existing `*ById` pattern.
+export function pitchById(graph, id) {
+  return (graph?.byKind?.pitch || []).find((s) => s.id === id) || null;
+}
+export function requirementById(graph, id) {
+  return (graph?.byKind?.requirement || []).find((s) => s.id === id) || null;
+}
+export function acceptanceCriterionById(graph, id) {
+  return (graph?.byKind?.acceptance_criterion || []).find((s) => s.id === id) || null;
+}
+export function taskById(graph, id) {
+  return (graph?.byKind?.task || []).find((s) => s.id === id) || null;
+}
+export function bugById(graph, id) {
+  return (graph?.byKind?.bug || []).find((s) => s.id === id) || null;
+}
+export function documentById(graph, id) {
+  return (graph?.docs || []).find((doc) => doc.id === id) || null;
+}
+
+export function summarizePitch(pitch) {
+  if (!pitch) return null;
+  return {
+    id: pitch.id,
+    name: pitch.name,
+    status: pitch.status,
+    priority: pitch.priority,
+    appetite: pitch.appetite,
+    domain: pitch.resolvedDomain ? pitch.resolvedDomain.id : null
+  };
+}
+export function summarizeRequirement(req) {
+  if (!req) return null;
+  return {
+    id: req.id,
+    name: req.name,
+    status: req.status,
+    priority: req.priority,
+    pitch: req.pitch?.id || null,
+    domain: req.resolvedDomain ? req.resolvedDomain.id : null
+  };
+}
+export function summarizeAcceptanceCriterion(ac) {
+  if (!ac) return null;
+  return {
+    id: ac.id,
+    name: ac.name,
+    status: ac.status,
+    requirement: ac.requirement?.id || null
+  };
+}
+export function summarizeTask(task) {
+  if (!task) return null;
+  return {
+    id: task.id,
+    name: task.name,
+    status: task.status,
+    priority: task.priority,
+    work_type: task.workType,
+    claimed_by: (task.claimedBy || []).map((r) => (typeof r === "string" ? r : r?.id)).filter(Boolean),
+    domain: task.resolvedDomain ? task.resolvedDomain.id : null
+  };
+}
+export function summarizeBug(bug) {
+  if (!bug) return null;
+  return {
+    id: bug.id,
+    name: bug.name,
+    status: bug.status,
+    severity: bug.severity,
+    priority: bug.priority,
+    domain: bug.resolvedDomain ? bug.resolvedDomain.id : null
+  };
+}
+export function summarizeDocument(doc) {
+  if (!doc) return null;
+  return {
+    id: doc.id,
+    title: doc.title,
+    kind: doc.kind,
+    status: doc.status,
+    domain: doc.domain || null
   };
 }
 

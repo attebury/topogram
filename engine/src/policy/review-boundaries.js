@@ -86,6 +86,41 @@ export function reviewBoundaryForJourneyDoc(journey) {
     : buildReviewBoundary("review_required", ["journey_surface"]);
 }
 
+export function reviewBoundaryForDomain() {
+  return buildReviewBoundary("review_required", ["domain_surface"]);
+}
+
+// Phase 2 — SDLC slice boundaries.
+// pitch / requirement / task / bug / document each define a unit of agent
+// or human work and surface natural review gates.
+
+export function reviewBoundaryForPitch() {
+  return buildReviewBoundary("manual_decision", ["pitch_scope"]);
+}
+
+export function reviewBoundaryForRequirement() {
+  return buildReviewBoundary("manual_decision", ["requirement_scope"]);
+}
+
+export function reviewBoundaryForAcceptanceCriterion() {
+  return buildReviewBoundary("review_required", ["acceptance_scope"]);
+}
+
+export function reviewBoundaryForTask() {
+  return buildReviewBoundary("review_required", ["task_scope"]);
+}
+
+export function reviewBoundaryForBug() {
+  return buildReviewBoundary("review_required", ["bug_scope"]);
+}
+
+export function reviewBoundaryForDocument(doc) {
+  if (doc?.reviewRequired) {
+    return buildReviewBoundary("manual_decision", ["document_scope", "doc_review_required"]);
+  }
+  return buildReviewBoundary("review_required", ["document_scope"]);
+}
+
 export function reviewBoundaryForMaintainedClassification(classification) {
   if (classification === "accepted_change") {
     return buildReviewBoundary("review_required", ["maintained_surface", "accepted_change"]);
