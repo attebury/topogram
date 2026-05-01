@@ -50,6 +50,7 @@ Use the default catalog-backed neutral starter:
 
 ```bash
 topogram template list
+topogram new --list-templates
 topogram new ./my-app
 ```
 
@@ -70,6 +71,10 @@ topogram new ./web-api-db --template web-api-db
 | `hello-db` | database | SQLite | Database lifecycle output only. |
 | `web-api` | web, api | React + Express | Executable implementation starter without a database. |
 | `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
+
+Use `topogram new --list-templates --json` when an agent or setup script needs
+the same list with structured `surfaces`, `generators`, `stack`,
+`includesExecutableImplementation`, and `recommendedCommand` fields.
 
 Use a local template:
 

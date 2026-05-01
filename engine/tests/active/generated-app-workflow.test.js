@@ -569,6 +569,20 @@ test("topogram catalog show describes template and topogram entries", () => {
 test("topogram template list includes catalog template aliases", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-template-list-"));
   const catalogPath = createCatalog(root, [
+    catalogEntry({
+      id: "hello-web",
+      package: "@scope/topogram-starter-hello-web",
+      defaultVersion: "0.1.0",
+      description: "Vanilla web starter",
+      tags: ["hello", "web"],
+      surfaces: ["web"],
+      generators: ["topogram/vanilla-web"],
+      stack: "Vanilla HTML/CSS/JS",
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
+    }),
     catalogEntry(),
     catalogEntry({
       id: "hello",
@@ -589,16 +603,45 @@ test("topogram template list includes catalog template aliases", () => {
   const payload = JSON.parse(list.stdout);
   assert.equal(payload.catalog.loaded, true);
   assert.equal(payload.templates.some((template) => template.source === "builtin"), false);
+  const helloWebTemplate = payload.templates.find((template) => template.id === "hello-web");
+  assert.ok(helloWebTemplate);
+  assert.equal(helloWebTemplate.isDefault, true);
+  assert.deepEqual(helloWebTemplate.surfaces, ["web"]);
+  assert.deepEqual(helloWebTemplate.generators, ["topogram/vanilla-web"]);
+  assert.equal(helloWebTemplate.stack, "Vanilla HTML/CSS/JS");
+  assert.equal(helloWebTemplate.includesExecutableImplementation, false);
+  assert.equal(
+    helloWebTemplate.recommendedCommand,
+    `topogram new ./my-app --template hello-web --catalog ${catalogPath}`
+  );
+  assert.equal(helloWebTemplate.commands.primary, helloWebTemplate.recommendedCommand);
   const todoTemplate = payload.templates.find((template) => template.id === "todo");
   assert.ok(todoTemplate);
   assert.equal(todoTemplate.source, "catalog");
   assert.equal(todoTemplate.package, "@scope/topogram-template-todo");
+  assert.equal(todoTemplate.isDefault, false);
+  assert.deepEqual(todoTemplate.surfaces, ["web", "api", "database"]);
+  assert.deepEqual(todoTemplate.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
+  assert.equal(todoTemplate.stack, "SvelteKit + Hono + Postgres");
+  assert.equal(todoTemplate.includesExecutableImplementation, true);
+  assert.equal(
+    todoTemplate.recommendedCommand,
+    `topogram new ./my-app --template todo --catalog ${catalogPath}`
+  );
+  assert.equal(todoTemplate.commands.primary, todoTemplate.recommendedCommand);
   assert.equal(payload.templates.some((template) => template.id === "hello"), false);
+
+  const aliasList = runCli(["new", "--list-templates", "--json", "--catalog", catalogPath]);
+  assert.equal(aliasList.status, 0, aliasList.stderr || aliasList.stdout);
+  const aliasPayload = JSON.parse(aliasList.stdout);
+  assert.equal(aliasPayload.catalog.loaded, true);
+  assert.equal(aliasPayload.templates.some((template) => template.id === "todo"), true);
 
   const listHuman = runCli(["template", "list", "--catalog", catalogPath]);
   assert.equal(listHuman.status, 0, listHuman.stderr || listHuman.stdout);
   assert.match(listHuman.stdout, /Template starters:/);
   assert.match(listHuman.stdout, /Catalog aliases resolve to versioned package installs/);
+  assert.match(listHuman.stdout, /hello-web@0\.1\.0 \(default\)/);
   assert.match(listHuman.stdout, /todo@0\.1\.0/);
   assert.match(listHuman.stdout, /Source: catalog \| Surfaces: web, api, database \| Stack: SvelteKit \+ Hono \+ Postgres \| Executable implementation: yes/);
   assert.match(listHuman.stdout, /topogram new \.\/my-app --template todo/);
@@ -895,11 +938,34 @@ test("topogram new explains catalog alias resolution failures", () => {
   assert.match(auth.stderr, /NODE_AUTH_TOKEN/);
 
   const catalogPath = createCatalog(root, [
-    catalogEntry({ id: "other", package: "@scope/topogram-template-other" })
+    catalogEntry({
+      id: "hello-web",
+      package: "@scope/topogram-starter-hello-web",
+      description: "Vanilla HTML/CSS/JS web starter",
+      surfaces: ["web"],
+      tags: ["hello", "web"]
+    }),
+    catalogEntry({
+      id: "web-api",
+      package: "@scope/topogram-starter-web-api",
+      description: "React and Express starter",
+      surfaces: ["web", "api"],
+      stack: "React + Express",
+      tags: ["react", "express", "web", "api"]
+    }),
+    catalogEntry({
+      id: "web-api-db",
+      package: "@scope/topogram-starter-web-api-db",
+      description: "SvelteKit, Hono, and Postgres starter",
+      surfaces: ["web", "api", "database"],
+      stack: "SvelteKit + Hono + Postgres",
+      tags: ["sveltekit", "hono", "postgres", "web", "api", "database"]
+    })
   ]);
-  const missing = runCli(["new", path.join(root, "missing"), "--template", "todo", "--catalog", catalogPath]);
+  const missing = runCli(["new", path.join(root, "missing"), "--template", "react", "--catalog", catalogPath]);
   assert.notEqual(missing.status, 0, missing.stdout);
-  assert.match(missing.stderr, /No template entry named 'todo' was found in the catalog/);
+  assert.match(missing.stderr, /No template entry named 'react' was found in the catalog/);
+  assert.match(missing.stderr, /Suggested templates: web-api, hello-web\./);
   assert.match(missing.stderr, /topogram template list/);
   assert.match(missing.stderr, /@attebury\/topogram-template-todo@0\.1\.6/);
 });

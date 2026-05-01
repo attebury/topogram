@@ -150,10 +150,16 @@ Use a local catalog while developing:
 
 ```bash
 topogram template list --catalog ./topograms.catalog.json
+topogram new --list-templates --catalog ./topograms.catalog.json
 topogram catalog show todo --catalog ./topograms.catalog.json
 topogram new ./app --template todo --catalog ./topograms.catalog.json
 topogram catalog copy hello ./hello-topogram --catalog ./topograms.catalog.json
 ```
+
+`topogram template list --json` and `topogram new --list-templates --json`
+return the same payload. Template entries include `surfaces`, `generators`,
+`stack`, `includesExecutableImplementation`, and `recommendedCommand` for
+human-friendly launchers and agents.
 
 Set `TOPOGRAM_CATALOG_SOURCE=none` only when you intentionally want to skip
 catalog discovery; `topogram template list` will then show no shared starters,
