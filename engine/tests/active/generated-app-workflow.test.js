@@ -329,6 +329,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(generateHelp.stdout, /topogram generate \[path\] --generate <target> \[--json\]/);
   assert.match(generateHelp.stdout, /Explicit --generate targets print JSON by default and write files only with --write\./);
   assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-component-contract --component component_ui_data_grid --json/);
+  assert.match(generateHelp.stdout, /component-conformance-report/);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate component-conformance-report --projection proj_ui_web --json/);
   assert.doesNotMatch(generateHelp.stdout, /Common commands:/);
 
   const helpGenerate = runCli(["help", "generate"]);
@@ -458,6 +460,25 @@ test("topogram generate honors explicit artifact targets", () => {
   assert.equal(contract.type, "component_contract");
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "explicit artifact generation must not write the app shortcut output");
 
+  const conformance = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "component-conformance-report",
+    "--projection",
+    "proj_ui_web",
+    "--component",
+    "component_ui_data_grid",
+    "--json"
+  ], { cwd });
+  assert.equal(conformance.status, 0, conformance.stderr || conformance.stdout);
+  const conformanceReport = JSON.parse(conformance.stdout);
+  assert.equal(conformanceReport.type, "component_conformance_report");
+  assert.equal(conformanceReport.summary.total_usages, 1);
+  assert.equal(conformanceReport.summary.errors, 0);
+  assert.equal(conformanceReport.projection_usages[0].source_projection.id, "proj_ui_shared");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component conformance generation must not write the app shortcut output");
+
   const outDir = path.join(cwd, "contracts");
   const written = runCli([
     "generate",
@@ -472,6 +493,22 @@ test("topogram generate honors explicit artifact targets", () => {
   assert.equal(readJson(path.join(outDir, ".topogram-generated.json")).target, "ui-component-contract");
   assert.equal(readJson(path.join(outDir, "component_ui_data_grid.ui-component-contract.json")).id, "component_ui_data_grid");
   assert.equal(fs.existsSync(path.join(outDir, "app-bundle-plan.json")), false);
+
+  const reportOutDir = path.join(cwd, "reports");
+  const writtenReport = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "component-conformance-report",
+    "--projection",
+    "proj_ui_web",
+    "--write",
+    "--out-dir",
+    reportOutDir
+  ], { cwd });
+  assert.equal(writtenReport.status, 0, writtenReport.stderr || writtenReport.stdout);
+  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "component-conformance-report");
+  assert.equal(readJson(path.join(reportOutDir, "proj_ui_web.component-conformance-report.json")).summary.total_usages, 1);
 });
 
 test("topogram catalog check validates catalog schema", () => {

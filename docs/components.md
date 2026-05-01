@@ -107,6 +107,32 @@ Passing `--component <id>` for a missing id is now a hard error rather than a si
 
 The JSON artifact contains stable `props`, `events`, `slots`, `behavior`, `behaviors`, `patterns`, `regions`, and `dependencies` arrays for downstream tools.
 
+## Conformance Report
+
+Generate a component conformance report for one projection:
+
+```bash
+topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json
+```
+
+Optionally narrow the report to one component:
+
+```bash
+topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --component component_ui_data_grid --json
+```
+
+The report checks `projection.ui_components` usage against component contracts,
+including required prop bindings, event bindings, navigation targets, action
+capability context, component status, and structured behavior references.
+Concrete web projections include inherited component usage from shared UI
+projections, so agents can inspect the surface they are editing without
+guessing where the component was declared.
+
+The JSON artifact includes `projection_usages`, `checks`,
+`component_contracts`, `write_scope`, and `impact` sections. Use `--write` with
+`--out-dir <dir>` to write the report to disk; without `--write`, explicit
+artifact generation prints JSON and does not create an app bundle.
+
 ## Projection Usage
 
 Projections own component placement and wiring. Use `ui_components` to bind a reusable component to a screen region, data source, and event outcome:
@@ -163,7 +189,7 @@ The slice returns a `context_slice` artifact with `focus.kind === "component"`, 
 
 ## Roadmap
 
-Likely follow-ups are a `query component-impact <component-id>` family for inverse impact analysis, component coverage/conformance checks, and component migration planning.
+Likely follow-ups are a `query component-impact <component-id>` family for inverse impact analysis, component coverage scoring, and component migration planning.
 
 Component packs are expected to use the existing pure Topogram catalog path described in [Catalog](./catalog.md), for example:
 

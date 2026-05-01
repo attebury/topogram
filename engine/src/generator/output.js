@@ -94,6 +94,16 @@ export function buildOutputFiles(result, options = {}) {
     }));
   }
 
+  if (result.target === "component-conformance-report") {
+    const suffix = [options.projectionId, options.componentId].filter(Boolean).join(".");
+    return [{
+      path: suffix
+        ? `${suffix}.component-conformance-report.json`
+        : "component-conformance-report.json",
+      contents: result.artifact
+    }];
+  }
+
   if (result.target === "ui-web-debug") {
     return [
       {

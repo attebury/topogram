@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-- None currently.
+- Add `component-conformance-report` generator target. The report compares
+  `projection.ui_components` usage against component contracts, includes
+  inherited shared-UI usages for concrete web projections, supports
+  `--projection` and `--component` filters, and reports repair-oriented checks
+  for missing required props, event action context, component status, approvals,
+  write scope, and projection/component impact.
 
 ## 0.3.11 - 2026-05-01
 

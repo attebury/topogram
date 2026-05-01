@@ -319,6 +319,162 @@ test("projection ui_components resolve component placement and bindings", () => 
   ]);
 });
 
+test("component-conformance-report passes valid inherited projection usage", () => {
+  const ast = parsePath(fixtureRoot);
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.type, "component_conformance_report");
+  assert.deepEqual(report.artifact.filters, {
+    projection: "proj_ui_web",
+    component: null
+  });
+  assert.equal(report.artifact.summary.total_usages, 1);
+  assert.equal(report.artifact.summary.passed_usages, 1);
+  assert.equal(report.artifact.summary.errors, 0);
+  assert.equal(report.artifact.summary.warnings, 0);
+  assert.deepEqual(report.artifact.summary.affected_components, ["component_ui_data_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_shared", "proj_ui_web"]);
+  assert.equal(report.artifact.projection_usages[0].projection.id, "proj_ui_web");
+  assert.equal(report.artifact.projection_usages[0].source_projection.id, "proj_ui_shared");
+  assert.equal(report.artifact.projection_usages[0].outcome, "pass");
+  assert.equal(report.artifact.component_contracts[0].id, "component_ui_data_grid");
+  assert.deepEqual(report.artifact.component_contracts[0].approvals, []);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("component-ui-data-grid.tg")), true);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-ui-web.tg")), true);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-ui-shared.tg")), true);
+});
+
+test("component-conformance-report reports required props, action context, status, and approvals", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+capability cap_update_item {
+  name "Update Item"
+  description "Update item"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  category collection
+  props {
+    rows array required
+    selected_ids array optional
+  }
+  events {
+    row_select shape_event_payload
+  }
+  behavior [selection]
+  behaviors {
+    selection mode multi state selected_ids emits row_select
+  }
+  patterns [resource_table]
+  regions [results]
+  approvals [design, security]
+  status draft
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid event row_select action cap_update_item
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.total_usages, 1);
+  assert.equal(report.artifact.summary.error_usages, 1);
+  assert.equal(report.artifact.summary.errors, 2);
+  assert.equal(report.artifact.summary.warnings, 1);
+  assert.deepEqual(report.artifact.summary.affected_components, ["component_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui"]);
+  assert.deepEqual(
+    report.artifact.checks.map((check) => check.code).sort(),
+    [
+      "component_event_action_not_in_projection",
+      "component_required_prop_missing",
+      "component_status_not_active"
+    ]
+  );
+  assert.equal(report.artifact.checks.find((check) => check.code === "component_required_prop_missing").prop, "rows");
+  assert.equal(report.artifact.component_contracts[0].id, "component_grid");
+  assert.deepEqual(report.artifact.component_contracts[0].approvals, ["design", "security"]);
+  assert.deepEqual(report.artifact.component_contracts[0].behaviors, [
+    {
+      kind: "selection",
+      directives: {
+        mode: "multi",
+        state: "selected_ids",
+        emits: "row_select"
+      },
+      source: "structured"
+    }
+  ]);
+});
+
+test("component-conformance-report filters by component and rejects unknown selectors", () => {
+  const ast = parsePath(fixtureRoot);
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    componentId: "component_ui_data_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.total_usages, 3);
+  assert.deepEqual(report.artifact.summary.affected_components, ["component_ui_data_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_shared", "proj_ui_web", "proj_ui_web_react"]);
+
+  assert.throws(
+    () => generateWorkspace(ast, {
+      target: "component-conformance-report",
+      componentId: "component_does_not_exist"
+    }),
+    /No component found with id 'component_does_not_exist'/
+  );
+  assert.throws(
+    () => generateWorkspace(ast, {
+      target: "component-conformance-report",
+      projectionId: "proj_does_not_exist"
+    }),
+    /No projection found with id 'proj_does_not_exist'/
+  );
+});
+
 test("projection ui_components validate component props, events, and navigation targets", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {

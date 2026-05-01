@@ -249,7 +249,7 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
-  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
+  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, component-conformance-report, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
@@ -282,6 +282,7 @@ function printGenerateHelp() {
   console.log("");
   console.log("Common artifact targets:");
   console.log("  ui-component-contract");
+  console.log("  component-conformance-report");
   console.log("  context-slice");
   console.log("  context-diff");
   console.log("  verification-targets");
@@ -298,6 +299,7 @@ function printGenerateHelp() {
   console.log("  topogram generate ./topogram --out ./app");
   console.log("  topogram generate app ./topogram --out ./app");
   console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
+  console.log("  topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json");
   console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
 }
 

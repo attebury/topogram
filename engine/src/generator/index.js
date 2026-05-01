@@ -12,6 +12,7 @@ import {
 } from "./api.js";
 import { generateVerificationChecklist, generateVerificationPlan } from "./verification.js";
 import { generateUiComponentContract } from "./components.js";
+import { generateComponentConformanceReport } from "./component-conformance.js";
 import { generateDbTarget } from "./surfaces/databases/index.js";
 import { generateAppTarget } from "./surfaces/index.js";
 import { generateRuntimeTarget } from "./runtime/index.js";
@@ -71,6 +72,9 @@ export function generateWorkspace(workspaceAst, options = {}) {
   }
   if (target === "ui-component-contract") {
     return okResult(target, generateUiComponentContract(graph, options));
+  }
+  if (target === "component-conformance-report") {
+    return okResult(target, generateComponentConformanceReport(graph, options));
   }
 
   if (
