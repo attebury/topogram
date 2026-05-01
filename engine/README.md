@@ -21,6 +21,8 @@ This lets source checkouts and private-package consumers call:
 
 ```bash
 topogram new ../my-app
+topogram version
+topogram version --json
 topogram doctor
 topogram check
 topogram generate

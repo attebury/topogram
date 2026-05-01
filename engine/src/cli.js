@@ -120,6 +120,7 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
 
 function printUsage(options = {}) {
   const { all = false } = options;
+  console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
@@ -147,6 +148,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
+  console.log("  topogram version");
   console.log("  topogram doctor");
   console.log("  topogram new ./my-app");
   console.log("  topogram new ./my-app --template todo");
@@ -240,6 +242,28 @@ function printUsage(options = {}) {
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
+}
+
+/**
+ * @returns {{ packageName: string, version: string, executablePath: string, nodeVersion: string }}
+ */
+function buildVersionPayload() {
+  return {
+    packageName: CLI_PACKAGE_NAME,
+    version: readInstalledCliPackageVersion(),
+    executablePath: path.resolve(process.argv[1] || fileURLToPath(import.meta.url)),
+    nodeVersion: process.version
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildVersionPayload>} payload
+ * @returns {void}
+ */
+function printVersion(payload) {
+  console.log(`Topogram CLI: ${payload.packageName}@${payload.version}`);
+  console.log(`Executable: ${payload.executablePath}`);
+  console.log(`Node: ${payload.nodeVersion}`);
 }
 
 function summarize(workspaceAst) {
@@ -3736,7 +3760,7 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
-if (args.length === 0 || args.includes("--help") || args.includes("-h") || args[0] === "help") {
+if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || args.includes("-h") || args[0] === "help") {
   printUsage({ all: args[1] === "all" || args.includes("--all") });
   process.exit(args.length === 0 ? 1 : 0);
 }
@@ -3753,7 +3777,9 @@ function commandPath(index, fallback = "./topogram") {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "doctor") {
+if (args[0] === "version" || args[0] === "--version") {
+  commandArgs = { version: true, inputPath: null };
+} else if (args[0] === "doctor") {
   commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
 } else if (args[0] === "new" || args[0] === "create") {
   commandArgs = { newProject: true, inputPath: args[1] };
@@ -3886,6 +3912,7 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
@@ -4007,6 +4034,16 @@ if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus |
 }
 
 try {
+  if (shouldVersion) {
+    const payload = buildVersionPayload();
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printVersion(payload);
+    }
+    process.exit(0);
+  }
+
   if (shouldDoctor) {
     const payload = buildDoctorPayload(catalogSource || inputPath || null);
     if (emitJson) {

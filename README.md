@@ -257,12 +257,16 @@ catalog source 404s. For private package consumers, configure `.npmrc` with the
 GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
 read access.
 
-Use `topogram doctor` when setup is unclear. It checks Node.js, npm, GitHub
-Packages registry configuration, `NODE_AUTH_TOKEN`, Topogram CLI package
-access, catalog reachability, GitHub token or `gh auth` readiness for private
-GitHub catalog sources, and npm package access for each catalog entry:
+Use `topogram version` to audit the installed CLI package, version, executable
+path, and Node runtime. Use `topogram doctor` when setup is unclear. It checks
+Node.js, npm, GitHub Packages registry configuration, `NODE_AUTH_TOKEN`,
+Topogram CLI package access, catalog reachability, GitHub token or `gh auth`
+readiness for private GitHub catalog sources, and npm package access for each
+catalog entry:
 
 ```bash
+topogram version
+topogram version --json
 topogram doctor
 topogram doctor --json
 topogram doctor --catalog ./topograms.catalog.json

@@ -62,6 +62,22 @@ function copyBuiltInTemplate(root, name = "template") {
   return templateRoot;
 }
 
+test("topogram version reports package and runtime details", () => {
+  const human = runCli(["version"]);
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, new RegExp(`Topogram CLI: @attebury/topogram@${cliPackageVersion.replaceAll(".", "\\.")}`));
+  assert.match(human.stdout, /Executable: /);
+  assert.match(human.stdout, new RegExp(`Node: ${process.version.replaceAll(".", "\\.")}`));
+
+  const json = runCli(["version", "--json"]);
+  assert.equal(json.status, 0, json.stderr || json.stdout);
+  const payload = JSON.parse(json.stdout);
+  assert.equal(payload.packageName, "@attebury/topogram");
+  assert.equal(payload.version, cliPackageVersion);
+  assert.equal(payload.executablePath, path.join(engineRoot, "src", "cli.js"));
+  assert.equal(payload.nodeVersion, process.version);
+});
+
 function createCatalog(root, entries) {
   fs.mkdirSync(root, { recursive: true });
   const catalogPath = path.join(root, "topograms.catalog.json");
