@@ -204,32 +204,32 @@ function printUsage(options = {}) {
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
-  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
+  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--component <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
   console.log("   or: node ./src/cli.js generate journeys <path> [--write]");
   console.log("   or: node ./src/cli.js report gaps <path> [--write]");
-  console.log("   or: node ./src/cli.js query task-mode <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query task-mode <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query adoption-plan <path>");
   console.log("   or: node ./src/cli.js query maintained-boundary <path>");
   console.log("   or: node ./src/cli.js query maintained-conformance <path> [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>]");
-  console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>]");
-  console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
+  console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
+  console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query import-plan <path>");
-  console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query canonical-writes <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query canonical-writes <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query multi-agent-plan <path> --mode import-adopt");
-  console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-activation <path> --mode <id> [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-diff <path> --provider <id> [--preset <id>]");
   console.log("   or: node ./src/cli.js query workflow-preset-customization <path> --provider <id> --preset <id>");
@@ -242,7 +242,7 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
-  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
+  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
@@ -4101,6 +4101,7 @@ function importAdoptOnlyRequested({
   capabilityId,
   workflowId,
   projectionId,
+  componentId,
   entityId,
   journeyId,
   surfaceId,
@@ -4110,6 +4111,7 @@ function importAdoptOnlyRequested({
     capabilityId ||
     workflowId ||
     projectionId ||
+    componentId ||
     entityId ||
     journeyId ||
     surfaceId ||
@@ -4317,6 +4319,8 @@ const shapeIndex = args.indexOf("--shape");
 const shapeId = shapeIndex >= 0 ? args[shapeIndex + 1] : null;
 const capabilityIndex = args.indexOf("--capability");
 const capabilityId = capabilityIndex >= 0 ? args[capabilityIndex + 1] : null;
+const componentIndex = args.indexOf("--component");
+const componentId = componentIndex >= 0 ? args[componentIndex + 1] : null;
 const projectionIndex = args.indexOf("--projection");
 const projectionId = projectionIndex >= 0 ? args[projectionIndex + 1] : null;
 const entityIndex = args.indexOf("--entity");
@@ -5078,6 +5082,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId
@@ -5099,7 +5104,7 @@ try {
 
   if (commandArgs?.queryName === "write-scope") {
     const ast = parsePath(inputPath);
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
 
     if (modeId || (!hasSelector && !fromTopogramPath)) {
       const effectiveModeId = modeId || "verification";
@@ -5109,6 +5114,7 @@ try {
         capabilityId,
         workflowId,
         projectionId,
+        componentId,
         entityId,
         journeyId,
         surfaceId,
@@ -5155,6 +5161,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId
@@ -5176,7 +5183,7 @@ try {
 
   if (commandArgs?.queryName === "verification-targets") {
     const ast = parsePath(inputPath);
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
 
     if (modeId || (!hasSelector && !fromTopogramPath)) {
       const effectiveModeId = modeId || "verification";
@@ -5186,6 +5193,7 @@ try {
         capabilityId,
         workflowId,
         projectionId,
+        componentId,
         entityId,
         journeyId,
         surfaceId,
@@ -5243,6 +5251,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId
@@ -5275,6 +5284,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5285,13 +5295,14 @@ try {
       process.exit(1);
     }
 
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
           capabilityId,
           workflowId,
           projectionId,
+          componentId,
           entityId,
           journeyId,
           surfaceId
@@ -5383,9 +5394,9 @@ try {
   if (commandArgs?.queryName === "risk-summary") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -5439,6 +5450,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5448,13 +5460,14 @@ try {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
           capabilityId,
           workflowId,
           projectionId,
+          componentId,
           entityId,
           journeyId,
           surfaceId
@@ -5525,9 +5538,9 @@ try {
   if (commandArgs?.queryName === "canonical-writes") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -5545,6 +5558,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5561,9 +5575,9 @@ try {
   if (commandArgs?.queryName === "proceed-decision") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -5631,6 +5645,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5640,13 +5655,14 @@ try {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
           capabilityId,
           workflowId,
           projectionId,
+          componentId,
           entityId,
           journeyId,
           surfaceId
@@ -5719,9 +5735,9 @@ try {
   if (commandArgs?.queryName === "review-packet") {
     const topogramRoot = normalizeTopogramPath(inputPath);
     const adoptionPlanPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
-    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId || fromTopogramPath);
+    const hasSelectors = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || fromTopogramPath);
     const useImportAdoptPath =
-      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
+      importAdoptOnlyRequested({ modeId, capabilityId, workflowId, projectionId, componentId, entityId, journeyId, surfaceId, fromTopogramPath }) ||
       (!hasSelectors && !modeId);
 
     if (useImportAdoptPath && fs.existsSync(adoptionPlanPath)) {
@@ -5770,6 +5786,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5779,13 +5796,14 @@ try {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
           capabilityId,
           workflowId,
           projectionId,
+          componentId,
           entityId,
           journeyId,
           surfaceId
@@ -5859,6 +5877,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5924,6 +5943,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5988,6 +6008,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -5998,13 +6019,14 @@ try {
       process.exit(1);
     }
 
-    const hasSelector = Boolean(capabilityId || workflowId || projectionId || entityId || journeyId || surfaceId);
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId);
     const sliceResult = hasSelector
       ? generateWorkspace(ast, {
           target: "context-slice",
           capabilityId,
           workflowId,
           projectionId,
+          componentId,
           entityId,
           journeyId,
           surfaceId
@@ -6081,6 +6103,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -6470,6 +6493,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      componentId,
       entityId,
       journeyId,
       surfaceId,
@@ -6497,6 +6521,7 @@ try {
         capabilityId,
         workflowId,
         projectionId,
+        componentId,
         entityId,
         journeyId,
         taskId,

@@ -1,0 +1,11 @@
+component component_missing_event_shape {
+  name "Missing Event Shape"
+  description "Invalid component fixture"
+  props {
+    rows array required
+  }
+  events {
+    row_select shape_missing
+  }
+  status active
+}

@@ -1,0 +1,116 @@
+# Components
+
+`component` is a first-class Topogram statement for reusable UI or service contracts. Components are platform-neutral: projections can realize screens and outputs, while components describe reusable pieces those surfaces depend on.
+
+## Authoring
+
+Use the `component_<slug>` identifier convention for reusable components:
+
+```text
+component component_ui_data_grid {
+  name "Data Grid"
+  description "Reusable tabular display"
+  category collection
+
+  props {
+    rows array required
+    selected_ids array optional default []
+    loading boolean optional default false
+  }
+
+  events {
+    row_select shape_output_task_card
+  }
+
+  slots {
+    toolbar "Toolbar actions"
+    empty_state "Empty-state content"
+  }
+
+  behavior [selection, sorting]
+  patterns [resource_table, data_grid_view]
+  regions [results, toolbar]
+  dependencies [proj_ui_shared]
+  consumers [proj_ui_shared]
+  version "1.0"
+  status active
+}
+```
+
+Required fields are `name`, `description`, `props`, and `status`. Optional fields include `category`, `events`, `slots`, `behavior`, `patterns`, `regions`, `lookups`, `dependencies`, `consumers`, `version`, and `approvals`.
+
+### Prop defaults
+
+Each prop is `<name> <type> <required|optional> [default <literal>]`. Supported `default` literal forms are:
+
+| Literal | Type emitted in the contract |
+|---|---|
+| `default true` / `default false` | boolean |
+| `default null` | `null` |
+| `default 0`, `default -3`, `default 42` | integer |
+| `default 1.5`, `default -0.25` | number |
+| `default "All"` | string |
+| `default []` | empty array |
+| `default [a, b]` | array of literals (recursively parsed) |
+
+Bare unquoted symbols other than `true`, `false`, `null`, and numerics are passed through as strings.
+
+## Validation
+
+`topogram check` validates:
+
+- `category` is a known component category.
+- `props` entries use `<name> <type> <required|optional> [default <value>]`.
+- `events` entries reference existing `shape` statements.
+- `slots` entries have a symbol name and text description.
+- `patterns` and `regions` use the shared UI vocabulary.
+- `dependencies` and `consumers` reference existing statements.
+
+## Generated Contract
+
+Generate one component contract:
+
+```bash
+topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid
+```
+
+Generate all component contracts:
+
+```bash
+topogram generate ./topogram --generate ui-component-contract
+```
+
+Passing `--component <id>` for a missing id is now a hard error rather than a silent `null` artifact, so typos surface immediately.
+
+The JSON artifact contains stable `props`, `events`, `slots`, `patterns`, `regions`, `dependencies`, and `consumers` arrays for downstream tools.
+
+## Query Integration
+
+`--component <id>` is a first-class selector across the agent-facing query family. Examples:
+
+```bash
+topogram query slice ./topogram --component component_ui_data_grid
+topogram query verification-targets ./topogram --component component_ui_data_grid
+topogram query change-plan ./topogram --component component_ui_data_grid
+topogram query review-packet ./topogram --component component_ui_data_grid --from-topogram ../baseline/topogram
+```
+
+The slice returns a `context_slice` artifact with `focus.kind === "component"`, the component's referenced shapes, the projections it consumes (or whose UI regions match its `patterns`/`regions`), the verifications that target any of those, and a `review_boundary` of `{ automation_class: "review_required", reasons: ["component_surface"] }`.
+
+`context-diff` now emits a `components` section and folds component changes into `affected_generated_surfaces.projections`, so `change-plan`, `review-packet`, and `verification-targets` (with `--from-topogram <path>`) automatically pick up component impacts and recommend `ui-component-contract` regeneration for the affected ids.
+
+## Roadmap
+
+Likely follow-ups are a `query component-impact <component-id>` family for inverse impact analysis, component coverage/conformance checks, and component migration planning.
+
+Component packs are expected to use the existing pure Topogram catalog path described in [Catalog](./catalog.md), for example:
+
+```text
+@scope/topogram-component-data-grid/
+  topogram-component.json
+  topogram/
+    components/component-ui-data-grid.tg
+    shapes/shape-event-row-click.tg
+```
+
+A future `topogram component check` command can mirror `topogram template check` for component pack authors.

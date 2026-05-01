@@ -83,6 +83,10 @@ my-topogram-app/app/
 
 Treat generated output as disposable. Change the Topogram, then regenerate.
 
+Reusable UI and service contracts can be modeled as `component` statements. See
+[Grammar](./grammar.md) for statement fields and [Components](./components.md)
+for generated `ui-component-contract` output.
+
 ## Engine Development
 
 Engine fixtures should live under `engine/tests/fixtures/**`.

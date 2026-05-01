@@ -2,11 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  componentById,
   getJourneyDoc,
   getStatement,
   summarizeById,
   getWorkflowDoc,
   relatedProjectionsForCapability,
+  relatedProjectionsForComponent,
   relatedProjectionsForEntity,
   relatedShapesForProjection
 } from "../generator/context/shared.js";
@@ -1353,6 +1355,7 @@ function addImpact(map, impact) {
     "changed_capability",
     "changed_entity",
     "changed_shape",
+    "changed_component",
     "changed_rule",
     "changed_workflow",
     "changed_journey",
@@ -1495,6 +1498,23 @@ function projectionImpactsFromShape(graph, shapeId) {
   ];
 }
 
+function projectionImpactsFromComponent(graph, componentId) {
+  const component = componentById(graph, componentId);
+  if (!component) {
+    return [];
+  }
+
+  return impactsFromProjectionIds(
+    graph,
+    relatedProjectionsForComponent(graph, componentId),
+    "changed_component",
+    (projection) => `Projection ${projection.id} is affected because component ${componentId} is used by that UI surface or one of its consumers.`
+  ).map((impact) => ({
+    ...impact,
+    component_ids: stableSortedStrings([componentId])
+  }));
+}
+
 function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
   const impactMap = new Map();
 
@@ -1527,6 +1547,10 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
 
     for (const entry of diffArtifact.shapes || []) {
       for (const impact of projectionImpactsFromShape(graph, entry.id)) addImpact(impactMap, impact);
+    }
+
+    for (const entry of diffArtifact.components || []) {
+      for (const impact of projectionImpactsFromComponent(graph, entry.id)) addImpact(impactMap, impact);
     }
 
     for (const entry of diffArtifact.rules || []) {
@@ -1562,6 +1586,8 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
         "selected_entity",
         (projection) => `Projection ${projection.id} is in scope because selected entity ${id} participates in that projection.`
       )) addImpact(impactMap, impact);
+    } else if (kind === "component") {
+      for (const impact of projectionImpactsFromComponent(graph, id)) addImpact(impactMap, impact);
     } else if (kind === "workflow") {
       for (const impact of projectionImpactsFromWorkflow(graph, id, true)) addImpact(impactMap, impact);
     } else if (kind === "journey") {
@@ -1581,11 +1607,25 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
 function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = null) {
   const targets = [];
   const addTarget = (target) => {
-    if (!target?.target || !target?.projection_id) return;
-    if (!targets.some((entry) => entry.target === target.target && entry.projection_id === target.projection_id)) {
+    if (!target?.target) return;
+    if (!target.projection_id && !target.component_id) return;
+    if (!targets.some((entry) =>
+      entry.target === target.target &&
+      entry.projection_id === target.projection_id &&
+      entry.component_id === target.component_id
+    )) {
       targets.push(target);
     }
   };
+
+  for (const entry of diffArtifact?.components || []) {
+    addTarget({
+      target: "ui-component-contract",
+      component_id: entry.id,
+      required: true,
+      reason: `Component ${entry.id} changed directly, so its component contract should be refreshed.`
+    });
+  }
 
   for (const impact of projectionImpacts) {
     const projection = projectionById(graph, impact.projection_id);
@@ -1626,6 +1666,16 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
         projection_id: impact.projection_id,
         required: false,
         reason: `Projection ${impact.projection_id} may benefit from UI contract debug output during review.`
+      });
+    }
+
+    for (const componentId of impact.component_ids || []) {
+      addTarget({
+        target: "ui-component-contract",
+        component_id: componentId,
+        projection_id: impact.projection_id,
+        required: true,
+        reason: `Projection ${impact.projection_id} is affected by component ${componentId}, so the component contract should be refreshed.`
       });
     }
 
@@ -1701,7 +1751,10 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
   }
 
   return targets.sort((a, b) => {
-    const projectionCompare = a.projection_id.localeCompare(b.projection_id);
+    const projectionCompare = String(a.projection_id || "").localeCompare(String(b.projection_id || ""));
+    if (projectionCompare !== 0) return projectionCompare;
+    const componentCompare = String(a.component_id || "").localeCompare(String(b.component_id || ""));
+    if (componentCompare !== 0) return componentCompare;
     return projectionCompare !== 0 ? projectionCompare : a.target.localeCompare(b.target);
   });
 }
@@ -2238,7 +2291,7 @@ export function buildMaintainedRiskSummary({ maintainedImpacts = null, maintaine
 function classifyChangePlan(changePlan, diffArtifact, projectionImpacts, generatorTargets, maintainedImpacts) {
   const focusKind = changePlan.focus?.kind || null;
   const semanticSections = diffArtifact
-    ? ["entities", "capabilities", "rules", "workflows", "journeys", "shapes", "projections"]
+    ? ["entities", "capabilities", "components", "rules", "workflows", "journeys", "shapes", "projections"]
         .filter((section) => (diffArtifact[section] || []).length > 0)
     : [];
   let classification = "context_review";

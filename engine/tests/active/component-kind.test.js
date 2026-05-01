@@ -1,0 +1,240 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+
+import { parsePath, parseSource } from "../../src/parser.js";
+import { resolveWorkspace } from "../../src/resolver.js";
+import { validateWorkspace } from "../../src/validator.js";
+import { generateWorkspace } from "../../src/generator/index.js";
+
+const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
+
+function workspaceFromSource(source) {
+  return {
+    root: "<memory>",
+    files: [parseSource(source, "component-test.tg")],
+    docs: []
+  };
+}
+
+function makeBaselineCopy() {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-baseline-"));
+  function copyRecursive(src, dst) {
+    fs.mkdirSync(dst, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      const srcPath = path.join(src, entry.name);
+      const dstPath = path.join(dst, entry.name);
+      if (entry.isDirectory()) {
+        copyRecursive(srcPath, dstPath);
+      } else {
+        fs.copyFileSync(srcPath, dstPath);
+      }
+    }
+  }
+  copyRecursive(fixtureRoot, tempRoot);
+  return tempRoot;
+}
+
+test("component kind validates and resolves from the app fixture", () => {
+  const ast = parsePath(fixtureRoot);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const resolved = resolveWorkspace(ast);
+  assert.equal(resolved.ok, true);
+  const component = resolved.graph.byKind.component.find((entry) => entry.id === "component_ui_data_grid");
+  assert.ok(component);
+  assert.equal(component.componentContract.id, "component_ui_data_grid");
+  assert.equal(component.componentContract.props[0].name, "rows");
+  assert.deepEqual(component.componentContract.patterns, ["resource_table", "data_grid_view"]);
+});
+
+test("component validator rejects missing props and status", () => {
+  const ast = workspaceFromSource(`
+component component_missing_required {
+  name "Missing Required"
+  description "Invalid component"
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  assert.match(validation.errors.map((error) => error.message).join("\n"), /Missing required field 'props'/);
+  assert.match(validation.errors.map((error) => error.message).join("\n"), /Missing required field 'status'/);
+});
+
+test("component validator rejects invalid patterns, regions, and event shapes", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Payload"
+  description "Payload"
+  status active
+}
+
+component component_invalid_refs {
+  name "Invalid Refs"
+  description "Invalid references"
+  props {
+    rows array required
+  }
+  events {
+    row_select missing_shape
+  }
+  patterns [not_a_pattern]
+  regions [not_a_region]
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /references missing shape 'missing_shape'/);
+  assert.match(messages, /pattern 'not_a_pattern' is not supported/);
+  assert.match(messages, /region 'not_a_region' is not supported/);
+});
+
+test("ui-component-contract generator emits selected and workspace contracts", () => {
+  const ast = parsePath(fixtureRoot);
+  const selected = generateWorkspace(ast, {
+    target: "ui-component-contract",
+    componentId: "component_ui_data_grid"
+  });
+  assert.equal(selected.ok, true);
+  assert.equal(selected.artifact.id, "component_ui_data_grid");
+  assert.equal(selected.artifact.events[0].shape.id, "shape_output_task_card");
+
+  const all = generateWorkspace(ast, { target: "ui-component-contract" });
+  assert.equal(all.ok, true);
+  assert.equal(all.artifact.component_ui_data_grid.id, "component_ui_data_grid");
+});
+
+test("component prop defaults preserve real values", () => {
+  const ast = parsePath(fixtureRoot);
+  const result = generateWorkspace(ast, {
+    target: "ui-component-contract",
+    componentId: "component_ui_data_grid"
+  });
+  assert.equal(result.ok, true);
+  const props = Object.fromEntries(result.artifact.props.map((prop) => [prop.name, prop]));
+  assert.deepEqual(props.selected_ids.defaultValue, []);
+  assert.equal(props.loading.defaultValue, false);
+  assert.equal(typeof props.loading.defaultValue, "boolean");
+});
+
+test("component prop defaults coerce booleans, numbers, lists, and null", () => {
+  const ast = workspaceFromSource(`
+component component_default_literals {
+  name "Default Literals"
+  description "Exercises every supported default literal form"
+  props {
+    enabled boolean optional default true
+    disabled boolean optional default false
+    items array optional default []
+    page_size integer optional default 10
+    weight number optional default 1.5
+    label string optional default "All"
+    note string optional default null
+  }
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+  const result = generateWorkspace(ast, {
+    target: "ui-component-contract",
+    componentId: "component_default_literals"
+  });
+  assert.equal(result.ok, true);
+  const props = Object.fromEntries(result.artifact.props.map((prop) => [prop.name, prop]));
+  assert.equal(props.enabled.defaultValue, true);
+  assert.equal(props.disabled.defaultValue, false);
+  assert.deepEqual(props.items.defaultValue, []);
+  assert.equal(props.page_size.defaultValue, 10);
+  assert.equal(props.weight.defaultValue, 1.5);
+  assert.equal(props.label.defaultValue, "All");
+  assert.equal(props.note.defaultValue, null);
+});
+
+test("ui-component-contract throws on unknown component id", () => {
+  const ast = parsePath(fixtureRoot);
+  assert.throws(
+    () => generateWorkspace(ast, {
+      target: "ui-component-contract",
+      componentId: "component_does_not_exist"
+    }),
+    /No component found with id 'component_does_not_exist'/
+  );
+});
+
+test("context-diff reports component additions and modifications", () => {
+  const baselineRoot = makeBaselineCopy();
+  try {
+    const baselineComponentPath = path.join(baselineRoot, "components", "component-ui-data-grid.tg");
+    fs.unlinkSync(baselineComponentPath);
+
+    const additiveAst = parsePath(fixtureRoot);
+    const additive = generateWorkspace(additiveAst, {
+      target: "context-diff",
+      fromTopogramPath: baselineRoot
+    });
+    assert.equal(additive.ok, true);
+    const dataGridAdd = (additive.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
+    assert.ok(dataGridAdd, "expected additive component entry");
+    assert.equal(dataGridAdd.classification, "additive");
+
+    const modifiedSource = fs
+      .readFileSync(path.join(fixtureRoot, "components", "component-ui-data-grid.tg"), "utf8")
+      .replace('version "1.0"', 'version "1.1"');
+    fs.mkdirSync(path.dirname(baselineComponentPath), { recursive: true });
+    fs.writeFileSync(baselineComponentPath, modifiedSource);
+
+    const modifiedAst = parsePath(fixtureRoot);
+    const modified = generateWorkspace(modifiedAst, {
+      target: "context-diff",
+      fromTopogramPath: baselineRoot
+    });
+    assert.equal(modified.ok, true);
+    const dataGridModified = (modified.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
+    assert.ok(dataGridModified, "expected modified component entry");
+    assert.equal(dataGridModified.classification, "modified");
+    assert.equal(dataGridModified.current.version, "1.0");
+    assert.equal(dataGridModified.baseline.version, "1.1");
+  } finally {
+    fs.rmSync(baselineRoot, { recursive: true, force: true });
+  }
+});
+
+test("context-slice with --component focuses on the component contract closure", () => {
+  const ast = parsePath(fixtureRoot);
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    componentId: "component_ui_data_grid"
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.artifact.focus.kind, "component");
+  assert.equal(result.artifact.focus.id, "component_ui_data_grid");
+  assert.ok(
+    result.artifact.depends_on.projections.includes("proj_ui_shared"),
+    `expected proj_ui_shared in depends_on.projections, got ${JSON.stringify(result.artifact.depends_on.projections)}`
+  );
+  assert.ok(
+    result.artifact.depends_on.shapes.includes("shape_output_task_card"),
+    `expected shape_output_task_card in depends_on.shapes, got ${JSON.stringify(result.artifact.depends_on.shapes)}`
+  );
+  assert.equal(result.artifact.review_boundary.automation_class, "review_required");
+  assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
+});
+
+test("context-slice rejects unknown component id", () => {
+  const ast = parsePath(fixtureRoot);
+  assert.throws(
+    () => generateWorkspace(ast, {
+      target: "context-slice",
+      componentId: "component_does_not_exist"
+    }),
+    /No component found with id 'component_does_not_exist'/
+  );
+});

@@ -81,6 +81,19 @@ export function buildOutputFiles(result, options = {}) {
     }));
   }
 
+  if (result.target === "ui-component-contract") {
+    if (result.artifact == null) {
+      throw new Error("ui-component-contract generator returned no artifact");
+    }
+    if (options.componentId) {
+      return [{ path: `${options.componentId}.ui-component-contract.json`, contents: result.artifact }];
+    }
+    return Object.keys(result.artifact).sort().map((componentId) => ({
+      path: `${componentId}.ui-component-contract.json`,
+      contents: result.artifact[componentId]
+    }));
+  }
+
   if (result.target === "ui-web-debug") {
     return [
       {
