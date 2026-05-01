@@ -167,7 +167,7 @@ function printUsage(options = {}) {
   console.log("  topogram trust template");
   console.log("  topogram trust status");
   console.log("  topogram trust diff");
-  console.log("  topogram package update-cli 0.2.52");
+  console.log("  topogram package update-cli 0.2.53");
   console.log("  topogram template explain");
   console.log("  topogram template status");
   console.log("  topogram template status --latest");
@@ -594,7 +594,7 @@ function latestTemplateInfo(template) {
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version>, for example 0.2.52.");
+    throw new Error("topogram package update-cli requires <version>, for example 0.2.53.");
   }
   const cwd = options.cwd || process.cwd();
   const diagnostics = [];
@@ -1286,14 +1286,14 @@ function printTemplateStatus(payload) {
 
 /**
  * @param {{ config: Record<string, any>, configPath: string|null, configDir: string }} projectConfigInfo
- * @returns {{ ok: boolean, projectRoot: string, projectConfigPath: string|null, attached: boolean, ownership: "template-attached"|"project-owned", template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, baseline: ReturnType<typeof buildTemplateOwnedBaselineStatus>, source: ReturnType<typeof buildProjectSourceStatus>, commands: { status: string, detachDryRun: string|null, detach: string|null, updateCheck: string|null, trustStatus: string|null, trustTemplate: string|null, check: string, generate: string }, summary: string[], diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, projectRoot: string, projectConfigPath: string|null, attached: boolean, ownership: "template-attached"|"project-owned", template: ReturnType<typeof templateMetadataFromProjectConfig>, trust: ReturnType<typeof getTemplateTrustStatus>|null, baseline: ReturnType<typeof buildTemplateOwnedBaselineStatus>, source: ReturnType<typeof buildTopogramSourceStatus>, commands: { status: string, detachDryRun: string|null, detach: string|null, updateCheck: string|null, trustStatus: string|null, trustTemplate: string|null, check: string, generate: string }, summary: string[], diagnostics: any[], errors: string[] }}
  */
 function buildTemplateExplainPayload(projectConfigInfo) {
   const template = templateMetadataFromProjectConfig(projectConfigInfo.config);
   const attached = Boolean(template.id);
   const projectRoot = projectConfigInfo.configDir;
   const baseline = buildTemplateOwnedBaselineStatus(projectRoot);
-  const source = buildProjectSourceStatus(projectRoot);
+  const source = buildTopogramSourceStatus(projectRoot);
   /** @type {ReturnType<typeof getTemplateTrustStatus>|null} */
   let trust = null;
   if (projectConfigInfo.config.implementation) {
