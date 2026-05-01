@@ -1,4 +1,7 @@
 import { renderSvelteKitRedirectingAction } from "../../../../../../src/generator/surfaces/web/sveltekit-actions.js";
+import {
+  renderSvelteKitComponentRegion
+} from "../../../../../../src/generator/surfaces/web/sveltekit-components.js";
 import { TODO_WEB_SCREEN_REFERENCE } from "./screens-reference.js";
 
 export function renderTodoHomePage({
@@ -72,6 +75,29 @@ export function renderTodoTaskRoutes({
   const editTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_update_task") || null;
   const completeTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_complete_task") || null;
   const deleteTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_delete_task") || null;
+  const taskListHeroComponents = renderSvelteKitComponentRegion(taskList, "hero", {
+    componentContracts: contract.components,
+    itemsExpression: "data.result.items"
+  });
+  const taskListResultsComponents = renderSvelteKitComponentRegion(taskList, "results", {
+    componentContracts: contract.components,
+    itemsExpression: "data.result.items"
+  });
+  const taskListDefaultResults = `<ul class="task-list">
+          {#each data.result.items as task}
+            <li>
+              <div class="task-meta">
+                <a href={'/tasks/' + task.id}><strong>{task.title}</strong></a>
+                {#if task.description}<span class="muted">{task.description}</span>{/if}
+                <span class="muted">Priority: {task.priority ?? "medium"}</span>
+              </div>
+              <div class="button-row">
+                <span class="badge">{task.priority ?? "medium"}</span>
+                <span class="badge">{task.status}</span>
+              </div>
+            </li>
+          {/each}
+        </ul>`;
 
   files["tasks/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
@@ -159,6 +185,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
         </div>
         <a class="button-link" href="/tasks/new">Create Task</a>
       </div>
+${taskListHeroComponents ? `\n      ${taskListHeroComponents}\n` : ""}
 
       <form class="filters" method="GET">
         <label>
@@ -210,21 +237,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
         </div>
       {:else}
         <p class="muted">Showing {data.result.items.length} task{data.result.items.length === 1 ? "" : "s"}.</p>
-        <ul class="task-list">
-          {#each data.result.items as task}
-            <li>
-              <div class="task-meta">
-                <a href={'/tasks/' + task.id}><strong>{task.title}</strong></a>
-                {#if task.description}<span class="muted">{task.description}</span>{/if}
-                <span class="muted">Priority: {task.priority ?? "medium"}</span>
-              </div>
-              <div class="button-row">
-                <span class="badge">{task.priority ?? "medium"}</span>
-                <span class="badge">{task.status}</span>
-              </div>
-            </li>
-          {/each}
-        </ul>
+        ${taskListResultsComponents || taskListDefaultResults}
         {#if nextHref}
           <p><a class="button-link secondary" href={nextHref}>Next Page</a></p>
         {/if}

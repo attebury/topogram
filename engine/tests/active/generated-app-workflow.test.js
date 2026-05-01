@@ -401,6 +401,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-app-basic-"));
   const generate = runCli(["generate", fixtureRoot, "--out", outputRoot]);
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+  const generatedTaskListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "+page.svelte"));
+  assert.match(generatedTaskListPage, /data-topogram-component="component_ui_data_grid"/);
+  assert.match(generatedTaskListPage, /class="component-card component-table"/);
 
   for (const relativePath of [
     ".topogram-generated.json",
