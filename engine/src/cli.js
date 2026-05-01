@@ -841,13 +841,27 @@ function buildReleaseStatusPayload(options = {}) {
   try {
     latestVersion = latestTopogramCliVersion(cwd);
   } catch (error) {
-    diagnostics.push({
-      code: "release_latest_unavailable",
-      severity: "warning",
-      message: messageFromError(error),
-      path: CLI_PACKAGE_NAME,
-      suggestedFix: "Check GitHub Packages auth, then rerun `topogram release status`."
-    });
+    const npmMessage = messageFromError(error);
+    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
+    if (fallback.ok && fallback.version) {
+      latestVersion = fallback.version;
+      diagnostics.push({
+        code: "release_latest_via_github_api",
+        severity: "warning",
+        message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
+        path: CLI_PACKAGE_NAME,
+        suggestedFix: "Configure npm auth for GitHub Packages when you need install-facing registry verification.",
+        cause: npmMessage
+      });
+    } else {
+      diagnostics.push({
+        code: "release_latest_unavailable",
+        severity: "warning",
+        message: `${npmMessage}\nGitHub API fallback also failed: ${fallback.message || "unknown error"}`,
+        path: CLI_PACKAGE_NAME,
+        suggestedFix: "Check GitHub Packages auth, then rerun `topogram release status`."
+      });
+    }
   }
   const git = inspectReleaseGitTag(localVersion, cwd);
   diagnostics.push(...git.diagnostics);
@@ -1520,6 +1534,55 @@ function latestTopogramCliVersion(cwd) {
     throw new Error(`npm returned invalid latest version '${version || "(empty)"}' for ${CLI_PACKAGE_NAME}.`);
   }
   return version;
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, version: string|null, message: string|null }}
+ */
+function latestTopogramCliVersionFromGithubApi(cwd) {
+  const result = childProcess.spawnSync("gh", [
+    "api",
+    "-H",
+    "Accept: application/vnd.github+json",
+    "/users/attebury/packages/npm/topogram/versions?per_page=30"
+  ], {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      version: null,
+      message: String(result.stderr || result.stdout || "gh api failed").trim()
+    };
+  }
+  let versions;
+  try {
+    versions = JSON.parse(String(result.stdout || "[]"));
+  } catch (error) {
+    return {
+      ok: false,
+      version: null,
+      message: `GitHub Packages API returned invalid JSON: ${messageFromError(error)}`
+    };
+  }
+  const version = Array.isArray(versions)
+    ? versions.map((item) => item?.name).find((name) => isPackageVersion(name))
+    : null;
+  if (!version) {
+    return {
+      ok: false,
+      version: null,
+      message: "GitHub Packages API returned no valid package versions."
+    };
+  }
+  return {
+    ok: true,
+    version,
+    message: null
+  };
 }
 
 /**

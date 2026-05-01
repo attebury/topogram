@@ -266,6 +266,23 @@ process.exit(1);
   return binDir;
 }
 
+function createFakeGh(root, versions = []) {
+  const binDir = path.join(root, `bin-gh-${Math.random().toString(16).slice(2)}`);
+  fs.mkdirSync(binDir, { recursive: true });
+  const commandPath = path.join(binDir, "gh");
+  fs.writeFileSync(commandPath, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === "api" && args.includes("/users/attebury/packages/npm/topogram/versions?per_page=30")) {
+  process.stdout.write(${JSON.stringify(JSON.stringify(versions.map((version) => ({ name: version }))))});
+  process.exit(0);
+}
+process.stderr.write("Unexpected fake gh command: " + args.join(" ") + "\\n");
+process.exit(1);
+`, "utf8");
+  fs.chmodSync(commandPath, 0o755);
+  return binDir;
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
@@ -1429,6 +1446,35 @@ test("topogram release status reports package, tag, and consumer pin state", () 
   assert.match(human.stdout, /Consumer pins: 1\/3 pinned, 1 matching, 0 differing, 2 missing/);
   assert.match(human.stdout, /topogram-starters: .* \(matches\)/);
   assert.match(human.stdout, /topogram-template-todo: missing \(missing\)/);
+});
+
+test("topogram release status falls back to GitHub Packages API for latest version", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-gh-"));
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+  );
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const fakeGhBin = createFakeGh(root, [cliPackageVersion, "0.3.1"]);
+  const status = runCli(["release", "status", "--json"], {
+    cwd: root,
+    env: {
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.latestVersion, cliPackageVersion);
+  assert.equal(payload.currentPublished, true);
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_via_github_api"),
+    true
+  );
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_unavailable"),
+    false
+  );
 });
 
 test("topogram package update-cli explains private package auth failures", () => {
