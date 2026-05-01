@@ -527,7 +527,7 @@ test("topogram catalog show describes template and topogram entries", () => {
   );
   assert.deepEqual(topogramPayload.commands.followUp, [
     "cd ./hello-topogram",
-    "topogram source status",
+    "topogram source status --local",
     "topogram check",
     "topogram generate"
   ]);
@@ -788,6 +788,32 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(humanSourceStatus.stdout, /Template baseline: matches-template/);
   assert.match(humanSourceStatus.stdout, /Template baseline meaning: matches-template-baseline/);
 
+  const localSourceStatus = runCli(["source", "status", "--local", "--json"], {
+    cwd: projectRoot,
+    env: { PATH: process.env.PATH || "" }
+  });
+  assert.equal(localSourceStatus.status, 0, localSourceStatus.stderr || localSourceStatus.stdout);
+  const localSourcePayload = JSON.parse(localSourceStatus.stdout);
+  assert.equal(localSourcePayload.project.package.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(localSourcePayload.project.package.checked, false);
+  assert.equal(localSourcePayload.project.package.currentVersion, null);
+  assert.equal(localSourcePayload.project.package.latestVersion, null);
+  assert.equal(localSourcePayload.project.packageChecks.mode, "local");
+  assert.equal(localSourcePayload.project.packageChecks.skipped, true);
+  assert.equal(localSourcePayload.project.trust.status, "trusted");
+  assert.equal(localSourcePayload.project.templateBaseline.status, "clean");
+  assert.equal(
+    localSourcePayload.project.package.diagnostics.some((diagnostic) => diagnostic.code === "github_packages_check_failed"),
+    false
+  );
+  const localHumanSourceStatus = runCli(["source", "status", "--local"], {
+    cwd: projectRoot,
+    env: { PATH: process.env.PATH || "" }
+  });
+  assert.equal(localHumanSourceStatus.status, 0, localHumanSourceStatus.stderr || localHumanSourceStatus.stdout);
+  assert.match(localHumanSourceStatus.stdout, /Template package: @scope\/topogram-template-todo@0\.1\.0 \(not checked, local mode\)/);
+  assert.doesNotMatch(localHumanSourceStatus.stdout, /github_packages_check_failed/);
+
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   const doctorPayload = JSON.parse(doctor.stdout);
@@ -803,7 +829,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
 
   const humanDoctor = runCli(["doctor"], { cwd: projectRoot, env });
   assert.equal(humanDoctor.status, 0, humanDoctor.stderr || humanDoctor.stdout);
-  assert.match(humanDoctor.stdout, /Project provenance: run `topogram source status`/);
+  assert.match(humanDoctor.stdout, /Project provenance: run `topogram source status --local`/);
 
   const updateCheck = runCli(["template", "update", "--check", "--json"], { cwd: projectRoot, env });
   assert.equal(updateCheck.status, 0, updateCheck.stderr || updateCheck.stdout);
@@ -1307,7 +1333,8 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
   assert.equal(pkg.scripts.doctor, "topogram doctor");
-  assert.equal(pkg.scripts["source:status"], "topogram source status");
+  assert.equal(pkg.scripts["source:status"], "topogram source status --local");
+  assert.equal(pkg.scripts["source:status:remote"], "topogram source status");
   assert.equal(pkg.scripts.check, "topogram check");
   assert.equal(pkg.scripts["check:json"], "topogram check --json");
   assert.equal(pkg.scripts.generate, "topogram generate");
@@ -1385,6 +1412,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
   assert.match(explainScript, /npm run doctor/);
   assert.match(explainScript, /npm run source:status/);
+  assert.match(explainScript, /npm run source:status:remote/);
   assert.match(explainScript, /npm run template:explain/);
   assert.match(explainScript, /npm run template:detach:dry-run/);
   assert.match(explainScript, /npm run template:policy:explain/);

@@ -1912,7 +1912,8 @@ function writeProjectPackage(projectRoot, engineRoot) {
     scripts: {
       explain: "node ./scripts/explain.mjs",
       doctor: "topogram doctor",
-      "source:status": "topogram source status",
+      "source:status": "topogram source status --local",
+      "source:status:remote": "topogram source status",
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
@@ -1989,6 +1990,7 @@ Useful inspection:
    npm run check:json
    npm run doctor
    npm run source:status
+   npm run source:status:remote
    npm run template:explain
    npm run template:status
    npm run template:detach:dry-run

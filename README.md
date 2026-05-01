@@ -31,7 +31,7 @@ npx topogram new ./my-app --template todo
 npx topogram catalog show hello
 npx topogram catalog copy hello ./hello-topogram
 cd ./hello-topogram
-npx topogram source status
+npx topogram source status --local
 npx topogram check
 ```
 
@@ -112,7 +112,7 @@ topogram catalog doctor
 topogram catalog show hello
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ./hello-topogram
-topogram source status ./hello-topogram
+topogram source status ./hello-topogram --local
 topogram template list
 topogram template explain
 topogram template status --latest
@@ -210,16 +210,19 @@ run next. Use `topogram template list` when you only need a quick starter
 summary.
 Use `topogram catalog copy <id> <target>` for pure topogram entries that should
 be copied into a workspace for editing. Copied topograms include
-`.topogram-source.json`; run `topogram source status <target>` to compare the
+`.topogram-source.json`; run `topogram source status <target> --local` to compare the
 current files to the import baseline. This is provenance only: local edits are
 allowed, and it does not block `topogram check` or `topogram generate`.
 Template-created projects also report whether their template baseline still
 matches or has diverged into local project-owned changes:
+Use `--local` for the normal offline-safe workflow; omit it only when you want
+to check package registry status.
 
 ```bash
 topogram catalog show hello
 topogram catalog copy hello ./hello-topogram
 cd ./hello-topogram
+topogram source status --local
 topogram source status
 topogram check
 topogram generate

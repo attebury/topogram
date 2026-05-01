@@ -132,7 +132,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram package update-cli <version> [--json]");
-  console.log("   or: topogram source status [path] [--json]");
+  console.log("   or: topogram source status [path] [--local] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
@@ -1011,6 +1011,24 @@ function checkTemplatePackageStatus(packageSpec) {
 
 /**
  * @param {string} packageSpec
+ * @returns {{ checked: false, ok: null, package: string|null, packageSpec: string, currentVersion: null, latestVersion: null, current: null, reason: string, diagnostics: any[] }}
+ */
+function localTemplatePackageStatus(packageSpec) {
+  return {
+    checked: false,
+    ok: null,
+    package: registryPackageNameFromSpec(packageSpec),
+    packageSpec,
+    currentVersion: null,
+    latestVersion: null,
+    current: null,
+    reason: "Package registry checks were skipped because --local was used.",
+    diagnostics: []
+  };
+}
+
+/**
+ * @param {string} packageSpec
  * @param {{ stdout?: string, stderr?: string, error?: Error }} result
  * @returns {any}
  */
@@ -1068,7 +1086,7 @@ function printDoctor(payload) {
     console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
   }
   if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.githubPackages.required) {
-    console.log("Project provenance: run `topogram source status` for catalog, template, trust, and baseline details.");
+    console.log("Project provenance: run `topogram source status --local` for catalog, template, trust, and baseline details.");
   }
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
@@ -1334,7 +1352,7 @@ function buildTemplateExplainPayload(projectConfigInfo) {
     baseline,
     source,
     commands: {
-      status: "topogram source status",
+      status: "topogram source status --local",
       detachDryRun: attached ? "topogram template detach --dry-run" : null,
       detach: attached ? "topogram template detach" : null,
       updateCheck: attached ? "topogram template update --check" : null,
@@ -1549,7 +1567,7 @@ function printTemplateDetachPayload(payload) {
     const label = diagnostic.severity === "warning" ? "Warning" : "Error";
     console.log(`${label}: ${diagnostic.message}`);
   }
-  console.log("Next: run `topogram source status`, then `topogram check`.");
+  console.log("Next: run `topogram source status --local`, then `topogram check`.");
 }
 
 /**
@@ -2014,7 +2032,7 @@ function catalogShowCommands(entry, source) {
     primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
     followUp: [
       `cd ${target}`,
-      "topogram source status",
+      "topogram source status --local",
       "topogram check",
       "topogram generate"
     ]
@@ -2412,7 +2430,7 @@ function printCatalogCopy(payload) {
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
-  console.log("  topogram source status");
+  console.log("  topogram source status --local");
   console.log("  topogram check");
   console.log("  topogram generate");
 }
@@ -2511,9 +2529,10 @@ function buildTemplateOwnedBaselineStatus(projectRoot) {
 
 /**
  * @param {string} projectRoot
+ * @param {{ local?: boolean }} [options]
  * @returns {ReturnType<typeof buildTopogramSourceStatus> & { project: Record<string, any> }}
  */
-function buildProjectSourceStatus(projectRoot) {
+function buildProjectSourceStatus(projectRoot, options = {}) {
   const resolvedRoot = normalizeProjectRoot(projectRoot);
   const sourceStatus = buildTopogramSourceStatus(resolvedRoot);
   const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(resolvedRoot));
@@ -2547,7 +2566,7 @@ function buildProjectSourceStatus(projectRoot) {
     };
   }
   const packageStatus = template?.source === "package" && template.sourceSpec
-    ? checkTemplatePackageStatus(template.sourceSpec)
+    ? (options.local ? localTemplatePackageStatus(template.sourceSpec) : checkTemplatePackageStatus(template.sourceSpec))
     : null;
   const projectDiagnostics = [];
   if (!projectConfigInfo) {
@@ -2580,6 +2599,11 @@ function buildProjectSourceStatus(projectRoot) {
           }
         : null,
       package: packageStatus,
+      packageChecks: {
+        mode: options.local ? "local" : "remote",
+        skipped: Boolean(options.local),
+        reason: options.local ? "Package registry checks were skipped because --local was used." : null
+      },
       trust,
       templateBaseline: baseline,
       diagnostics: projectDiagnostics
@@ -2624,10 +2648,14 @@ function printTopogramSourceStatus(payload) {
   }
   if (payload.project?.package?.package) {
     const packageStatus = payload.project.package;
-    const currentLabel = packageStatus.current === null ? "unknown" : (packageStatus.current ? "current" : "update available");
-    console.log(`Template package: ${packageStatus.packageSpec} (${packageStatus.ok ? "reachable" : "unreachable"}, ${currentLabel})`);
-    if (packageStatus.latestVersion) {
-      console.log(`Latest template package version: ${packageStatus.latestVersion}`);
+    if (packageStatus.checked === false) {
+      console.log(`Template package: ${packageStatus.packageSpec} (not checked, local mode)`);
+    } else {
+      const currentLabel = packageStatus.current === null ? "unknown" : (packageStatus.current ? "current" : "update available");
+      console.log(`Template package: ${packageStatus.packageSpec} (${packageStatus.ok ? "reachable" : "unreachable"}, ${currentLabel})`);
+      if (packageStatus.latestVersion) {
+        console.log(`Latest template package version: ${packageStatus.latestVersion}`);
+      }
     }
   }
   if (payload.project?.trust) {
@@ -4148,7 +4176,9 @@ try {
   }
 
   if (shouldSourceStatus) {
-    const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath));
+    const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath), {
+      local: args.includes("--local")
+    });
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {

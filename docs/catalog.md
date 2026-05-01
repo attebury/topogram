@@ -99,7 +99,7 @@ topogram catalog show hello
 topogram catalog copy hello ./hello-topogram
 topogram catalog copy hello ./hello-topogram --version 0.1.0
 cd ./hello-topogram
-topogram source status
+topogram source status --local
 topogram check
 topogram generate
 ```
@@ -107,14 +107,14 @@ topogram generate
 To inspect provenance from outside the copied project:
 
 ```bash
-topogram source status ./hello-topogram
+topogram source status ./hello-topogram --local
 topogram source status ./hello-topogram --json
 ```
 
 `catalog copy` writes `.topogram-source.json` in the target workspace. That
 file records the catalog id/source, package spec/version, copy time,
 non-executable trust metadata, and SHA-256 hashes for imported `topogram/`,
-`topogram.project.json`, and `README.md` files. `topogram source status` compares
+`topogram.project.json`, and `README.md` files. `topogram source status --local` compares
 the current files with that import baseline and reports changed, added, and
 removed paths.
 
@@ -123,6 +123,10 @@ files after import; this status command reports drift but does not block checks,
 generation, or local maintenance. Template-created projects also report a
 template baseline. If that baseline is `diverged`, the project owns those local
 changes; it is update-review context, not a validity failure.
+
+Use `--local` for day-to-day checks. Omitting `--local` also inspects package
+registry status for package-backed templates and may require network and npm
+auth.
 
 Human `source status` output always includes this distinction and suggested next
 steps. Clean copied source can move directly to `topogram check` or
