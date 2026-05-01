@@ -5,7 +5,7 @@
  * @typedef {{ component?: ComponentReference, region?: string }} ComponentUsage
  * @typedef {{ patterns?: string[] }} ComponentContract
  * @typedef {Record<string, ComponentContract>} ComponentContractMap
- * @typedef {{ itemsExpression?: string, componentContracts?: ComponentContractMap }} RenderOptions
+ * @typedef {{ itemsExpression?: string, componentContracts?: ComponentContractMap, useTypescript?: boolean }} RenderOptions
  * @typedef {{ components?: ComponentUsage[] }} ScreenContract
  */
 
@@ -65,6 +65,7 @@ function hasPattern(usage, componentContracts, pattern) {
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "data.result.items";
+  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<section class="component-card component-summary" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div>
             <p class="component-eyebrow">Component</p>
@@ -76,11 +77,11 @@ function renderSummaryStats(usage, options) {
               <span>Total</span>
             </div>
             <div>
-              <strong>{${items}.filter((item) => item.status === "active").length}</strong>
+              <strong>{${items}.filter(${itemParam} => item.status === "active").length}</strong>
               <span>Active</span>
             </div>
             <div>
-              <strong>{${items}.filter((item) => item.status === "completed").length}</strong>
+              <strong>{${items}.filter(${itemParam} => item.status === "completed").length}</strong>
               <span>Completed</span>
             </div>
           </div>
@@ -139,6 +140,7 @@ function renderCollectionTable(usage, options) {
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "data.result.items";
+  const taskParam = options.useTypescript ? "(task: any)" : "(task)";
   return `<div class="component-card component-board" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -150,7 +152,7 @@ function renderBoard(usage, options) {
             {#each ["draft", "active", "completed", "archived"] as status}
               <section class="board-column">
                 <h3>{status}</h3>
-                {#each ${items}.filter((task) => task.status === status) as task}
+                {#each ${items}.filter(${taskParam} => task.status === status) as task}
                   <a class="board-card" href={'/tasks/' + task.id}>{task.title}</a>
                 {/each}
               </section>
@@ -166,6 +168,7 @@ function renderBoard(usage, options) {
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "data.result.items";
+  const taskParam = options.useTypescript ? "(task: any)" : "(task)";
   return `<div class="component-card component-calendar" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -174,7 +177,7 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div class="calendar-list">
-            {#each ${items}.filter((task) => task.due_at || task.dueAt) as task}
+            {#each ${items}.filter(${taskParam} => task.due_at || task.dueAt) as task}
               <a href={'/tasks/' + task.id}>
                 <span>{task.due_at ?? task.dueAt}</span>
                 <strong>{task.title}</strong>

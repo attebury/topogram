@@ -77,11 +77,13 @@ export function renderTodoTaskRoutes({
   const deleteTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_delete_task") || null;
   const taskListHeroComponents = renderSvelteKitComponentRegion(taskList, "hero", {
     componentContracts: contract.components,
-    itemsExpression: "data.result.items"
+    itemsExpression: "data.result.items",
+    useTypescript
   });
   const taskListResultsComponents = renderSvelteKitComponentRegion(taskList, "results", {
     componentContracts: contract.components,
-    itemsExpression: "data.result.items"
+    itemsExpression: "data.result.items",
+    useTypescript
   });
   const taskListDefaultResults = `<ul class="task-list">
           {#each data.result.items as task}
