@@ -61,6 +61,55 @@ function deriveDefaultPattern(screen, collectionEntries) {
   return null;
 }
 
+function componentById(graph, componentId) {
+  return (graph.byKind.component || []).find((component) => component.id === componentId) || null;
+}
+
+function componentContractFor(graph, componentId) {
+  const component = componentById(graph, componentId);
+  return component?.componentContract || null;
+}
+
+function summarizeComponentRef(graph, componentId) {
+  const component = componentById(graph, componentId);
+  if (!component) {
+    return { id: componentId, name: componentId, category: null, version: null };
+  }
+  return {
+    id: component.id,
+    name: component.name || component.id,
+    category: component.category || null,
+    version: component.version || null
+  };
+}
+
+function buildComponentUsageContract(graph, entry) {
+  const componentId = entry.component?.id || null;
+  return {
+    type: "ui_component_usage",
+    region: entry.region || null,
+    component: componentId ? summarizeComponentRef(graph, componentId) : null,
+    dataBindings: (entry.dataBindings || []).map((binding) => ({
+      prop: binding.prop || null,
+      source: binding.source || null
+    })),
+    eventBindings: (entry.eventBindings || []).map((binding) => ({
+      event: binding.event || null,
+      action: binding.action || null,
+      target: binding.target || null
+    }))
+  };
+}
+
+function buildComponentContractMap(graph, componentUsages) {
+  return Object.fromEntries(
+    [...new Set(componentUsages.map((entry) => entry.component?.id).filter(Boolean))]
+      .sort()
+      .map((componentId) => [componentId, componentContractFor(graph, componentId)])
+      .filter(([, contract]) => contract)
+  );
+}
+
 function buildNavigationContract(projection, screens) {
   const routeMap = new Map((projection.uiRoutes || []).map((entry) => [entry.screenId, entry]));
   const screenEntries = (projection.uiNavigation || []).filter((entry) => entry.targetKind === "screen");
@@ -108,11 +157,12 @@ function buildNavigationContract(projection, screens) {
   };
 }
 
-function buildUiScreenContract(projection, screen, ownershipFields) {
+function buildUiScreenContract(graph, projection, screen, ownershipFields) {
   const collectionEntries = (projection.uiCollections || []).filter((entry) => entry.screenId === screen.id);
   const actionEntries = (projection.uiActions || []).filter((entry) => entry.screenId === screen.id);
   const lookupEntries = (projection.uiLookups || []).filter((entry) => entry.screenId === screen.id);
   const regionEntries = (projection.uiScreenRegions || []).filter((entry) => entry.screenId === screen.id);
+  const componentEntries = (projection.uiComponents || []).filter((entry) => entry.screenId === screen.id);
   const screenActionIds = new Set(
     [
       screen.primaryAction?.id,
@@ -202,6 +252,7 @@ function buildUiScreenContract(projection, screen, ownershipFields) {
       state: entry.state || null,
       variant: entry.variant || null
     })),
+    components: componentEntries.map((entry) => buildComponentUsageContract(graph, entry)),
     patterns: [...patterns]
   };
 }
@@ -212,7 +263,8 @@ export function buildUiSharedRealization(graph, options = {}) {
 
   if (options.projectionId) {
     const projection = projections[0];
-    const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(projection, screen, ownershipFields));
+    const componentUsages = projection.uiComponents || [];
+    const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(graph, projection, screen, ownershipFields));
     return {
       projection: {
         id: projection.id,
@@ -221,6 +273,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       },
       realizes: projection.realizes,
       outputs: projection.outputs,
+      components: buildComponentContractMap(graph, componentUsages),
       appShell: buildAppShellContract(projection),
       navigation: buildNavigationContract(projection, screens),
       screens
@@ -229,7 +282,8 @@ export function buildUiSharedRealization(graph, options = {}) {
 
   const output = {};
   for (const projection of projections) {
-    const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(projection, screen, ownershipFields));
+    const componentUsages = projection.uiComponents || [];
+    const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(graph, projection, screen, ownershipFields));
     output[projection.id] = {
       projection: {
         id: projection.id,
@@ -238,6 +292,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       },
       realizes: projection.realizes,
       outputs: projection.outputs,
+      components: buildComponentContractMap(graph, componentUsages),
       appShell: buildAppShellContract(projection),
       navigation: buildNavigationContract(projection, screens),
       screens

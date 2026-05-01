@@ -278,6 +278,45 @@ test("projection ui_components resolve component placement and bindings", () => 
   });
   assert.equal(concreteSlice.ok, true);
   assert.deepEqual(concreteSlice.artifact.depends_on.components, ["component_ui_data_grid"]);
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
+  const taskList = webContract.artifact.screens.find((screen) => screen.id === "task_list");
+  assert.deepEqual(taskList.components, [
+    {
+      type: "ui_component_usage",
+      region: "results",
+      component: {
+        id: "component_ui_data_grid",
+        name: "Data Grid",
+        category: "collection",
+        version: "1.0"
+      },
+      dataBindings: [
+        {
+          prop: "rows",
+          source: {
+            id: "cap_list_tasks",
+            kind: "capability"
+          }
+        }
+      ],
+      eventBindings: [
+        {
+          event: "row_select",
+          action: "navigate",
+          target: {
+            id: "task_detail",
+            kind: "screen"
+          }
+        }
+      ]
+    }
+  ]);
 });
 
 test("projection ui_components validate component props, events, and navigation targets", () => {
