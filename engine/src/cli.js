@@ -132,7 +132,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram package update-cli <version> [--json]");
-  console.log("   or: topogram source status [path] [--local] [--json]");
+  console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
   console.log("   or: topogram template status [path] [--json]");
@@ -161,7 +161,8 @@ function printUsage(options = {}) {
   console.log("  topogram catalog doctor");
   console.log("  topogram catalog check topograms.catalog.json");
   console.log("  topogram catalog copy hello ./hello-topogram");
-  console.log("  topogram source status");
+  console.log("  topogram source status --local");
+  console.log("  topogram source status --remote");
   console.log("");
   console.log("Template trust and updates:");
   console.log("  topogram trust template");
@@ -2617,6 +2618,11 @@ function buildProjectSourceStatus(projectRoot, options = {}) {
  * @returns {void}
  */
 function printTopogramSourceStatus(payload) {
+  if (payload.project?.package && payload.project?.packageChecks?.mode === "remote") {
+    console.log("Package checks: remote. Use --local to skip registry access.");
+  } else if (payload.project?.package && payload.project?.packageChecks?.mode === "local") {
+    console.log("Package checks: local. Registry access skipped.");
+  }
   if (!payload.exists) {
     console.log("Topogram source status: no provenance");
     console.log(`Expected: ${payload.path}`);
@@ -4176,8 +4182,9 @@ try {
   }
 
   if (shouldSourceStatus) {
+    const sourceStatusRemote = args.includes("--remote");
     const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath), {
-      local: args.includes("--local")
+      local: args.includes("--local") && !sourceStatusRemote
     });
     if (emitJson) {
       console.log(stableStringify(payload));

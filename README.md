@@ -215,7 +215,7 @@ current files to the import baseline. This is provenance only: local edits are
 allowed, and it does not block `topogram check` or `topogram generate`.
 Template-created projects also report whether their template baseline still
 matches or has diverged into local project-owned changes:
-Use `--local` for the normal offline-safe workflow; omit it only when you want
+Use `--local` for the normal offline-safe workflow. Use `--remote` when you want
 to check package registry status.
 
 ```bash
@@ -223,7 +223,7 @@ topogram catalog show hello
 topogram catalog copy hello ./hello-topogram
 cd ./hello-topogram
 topogram source status --local
-topogram source status
+topogram source status --remote
 topogram check
 topogram generate
 ```

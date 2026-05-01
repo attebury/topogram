@@ -108,7 +108,7 @@ To inspect provenance from outside the copied project:
 
 ```bash
 topogram source status ./hello-topogram --local
-topogram source status ./hello-topogram --json
+topogram source status ./hello-topogram --remote --json
 ```
 
 `catalog copy` writes `.topogram-source.json` in the target workspace. That
@@ -124,9 +124,8 @@ generation, or local maintenance. Template-created projects also report a
 template baseline. If that baseline is `diverged`, the project owns those local
 changes; it is update-review context, not a validity failure.
 
-Use `--local` for day-to-day checks. Omitting `--local` also inspects package
-registry status for package-backed templates and may require network and npm
-auth.
+Use `--local` for day-to-day checks. Use `--remote` when package registry status
+is intentionally part of the check; remote mode may require network and npm auth.
 
 Human `source status` output always includes this distinction and suggested next
 steps. Clean copied source can move directly to `topogram check` or

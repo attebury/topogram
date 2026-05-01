@@ -235,6 +235,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
+  assert.match(help.stdout, /topogram source status --remote/);
   assert.match(help.stdout, /topogram template list/);
   assert.match(help.stdout, /topogram template explain/);
   assert.doesNotMatch(help.stdout, /topogram template show todo/);
@@ -768,6 +769,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(sourcePayload.project.package.currentVersion, "0.1.0");
   assert.equal(sourcePayload.project.package.latestVersion, "0.1.0");
   assert.equal(sourcePayload.project.package.current, true);
+  assert.equal(sourcePayload.project.packageChecks.mode, "remote");
+  assert.equal(sourcePayload.project.packageChecks.skipped, false);
   assert.equal(sourcePayload.project.trust.status, "trusted");
   assert.equal(sourcePayload.project.trust.content.trustedDigest, sourcePayload.project.trust.content.currentDigest);
   assert.equal(sourcePayload.project.templateOwnedBaseline, undefined);
@@ -781,12 +784,20 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   const humanSourceStatus = runCli(["source", "status"], { cwd: projectRoot, env });
   assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
   assert.match(humanSourceStatus.stdout, /Topogram source status: no provenance/);
+  assert.match(humanSourceStatus.stdout, /Package checks: remote\. Use --local to skip registry access\./);
   assert.match(humanSourceStatus.stdout, /Project catalog: todo from /);
   assert.match(humanSourceStatus.stdout, /Template: @scope\/topogram-template-todo@0\.1\.0/);
   assert.match(humanSourceStatus.stdout, /Executable implementation: yes/);
   assert.match(humanSourceStatus.stdout, /Implementation trust: trusted/);
   assert.match(humanSourceStatus.stdout, /Template baseline: matches-template/);
   assert.match(humanSourceStatus.stdout, /Template baseline meaning: matches-template-baseline/);
+
+  const explicitRemoteSourceStatus = runCli(["source", "status", "--remote", "--json"], { cwd: projectRoot, env });
+  assert.equal(explicitRemoteSourceStatus.status, 0, explicitRemoteSourceStatus.stderr || explicitRemoteSourceStatus.stdout);
+  const explicitRemoteSourcePayload = JSON.parse(explicitRemoteSourceStatus.stdout);
+  assert.equal(explicitRemoteSourcePayload.project.package.currentVersion, "0.1.0");
+  assert.equal(explicitRemoteSourcePayload.project.packageChecks.mode, "remote");
+  assert.equal(explicitRemoteSourcePayload.project.packageChecks.skipped, false);
 
   const localSourceStatus = runCli(["source", "status", "--local", "--json"], {
     cwd: projectRoot,
@@ -811,6 +822,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     env: { PATH: process.env.PATH || "" }
   });
   assert.equal(localHumanSourceStatus.status, 0, localHumanSourceStatus.stderr || localHumanSourceStatus.stdout);
+  assert.match(localHumanSourceStatus.stdout, /Package checks: local\. Registry access skipped\./);
   assert.match(localHumanSourceStatus.stdout, /Template package: @scope\/topogram-template-todo@0\.1\.0 \(not checked, local mode\)/);
   assert.doesNotMatch(localHumanSourceStatus.stdout, /github_packages_check_failed/);
 
@@ -1334,7 +1346,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
   assert.equal(pkg.scripts.doctor, "topogram doctor");
   assert.equal(pkg.scripts["source:status"], "topogram source status --local");
-  assert.equal(pkg.scripts["source:status:remote"], "topogram source status");
+  assert.equal(pkg.scripts["source:status:remote"], "topogram source status --remote");
   assert.equal(pkg.scripts.check, "topogram check");
   assert.equal(pkg.scripts["check:json"], "topogram check --json");
   assert.equal(pkg.scripts.generate, "topogram generate");

@@ -1913,7 +1913,7 @@ function writeProjectPackage(projectRoot, engineRoot) {
       explain: "node ./scripts/explain.mjs",
       doctor: "topogram doctor",
       "source:status": "topogram source status --local",
-      "source:status:remote": "topogram source status",
+      "source:status:remote": "topogram source status --remote",
       check: "topogram check",
       "check:json": "topogram check --json",
       generate: "topogram generate",
