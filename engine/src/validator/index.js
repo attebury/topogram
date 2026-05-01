@@ -234,7 +234,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 

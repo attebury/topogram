@@ -108,7 +108,7 @@ export const FIELD_SPECS = {
   },
   component: {
     required: ["name", "description", "props", "status"],
-    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "patterns", "regions", "lookups", "dependencies", "version", "approvals", "status"]
+    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "behaviors", "patterns", "regions", "lookups", "dependencies", "version", "approvals", "status"]
   },
   decision: {
     required: ["name", "description", "status"],

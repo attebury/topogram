@@ -136,6 +136,11 @@ function summarizeComponent(statement) {
       description: slot.description ?? null
     })),
     behavior: stableSortedStrings(statement.behavior || []),
+    behaviors: (statement.behaviors || []).map((behavior) => ({
+      kind: behavior.kind || null,
+      directives: behavior.directives || {},
+      source: behavior.source || null
+    })),
     patterns: stableSortedStrings(statement.patterns || []),
     regions: stableSortedStrings(statement.regions || []),
     approvals: stableSortedStrings(statement.approvals || []),

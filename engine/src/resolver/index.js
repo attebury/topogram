@@ -146,6 +146,50 @@ function normalizeComponentSlots(statement) {
   }));
 }
 
+function normalizeBehaviorValue(token) {
+  if (!token) {
+    return null;
+  }
+  if (token.type === "list") {
+    return token.items.map((item) => normalizeBehaviorValue(item));
+  }
+  return parseDefaultLiteral(token);
+}
+
+function normalizeComponentBehaviors(statement) {
+  const structured = blockEntries(getFieldValue(statement, "behaviors")).map((entry) => {
+    const kind = tokenValue(entry.items[0]);
+    const directives = {};
+    for (let i = 1; i < entry.items.length; i += 2) {
+      const key = tokenValue(entry.items[i]);
+      if (!key) {
+        continue;
+      }
+      directives[key] = normalizeBehaviorValue(entry.items[i + 1]);
+    }
+    return {
+      kind,
+      directives,
+      source: "structured",
+      raw: normalizeSequence(entry.items),
+      loc: entry.loc
+    };
+  });
+
+  const structuredKinds = new Set(structured.map((entry) => entry.kind));
+  const shorthand = symbolValues(getFieldValue(statement, "behavior"))
+    .filter((kind) => !structuredKinds.has(kind))
+    .map((kind) => ({
+      kind,
+      directives: {},
+      source: "shorthand",
+      raw: [kind],
+      loc: null
+    }));
+
+  return [...structured, ...shorthand];
+}
+
 function normalizeGenericBlock(statement, key) {
   return blockEntries(getFieldValue(statement, key)).map((entry) => ({
     raw: normalizeSequence(entry.items),
@@ -337,6 +381,11 @@ function buildComponentContract(statement) {
       description: slot.description || null
     })),
     behavior: [...(statement.behavior || [])],
+    behaviors: (statement.behaviors || []).map((behavior) => ({
+      kind: behavior.kind,
+      directives: { ...(behavior.directives || {}) },
+      source: behavior.source || null
+    })),
     patterns: [...(statement.patterns || [])],
     regions: [...(statement.regions || [])],
     approvals: [...(statement.approvals || [])],
@@ -1719,6 +1768,7 @@ export function normalizeStatement(statement, registry) {
         events: normalizeComponentEvents(statement, registry),
         slots: normalizeComponentSlots(statement),
         behavior: symbolValues(getFieldValue(statement, "behavior")),
+        behaviors: normalizeComponentBehaviors(statement),
         patterns: symbolValues(getFieldValue(statement, "patterns")),
         regions: symbolValues(getFieldValue(statement, "regions")),
         approvals: symbolValues(getFieldValue(statement, "approvals")),

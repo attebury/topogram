@@ -67,6 +67,25 @@ test("component kind validates and resolves from the app fixture", () => {
   assert.equal(component.componentContract.id, "component_ui_data_grid");
   assert.equal(component.componentContract.props[0].name, "rows");
   assert.deepEqual(component.componentContract.patterns, ["resource_table", "data_grid_view"]);
+  assert.deepEqual(component.componentContract.behaviors, [
+    {
+      kind: "selection",
+      directives: {
+        mode: "multi",
+        state: "selected_ids",
+        emits: "row_select"
+      },
+      source: "structured"
+    },
+    {
+      kind: "sorting",
+      directives: {
+        fields: ["title", "status", "created_at"],
+        default: ["created_at", "desc"]
+      },
+      source: "structured"
+    }
+  ]);
 });
 
 test("component validator rejects missing props and status", () => {
@@ -110,6 +129,41 @@ component component_invalid_refs {
   assert.match(messages, /references missing shape 'missing_shape'/);
   assert.match(messages, /pattern 'not_a_pattern' is not supported/);
   assert.match(messages, /region 'not_a_region' is not supported/);
+});
+
+test("component validator rejects invalid behavior shorthand and structured bindings", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Payload"
+  description "Payload"
+  status active
+}
+
+component component_invalid_behaviors {
+  name "Invalid Behaviors"
+  description "Invalid behavior contracts"
+  props {
+    selected_ids array optional default []
+  }
+  events {
+    row_select shape_event_payload
+  }
+  behavior [selecion]
+  behaviors {
+    selection mode sometimes state missing_state emits missing_event
+    sorting unknown true
+  }
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /behavior 'selecion' is not supported/);
+  assert.match(messages, /behavior 'selection' references unknown prop 'missing_state'/);
+  assert.match(messages, /behavior 'selection' references unknown event 'missing_event'/);
+  assert.match(messages, /behavior 'selection' has invalid mode 'sometimes'/);
+  assert.match(messages, /behavior 'sorting' has unsupported directive 'unknown'/);
 });
 
 test("component validator rejects removed consumers field", () => {

@@ -56,6 +56,10 @@ component component_ui_data_grid {
   }
 
   patterns [resource_table, data_grid_view]
+  behaviors {
+    selection mode multi state selected_ids emits row_select
+    sorting fields [title, status, created_at] default [created_at, desc]
+  }
   regions [results, toolbar]
   version "1.0"
   status active

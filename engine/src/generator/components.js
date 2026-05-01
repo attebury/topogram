@@ -15,6 +15,7 @@ function componentContract(component) {
     events: component.events || [],
     slots: component.slots || [],
     behavior: component.behavior || [],
+    behaviors: component.behaviors || [],
     patterns: component.patterns || [],
     regions: component.regions || [],
     approvals: component.approvals || [],

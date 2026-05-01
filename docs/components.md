@@ -28,6 +28,10 @@ component component_ui_data_grid {
   }
 
   behavior [selection, sorting]
+  behaviors {
+    selection mode multi state selected_ids emits row_select
+    sorting fields [title, status, created_at] default [created_at, desc]
+  }
   patterns [resource_table, data_grid_view]
   regions [results, toolbar]
   version "1.0"
@@ -35,7 +39,25 @@ component component_ui_data_grid {
 }
 ```
 
-Required fields are `name`, `description`, `props`, and `status`. Optional fields include `category`, `events`, `slots`, `behavior`, `patterns`, `regions`, `lookups`, `dependencies`, `version`, and `approvals`.
+Required fields are `name`, `description`, `props`, and `status`. Optional fields include `category`, `events`, `slots`, `behavior`, `behaviors`, `patterns`, `regions`, `lookups`, `dependencies`, `version`, and `approvals`.
+
+### Behaviors
+
+`behavior [selection, sorting]` is shorthand for supported interaction
+capabilities. `behaviors { ... }` carries details that agents and generators
+should not infer:
+
+```text
+behaviors {
+  selection mode multi state selected_ids emits row_select
+  sorting fields [title, status, created_at] default [created_at, desc]
+  pagination mode cursor page_size 25
+}
+```
+
+Supported behavior kinds are `selection`, `sorting`, `filtering`, `search`,
+`pagination`, `grouping`, `drag_drop`, `inline_edit`, `bulk_action`,
+`optimistic_update`, `realtime_update`, and `keyboard_navigation`.
 
 ### Prop defaults
 
@@ -80,7 +102,7 @@ topogram generate ./topogram --generate ui-component-contract
 
 Passing `--component <id>` for a missing id is now a hard error rather than a silent `null` artifact, so typos surface immediately.
 
-The JSON artifact contains stable `props`, `events`, `slots`, `patterns`, `regions`, and `dependencies` arrays for downstream tools.
+The JSON artifact contains stable `props`, `events`, `slots`, `behavior`, `behaviors`, `patterns`, `regions`, and `dependencies` arrays for downstream tools.
 
 ## Projection Usage
 
