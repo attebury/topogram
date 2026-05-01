@@ -30,6 +30,21 @@ if [[ ! -x "$TOPOGRAM_BIN" ]]; then
   echo "Expected topogram binary was not installed: $TOPOGRAM_BIN" >&2
   exit 1
 fi
+VERSION_JSON="$("$TOPOGRAM_BIN" version --json)"
+node --input-type=module - "$VERSION_JSON" "${EXPECTED_TOPOGRAM_CLI_VERSION:-}" <<'NODE'
+const payload = JSON.parse(process.argv[2]);
+const expected = process.argv[3] || "";
+if (payload.packageName !== "@attebury/topogram") {
+  throw new Error(`Expected @attebury/topogram, got ${payload.packageName}`);
+}
+if (expected && payload.version !== expected) {
+  throw new Error(`Expected Topogram CLI ${expected}, got ${payload.version}`);
+}
+if (!payload.executablePath || !payload.nodeVersion) {
+  throw new Error("Expected executablePath and nodeVersion in topogram version output.");
+}
+console.log(`Using Topogram CLI ${payload.version} from ${payload.executablePath}`);
+NODE
 
 echo "Checking installed catalog-first command surface..."
 (
