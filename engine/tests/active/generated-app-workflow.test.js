@@ -177,7 +177,7 @@ if (args[0] === "view") {
 }
 if (args[0] === "install") {
   const prefixIndex = args.indexOf("--prefix");
-  const spec = args[args.length - 1];
+  const spec = args.find((arg) => arg.startsWith("@") || arg.endsWith(".tgz")) || args[args.length - 1];
   if (prefixIndex < 0) {
     const packageName = packageNameFromSpec(spec).replace(/\\\\/g, "/");
     const versionMatch = spec.match(/@\\^?([^@/]+)$/);
@@ -1118,6 +1118,57 @@ test("topogram package update-cli updates consumer dependency and runs available
   assert.equal(minimalPayload.ok, true);
   assert.deepEqual(minimalPayload.scriptsRun, []);
   assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"]);
+});
+
+test("topogram package update-cli refreshes stale CLI lockfile tarball metadata", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-lock-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "consumer",
+    lockfileVersion: 3,
+    requires: true,
+    packages: {
+      "": {
+        name: "consumer",
+        devDependencies: {
+          "@attebury/topogram": "^0.2.37"
+        }
+      },
+      "node_modules/@attebury/topogram": {
+        version: "0.2.37",
+        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/local-pack-sha",
+        integrity: "sha512-local-pack-integrity",
+        dev: true,
+        bin: {
+          topogram: "src/cli.js"
+        }
+      }
+    }
+  });
+  const fakeNpmBin = createFakeNpm(root);
+  const update = runCli(["package", "update-cli", "0.2.37", "--json"], {
+    cwd: projectRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.37",
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  const payload = JSON.parse(update.stdout);
+  assert.equal(payload.lockfileSanitized, true);
+  const cliLockEntry = readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"];
+  assert.equal(cliLockEntry.version, "0.2.37");
+  assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "resolved"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "integrity"), false);
 });
 
 test("topogram package update-cli explains private package auth failures", () => {

@@ -617,7 +617,7 @@ function latestTemplateInfo(template) {
 /**
  * @param {string} version
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, lockfileSanitized: boolean, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
@@ -644,7 +644,8 @@ function buildPackageUpdateCliPayload(version, options = {}) {
   if (checkedVersion !== version) {
     throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
   }
-  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec], cwd);
+  const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
+  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
   if (install.status !== 0) {
     throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
   }
@@ -670,6 +671,7 @@ function buildPackageUpdateCliPayload(version, options = {}) {
     requestedVersion: version,
     dependencySpec,
     checkedVersion,
+    lockfileSanitized,
     scriptsRun,
     skippedScripts,
     diagnostics,
@@ -690,6 +692,9 @@ function printPackageUpdateCli(payload) {
   console.log(`Updated ${payload.packageName} to ^${payload.requestedVersion}.`);
   console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion}`);
   console.log(`Installed dependency: ${payload.dependencySpec}`);
+  if (payload.lockfileSanitized) {
+    console.log("Lockfile: refreshed existing @attebury/topogram entry from registry metadata");
+  }
   console.log(`Checks run: ${payload.scriptsRun.join(", ") || "none"}`);
   if (payload.skippedScripts.length > 0) {
     console.log(`Checks skipped: ${payload.skippedScripts.join(", ")}`);
@@ -1168,6 +1173,42 @@ function runNpmForPackageUpdate(args, cwd) {
       PATH: process.env.PATH || ""
     }
   });
+}
+
+/**
+ * Remove stale tarball metadata for the CLI package before npm installs the
+ * requested version. GitHub Packages can repack publish metadata, so copying a
+ * local npm-pack resolved URL or integrity into a consumer lockfile can make
+ * npm ci fail with a checksum mismatch.
+ *
+ * @param {string} cwd
+ * @param {string} version
+ * @returns {boolean}
+ */
+function sanitizeTopogramLockForPackageUpdate(cwd, version) {
+  const lockPath = path.join(cwd, "package-lock.json");
+  if (!fs.existsSync(lockPath)) {
+    return false;
+  }
+  const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+  const packages = lock && typeof lock === "object" && lock.packages && typeof lock.packages === "object"
+    ? lock.packages
+    : null;
+  const packageEntry = packages?.[`node_modules/${CLI_PACKAGE_NAME}`];
+  if (!packageEntry || typeof packageEntry !== "object" || packageEntry.version !== version) {
+    return false;
+  }
+  let changed = false;
+  for (const key of ["resolved", "integrity"]) {
+    if (Object.prototype.hasOwnProperty.call(packageEntry, key)) {
+      delete packageEntry[key];
+      changed = true;
+    }
+  }
+  if (changed) {
+    fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
+  }
+  return changed;
 }
 
 /**
