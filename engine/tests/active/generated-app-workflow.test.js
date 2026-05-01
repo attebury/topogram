@@ -242,12 +242,38 @@ process.exit(${status});
   return binDir;
 }
 
+function createFakeGit(root, tag) {
+  const binDir = path.join(root, `bin-git-${Math.random().toString(16).slice(2)}`);
+  fs.mkdirSync(binDir, { recursive: true });
+  const commandPath = path.join(binDir, "git");
+  fs.writeFileSync(commandPath, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+const tag = ${JSON.stringify(tag)};
+if (args[0] === "tag" && args[1] === "--list") {
+  if (args[2] === tag) {
+    process.stdout.write(tag + "\\n");
+  }
+  process.exit(0);
+}
+if (args[0] === "ls-remote" && args.includes("refs/tags/" + tag)) {
+  process.stdout.write("abc123\\trefs/tags/" + tag + "\\n");
+  process.exit(0);
+}
+process.stderr.write("Unexpected fake git command: " + args.join(" ") + "\\n");
+process.exit(1);
+`, "utf8");
+  fs.chmodSync(commandPath, 0o755);
+  return binDir;
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
   assert.match(help.stdout, /topogram new <path> \[--template .*todo/);
+  assert.match(help.stdout, /topogram release status/);
+  assert.match(help.stdout, /topogram package update-cli <version\|--latest>/);
   assert.match(help.stdout, /topogram new \.\/my-app/);
   assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
   assert.match(help.stdout, /Template and catalog discovery:/);
@@ -1169,6 +1195,151 @@ test("topogram package update-cli refreshes stale CLI lockfile tarball metadata"
   assert.equal(cliLockEntry.version, "0.2.37");
   assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "resolved"), false);
   assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "integrity"), false);
+});
+
+test("topogram package update-cli --latest resolves latest and updates version convention", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-latest-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  const fakeNpmBin = createFakeNpm(root);
+  const update = runCli(["package", "update-cli", "--latest", "--json"], {
+    cwd: projectRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.38",
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  const payload = JSON.parse(update.stdout);
+  assert.equal(payload.requestedLatest, true);
+  assert.equal(payload.requestedVersion, "0.2.38");
+  assert.equal(payload.versionConventionUpdated, true);
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.38");
+  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
+});
+
+test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-cli-lock-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "consumer",
+    lockfileVersion: 3,
+    requires: true,
+    packages: {
+      "": {
+        name: "consumer",
+        devDependencies: {
+          "@attebury/topogram": "^0.2.37"
+        }
+      },
+      "node_modules/@attebury/topogram": {
+        version: "0.2.37",
+        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.36/local-pack-sha",
+        integrity: "sha512-local-pack-integrity",
+        dev: true
+      }
+    }
+  });
+  const fakeNpmBin = createFakeNpm(root);
+  const doctor = runCli(["doctor", "--catalog", "none", "--json"], {
+    cwd: projectRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const payload = JSON.parse(doctor.stdout);
+  assert.equal(payload.lockfile.refreshRecommended, true);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "topogram_cli_lockfile_refresh_available"), true);
+});
+
+test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-cli-lock-current-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    devDependencies: {
+      "@attebury/topogram": "^0.2.37"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "consumer",
+    lockfileVersion: 3,
+    requires: true,
+    packages: {
+      "": {
+        name: "consumer",
+        devDependencies: {
+          "@attebury/topogram": "^0.2.37"
+        }
+      },
+      "node_modules/@attebury/topogram": {
+        version: "0.2.37",
+        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/registry-sha",
+        integrity: "sha512-registry-integrity",
+        dev: true
+      }
+    }
+  });
+  const fakeNpmBin = createFakeNpm(root);
+  const doctor = runCli(["doctor", "--catalog", "none", "--json"], {
+    cwd: projectRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      NODE_AUTH_TOKEN: "test-token",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  const payload = JSON.parse(doctor.stdout);
+  assert.equal(payload.lockfile.refreshRecommended, false);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "topogram_cli_lockfile_refresh_available"), false);
+});
+
+test("topogram release status reports package, tag, and consumer pin state", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-"));
+  fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), `${cliPackageVersion}\n`, "utf8");
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const status = runCli(["release", "status", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.localVersion, cliPackageVersion);
+  assert.equal(payload.latestVersion, cliPackageVersion);
+  assert.equal(payload.currentPublished, true);
+  assert.equal(payload.git.local, true);
+  assert.equal(payload.git.remote, true);
+  assert.equal(payload.consumers.find((consumer) => consumer.name === "topogram-starters").matchesLocal, true);
 });
 
 test("topogram package update-cli explains private package auth failures", () => {

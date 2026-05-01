@@ -132,7 +132,7 @@ package's Manage Actions access settings.
 Consumer repos can update their Topogram CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
 ```
 
 The command updates `@attebury/topogram`, refreshes stale lockfile tarball

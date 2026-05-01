@@ -33,4 +33,16 @@ CLI and creates `hello-web` through the private catalog, so the `topogram` repo
 must have Read access under the starter package's Manage Actions access
 settings.
 
-Update package consumers, starting with `topogram-demo-todo`, to the published version and rerun their verification.
+Check the release and known consumer pins:
+
+```bash
+topogram release status
+```
+
+Update package consumers, starting with `topogram-demo-todo`, to the published
+version and rerun their verification. Consumer repos that include
+`topogram-cli.version` can use:
+
+```bash
+NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
+```
