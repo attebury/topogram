@@ -2258,9 +2258,9 @@ function printTemplateStatus(payload) {
   if (!payload.template.id) {
     console.log("Template status: detached");
   } else if (payload.trust?.requiresTrust) {
-    console.log(payload.ok ? "Template status: trusted" : "Template status: review required");
+    console.log(`Template status: attached; implementation trust: ${payload.ok ? "trusted" : "review required"}`);
   } else {
-    console.log("Template status: no executable implementation trust needed");
+    console.log("Template status: attached; implementation trust: not required");
   }
   if (payload.template.id) {
     console.log(`Template: ${payload.template.id}@${payload.template.version || "unknown"}`);
@@ -3426,7 +3426,7 @@ function printCatalogCopy(payload) {
   console.log(`Package: ${payload.packageSpec}`);
   console.log(`Source provenance: ${payload.provenancePath}`);
   console.log(`Files: ${payload.files.length}`);
-  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
@@ -3711,9 +3711,10 @@ function printTopogramSourceStatus(payload) {
     }
   }
   console.log("");
-  console.log(`${TOPOGRAM_SOURCE_FILE} records import provenance only. Local edits are allowed.`);
-  console.log("Template attachment is project metadata. Detaching makes the project fully owned by this workspace.");
-  console.log("This status does not block `topogram check` or `topogram generate`.");
+  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
+  console.log("Template attachment controls update tracking. Detaching makes the project fully owned by this workspace.");
+  console.log("Template baseline drift does not block `topogram check` or `topogram generate`.");
+  console.log("Implementation trust is separate and can block check/generate when review is required.");
   if (payload.project?.trust?.status === "review-required") {
     console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
   } else if (payload.exists && payload.status === "changed") {
@@ -5467,7 +5468,7 @@ try {
     } else if (!status.requiresTrust) {
       console.log("No local implementation trust record needed for this project.");
     } else {
-      console.log(status.ok ? "Template trust status: trusted" : "Template trust status: review required");
+      console.log(status.ok ? "Implementation trust status: trusted" : "Implementation trust status: review required");
       if (status.template.id) {
         console.log(`Template: ${status.template.id}@${status.template.version || "unknown"}`);
       }

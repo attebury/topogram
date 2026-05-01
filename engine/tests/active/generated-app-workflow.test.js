@@ -1790,7 +1790,7 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   assert.match(humanCopy.stdout, /Package: @scope\/topogram-hello@0\.1\.0/);
   assert.match(humanCopy.stdout, /Source provenance: .*\.topogram-source\.json/);
   assert.match(humanCopy.stdout, /Files: \d+/);
-  assert.match(humanCopy.stdout, /\.topogram-source\.json records import provenance only\. Local edits are allowed\./);
+  assert.match(humanCopy.stdout, /\.topogram-source\.json records catalog-copy provenance only\. Local edits are allowed\./);
   assert.match(humanCopy.stdout, /Next steps:/);
   assert.match(humanCopy.stdout, /topogram source status/);
   assert.match(humanCopy.stdout, /topogram check/);
@@ -1803,8 +1803,9 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   assert.match(humanSourceStatus.stdout, /Catalog: hello from /);
   assert.match(humanSourceStatus.stdout, /Package: @scope\/topogram-hello@0\.1\.0/);
   assert.match(humanSourceStatus.stdout, /Changed: 0/);
-  assert.match(humanSourceStatus.stdout, /\.topogram-source\.json records import provenance only\. Local edits are allowed\./);
-  assert.match(humanSourceStatus.stdout, /This status does not block `topogram check` or `topogram generate`\./);
+  assert.match(humanSourceStatus.stdout, /\.topogram-source\.json records catalog-copy provenance only\. Local edits are allowed\./);
+  assert.match(humanSourceStatus.stdout, /Template baseline drift does not block `topogram check` or `topogram generate`\./);
+  assert.match(humanSourceStatus.stdout, /Implementation trust is separate and can block check\/generate when review is required\./);
   assert.match(humanSourceStatus.stdout, /Next: run `topogram check` or `topogram generate`\./);
 
   const copy = runCli(["catalog", "copy", "hello", targetRoot, "--catalog", catalogPath, "--json"], { env });
@@ -2165,7 +2166,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
 
   const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(humanTemplateStatus.status, 0, humanTemplateStatus.stderr || humanTemplateStatus.stdout);
-  assert.match(humanTemplateStatus.stdout, /Template status: trusted/);
+  assert.match(humanTemplateStatus.stdout, /Template status: attached; implementation trust: trusted/);
   assert.match(humanTemplateStatus.stdout, /Latest version: not checked/);
 
   const install = runNpm(["install"], projectRoot);
@@ -2346,6 +2347,7 @@ test("topogram trust status reports implementation content drift and trust refre
 
   const humanStatus = runCli(["trust", "status"], { cwd: projectRoot });
   assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
+  assert.match(humanStatus.stdout, /Implementation trust status: review required/);
   assert.match(humanStatus.stdout, /topogram trust diff/);
 
   const templateStatus = runCli(["template", "status", "--json"], { cwd: projectRoot });
@@ -2358,7 +2360,7 @@ test("topogram trust status reports implementation content drift and trust refre
 
   const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.notEqual(humanTemplateStatus.status, 0, humanTemplateStatus.stdout);
-  assert.match(humanTemplateStatus.stdout, /Template status: review required/);
+  assert.match(humanTemplateStatus.stdout, /Template status: attached; implementation trust: review required/);
   assert.match(humanTemplateStatus.stdout, /Changed: index\.js/);
   assert.match(humanTemplateStatus.stdout, /topogram trust diff/);
 
