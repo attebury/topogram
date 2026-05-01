@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+- Add `projection.ui_components` so projections explicitly own component
+  placement and wiring. Component usage validates screen, region, component,
+  prop, event, data-source, and event-target references.
+- Remove `component.consumers` from the component grammar before external
+  adoption; component usage now flows from projections instead of components
+  self-registering consumers.
+- Add structured component `behaviors { ... }` alongside the shorthand
+  `behavior [...]`, with validation for supported stack-agnostic behavior
+  kinds and behavior references to component props/events.
+- Emit `approvals` and normalized `behaviors` in `ui-component-contract`
+  artifacts.
+- Include component usage metadata in generated UI contracts. Concrete web
+  projections that realize a shared UI projection now inherit the shared
+  projection's component usages and component contracts.
+- Fix component diff impact for removed components by resolving projection
+  impact from the baseline graph.
+
 ## 0.3.0 - 2026-05-01
 
 - Add `component` statement kind for reusable UI/service component contracts

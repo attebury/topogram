@@ -83,6 +83,9 @@ Bare unquoted symbols other than `true`, `false`, `null`, and numerics are passe
 - `props` entries use `<name> <type> <required|optional> [default <value>]`.
 - `events` entries reference existing `shape` statements.
 - `slots` entries have a symbol name and text description.
+- `behavior` and `behaviors` use the supported interaction vocabulary.
+- Structured behavior entries reference existing component props/events where
+  applicable.
 - `patterns` and `regions` use the shared UI vocabulary.
 - `dependencies` reference existing statements.
 
@@ -123,6 +126,12 @@ projection proj_ui_shared {
 ```
 
 `topogram check` validates that the screen and region exist, the component exists, `data` bindings reference known component props and Topogram sources, and `event` bindings reference known component events.
+
+Generated UI contracts include the same usage metadata. Each screen gets a
+`components` array with placement, data bindings, and event bindings, and the
+contract includes a top-level `components` map for the referenced component
+contracts. Concrete web projections inherit component usage from shared UI
+projections they realize.
 
 ## Query Integration
 
