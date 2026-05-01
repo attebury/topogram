@@ -169,10 +169,15 @@ contract includes a top-level `components` map for the referenced component
 contracts. Concrete web projections inherit component usage from shared UI
 projections they realize.
 
-SvelteKit and React generation can consume supported `ui_components` bindings
-through packaged helpers. Supported patterns render component-marked markup for
-`summary_stats`, `resource_table`, `data_grid_view`, `board_view`, and
-`calendar_view`:
+SvelteKit and React generation can consume supported `ui_components` bindings.
+For SvelteKit, the engine also generates fallback pages for routed screens that
+the template implementation did not render; those fallback pages render
+component regions before falling back to sample list markup. Supported patterns
+render component-marked markup for `summary_stats`, `resource_table`,
+`data_grid_view`, `board_view`, and `calendar_view`.
+
+Template implementations can call the packaged helpers directly when they need
+custom route structure:
 
 ```js
 import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";

@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- None currently.
+- Generate SvelteKit fallback route pages for routed screens that a template
+  implementation leaves unrendered, using `projection.ui_components` regions
+  before falling back to generic list markup.
 
 ## 0.3.13 - 2026-05-01
 

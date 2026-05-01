@@ -131,6 +131,9 @@ import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/
 Pass the screen contract, region, top-level component contracts, and the data
 expression for that screen. Set `useTypescript: true` when generating typed
 Svelte or React pages so callback parameters are emitted with explicit types.
+The SvelteKit generator also emits fallback pages for routed screens your
+implementation does not render; those pages use `ui_components` regions before
+falling back to generic sample list markup.
 Vanilla web templates should still treat `ui_components` as contract metadata
 until a concrete helper exists.
 

@@ -2,6 +2,7 @@ import { buildWebRealization } from "../../../realization/ui/index.js";
 import { lookupRouteSegment } from "../services/runtime-helpers.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
+import { renderSvelteKitComponentRegion } from "./sveltekit-components.js";
 
 function routePathToSvelteKitDirectory(routePath) {
   if (!routePath || routePath === "/") {
@@ -28,6 +29,127 @@ function lookupDescriptor(lookup) {
     ...lookup,
     route: `/lookups/${lookupRouteSegment(lookup.entity.id)}`
   };
+}
+
+function screenRegions(screen) {
+  const names = new Set();
+  for (const region of screen?.regions || []) {
+    if (region?.name) names.add(region.name);
+  }
+  for (const usage of screen?.components || []) {
+    if (usage?.region) names.add(usage.region);
+  }
+  return [...names];
+}
+
+function sampleItemsForScreen(screen) {
+  const title = screen?.title || screen?.id || "Resource";
+  return [
+    {
+      id: "sample-active",
+      title: `${title} sample`,
+      name: `${title} sample`,
+      message: `${title} sample`,
+      description: "Generated from Topogram UI contract metadata.",
+      status: "active",
+      priority: "medium",
+      created_at: "2026-01-01",
+      due_at: "2026-01-15"
+    },
+    {
+      id: "sample-completed",
+      title: `${title} completed sample`,
+      name: `${title} completed sample`,
+      message: `${title} completed sample`,
+      description: "Second generated row for component rendering checks.",
+      status: "completed",
+      priority: "low",
+      created_at: "2026-01-02",
+      due_at: "2026-01-22"
+    }
+  ];
+}
+
+function isDynamicRoute(route) {
+  return String(route || "").split("/").some((segment) => segment.startsWith(":"));
+}
+
+function buildGenericSvelteKitScreenFiles(screen, contract, useTypescript) {
+  const files = {};
+  const routeDir = routePathToSvelteKitDirectory(screen.route);
+  const sampleItems = sampleItemsForScreen(screen);
+  const loadCapabilityId = screen.loadCapability?.id || null;
+  const canLoadFromApi = loadCapabilityId && !isDynamicRoute(screen.route);
+  const renderedRegions = screenRegions(screen)
+    .map((region) => {
+      const rendered = renderSvelteKitComponentRegion(screen, region, {
+        componentContracts: contract.components,
+        itemsExpression: "data.result.items",
+        useTypescript
+      });
+      if (!rendered) return "";
+      return `      <section class="stack" data-topogram-region="${region}">
+        ${rendered}
+      </section>`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+  const defaultCollection = `<section class="card">
+      <h2>Sample rows</h2>
+      <ul class="task-list resource-list">
+        {#each data.result.items as item}
+          <li>
+            <div class="resource-meta">
+              <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
+              {#if item.description}<span class="muted">{item.description}</span>{/if}
+            </div>
+            <span class="badge">{item.status ?? "active"}</span>
+          </li>
+        {/each}
+      </ul>
+    </section>`;
+
+  if (canLoadFromApi) {
+    files[`${routeDir}/+page.ts`] = `import type { PageLoad } from "./$types";
+import { requestCapability } from "$lib/api/client";
+
+export const load: PageLoad = async ({ fetch }) => {
+  const result = await requestCapability(fetch, "${loadCapabilityId}");
+  const resultObject = result && typeof result === "object" && !Array.isArray(result) ? result : {};
+  return {
+    screen: ${JSON.stringify({ id: screen.id, title: screen.title, collection: screen.collection, web: screen.web }, null, 2)},
+    result: Array.isArray(result) ? { items: result } : { items: resultObject.items ?? [], ...resultObject }
+  };
+};
+`;
+  }
+
+  files[`${routeDir}/+page.svelte`] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  ${canLoadFromApi ? "export let data;" : `const data = {
+    screen: ${JSON.stringify({ id: screen.id, title: screen.title, collection: screen.collection, web: screen.web }, null, 2)},
+    result: {
+      items: ${JSON.stringify(sampleItems, null, 2)}
+    }
+  };`}
+</script>
+
+<main>
+  <div class="stack">
+    <section class="card">
+      <div class="button-row" style="justify-content: space-between;">
+        <div>
+          <p class="muted">${screen.kind || "screen"}</p>
+          <h1>${screen.title || screen.id}</h1>
+          <p>This SvelteKit page was generated from <code>${screen.id}</code>.</p>
+        </div>
+      </div>
+    </section>
+
+${renderedRegions || `    ${defaultCollection}`}
+  </div>
+</main>
+`;
+  return files;
 }
 
 function resolveNavLinks(contract, webReference) {
@@ -185,6 +307,13 @@ function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
         prettyScreenKind
       })).map(([relativePath, contents]) => [`src/routes/${relativePath}`, contents])
     ));
+  }
+
+  for (const screen of contract.screens || []) {
+    if (!screen.route || screen.route === "/") continue;
+    const routeDir = routePathToSvelteKitDirectory(screen.route);
+    if (files[`${routeDir}/+page.svelte`]) continue;
+    Object.assign(files, buildGenericSvelteKitScreenFiles(screen, contract, useTypescript));
   }
 
   files["src/lib/topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;

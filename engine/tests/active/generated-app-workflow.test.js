@@ -62,6 +62,18 @@ function copyBuiltInTemplate(root, name = "template") {
   return templateRoot;
 }
 
+function copyAppBasicFixture(root, name = "app-basic") {
+  const workspaceRoot = path.join(root, name);
+  fs.cpSync(fixtureRoot, workspaceRoot, { recursive: true });
+  const rendererPath = path.join(workspaceRoot, "implementation", "web", "renderers.js");
+  fs.writeFileSync(
+    rendererPath,
+    fs.readFileSync(rendererPath, "utf8").replaceAll("../../../../../../src/", `${engineRoot}/src/`),
+    "utf8"
+  );
+  return workspaceRoot;
+}
+
 test("topogram version reports package and runtime details", () => {
   const human = runCli(["version"]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
@@ -412,6 +424,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const generatedTaskListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "+page.svelte"));
   assert.match(generatedTaskListPage, /data-topogram-component="component_ui_data_grid"/);
   assert.match(generatedTaskListPage, /class="component-card component-table"/);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte")), true);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "calendar", "+page.svelte")), true);
 
   for (const relativePath of [
     ".topogram-generated.json",
@@ -447,6 +461,33 @@ test("public authoring-to-app commands check and generate app bundles", () => {
 
   const buildAlias = runCli(["build", fixtureRoot, "--out", outputRoot]);
   assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
+});
+
+test("sveltekit fallback routes render projection ui_components for unrendered screens", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-route-"));
+  const workspaceRoot = copyAppBasicFixture(root);
+  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-shared.tg");
+  const source = fs.readFileSync(projectionPath, "utf8");
+  fs.writeFileSync(
+    projectionPath,
+    source.replace(
+      "    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n",
+      "    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n" +
+        "    screen task_board region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n"
+    ),
+    "utf8"
+  );
+
+  const outputRoot = path.join(root, "app");
+  const trust = runCli(["trust", "template"], { cwd: workspaceRoot });
+  assert.equal(trust.status, 0, trust.stderr || trust.stdout);
+  const generate = runCli(["generate", workspaceRoot, "--out", outputRoot]);
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+
+  const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte"));
+  assert.match(boardPage, /data-topogram-component="component_ui_data_grid"/);
+  assert.match(boardPage, /class="component-card component-table"/);
+  assert.doesNotMatch(boardPage, /Sample rows/);
 });
 
 test("topogram generate honors explicit artifact targets", () => {
