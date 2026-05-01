@@ -146,11 +146,13 @@ function printUsage(options = {}) {
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
+  console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram version");
   console.log("  topogram doctor");
   console.log("  topogram new ./my-app");
+  console.log("  topogram new --list-templates");
   console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
   console.log("  topogram check --json");
@@ -615,7 +617,7 @@ function latestTemplateInfo(template) {
 /**
  * @param {string} version
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, dependencySpec: string, checkedVersion: string, lockfileSanitized: boolean, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildPackageUpdateCliPayload(version, options = {}) {
   if (!isPackageVersion(version)) {
@@ -642,7 +644,8 @@ function buildPackageUpdateCliPayload(version, options = {}) {
   if (checkedVersion !== version) {
     throw new Error(`Expected ${exactSpec}, but npm returned version '${checkedVersion || "(empty)"}'.`);
   }
-  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec], cwd);
+  const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
+  const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
   if (install.status !== 0) {
     throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
   }
@@ -668,6 +671,7 @@ function buildPackageUpdateCliPayload(version, options = {}) {
     requestedVersion: version,
     dependencySpec,
     checkedVersion,
+    lockfileSanitized,
     scriptsRun,
     skippedScripts,
     diagnostics,
@@ -688,6 +692,9 @@ function printPackageUpdateCli(payload) {
   console.log(`Updated ${payload.packageName} to ^${payload.requestedVersion}.`);
   console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion}`);
   console.log(`Installed dependency: ${payload.dependencySpec}`);
+  if (payload.lockfileSanitized) {
+    console.log("Lockfile: refreshed existing @attebury/topogram entry from registry metadata");
+  }
   console.log(`Checks run: ${payload.scriptsRun.join(", ") || "none"}`);
   if (payload.skippedScripts.length > 0) {
     console.log(`Checks skipped: ${payload.skippedScripts.join(", ")}`);
@@ -1169,6 +1176,42 @@ function runNpmForPackageUpdate(args, cwd) {
 }
 
 /**
+ * Remove stale tarball metadata for the CLI package before npm installs the
+ * requested version. GitHub Packages can repack publish metadata, so copying a
+ * local npm-pack resolved URL or integrity into a consumer lockfile can make
+ * npm ci fail with a checksum mismatch.
+ *
+ * @param {string} cwd
+ * @param {string} version
+ * @returns {boolean}
+ */
+function sanitizeTopogramLockForPackageUpdate(cwd, version) {
+  const lockPath = path.join(cwd, "package-lock.json");
+  if (!fs.existsSync(lockPath)) {
+    return false;
+  }
+  const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+  const packages = lock && typeof lock === "object" && lock.packages && typeof lock.packages === "object"
+    ? lock.packages
+    : null;
+  const packageEntry = packages?.[`node_modules/${CLI_PACKAGE_NAME}`];
+  if (!packageEntry || typeof packageEntry !== "object" || packageEntry.version !== version) {
+    return false;
+  }
+  let changed = false;
+  for (const key of ["resolved", "integrity"]) {
+    if (Object.prototype.hasOwnProperty.call(packageEntry, key)) {
+      delete packageEntry[key];
+      changed = true;
+    }
+  }
+  if (changed) {
+    fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
+  }
+  return changed;
+}
+
+/**
  * @param {string} cwd
  * @returns {Record<string, any>}
  */
@@ -1634,7 +1677,7 @@ function buildTemplateListPayload(options = {}) {
       templates.push(
         ...loaded.catalog.entries
           .filter((entry) => entry.kind === "template")
-          .map((entry) => catalogTemplateListItem(entry))
+          .map((entry) => templateListItemFromCatalogEntry(entry, loaded.source))
       );
     } catch (error) {
       diagnostics.push({
@@ -1659,6 +1702,25 @@ function buildTemplateListPayload(options = {}) {
 }
 
 /**
+ * @param {any} entry
+ * @param {string} source
+ * @returns {Record<string, any>}
+ */
+function templateListItemFromCatalogEntry(entry, source) {
+  const item = catalogTemplateListItem(entry);
+  const commands = catalogShowCommands(entry, source);
+  return {
+    ...item,
+    surfaces: Array.isArray(item.surfaces) ? item.surfaces : [],
+    generators: Array.isArray(item.generators) ? item.generators : [],
+    stack: typeof item.stack === "string" ? item.stack : null,
+    isDefault: item.id === "hello-web",
+    recommendedCommand: commands.primary,
+    commands
+  };
+}
+
+/**
  * @param {ReturnType<typeof buildTemplateListPayload>} payload
  * @returns {void}
  */
@@ -1676,7 +1738,7 @@ function printTemplateList(payload) {
     const surfaces = Array.isArray(template.surfaces) && template.surfaces.length > 0
       ? template.surfaces.join(", ")
       : "not declared";
-    const command = `topogram new ./my-app --template ${shellCommandArg(template.id)}`;
+    const command = template.recommendedCommand || `topogram new ./my-app --template ${shellCommandArg(template.id)}`;
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
     console.log(`  Source: ${template.source} | Surfaces: ${surfaces} | Stack: ${stack} | Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
     console.log(`  New: ${command}`);
@@ -3782,7 +3844,9 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "doctor") {
   commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
 } else if (args[0] === "new" || args[0] === "create") {
-  commandArgs = { newProject: true, inputPath: args[1] };
+  commandArgs = args.includes("--list-templates")
+    ? { templateList: true, inputPath: null }
+    : { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "validate") {

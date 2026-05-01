@@ -90,11 +90,13 @@ npm run verify
 
 The default starter alias is `hello-web`: a small vanilla HTML/CSS/JS app with
 two pages and one workflow doc. Starter content is package-backed and resolved
-through the catalog. Use `topogram template list` for a quick starter summary
-and `topogram catalog show <id>` to inspect catalog aliases:
+through the catalog. Use `topogram template list` or the friendlier
+`topogram new --list-templates` alias for a quick starter summary, and
+`topogram catalog show <id>` to inspect catalog aliases:
 
 ```bash
 topogram template list
+topogram new --list-templates
 topogram catalog show todo
 topogram new ./todo-demo --template todo
 ```
@@ -106,6 +108,16 @@ topogram new ./todo-demo --template todo
 | `hello-db` | SQLite | You want database lifecycle output only. |
 | `web-api` | React + Express | You want a web/API starter without a database. |
 | `web-api-db` | SvelteKit + Hono + Postgres | You want the heavier full-stack starter. |
+
+The JSON form is intended for agents and setup scripts:
+
+```bash
+topogram new --list-templates --json
+```
+
+Each template item includes `surfaces`, `generators`, `stack`,
+`includesExecutableImplementation`, and `recommendedCommand` so tools can pick a
+starter without scraping human output.
 
 The package-backed starter templates in `topogram-starters` are the canonical
 shared starter examples and are surfaced through the `attebury/topograms`
@@ -301,9 +313,10 @@ Consumer repos can update their CLI dependency with:
 NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
 ```
 
-The command verifies the published package, runs `npm install --save-dev`, then
-runs available consumer checks: `cli:surface`, `catalog:template-show`, and
-`check`.
+The command verifies the published package, refreshes stale
+`@attebury/topogram` lockfile tarball metadata when needed, runs `npm install
+--save-dev`, then runs available consumer checks: `cli:surface`, `doctor`,
+`catalog:show`, `catalog:template-show`, and `check`.
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 

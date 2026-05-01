@@ -50,6 +50,7 @@ Use the default catalog-backed neutral starter:
 
 ```bash
 topogram template list
+topogram new --list-templates
 topogram new ./my-app
 ```
 
@@ -70,6 +71,10 @@ topogram new ./web-api-db --template web-api-db
 | `hello-db` | database | SQLite | Database lifecycle output only. |
 | `web-api` | web, api | React + Express | Executable implementation starter without a database. |
 | `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
+
+Use `topogram new --list-templates --json` when an agent or setup script needs
+the same list with structured `surfaces`, `generators`, `stack`,
+`includesExecutableImplementation`, and `recommendedCommand` fields.
 
 Use a local template:
 
@@ -130,8 +135,10 @@ Consumer repos can update their Topogram CLI dependency with:
 NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli <version>
 ```
 
-The command updates `@attebury/topogram`, then runs any available consumer
-scripts named `cli:surface`, `catalog:template-show`, and `check`.
+The command updates `@attebury/topogram`, refreshes stale lockfile tarball
+metadata for the CLI package when needed, then runs any available consumer
+scripts named `cli:surface`, `doctor`, `catalog:show`,
+`catalog:template-show`, and `check`.
 
 Maintained apps can intentionally leave the template update workflow with
 `topogram template detach`. Detach removes template provenance from

@@ -24,3 +24,11 @@ test("catalog-disabled default starter guidance is explicit", () => {
   assert.match(message, /Unset TOPOGRAM_CATALOG_SOURCE=none/);
   assert.doesNotMatch(message, /For the private default catalog/);
 });
+
+test("catalog alias errors include bounded template suggestions", () => {
+  const message = formatCatalogTemplateAliasError("react", "./topograms.catalog.json", null, {
+    suggestions: ["web-api", "hello-web", "web-api-db", "ignored"]
+  });
+  assert.match(message, /Suggested templates: web-api, hello-web, web-api-db\./);
+  assert.doesNotMatch(message, /ignored/);
+});
