@@ -66,14 +66,8 @@ node --input-type=module -e '
 "$TOPOGRAM_BIN" catalog show smoke --catalog "$CATALOG_FILE" --json >/dev/null
 "$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
 
-echo "Creating a starter with the packed CLI..."
-(
-  cd "$CONSUMER_DIR"
-  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter
-)
-
 echo "Packing a template pack..."
-cp -R "$ENGINE_DIR/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
+cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
 (
   cd "$TEMPLATE_PACKAGE_DIR"
   node --input-type=module -e '
@@ -95,6 +89,12 @@ if [[ ! -f "$TEMPLATE_TARBALL" ]]; then
   echo "Expected template tarball was not created: $TEMPLATE_TARBALL" >&2
   exit 1
 fi
+
+echo "Creating a starter with the packed CLI and local fixture template..."
+(
+  cd "$CONSUMER_DIR"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter --template "$ENGINE_DIR/tests/fixtures/templates/hello-web"
+)
 
 echo "Creating a starter with the packed template..."
 (

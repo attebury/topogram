@@ -54,8 +54,8 @@ npm run new -- ./my-topogram-app
 ## Layout
 
 - `src/` - engine source
-- `templates/` - built-in starter templates for `topogram new`
 - `tests/active/` - retained active engine tests
+- `tests/fixtures/templates/` - local template fixtures used by engine tests
 - `tests/fixtures/workspaces/` - engine-owned Topogram workspaces
 - `tests/fixtures/expected/` - engine-owned golden outputs
 - `tests/fixtures/invalid/` - invalid model cases
@@ -81,17 +81,17 @@ Run the engine gate:
 npm run check
 ```
 
-Create a starter project from the default built-in `hello-web` template:
+Create a starter project from the catalog-backed default `hello-web` alias:
 
 ```bash
-npm run new -- ../my-topogram-app
+topogram new ../my-topogram-app --template hello-web
 cd ../my-topogram-app
 npm install
 npm run doctor
 npm run check
 ```
 
-Choose another built-in starter with the template commands:
+Choose another catalog starter with the template commands:
 
 ```bash
 topogram template list

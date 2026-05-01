@@ -21,16 +21,15 @@ Fixtures are for engine regression confidence. They are not user-facing demos.
 ## Starter Templates
 
 ```text
-engine/templates/
+topogram-starters/packages/
 ```
 
-Templates are copied by `topogram new`. They are product starters, not regression fixtures.
-The default built-in template is `hello-web`, a vanilla HTML/CSS/JS starter with
-two pages and one workflow doc. Additional built-ins cover API-only, DB-only,
-React/Express web/API, and SvelteKit/Hono/Postgres web/API/DB starts. Shared
-template packs use the same layout with `topogram-template.json`, `topogram/`,
-`topogram.project.json`, and optional trusted `implementation/` code. See
-`docs/template-authoring.md`.
+Templates are copied by `topogram new`. Product starter templates live outside
+the engine in package repos such as `topogram-starters` and
+`topogram-template-todo`. The engine keeps only local template fixtures under
+`engine/tests/fixtures/templates/` for regression tests. Template packs use
+`topogram-template.json`, `topogram/`, `topogram.project.json`, and optional
+trusted `implementation/` code. See `docs/template-authoring.md`.
 
 Use `topogram template list` for a quick stack/surface summary and
 `topogram catalog show <id>` to inspect catalog aliases and their recommended

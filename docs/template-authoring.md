@@ -46,15 +46,14 @@ For npm or GitHub Packages, keep the package payload narrow:
 
 ## Usage
 
-Use the default built-in neutral starter:
+Use the default catalog-backed neutral starter:
 
 ```bash
 topogram template list
 topogram new ./my-app
-TOPOGRAM_CATALOG_SOURCE=none topogram template list
 ```
 
-Built-in starters:
+Catalog starter aliases:
 
 ```bash
 topogram new ./hello-web
@@ -178,8 +177,8 @@ latest-version checks are not performed by default.
 
 `topogram template status --latest` is the opt-in registry check for
 package-backed templates. It reports the recorded version, latest package
-version, and the candidate package spec to compare. It does not support local or
-built-in templates.
+version, and the candidate package spec to compare. It does not support local
+templates.
 
 ## Template Allow Policy
 
@@ -189,7 +188,7 @@ human or agent can use for checks and updates:
 ```json
 {
   "version": "0.1",
-  "allowedSources": ["builtin", "local", "package"],
+  "allowedSources": ["local", "package"],
   "allowedTemplateIds": ["@scope/topogram-template-name"],
   "allowedPackageScopes": ["@scope"],
   "executableImplementation": "allow",
@@ -215,10 +214,10 @@ topogram template policy pin @scope/topogram-template-name@0.1.0
 Policy check succeeds with a warning when the file is missing so older projects
 can adopt it incrementally. When the file exists, template update/status/check
 commands enforce it before comparing candidate files. `allowedSources` controls
-`builtin`, `local`, and package templates. `allowedTemplateIds` keeps updates on
-the expected template family. `allowedPackageScopes` limits package templates by
-the actual package source spec recorded in `topogram.project.json`, not only by
-the template id. `executableImplementation` may be `allow`, `warn`, or `deny`.
+local and package templates. `allowedTemplateIds` keeps updates on the expected
+template family. `allowedPackageScopes` limits package templates by the actual
+package source spec recorded in `topogram.project.json`, not only by the
+template id. `executableImplementation` may be `allow`, `warn`, or `deny`.
 `pinnedVersions` can force a reviewed exact template version until a human
 updates the pin.
 

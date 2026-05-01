@@ -9,7 +9,8 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 const engineRoot = path.join(repoRoot, "engine");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
 const expectedRoot = path.join(engineRoot, "tests", "fixtures", "expected", "app-basic");
-const builtInTemplateRoot = path.join(engineRoot, "templates", "web-api-db");
+const builtInTemplateRoot = path.join(engineRoot, "tests", "fixtures", "templates", "web-api-db");
+const fixtureTemplatesRoot = path.join(engineRoot, "tests", "fixtures", "templates");
 const npmCacheRoot = path.join(os.tmpdir(), "topogram-generated-app-workflow-npm-cache");
 fs.mkdirSync(npmCacheRoot, { recursive: true });
 const cliPackageVersion = JSON.parse(fs.readFileSync(path.join(engineRoot, "package.json"), "utf8")).version;
@@ -258,18 +259,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const templateList = runCli(["template", "list", "--json"]);
   assert.equal(templateList.status, 0, templateList.stderr || templateList.stdout);
   const listPayload = JSON.parse(templateList.stdout);
-  assert.equal(listPayload.templates.some((template) => template.id === "topogram/hello-web" && template.source === "builtin"), true);
-  assert.equal(listPayload.templates.some((template) => template.id === "topogram/hello-api" && template.source === "builtin"), true);
-  assert.equal(listPayload.templates.some((template) => template.id === "topogram/hello-db" && template.source === "builtin"), true);
-  assert.equal(listPayload.templates.some((template) => template.id === "topogram/web-api" && template.source === "builtin"), true);
-  assert.equal(listPayload.templates.some((template) => template.id === "topogram/web-api-db" && template.source === "builtin"), true);
-  const helloWebTemplate = listPayload.templates.find((template) => template.id === "topogram/hello-web");
-  assert.equal(helloWebTemplate.isDefault, true);
-  assert.equal(helloWebTemplate.stack, "Vanilla HTML/CSS/JS");
-  assert.deepEqual(helloWebTemplate.surfaces, ["web"]);
-  const webApiTemplate = listPayload.templates.find((template) => template.id === "topogram/web-api");
-  assert.equal(webApiTemplate.stack, "React + Express");
-  assert.deepEqual(webApiTemplate.surfaces, ["web", "api"]);
+  assert.equal(listPayload.templates.some((template) => template.source === "builtin"), false);
 
   const check = runCli(["check", fixtureRoot]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -577,9 +567,7 @@ test("topogram template list includes catalog template aliases", () => {
   assert.equal(list.status, 0, list.stderr || list.stdout);
   const payload = JSON.parse(list.stdout);
   assert.equal(payload.catalog.loaded, true);
-  assert.equal(payload.templates.some((template) => template.id === "topogram/hello-web" && template.source === "builtin"), true);
-  assert.equal(payload.templates.some((template) => template.id === "topogram/web-api" && template.source === "builtin"), true);
-  assert.equal(payload.templates.some((template) => template.id === "topogram/web-api-db" && template.source === "builtin"), true);
+  assert.equal(payload.templates.some((template) => template.source === "builtin"), false);
   const todoTemplate = payload.templates.find((template) => template.id === "todo");
   assert.ok(todoTemplate);
   assert.equal(todoTemplate.source, "catalog");
@@ -589,9 +577,7 @@ test("topogram template list includes catalog template aliases", () => {
   const listHuman = runCli(["template", "list", "--catalog", catalogPath]);
   assert.equal(listHuman.status, 0, listHuman.stderr || listHuman.stdout);
   assert.match(listHuman.stdout, /Template starters:/);
-  assert.match(listHuman.stdout, /Built-ins are bundled with the CLI; catalog aliases resolve to versioned package installs/);
-  assert.match(listHuman.stdout, /topogram\/hello-web@0\.1\.0 \(default\)/);
-  assert.match(listHuman.stdout, /Source: builtin \| Surfaces: web \| Stack: Vanilla HTML\/CSS\/JS \| Executable implementation: no/);
+  assert.match(listHuman.stdout, /Catalog aliases resolve to versioned package installs/);
   assert.match(listHuman.stdout, /todo@0\.1\.0/);
   assert.match(listHuman.stdout, /Source: catalog \| Surfaces: web, api, database \| Stack: SvelteKit \+ Hono \+ Postgres \| Executable implementation: yes/);
   assert.match(listHuman.stdout, /topogram new \.\/my-app --template todo/);
@@ -608,7 +594,7 @@ test("topogram template list includes catalog template aliases", () => {
   assert.match(human.stdout, /Copy: topogram catalog copy hello \.\/hello-topogram/);
 });
 
-test("topogram template show describes built-in and catalog templates", () => {
+test("topogram template show describes catalog templates", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-show-"));
   const catalogPath = createCatalog(root, [
     catalogEntry(),
@@ -625,31 +611,6 @@ test("topogram template show describes built-in and catalog templates", () => {
       }
     })
   ]);
-
-  const builtin = runCli(["template", "show", "hello-web", "--json"]);
-  assert.equal(builtin.status, 0, builtin.stderr || builtin.stdout);
-  const builtinPayload = JSON.parse(builtin.stdout);
-  assert.equal(builtinPayload.ok, true);
-  assert.equal(builtinPayload.source, "builtin");
-  assert.equal(builtinPayload.template.id, "topogram/hello-web");
-  assert.equal(builtinPayload.template.description, "Vanilla HTML/CSS/JS starter with two pages and one workflow.");
-  assert.equal(builtinPayload.template.isDefault, true);
-  assert.equal(builtinPayload.template.stack, "Vanilla HTML/CSS/JS");
-  assert.deepEqual(builtinPayload.template.generators, ["topogram/vanilla-web"]);
-  assert.deepEqual(builtinPayload.template.surfaces, ["web"]);
-  assert.deepEqual(builtinPayload.decision.surfaces, ["web"]);
-  assert.equal(builtinPayload.decision.stack, "Vanilla HTML/CSS/JS");
-  assert.deepEqual(builtinPayload.decision.generators, ["topogram/vanilla-web"]);
-  assert.equal(builtinPayload.decision.packageSpec, null);
-  assert.equal(builtinPayload.decision.executableImplementation, false);
-  assert.equal(builtinPayload.commands.primary, "topogram new ./my-app --template hello-web");
-
-  const builtinHuman = runCli(["template", "show", "web-api"]);
-  assert.equal(builtinHuman.status, 0, builtinHuman.stderr || builtinHuman.stdout);
-  assert.match(builtinHuman.stdout, /What it creates:/);
-  assert.match(builtinHuman.stdout, /Stack: React \+ Express/);
-  assert.match(builtinHuman.stdout, /Surfaces: web, api/);
-  assert.match(builtinHuman.stdout, /Policy impact: Copies implementation\/ code/);
 
   const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
@@ -856,8 +817,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(updatePayload.files.some((file) => file.path === "topogram.project.json" && file.kind === "changed"), false);
 });
 
-test("explicit catalogs can override built-in template names", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-builtin-name-"));
+test("catalog aliases resolve starter names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-starter-name-"));
   const templateRoot = copyBuiltInTemplate(root, "hello-web-template");
   const manifestPath = path.join(templateRoot, "topogram-template.json");
   const manifest = readJson(manifestPath);
@@ -893,13 +854,6 @@ test("explicit catalogs can override built-in template names", () => {
   assert.match(catalogCreate.stdout, /Source: package/);
   assert.match(catalogCreate.stdout, /Catalog: hello-web from /);
   assert.equal(readJson(path.join(catalogProjectRoot, "topogram.project.json")).template.catalog.id, "hello-web");
-
-  const builtinProjectRoot = path.join(root, "builtin-starter");
-  const builtinCreate = runCli(["new", builtinProjectRoot, "--template", "hello-web"], { env });
-  assert.equal(builtinCreate.status, 0, builtinCreate.stderr || builtinCreate.stdout);
-  assert.match(builtinCreate.stdout, /Template: topogram\/hello-web/);
-  assert.match(builtinCreate.stdout, /Source: builtin/);
-  assert.equal(readJson(path.join(builtinProjectRoot, "topogram.project.json")).template.catalog, undefined);
 });
 
 test("topogram new explains catalog alias resolution failures", () => {
@@ -1235,7 +1189,7 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
 test("public commands default to project topogram and app paths", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-defaults-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["create", projectRoot]);
+  const create = runCli(["create", projectRoot, "--template", path.join(fixtureTemplatesRoot, "hello-web")]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const check = runCli(["check"], { cwd: projectRoot });
@@ -1254,13 +1208,36 @@ test("public commands default to project topogram and app paths", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
 
-test("topogram new defaults to the hello-web starter", () => {
+test("topogram new defaults to the catalog hello-web starter", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-new-default-"));
+  const fakeNpmBin = createFakeNpm(root);
+  const templateRoot = path.join(fixtureTemplatesRoot, "hello-web");
+  const catalogPath = createCatalog(root, [
+    catalogEntry({
+      id: "hello-web",
+      package: "@scope/topogram-starter-hello-web",
+      defaultVersion: "0.1.0",
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      },
+      surfaces: ["web"],
+      generators: ["topogram/vanilla-web"],
+      stack: "Vanilla HTML/CSS/JS"
+    })
+  ]);
+  const env = {
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`,
+    FAKE_NPM_PACKAGES: JSON.stringify({
+      "@scope/topogram-starter-hello-web@0.1.0": templateRoot
+    })
+  };
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot]);
+  const create = runCli(["new", projectRoot, "--catalog", catalogPath], { env });
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Template: topogram\/hello-web/);
-  assert.match(create.stdout, /Source: builtin/);
+  assert.match(create.stdout, /Source: package/);
+  assert.match(create.stdout, /Catalog: hello-web from /);
   assert.match(create.stdout, /Executable implementation: no/);
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
   assert.match(create.stdout, /Template files: \.topogram-template-files\.json/);
@@ -1277,6 +1254,8 @@ test("topogram new defaults to the hello-web starter", () => {
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/hello-web");
   assert.equal(projectConfig.template.requested, "hello-web");
+  assert.equal(projectConfig.template.source, "package");
+  assert.equal(projectConfig.template.catalog.id, "hello-web");
   assert.equal(projectConfig.template.includesExecutableImplementation, false);
   assert.equal(projectConfig.topology.components[0].generator.id, "topogram/vanilla-web");
 
@@ -1291,7 +1270,7 @@ test("topogram new defaults to the hello-web starter", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db")), false);
 });
 
-test("built-in starter templates generate the expected surface layout", () => {
+test("fixture starter templates generate the expected surface layout", () => {
   const cases = [
     {
       template: "hello-api",
@@ -1318,7 +1297,7 @@ test("built-in starter templates generate the expected surface layout", () => {
   for (const item of cases) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), `topogram-${item.template}-`));
     const projectRoot = path.join(root, "starter");
-    const create = runCli(["new", projectRoot, "--template", item.template]);
+    const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, item.template)]);
     assert.equal(create.status, 0, create.stderr || create.stdout);
     const generate = runCli(["generate"], { cwd: projectRoot });
     assert.equal(generate.status, 0, `${item.template}\n${generate.stderr || generate.stdout}`);
@@ -1334,7 +1313,7 @@ test("built-in starter templates generate the expected surface layout", () => {
 test("topogram new creates an executable web-api-db starter project", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-new-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
   assert.match(create.stdout, /npm run doctor/);
@@ -1431,10 +1410,10 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");
-  assert.equal(projectConfig.template.requested, "web-api-db");
-  assert.equal(projectConfig.template.source, "builtin");
-  assert.equal(projectConfig.template.sourceSpec, "web-api-db");
-  assert.equal(projectConfig.template.sourceRoot, null);
+  assert.equal(projectConfig.template.requested, builtInTemplateRoot);
+  assert.equal(projectConfig.template.source, "local");
+  assert.equal(projectConfig.template.sourceSpec, builtInTemplateRoot);
+  assert.equal(projectConfig.template.sourceRoot, builtInTemplateRoot);
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
   const policy = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.template-policy.json"), "utf8"));
   assert.deepEqual(policy.allowedTemplateIds, ["topogram/web-api-db"]);
@@ -1443,9 +1422,9 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(trustRecord.trustPolicy, "topogram-template-executable-implementation-v1");
   assert.equal(trustRecord.template.id, "topogram/web-api-db");
   assert.equal(trustRecord.template.version, projectConfig.template.version);
-  assert.equal(trustRecord.template.requested, "web-api-db");
-  assert.equal(trustRecord.template.sourceSpec, "web-api-db");
-  assert.equal(trustRecord.template.sourceRoot, null);
+  assert.equal(trustRecord.template.requested, builtInTemplateRoot);
+  assert.equal(trustRecord.template.sourceSpec, builtInTemplateRoot);
+  assert.equal(trustRecord.template.sourceRoot, builtInTemplateRoot);
   assert.equal(trustRecord.implementation.module, "./implementation/index.js");
   assert.equal(trustRecord.content.algorithm, "sha256");
   assert.match(trustRecord.content.digest, /^[a-f0-9]{64}$/);
@@ -1482,17 +1461,17 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const templateStatusPayload = JSON.parse(templateStatus.stdout);
   assert.equal(templateStatusPayload.ok, true);
   assert.equal(templateStatusPayload.template.id, "topogram/web-api-db");
-  assert.equal(templateStatusPayload.template.requested, "web-api-db");
-  assert.equal(templateStatusPayload.template.source, "builtin");
+  assert.equal(templateStatusPayload.template.requested, builtInTemplateRoot);
+  assert.equal(templateStatusPayload.template.source, "local");
   assert.equal(templateStatusPayload.latest.checked, false);
   assert.equal(templateStatusPayload.trust.ok, true);
 
-  const builtinLatest = runCli(["template", "status", "--latest", "--json"], { cwd: projectRoot });
-  assert.equal(builtinLatest.status, 0, builtinLatest.stderr || builtinLatest.stdout);
-  const builtinLatestPayload = JSON.parse(builtinLatest.stdout);
-  assert.equal(builtinLatestPayload.latest.checked, true);
-  assert.equal(builtinLatestPayload.latest.supported, false);
-  assert.match(builtinLatestPayload.latest.reason, /package-backed/);
+  const localLatest = runCli(["template", "status", "--latest", "--json"], { cwd: projectRoot });
+  assert.equal(localLatest.status, 0, localLatest.stderr || localLatest.stdout);
+  const localLatestPayload = JSON.parse(localLatest.stdout);
+  assert.equal(localLatestPayload.latest.checked, true);
+  assert.equal(localLatestPayload.latest.supported, false);
+  assert.match(localLatestPayload.latest.reason, /package-backed/);
 
   const humanTemplateStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(humanTemplateStatus.status, 0, humanTemplateStatus.stderr || humanTemplateStatus.stdout);
@@ -1526,7 +1505,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
 test("topogram template detach removes template tracking without bypassing implementation trust", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-detach-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const dryRun = runCli(["template", "detach", "--dry-run", "--json"], { cwd: projectRoot });
@@ -1600,7 +1579,7 @@ test("topogram template detach removes template tracking without bypassing imple
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 
   const noImplementationRoot = path.join(root, "hello");
-  const hello = runCli(["new", noImplementationRoot, "--template", "hello-web"]);
+  const hello = runCli(["new", noImplementationRoot, "--template", path.join(engineRoot, "tests", "fixtures", "templates", "hello-web")]);
   assert.equal(hello.status, 0, hello.stderr || hello.stdout);
   const detachPolicy = runCli(["template", "detach", "--remove-policy", "--json"], { cwd: noImplementationRoot });
   assert.equal(detachPolicy.status, 0, detachPolicy.stderr || detachPolicy.stdout);
@@ -1613,7 +1592,7 @@ test("topogram template detach removes template tracking without bypassing imple
 test("topogram generate requires local executable implementation trust", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const trustPath = path.join(projectRoot, ".topogram-template-trust.json");
@@ -1641,7 +1620,7 @@ test("topogram generate requires local executable implementation trust", () => {
 test("topogram generate rejects stale template trust metadata", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-stale-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const trustPath = path.join(projectRoot, ".topogram-template-trust.json");
@@ -1658,7 +1637,7 @@ test("topogram generate rejects stale template trust metadata", () => {
 test("topogram trust status reports implementation content drift and trust refresh adopts edits", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-content-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   fs.appendFileSync(path.join(projectRoot, "implementation", "index.js"), "\n// reviewed local edit\n", "utf8");
@@ -1735,7 +1714,7 @@ test("topogram trust status reports implementation content drift and trust refre
 test("topogram template policy init and check manage project policy", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.rmSync(path.join(projectRoot, "topogram.template-policy.json"));
 
@@ -1773,7 +1752,7 @@ test("topogram template policy init and check manage project policy", () => {
 test("topogram template policy pin records a reviewed template version", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-pin-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.rmSync(path.join(projectRoot, "topogram.template-policy.json"));
 
@@ -1854,7 +1833,7 @@ test("topogram template update emits a non-writing update plan", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-plan-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
@@ -1909,7 +1888,7 @@ test("topogram template update check reports clean and pending updates without w
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-check-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const cleanCheck = runCli(["template", "update", "--check", "--json"], { cwd: projectRoot });
@@ -1945,7 +1924,7 @@ test("topogram template update status reports action needed and writes review re
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
   const reportPath = path.join(root, "reports", "template-update-report.json");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.appendFileSync(
@@ -1992,7 +1971,7 @@ test("topogram template update recommend explains the next reviewed action", () 
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
   const reportPath = path.join(root, "reports", "recommendation.json");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
@@ -2035,7 +2014,7 @@ test("topogram template update accept-current adopts local file baseline", () =>
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
   const relativeFile = "topogram/entities/entity-greeting.tg";
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.appendFileSync(path.join(projectRoot, relativeFile), "\n# local accepted edit\n", "utf8");
@@ -2066,7 +2045,7 @@ test("topogram template update accept-candidate applies one safe candidate file"
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
   const relativeFile = "topogram/entities/entity-greeting.tg";
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.appendFileSync(path.join(nextTemplateRoot, relativeFile), "\n# single candidate edit\n", "utf8");
@@ -2085,7 +2064,7 @@ test("topogram template update delete-current removes one baseline-matching curr
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
   const relativeFile = "topogram/entities/entity-greeting.tg";
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.rmSync(path.join(nextTemplateRoot, relativeFile));
@@ -2105,7 +2084,7 @@ test("topogram template update reports incompatible template ids", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-id-mismatch-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
@@ -2124,19 +2103,19 @@ test("topogram template policy denies disallowed sources, executable templates, 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-deny-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
 
   const policyPath = path.join(projectRoot, "topogram.template-policy.json");
   const policy = readJson(policyPath);
-  policy.allowedSources = ["builtin"];
+  policy.allowedSources = ["package"];
   writeJson(policyPath, policy);
   const localDenied = runCli(["template", "update", "--plan", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
   assert.notEqual(localDenied.status, 0, localDenied.stdout);
   assert.equal(JSON.parse(localDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "template_source_denied"), true);
 
-  policy.allowedSources = ["builtin", "local", "package"];
+  policy.allowedSources = ["local", "package"];
   policy.executableImplementation = "deny";
   writeJson(policyPath, policy);
   const executableDenied = runCli(["template", "update", "--status", "--json"], { cwd: projectRoot });
@@ -2154,7 +2133,7 @@ test("topogram template policy denies disallowed sources, executable templates, 
 test("topogram template policy explain checks package scope from source spec", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-policy-explain-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
@@ -2200,10 +2179,10 @@ test("topogram template policy explain checks package scope from source spec", (
 test("topogram template check enforces caller template policy when present", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-policy-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   const policy = readJson(path.join(projectRoot, "topogram.template-policy.json"));
-  policy.allowedSources = ["builtin"];
+  policy.allowedSources = ["package"];
   writeJson(path.join(projectRoot, "topogram.template-policy.json"), policy);
 
   const check = runCli(["template", "check", builtInTemplateRoot, "--json"], { cwd: projectRoot });
@@ -2217,7 +2196,7 @@ test("topogram template update applies reviewed template-owned changes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-apply-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   const manifestPath = path.join(nextTemplateRoot, "topogram-template.json");
@@ -2280,7 +2259,7 @@ test("topogram template update apply refuses local template-owned conflicts", ()
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-conflict-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.appendFileSync(
@@ -2316,7 +2295,7 @@ test("topogram trust template records template-owned baseline for update apply",
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-baseline-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.rmSync(path.join(projectRoot, ".topogram-template-files.json"));
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
@@ -2346,7 +2325,7 @@ test("topogram template update apply skips current-only deletes with diagnostics
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-skip-delete-"));
   const projectRoot = path.join(root, "starter");
   const nextTemplateRoot = path.join(root, "next-template");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   fs.cpSync(builtInTemplateRoot, nextTemplateRoot, { recursive: true });
   fs.rmSync(path.join(nextTemplateRoot, "topogram", "entities", "entity-greeting.tg"));
@@ -2500,7 +2479,7 @@ test("topogram template check reports missing starter implementation trust", () 
 test("topogram template update requires explicit plan mode", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-update-write-refusal-"));
   const projectRoot = path.join(root, "starter");
-  const create = runCli(["new", projectRoot, "--template", "web-api-db"]);
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
 
   const update = runCli(["template", "update"], { cwd: projectRoot });
@@ -2559,7 +2538,7 @@ test("topogram new reports invalid template manifests", () => {
 test("repo root new script creates a generated app starter project outside engine", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-root-create-"));
   const projectRoot = path.join(root, "starter");
-  const create = runNpm(["run", "new", "--", projectRoot], repoRoot);
+  const create = runNpm(["run", "new", "--", projectRoot, "--template", path.join(fixtureTemplatesRoot, "hello-web")], repoRoot);
   assert.equal(create.status, 0, create.stderr || create.stdout);
   assert.match(create.stdout, /Created Topogram project/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), true);

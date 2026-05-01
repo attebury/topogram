@@ -19,7 +19,6 @@ import {
   buildTemplateUpdatePlan,
   buildTemplateUpdateStatus,
   createNewProject,
-  listBuiltInTemplates,
   loadTemplatePolicy,
   packageScopeFromSpec,
   resolveTemplate,
@@ -144,7 +143,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
-  console.log("   or: topogram new <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
+  console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram doctor");
@@ -177,7 +176,7 @@ function printUsage(options = {}) {
   console.log("  topogram template policy check");
   console.log("  topogram template policy explain");
   console.log("  topogram template policy pin @scope/template@0.2.0");
-  console.log("  topogram template check hello-web");
+  console.log("  topogram template check ./local-template");
   console.log("  topogram template update --status");
   console.log("  topogram template update --recommend");
   console.log("  topogram template update --recommend --latest");
@@ -186,7 +185,7 @@ function printUsage(options = {}) {
   console.log("  topogram template update --apply");
   console.log("");
   console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
-  console.log("Default starter: hello-web. Run `topogram template list` for built-ins and catalog aliases.");
+  console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
   if (!all) {
@@ -194,7 +193,7 @@ function printUsage(options = {}) {
   }
   console.log("");
   console.log("Legacy and internal commands:");
-  console.log("Usage: topogram create <path> [--template hello-web|hello-api|hello-db|web-api|web-api-db|todo|./local-template|@scope/template]");
+  console.log("Usage: topogram create <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
@@ -1578,7 +1577,7 @@ function printTemplateDetachPayload(payload) {
 function buildTemplateListPayload(options = {}) {
   const catalogSource = catalogSourceOrDefault(options.catalogSource || null);
   /** @type {Array<Record<string, any>>} */
-  const templates = listBuiltInTemplates(TEMPLATES_ROOT);
+  const templates = [];
   /** @type {Array<Record<string, any>>} */
   const diagnostics = [];
   let catalogLoaded = false;
@@ -1597,7 +1596,7 @@ function buildTemplateListPayload(options = {}) {
         severity: "warning",
         message: messageFromError(error),
         path: catalogSource,
-        suggestedFix: "Run `topogram catalog list` after authenticating, or set TOPOGRAM_CATALOG_SOURCE=none to list only built-ins."
+        suggestedFix: "Run `topogram catalog list` after authenticating, or pass a local template path/package spec directly."
       });
     }
   }
@@ -1619,7 +1618,7 @@ function buildTemplateListPayload(options = {}) {
  */
 function printTemplateList(payload) {
   console.log("Template starters:");
-  console.log("Built-ins are bundled with the CLI; catalog aliases resolve to versioned package installs.");
+  console.log("Catalog aliases resolve to versioned package installs. Local paths and full package specs can also be used with `topogram new`.");
   if (payload.catalog.source) {
     console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
   } else {
@@ -1631,9 +1630,7 @@ function printTemplateList(payload) {
     const surfaces = Array.isArray(template.surfaces) && template.surfaces.length > 0
       ? template.surfaces.join(", ")
       : "not declared";
-    const command = template.source === "catalog"
-      ? `topogram new ./my-app --template ${shellCommandArg(template.id)}`
-      : `topogram new ./my-app --template ${shellCommandArg(template.name || template.id)}`;
+    const command = `topogram new ./my-app --template ${shellCommandArg(template.id)}`;
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
     console.log(`  Source: ${template.source} | Surfaces: ${surfaces} | Stack: ${stack} | Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
     console.log(`  New: ${command}`);
@@ -1699,7 +1696,7 @@ function printNewProjectResult(result, cwd) {
 
 /**
  * @param {Record<string, any>} template
- * @param {"builtin"|"catalog"} sourceKind
+ * @param {"catalog"} sourceKind
  * @param {string|null} packageSpec
  * @param {{ primary: string|null, followUp: string[] }} commands
  * @returns {{ surfaces: string[], generators: string[], stack: string|null, packageSpec: string|null, packageName: string|null, version: string|null, executableImplementation: boolean, policyImpact: string, recommendedCommand: string|null, followUp: string[], notes: string[] }}
@@ -1742,48 +1739,12 @@ function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
 /**
  * @param {string} id
  * @param {string|null} source
- * @returns {{ ok: boolean, source: "builtin"|"catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, decision: ReturnType<typeof templateDecisionSummary>|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, source: "catalog"|null, catalog: { source: string|null, version: string|null }, template: Record<string, any>|null, packageSpec: string|null, decision: ReturnType<typeof templateDecisionSummary>|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
  */
 function buildTemplateShowPayload(id, source) {
   if (!id || id.startsWith("-")) {
     throw new Error("topogram template show requires <id>.");
   }
-  const builtIn = listBuiltInTemplates(TEMPLATES_ROOT).find((template) => template.id === id || template.name === id);
-  if (builtIn) {
-    const commands = {
-      primary: `topogram new ./my-app --template ${shellCommandArg(builtIn.name)}`,
-      followUp: [
-        "cd ./my-app",
-        "npm install",
-        "npm run check",
-        "npm run generate"
-      ]
-    };
-    const template = {
-      id: builtIn.id,
-      name: builtIn.name,
-      version: builtIn.version,
-      source: builtIn.source,
-      description: builtIn.description,
-      isDefault: builtIn.isDefault,
-      surfaces: builtIn.surfaces,
-      generators: builtIn.generators,
-      stack: builtIn.stack,
-      includesExecutableImplementation: builtIn.includesExecutableImplementation
-    };
-    return {
-      ok: true,
-      source: "builtin",
-      catalog: { source: null, version: null },
-      template,
-      packageSpec: null,
-      decision: templateDecisionSummary(template, "builtin", null, commands),
-      commands,
-      diagnostics: [],
-      errors: []
-    };
-  }
-
   const catalogPayload = buildCatalogShowPayload(id, source);
   if (!catalogPayload.ok || !catalogPayload.entry) {
     return {
@@ -1878,11 +1839,7 @@ function printTemplateShow(payload) {
     console.log(`  Surfaces: ${payload.decision.surfaces.join(", ") || "not declared"}`);
     console.log(`  Stack: ${payload.decision.stack || "not declared"}`);
     console.log(`  Generators: ${payload.decision.generators.join(", ") || "not declared"}`);
-    if (payload.decision.packageSpec) {
-      console.log(`  Package: ${payload.decision.packageSpec}`);
-    } else {
-      console.log("  Package: built-in");
-    }
+    console.log(`  Package: ${payload.decision.packageSpec || "not declared"}`);
     console.log(`  Executable implementation: ${payload.decision.executableImplementation ? "yes" : "no"}`);
     console.log(`  Policy impact: ${payload.decision.policyImpact}`);
     for (const note of payload.decision.notes) {
@@ -2773,12 +2730,8 @@ function resolveCatalogTemplateAlias(templateName, source = null) {
  * @returns {boolean}
  */
 function isCatalogAliasCandidate(templateName, source = null) {
-  const builtInTemplates = new Set(["hello-api", "hello-db", "hello-web", "web-api", "web-api-db"]);
-  const explicitCatalogSource = typeof source === "string" &&
-    source.trim() !== "" &&
-    !isCatalogSourceDisabled(source);
+  void source;
   return Boolean(templateName) &&
-    (explicitCatalogSource || !builtInTemplates.has(templateName)) &&
     !templateName.startsWith("@") &&
     !templateName.startsWith("./") &&
     !templateName.startsWith("../") &&
@@ -2804,7 +2757,7 @@ function formatCatalogTemplateAliasError(templateName, catalogSource, error) {
     "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
     "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
     "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
-    "Use a built-in template such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
+    "Use a catalog alias such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
   ].filter(Boolean).join("\n");
 }
 
@@ -3373,13 +3326,13 @@ function buildTemplateCheckPayload(templateSpec) {
 
 /**
  * @param {ReturnType<typeof loadProjectConfig>} projectConfigInfo
- * @returns {{ requested: string, root: string, manifest: { id: string, version: string, kind: string, topogramVersion: string, includesExecutableImplementation: boolean }, source: "builtin"|"local"|"package", packageSpec: string|null }}
+ * @returns {{ requested: string, root: string, manifest: { id: string, version: string, kind: string, topogramVersion: string, includesExecutableImplementation: boolean }, source: "local"|"package", packageSpec: string|null }}
  */
 function currentPolicyTemplate(projectConfigInfo) {
   const template = projectConfigInfo?.config.template || {};
-  const source = template.source === "builtin" || template.source === "local" || template.source === "package"
+  const source = template.source === "local" || template.source === "package"
     ? template.source
-    : "builtin";
+    : "local";
   return {
     requested: typeof template.requested === "string" ? template.requested : String(template.id || "unknown"),
     root: projectConfigInfo?.configDir || process.cwd(),
@@ -4195,6 +4148,13 @@ try {
   }
 
   if (commandArgs?.newProject) {
+    const projectRoot = path.resolve(inputPath);
+    const relativeToEngine = path.relative(ENGINE_ROOT, projectRoot);
+    if (relativeToEngine === "" || (!relativeToEngine.startsWith("..") && !path.isAbsolute(relativeToEngine))) {
+      throw new Error(
+        `Refusing to create a generated project inside the engine directory. Use a path outside engine, for example '../${path.basename(projectRoot)}'.`
+      );
+    }
     const resolvedTemplate = resolveCatalogTemplateAlias(templateName, catalogSource);
     const result = createNewProject({
       targetPath: inputPath,

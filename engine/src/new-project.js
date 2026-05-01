@@ -10,7 +10,6 @@ import { writeTemplateTrustRecord } from "./template-trust.js";
 
 const CLI_PACKAGE_NAME = "@attebury/topogram";
 const DEFAULT_TEMPLATE_NAME = "hello-web";
-const TEMPLATE_NAMES = new Set(["hello-api", "hello-db", "hello-web", "web-api", "web-api-db"]);
 const TEMPLATE_MANIFEST = "topogram-template.json";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
@@ -81,7 +80,7 @@ const SURFACE_ORDER = new Map([
 /**
  * @typedef {Object} TemplatePolicy
  * @property {string} version
- * @property {Array<"builtin"|"local"|"package">} allowedSources
+ * @property {Array<"local"|"package">} allowedSources
  * @property {string[]} allowedTemplateIds
  * @property {string[]} [allowedPackageScopes]
  * @property {"allow"|"warn"|"deny"} executableImplementation
@@ -111,7 +110,7 @@ const SURFACE_ORDER = new Map([
  * @property {string} requested
  * @property {string} root
  * @property {TemplateManifest} manifest
- * @property {"builtin"|"local"|"package"} source
+ * @property {"local"|"package"} source
  * @property {string|null} packageSpec
  */
 
@@ -378,31 +377,6 @@ function summarizeTemplateTopology(templateRoot) {
 }
 
 /**
- * @param {string} templatesRoot
- * @returns {Array<{ id: string, version: string, source: "builtin", name: string, description: string|null, includesExecutableImplementation: boolean, isDefault: boolean, surfaces: string[], generators: string[], stack: string, path: string }>}
- */
-export function listBuiltInTemplates(templatesRoot) {
-  return [...TEMPLATE_NAMES].sort((a, b) => a.localeCompare(b)).map((name) => {
-    const templateRoot = path.join(templatesRoot, name);
-    const manifest = validateTemplateRoot(templateRoot);
-    const topology = summarizeTemplateTopology(templateRoot);
-    return {
-      id: manifest.id,
-      version: manifest.version,
-      source: "builtin",
-      name,
-      description: manifest.description || null,
-      includesExecutableImplementation: Boolean(manifest.includesExecutableImplementation),
-      isDefault: name === DEFAULT_TEMPLATE_NAME,
-      surfaces: topology.surfaces,
-      generators: topology.generators,
-      stack: topology.stack,
-      path: templateRoot
-    };
-  });
-}
-
-/**
  * @param {string} templateSpec
  * @returns {string}
  */
@@ -543,19 +517,7 @@ function findInstalledTemplatePackageRoot(installRoot, templateSpec) {
  * @returns {ResolvedTemplate}
  */
 export function resolveTemplate(templateName, templatesRoot) {
-  if (TEMPLATE_NAMES.has(templateName)) {
-    const templateRoot = path.join(templatesRoot, templateName);
-    if (!fs.existsSync(templateRoot)) {
-      throw new Error(`Template '${templateName}' is not installed at '${templateRoot}'.`);
-    }
-    return {
-      requested: templateName,
-      root: templateRoot,
-      manifest: validateTemplateRoot(templateRoot),
-      source: "builtin",
-      packageSpec: null
-    };
-  }
+  void templatesRoot;
 
   if (isLocalTemplateSpec(templateName)) {
     const templateRoot = path.resolve(templateName);
@@ -712,8 +674,8 @@ function validateTemplatePolicy(value, policyPath) {
   }
   const policy = /** @type {Record<string, unknown>} */ (value);
   const version = typeof policy.version === "string" && policy.version ? policy.version : "0.1";
-  const allowedSources = Array.isArray(policy.allowedSources) ? policy.allowedSources : ["builtin", "local", "package"];
-  const invalidSource = allowedSources.find((source) => !["builtin", "local", "package"].includes(String(source)));
+  const allowedSources = Array.isArray(policy.allowedSources) ? policy.allowedSources : ["local", "package"];
+  const invalidSource = allowedSources.find((source) => !["local", "package"].includes(String(source)));
   if (invalidSource) {
     throw new Error(`${policyPath} has invalid allowedSources value '${String(invalidSource)}'.`);
   }
@@ -731,7 +693,7 @@ function validateTemplatePolicy(value, policyPath) {
     : {};
   return {
     version,
-    allowedSources: /** @type {Array<"builtin"|"local"|"package">} */ (allowedSources),
+    allowedSources: /** @type {Array<"local"|"package">} */ (allowedSources),
     allowedTemplateIds,
     allowedPackageScopes,
     executableImplementation,
@@ -790,7 +752,7 @@ function defaultTemplatePolicyForTemplate(template) {
   }
   return {
     version: "0.1",
-    allowedSources: ["builtin", "local", "package"],
+    allowedSources: ["local", "package"],
     allowedTemplateIds: [template.manifest.id],
     allowedPackageScopes,
     executableImplementation: "allow",
@@ -826,7 +788,7 @@ export function writeTemplatePolicyForProject(projectRoot, projectConfig) {
   }
   return writeTemplatePolicy(projectRoot, {
     version: "0.1",
-    allowedSources: ["builtin", "local", "package"],
+    allowedSources: ["local", "package"],
     allowedTemplateIds: current.id ? [current.id] : [],
     allowedPackageScopes,
     executableImplementation: "allow",

@@ -155,7 +155,8 @@ topogram new ./app --template todo --catalog ./topograms.catalog.json
 topogram catalog copy hello ./hello-topogram --catalog ./topograms.catalog.json
 ```
 
-Set `TOPOGRAM_CATALOG_SOURCE=none` to list only built-in templates.
+Set `TOPOGRAM_CATALOG_SOURCE=none` only when you intentionally want to skip
+catalog discovery; `topogram template list` will then show no shared starters.
 
 ## Schema
 
@@ -242,8 +243,7 @@ token cannot see that repo.
 `topogram new --template <catalog-id>` treats simple names such as `todo` as
 catalog aliases. If the alias cannot be resolved, Topogram stops with catalog
 guidance instead of falling through to an unrelated npm package install. Use a
-built-in id, local path, or full package spec when you do not want catalog
-resolution.
+local path or full package spec when you do not want catalog resolution.
 
 For GitHub Actions consumers that need private packages, grant package access
 from the package page:

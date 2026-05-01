@@ -20,9 +20,6 @@ npx topogram doctor
 Choose your starting point:
 
 ```bash
-# Built-in starter, no catalog access required.
-npx topogram new ./hello-web
-
 # Catalog template alias, installs a versioned template package.
 npx topogram template list
 npx topogram new ./hello-web --template hello-web
@@ -68,7 +65,7 @@ To create your own starter:
 ```bash
 cd topogram
 npm install
-npm run new -- ./my-topogram-app
+npm run new -- ./my-topogram-app --template ./engine/tests/fixtures/templates/hello-web
 cd ./my-topogram-app
 npm install
 npm run explain
@@ -78,15 +75,15 @@ npm run generate
 npm run verify
 ```
 
-The default built-in starter is `hello-web`: a small vanilla HTML/CSS/JS app
-with two pages and one workflow doc. Use `topogram template list` for a quick
-starter summary and `topogram catalog show <id>` to inspect catalog aliases:
+The default starter alias is `hello-web`: a small vanilla HTML/CSS/JS app with
+two pages and one workflow doc. Starter content is package-backed and resolved
+through the catalog. Use `topogram template list` for a quick starter summary
+and `topogram catalog show <id>` to inspect catalog aliases:
 
 ```bash
 topogram template list
 topogram catalog show todo
 topogram new ./todo-demo --template todo
-TOPOGRAM_CATALOG_SOURCE=none topogram template list
 ```
 
 | Template | Stack | Use When |
@@ -97,12 +94,11 @@ TOPOGRAM_CATALOG_SOURCE=none topogram template list
 | `web-api` | React + Express | You want a web/API starter without a database. |
 | `web-api-db` | SvelteKit + Hono + Postgres | You want the heavier full-stack starter. |
 
-The built-ins are convenience defaults bundled with the CLI. The package-backed
-starter templates in `topogram-starters` are the canonical shared starter
-examples and are surfaced through the `attebury/topograms` catalog. Generated
-projects include a project `.npmrc` that reads `${NODE_AUTH_TOKEN}`, so run
-`npm install` with a token that can read GitHub Packages when the CLI dependency
-comes from `@attebury/topogram`.
+The package-backed starter templates in `topogram-starters` are the canonical
+shared starter examples and are surfaced through the `attebury/topograms`
+catalog. Generated projects include a project `.npmrc` that reads
+`${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read GitHub
+Packages when the CLI dependency comes from `@attebury/topogram`.
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
@@ -317,8 +313,8 @@ npm run app:runtime
 ## Repo Layout
 
 - `engine/` - Topogram engine, CLI, tests, and fixtures
-- `engine/templates/` - built-in starter templates for `topogram new`
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
+- `engine/tests/fixtures/templates/` - engine-owned local template fixtures for tests
 - `docs/` - terse first-use docs
 
 ## Engine
@@ -326,7 +322,7 @@ npm run app:runtime
 The engine package publishes privately as `@attebury/topogram` and exposes the `topogram` bin:
 
 ```bash
-npm run new -- ./my-app
+npm run new -- ./my-app --template ./engine/tests/fixtures/templates/hello-web
 cd ./my-app
 npm run doctor
 npm run check
@@ -338,12 +334,11 @@ Before publishing, run `npm run release:prepare -- <version>` and commit the
 updated `engine/package.json` and `engine/package-lock.json`. See
 [Releasing](./docs/releasing.md).
 
-This repo owns the CLI package, engine validation, catalog mechanics, and
-stack-neutral built-in starters. Todo product behavior is intentionally outside
-the engine: the generated Todo demo lives in the private `topogram-demo-todo`
-repo and consumes the published `@attebury/topogram` package; the Todo starter
-source lives in the private `topogram-template-todo` repo and publishes as
-`@attebury/topogram-template-todo`.
+This repo owns the CLI package, engine validation, catalog mechanics, and test
+fixtures. Starter product behavior lives outside the engine: shared starter
+packages live in `topogram-starters`, the generated Todo demo lives in
+`topogram-demo-todo`, and the Todo starter source lives in
+`topogram-template-todo`.
 See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
 See [Catalog](./docs/catalog.md) for private catalog layout and commands.
 
