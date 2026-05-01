@@ -115,6 +115,12 @@ Generate a component conformance report for one projection:
 topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json
 ```
 
+For day-to-day validation, use the friendlier command alias:
+
+```bash
+topogram component check ./topogram --projection proj_ui_web
+```
+
 Optionally narrow the report to one component:
 
 ```bash
@@ -132,6 +138,10 @@ The JSON artifact includes `projection_usages`, `checks`,
 `component_contracts`, `write_scope`, and `impact` sections. Use `--write` with
 `--out-dir <dir>` to write the report to disk; without `--write`, explicit
 artifact generation prints JSON and does not create an app bundle.
+
+`topogram component check` prints a human summary by default, exits non-zero
+when conformance errors are present, and emits the same report artifact with
+`--json`.
 
 ## Projection Usage
 

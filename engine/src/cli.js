@@ -126,6 +126,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("Usage: topogram release status [--json] [--strict]");
   console.log("Usage: topogram check [path] [--json]");
+  console.log("   or: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram trust template [path]");
@@ -162,6 +163,7 @@ function printUsage(options = {}) {
   console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
   console.log("  topogram check --json");
+  console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram generate");
   console.log("");
   console.log("Template and catalog discovery:");
@@ -301,6 +303,19 @@ function printGenerateHelp() {
   console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
   console.log("  topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json");
   console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
+}
+
+function printComponentHelp() {
+  console.log("Usage: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("");
+  console.log("Checks projection ui_components usage against reusable component contracts.");
+  console.log("");
+  console.log("Defaults: path is ./topogram.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram component check");
+  console.log("  topogram component check --projection proj_ui_web");
+  console.log("  topogram component check ./topogram --component component_ui_data_grid --json");
 }
 
 function printTemplateHelp() {
@@ -480,6 +495,10 @@ function printCommandHelp(command) {
   }
   if (command === "generate") {
     printGenerateHelp();
+    return true;
+  }
+  if (command === "component") {
+    printComponentHelp();
     return true;
   }
   if (command === "template") {
@@ -770,6 +789,53 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
       }))
     ]
   };
+}
+
+function printComponentConformanceReport(report) {
+  const summary = report.summary || {};
+  const ok = (summary.errors || 0) === 0;
+  console.log(ok ? "Component conformance passed." : "Component conformance found issues.");
+  console.log(`Usages: ${summary.total_usages || 0} total, ${summary.passed_usages || 0} passed, ${summary.warning_usages || 0} warning, ${summary.error_usages || 0} error`);
+  console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
+  if (report.filters?.projection) {
+    console.log(`Projection filter: ${report.filters.projection}`);
+  }
+  if (report.filters?.component) {
+    console.log(`Component filter: ${report.filters.component}`);
+  }
+  if ((summary.affected_projections || []).length > 0) {
+    console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
+  }
+  if ((summary.affected_components || []).length > 0) {
+    console.log(`Affected components: ${summary.affected_components.join(", ")}`);
+  }
+  if ((report.checks || []).length > 0) {
+    console.log("");
+    console.log("Issues:");
+    for (const check of report.checks) {
+      const context = [
+        check.projection ? `projection ${check.projection}` : null,
+        check.component ? `component ${check.component}` : null,
+        check.screen ? `screen ${check.screen}` : null,
+        check.region ? `region ${check.region}` : null,
+        check.prop ? `prop ${check.prop}` : null,
+        check.event ? `event ${check.event}` : null,
+        check.behavior ? `behavior ${check.behavior}` : null
+      ].filter(Boolean).join(", ");
+      console.log(`- ${check.severity.toUpperCase()} ${check.code}${context ? ` (${context})` : ""}: ${check.message}`);
+      if (check.suggested_fix) {
+        console.log(`  Fix: ${check.suggested_fix}`);
+      }
+    }
+  }
+  const writeScopePaths = report.write_scope?.paths || [];
+  if (writeScopePaths.length > 0) {
+    console.log("");
+    console.log("Write scope:");
+    for (const filePath of writeScopePaths) {
+      console.log(`- ${filePath}`);
+    }
+  }
 }
 
 function combineProjectValidationResults(...results) {
@@ -4839,6 +4905,11 @@ if (args[0] === "version" || args[0] === "--version") {
     : { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
+} else if (args[0] === "component" && args[1] === "check") {
+  commandArgs = { componentCheck: true, inputPath: commandPath(2) };
+} else if (args[0] === "component") {
+  printComponentHelp();
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
@@ -4997,6 +5068,7 @@ const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldCheck = Boolean(commandArgs?.check);
+const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
@@ -5114,7 +5186,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -5144,7 +5216,7 @@ if (shouldPackageUpdateCli && !inputPath) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -5177,6 +5249,27 @@ try {
       printReleaseStatus(payload);
     }
     process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldComponentCheck) {
+    const ast = parsePath(inputPath);
+    const result = generateWorkspace(ast, {
+      target: "component-conformance-report",
+      projectionId,
+      componentId
+    });
+    if (!result.ok) {
+      console.error(formatValidationErrors(result.validation));
+      process.exit(1);
+    }
+    const report = result.artifact;
+    const ok = (report.summary?.errors || 0) === 0;
+    if (emitJson) {
+      console.log(stableStringify(report));
+    } else {
+      printComponentConformanceReport(report);
+    }
+    process.exit(ok ? 0 : 1);
   }
 
   if (shouldCatalogList) {

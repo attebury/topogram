@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- None currently.
+- Add `topogram component check` as a user-facing alias for component
+  conformance reports. The command prints a human summary by default, supports
+  `--projection`, `--component`, and `--json`, and exits non-zero when
+  conformance errors are present.
 
 ## 0.3.12 - 2026-05-01
 

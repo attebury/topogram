@@ -301,6 +301,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram package update-cli <version\|--latest>/);
   assert.match(help.stdout, /topogram new \.\/my-app/);
   assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
+  assert.match(help.stdout, /topogram component check --projection proj_ui_web/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
@@ -336,6 +337,11 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const helpGenerate = runCli(["help", "generate"]);
   assert.equal(helpGenerate.status, 0, helpGenerate.stderr || helpGenerate.stdout);
   assert.equal(helpGenerate.stdout, generateHelp.stdout);
+
+  const componentHelp = runCli(["component", "--help"]);
+  assert.equal(componentHelp.status, 0, componentHelp.stderr || componentHelp.stdout);
+  assert.match(componentHelp.stdout, /Usage: topogram component check \[path\]/);
+  assert.match(componentHelp.stdout, /topogram component check --projection proj_ui_web/);
 
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
@@ -509,6 +515,51 @@ test("topogram generate honors explicit artifact targets", () => {
   assert.equal(writtenReport.status, 0, writtenReport.stderr || writtenReport.stdout);
   assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "component-conformance-report");
   assert.equal(readJson(path.join(reportOutDir, "proj_ui_web.component-conformance-report.json")).summary.total_usages, 1);
+});
+
+test("topogram component check reports conformance without writing app output", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-check-"));
+  const human = runCli([
+    "component",
+    "check",
+    fixtureRoot,
+    "--projection",
+    "proj_ui_web",
+    "--component",
+    "component_ui_data_grid"
+  ], { cwd });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Component conformance passed\./);
+  assert.match(human.stdout, /Usages: 1 total, 1 passed, 0 warning, 0 error/);
+  assert.match(human.stdout, /Affected projections: proj_ui_shared, proj_ui_web/);
+  assert.match(human.stdout, /Affected components: component_ui_data_grid/);
+  assert.match(human.stdout, /Write scope:/);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component check must not write the app shortcut output");
+
+  const json = runCli([
+    "component",
+    "check",
+    fixtureRoot,
+    "--projection",
+    "proj_ui_web",
+    "--json"
+  ], { cwd });
+  assert.equal(json.status, 0, json.stderr || json.stdout);
+  const report = JSON.parse(json.stdout);
+  assert.equal(report.type, "component_conformance_report");
+  assert.equal(report.filters.projection, "proj_ui_web");
+  assert.equal(report.summary.total_usages, 1);
+  assert.equal(report.summary.errors, 0);
+
+  const missing = runCli([
+    "component",
+    "check",
+    fixtureRoot,
+    "--component",
+    "component_does_not_exist"
+  ], { cwd });
+  assert.notEqual(missing.status, 0);
+  assert.match(missing.stderr, /No component found with id 'component_does_not_exist'/);
 });
 
 test("topogram catalog check validates catalog schema", () => {
