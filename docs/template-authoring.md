@@ -120,18 +120,19 @@ topogram generate ./topogram --generate ui-component-contract --component compon
 
 See [Components](./components.md) for the full grammar and pack roadmap.
 
-SvelteKit template implementations can render supported component usage with the
-stable packaged helper:
+SvelteKit and React template implementations can render supported component
+usage with stable packaged helpers:
 
 ```js
 import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
+import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/react.js";
 ```
 
 Pass the screen contract, region, top-level component contracts, and the data
-expression for that screen. Set `useTypescript: true` when generating
-TypeScript Svelte pages so callback parameters are emitted with explicit types.
-React and vanilla web templates should still treat `ui_components` as contract
-metadata until their concrete helpers exist.
+expression for that screen. Set `useTypescript: true` when generating typed
+Svelte or React pages so callback parameters are emitted with explicit types.
+Vanilla web templates should still treat `ui_components` as contract metadata
+until a concrete helper exists.
 
 Private package consumers need registry auth in `.npmrc`:
 

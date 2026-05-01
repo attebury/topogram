@@ -34,5 +34,9 @@ projection proj_ui_shared {
     screen greeting_detail region summary pattern detail_panel placement primary
   }
 
+  ui_components {
+    screen greeting_list region results component component_ui_greeting_table data rows from cap_list_greetings event row_select navigate greeting_detail
+  }
+
   status active
 }

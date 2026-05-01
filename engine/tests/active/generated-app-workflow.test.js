@@ -2001,6 +2001,11 @@ test("fixture starter templates generate the expected surface layout", () => {
     for (const relativePath of item.absent) {
       assert.equal(fs.existsSync(path.join(projectRoot, relativePath)), false, `${item.template} did not expect ${relativePath}`);
     }
+    if (item.template === "web-api") {
+      const listPage = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "pages", "GreetingListPage.tsx"));
+      assert.match(listPage, /data-topogram-component="component_ui_greeting_table"/);
+      assert.match(listPage, /className="component-card component-table"/);
+    }
   }
 });
 
