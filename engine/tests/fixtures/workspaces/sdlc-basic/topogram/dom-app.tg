@@ -1,0 +1,24 @@
+# SDLC fixture: minimal domain so SDLC kinds can carry `domain dom_app`.
+domain dom_app {
+  name "Sample App"
+  description "Toy domain used by SDLC fixtures"
+  status active
+}
+
+actor actor_dev {
+  name "Developer"
+  description "Implements changes"
+  status active
+}
+
+actor actor_reviewer {
+  name "Reviewer"
+  description "Reviews changes"
+  status active
+}
+
+actor actor_qa {
+  name "QA"
+  description "Verifies fixes"
+  status active
+}

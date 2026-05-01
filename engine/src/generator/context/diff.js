@@ -81,7 +81,13 @@ function changedIdsForDiffSections(diff) {
     "projections",
     "components",
     "journeys",
-    "verifications"
+    "verifications",
+    "domains",
+    "pitches",
+    "requirements",
+    "acceptance_criteria",
+    "tasks",
+    "bugs"
   ];
   const ids = [];
   for (const section of sectionNames) {
@@ -179,7 +185,23 @@ export function generateContextDiff(graph, options = {}) {
     projections: diffMaps(normalizeTargetMap(graph, "projection"), normalizeTargetMap(baselineGraph, "projection")),
     components: diffMaps(normalizeTargetMap(graph, "component"), normalizeTargetMap(baselineGraph, "component")),
     journeys: diffMaps(normalizeTargetMap(graph, "journey"), normalizeTargetMap(baselineGraph, "journey")),
-    verifications: diffMaps(normalizeTargetMap(graph, "verification"), normalizeTargetMap(baselineGraph, "verification"))
+    verifications: diffMaps(normalizeTargetMap(graph, "verification"), normalizeTargetMap(baselineGraph, "verification")),
+    domains: diffMaps(normalizeTargetMap(graph, "domain"), normalizeTargetMap(baselineGraph, "domain")),
+    pitches: diffMaps(normalizeTargetMap(graph, "pitch"), normalizeTargetMap(baselineGraph, "pitch")),
+    requirements: diffMaps(normalizeTargetMap(graph, "requirement"), normalizeTargetMap(baselineGraph, "requirement")),
+    acceptance_criteria: diffMaps(
+      normalizeTargetMap(graph, "acceptance_criterion"),
+      normalizeTargetMap(baselineGraph, "acceptance_criterion")
+    ),
+    tasks: diffMaps(normalizeTargetMap(graph, "task"), normalizeTargetMap(baselineGraph, "task")),
+    bugs: diffMaps(normalizeTargetMap(graph, "bug"), normalizeTargetMap(baselineGraph, "bug"))
+  };
+  const sdlcChanges = {
+    pitches: diff.pitches || [],
+    requirements: diff.requirements || [],
+    acceptance_criteria: diff.acceptance_criteria || [],
+    tasks: diff.tasks || [],
+    bugs: diff.bugs || []
   };
   const affectedCapabilities = collectAffectedCapabilityIds(graph, diff);
   const affectedProjections = collectAffectedProjectionIds(graph, baselineGraph, diff);
@@ -228,6 +250,7 @@ export function generateContextDiff(graph, options = {}) {
       }))
     },
     affected_verifications: affectedVerifications.map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id)).filter(Boolean),
-    review_boundary_changes: reviewBoundaryChangeItems
+    review_boundary_changes: reviewBoundaryChangeItems,
+    sdlc: sdlcChanges
   };
 }

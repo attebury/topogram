@@ -69,3 +69,84 @@ apps/native/<native-id>/
 ```
 
 The private `topogram-demo-todo` repo mirrors this layout and owns generated demo verification as a package consumer.
+
+## Domain organization
+
+Larger workspaces benefit from organizing `.tg` files by business domain
+(FIS, RNF, DrugTrac, etc.). The engine treats folders as a human
+convention only — `parsePath()` flattens everything into one graph — but
+the recommended layout helps new contributors find the slice they care
+about and feeds tools like `git blame` and `CODEOWNERS`:
+
+```text
+topogram/
+  domains/
+    dom-feed-inventory.tg
+    dom-cattle-management.tg
+    dom-drugtrac.tg
+  feed-inventory/
+    capabilities/
+    entities/
+    rules/
+    verifications/
+    projections/
+  cattle-management/
+    ...
+  shared/                      # cross-cutting (party, address, audit)
+    entities/
+    terms/
+    decisions/
+```
+
+`domain` statements are first-class graph members; the optional `domain`
+field on workhorse kinds (`capability`, `entity`, `rule`, etc.) makes
+the slicing explicit. See [Domains](./domains.md) for the full guide.
+
+## Generated domain pages
+
+```text
+topogram/docs-generated/domains/
+  dom-feed-inventory.md
+  dom-cattle-management.md
+  ...
+```
+
+The `domain-page` generator emits a markdown summary per domain
+(members, in/out-of-scope, per-platform coverage table).
+
+## SDLC layout
+
+Phase 2 introduces six SDLC kinds (`pitch`, `requirement`,
+`acceptance_criterion`, `task`, `bug`, `document`). Recommended layout:
+
+```text
+topogram/
+  pitches/{slug}.tg
+  requirements/{slug}.tg
+  acceptance_criteria/{slug}.tg
+  tasks/{slug}.tg
+  bugs/{slug}.tg
+  docs/                          # markdown documents (with frontmatter)
+    user-guide/
+    api/
+    architecture/
+    operations/
+    getting-started/
+    reference/
+    development/
+  _archive/
+    tasks-2026.jsonl             # year-bucketed JSONL archives
+    bugs-2026.jsonl
+    pitches-2026.jsonl
+  .topogram-sdlc-history.json    # append-only transition history sidecar
+```
+
+The `_archive/` folder is special: the resolver bridge auto-loads JSONL
+files at workspace-parse time so frozen entries participate in
+cross-references and the traceability matrix without showing up in the
+default board. Use `topogram sdlc unarchive <id>` to restore one.
+
+The history sidecar is the source of truth for status transitions —
+`topogram sdlc check` cross-references it against current `.tg` status
+to detect drift (artifacts edited outside the CLI). See
+[SDLC](./sdlc.md) and [Lifecycles](./lifecycles.md) for the full guide.
