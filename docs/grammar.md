@@ -57,13 +57,24 @@ component component_ui_data_grid {
 
   patterns [resource_table, data_grid_view]
   regions [results, toolbar]
-  dependencies [proj_ui_shared]
-  consumers [proj_ui_shared]
   version "1.0"
   status active
 }
 ```
 
-Validation enforces supported categories, prop entry shape, event shape references, slot entries, UI pattern and region symbols, and dependency/consumer references.
+Validation enforces supported categories, prop entry shape, event shape references, slot entries, UI pattern and region symbols, and dependency references.
+
+Projection statements bind components to concrete screens and regions:
+
+```text
+projection proj_ui_shared {
+  # ...
+  ui_components {
+    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail
+  }
+}
+```
+
+Validation enforces known screens, regions, components, component props, component events, and binding targets.
 
 See [Components](./components.md) for generator output and roadmap details.

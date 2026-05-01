@@ -21,8 +21,6 @@ component component_ui_data_grid {
   behavior [selection, sorting]
   patterns [resource_table, data_grid_view]
   regions [results, toolbar]
-  dependencies [proj_ui_shared]
-  consumers [proj_ui_shared]
   version "1.0"
   status active
 }

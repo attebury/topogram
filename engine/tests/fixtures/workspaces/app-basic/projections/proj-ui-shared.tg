@@ -122,5 +122,9 @@ projection proj_ui_shared {
     screen user_list region results pattern resource_table placement primary
   }
 
+  ui_components {
+    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail
+  }
+
   status active
 }

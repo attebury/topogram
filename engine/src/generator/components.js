@@ -17,9 +17,9 @@ function componentContract(component) {
     behavior: component.behavior || [],
     patterns: component.patterns || [],
     regions: component.regions || [],
+    approvals: component.approvals || [],
     lookups: component.lookups || [],
-    dependencies: component.dependencies || [],
-    consumers: component.consumers || []
+    dependencies: component.dependencies || []
   };
 }
 

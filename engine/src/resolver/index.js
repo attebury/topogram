@@ -339,9 +339,9 @@ function buildComponentContract(statement) {
     behavior: [...(statement.behavior || [])],
     patterns: [...(statement.patterns || [])],
     regions: [...(statement.regions || [])],
+    approvals: [...(statement.approvals || [])],
     lookups: parseReferenceNodes(statement.lookups || []),
-    dependencies: parseReferenceNodes(statement.dependencies || []),
-    consumers: parseReferenceNodes(statement.consumers || [])
+    dependencies: parseReferenceNodes(statement.dependencies || [])
   };
 }
 
@@ -425,6 +425,7 @@ function buildProjectionPlan(statement) {
     uiVisibility: statement.uiVisibility,
     uiRoutes: statement.uiRoutes,
     uiWeb: statement.uiWeb,
+    uiComponents: statement.uiComponents,
     dbTables: statement.dbTables,
     dbColumns: statement.dbColumns,
     dbKeys: statement.dbKeys,
@@ -1238,6 +1239,67 @@ function parseProjectionUiScreenRegionsBlock(statement) {
   });
 }
 
+function parseProjectionUiComponentsBlock(statement, registry) {
+  return blockEntries(getFieldValue(statement, "ui_components")).map((entry) => {
+    const dataBindings = [];
+    const eventBindings = [];
+
+    for (let i = 6; i < entry.items.length;) {
+      const directive = tokenValue(entry.items[i]);
+      if (directive === "data") {
+        const prop = tokenValue(entry.items[i + 1]);
+        const sourceId = tokenValue(entry.items[i + 3]);
+        dataBindings.push({
+          prop,
+          source: sourceId
+            ? {
+                id: sourceId,
+                kind: registry.get(sourceId)?.kind || null
+              }
+            : null
+        });
+        i += 4;
+        continue;
+      }
+      if (directive === "event") {
+        const event = tokenValue(entry.items[i + 1]);
+        const action = tokenValue(entry.items[i + 2]);
+        const targetId = tokenValue(entry.items[i + 3]);
+        eventBindings.push({
+          event,
+          action,
+          target: targetId
+            ? {
+                id: targetId,
+                kind: action === "navigate" ? "screen" : registry.get(targetId)?.kind || null
+              }
+            : null
+        });
+        i += 4;
+        continue;
+      }
+      i += 1;
+    }
+
+    const componentId = tokenValue(entry.items[5]);
+    return {
+      type: "ui_component_binding",
+      screenId: tokenValue(entry.items[1]) || null,
+      region: tokenValue(entry.items[3]) || null,
+      component: componentId
+        ? {
+            id: componentId,
+            kind: registry.get(componentId)?.kind || null
+          }
+        : null,
+      dataBindings,
+      eventBindings,
+      raw: normalizeSequence(entry.items),
+      loc: entry.loc
+    };
+  });
+}
+
 function parseProjectionGeneratorDefaultsBlock(statement) {
   return blockEntries(getFieldValue(statement, "generator_defaults")).map((entry) => ({
     type: "generator_default",
@@ -1659,9 +1721,9 @@ export function normalizeStatement(statement, registry) {
         behavior: symbolValues(getFieldValue(statement, "behavior")),
         patterns: symbolValues(getFieldValue(statement, "patterns")),
         regions: symbolValues(getFieldValue(statement, "regions")),
+        approvals: symbolValues(getFieldValue(statement, "approvals")),
         lookups: resolveReferenceList(registry, getFieldValue(statement, "lookups")),
         dependencies: resolveReferenceList(registry, getFieldValue(statement, "dependencies")),
-        consumers: resolveReferenceList(registry, getFieldValue(statement, "consumers")),
         version: stringValue(getFieldValue(statement, "version"))
       };
     case "rule":
@@ -1713,6 +1775,7 @@ export function normalizeStatement(statement, registry) {
         uiAppShell: parseProjectionUiAppShellBlock(statement),
         uiNavigation: parseProjectionUiNavigationBlock(statement),
         uiScreenRegions: parseProjectionUiScreenRegionsBlock(statement),
+        uiComponents: parseProjectionUiComponentsBlock(statement, registry),
         dbTables: parseProjectionDbTablesBlock(statement, registry),
         dbColumns: parseProjectionDbColumnsBlock(statement, registry),
         dbKeys: parseProjectionDbKeysBlock(statement, registry),

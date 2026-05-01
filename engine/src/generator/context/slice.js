@@ -7,6 +7,7 @@ import {
   getWorkflowDoc,
   relatedCapabilitiesForEntity,
   relatedCapabilitiesForProjection,
+  relatedComponentsForProjection,
   relatedJourneysForCapability,
   relatedProjectionsForCapability,
   relatedProjectionsForComponent,
@@ -137,8 +138,9 @@ function projectionSlice(graph, projectionId) {
   const capabilities = relatedCapabilitiesForProjection(projection);
   const entities = relatedEntitiesForProjection(projection);
   const shapes = relatedShapesForProjection(projection);
+  const components = relatedComponentsForProjection(graph, projection);
   const rules = [...new Set(capabilities.flatMap((capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
-  const verifications = verificationIdsForTarget(graph, [projectionId, ...capabilities, ...entities, ...shapes]);
+  const verifications = verificationIdsForTarget(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...components]);
 
   return {
     type: "context_slice",
@@ -152,6 +154,7 @@ function projectionSlice(graph, projectionId) {
       entities,
       shapes,
       capabilities,
+      components,
       rules,
       verifications
     },
@@ -159,10 +162,11 @@ function projectionSlice(graph, projectionId) {
       entities: summarizeStatementsByIds(graph, entities),
       shapes: summarizeStatementsByIds(graph, shapes),
       capabilities: summarizeStatementsByIds(graph, capabilities),
+      components: summarizeStatementsByIds(graph, components),
       rules: summarizeStatementsByIds(graph, rules)
     },
     verification: summarizeStatementsByIds(graph, verifications),
-    verification_targets: recommendedVerificationTargets(graph, [projectionId, ...capabilities, ...entities, ...shapes], {
+    verification_targets: recommendedVerificationTargets(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...components], {
       rationale: "Projection slices affect generated contract and runtime surfaces, so verification should follow the projection closure."
     }),
     write_scope: buildDefaultWriteScope(),
@@ -255,7 +259,7 @@ function componentSlice(graph, componentId) {
     },
     verification: summarizeStatementsByIds(graph, verifications),
     verification_targets: recommendedVerificationTargets(graph, verificationScope, {
-      rationale: "Component changes affect every consumer projection — verification should follow the component contract closure."
+      rationale: "Component changes affect every related projection — verification should follow the component contract closure."
     }),
     write_scope: buildDefaultWriteScope(),
     review_boundary: {

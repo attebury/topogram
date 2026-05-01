@@ -62,6 +62,7 @@ function summarizeProjection(projection) {
     realizes: refIds(projection.realizes),
     outputs: stableSortedStrings(projection.outputs || []),
     uiScreens: stableSortedStrings((projection.uiScreens || []).map((screen) => screen.id)),
+    uiComponents: stableSortedStrings((projection.uiComponents || []).map((entry) => entry.component?.id).filter(Boolean)),
     dbTables: stableSortedStrings((projection.dbTables || []).map((table) => table.table || table.entity?.id)),
     httpCapabilities: stableSortedStrings((projection.http || []).map((entry) => entry.capability?.id)),
     reviewBoundary: reviewBoundaryForProjectionPolicy(projection),
@@ -137,9 +138,9 @@ function summarizeComponent(statement) {
     behavior: stableSortedStrings(statement.behavior || []),
     patterns: stableSortedStrings(statement.patterns || []),
     regions: stableSortedStrings(statement.regions || []),
+    approvals: stableSortedStrings(statement.approvals || []),
     lookups: refIds(statement.lookups),
     dependencies: refIds(statement.dependencies),
-    consumers: refIds(statement.consumers),
     ownership_boundary: defaultOwnershipBoundary()
   };
 }
@@ -394,10 +395,43 @@ export function componentById(graph, componentId) {
   return (graph?.byKind?.component || []).find((component) => component.id === componentId) || null;
 }
 
-export function componentsByConsumer(graph, consumerId) {
-  return (graph?.byKind?.component || []).filter((component) =>
-    (component.consumers || []).some((consumer) => consumer.id === consumerId)
-  );
+function projectionById(graph, projectionId) {
+  return (graph?.byKind?.projection || []).find((projection) => projection.id === projectionId) || null;
+}
+
+function realizedProjectionIds(projection) {
+  return stableSortedStrings((projection?.realizes || [])
+    .filter((target) => target.target?.kind === "projection" || String(target.id || "").startsWith("proj_"))
+    .map((target) => target.id));
+}
+
+function downstreamProjectionIds(graph, projectionIds) {
+  const visited = new Set(projectionIds);
+  const queue = [...projectionIds];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift();
+    for (const projection of graph?.byKind?.projection || []) {
+      if (visited.has(projection.id)) {
+        continue;
+      }
+      if (realizedProjectionIds(projection).includes(currentId)) {
+        visited.add(projection.id);
+        queue.push(projection.id);
+      }
+    }
+  }
+
+  return stableSortedStrings([...visited]);
+}
+
+export function relatedComponentsForProjection(graph, projection) {
+  const directIds = (projection?.uiComponents || []).map((entry) => entry.component?.id).filter(Boolean);
+  const inheritedIds = realizedProjectionIds(projection)
+    .map((projectionId) => projectionById(graph, projectionId))
+    .filter(Boolean)
+    .flatMap((realizedProjection) => relatedComponentsForProjection(graph, realizedProjection));
+  return stableSortedStrings([...directIds, ...inheritedIds]);
 }
 
 export function relatedShapesForComponent(component) {
@@ -414,25 +448,12 @@ export function relatedShapesForComponent(component) {
   return stableSortedStrings(ids);
 }
 
-export function relatedComponentsForConsumer(graph, consumerId) {
-  return stableSortedStrings(componentsByConsumer(graph, consumerId).map((component) => component.id));
-}
-
 export function relatedProjectionsForComponent(graph, componentId) {
   const component = componentById(graph, componentId);
   if (!component) return [];
-  const directConsumerIds = stableSortedStrings((component.consumers || []).flatMap((consumer) => {
-    if (consumer.target?.kind === "projection" || String(consumer.id || "").startsWith("proj_")) {
-      return [consumer.id];
-    }
-    if (consumer.target?.kind === "capability" || String(consumer.id || "").startsWith("cap_")) {
-      return relatedProjectionsForCapability(graph, consumer.id);
-    }
-    if (consumer.target?.kind === "entity" || String(consumer.id || "").startsWith("entity_")) {
-      return relatedProjectionsForEntity(graph, consumer.id);
-    }
-    return [];
-  }));
+  const explicitProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
+    .filter((projection) => (projection.uiComponents || []).some((entry) => entry.component?.id === componentId))
+    .map((projection) => projection.id));
   const dependencyProjectionIds = stableSortedStrings((component.dependencies || []).flatMap((dependency) => {
     const kind = referenceKind(dependency);
     if (kind === "projection") {
@@ -458,7 +479,7 @@ export function relatedProjectionsForComponent(graph, componentId) {
     ))
     .map((projection) => projection.id));
 
-  return stableSortedStrings([...directConsumerIds, ...dependencyProjectionIds, ...viaUiRegions]);
+  return downstreamProjectionIds(graph, stableSortedStrings([...explicitProjectionIds, ...dependencyProjectionIds, ...viaUiRegions]));
 }
 
 function referenceKind(reference) {

@@ -1508,7 +1508,7 @@ function projectionImpactsFromComponent(graph, componentId) {
     graph,
     relatedProjectionsForComponent(graph, componentId),
     "changed_component",
-    (projection) => `Projection ${projection.id} is affected because component ${componentId} is used by that UI surface or one of its consumers.`
+    (projection) => `Projection ${projection.id} is affected because component ${componentId} is used by that UI surface.`
   ).map((impact) => ({
     ...impact,
     component_ids: stableSortedStrings([componentId])
