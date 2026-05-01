@@ -49,6 +49,7 @@ echo "Checking installed template helper imports..."
   cd "$CONSUMER_DIR"
   node --input-type=module -e '
     import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
+    import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/react.js";
     const rendered = renderSvelteKitComponentRegion(
       {
         components: [
@@ -72,6 +73,30 @@ echo "Checking installed template helper imports..."
     }
     if (!rendered.includes("data.items")) {
       throw new Error("Expected SvelteKit helper to preserve items expression.");
+    }
+    const reactRendered = renderReactComponentRegion(
+      {
+        components: [
+          {
+            region: "results",
+            component: { id: "component_react_grid", name: "React Grid" }
+          }
+        ]
+      },
+      "results",
+      {
+        componentContracts: {
+          component_react_grid: { patterns: ["resource_table"] }
+        },
+        itemsExpression: "items",
+        useTypescript: true
+      }
+    );
+    if (!reactRendered.includes(`data-topogram-component="component_react_grid"`)) {
+      throw new Error("Expected React helper to render component marker.");
+    }
+    if (!reactRendered.includes("className=\"component-card component-table\"")) {
+      throw new Error("Expected React helper to render JSX className markup.");
     }
   '
 )

@@ -1,0 +1,23 @@
+component component_ui_greeting_table {
+  name "Greeting Table"
+  description "Reusable table display for greeting rows"
+  category collection
+
+  props {
+    rows array required
+    loading boolean optional default false
+  }
+
+  events {
+    row_select shape_output_greeting_card
+  }
+
+  slots {
+    empty_state "Empty-state content"
+  }
+
+  patterns [resource_table, data_grid_view]
+  regions [results]
+  version "1.0"
+  status active
+}

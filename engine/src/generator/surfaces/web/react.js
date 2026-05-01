@@ -1,5 +1,6 @@
 import { buildWebRealization } from "../../../realization/ui/index.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
+import { renderReactComponentRegion } from "./react-components.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
 
 function componentNameForScreen(screenId) {
@@ -36,6 +37,151 @@ function resolveNavLinks(contract, webReference) {
         { label: webReference.nav.browseLabel, route: webReference.nav.browseRoute },
         { label: webReference.nav.createLabel, route: webReference.nav.createRoute }
       ];
+}
+
+function routeSamplePath(route) {
+  return String(route || "/").replace(/:([A-Za-z0-9_]+)/g, "sample-$1");
+}
+
+function screenRegions(screen) {
+  const names = new Set();
+  for (const region of screen?.regions || []) {
+    if (region?.name) names.add(region.name);
+  }
+  for (const usage of screen?.components || []) {
+    if (usage?.region) names.add(usage.region);
+  }
+  return [...names];
+}
+
+function sampleItemsForScreen(screen) {
+  const title = screen?.title || screen?.id || "Resource";
+  return [
+    {
+      id: "sample-active",
+      title: `${title} sample`,
+      name: `${title} sample`,
+      message: `${title} sample`,
+      description: "Generated from Topogram UI contract metadata.",
+      status: "active",
+      priority: "medium",
+      created_at: "2026-01-01"
+    },
+    {
+      id: "sample-completed",
+      title: `${title} completed sample`,
+      name: `${title} completed sample`,
+      message: `${title} completed sample`,
+      description: "Second generated row for component rendering checks.",
+      status: "completed",
+      priority: "low",
+      created_at: "2026-01-02"
+    }
+  ];
+}
+
+function buildReactHomePage(contract, webReference) {
+  const screens = contract.screens.map((screen) => ({
+    id: screen.id,
+    title: screen.title || screen.id,
+    route: screen.route,
+    sampleRoute: routeSamplePath(screen.route),
+    navigable: Boolean(screen.route)
+  }));
+  const homeDescription = webReference.home.heroDescriptionTemplate.replace("PROFILE", "`react`");
+  return `import { Link } from "react-router-dom";
+
+const screens = ${JSON.stringify(screens, null, 2)};
+
+export function HomePage() {
+  return (
+    <main>
+      <div className="stack">
+        <section className="card hero">
+          <div>
+            <p className="muted">Generated starter</p>
+            <h1>${contract.projection.name}</h1>
+            <p>${homeDescription}</p>
+          </div>
+          <div className="button-row">
+            {screens.filter((screen) => screen.navigable).slice(0, 2).map((screen) => (
+              <Link className="button-link" to={screen.sampleRoute} key={screen.id}>{screen.title}</Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid two">
+          {screens.map((screen) => (
+            <article className="card" key={screen.id}>
+              <h2>{screen.title}</h2>
+              {screen.navigable ? (
+                <p><Link to={screen.sampleRoute}>Open screen</Link></p>
+              ) : (
+                <p className="muted">Contract-only screen</p>
+              )}
+            </article>
+          ))}
+        </section>
+      </div>
+    </main>
+  );
+}
+`;
+}
+
+function buildReactScreenPage(screen, contract) {
+  const sampleItems = sampleItemsForScreen(screen);
+  const renderedRegions = screenRegions(screen)
+    .map((region) => {
+      const rendered = renderReactComponentRegion(screen, region, {
+        componentContracts: contract.components,
+        itemsExpression: "items",
+        useTypescript: true
+      });
+      if (!rendered) return "";
+      return `        <section className="stack" data-topogram-region="${region}">
+${rendered}
+        </section>`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+  const defaultCollection = `<section className="card">
+          <h2>Sample rows</h2>
+          <ul className="resource-list">
+            {items.map((item: any) => (
+              <li key={item.id}>
+                <div className="resource-meta">
+                  <strong>{item.title}</strong>
+                  <span className="muted">{item.description}</span>
+                </div>
+                <span className="badge">{item.status}</span>
+              </li>
+            ))}
+          </ul>
+        </section>`;
+
+  return `const items: any[] = ${JSON.stringify(sampleItems, null, 2)};
+
+export function ${componentNameForScreen(screen.id)}() {
+  return (
+    <main>
+      <div className="stack">
+        <section className="card">
+          <div className="button-row" style={{ justifyContent: "space-between" }}>
+            <div>
+              <p className="muted">${screen.kind || "screen"}</p>
+              <h1>${screen.title || screen.id}</h1>
+              <p>This React page was generated from <code>${screen.id}</code>.</p>
+            </div>
+          </div>
+        </section>
+
+${renderedRegions || `        ${defaultCollection}`}
+      </div>
+    </main>
+  );
+}
+`;
 }
 
 function buildAppTsx(contract, webReference) {
@@ -134,21 +280,9 @@ function buildReactScaffold(realization, graph, options = {}) {
     ...webReference,
     defaultApiBaseUrl: `http://localhost:${runtimeReference?.ports?.server || 3000}`
   };
-  const webScreenReference = implementation.web.screenReference;
-  const webRenderers = implementation.web.renderers;
   const contract = realization.contract;
+  const routeScreens = contract.screens.filter((screen) => screen.route && componentNameForScreen(screen.id) !== "EditorialSettingsPage");
   const files = {};
-
-  const listScreen = contract.screens.find((screen) => screen.id === webScreenReference.listScreenId);
-  const detailScreen = contract.screens.find((screen) => screen.id === webScreenReference.detailScreenId);
-  const createScreen = contract.screens.find((screen) => screen.id === webScreenReference.createScreenId);
-  const editScreen = contract.screens.find((screen) => screen.id === webScreenReference.editScreenId);
-  const taskExports = webScreenReference.exportsScreenId
-    ? contract.screens.find((screen) => screen.id === webScreenReference.exportsScreenId)
-    : null;
-  const listLookups = Object.fromEntries((listScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
-  const createLookups = Object.fromEntries((createScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
-  const editLookups = Object.fromEntries((editScreen?.lookups || []).map((lookup) => [lookup.field, { ...lookup, route: `/lookups/${lookup.entity.id.replace(/^entity_/, "")}s` }]));
 
   files["package.json"] = `${JSON.stringify({
     name: contract.projection.id,
@@ -279,6 +413,18 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
 .muted { color: #607284; }
 .empty-state { padding: 1rem 0; }
 .error-text { color: #b42318; }
+.component-card { border: 1px solid #d7e1ec; border-radius: 14px; background: #fbfcfe; padding: 1rem; margin-top: 1rem; }
+.component-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.component-eyebrow { margin: 0 0 0.25rem; color: #607284; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.component-card h2, .component-card h3 { margin: 0; }
+.component-table-wrap { margin-top: 1rem; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.75rem; }
+.summary-grid div, .board-column { border: 1px solid #e0e8f1; border-radius: 12px; background: white; padding: 0.85rem; }
+.summary-grid strong { display: block; font-size: 1.5rem; }
+.summary-grid span, .calendar-list span { color: #607284; font-size: 0.9rem; }
+.board-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.board-card, .calendar-card { display: grid; gap: 0.25rem; border: 1px solid #e0e8f1; border-radius: 10px; background: #f8fbff; padding: 0.75rem; }
+.calendar-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
 @media (max-width: 900px) { .app-workspace { grid-template-columns: 1fr; } .app-sidebar { position: static; min-height: auto; border-right: none; border-bottom: 1px solid rgba(24, 32, 38, 0.08); } }
 @media (max-width: 640px) { .definition-list { grid-template-columns: 1fr; } .task-list li, .resource-list li { flex-direction: column; } .resource-table { min-width: 36rem; } .app-nav { flex-wrap: wrap; } }
 `;
@@ -288,45 +434,10 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
   files["src/lib/auth/visibility.ts"] = buildReactVisibilityModule();
   files["src/lib/api/client.ts"] = buildReactClientModule(webReferenceWithDefaults);
   files["src/lib/api/lookups.ts"] = buildLookupModule(webReferenceWithDefaults);
-  files["src/pages/HomePage.tsx"] = webRenderers.renderHomePage({
-    screens: contract.screens.map((screen) => ({
-      id: screen.id,
-      title: screen.title || screen.id,
-      route: screen.route,
-      navigable: Boolean(screen.route) && !screen.route.includes(":")
-    })),
-    projectionName: contract.projection.name,
-    homeDescription: webReference.home.heroDescriptionTemplate.replace("PROFILE", "`react`"),
-    webReference
-  });
+  files["src/pages/HomePage.tsx"] = buildReactHomePage(contract, webReferenceWithDefaults);
 
-  if (listScreen?.route && detailScreen?.route && createScreen?.route && editScreen?.route) {
-    const pageFiles = webRenderers.renderRoutes({
-      listScreen,
-      detailScreen,
-      createScreen,
-      editScreen,
-      taskList: listScreen,
-      taskDetail: detailScreen,
-      taskCreate: createScreen,
-      taskEdit: editScreen,
-      taskExports,
-      listLookups,
-      createLookups,
-      editLookups,
-      taskListLookups: listLookups,
-      taskCreateLookups: createLookups,
-      taskEditLookups: editLookups,
-      defaultContainerEnvVar: webReference.createPrimary.defaultContainerEnvVar,
-      defaultAssigneeEnvVar: webReference.createPrimary.defaultAssigneeEnvVar,
-      projectEnvVar: webReference.createPrimary.defaultContainerEnvVar,
-      ownerEnvVar: webReference.createPrimary.defaultAssigneeEnvVar,
-      webReference,
-      prettyScreenKind: (kind) => String(kind || "screen").replace(/_/g, " ")
-    });
-    for (const [relativePath, contents] of Object.entries(pageFiles)) {
-      files[`src/pages/${relativePath}`] = contents;
-    }
+  for (const screen of routeScreens) {
+    files[`src/pages/${componentNameForScreen(screen.id)}.tsx`] = buildReactScreenPage(screen, contract);
   }
 
   return files;
