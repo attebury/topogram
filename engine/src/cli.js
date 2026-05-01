@@ -4153,6 +4153,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
+} else if (args[0] === "generate" && args.indexOf("--generate") >= 0) {
+  commandArgs = { inputPath: commandPath(1) };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {

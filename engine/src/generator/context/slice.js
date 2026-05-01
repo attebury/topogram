@@ -221,12 +221,14 @@ function componentSlice(graph, componentId) {
   if (!component) {
     throw new Error(`No component found with id '${componentId}'`);
   }
+  const dependencyIds = componentDependencyIdsByKind(component);
   const shapes = relatedShapesForComponent(component);
+  const entities = dependencyIds.entity;
+  const capabilities = dependencyIds.capability;
   const projections = relatedProjectionsForComponent(graph, componentId);
-  const componentDependencies = [...new Set((component.dependencies || [])
-    .filter((dep) => dep?.target?.kind === "component" || String(dep?.id || "").startsWith("component_"))
-    .map((dep) => dep.id))].sort();
-  const verifications = verificationIdsForTarget(graph, [componentId, ...projections, ...shapes]);
+  const componentDependencies = dependencyIds.component;
+  const verificationScope = [componentId, ...shapes, ...entities, ...capabilities, ...projections, ...componentDependencies];
+  const verifications = verificationIdsForTarget(graph, verificationScope);
 
   return {
     type: "context_slice",
@@ -238,17 +240,21 @@ function componentSlice(graph, componentId) {
     summary: summarizeById(graph, componentId),
     depends_on: {
       shapes,
+      entities,
+      capabilities,
       components: componentDependencies,
       projections,
       verifications
     },
     related: {
       shapes: summarizeStatementsByIds(graph, shapes),
+      entities: summarizeStatementsByIds(graph, entities),
+      capabilities: summarizeStatementsByIds(graph, capabilities),
       components: summarizeStatementsByIds(graph, componentDependencies),
       projections: summarizeStatementsByIds(graph, projections)
     },
     verification: summarizeStatementsByIds(graph, verifications),
-    verification_targets: recommendedVerificationTargets(graph, [componentId, ...projections, ...shapes], {
+    verification_targets: recommendedVerificationTargets(graph, verificationScope, {
       rationale: "Component changes affect every consumer projection — verification should follow the component contract closure."
     }),
     write_scope: buildDefaultWriteScope(),
@@ -258,6 +264,42 @@ function componentSlice(graph, componentId) {
     },
     ownership_boundary: defaultOwnershipBoundary()
   };
+}
+
+function componentDependencyIdsByKind(component) {
+  const ids = {
+    shape: [],
+    entity: [],
+    capability: [],
+    projection: [],
+    component: []
+  };
+
+  for (const dependency of component.dependencies || []) {
+    const kind = componentDependencyKind(dependency);
+    if (kind && Object.hasOwn(ids, kind)) {
+      ids[kind].push(dependency.id);
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(ids).map(([kind, values]) => [kind, [...new Set(values.filter(Boolean))].sort()])
+  );
+}
+
+function componentDependencyKind(dependency) {
+  if (dependency?.target?.kind) {
+    return dependency.target.kind;
+  }
+  const id = String(dependency?.id || "");
+  const prefix = id.split("_")[0];
+  if (prefix === "proj") {
+    return "projection";
+  }
+  if (prefix === "cap") {
+    return "capability";
+  }
+  return prefix || null;
 }
 
 function journeySlice(graph, journeyId) {

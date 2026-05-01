@@ -379,6 +379,17 @@ export function relatedShapesForProjection(projection) {
   return stableSortedStrings(ids);
 }
 
+export function relatedProjectionsForShape(graph, shapeId) {
+  const directProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
+    .filter((projection) => relatedShapesForProjection(projection).includes(shapeId))
+    .map((projection) => projection.id));
+  const viaCapabilities = stableSortedStrings((graph?.byKind?.capability || [])
+    .filter((capability) => [...(capability.input || []), ...(capability.output || [])].some((item) => item.id === shapeId))
+    .flatMap((capability) => relatedProjectionsForCapability(graph, capability.id)));
+
+  return stableSortedStrings([...directProjectionIds, ...viaCapabilities]);
+}
+
 export function componentById(graph, componentId) {
   return (graph?.byKind?.component || []).find((component) => component.id === componentId) || null;
 }
@@ -395,7 +406,10 @@ export function relatedShapesForComponent(component) {
     ...(component.events || []).map((event) => event.shape?.id),
     ...(component.lookups || [])
       .filter((lookup) => lookup?.target?.kind === "shape" || String(lookup?.id || "").startsWith("shape_"))
-      .map((lookup) => lookup.id)
+      .map((lookup) => lookup.id),
+    ...(component.dependencies || [])
+      .filter((dependency) => referenceKind(dependency) === "shape")
+      .map((dependency) => dependency.id)
   ];
   return stableSortedStrings(ids);
 }
@@ -419,6 +433,22 @@ export function relatedProjectionsForComponent(graph, componentId) {
     }
     return [];
   }));
+  const dependencyProjectionIds = stableSortedStrings((component.dependencies || []).flatMap((dependency) => {
+    const kind = referenceKind(dependency);
+    if (kind === "projection") {
+      return [dependency.id];
+    }
+    if (kind === "capability") {
+      return relatedProjectionsForCapability(graph, dependency.id);
+    }
+    if (kind === "entity") {
+      return relatedProjectionsForEntity(graph, dependency.id);
+    }
+    if (kind === "shape") {
+      return relatedProjectionsForShape(graph, dependency.id);
+    }
+    return [];
+  }));
   const componentPatterns = new Set(component.patterns || []);
   const componentRegions = new Set(component.regions || []);
   const viaUiRegions = stableSortedStrings((graph?.byKind?.projection || [])
@@ -428,7 +458,22 @@ export function relatedProjectionsForComponent(graph, componentId) {
     ))
     .map((projection) => projection.id));
 
-  return stableSortedStrings([...directConsumerIds, ...viaUiRegions]);
+  return stableSortedStrings([...directConsumerIds, ...dependencyProjectionIds, ...viaUiRegions]);
+}
+
+function referenceKind(reference) {
+  if (reference?.target?.kind) {
+    return reference.target.kind;
+  }
+  const id = String(reference?.id || "");
+  const prefix = id.split("_")[0];
+  if (prefix === "proj") {
+    return "projection";
+  }
+  if (prefix === "cap") {
+    return "capability";
+  }
+  return prefix || null;
 }
 
 export function verificationIdsForTarget(graph, targetIds) {

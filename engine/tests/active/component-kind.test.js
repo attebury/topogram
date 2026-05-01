@@ -228,6 +228,135 @@ test("context-slice with --component focuses on the component contract closure",
   assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
 });
 
+test("context-slice with --component preserves dependency references by kind", () => {
+  const ast = workspaceFromSource(`
+entity entity_dep {
+  name "Dependency Entity"
+  description "Dependency entity"
+  fields {
+    id string required
+  }
+  status active
+}
+
+shape shape_dep from entity_dep {
+  name "Dependency Shape"
+  description "Dependency shape"
+  status active
+}
+
+capability cap_dep {
+  name "Dependency Capability"
+  description "Dependency capability"
+  status active
+}
+
+capability cap_shape {
+  name "Shape Capability"
+  description "Capability that exposes the dependency shape"
+  output [shape_dep]
+  status active
+}
+
+projection proj_direct {
+  name "Direct Projection"
+  description "Direct projection dependency"
+  platform ui_shared
+  realizes [cap_dep]
+  outputs [ui_contract]
+  status active
+}
+
+projection proj_from_cap {
+  name "Capability Projection"
+  description "Projection expanded from capability dependency"
+  platform ui_shared
+  realizes [cap_dep]
+  outputs [ui_contract]
+  status active
+}
+
+projection proj_from_entity {
+  name "Entity Projection"
+  description "Projection expanded from entity dependency"
+  platform db_sqlite
+  realizes [entity_dep]
+  outputs [db_contract]
+  db_tables {
+    entity_dep table deps
+  }
+  status active
+}
+
+projection proj_from_shape {
+  name "Shape Projection"
+  description "Projection expanded from shape dependency"
+  platform ui_shared
+  realizes [cap_shape]
+  outputs [ui_contract]
+  status active
+}
+
+component component_other {
+  name "Other Component"
+  description "Other component"
+  props {
+    label string required
+  }
+  status active
+}
+
+component component_dep_test {
+  name "Dependency Component"
+  description "Component with dependencies across statement kinds"
+  props {
+    rows array required
+  }
+  dependencies [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+  status active
+}
+
+verification ver_component_dependencies {
+  name "Component dependency verification"
+  description "Covers dependency-driven component context"
+  validates [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+  method smoke
+  scenarios [component_dependency_context]
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    componentId: "component_dep_test"
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.artifact.depends_on.shapes, ["shape_dep"]);
+  assert.deepEqual(result.artifact.depends_on.entities, ["entity_dep"]);
+  assert.deepEqual(result.artifact.depends_on.capabilities, ["cap_dep"]);
+  assert.deepEqual(result.artifact.depends_on.components, ["component_other"]);
+  assert.deepEqual(result.artifact.depends_on.projections, [
+    "proj_direct",
+    "proj_from_cap",
+    "proj_from_entity",
+    "proj_from_shape"
+  ]);
+  assert.deepEqual(result.artifact.depends_on.verifications, ["ver_component_dependencies"]);
+  assert.equal(result.artifact.related.shapes[0].id, "shape_dep");
+  assert.equal(result.artifact.related.entities[0].id, "entity_dep");
+  assert.equal(result.artifact.related.capabilities[0].id, "cap_dep");
+  assert.equal(result.artifact.related.components[0].id, "component_other");
+  assert.deepEqual(result.artifact.related.projections.map((projection) => projection.id), [
+    "proj_direct",
+    "proj_from_cap",
+    "proj_from_entity",
+    "proj_from_shape"
+  ]);
+  assert.deepEqual(result.artifact.verification_targets.verification_ids, ["ver_component_dependencies"]);
+});
+
 test("context-slice rejects unknown component id", () => {
   const ast = parsePath(fixtureRoot);
   assert.throws(

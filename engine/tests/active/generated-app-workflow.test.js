@@ -335,11 +335,49 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "scripts", "docker-db.sh")), false);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "scripts", "docker-stack.sh")), false);
 
+  const explicitAppOutputRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-app-basic-explicit-"));
+  const explicitAppGenerate = runCli(["generate", "app", fixtureRoot, "--out", explicitAppOutputRoot]);
+  assert.equal(explicitAppGenerate.status, 0, explicitAppGenerate.stderr || explicitAppGenerate.stdout);
+  assert.equal(fs.existsSync(path.join(explicitAppOutputRoot, "app-bundle-plan.json")), true);
+
   const statusAlias = runCli(["status", fixtureRoot]);
   assert.notEqual(statusAlias.status, 0, statusAlias.stdout);
 
   const buildAlias = runCli(["build", fixtureRoot, "--out", outputRoot]);
   assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
+});
+
+test("topogram generate honors explicit artifact targets", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generate-target-"));
+  const selected = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "ui-component-contract",
+    "--component",
+    "component_ui_data_grid",
+    "--json"
+  ], { cwd });
+  assert.equal(selected.status, 0, selected.stderr || selected.stdout);
+  const contract = JSON.parse(selected.stdout);
+  assert.equal(contract.id, "component_ui_data_grid");
+  assert.equal(contract.type, "component_contract");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "explicit artifact generation must not write the app shortcut output");
+
+  const outDir = path.join(cwd, "contracts");
+  const written = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "ui-component-contract",
+    "--write",
+    "--out-dir",
+    outDir
+  ], { cwd });
+  assert.equal(written.status, 0, written.stderr || written.stdout);
+  assert.equal(readJson(path.join(outDir, ".topogram-generated.json")).target, "ui-component-contract");
+  assert.equal(readJson(path.join(outDir, "component_ui_data_grid.ui-component-contract.json")).id, "component_ui_data_grid");
+  assert.equal(fs.existsSync(path.join(outDir, "app-bundle-plan.json")), false);
 });
 
 test("topogram catalog check validates catalog schema", () => {
