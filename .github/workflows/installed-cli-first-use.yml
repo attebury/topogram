@@ -28,5 +28,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TOPOGRAM_FIRST_USE_TEMPLATE_SPEC: ${{ github.workspace }}/engine/tests/fixtures/templates/hello-web
         run: bash ./scripts/verify-installed-cli-first-use.sh
