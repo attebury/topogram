@@ -283,6 +283,13 @@ process.exit(1);
   return binDir;
 }
 
+function writeKnownCliConsumerPins(root, version) {
+  for (const consumer of ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"]) {
+    fs.mkdirSync(path.join(root, consumer), { recursive: true });
+    fs.writeFileSync(path.join(root, consumer, "topogram-cli.version"), `${version}\n`, "utf8");
+  }
+}
+
 test("public authoring-to-app commands check and generate app bundles", () => {
   const help = runCli(["--help"]);
   assert.equal(help.status, 0, help.stderr || help.stdout);
@@ -1475,6 +1482,65 @@ test("topogram release status falls back to GitHub Packages API for latest versi
     payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_unavailable"),
     false
   );
+});
+
+test("topogram release status strict passes when package, tag, and consumers are current", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-pass-"));
+  writeKnownCliConsumerPins(root, cliPackageVersion);
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.strict, true);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.currentPublished, true);
+  assert.equal(payload.git.local, true);
+  assert.equal(payload.git.remote, true);
+  assert.equal(payload.consumerPins.allKnownPinned, true);
+  assert.deepEqual(payload.errors, []);
+
+  const human = runCli(["release", "status", "--strict"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Strict: enabled/);
+});
+
+test("topogram release status strict fails when release completion checks are not met", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-fail-"));
+  fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
+  fs.mkdirSync(path.join(root, "topogram-template-todo"), { recursive: true });
+  fs.mkdirSync(path.join(root, "topogram-demo-todo"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), "0.0.1\n", "utf8");
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, "topogram-v0.0.1");
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.0.1",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 1, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.strict, true);
+  assert.equal(payload.ok, false);
+  const codes = payload.diagnostics.map((diagnostic) => diagnostic.code);
+  assert.ok(codes.includes("release_latest_not_current"));
+  assert.ok(codes.includes("release_local_tag_missing"));
+  assert.ok(codes.includes("release_remote_tag_missing"));
+  assert.ok(codes.includes("release_consumer_pins_not_current"));
 });
 
 test("topogram package update-cli explains private package auth failures", () => {

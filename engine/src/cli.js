@@ -123,7 +123,7 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
-  console.log("Usage: topogram release status [--json]");
+  console.log("Usage: topogram release status [--json] [--strict]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
@@ -835,6 +835,7 @@ function printPackageUpdateCli(payload) {
  */
 function buildReleaseStatusPayload(options = {}) {
   const cwd = options.cwd || process.cwd();
+  const strict = Boolean(options.strict);
   const localVersion = readInstalledCliPackageVersion();
   const diagnostics = [];
   let latestVersion = null;
@@ -870,15 +871,26 @@ function buildReleaseStatusPayload(options = {}) {
     matchesLocal: consumer.version ? consumer.version === localVersion : null
   }));
   const consumerPins = summarizeConsumerPins(consumers);
+  const currentPublished = latestVersion ? latestVersion === localVersion : null;
+  if (strict) {
+    diagnostics.push(...releaseStatusStrictDiagnostics({
+      localVersion,
+      latestVersion,
+      currentPublished,
+      git,
+      consumerPins
+    }));
+  }
   const errors = diagnostics
     .filter((diagnostic) => diagnostic.severity === "error")
     .map((diagnostic) => diagnostic.message);
   return {
     ok: errors.length === 0,
+    strict,
     packageName: CLI_PACKAGE_NAME,
     localVersion,
     latestVersion,
-    currentPublished: latestVersion ? latestVersion === localVersion : null,
+    currentPublished,
     git,
     consumerPins,
     consumers,
@@ -888,11 +900,67 @@ function buildReleaseStatusPayload(options = {}) {
 }
 
 /**
+ * @param {{
+ *   localVersion: string,
+ *   latestVersion: string|null,
+ *   currentPublished: boolean|null,
+ *   git: ReturnType<typeof inspectReleaseGitTag>,
+ *   consumerPins: ReturnType<typeof summarizeConsumerPins>
+ * }} release
+ * @returns {Array<{ code: string, severity: "error", message: string, path: string, suggestedFix: string }>}
+ */
+function releaseStatusStrictDiagnostics(release) {
+  const diagnostics = [];
+  if (release.currentPublished !== true) {
+    diagnostics.push({
+      code: "release_latest_not_current",
+      severity: "error",
+      message: release.latestVersion
+        ? `${CLI_PACKAGE_NAME}@${release.localVersion} is not the latest published version (${release.latestVersion}).`
+        : `Latest published ${CLI_PACKAGE_NAME} version could not be verified.`,
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Publish the current CLI package version or fix GitHub Packages auth, then rerun `topogram release status --strict`."
+    });
+  }
+  if (release.git.local !== true) {
+    diagnostics.push({
+      code: "release_local_tag_missing",
+      severity: "error",
+      message: `Release tag ${release.git.tag} is missing locally.`,
+      path: release.git.tag,
+      suggestedFix: `Fetch or create the local ${release.git.tag} tag before treating this release as complete.`
+    });
+  }
+  if (release.git.remote !== true) {
+    diagnostics.push({
+      code: "release_remote_tag_missing",
+      severity: "error",
+      message: `Release tag ${release.git.tag} is missing on origin.`,
+      path: release.git.tag,
+      suggestedFix: `Push or create the remote ${release.git.tag} tag before treating this release as complete.`
+    });
+  }
+  if (release.consumerPins.allKnownPinned !== true) {
+    diagnostics.push({
+      code: "release_consumer_pins_not_current",
+      severity: "error",
+      message: `Known consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
+      path: "topogram-cli.version",
+      suggestedFix: "Roll known consumer repositories to the current CLI version before treating this release as complete."
+    });
+  }
+  return diagnostics;
+}
+
+/**
  * @param {ReturnType<typeof buildReleaseStatusPayload>} payload
  * @returns {void}
  */
 function printReleaseStatus(payload) {
   console.log(payload.ok ? "Topogram release status passed." : "Topogram release status found issues.");
+  if (payload.strict) {
+    console.log("Strict: enabled");
+  }
   console.log(`Package: ${payload.packageName}`);
   console.log(`Local version: ${payload.localVersion}`);
   console.log(`Latest published: ${payload.latestVersion || "unknown"}${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`);
@@ -4497,6 +4565,7 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
+const strictReleaseStatus = args.includes("--strict");
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
@@ -4643,7 +4712,7 @@ try {
   }
 
   if (shouldReleaseStatus) {
-    const payload = buildReleaseStatusPayload();
+    const payload = buildReleaseStatusPayload({ strict: strictReleaseStatus });
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {
