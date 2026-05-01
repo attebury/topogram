@@ -1280,6 +1280,9 @@ test("topogram package update-cli refreshes stale CLI lockfile tarball metadata"
   writePackageJson(projectRoot, {
     name: "consumer",
     private: true,
+    scripts: {
+      "cli:surface": "node -e 'throw new Error(\"should not run without refreshed node_modules\")'"
+    },
     devDependencies: {
       "@attebury/topogram": "^0.2.37"
     }
@@ -1403,8 +1406,14 @@ test("topogram package update-cli falls back to GitHub API for private package i
   assert.equal(payload.dependencyUpdatedBy, "manifest-lockfile");
   assert.equal(payload.checkedVersion, "0.2.38");
   assert.equal(payload.versionConventionUpdated, true);
+  assert.deepEqual(payload.scriptsRun, []);
+  assert.deepEqual(payload.skippedScripts, ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"]);
   assert.equal(
     payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_check_via_github_api"),
+    true
+  );
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_checks_skipped_after_file_update"),
     true
   );
   assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.38");
@@ -1412,6 +1421,39 @@ test("topogram package update-cli falls back to GitHub API for private package i
   assert.equal(lockEntry.version, "0.2.38");
   assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "resolved"), false);
   assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "integrity"), false);
+  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
+});
+
+test("topogram package update-cli fallback leaves convention-only packages convention-only", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-convention-"));
+  const projectRoot = path.join(root, "consumer");
+  fs.mkdirSync(projectRoot, { recursive: true });
+  writePackageJson(projectRoot, {
+    name: "consumer",
+    private: true,
+    scripts: {
+      "pack:check": "node -e true"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
+  const fakeNpmBin = createFailingCommand(
+    root,
+    "npm",
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+  );
+  const fakeGhBin = createFakeGh(root, ["0.2.38", "0.2.37"]);
+  const update = runCli(["package", "update-cli", "0.2.38", "--json"], {
+    cwd: projectRoot,
+    env: {
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(update.status, 0, update.stderr || update.stdout);
+  const payload = JSON.parse(update.stdout);
+  assert.equal(payload.packageCheckSource, "github-api");
+  assert.equal(payload.dependencyUpdatedBy, "version-convention");
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies, undefined);
+  assert.equal(fs.existsSync(path.join(projectRoot, "package-lock.json")), false);
   assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
 });
 

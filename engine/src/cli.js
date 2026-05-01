@@ -882,7 +882,7 @@ function latestTemplateInfo(template) {
 /**
  * @param {string} requested
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm"|"github-api", dependencyUpdatedBy: "npm-install"|"manifest-lockfile", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm"|"github-api", dependencyUpdatedBy: "npm-install"|"manifest-lockfile"|"version-convention", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildPackageUpdateCliPayload(requested, options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -940,20 +940,22 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
       if (!isPackageUpdateNpmAuthFailure(install)) {
         throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
       }
-      dependencyUpdatedBy = "manifest-lockfile";
-      updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+      const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+      dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
       diagnostics.push({
         code: "package_update_cli_install_manifest_fallback",
         severity: "warning",
-        message: `npm install failed due to package auth, so ${CLI_PACKAGE_NAME} files were updated directly.`,
+        message: updateResult.packageJsonUpdated
+          ? `npm install failed due to package auth, so ${CLI_PACKAGE_NAME} files were updated directly.`
+          : `npm install failed due to package auth, so only topogram-cli.version will be updated.`,
         path: cwd,
         suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
         cause: formatPackageUpdateNpmError(dependencySpec, "install", install)
       });
     }
   } else {
-    dependencyUpdatedBy = "manifest-lockfile";
-    updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+    const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
+    dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
   }
   const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
@@ -961,15 +963,26 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const candidateScripts = ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"];
   const scriptsRun = [];
   const skippedScripts = [];
-  for (const scriptName of candidateScripts) {
-    if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+  if (dependencyUpdatedBy !== "npm-install") {
+    skippedScripts.push(...candidateScripts);
+    diagnostics.push({
+      code: "package_update_cli_checks_skipped_after_file_update",
+      severity: "warning",
+      message: "Consumer verification scripts were skipped because package files were updated without refreshing installed node_modules.",
+      path: cwd,
+      suggestedFix: "Run npm install or npm ci with GitHub Packages auth, then rerun consumer verification."
+    });
+  } else {
+    for (const scriptName of candidateScripts) {
+      if (!Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+        skippedScripts.push(scriptName);
+        continue;
+      }
       const result = runNpmForPackageUpdate(["run", scriptName], cwd);
       if (result.status !== 0) {
         throw new Error(formatPackageUpdateNpmError(`npm run ${scriptName}`, "check", result));
       }
       scriptsRun.push(scriptName);
-    } else {
-      skippedScripts.push(scriptName);
     }
   }
   return {
@@ -2066,11 +2079,26 @@ function readPackageJsonForUpdate(cwd) {
 function updateTopogramCliDependencyFiles(cwd, version, dependencySpec) {
   const packagePath = path.join(cwd, "package.json");
   const packageJson = readPackageJsonForUpdate(cwd);
-  packageJson.devDependencies = packageJson.devDependencies && typeof packageJson.devDependencies === "object"
-    ? packageJson.devDependencies
-    : {};
-  packageJson.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
-  if (packageJson.dependencies && typeof packageJson.dependencies === "object") {
+  const hasDevDependency = packageJson.devDependencies &&
+    typeof packageJson.devDependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(packageJson.devDependencies, CLI_PACKAGE_NAME);
+  const hasDependency = packageJson.dependencies &&
+    typeof packageJson.dependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(packageJson.dependencies, CLI_PACKAGE_NAME);
+  const hasVersionConvention = fs.existsSync(path.join(cwd, "topogram-cli.version"));
+  const shouldUpdatePackageJson = hasDevDependency || hasDependency || !hasVersionConvention;
+  if (!shouldUpdatePackageJson) {
+    return { packageJsonUpdated: false, lockfileUpdated: false };
+  }
+  if (hasDependency && !hasDevDependency) {
+    packageJson.dependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  } else {
+    packageJson.devDependencies = packageJson.devDependencies && typeof packageJson.devDependencies === "object"
+      ? packageJson.devDependencies
+      : {};
+    packageJson.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  }
+  if (hasDevDependency && packageJson.dependencies && typeof packageJson.dependencies === "object") {
     delete packageJson.dependencies[CLI_PACKAGE_NAME];
   }
   fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
@@ -2082,11 +2110,19 @@ function updateTopogramCliDependencyFiles(cwd, version, dependencySpec) {
   const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
   lock.packages = lock.packages && typeof lock.packages === "object" ? lock.packages : {};
   lock.packages[""] = lock.packages[""] && typeof lock.packages[""] === "object" ? lock.packages[""] : {};
-  lock.packages[""].devDependencies = lock.packages[""].devDependencies && typeof lock.packages[""].devDependencies === "object"
-    ? lock.packages[""].devDependencies
-    : {};
-  lock.packages[""].devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
-  if (lock.packages[""].dependencies && typeof lock.packages[""].dependencies === "object") {
+  const rootEntry = lock.packages[""];
+  const lockHasDependency = rootEntry.dependencies &&
+    typeof rootEntry.dependencies === "object" &&
+    Object.prototype.hasOwnProperty.call(rootEntry.dependencies, CLI_PACKAGE_NAME);
+  if (lockHasDependency && !hasDevDependency) {
+    rootEntry.dependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  } else {
+    rootEntry.devDependencies = rootEntry.devDependencies && typeof rootEntry.devDependencies === "object"
+      ? rootEntry.devDependencies
+      : {};
+    rootEntry.devDependencies[CLI_PACKAGE_NAME] = dependencySpec.slice(`${CLI_PACKAGE_NAME}@`.length);
+  }
+  if ((hasDevDependency || !lockHasDependency) && rootEntry.dependencies && typeof rootEntry.dependencies === "object") {
     delete lock.packages[""].dependencies[CLI_PACKAGE_NAME];
   }
   const entryPath = `node_modules/${CLI_PACKAGE_NAME}`;
