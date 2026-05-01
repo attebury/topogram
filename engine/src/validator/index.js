@@ -2,16 +2,36 @@ import {
   DOC_ARRAY_FIELDS,
   DOC_CONFIDENCE,
   DOC_KINDS,
+  DOC_REFERENCE_FIELDS,
   DOC_STATUSES
 } from "../workspace-docs.js";
 
 import {
   STATEMENT_KINDS,
   IDENTIFIER_PATTERN,
+  DOMAIN_IDENTIFIER_PATTERN,
+  DOMAIN_TAGGABLE_KINDS,
+  PITCH_IDENTIFIER_PATTERN,
+  REQUIREMENT_IDENTIFIER_PATTERN,
+  ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN,
+  TASK_IDENTIFIER_PATTERN,
+  BUG_IDENTIFIER_PATTERN,
+  DOCUMENT_IDENTIFIER_PATTERN,
   GLOBAL_STATUSES,
   DECISION_STATUSES,
   RULE_SEVERITIES,
   VERIFICATION_METHODS,
+  STATUS_SETS_BY_KIND,
+  PITCH_STATUSES,
+  REQUIREMENT_STATUSES,
+  ACCEPTANCE_CRITERION_STATUSES,
+  TASK_STATUSES,
+  BUG_STATUSES,
+  PRIORITY_VALUES,
+  WORK_TYPES,
+  BUG_SEVERITIES,
+  DOC_TYPES,
+  AUDIENCES,
   UI_SCREEN_KINDS,
   UI_COLLECTION_PRESENTATIONS,
   UI_NAVIGATION_PATTERNS,
@@ -20,14 +40,39 @@ import {
   FIELD_SPECS
 } from "./kinds.js";
 import { validateComponent } from "./per-kind/component.js";
+import { validateDomain, validateDomainTag } from "./per-kind/domain.js";
+import { validatePitch } from "./per-kind/pitch.js";
+import { validateRequirement } from "./per-kind/requirement.js";
+import { validateAcceptanceCriterion } from "./per-kind/acceptance-criterion.js";
+import { validateTask } from "./per-kind/task.js";
+import { validateBug } from "./per-kind/bug.js";
 
 export {
   STATEMENT_KINDS,
   IDENTIFIER_PATTERN,
+  DOMAIN_IDENTIFIER_PATTERN,
+  DOMAIN_TAGGABLE_KINDS,
+  PITCH_IDENTIFIER_PATTERN,
+  REQUIREMENT_IDENTIFIER_PATTERN,
+  ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN,
+  TASK_IDENTIFIER_PATTERN,
+  BUG_IDENTIFIER_PATTERN,
+  DOCUMENT_IDENTIFIER_PATTERN,
   GLOBAL_STATUSES,
   DECISION_STATUSES,
   RULE_SEVERITIES,
   VERIFICATION_METHODS,
+  STATUS_SETS_BY_KIND,
+  PITCH_STATUSES,
+  REQUIREMENT_STATUSES,
+  ACCEPTANCE_CRITERION_STATUSES,
+  TASK_STATUSES,
+  BUG_STATUSES,
+  PRIORITY_VALUES,
+  WORK_TYPES,
+  BUG_SEVERITIES,
+  DOC_TYPES,
+  AUDIENCES,
   UI_SCREEN_KINDS,
   UI_COLLECTION_PRESENTATIONS,
   UI_NAVIGATION_PATTERNS,
@@ -285,7 +330,9 @@ function validateStatus(errors, statement, fieldMap) {
     return;
   }
 
-  const allowed = statement.kind === "decision" ? DECISION_STATUSES : GLOBAL_STATUSES;
+  // Per-kind status table takes precedence (decision and SDLC kinds), with
+  // GLOBAL_STATUSES as the default.
+  const allowed = STATUS_SETS_BY_KIND[statement.kind] || GLOBAL_STATUSES;
   if (!allowed.has(field.value.value)) {
     pushError(errors, `Invalid status '${field.value.value}' on ${statement.kind} ${statement.id}`, field.loc);
   }
@@ -354,6 +401,10 @@ function validateShapeFrom(errors, statement, registry) {
 }
 
 function validateReferenceKinds(errors, statement, fieldMap, registry) {
+  // Phase 2: SDLC kinds add several reference fields. The `affects` field is
+  // polymorphic — pitches/requirements/tasks/bugs all use it, so we keep the
+  // target set wide. `pitch` is single-id but lives in the same map for
+  // uniform validation.
   const expectedByField = {
     uses_terms: ["term"],
     derived_from: ["entity"],
@@ -383,7 +434,31 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
     include: null,
     exclude: null,
     context: null,
-    consequences: null
+    consequences: null,
+    pitch: ["pitch"],
+    requirement: null,
+    from_requirement: ["requirement"],
+    affects: ["capability", "entity", "rule", "projection", "component", "orchestration", "operation"],
+    introduces_rules: ["rule"],
+    respects_rules: ["rule"],
+    decisions: ["decision"],
+    introduces_decisions: ["decision"],
+    satisfies: ["requirement", "acceptance_criterion"],
+    acceptance_refs: ["acceptance_criterion"],
+    requirement_refs: ["requirement"],
+    fixes_bugs: ["bug"],
+    blocks: ["task"],
+    blocked_by: ["task"],
+    claimed_by: ["actor", "role"],
+    violates: ["rule"],
+    surfaces_rule: ["rule"],
+    introduced_in: ["task", "bug"],
+    fixed_in: ["task"],
+    fixed_in_verification: ["verification"],
+    supersedes: null,
+    modifies: [...STATEMENT_KINDS],
+    introduces: [...STATEMENT_KINDS],
+    removes: [...STATEMENT_KINDS]
   };
 
   for (const [key, allowedKinds] of Object.entries(expectedByField)) {
@@ -3070,6 +3145,27 @@ function validateDocs(workspaceAst, registry, errors) {
         pushError(errors, `Doc '${metadata.id}' references missing doc '${relatedDocId}'`, doc.loc);
       }
     }
+
+    for (const [fieldName, expectedKind] of Object.entries(DOC_REFERENCE_FIELDS)) {
+      const value = metadata[fieldName];
+      if (value == null) continue;
+      if (typeof value !== "string") {
+        pushError(errors, `Doc metadata '${fieldName}' must be a single id`, doc.loc);
+        continue;
+      }
+      const target = registry.get(value);
+      if (!target) {
+        pushError(errors, `Doc '${metadata.id}' references missing ${expectedKind} '${value}'`, doc.loc);
+        continue;
+      }
+      if (target.kind !== expectedKind) {
+        pushError(
+          errors,
+          `Doc '${metadata.id}' ${fieldName} must reference a ${expectedKind}, found ${target.kind} '${target.id}'`,
+          doc.loc
+        );
+      }
+    }
   }
 }
 
@@ -3122,6 +3218,13 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionDbLifecycle(errors, statement, fieldMap, registry);
       validateProjectionGeneratorDefaults(errors, statement, fieldMap);
       validateComponent(errors, statement, fieldMap, registry);
+      validateDomain(errors, statement, fieldMap, registry);
+      validateDomainTag(errors, statement, fieldMap, registry);
+      validatePitch(errors, statement, fieldMap, registry);
+      validateRequirement(errors, statement, fieldMap, registry);
+      validateAcceptanceCriterion(errors, statement, fieldMap, registry);
+      validateTask(errors, statement, fieldMap, registry);
+      validateBug(errors, statement, fieldMap, registry);
       validateExpressions(errors, statement, fieldMap);
     }
   }

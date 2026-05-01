@@ -1,0 +1,12 @@
+task task_implement_audit_writer {
+  name "Implement audit writer"
+  description "Write the actual append-to-audit-log code"
+  satisfies [req_audit_persistence]
+  acceptance_refs [ac_audit_survives_restart]
+  affects [cap_record_audit]
+  claimed_by [actor_dev]
+  domain dom_app
+  priority high
+  work_type implementation
+  status in-progress
+}

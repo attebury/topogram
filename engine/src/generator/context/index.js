@@ -4,6 +4,8 @@ import { generateContextDiff } from "./diff.js";
 import { generateContextReport } from "./report.js";
 import { generateContextSlice } from "./slice.js";
 import { generateContextTaskMode } from "./task-mode.js";
+import { generateDomainCoverage, generateDomainList } from "./domain-coverage.js";
+import { generateAllDomainPages, generateDomainPage } from "./domain-page.js";
 
 export function generateContextTarget(target, graph, options = {}) {
   if (target === "context-digest") {
@@ -23,6 +25,17 @@ export function generateContextTarget(target, graph, options = {}) {
   }
   if (target === "context-task-mode") {
     return generateContextTaskMode(graph, options);
+  }
+  if (target === "domain-coverage") {
+    return generateDomainCoverage(graph, options);
+  }
+  if (target === "domain-list") {
+    return generateDomainList(graph);
+  }
+  if (target === "domain-page") {
+    return options.domainId
+      ? generateDomainPage(graph, options)
+      : generateAllDomainPages(graph);
   }
 
   throw new Error(`Unsupported context target '${target}'`);

@@ -1,0 +1,13 @@
+bug bug_audit_drops_silently {
+  name "Audit drops silently on disk full"
+  description "Audit writer swallowed errors when the disk filled up"
+  reproduction "Fill the disk, then trigger any state mutation"
+  affects [cap_record_audit]
+  violates [rule_audit_required]
+  fixed_in [task_implement_audit_writer]
+  fixed_in_verification [verification_audit_persists]
+  domain dom_app
+  priority critical
+  severity high
+  status verified
+}

@@ -1,0 +1,6 @@
+acceptance_criterion ac_audit_survives_restart {
+  name "Audit row survives a restart"
+  description "Given a write, when the process restarts, then the row is still readable"
+  requirement req_audit_persistence
+  status approved
+}
