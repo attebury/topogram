@@ -1389,6 +1389,8 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
 test("topogram release status reports package, tag, and consumer pin state", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-"));
   fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
+  fs.mkdirSync(path.join(root, "topogram-template-todo"), { recursive: true });
+  fs.mkdirSync(path.join(root, "topogram-demo-todo"), { recursive: true });
   fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), `${cliPackageVersion}\n`, "utf8");
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
@@ -1407,6 +1409,26 @@ test("topogram release status reports package, tag, and consumer pin state", () 
   assert.equal(payload.git.local, true);
   assert.equal(payload.git.remote, true);
   assert.equal(payload.consumers.find((consumer) => consumer.name === "topogram-starters").matchesLocal, true);
+  assert.equal(payload.consumerPins.known, 3);
+  assert.equal(payload.consumerPins.pinned, 1);
+  assert.equal(payload.consumerPins.matching, 1);
+  assert.equal(payload.consumerPins.differing, 0);
+  assert.equal(payload.consumerPins.missing, 2);
+  assert.equal(payload.consumerPins.allKnownPinned, false);
+  assert.deepEqual(payload.consumerPins.matchingNames, ["topogram-starters"]);
+  assert.deepEqual(payload.consumerPins.missingNames, ["topogram-template-todo", "topogram-demo-todo"]);
+
+  const human = runCli(["release", "status"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Consumer pins: 1\/3 pinned, 1 matching, 0 differing, 2 missing/);
+  assert.match(human.stdout, /topogram-starters: .* \(matches\)/);
+  assert.match(human.stdout, /topogram-template-todo: missing \(missing\)/);
 });
 
 test("topogram package update-cli explains private package auth failures", () => {

@@ -39,6 +39,14 @@ Check the release and known consumer pins:
 topogram release status
 ```
 
+The status output includes a `consumerPins` summary for the known package
+consumers: `topogram-starters`, `topogram-template-todo`, and
+`topogram-demo-todo`. Patch CLI releases can roll through those
+`topogram-cli.version` pins without republishing starter or template packages.
+Only publish new starter/template package versions when their payload,
+implementation, package metadata, trust policy, catalog-facing metadata, or
+conformance requirements changed.
+
 Update package consumers, starting with `topogram-demo-todo`, to the published
 version and rerun their verification. Consumer repos that include
 `topogram-cli.version` can use:

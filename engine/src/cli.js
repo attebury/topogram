@@ -94,6 +94,7 @@ const CLI_PACKAGE_NAME = "@attebury/topogram";
 const GITHUB_PACKAGES_REGISTRY = "https://npm.pkg.github.com";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
+const KNOWN_CLI_CONSUMER_REPOS = ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"];
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -830,7 +831,7 @@ function printPackageUpdateCli(payload) {
 
 /**
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: { tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }, consumers: Array<{ name: string, path: string, version: string|null, matchesLocal: boolean|null }>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: { tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumers: Array<{ name: string, path: string, version: string|null, found: boolean, matchesLocal: boolean|null }>, diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildReleaseStatusPayload(options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -854,6 +855,7 @@ function buildReleaseStatusPayload(options = {}) {
     ...consumer,
     matchesLocal: consumer.version ? consumer.version === localVersion : null
   }));
+  const consumerPins = summarizeConsumerPins(consumers);
   const errors = diagnostics
     .filter((diagnostic) => diagnostic.severity === "error")
     .map((diagnostic) => diagnostic.message);
@@ -864,6 +866,7 @@ function buildReleaseStatusPayload(options = {}) {
     latestVersion,
     currentPublished: latestVersion ? latestVersion === localVersion : null,
     git,
+    consumerPins,
     consumers,
     diagnostics,
     errors
@@ -880,13 +883,17 @@ function printReleaseStatus(payload) {
   console.log(`Local version: ${payload.localVersion}`);
   console.log(`Latest published: ${payload.latestVersion || "unknown"}${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`);
   console.log(`Git tag: ${payload.git.tag} local=${labelBoolean(payload.git.local)} remote=${labelBoolean(payload.git.remote)}`);
-  if (payload.consumers.length > 0) {
-    console.log("Consumer pins:");
-    for (const consumer of payload.consumers) {
-      console.log(`- ${consumer.name}: ${consumer.version || "missing"}${consumer.matchesLocal === true ? " (matches)" : consumer.matchesLocal === false ? " (differs)" : ""}`);
-    }
-  } else {
-    console.log("Consumer pins: none found");
+  console.log(
+    `Consumer pins: ${payload.consumerPins.pinned}/${payload.consumerPins.known} pinned, ` +
+    `${payload.consumerPins.matching} matching, ${payload.consumerPins.differing} differing, ${payload.consumerPins.missing} missing`
+  );
+  for (const consumer of payload.consumers) {
+    const status = consumer.matchesLocal === true
+      ? "matches"
+      : consumer.matchesLocal === false
+        ? "differs"
+        : "missing";
+    console.log(`- ${consumer.name}: ${consumer.version || "missing"} (${status})`);
   }
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
@@ -957,37 +964,71 @@ function inspectReleaseGitTag(version, cwd) {
 
 /**
  * @param {string} cwd
- * @returns {Array<{ name: string, path: string, version: string|null }>}
+ * @returns {Array<{ name: string, path: string, version: string|null, found: boolean }>}
  */
 function discoverTopogramCliVersionConsumers(cwd) {
-  const roots = new Map();
+  const roots = [];
   for (const root of [cwd, REPO_ROOT, path.dirname(REPO_ROOT)]) {
-    roots.set(path.resolve(root), true);
+    const resolved = path.resolve(root);
+    if (!roots.includes(resolved)) {
+      roots.push(resolved);
+    }
   }
-  const knownNames = ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"];
   const consumers = [];
-  for (const root of roots.keys()) {
-    for (const name of knownNames) {
+  for (const name of KNOWN_CLI_CONSUMER_REPOS) {
+    let found = null;
+    for (const root of roots) {
       const consumerRoot = path.join(root, name);
       const versionPath = path.join(consumerRoot, "topogram-cli.version");
+      if (fs.existsSync(consumerRoot) && !fs.existsSync(versionPath)) {
+        found = {
+          name,
+          path: versionPath,
+          version: null,
+          found: false
+        };
+        break;
+      }
       if (!fs.existsSync(versionPath)) {
         continue;
       }
-      consumers.push({
+      found = {
         name,
         path: versionPath,
-        version: fs.readFileSync(versionPath, "utf8").trim() || null
-      });
+        version: fs.readFileSync(versionPath, "utf8").trim() || null,
+        found: true
+      };
+      break;
     }
+    consumers.push(found || {
+      name,
+      path: path.join(roots[0], name, "topogram-cli.version"),
+      version: null,
+      found: false
+    });
   }
-  const seen = new Set();
-  return consumers.filter((consumer) => {
-    if (seen.has(consumer.path)) {
-      return false;
-    }
-    seen.add(consumer.path);
-    return true;
-  });
+  return consumers;
+}
+
+/**
+ * @param {Array<{ name: string, version: string|null, found: boolean, matchesLocal: boolean|null }>} consumers
+ * @returns {{ known: number, pinned: number, matching: number, differing: number, missing: number, allKnownPinned: boolean, matchingNames: string[], differingNames: string[], missingNames: string[] }}
+ */
+function summarizeConsumerPins(consumers) {
+  const matchingNames = consumers.filter((consumer) => consumer.matchesLocal === true).map((consumer) => consumer.name);
+  const differingNames = consumers.filter((consumer) => consumer.matchesLocal === false).map((consumer) => consumer.name);
+  const missingNames = consumers.filter((consumer) => !consumer.found || !consumer.version).map((consumer) => consumer.name);
+  return {
+    known: consumers.length,
+    pinned: consumers.filter((consumer) => consumer.found && consumer.version).length,
+    matching: matchingNames.length,
+    differing: differingNames.length,
+    missing: missingNames.length,
+    allKnownPinned: consumers.length > 0 && differingNames.length === 0 && missingNames.length === 0,
+    matchingNames,
+    differingNames,
+    missingNames
+  };
 }
 
 /**
