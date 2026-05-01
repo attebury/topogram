@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- None currently.
+
+## 0.3.12 - 2026-05-01
+
 - Add `component-conformance-report` generator target. The report compares
   `projection.ui_components` usage against component contracts, includes
   inherited shared-UI usages for concrete web projections, supports
