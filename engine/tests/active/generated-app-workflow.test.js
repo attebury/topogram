@@ -298,6 +298,35 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(fullHelp.stdout, /topogram import app <path>/);
   assert.match(fullHelp.stdout, /query work-packet/);
 
+  const generateHelp = runCli(["generate", "--help"]);
+  assert.equal(generateHelp.status, 0, generateHelp.stderr || generateHelp.stdout);
+  assert.match(generateHelp.stdout, /Usage: topogram generate \[path\] \[--out <path>\]/);
+  assert.match(generateHelp.stdout, /topogram generate \[path\] --generate <target> \[--json\]/);
+  assert.match(generateHelp.stdout, /Explicit --generate targets print JSON by default and write files only with --write\./);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-component-contract --component component_ui_data_grid --json/);
+  assert.doesNotMatch(generateHelp.stdout, /Common commands:/);
+
+  const helpGenerate = runCli(["help", "generate"]);
+  assert.equal(helpGenerate.status, 0, helpGenerate.stderr || helpGenerate.stdout);
+  assert.equal(helpGenerate.stdout, generateHelp.stdout);
+
+  const newHelp = runCli(["new", "--help"]);
+  assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
+  assert.match(newHelp.stdout, /Usage: topogram new <path> \[--template <alias\|package\|path>\]/);
+  assert.match(newHelp.stdout, /topogram new --list-templates/);
+  assert.match(newHelp.stdout, /Default template: hello-web/);
+
+  const templateHelp = runCli(["template", "--help"]);
+  assert.equal(templateHelp.status, 0, templateHelp.stderr || templateHelp.stdout);
+  assert.match(templateHelp.stdout, /Usage: topogram template list/);
+  assert.match(templateHelp.stdout, /topogram template policy check/);
+  assert.doesNotMatch(templateHelp.stdout, /topogram template show/);
+
+  const catalogHelp = runCli(["catalog", "--help"]);
+  assert.equal(catalogHelp.status, 0, catalogHelp.stderr || catalogHelp.stdout);
+  assert.match(catalogHelp.stdout, /Usage: topogram catalog list/);
+  assert.match(catalogHelp.stdout, /topogram catalog copy hello \.\/hello-topogram/);
+
   const templateList = runCli(["template", "list", "--json"]);
   assert.equal(templateList.status, 0, templateList.stderr || templateList.stdout);
   const listPayload = JSON.parse(templateList.stdout);

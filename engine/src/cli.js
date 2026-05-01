@@ -125,6 +125,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram release status [--json]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
+  console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
@@ -246,6 +247,112 @@ function printUsage(options = {}) {
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
+}
+
+function printNewHelp() {
+  console.log("Usage: topogram new <path> [--template <alias|package|path>] [--catalog <path-or-source>]");
+  console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Creates a new editable Topogram workspace from a template package or local template path.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram new ./my-app");
+  console.log("  topogram new --list-templates");
+  console.log("  topogram new ./my-app --template hello-web");
+  console.log("  topogram new ./my-app --template ./local-template");
+  console.log("  topogram new ./my-app --template @scope/topogram-template");
+  console.log("");
+  console.log("Default template: hello-web from the configured catalog.");
+}
+
+function printGenerateHelp() {
+  console.log("Usage: topogram generate [path] [--out <path>]");
+  console.log("   or: topogram generate app [path] [--out <path>]");
+  console.log("   or: topogram generate [path] --generate <target> [--json]");
+  console.log("   or: topogram generate [path] --generate <target> --write [--out-dir <path>]");
+  console.log("");
+  console.log("Defaults: path is ./topogram and app generation writes ./app.");
+  console.log("Explicit --generate targets print JSON by default and write files only with --write.");
+  console.log("");
+  console.log("Common artifact targets:");
+  console.log("  ui-component-contract");
+  console.log("  context-slice");
+  console.log("  context-diff");
+  console.log("  verification-targets");
+  console.log("");
+  console.log("Selectors:");
+  console.log("  --component <id>");
+  console.log("  --capability <id>");
+  console.log("  --projection <id>");
+  console.log("  --entity <id>");
+  console.log("  --journey <id>");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram generate");
+  console.log("  topogram generate ./topogram --out ./app");
+  console.log("  topogram generate app ./topogram --out ./app");
+  console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
+  console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
+}
+
+function printTemplateHelp() {
+  console.log("Usage: topogram template list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram template explain [path] [--json]");
+  console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
+  console.log("   or: topogram template check <template-spec-or-path> [--json]");
+  console.log("   or: topogram template policy init [path] [--json]");
+  console.log("   or: topogram template policy check [path] [--json]");
+  console.log("   or: topogram template policy explain [path] [--json]");
+  console.log("   or: topogram template policy pin <template-id@version> [path] [--json]");
+  console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
+  console.log("");
+  console.log("Template commands inspect catalog-backed starters, project provenance, trust policy, and update plans.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram template list");
+  console.log("  topogram template explain");
+  console.log("  topogram template status --latest");
+  console.log("  topogram template policy check");
+  console.log("  topogram template check ./local-template");
+  console.log("  topogram template update --recommend");
+}
+
+function printCatalogHelp() {
+  console.log("Usage: topogram catalog list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram catalog check <path-or-url> [--json]");
+  console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
+  console.log("");
+  console.log("Catalog commands inspect the shared Topogram index. The catalog is an index; templates and topograms resolve to versioned packages.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram catalog list");
+  console.log("  topogram catalog show hello-web");
+  console.log("  topogram catalog doctor");
+  console.log("  topogram catalog check topograms.catalog.json");
+  console.log("  topogram catalog copy hello ./hello-topogram");
+}
+
+function printCommandHelp(command) {
+  if (command === "new" || command === "create") {
+    printNewHelp();
+    return true;
+  }
+  if (command === "generate") {
+    printGenerateHelp();
+    return true;
+  }
+  if (command === "template") {
+    printTemplateHelp();
+    return true;
+  }
+  if (command === "catalog") {
+    printCatalogHelp();
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -4120,6 +4227,14 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
+if (args[0] === "help" && args[1] && args[1] !== "all" && printCommandHelp(args[1])) {
+  process.exit(0);
+}
+
+if (args[0] !== "version" && (args.includes("--help") || args.includes("-h")) && printCommandHelp(args[0])) {
+  process.exit(0);
+}
+
 if (args.length === 0 || (args[0] !== "version" && args.includes("--help")) || args.includes("-h") || args[0] === "help") {
   printUsage({ all: args[1] === "all" || args.includes("--all") });
   process.exit(args.length === 0 ? 1 : 0);
