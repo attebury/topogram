@@ -111,6 +111,39 @@ function summarizeJourneyDoc(doc) {
   };
 }
 
+function summarizeComponent(statement) {
+  return {
+    id: statement.id,
+    kind: statement.kind,
+    name: statement.name || statement.id,
+    description: statement.description || null,
+    category: statement.category || null,
+    version: statement.version || null,
+    status: statement.status || null,
+    props: (statement.props || []).map((prop) => ({
+      name: prop.name ?? null,
+      type: prop.fieldType ?? null,
+      requiredness: prop.requiredness ?? null,
+      defaultValue: prop.defaultValue ?? null
+    })),
+    events: (statement.events || []).map((event) => ({
+      id: event.id ?? null,
+      shape: event.shape?.id ?? null
+    })),
+    slots: (statement.slots || []).map((slot) => ({
+      id: slot.id ?? null,
+      description: slot.description ?? null
+    })),
+    behavior: stableSortedStrings(statement.behavior || []),
+    patterns: stableSortedStrings(statement.patterns || []),
+    regions: stableSortedStrings(statement.regions || []),
+    lookups: refIds(statement.lookups),
+    dependencies: refIds(statement.dependencies),
+    consumers: refIds(statement.consumers),
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
 function summarizeStatement(statement) {
   switch (statement.kind) {
     case "entity":
@@ -129,6 +162,8 @@ function summarizeStatement(statement) {
         reviewBoundary: reviewBoundaryForEntityPolicy(statement),
         ownership_boundary: defaultOwnershipBoundary()
       };
+    case "component":
+      return summarizeComponent(statement);
     case "shape":
       return {
         id: statement.id,
@@ -344,6 +379,58 @@ export function relatedShapesForProjection(projection) {
   return stableSortedStrings(ids);
 }
 
+export function componentById(graph, componentId) {
+  return (graph?.byKind?.component || []).find((component) => component.id === componentId) || null;
+}
+
+export function componentsByConsumer(graph, consumerId) {
+  return (graph?.byKind?.component || []).filter((component) =>
+    (component.consumers || []).some((consumer) => consumer.id === consumerId)
+  );
+}
+
+export function relatedShapesForComponent(component) {
+  if (!component) return [];
+  const ids = [
+    ...(component.events || []).map((event) => event.shape?.id),
+    ...(component.lookups || [])
+      .filter((lookup) => lookup?.target?.kind === "shape" || String(lookup?.id || "").startsWith("shape_"))
+      .map((lookup) => lookup.id)
+  ];
+  return stableSortedStrings(ids);
+}
+
+export function relatedComponentsForConsumer(graph, consumerId) {
+  return stableSortedStrings(componentsByConsumer(graph, consumerId).map((component) => component.id));
+}
+
+export function relatedProjectionsForComponent(graph, componentId) {
+  const component = componentById(graph, componentId);
+  if (!component) return [];
+  const directConsumerIds = stableSortedStrings((component.consumers || []).flatMap((consumer) => {
+    if (consumer.target?.kind === "projection" || String(consumer.id || "").startsWith("proj_")) {
+      return [consumer.id];
+    }
+    if (consumer.target?.kind === "capability" || String(consumer.id || "").startsWith("cap_")) {
+      return relatedProjectionsForCapability(graph, consumer.id);
+    }
+    if (consumer.target?.kind === "entity" || String(consumer.id || "").startsWith("entity_")) {
+      return relatedProjectionsForEntity(graph, consumer.id);
+    }
+    return [];
+  }));
+  const componentPatterns = new Set(component.patterns || []);
+  const componentRegions = new Set(component.regions || []);
+  const viaUiRegions = stableSortedStrings((graph?.byKind?.projection || [])
+    .filter((projection) => (projection.uiScreenRegions || []).some((region) =>
+      (region.pattern && componentPatterns.has(region.pattern)) ||
+      (region.region && componentRegions.has(region.region))
+    ))
+    .map((projection) => projection.id));
+
+  return stableSortedStrings([...directConsumerIds, ...viaUiRegions]);
+}
+
 export function verificationIdsForTarget(graph, targetIds) {
   const set = new Set(targetIds || []);
   return verificationsFor(graph, (targetId) => set.has(targetId));
@@ -381,6 +468,7 @@ export function workspaceInventory(graph) {
     journeys: stableSortedStrings((graph.docs || []).filter((doc) => doc.kind === "journey").map((doc) => doc.id)),
     entities: stableSortedStrings((graph.byKind.entity || []).map((item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map((item) => item.id)),
+    components: stableSortedStrings((graph.byKind.component || []).map((item) => item.id)),
     verifications: stableSortedStrings((graph.byKind.verification || []).map((item) => item.id))
   };
 }
@@ -390,13 +478,14 @@ export function ensureContextSelection(options = {}) {
     options.capabilityId ? ["capability", options.capabilityId] : null,
     options.workflowId ? ["workflow", options.workflowId] : null,
     options.projectionId ? ["projection", options.projectionId] : null,
+    options.componentId ? ["component", options.componentId] : null,
     options.entityId ? ["entity", options.entityId] : null,
     options.journeyId ? ["journey", options.journeyId] : null,
     options.surfaceId ? ["surface", options.surfaceId] : null
   ].filter(Boolean);
 
   if (selectors.length !== 1) {
-    throw new Error("Context selection requires exactly one of --capability, --workflow, --projection, --entity, --journey, or --surface");
+    throw new Error("Context selection requires exactly one of --capability, --workflow, --projection, --component, --entity, --journey, or --surface");
   }
 
   return {

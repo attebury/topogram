@@ -108,6 +108,18 @@ Catalog aliases resolve to package specs such as
 template package remains the source of versioned starter content. See
 [Catalog](./catalog.md).
 
+## Component Contracts
+
+Templates may include reusable `component` statements under `topogram/components/`.
+These contracts are platform-neutral and can be generated independently:
+
+```bash
+topogram generate ./topogram --generate ui-component-contract
+topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid
+```
+
+See [Components](./components.md) for the full grammar and pack roadmap.
+
 Private package consumers need registry auth in `.npmrc`:
 
 ```text

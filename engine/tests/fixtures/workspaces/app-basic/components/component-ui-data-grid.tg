@@ -1,0 +1,28 @@
+component component_ui_data_grid {
+  name "Data Grid"
+  description "Reusable tabular display for task rows"
+  category collection
+
+  props {
+    rows array required
+    selected_ids array optional default []
+    loading boolean optional default false
+  }
+
+  events {
+    row_select shape_output_task_card
+  }
+
+  slots {
+    toolbar "Toolbar actions"
+    empty_state "Empty-state content"
+  }
+
+  behavior [selection, sorting]
+  patterns [resource_table, data_grid_view]
+  regions [results, toolbar]
+  dependencies [proj_ui_shared]
+  consumers [proj_ui_shared]
+  version "1.0"
+  status active
+}

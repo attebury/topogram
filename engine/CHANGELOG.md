@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.0 - 2026-05-01
+
+- Add `component` statement kind for reusable UI/service component contracts
+  (props, events, slots, patterns, regions, dependencies, consumers).
+- Add `ui-component-contract` generator target that emits stable JSON per
+  component or for the whole workspace; selectable via `--component <id>`.
+- `context-diff` now emits a `components` section, and changed components
+  fan out into `affected_generated_surfaces.projections` so consumer
+  projections show up in diff payloads.
+- `context-slice --component <id>` returns a first-class component slice with
+  `focus.kind === "component"`, dependent shapes/projections/verifications,
+  and a `component_surface` review boundary; the same selector flows through
+  `verification-targets`, `change-plan`, `risk-summary`, `review-packet`,
+  `proceed-decision`, `next-action`, `single-agent-plan`, and
+  `resolved-workflow-context`.
+- `topogram generate ... --generate ui-component-contract --component <id>`
+  now errors loudly when the id does not match any component (previously it
+  wrote a `null` artifact).
+- Component prop defaults preserve real values: `default true`, `default false`,
+  `default null`, integers, floats, quoted strings, and `default []` are all
+  surfaced in the generated contract instead of collapsing to `null`.
+- Add `docs/grammar.md` as the first authoritative reference for `.tg`
+  statement kinds.
+
 ## 0.2.22 - 2026-04-29
 
 - Record catalog provenance when `topogram new --template <catalog-id>` resolves

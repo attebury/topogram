@@ -1,5 +1,6 @@
 import {
   buildDefaultWriteScope,
+  componentById,
   ensureContextSelection,
   getJourneyDoc,
   getStatement,
@@ -8,8 +9,10 @@ import {
   relatedCapabilitiesForProjection,
   relatedJourneysForCapability,
   relatedProjectionsForCapability,
+  relatedProjectionsForComponent,
   relatedProjectionsForEntity,
   relatedRulesForTarget,
+  relatedShapesForComponent,
   relatedShapesForEntity,
   relatedShapesForProjection,
   relatedWorkflowDocsForCapability,
@@ -213,6 +216,50 @@ function entitySlice(graph, entityId) {
   };
 }
 
+function componentSlice(graph, componentId) {
+  const component = componentById(graph, componentId);
+  if (!component) {
+    throw new Error(`No component found with id '${componentId}'`);
+  }
+  const shapes = relatedShapesForComponent(component);
+  const projections = relatedProjectionsForComponent(graph, componentId);
+  const componentDependencies = [...new Set((component.dependencies || [])
+    .filter((dep) => dep?.target?.kind === "component" || String(dep?.id || "").startsWith("component_"))
+    .map((dep) => dep.id))].sort();
+  const verifications = verificationIdsForTarget(graph, [componentId, ...projections, ...shapes]);
+
+  return {
+    type: "context_slice",
+    version: 1,
+    focus: {
+      kind: "component",
+      id: componentId
+    },
+    summary: summarizeById(graph, componentId),
+    depends_on: {
+      shapes,
+      components: componentDependencies,
+      projections,
+      verifications
+    },
+    related: {
+      shapes: summarizeStatementsByIds(graph, shapes),
+      components: summarizeStatementsByIds(graph, componentDependencies),
+      projections: summarizeStatementsByIds(graph, projections)
+    },
+    verification: summarizeStatementsByIds(graph, verifications),
+    verification_targets: recommendedVerificationTargets(graph, [componentId, ...projections, ...shapes], {
+      rationale: "Component changes affect every consumer projection — verification should follow the component contract closure."
+    }),
+    write_scope: buildDefaultWriteScope(),
+    review_boundary: {
+      automation_class: "review_required",
+      reasons: ["component_surface"]
+    },
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
 function journeySlice(graph, journeyId) {
   const journey = getJourneyDoc(graph, journeyId);
   const capabilities = [...(journey.relatedCapabilities || [])].sort();
@@ -254,6 +301,7 @@ export function generateContextSlice(graph, options = {}) {
     capabilityId: options.capabilityId,
     workflowId: options.workflowId,
     projectionId: options.projectionId,
+    componentId: options.componentId,
     entityId: options.entityId,
     journeyId: options.journeyId,
     surfaceId: options.surfaceId
@@ -267,6 +315,9 @@ export function generateContextSlice(graph, options = {}) {
   }
   if (selection.kind === "projection") {
     return projectionSlice(graph, selection.id);
+  }
+  if (selection.kind === "component") {
+    return componentSlice(graph, selection.id);
   }
   if (selection.kind === "entity") {
     return entitySlice(graph, selection.id);

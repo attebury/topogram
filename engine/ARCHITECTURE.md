@@ -33,6 +33,11 @@ Workspace `implementation/`
 - Can include seed data, custom page renderers, repository implementations, and runtime-check specifics.
 - Must not be treated as engine contracts.
 
+`component` statements live in the semantic graph beside entities, capabilities,
+shapes, and projections. They produce `componentContract` resolver enrichment
+and can be emitted through the `ui-component-contract` generator target without
+requiring an implementation provider.
+
 ## Stable Internal Contracts
 
 The engine currently treats these realization types as stable internal interfaces:

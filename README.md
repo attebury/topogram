@@ -85,6 +85,7 @@ npm run explain
 npm run doctor
 npm run check
 npm run generate
+topogram generate ./topogram --generate ui-component-contract
 npm run verify
 ```
 
@@ -345,7 +346,7 @@ npm run app:runtime
 - `engine/` - Topogram engine, CLI, tests, and fixtures
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `engine/tests/fixtures/templates/` - engine-owned local template fixtures for tests
-- `docs/` - terse first-use docs
+- `docs/` - terse first-use docs, grammar reference, and component contract guide
 
 ## Engine
 

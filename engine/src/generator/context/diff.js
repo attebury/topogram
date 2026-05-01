@@ -6,6 +6,7 @@ import {
   maintainedProofMetadata,
   relatedCapabilitiesForEntity,
   relatedProjectionsForCapability,
+  relatedProjectionsForComponent,
   relatedProjectionsForEntity,
   stableSortedStrings,
   summarizeById,
@@ -78,6 +79,7 @@ function changedIdsForDiffSections(diff) {
     "rules",
     "workflows",
     "projections",
+    "components",
     "journeys",
     "verifications"
   ];
@@ -92,11 +94,13 @@ function collectAffectedProjectionIds(graph, diff) {
   const changedCapabilities = stableSortedStrings((diff.capabilities || []).map((entry) => entry.id));
   const changedEntities = stableSortedStrings((diff.entities || []).map((entry) => entry.id));
   const changedProjections = stableSortedStrings((diff.projections || []).map((entry) => entry.id));
+  const changedComponents = stableSortedStrings((diff.components || []).map((entry) => entry.id));
 
   return stableSortedStrings([
     ...changedProjections,
     ...changedCapabilities.flatMap((id) => relatedProjectionsForCapability(graph, id)),
-    ...changedEntities.flatMap((id) => relatedProjectionsForEntity(graph, id))
+    ...changedEntities.flatMap((id) => relatedProjectionsForEntity(graph, id)),
+    ...changedComponents.flatMap((id) => relatedProjectionsForComponent(graph, id))
   ]);
 }
 
@@ -162,6 +166,7 @@ export function generateContextDiff(graph, options = {}) {
     rules: diffMaps(normalizeTargetMap(graph, "rule"), normalizeTargetMap(baselineGraph, "rule")),
     workflows: diffMaps(normalizeTargetMap(graph, "workflow"), normalizeTargetMap(baselineGraph, "workflow")),
     projections: diffMaps(normalizeTargetMap(graph, "projection"), normalizeTargetMap(baselineGraph, "projection")),
+    components: diffMaps(normalizeTargetMap(graph, "component"), normalizeTargetMap(baselineGraph, "component")),
     journeys: diffMaps(normalizeTargetMap(graph, "journey"), normalizeTargetMap(baselineGraph, "journey")),
     verifications: diffMaps(normalizeTargetMap(graph, "verification"), normalizeTargetMap(baselineGraph, "verification"))
   };
