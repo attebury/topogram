@@ -317,8 +317,11 @@ NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --l
 The command resolves the latest published CLI package, updates
 `@attebury/topogram`, refreshes stale lockfile tarball metadata when needed,
 updates `topogram-cli.version` when the consumer repo has that convention file,
-then runs available checks: `cli:surface`, `doctor`, `catalog:show`,
-`catalog:template-show`, and `check`.
+then runs available checks when dependencies were installed or already current:
+`cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, and `check`.
+If npm auth is missing and the command falls back to direct file updates through
+the GitHub Packages API, it skips local checks until `npm install`, `npm ci`, or
+CI refreshes `node_modules`.
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 

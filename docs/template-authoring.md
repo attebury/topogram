@@ -150,11 +150,14 @@ NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --l
 The command updates `@attebury/topogram`, refreshes stale lockfile tarball
 metadata for the CLI package when needed, then runs any available consumer
 scripts named `cli:surface`, `doctor`, `catalog:show`,
-`catalog:template-show`, and `check`.
+`catalog:template-show`, and `check` when dependencies were installed or
+already current.
 If npm package inspection fails because local npm auth is unavailable, the
 command can confirm the version through the GitHub Packages API and update the
-consumer files directly. That does not prove install auth; use
-`topogram setup package-auth` for local and CI package-read setup guidance.
+consumer files directly. That does not prove install auth and skips local
+verification scripts until `npm install`, `npm ci`, or CI refreshes
+`node_modules`; use `topogram setup package-auth` for local and CI package-read
+setup guidance.
 
 Maintained apps can intentionally leave the template update workflow with
 `topogram template detach`. Detach removes template provenance from

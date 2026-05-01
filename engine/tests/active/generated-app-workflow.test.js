@@ -344,6 +344,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const templateHelp = runCli(["template", "--help"]);
   assert.equal(templateHelp.status, 0, templateHelp.stderr || templateHelp.stdout);
   assert.match(templateHelp.stdout, /Usage: topogram template list/);
+  assert.match(templateHelp.stdout, /topogram template status \[path\] \[--latest\] \[--json\]/);
   assert.match(templateHelp.stdout, /topogram template policy check/);
   assert.doesNotMatch(templateHelp.stdout, /topogram template show/);
 
@@ -362,6 +363,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(packageHelp.status, 0, packageHelp.stderr || packageHelp.stdout);
   assert.match(packageHelp.stdout, /Usage: topogram package update-cli <version\|--latest>/);
   assert.match(packageHelp.stdout, /GitHub Packages API confirms the version/);
+  assert.match(packageHelp.stdout, /Direct file updates skip local verification scripts/);
 
   const releaseHelp = runCli(["release", "--help"]);
   assert.equal(releaseHelp.status, 0, releaseHelp.stderr || releaseHelp.stdout);

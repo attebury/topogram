@@ -140,7 +140,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
-  console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template status [path] [--latest] [--json]");
   console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
   console.log("   or: topogram template policy check [path] [--json]");
@@ -302,7 +302,7 @@ function printGenerateHelp() {
 function printTemplateHelp() {
   console.log("Usage: topogram template list [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram template explain [path] [--json]");
-  console.log("   or: topogram template status [path] [--json]");
+  console.log("   or: topogram template status [path] [--latest] [--json]");
   console.log("   or: topogram template detach [path] [--dry-run] [--remove-policy] [--json]");
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template policy init [path] [--json]");
@@ -316,6 +316,7 @@ function printTemplateHelp() {
   console.log("Examples:");
   console.log("  topogram template list");
   console.log("  topogram template explain");
+  console.log("  topogram template status");
   console.log("  topogram template status --latest");
   console.log("  topogram template policy check");
   console.log("  topogram template check ./local-template");
@@ -410,15 +411,16 @@ function printCatalogAuthSetup() {
 function printPackageHelp() {
   console.log("Usage: topogram package update-cli <version|--latest> [--json]");
   console.log("");
-  console.log("Updates a consumer project to a Topogram CLI version and runs available verification scripts.");
+  console.log("Updates a consumer project to a Topogram CLI version and runs verification when dependencies are current.");
   console.log("");
   console.log("Behavior:");
   console.log("  - npm package inspection and install are used when auth is configured.");
   console.log("  - If npm inspection fails but GitHub Packages API confirms the version, package files are updated directly.");
+  console.log("  - Direct file updates skip local verification scripts because node_modules may still contain the old CLI.");
   console.log("  - Direct file updates do not prove npm install auth. Run npm install or CI afterward.");
   console.log("");
   console.log("Examples:");
-  console.log("  topogram package update-cli 0.3.4");
+  console.log("  topogram package update-cli 0.3.5");
   console.log("  topogram package update-cli --latest");
   console.log("  topogram package update-cli --latest --json");
   console.log("");
@@ -892,7 +894,7 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
     ? resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics)
     : requested;
   if (!isPackageVersion(version)) {
-    throw new Error("topogram package update-cli requires <version> or --latest, for example 0.2.57.");
+    throw new Error("topogram package update-cli requires <version> or --latest.");
   }
   if (!process.env.NODE_AUTH_TOKEN) {
     diagnostics.push({

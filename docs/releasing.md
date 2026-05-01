@@ -59,8 +59,9 @@ NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --l
 If local npm auth is unavailable, `topogram package update-cli` can confirm the
 requested CLI version through the GitHub Packages API via `gh api` and update
 the consumer manifests directly. That fallback is only for rollout bookkeeping:
-`npm install` and `npm ci` still need GitHub Packages auth for private package
-downloads.
+it skips local verification scripts because `node_modules` may still contain
+the old CLI, and `npm install` or `npm ci` still need GitHub Packages auth for
+private package downloads.
 
 Use `topogram setup package-auth` when a local or CI environment needs package
 read setup guidance.
