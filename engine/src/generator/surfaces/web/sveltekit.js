@@ -160,7 +160,7 @@ ${renderedRegions || `    ${defaultCollection}`}
   return files;
 }
 
-function buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds) {
+function buildSvelteKitGenerationCoverage(contract, files, implementationScreenIds) {
   const diagnostics = [];
   const screens = (contract.screens || [])
     .filter((screen) => Boolean(screen.route) && screen.route !== "/")
@@ -168,10 +168,10 @@ function buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds) {
       const pagePath = screenRoutePagePath(screen);
       const contents = files[pagePath] || "";
       const rendered = Boolean(contents);
-      const renderer = fallbackScreenIds.has(screen.id)
-        ? "fallback"
+      const renderer = implementationScreenIds.has(screen.id)
+        ? "implementation"
         : rendered
-          ? "implementation"
+          ? "generator"
           : "missing";
       if (!rendered) {
         diagnostics.push({
@@ -180,7 +180,7 @@ function buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds) {
           screen: screen.id,
           route: screen.route,
           message: `Screen '${screen.id}' has route '${screen.route}' but no SvelteKit page was generated.`,
-          suggested_fix: "Render the route in the implementation provider or allow the SvelteKit fallback generator to create it."
+          suggested_fix: "Check the SvelteKit generator contract-complete route emission for this screen."
         });
       }
       const componentUsages = screenComponentUsages(screen).map((usage) => {
@@ -229,7 +229,7 @@ function buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds) {
       routed_screens: screens.length,
       rendered_screens: screens.filter((screen) => screen.rendered).length,
       implementation_screens: screens.filter((screen) => screen.renderer === "implementation").length,
-      fallback_screens: screens.filter((screen) => screen.renderer === "fallback").length,
+      generator_screens: screens.filter((screen) => screen.renderer === "generator").length,
       component_usages: screens.reduce((total, screen) => total + screen.component_usages.length, 0),
       rendered_component_usages: screens.reduce(
         (total, screen) => total + screen.component_usages.filter((usage) => usage.rendered).length,
@@ -369,6 +369,11 @@ function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
   files["src/lib/api/client.ts"] = buildSvelteKitClientModule(webReference, `http://localhost:${runtimeReference?.ports?.server || 3000}`);
   files["src/lib/api/lookups.ts"] = buildSvelteKitLookupModule(`http://localhost:${runtimeReference?.ports?.server || 3000}`);
 
+  for (const screen of contract.screens || []) {
+    if (!screen.route || screen.route === "/") continue;
+    Object.assign(files, buildGenericSvelteKitScreenFiles(screen, contract, useTypescript));
+  }
+
   const taskList = contract.screens.find((screen) => screen.id === webScreenReference.listScreenId);
   const taskDetail = contract.screens.find((screen) => screen.id === webScreenReference.detailScreenId);
   const taskCreate = contract.screens.find((screen) => screen.id === webScreenReference.createScreenId);
@@ -379,38 +384,38 @@ function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
   const taskListLookups = Object.fromEntries((taskList?.lookups || []).map((lookup) => [lookup.field, lookupDescriptor(lookup)]));
   const taskCreateLookups = Object.fromEntries((taskCreate?.lookups || []).map((lookup) => [lookup.field, lookupDescriptor(lookup)]));
   const taskEditLookups = Object.fromEntries((taskEdit?.lookups || []).map((lookup) => [lookup.field, lookupDescriptor(lookup)]));
+  const routePageScreenIds = new Map(
+    (contract.screens || [])
+      .filter((screen) => screen.route && screen.route !== "/")
+      .map((screen) => [screenRoutePagePath(screen), screen.id])
+  );
+  const implementationScreenIds = new Set();
 
   if (taskList?.route && taskDetail?.route && taskCreate?.route && taskEdit?.route) {
-    Object.assign(files, Object.fromEntries(
-      Object.entries(webRenderers.renderRoutes({
-        useTypescript,
-        contract,
-        taskList,
-        taskDetail,
-        taskCreate,
-        taskEdit,
-        taskExports,
-        taskListLookups,
-        taskCreateLookups,
-        taskEditLookups,
-        projectEnvVar,
-        ownerEnvVar,
-        webReference,
-        prettyScreenKind
-      })).map(([relativePath, contents]) => [`src/routes/${relativePath}`, contents])
-    ));
+    for (const [relativePath, contents] of Object.entries(webRenderers.renderRoutes({
+      useTypescript,
+      contract,
+      taskList,
+      taskDetail,
+      taskCreate,
+      taskEdit,
+      taskExports,
+      taskListLookups,
+      taskCreateLookups,
+      taskEditLookups,
+      projectEnvVar,
+      ownerEnvVar,
+      webReference,
+      prettyScreenKind
+    }))) {
+      const filePath = `src/routes/${relativePath}`;
+      files[filePath] = contents;
+      const screenId = routePageScreenIds.get(filePath);
+      if (screenId) implementationScreenIds.add(screenId);
+    }
   }
 
-  const fallbackScreenIds = new Set();
-  for (const screen of contract.screens || []) {
-    if (!screen.route || screen.route === "/") continue;
-    const routeDir = routePathToSvelteKitDirectory(screen.route);
-    if (files[`${routeDir}/+page.svelte`]) continue;
-    fallbackScreenIds.add(screen.id);
-    Object.assign(files, buildGenericSvelteKitScreenFiles(screen, contract, useTypescript));
-  }
-
-  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildSvelteKitGenerationCoverage(contract, files, fallbackScreenIds), null, 2)}\n`;
+  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildSvelteKitGenerationCoverage(contract, files, implementationScreenIds), null, 2)}\n`;
   files["src/lib/topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   return files;
 }

@@ -131,12 +131,15 @@ import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/
 Pass the screen contract, region, top-level component contracts, and the data
 expression for that screen. Set `useTypescript: true` when generating typed
 Svelte or React pages so callback parameters are emitted with explicit types.
-The SvelteKit generator also emits fallback pages for routed screens your
-implementation does not render; those pages use `ui_components` regions before
-falling back to generic sample list markup.
+Every web generator should be contract-complete by default: the Topogram
+contract defines the route surface, and template implementation code may replace
+generated files but must not define which screens exist. The SvelteKit generator
+emits generic pages for routed screens first, then lets your implementation
+override specific route files. Generator-owned pages use `ui_components` regions
+before falling back to generic sample list markup.
 It also writes `src/lib/topogram/generation-coverage.json`, which lists the
 screen routes and component usages that were rendered by the implementation or
-by fallback generation.
+by generic generation.
 Vanilla web templates should still treat `ui_components` as contract metadata
 until a concrete helper exists.
 

@@ -2,12 +2,13 @@
 
 ## Unreleased
 
-- Generate SvelteKit fallback route pages for routed screens that a template
-  implementation leaves unrendered, using `projection.ui_components` regions
-  before falling back to generic list markup.
+- Make SvelteKit route generation contract-complete by default: generic route
+  files are generated from the Topogram contract first, and template
+  implementation providers may override specific route files.
 - Emit SvelteKit `src/lib/topogram/generation-coverage.json` so generated apps
-  record routed-screen coverage, fallback usage, component rendering coverage,
-  and diagnostics when projection intent is not realized.
+  record routed-screen coverage, implementation-vs-generator ownership,
+  component rendering coverage, and diagnostics when projection intent is not
+  realized.
 
 ## 0.3.13 - 2026-05-01
 

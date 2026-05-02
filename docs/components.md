@@ -170,15 +170,18 @@ contracts. Concrete web projections inherit component usage from shared UI
 projections they realize.
 
 SvelteKit and React generation can consume supported `ui_components` bindings.
-For SvelteKit, the engine also generates fallback pages for routed screens that
-the template implementation did not render; those fallback pages render
+Every web generator should be contract-complete by default: the Topogram
+contract defines the route surface, and template implementation code may replace
+generated files but must not define which screens exist. For SvelteKit, the
+engine generates pages for routed screens first, then lets the template
+implementation override specific route files. Generator-owned pages render
 component regions before falling back to sample list markup. Supported patterns
 render component-marked markup for `summary_stats`, `resource_table`,
 `data_grid_view`, `board_view`, and `calendar_view`.
 
 Generated SvelteKit apps include a coverage artifact at
 `src/lib/topogram/generation-coverage.json`. It records every routed screen,
-whether the page came from the implementation provider or the engine fallback,
+whether the page came from the implementation provider or the generic generator,
 and whether each `ui_components` usage produced component-marked markup. Treat
 warnings in that file as places where projection intent exists but generated UI
 did not fully realize it.
