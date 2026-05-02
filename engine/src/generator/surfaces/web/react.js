@@ -184,6 +184,94 @@ ${renderedRegions || `        ${defaultCollection}`}
 `;
 }
 
+function screenComponentUsages(screen) {
+  return Array.isArray(screen?.components) ? screen.components : [];
+}
+
+function screenPagePath(screen) {
+  return `src/pages/${componentNameForScreen(screen.id)}.tsx`;
+}
+
+function buildReactGenerationCoverage(contract, files, routeScreens) {
+  const diagnostics = [];
+  const routeScreenIds = new Set(routeScreens.map((screen) => screen.id));
+  const screens = (contract.screens || [])
+    .filter((screen) => routeScreenIds.has(screen.id))
+    .map((screen) => {
+      const pagePath = screenPagePath(screen);
+      const contents = files[pagePath] || "";
+      const rendered = Boolean(contents);
+      if (!rendered) {
+        diagnostics.push({
+          code: "screen_route_not_rendered",
+          severity: "error",
+          screen: screen.id,
+          route: screen.route,
+          message: `Screen '${screen.id}' has route '${screen.route}' but no React page was generated.`,
+          suggested_fix: "Check the React generator contract-complete route emission for this screen."
+        });
+      }
+      const componentUsages = screenComponentUsages(screen).map((usage) => {
+        const componentId = usage.component?.id || null;
+        const marker = componentId ? `data-topogram-component="${componentId}"` : null;
+        const usageRendered = Boolean(marker && contents.includes(marker));
+        if (componentId && rendered && !usageRendered) {
+          diagnostics.push({
+            code: "component_usage_not_rendered",
+            severity: "warning",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            component: componentId,
+            message: `Screen '${screen.id}' uses component '${componentId}' but the generated React page does not contain its component marker.`,
+            suggested_fix: "Render the component region with renderReactComponentRegion or add a supported component pattern."
+          });
+        }
+        return {
+          component: componentId,
+          region: usage.region || null,
+          rendered: usageRendered,
+          marker
+        };
+      });
+      return {
+        id: screen.id,
+        route: screen.route,
+        page: pagePath,
+        rendered,
+        renderer: rendered ? "generator" : "missing",
+        component_usages: componentUsages
+      };
+    });
+
+  return {
+    type: "generation_coverage",
+    surface: "web",
+    generator: "topogram/react",
+    projection: {
+      id: contract.projection.id,
+      name: contract.projection.name,
+      platform: contract.projection.platform
+    },
+    summary: {
+      routed_screens: screens.length,
+      rendered_screens: screens.filter((screen) => screen.rendered).length,
+      implementation_screens: 0,
+      generator_screens: screens.filter((screen) => screen.renderer === "generator").length,
+      component_usages: screens.reduce((total, screen) => total + screen.component_usages.length, 0),
+      rendered_component_usages: screens.reduce(
+        (total, screen) => total + screen.component_usages.filter((usage) => usage.rendered).length,
+        0
+      ),
+      diagnostics: diagnostics.length,
+      errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length,
+      warnings: diagnostics.filter((diagnostic) => diagnostic.severity === "warning").length
+    },
+    screens,
+    diagnostics
+  };
+}
+
 function buildAppTsx(contract, webReference) {
   const navLinks = resolveNavLinks(contract, webReference);
   const brandName = contract.appShell?.brand || webReference.brandName;
@@ -437,9 +525,10 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
   files["src/pages/HomePage.tsx"] = buildReactHomePage(contract, webReferenceWithDefaults);
 
   for (const screen of routeScreens) {
-    files[`src/pages/${componentNameForScreen(screen.id)}.tsx`] = buildReactScreenPage(screen, contract);
+    files[screenPagePath(screen)] = buildReactScreenPage(screen, contract);
   }
 
+  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildReactGenerationCoverage(contract, files, routeScreens), null, 2)}\n`;
   return files;
 }
 

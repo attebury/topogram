@@ -137,9 +137,9 @@ generated files but must not define which screens exist. The SvelteKit generator
 emits generic pages for routed screens first, then lets your implementation
 override specific route files. Generator-owned pages use `ui_components` regions
 before falling back to generic sample list markup.
-It also writes `src/lib/topogram/generation-coverage.json`, which lists the
-screen routes and component usages that were rendered by the implementation or
-by generic generation.
+SvelteKit and React also write `src/lib/topogram/generation-coverage.json`,
+which lists the screen routes and component usages that were rendered by the
+implementation or by generic generation.
 Vanilla web templates should still treat `ui_components` as contract metadata
 until a concrete helper exists.
 

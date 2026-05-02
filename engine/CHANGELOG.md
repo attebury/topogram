@@ -9,6 +9,8 @@
   record routed-screen coverage, implementation-vs-generator ownership,
   component rendering coverage, and diagnostics when projection intent is not
   realized.
+- Emit the same generation coverage artifact for React apps so web generators
+  share a common route and component coverage contract.
 
 ## 0.3.13 - 2026-05-01
 

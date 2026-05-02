@@ -179,7 +179,7 @@ component regions before falling back to sample list markup. Supported patterns
 render component-marked markup for `summary_stats`, `resource_table`,
 `data_grid_view`, `board_view`, and `calendar_view`.
 
-Generated SvelteKit apps include a coverage artifact at
+Generated SvelteKit and React apps include a coverage artifact at
 `src/lib/topogram/generation-coverage.json`. It records every routed screen,
 whether the page came from the implementation provider or the generic generator,
 and whether each `ui_components` usage produced component-marked markup. Treat

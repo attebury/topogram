@@ -2149,6 +2149,14 @@ test("fixture starter templates generate the expected surface layout", () => {
       const listPage = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "pages", "GreetingListPage.tsx"));
       assert.match(listPage, /data-topogram-component="component_ui_greeting_table"/);
       assert.match(listPage, /className="component-card component-table"/);
+      const coverage = readJson(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "lib", "topogram", "generation-coverage.json"));
+      assert.equal(coverage.type, "generation_coverage");
+      assert.equal(coverage.generator, "topogram/react");
+      assert.equal(coverage.summary.routed_screens, 3);
+      assert.equal(coverage.summary.rendered_screens, 3);
+      assert.equal(coverage.summary.generator_screens, 3);
+      assert.equal(coverage.summary.rendered_component_usages, 1);
+      assert.deepEqual(coverage.diagnostics, []);
     }
   }
 });
