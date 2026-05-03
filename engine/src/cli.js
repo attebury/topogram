@@ -4175,6 +4175,46 @@ function templateCheckStep(name, ok, details = {}, diagnostics = []) {
 }
 
 /**
+ * @param {string} projectRoot
+ * @returns {string[]}
+ */
+function templateCheckGeneratorDependencies(projectRoot) {
+  const packagePath = path.join(projectRoot, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return [];
+  }
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  const dependencies = {
+    ...(pkg.dependencies || {}),
+    ...(pkg.devDependencies || {})
+  };
+  return Object.keys(dependencies).filter((name) => name.includes("topogram-generator")).sort();
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string[]} dependencies
+ * @returns {TemplateCheckDiagnostic|null}
+ */
+function installTemplateCheckGeneratorDependencies(projectRoot, dependencies) {
+  if (dependencies.length === 0) {
+    return null;
+  }
+  const result = runNpmForPackageUpdate(["install", "--ignore-scripts"], projectRoot);
+  if (result.status === 0) {
+    return null;
+  }
+  const output = `${result.stdout || ""}\n${result.stderr || ""}`.trim();
+  return templateCheckDiagnostic({
+    code: "template_generator_dependencies_install_failed",
+    message: `Failed to install package-backed generator dependencies: ${dependencies.join(", ")}.`,
+    path: path.join(projectRoot, "package.json"),
+    suggestedFix: `Run npm install with GitHub Packages access before checking this package-backed generator template.${output ? ` ${output.split(/\r?\n/).slice(-3).join(" ")}` : ""}`,
+    step: "generator-dependencies"
+  });
+}
+
+/**
  * @param {string} templateSpec
  * @returns {{ ok: boolean, templateSpec: string, projectRoot: string|null, steps: Array<{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
  */
@@ -4220,6 +4260,27 @@ function buildTemplateCheckPayload(templateSpec) {
       template: created.templateName,
       warnings: created.warnings.length
     }));
+    const generatorDependencies = templateCheckGeneratorDependencies(projectRoot);
+    const installDiagnostic = installTemplateCheckGeneratorDependencies(projectRoot, generatorDependencies);
+    if (installDiagnostic) {
+      diagnostics.push(installDiagnostic);
+      steps.push(templateCheckStep("generator-dependencies", false, {
+        dependencies: generatorDependencies
+      }, [installDiagnostic]));
+      return {
+        ok: false,
+        templateSpec,
+        projectRoot,
+        steps,
+        diagnostics,
+        errors: diagnostics.map((diagnostic) => diagnostic.message)
+      };
+    }
+    if (generatorDependencies.length > 0) {
+      steps.push(templateCheckStep("generator-dependencies", true, {
+        dependencies: generatorDependencies
+      }));
+    }
   } catch (error) {
     const stepDiagnostics = [
       diagnosticForTemplateCreateFailure(messageFromError(error), templateSpec, "create-starter")
