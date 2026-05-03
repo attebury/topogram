@@ -2730,6 +2730,31 @@ test("topogram new supports local path template packs", () => {
   assert.equal(check.status, 0, check.stderr || check.stdout);
 });
 
+test("topogram new carries template generator package dependencies into starters", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-deps-"));
+  const templateRoot = copyBuiltInTemplate(root, "template");
+  writePackageJson(templateRoot, {
+    name: "@scope/topogram-starter-generator-deps",
+    version: "0.1.0",
+    devDependencies: {
+      "@scope/topogram-generator-web": "^0.1.0",
+      "@scope/not-a-generator": "^1.0.0"
+    },
+    topogramGeneratorDependencies: {
+      "@scope/topogram-generator-api": "~0.2.0"
+    }
+  });
+  const projectRoot = path.join(root, "starter");
+
+  const create = runCli(["new", projectRoot, "--template", templateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const pkg = readJson(path.join(projectRoot, "package.json"));
+
+  assert.equal(pkg.devDependencies["@scope/topogram-generator-web"], "^0.1.0");
+  assert.equal(pkg.devDependencies["@scope/topogram-generator-api"], "~0.2.0");
+  assert.equal(pkg.devDependencies["@scope/not-a-generator"], undefined);
+});
+
 test("package-backed templates can inspect and recommend latest versions explicitly", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-latest-"));
   const initialTemplateRoot = copyBuiltInTemplate(root, "template-initial");

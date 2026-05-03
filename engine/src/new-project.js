@@ -215,6 +215,34 @@ function writeProjectNpmConfig(projectRoot, cliDependency) {
 }
 
 /**
+ * @param {string} templateRoot
+ * @returns {Record<string, string>}
+ */
+function generatorDependenciesForTemplate(templateRoot) {
+  const packagePath = path.join(templateRoot, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return {};
+  }
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  const explicit = pkg.topogramGeneratorDependencies &&
+    typeof pkg.topogramGeneratorDependencies === "object" &&
+    !Array.isArray(pkg.topogramGeneratorDependencies)
+    ? pkg.topogramGeneratorDependencies
+    : {};
+  const dependencies = {
+    ...(pkg.dependencies || {}),
+    ...(pkg.devDependencies || {}),
+    ...explicit
+  };
+  return Object.fromEntries(Object.entries(dependencies).filter(([name, spec]) =>
+    typeof name === "string" &&
+    name.includes("topogram-generator") &&
+    typeof spec === "string" &&
+    spec.length > 0
+  ));
+}
+
+/**
  * @param {string} parent
  * @param {string} child
  * @returns {boolean}
@@ -1863,10 +1891,12 @@ export function applyTemplateUpdate(options) {
 /**
  * @param {string} projectRoot
  * @param {string} engineRoot
+ * @param {ResolvedTemplate} template
  * @returns {void}
  */
-function writeProjectPackage(projectRoot, engineRoot) {
+function writeProjectPackage(projectRoot, engineRoot, template) {
   const cliDependency = cliDependencyForProject(projectRoot, engineRoot);
+  const generatorDependencies = generatorDependenciesForTemplate(template.root);
   const pkg = {
     name: packageNameFromPath(projectRoot),
     private: true,
@@ -1905,7 +1935,8 @@ function writeProjectPackage(projectRoot, engineRoot) {
       "app:runtime": "npm --prefix ./app run runtime"
     },
     devDependencies: {
-      [cliDependency.name]: cliDependency.spec
+      [cliDependency.name]: cliDependency.spec,
+      ...generatorDependencies
     }
   };
   fs.writeFileSync(path.join(projectRoot, "package.json"), `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
@@ -2048,7 +2079,7 @@ export function createNewProject({
   ensureCreatableProjectRoot(projectRoot);
   copyTopogramWorkspace(template.root, projectRoot);
   const projectConfig = writeProjectTemplateMetadata(projectRoot, template, templateProvenance);
-  writeProjectPackage(projectRoot, engineRoot);
+  writeProjectPackage(projectRoot, engineRoot, template);
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, projectConfig);
   writeTemplateFilesManifest(projectRoot, projectConfig);

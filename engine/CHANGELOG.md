@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Carry package-backed generator dependencies from template packages into
+  generated starter package devDependencies.
+
+## 0.3.15 - 2026-05-03
+
+- Carry package-backed generator dependencies from template packages into
+  generated starter package devDependencies.
+
+## 0.3.14 - 2026-05-03
+
 - Add the bundled generator manifest/adapter interface so first-party stack
   generators dispatch through topology-bound generator manifests.
 - Add explicit package-backed generator loading for installed packages with

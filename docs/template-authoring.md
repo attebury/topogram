@@ -125,6 +125,13 @@ implementation code. Reusable stack realization belongs in generator packs, not
 inside starter templates. See [Generator Packs](./generator-packs.md) for the
 manifest and adapter contract.
 
+If a template binds topology components to package-backed generators, list those
+generator packages in the template package `dependencies` or `devDependencies`.
+`topogram new` copies dependencies whose package names include
+`topogram-generator` into the generated starter `devDependencies`, so
+`npm install` in the starter installs the generator adapters before
+`topogram check` or `topogram generate` runs.
+
 SvelteKit and React template implementations can render supported component
 usage with stable packaged helpers:
 
