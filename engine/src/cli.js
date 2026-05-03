@@ -4266,7 +4266,7 @@ function buildTemplateCheckPayload(templateSpec) {
   const ast = parsePath(path.join(projectRoot, "topogram"));
   const resolved = resolveWorkspace(ast);
   const projectValidation = combineProjectValidationResults(
-    validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null),
+    validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),
     validateProjectOutputOwnership(projectConfigInfo),
     validateProjectImplementationTrust(projectConfigInfo)
   );
@@ -5736,7 +5736,7 @@ try {
       (implementation ? projectConfigOrDefault(inputPath, resolved.ok ? resolved.graph : null, implementation) : null);
     const projectValidation = projectConfigInfo
       ? combineProjectValidationResults(
-          validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null),
+          validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),
           validateProjectOutputOwnership(projectConfigInfo),
           validateProjectImplementationTrust(projectConfigInfo)
         )
@@ -7467,7 +7467,7 @@ try {
       ? (explicitProjectConfig || projectConfigOrDefault(projectRoot, resolvedForConfig.graph, implementation))
       : null;
     const projectConfigValidation = projectConfigInfo
-      ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph)
+      ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph, { configDir: projectConfigInfo.configDir })
       : { ok: true, errors: [] };
     if (!projectConfigValidation.ok) {
       console.error(formatProjectConfigErrors(projectConfigValidation, projectConfigInfo?.configPath || "topogram.project.json"));
@@ -7501,7 +7501,9 @@ try {
       fromTopogramPath,
       topogramInputPath: topogramInputPathForGeneration(inputPath),
       implementation,
-      projectConfig: projectConfigInfo?.config || null
+      projectConfig: projectConfigInfo?.config || null,
+      configDir: projectConfigInfo?.configDir || projectRoot,
+      projectRoot: projectConfigInfo?.configDir || projectRoot
     });
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));

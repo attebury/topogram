@@ -61,6 +61,8 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
  * @property {Record<string, any>|null} [implementation]
  * @property {string} [projectionId]
  * @property {string} [dbProjectionId]
+ * @property {string} [configDir]
+ * @property {string} [projectRoot]
  * @property {RuntimeComponent} [component]
  */
 
@@ -451,7 +453,10 @@ function decorateComponents(graph, config) {
  */
 export function resolveRuntimeTopology(graph, options = {}) {
   const config = options.projectConfig || defaultProjectConfigForGraph(graph, options.implementation || null);
-  const validation = validateProjectConfig(config, graph);
+  const validation = validateProjectConfig(config, graph, {
+    configDir: options.configDir || options.projectRoot || null,
+    rootDir: options.projectRoot || options.configDir || null
+  });
   if (!validation.ok) {
     throw new Error(validation.errors.map((error) => error.message).join("\n"));
   }

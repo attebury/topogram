@@ -1,8 +1,12 @@
 // @ts-check
 
+import path from "node:path";
+import { createRequire } from "node:module";
+
 import { generateApiContractGraph } from "./api.js";
 import {
   getGeneratorManifest,
+  resolveGeneratorManifestForBinding,
   validateGeneratorManifest
 } from "./registry.js";
 import { generateDbContractGraph } from "./surfaces/databases/contract.js";
@@ -216,14 +220,71 @@ export function getBundledGeneratorAdapter(generatorId) {
 }
 
 /**
+ * @param {string|null|undefined} rootDir
+ * @returns {any}
+ */
+function requireFromProject(rootDir) {
+  return createRequire(path.join(rootDir || process.cwd(), "package.json"));
+}
+
+/**
+ * @param {any} moduleValue
+ * @param {string|null|undefined} exportName
+ * @returns {any}
+ */
+function selectPackageExport(moduleValue, exportName) {
+  if (exportName) {
+    return moduleValue?.[exportName] || moduleValue?.default?.[exportName] || null;
+  }
+  return moduleValue?.default || moduleValue;
+}
+
+/**
+ * @param {GeneratorManifest} manifest
  * @param {Record<string, any>} component
+ * @param {{ rootDir?: string|null, configDir?: string|null }} [options]
+ * @returns {GeneratorAdapter}
+ */
+function loadPackageGeneratorAdapter(manifest, component, options = {}) {
+  const packageName = manifest.package || component?.generator?.package;
+  if (!packageName) {
+    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is package-backed but does not declare a package.`);
+  }
+  const rootDir = options.configDir || options.rootDir || process.cwd();
+  let moduleValue;
+  try {
+    moduleValue = requireFromProject(rootDir)(packageName);
+  } catch (error) {
+    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const adapter = selectPackageExport(moduleValue, manifest.export);
+  if (!adapter || typeof adapter.generate !== "function") {
+    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' must export an adapter with a generate(context) function.`);
+  }
+  const adapterManifest = adapter.manifest || manifest;
+  if (adapterManifest.id !== manifest.id || adapterManifest.version !== manifest.version) {
+    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' adapter manifest '${adapterManifest.id}@${adapterManifest.version}' does not match '${manifest.id}@${manifest.version}'.`);
+  }
+  return {
+    manifest,
+    generate(context) {
+      return adapter.generate(context);
+    }
+  };
+}
+
+/**
+ * @param {Record<string, any>} component
+ * @param {{ rootDir?: string|null, configDir?: string|null }} [options]
  * @returns {{ manifest: GeneratorManifest, adapter: GeneratorAdapter }}
  */
-export function resolveGeneratorForComponent(component) {
+export function resolveGeneratorForComponent(component, options = {}) {
   const generatorId = component?.generator?.id;
-  const manifest = getGeneratorManifest(generatorId);
+  const resolved = resolveGeneratorManifestForBinding(component?.generator, options);
+  const manifest = resolved.manifest || getGeneratorManifest(generatorId);
   if (!manifest) {
-    throw new Error(`Component '${component?.id || "unknown"}' uses unknown generator '${generatorId || "unknown"}'.`);
+    const detail = resolved.errors.length > 0 ? ` ${resolved.errors.join(" ")}` : "";
+    throw new Error(`Component '${component?.id || "unknown"}' uses unknown generator '${generatorId || "unknown"}'.${detail}`);
   }
   if (manifest.planned) {
     throw new Error(`Component '${component?.id || "unknown"}' uses planned generator '${manifest.id}', which is not implemented yet.`);
@@ -234,6 +295,9 @@ export function resolveGeneratorForComponent(component) {
   const manifestValidation = validateGeneratorManifest(manifest);
   if (!manifestValidation.ok) {
     throw new Error(manifestValidation.errors.join("\n"));
+  }
+  if (manifest.source === "package") {
+    return { manifest, adapter: loadPackageGeneratorAdapter(manifest, component, options) };
   }
   const adapter = getBundledGeneratorAdapter(manifest.id);
   if (!adapter) {
@@ -247,7 +311,7 @@ export function resolveGeneratorForComponent(component) {
  * @returns {GeneratorResult}
  */
 export function generateWithComponentGenerator(context) {
-  const { manifest, adapter } = resolveGeneratorForComponent(context.component);
+  const { manifest, adapter } = resolveGeneratorForComponent(context.component, context.options || {});
   const contracts = context.contracts || buildContractsForContext(context);
   return adapter.generate({
     ...context,

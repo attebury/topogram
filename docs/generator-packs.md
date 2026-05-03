@@ -62,8 +62,30 @@ Bundled and future package-backed generators use the same manifest shape:
 ```
 
 `source: "bundled"` means the generator ships with `@attebury/topogram`.
-`source: "package"` is reserved for installed generator packages. Topogram does
-not dynamically install or execute unknown generator packages.
+`source: "package"` means the generator lives in an already installed package.
+Topogram does not dynamically install unknown generator packages; a project or
+template must declare and install the package through normal package-manager
+workflow before `topogram check` or `topogram generate` can use it.
+
+Package-backed topology bindings include the package name explicitly:
+
+```json
+{
+  "id": "app_web",
+  "type": "web",
+  "projection": "proj_ui_web",
+  "generator": {
+    "id": "@attebury/topogram-generator-react",
+    "version": "1",
+    "package": "@attebury/topogram-generator-react"
+  },
+  "api": "app_api",
+  "port": 5173
+}
+```
+
+The package must expose `topogram-generator.json`. The manifest `id`,
+`version`, `source`, and `package` must match the topology binding.
 
 ## Package Layout
 
@@ -77,7 +99,7 @@ src/index.js
 ```
 
 `topogram-generator.json` contains the manifest. The package export must provide
-an adapter with:
+an adapter with a synchronous `generate(context)` function:
 
 ```js
 export const manifest = { /* manifest */ };
@@ -100,9 +122,11 @@ export function generate({
 ```
 
 The adapter receives normalized contracts and returns generated files relative
-to that component output directory. Templates may include implementation code to
-customize generated files, but reusable stack behavior should live in generator
-packages.
+to that component output directory. The v1 package loader uses Node package
+resolution from the project root and calls the installed package export directly;
+publish a CommonJS-compatible entry point such as `index.cjs` or a compatible
+package export. Templates may include implementation code to customize generated
+files, but reusable stack behavior should live in generator packages.
 
 ## Templates
 

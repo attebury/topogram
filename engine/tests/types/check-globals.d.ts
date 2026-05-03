@@ -23,4 +23,8 @@ declare module "node:os" {
   export default os;
 }
 
+declare module "node:module" {
+  export function createRequire(filename: string): any;
+}
+
 declare const process: any;

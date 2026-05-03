@@ -56,6 +56,67 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function writePackageBackedGenerator(root, manifestOverrides = {}) {
+  const packageName = manifestOverrides.package || "@scope/topogram-generator-smoke-web";
+  const packageRoot = path.join(root, "node_modules", ...packageName.split("/"));
+  fs.mkdirSync(packageRoot, { recursive: true });
+  const manifest = {
+    id: "@scope/smoke-web",
+    version: "1",
+    surface: "web",
+    projectionPlatforms: ["ui_web"],
+    inputs: ["ui-web-contract"],
+    outputs: ["web-app"],
+    stack: {
+      runtime: "browser",
+      framework: "smoke",
+      language: "javascript"
+    },
+    capabilities: {
+      routes: true
+    },
+    source: "package",
+    package: packageName,
+    ...manifestOverrides
+  };
+  writeJson(path.join(packageRoot, "topogram-generator.json"), manifest);
+  writePackageJson(packageRoot, {
+    name: packageName,
+    version: "0.1.0",
+    main: "index.cjs",
+    exports: {
+      ".": "./index.cjs",
+      "./topogram-generator.json": "./topogram-generator.json",
+      "./package.json": "./package.json"
+    }
+  });
+  fs.writeFileSync(path.join(packageRoot, "index.cjs"), `exports.manifest = require("./topogram-generator.json");
+exports.generate = function generateSmokeWeb(context) {
+  return {
+    files: {
+      "package.json": JSON.stringify({
+        name: "package-backed-smoke-web",
+        private: true,
+        scripts: {
+          compile: "node -e \\"console.log('compile')\\"",
+          smoke: "node -e \\"console.log('smoke')\\"",
+          "runtime-check": "node -e \\"console.log('runtime-check')\\"",
+          runtime: "node -e \\"console.log('runtime')\\""
+        }
+      }, null, 2) + "\\n",
+      "index.html": "<!doctype html><h1 data-generator=\\"" + context.manifest.id + "\\">Package generator smoke</h1>\\n",
+      "contract.json": JSON.stringify({ projection: context.projection.id, screens: context.contracts.uiWeb.screens.length }, null, 2) + "\\n"
+    },
+    artifacts: {
+      generator: context.manifest.id
+    },
+    diagnostics: []
+  };
+};
+`, "utf8");
+  return { packageName, packageRoot, manifest };
+}
+
 function copyBuiltInTemplate(root, name = "template") {
   const templateRoot = path.join(root, name);
   fs.cpSync(builtInTemplateRoot, templateRoot, { recursive: true });
@@ -2159,6 +2220,36 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.deepEqual(coverage.diagnostics, []);
     }
   }
+});
+
+test("package-backed generators can be checked and used by app generation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-backed-generator-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, "hello-web")]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const { packageName } = writePackageBackedGenerator(projectRoot);
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.topology.components[0].generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+  writeJson(projectConfigPath, projectConfig);
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const generate = runCli(["generate"], { cwd: projectRoot });
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+
+  assert.equal(
+    readText(path.join(projectRoot, "app", "apps", "web", "app_web", "index.html")),
+    "<!doctype html><h1 data-generator=\"@scope/smoke-web\">Package generator smoke</h1>\n"
+  );
+  const contract = readJson(path.join(projectRoot, "app", "apps", "web", "app_web", "contract.json"));
+  assert.equal(contract.projection, "proj_ui_web");
+  assert.equal(contract.screens, 2);
+  assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
 
 test("topogram new creates an executable web-api-db starter project", () => {

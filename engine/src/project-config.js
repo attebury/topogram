@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
-  getGeneratorManifest,
   isGeneratorCompatible,
+  resolveGeneratorManifestForBinding,
   validateGeneratorManifest
 } from "./generator/registry.js";
 
@@ -13,6 +13,7 @@ import {
  * @typedef {Object} GeneratorBinding
  * @property {string} id
  * @property {string} version
+ * @property {string} [package]
  */
 
 /**
@@ -332,6 +333,9 @@ function validateComponentShape(errors, component, seenIds) {
     if (typeof component.generator.version !== "string" || component.generator.version.length === 0) {
       pushError(errors, `${componentLabel(component)} generator.version must be a non-empty string`);
     }
+    if (component.generator.package != null && (typeof component.generator.package !== "string" || component.generator.package.length === 0)) {
+      pushError(errors, `${componentLabel(component)} generator.package must be a non-empty string when provided`);
+    }
   }
   if (component.port != null && (!Number.isInteger(component.port) || component.port <= 0 || component.port > 65535)) {
     pushError(errors, `${componentLabel(component)} port must be an integer from 1 to 65535`);
@@ -343,18 +347,21 @@ function validateComponentShape(errors, component, seenIds) {
  * @param {ValidationError[]} errors
  * @param {RuntimeTopologyComponent} component
  * @param {Map<string, Record<string, any>>} projections
+ * @param {{ configDir?: string|null, rootDir?: string|null }} [options]
  * @returns {void}
  */
-function validateComponentCompatibility(errors, component, projections) {
+function validateComponentCompatibility(errors, component, projections, options = {}) {
   const projection = projections.get(component.projection);
   if (!projection) {
     pushError(errors, `${componentLabel(component)} references missing projection '${component.projection}'`);
     return;
   }
 
-  const manifest = getGeneratorManifest(component.generator?.id);
+  const resolvedManifest = resolveGeneratorManifestForBinding(component.generator, options);
+  const manifest = resolvedManifest.manifest;
   if (!manifest) {
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses unknown generator '${component.generator?.id}' version '${component.generator?.version || "unknown"}'`);
+    const details = resolvedManifest.errors.length > 0 ? `: ${resolvedManifest.errors.join("; ")}` : "";
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses unknown generator '${component.generator?.id}' version '${component.generator?.version || "unknown"}'${details}`);
     return;
   }
   const manifestValidation = validateGeneratorManifest(manifest);
@@ -407,9 +414,10 @@ function validateTopologyReferences(errors, components) {
 /**
  * @param {any} config
  * @param {Record<string, any>|null} [graph]
+ * @param {{ configDir?: string|null, rootDir?: string|null }} [options]
  * @returns {{ ok: boolean, errors: ValidationError[] }}
  */
-export function validateProjectConfig(config, graph = null) {
+export function validateProjectConfig(config, graph = null, options = {}) {
   /** @type {ValidationError[]} */
   const errors = [];
   if (!config || typeof config !== "object" || Array.isArray(config)) {
@@ -429,7 +437,7 @@ export function validateProjectConfig(config, graph = null) {
     if (graph) {
       const projections = projectionById(graph);
       for (const component of config.topology.components) {
-        validateComponentCompatibility(errors, component, projections);
+        validateComponentCompatibility(errors, component, projections, options);
       }
       validateTopologyReferences(errors, config.topology.components);
     }

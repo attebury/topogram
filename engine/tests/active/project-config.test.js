@@ -33,6 +33,47 @@ function appBasicProjectConfig() {
   return JSON.parse(fs.readFileSync(path.join(fixtureRoot, "topogram.project.json"), "utf8"));
 }
 
+function writeJson(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function writePackageBackedGenerator(root, manifestOverrides = {}) {
+  const packageName = manifestOverrides.package || "@scope/topogram-generator-smoke-web";
+  const packageRoot = path.join(root, "node_modules", ...packageName.split("/"));
+  fs.mkdirSync(packageRoot, { recursive: true });
+  const manifest = {
+    id: "@scope/smoke-web",
+    version: "1",
+    surface: "web",
+    projectionPlatforms: ["ui_web"],
+    inputs: ["ui-web-contract"],
+    outputs: ["web-app"],
+    stack: {
+      runtime: "browser",
+      framework: "smoke",
+      language: "javascript"
+    },
+    capabilities: {
+      routes: true
+    },
+    source: "package",
+    package: packageName,
+    ...manifestOverrides
+  };
+  writeJson(path.join(packageRoot, "topogram-generator.json"), manifest);
+  writeJson(path.join(packageRoot, "package.json"), {
+    name: packageName,
+    version: "0.1.0",
+    main: "index.cjs",
+    exports: {
+      ".": "./index.cjs",
+      "./topogram-generator.json": "./topogram-generator.json"
+    }
+  });
+  fs.writeFileSync(path.join(packageRoot, "index.cjs"), "exports.manifest = require('./topogram-generator.json'); exports.generate = () => ({ files: {} });\n", "utf8");
+  return { packageName, packageRoot, manifest };
+}
+
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [cliPath, ...args], {
     cwd: options.cwd || engineRoot,
@@ -232,6 +273,51 @@ test("project config validation catches incompatible and planned generators", ()
   assert.match(plannedResult.errors.map((error) => error.message).join("\n"), /planned generator/);
   assert.equal(unsupportedResult.ok, false);
   assert.match(unsupportedResult.errors.map((error) => error.message).join("\n"), /unsupported; expected '1'/);
+});
+
+test("project config validation resolves installed package-backed generator manifests", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-generator-"));
+  const { packageName } = writePackageBackedGenerator(root);
+  const graph = appBasicGraph();
+  const config = appBasicProjectConfig();
+  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
+  webComponent.generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+
+  const result = validateProjectConfig(config, graph, { configDir: root });
+
+  assert.equal(result.ok, true, result.errors.map((error) => error.message).join("\n"));
+});
+
+test("project config validation rejects missing and mismatched package-backed generators", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-generator-invalid-"));
+  const { packageName } = writePackageBackedGenerator(root, { id: "@scope/other-web" });
+  const graph = appBasicGraph();
+  const missing = appBasicProjectConfig();
+  const missingWeb = missing.topology.components.find((component) => component.id === "app_sveltekit");
+  missingWeb.generator = {
+    id: "@scope/missing-web",
+    version: "1",
+    package: "@scope/topogram-generator-missing"
+  };
+  const mismatched = appBasicProjectConfig();
+  const mismatchedWeb = mismatched.topology.components.find((component) => component.id === "app_sveltekit");
+  mismatchedWeb.generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+
+  const missingResult = validateProjectConfig(missing, graph, { configDir: root });
+  const mismatchedResult = validateProjectConfig(mismatched, graph, { configDir: root });
+
+  assert.equal(missingResult.ok, false);
+  assert.match(missingResult.errors.map((error) => error.message).join("\n"), /could not be resolved/);
+  assert.equal(mismatchedResult.ok, false);
+  assert.match(mismatchedResult.errors.map((error) => error.message).join("\n"), /does not match binding/);
 });
 
 test("maintained app outputs are refused for generated app writes", () => {

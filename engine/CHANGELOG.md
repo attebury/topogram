@@ -4,6 +4,8 @@
 
 - Add the bundled generator manifest/adapter interface so first-party stack
   generators dispatch through topology-bound generator manifests.
+- Add explicit package-backed generator loading for installed packages with
+  `topogram-generator.json` manifests and synchronous adapter exports.
 - Document generator packs as the long-term boundary for reusable stack
   realization while templates compose generator IDs and optional implementation
   customizations.

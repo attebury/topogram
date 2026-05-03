@@ -1,5 +1,9 @@
 // @ts-check
 
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
+
 /**
  * @typedef {Object} GeneratorManifest
  * @property {string} id
@@ -143,6 +147,22 @@ export const GENERATOR_MANIFESTS = [
 const GENERATOR_BY_ID = new Map(GENERATOR_MANIFESTS.map((manifest) => [manifest.id, manifest]));
 
 /**
+ * @typedef {Object} GeneratorBinding
+ * @property {string} id
+ * @property {string} version
+ * @property {string} [package]
+ */
+
+/**
+ * @typedef {Object} ResolvedGeneratorManifest
+ * @property {GeneratorManifest|null} manifest
+ * @property {string[]} errors
+ * @property {"bundled"|"package"|null} source
+ * @property {string|null} manifestPath
+ * @property {string|null} packageRoot
+ */
+
+/**
  * @param {any} value
  * @param {boolean} [nonEmpty]
  * @returns {boolean}
@@ -159,6 +179,153 @@ function isStringArray(value, nonEmpty = false) {
  */
 export function getGeneratorManifest(generatorId) {
   return GENERATOR_BY_ID.get(generatorId) || null;
+}
+
+/**
+ * @param {string|null|undefined} rootDir
+ * @returns {string}
+ */
+function packageResolutionBase(rootDir) {
+  return path.join(rootDir || process.cwd(), "package.json");
+}
+
+/**
+ * @param {string} packageName
+ * @param {string|null|undefined} rootDir
+ * @returns {{ manifestPath: string|null, packageRoot: string|null, error: string|null }}
+ */
+export function resolvePackageGeneratorManifestPath(packageName, rootDir = process.cwd()) {
+  const requireFromRoot = createRequire(packageResolutionBase(rootDir));
+  try {
+    const manifestPath = requireFromRoot.resolve(`${packageName}/topogram-generator.json`);
+    return {
+      manifestPath,
+      packageRoot: path.dirname(manifestPath),
+      error: null
+    };
+  } catch (manifestError) {
+    try {
+      const packageJsonPath = requireFromRoot.resolve(`${packageName}/package.json`);
+      const packageRoot = path.dirname(packageJsonPath);
+      const manifestPath = path.join(packageRoot, "topogram-generator.json");
+      if (!fs.existsSync(manifestPath)) {
+        return {
+          manifestPath: null,
+          packageRoot,
+          error: `Generator package '${packageName}' is missing topogram-generator.json`
+        };
+      }
+      return {
+        manifestPath,
+        packageRoot,
+        error: null
+      };
+    } catch {
+      const detail = manifestError instanceof Error ? manifestError.message : String(manifestError);
+      return {
+        manifestPath: null,
+        packageRoot: null,
+        error: `Generator package '${packageName}' could not be resolved from '${rootDir || process.cwd()}': ${detail}`
+      };
+    }
+  }
+}
+
+/**
+ * @param {string} packageName
+ * @param {string|null|undefined} rootDir
+ * @returns {{ manifest: GeneratorManifest|null, errors: string[], manifestPath: string|null, packageRoot: string|null }}
+ */
+export function loadPackageGeneratorManifest(packageName, rootDir = process.cwd()) {
+  const resolved = resolvePackageGeneratorManifestPath(packageName, rootDir);
+  if (!resolved.manifestPath) {
+    return {
+      manifest: null,
+      errors: [resolved.error || `Generator package '${packageName}' could not be resolved`],
+      manifestPath: null,
+      packageRoot: resolved.packageRoot
+    };
+  }
+  try {
+    const manifest = JSON.parse(fs.readFileSync(resolved.manifestPath, "utf8"));
+    const validation = validateGeneratorManifest(manifest);
+    return {
+      manifest: validation.ok ? manifest : null,
+      errors: validation.errors,
+      manifestPath: resolved.manifestPath,
+      packageRoot: resolved.packageRoot
+    };
+  } catch (error) {
+    return {
+      manifest: null,
+      errors: [`Generator package '${packageName}' manifest could not be read: ${error instanceof Error ? error.message : String(error)}`],
+      manifestPath: resolved.manifestPath,
+      packageRoot: resolved.packageRoot
+    };
+  }
+}
+
+/**
+ * @param {GeneratorBinding|string|null|undefined} bindingOrId
+ * @param {{ rootDir?: string|null, configDir?: string|null }} [options]
+ * @returns {ResolvedGeneratorManifest}
+ */
+export function resolveGeneratorManifestForBinding(bindingOrId, options = {}) {
+  const binding = typeof bindingOrId === "string"
+    ? { id: bindingOrId, version: "" }
+    : bindingOrId;
+  const generatorId = binding?.id || "";
+  const bundled = getGeneratorManifest(generatorId);
+  if (bundled) {
+    return {
+      manifest: bundled,
+      errors: [],
+      source: "bundled",
+      manifestPath: null,
+      packageRoot: null
+    };
+  }
+  if (!binding?.package) {
+    return {
+      manifest: null,
+      errors: [`Generator '${generatorId || "unknown"}' is not bundled and does not declare a package`],
+      source: null,
+      manifestPath: null,
+      packageRoot: null
+    };
+  }
+  const rootDir = options.configDir || options.rootDir || process.cwd();
+  const loaded = loadPackageGeneratorManifest(binding.package, rootDir);
+  if (!loaded.manifest) {
+    return {
+      manifest: null,
+      errors: loaded.errors,
+      source: "package",
+      manifestPath: loaded.manifestPath,
+      packageRoot: loaded.packageRoot
+    };
+  }
+  /** @type {string[]} */
+  const errors = [];
+  if (loaded.manifest.source !== "package") {
+    errors.push(`Generator package '${binding.package}' manifest source must be package`);
+  }
+  if (loaded.manifest.package !== binding.package) {
+    errors.push(`Generator package '${binding.package}' manifest package must match '${binding.package}'`);
+  }
+  if (loaded.manifest.id !== binding.id) {
+    errors.push(`Generator package '${binding.package}' manifest id '${loaded.manifest.id}' does not match binding '${binding.id}'`);
+  }
+  if (binding.version && loaded.manifest.version !== binding.version) {
+    errors.push(`Generator package '${binding.package}' manifest version '${loaded.manifest.version}' does not match binding '${binding.version}'`);
+  }
+  return {
+    manifest: errors.length === 0 ? loaded.manifest : null,
+    errors,
+    source: "package",
+    manifestPath: loaded.manifestPath,
+    packageRoot: loaded.packageRoot
+  };
 }
 
 /**
