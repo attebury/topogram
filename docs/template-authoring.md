@@ -120,6 +120,11 @@ topogram generate ./topogram --generate ui-component-contract --component compon
 
 See [Components](./components.md) for the full grammar and pack roadmap.
 
+Templates compose Topogram source, topology, generator IDs, and optional trusted
+implementation code. Reusable stack realization belongs in generator packs, not
+inside starter templates. See [Generator Packs](./generator-packs.md) for the
+manifest and adapter contract.
+
 SvelteKit and React template implementations can render supported component
 usage with stable packaged helpers:
 

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add the bundled generator manifest/adapter interface so first-party stack
+  generators dispatch through topology-bound generator manifests.
+- Document generator packs as the long-term boundary for reusable stack
+  realization while templates compose generator IDs and optional implementation
+  customizations.
 - Make SvelteKit route generation contract-complete by default: generic route
   files are generated from the Topogram contract first, and template
   implementation providers may override specific route files.

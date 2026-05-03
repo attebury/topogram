@@ -9,7 +9,7 @@ The current greenfield workflow is:
 5. compile or smoke-check the generated app
 6. repeat
 
-`topogram.project.json` owns stack and topology choices. It binds generated or maintained outputs, API/web/database components, ports, and generator IDs. Generated outputs can be regenerated when `.topogram-generated.json` is present; maintained outputs are not overwritten.
+`topogram.project.json` owns stack and topology choices. It binds generated or maintained outputs, API/web/database components, ports, and generator IDs. Topogram core validates that topology and builds normalized contracts; generator packs own the stack-specific realization. Generated outputs can be regenerated when `.topogram-generated.json` is present; maintained outputs are not overwritten.
 
 Maintained apps use the same check step, then emit contracts, checks, reports, or migration proposals while an agent or human edits the app code directly.
 

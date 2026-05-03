@@ -8,6 +8,12 @@ import test from "node:test";
 import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { validateProjectConfig } from "../../src/project-config.js";
+import {
+  GENERATOR_MANIFESTS,
+  validateGeneratorManifest,
+  validateGeneratorRegistry
+} from "../../src/generator/registry.js";
+import { getBundledGeneratorAdapter } from "../../src/generator/adapters.js";
 import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -37,6 +43,45 @@ function runCli(args, options = {}) {
     }
   });
 }
+
+test("bundled generator manifests are valid and have adapters", () => {
+  const registry = validateGeneratorRegistry();
+  assert.equal(registry.ok, true, registry.errors.join("\n"));
+
+  for (const manifest of GENERATOR_MANIFESTS) {
+    assert.equal(manifest.source, "bundled");
+    assert.equal(["api", "web", "database", "native"].includes(manifest.surface), true);
+    assert.equal(Array.isArray(manifest.inputs), true);
+    assert.equal(Array.isArray(manifest.outputs), true);
+    assert.equal(typeof manifest.stack, "object");
+    assert.equal(typeof manifest.capabilities, "object");
+    if (!manifest.planned) {
+      assert.equal(getBundledGeneratorAdapter(manifest.id)?.manifest.id, manifest.id);
+    }
+  }
+});
+
+test("generator manifest validation rejects malformed manifests", () => {
+  const result = validateGeneratorManifest({
+    id: "topogram/bad",
+    version: "",
+    surface: "web",
+    projectionPlatforms: [],
+    inputs: "ui-web-contract",
+    outputs: [],
+    stack: null,
+    capabilities: [],
+    source: "package"
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /version/);
+  assert.match(result.errors.join("\n"), /projectionPlatforms/);
+  assert.match(result.errors.join("\n"), /inputs/);
+  assert.match(result.errors.join("\n"), /stack/);
+  assert.match(result.errors.join("\n"), /capabilities/);
+  assert.match(result.errors.join("\n"), /package source/);
+});
 
 function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-project-"));
@@ -174,14 +219,19 @@ test("project config validation catches incompatible and planned generators", ()
   incompatible.topology.components[0].generator.id = "topogram/sveltekit";
   const planned = appBasicProjectConfig();
   planned.topology.components[1].generator.id = "topogram/android-compose";
+  const unsupported = appBasicProjectConfig();
+  unsupported.topology.components[0].generator.version = "999";
 
   const incompatibleResult = validateProjectConfig(incompatible, graph);
   const plannedResult = validateProjectConfig(planned, graph);
+  const unsupportedResult = validateProjectConfig(unsupported, graph);
 
   assert.equal(incompatibleResult.ok, false);
   assert.match(incompatibleResult.errors.map((error) => error.message).join("\n"), /incompatible/);
   assert.equal(plannedResult.ok, false);
   assert.match(plannedResult.errors.map((error) => error.message).join("\n"), /planned generator/);
+  assert.equal(unsupportedResult.ok, false);
+  assert.match(unsupportedResult.errors.map((error) => error.message).join("\n"), /unsupported; expected '1'/);
 });
 
 test("maintained app outputs are refused for generated app writes", () => {

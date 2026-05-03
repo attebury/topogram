@@ -1,3 +1,4 @@
+import { generateWithComponentGenerator } from "../../adapters.js";
 import { generateExpressServer } from "./express.js";
 import { generateHonoServer } from "./hono.js";
 import { generatePersistenceScaffold } from "./persistence-wiring.js";
@@ -11,9 +12,29 @@ export function generateBackendTarget(target, graph, options = {}) {
     return generatePersistenceScaffold(graph, options);
   }
   if (target === "hono-server") {
+    if (options.component?.generator?.id) {
+      return generateWithComponentGenerator({
+        graph,
+        projection: options.component.projection,
+        component: options.component,
+        topology: options.topology || null,
+        implementation: options.implementation || null,
+        options
+      }).files;
+    }
     return generateHonoServer(graph, options);
   }
   if (target === "express-server") {
+    if (options.component?.generator?.id) {
+      return generateWithComponentGenerator({
+        graph,
+        projection: options.component.projection,
+        component: options.component,
+        topology: options.topology || null,
+        implementation: options.implementation || null,
+        options
+      }).files;
+    }
     return generateExpressServer(graph, options);
   }
 

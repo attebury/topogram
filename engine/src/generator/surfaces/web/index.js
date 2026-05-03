@@ -3,6 +3,7 @@ import {
   generateUiContractGraph
 } from "../contracts.js";
 import { generatorDefaultsMap, getProjection } from "../shared.js";
+import { generateWithComponentGenerator } from "../../adapters.js";
 import { generatorProfile } from "../../registry.js";
 import { generateReactApp } from "./react.js";
 import { generateSvelteKitApp } from "./sveltekit.js";
@@ -14,6 +15,16 @@ import {
 
 export function generateWebApp(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
+  if (options.component?.generator?.id) {
+    return generateWithComponentGenerator({
+      graph,
+      projection,
+      component: options.component,
+      topology: options.topology || null,
+      implementation: options.implementation || null,
+      options: { ...options, projectionId: projection.id }
+    }).files;
+  }
   const profile = generatorProfile(options.component?.generator?.id, null) || generatorDefaultsMap(projection).profile || "sveltekit";
   if (profile === "vanilla") {
     return generateVanillaWebApp(graph, options);

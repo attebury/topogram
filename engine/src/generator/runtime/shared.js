@@ -1,15 +1,10 @@
 // @ts-check
 
-import { generateExpressServer } from "../surfaces/services/express.js";
-import { generateHonoServer } from "../surfaces/services/hono.js";
-import { generateStatelessServer } from "../surfaces/services/stateless.js";
-import { generateWebApp } from "../surfaces/web/index.js";
 import { generateApiContractGraph } from "../api.js";
-import { generateDbLifecycleBundleForProjection } from "../surfaces/databases/lifecycle-shared.js";
+import { generateWithComponentGenerator } from "../adapters.js";
 import { getProjection } from "../surfaces/databases/shared.js";
 import { getDefaultBackendDbProjection } from "../../realization/backend/index.js";
 import { defaultProjectConfigForGraph, validateProjectConfig } from "../../project-config.js";
-import { generatorProfile } from "../registry.js";
 
 /**
  * @typedef {Object} ResolvedGraph
@@ -333,15 +328,17 @@ export function getDefaultEnvironmentProjections(graph, options = {}) {
 export function generateServerBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.apiComponents.find((entry) => entry.projection.id === projectionId);
-  const profile = generatorProfile(component?.generator?.id, "hono");
-  if (component && !component.databaseComponent) {
-    return generateStatelessServer(graph, { ...options, projectionId, component, profile });
+  if (!component) {
+    throw new Error(`No api topology component found for projection '${projectionId}'`);
   }
-  const dbProjectionId = component?.databaseComponent?.projection?.id || options.dbProjectionId;
-  const generatorOptions = { ...options, projectionId, dbProjectionId, component };
-  return profile === "express"
-    ? generateExpressServer(graph, generatorOptions)
-    : generateHonoServer(graph, generatorOptions);
+  return generateWithComponentGenerator({
+    graph,
+    projection: component.projection,
+    component,
+    topology,
+    implementation: options.implementation || null,
+    options: { ...options, projectionId }
+  }).files;
 }
 
 /**
@@ -353,7 +350,17 @@ export function generateServerBundle(graph, projectionId, options = {}) {
 export function generateWebBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.webComponents.find((entry) => entry.projection.id === projectionId);
-  return generateWebApp(graph, { ...options, projectionId, component });
+  if (!component) {
+    throw new Error(`No web topology component found for projection '${projectionId}'`);
+  }
+  return generateWithComponentGenerator({
+    graph,
+    projection: component.projection,
+    component,
+    topology,
+    implementation: options.implementation || null,
+    options: { ...options, projectionId }
+  }).files;
 }
 
 /**
@@ -365,7 +372,17 @@ export function generateWebBundle(graph, projectionId, options = {}) {
 export function generateDbBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const component = options.component || topology.dbComponents.find((entry) => entry.projection.id === projectionId);
-  return generateDbLifecycleBundleForProjection(graph, getProjection(graph, projectionId), { ...options, component });
+  if (!component) {
+    throw new Error(`No database topology component found for projection '${projectionId}'`);
+  }
+  return generateWithComponentGenerator({
+    graph,
+    projection: getProjection(graph, projectionId),
+    component,
+    topology,
+    implementation: options.implementation || null,
+    options: { ...options, projectionId }
+  }).files;
 }
 
 /**

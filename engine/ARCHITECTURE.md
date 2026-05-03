@@ -1,11 +1,12 @@
 # Topogram Architecture
 
-Topogram turns a `.tg` workspace into generated artifacts and apps through four layers:
+Topogram turns a `.tg` workspace into generated artifacts and apps through five layers:
 
 1. `Topogram graph`
 2. `realization`
-3. `renderer`
-4. `implementation provider`
+3. normalized `contracts`
+4. generator manifest + adapter
+5. optional implementation provider
 
 ## Flow
 
@@ -13,8 +14,9 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through four 
 2. `engine/src/validator` validates statements and projection semantics.
 3. `engine/src/resolver` produces a resolved semantic graph.
 4. `engine/src/realization` derives target-ready realization objects from that graph.
-5. `engine/src/generator` renders files, bundles, and runtime scaffolds from those realizations.
-6. Workspace `implementation/` modules supply project-specific reference behavior that should not live in the generic engine.
+5. `engine/src/generator` builds normalized contracts and resolves topology-bound generator manifests.
+6. Bundled or package-backed generator adapters render stack-specific files.
+7. Workspace `implementation/` modules supply project-specific reference behavior that should not live in the generic engine.
 
 ## Boundaries
 
@@ -24,9 +26,16 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through four 
 - Should be domain-agnostic and projection-driven.
 
 `engine/src/generator`
-- Owns rendering and file emission.
-- Consumes realization objects and generic generator inputs.
-- Should be target-aware, not example-aware.
+- Owns contract emission, generator manifest validation, and file emission.
+- Dispatches through topology-bound generator adapters.
+- Should be contract-aware and stack-adapter-aware, not example-aware.
+
+Generator adapters
+- Own stack-specific realization such as React, SvelteKit, Hono, Express,
+  Postgres, SQLite, Prisma, Drizzle, SwiftUI, or future Android files.
+- Consume normalized contracts, topology component metadata, and optional
+  implementation hooks.
+- Return generated files and diagnostics through the shared generator interface.
 
 Workspace `implementation/`
 - Owns project-specific runtime/reference behavior.

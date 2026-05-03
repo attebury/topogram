@@ -2,6 +2,7 @@ import {
   generateDbContractDebug,
   generateDbContractGraph
 } from "./contract.js";
+import { generateWithComponentGenerator } from "../../adapters.js";
 import { generateDbLifecyclePlan } from "./lifecycle-shared.js";
 import { generateDbSchemaSnapshot } from "./snapshot.js";
 import { generateDbMigrationPlan } from "./migration-plan.js";
@@ -56,6 +57,16 @@ export function generateDbTarget(target, graph, options = {}) {
       : generatePostgresDbLifecyclePlan(graph, options);
   }
   if (target === "db-lifecycle-bundle") {
+    if (options.component?.generator?.id) {
+      return generateWithComponentGenerator({
+        graph,
+        projection: options.component.projection,
+        component: options.component,
+        topology: options.topology || null,
+        implementation: options.implementation || null,
+        options
+      }).files;
+    }
     return family === "sqlite"
       ? generateSqliteDbLifecycleBundle(graph, options)
       : generatePostgresDbLifecycleBundle(graph, options);

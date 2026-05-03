@@ -11,8 +11,9 @@ import {
   runtimeUrls
 } from "./shared.js";
 import { mergeNamedBundles, renderEnvAwareShellScript, renderLoadEnvScript, renderRootShellScript } from "./bundle-shared.js";
+import { generatorProfile as manifestGeneratorProfile } from "../registry.js";
 
-function generatorProfile(projection, fallback) {
+function projectionHintProfile(projection, fallback) {
   if (!projection) {
     return fallback;
   }
@@ -43,7 +44,7 @@ function buildEnvironmentPlan(graph, options = {}) {
   const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
   const profile = options.profileId || (dbProjection?.platform === "db_sqlite" || !dbProjection ? "local_process" : "local_docker");
   const usesDocker = profile === "local_docker";
-  const webProfile = generatorProfile(uiProjection, "sveltekit");
+  const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
   const isSqlite = dbProjection?.platform === "db_sqlite";
   const ports = runtimePorts(runtimeReference, topology);
 

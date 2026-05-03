@@ -7,8 +7,9 @@ import {
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderRootEnvFileShellScript, renderRootShellScript } from "./bundle-shared.js";
+import { generatorProfile as manifestGeneratorProfile } from "../registry.js";
 
-function projectionProfile(projection, fallback) {
+function projectionHintProfile(projection, fallback) {
   for (const entry of projection.generatorDefaults || []) {
     if (entry.key === "profile" && entry.value != null) {
       return entry.value;
@@ -31,7 +32,7 @@ function buildDeploymentPlan(graph, options = {}) {
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const profile = options.profileId || "fly_io";
   const supportedProfiles = ["fly_io", "railway"];
-  const webProfile = projectionProfile(uiProjection, "sveltekit");
+  const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
   const databaseTarget = dbProjection.platform === "db_sqlite"
     ? "sqlite_file"
     : profile === "fly_io"
@@ -69,7 +70,7 @@ function buildDeploymentPlan(graph, options = {}) {
       db: topology.dbDir(topology.primaryDb)
     },
     runtime: {
-      server: "hono",
+      server: manifestGeneratorProfile(topology.primaryApi?.generator?.id, "hono"),
       web: webProfile,
       orm: "prisma",
       serverPort: topology.primaryApi?.port || 3000

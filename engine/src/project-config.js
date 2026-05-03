@@ -5,7 +5,8 @@ import path from "node:path";
 
 import {
   getGeneratorManifest,
-  isGeneratorCompatible
+  isGeneratorCompatible,
+  validateGeneratorManifest
 } from "./generator/registry.js";
 
 /**
@@ -353,17 +354,23 @@ function validateComponentCompatibility(errors, component, projections) {
 
   const manifest = getGeneratorManifest(component.generator?.id);
   if (!manifest) {
-    pushError(errors, `${componentLabel(component)} uses unknown generator '${component.generator?.id}'`);
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses unknown generator '${component.generator?.id}' version '${component.generator?.version || "unknown"}'`);
     return;
   }
+  const manifestValidation = validateGeneratorManifest(manifest);
+  if (!manifestValidation.ok) {
+    for (const message of manifestValidation.errors) {
+      pushError(errors, `${componentLabel(component)} generator manifest invalid: ${message}`);
+    }
+  }
   if (manifest.planned) {
-    pushError(errors, `${componentLabel(component)} uses planned generator '${manifest.id}', which is not implemented yet`);
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses planned generator '${manifest.id}@${manifest.version}', which is not implemented yet`);
   }
   if (manifest.version !== component.generator.version) {
-    pushError(errors, `${componentLabel(component)} generator '${manifest.id}' version '${component.generator.version}' is unsupported; expected '${manifest.version}'`);
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}' version '${component.generator.version}' is unsupported; expected '${manifest.version}'`);
   }
   if (!isGeneratorCompatible(manifest, component.type, projection)) {
-    pushError(errors, `${componentLabel(component)} generator '${manifest.id}' is incompatible with projection '${projection.id}'`);
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}@${manifest.version}' is incompatible with component surface '${component.type}' and projection platform '${projection.platform || "api"}'`);
   }
 }
 
