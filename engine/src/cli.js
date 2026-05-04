@@ -1485,10 +1485,10 @@ function buildReleaseStatusPayload(options = {}) {
       latestVersion = fallback.version;
       diagnostics.push({
         code: "release_latest_via_github_api",
-        severity: "warning",
-        message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
+        severity: "info",
+        message: `npm registry latest lookup was unavailable; GitHub Packages API confirmed ${CLI_PACKAGE_NAME}@${fallback.version}.`,
         path: CLI_PACKAGE_NAME,
-        suggestedFix: "Configure npm auth for GitHub Packages when you need install-facing registry verification.",
+        suggestedFix: "No release action is required. Configure npm auth only when install-facing registry verification is needed.",
         cause: npmMessage
       });
     } else {
@@ -1617,7 +1617,11 @@ function printReleaseStatus(payload) {
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
     for (const diagnostic of payload.diagnostics) {
-      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+      const label = diagnostic.severity === "warning"
+        ? "Warning"
+        : diagnostic.severity === "info"
+          ? "Note"
+          : "Error";
       console.log(`- ${label}: ${diagnostic.message}`);
       if (diagnostic.suggestedFix) {
         console.log(`  Fix: ${diagnostic.suggestedFix}`);

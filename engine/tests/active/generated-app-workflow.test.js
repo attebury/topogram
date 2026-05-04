@@ -1866,9 +1866,23 @@ test("topogram release status falls back to GitHub Packages API for latest versi
     true
   );
   assert.equal(
+    payload.diagnostics.find((diagnostic) => diagnostic.code === "release_latest_via_github_api")?.severity,
+    "info"
+  );
+  assert.equal(
     payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_unavailable"),
     false
   );
+
+  const human = runCli(["release", "status"], {
+    cwd: root,
+    env: {
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Note: npm registry latest lookup was unavailable; GitHub Packages API confirmed/);
+  assert.doesNotMatch(human.stdout, /Warning: npm registry latest lookup/);
 });
 
 test("topogram release status strict passes when package, tag, and consumers are current", () => {

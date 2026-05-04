@@ -63,6 +63,12 @@ it skips local verification scripts because `node_modules` may still contain
 the old CLI, and `npm install` or `npm ci` still need GitHub Packages auth for
 private package downloads.
 
+`topogram release status` uses the same GitHub Packages API fallback for
+release visibility. If npm registry inspection is unavailable but the API
+confirms the package version, release status reports an informational note
+instead of a release-blocking warning. Install and CI jobs still need npm auth
+when they download private packages.
+
 Use `topogram setup package-auth` when a local or CI environment needs package
 read setup guidance.
 
