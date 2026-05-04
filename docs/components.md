@@ -181,6 +181,7 @@ interactions rather than the full conformance report:
 ```bash
 topogram component behavior ./topogram --projection proj_ui_web
 topogram component behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json
+topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json
 ```
 
 The equivalent artifact target is:
@@ -266,13 +267,14 @@ component rendering is intentionally not implemented yet.
 ```bash
 topogram query slice ./topogram --component component_ui_data_grid
 topogram query verification-targets ./topogram --component component_ui_data_grid
+topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json
 topogram query change-plan ./topogram --component component_ui_data_grid
 topogram query review-packet ./topogram --component component_ui_data_grid --from-topogram ../baseline/topogram
 ```
 
 The slice returns a `context_slice` artifact with `focus.kind === "component"`, the component's referenced shapes, the projections that use it through `ui_components` or matching `patterns`/`regions`, the verifications that target any of those, and a `review_boundary` of `{ automation_class: "review_required", reasons: ["component_surface"] }`.
 
-`context-diff` now emits a `components` section and folds component changes into `affected_generated_surfaces.projections`, so `change-plan`, `review-packet`, and `verification-targets` (with `--from-topogram <path>`) automatically pick up component impacts and recommend `ui-component-contract` regeneration for the affected ids.
+`context-diff` now emits a `components` section and folds component changes into `affected_generated_surfaces.projections`, so `change-plan`, `review-packet`, and `verification-targets` (with `--from-topogram <path>`) automatically pick up component impacts and recommend `ui-component-contract` regeneration for the affected ids. When `component-behavior-report` is recommended, `resolved-workflow-context` and `single-agent-plan` include the matching behavior report artifact and a `topogram query component-behavior ... --json` command in `recommended_artifact_queries`.
 
 ## Roadmap
 

@@ -138,6 +138,53 @@ function stableOrderedUnion(values = []) {
   return result;
 }
 
+function componentBehaviorArtifactPath(target = {}) {
+  if (target.target !== "component-behavior-report") {
+    return null;
+  }
+  const suffix = [target.projection_id, target.component_id].filter(Boolean).join(".");
+  return suffix ? `${suffix}.component-behavior-report.json` : "component-behavior-report.json";
+}
+
+function componentBehaviorQueryCommand(target = {}) {
+  if (target.target !== "component-behavior-report") {
+    return null;
+  }
+  const parts = ["topogram", "query", "component-behavior", "./topogram"];
+  if (target.projection_id) {
+    parts.push("--projection", target.projection_id);
+  }
+  if (target.component_id) {
+    parts.push("--component", target.component_id);
+  }
+  parts.push("--json");
+  return parts.join(" ");
+}
+
+function recommendedArtifactQueriesFromGeneratorTargets(generatorTargets = []) {
+  const queries = [];
+  const seen = new Set();
+  for (const target of generatorTargets || []) {
+    const command = componentBehaviorQueryCommand(target);
+    if (!command || seen.has(command)) continue;
+    seen.add(command);
+    queries.push({
+      query: "component-behavior",
+      target: target.target,
+      projection_id: target.projection_id || null,
+      component_id: target.component_id || null,
+      command
+    });
+  }
+  return queries;
+}
+
+function artifactLoadOrderFromGeneratorTargets(generatorTargets = []) {
+  return stableOrderedUnion((generatorTargets || [])
+    .map((target) => componentBehaviorArtifactPath(target))
+    .filter(Boolean));
+}
+
 function flattenVerificationTargets(verificationTargets = null) {
   if (!verificationTargets || typeof verificationTargets !== "object") {
     return [];
@@ -3387,6 +3434,7 @@ export function buildResolvedWorkflowContextPayload({
   importPlan = null,
   reviewBoundary = null,
   maintainedBoundary = null,
+  generatorTargets = [],
   providerPresets = null,
   teamPresets = null,
   providerManifests = null,
@@ -3470,8 +3518,10 @@ export function buildResolvedWorkflowContextPayload({
   const artifactLoadOrder = stableOrderedUnion([
     ...activePresets.active_team_presets.flatMap((preset) => preset.artifact_load_order || []),
     ...activePresets.active_provider_presets.flatMap((preset) => preset.artifact_load_order || []),
-    ...(taskModeArtifact?.preferred_context_artifacts || [])
+    ...(taskModeArtifact?.preferred_context_artifacts || []),
+    ...artifactLoadOrderFromGeneratorTargets(generatorTargets)
   ]);
+  const recommendedArtifactQueries = recommendedArtifactQueriesFromGeneratorTargets(generatorTargets);
   fieldResolution.artifact_load_order = mergeFieldResolution([
     ...activePresets.active_team_presets.filter((preset) => (preset.artifact_load_order || []).length > 0),
     ...activePresets.active_provider_presets.filter((preset) => (preset.artifact_load_order || []).length > 0)
@@ -3556,6 +3606,7 @@ export function buildResolvedWorkflowContextPayload({
     resolved_task_mode: resolvedTaskMode,
     preferred_queries: preferredQueries,
     artifact_load_order: artifactLoadOrder,
+    recommended_artifact_queries: recommendedArtifactQueries,
     effective_write_scope: taskModeArtifact?.write_scope || null,
     effective_review_policy: {
       block_on: reviewBlockers,

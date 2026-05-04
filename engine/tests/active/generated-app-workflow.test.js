@@ -396,6 +396,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(fullHelp.status, 0, fullHelp.stderr || fullHelp.stdout);
   assert.match(fullHelp.stdout, /topogram create <path>/);
   assert.match(fullHelp.stdout, /topogram import app <path>/);
+  assert.match(fullHelp.stdout, /query component-behavior <path>/);
   assert.match(fullHelp.stdout, /query work-packet/);
 
   const generateHelp = runCli(["generate", "--help"]);
@@ -722,6 +723,24 @@ test("topogram component behavior reports behavior groups without writing app ou
   assert.deepEqual(report.groups.screens.map((group) => group.id), ["task_list"]);
   assert.deepEqual(report.groups.effects.map((group) => group.id), ["navigation", "none"]);
 
+  const query = runCli([
+    "query",
+    "component-behavior",
+    fixtureRoot,
+    "--projection",
+    "proj_ui_web",
+    "--component",
+    "component_ui_data_grid",
+    "--json"
+  ], { cwd });
+  assert.equal(query.status, 0, query.stderr || query.stdout);
+  const queryReport = JSON.parse(query.stdout);
+  assert.equal(queryReport.type, "component_behavior_report");
+  assert.equal(queryReport.filters.projection, "proj_ui_web");
+  assert.equal(queryReport.filters.component, "component_ui_data_grid");
+  assert.equal(queryReport.summary.total_behaviors, 2);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior query must not write app shortcut output");
+
   const reportOutDir = path.join(cwd, "behavior-reports");
   const written = runCli([
     "generate",
@@ -784,6 +803,49 @@ test("agent review packets recommend component behavior reports for component im
       target.component_id === "component_ui_data_grid" &&
       target.projection_id === "proj_ui_web"
     ),
+    true
+  );
+
+  const workflowContext = runCli([
+    "query",
+    "resolved-workflow-context",
+    fixtureRoot,
+    "--mode",
+    "modeling",
+    "--component",
+    "component_ui_data_grid",
+    "--json"
+  ]);
+  assert.equal(workflowContext.status, 0, workflowContext.stderr || workflowContext.stdout);
+  const workflowPayload = JSON.parse(workflowContext.stdout);
+  assert.equal(workflowPayload.type, "resolved_workflow_context_query");
+  assert.equal(
+    workflowPayload.artifact_load_order.includes("proj_ui_web.component_ui_data_grid.component-behavior-report.json"),
+    true
+  );
+  assert.equal(
+    workflowPayload.recommended_artifact_queries.some((query) =>
+      query.query === "component-behavior" &&
+      query.command === "topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json"
+    ),
+    true
+  );
+
+  const singleAgentPlan = runCli([
+    "query",
+    "single-agent-plan",
+    fixtureRoot,
+    "--mode",
+    "modeling",
+    "--component",
+    "component_ui_data_grid",
+    "--json"
+  ]);
+  assert.equal(singleAgentPlan.status, 0, singleAgentPlan.stderr || singleAgentPlan.stdout);
+  const singleAgentPayload = JSON.parse(singleAgentPlan.stdout);
+  assert.equal(singleAgentPayload.type, "single_agent_plan");
+  assert.equal(
+    singleAgentPayload.primary_artifacts.includes("proj_ui_web.component_ui_data_grid.component-behavior-report.json"),
     true
   );
 });

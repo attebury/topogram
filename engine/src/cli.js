@@ -244,6 +244,7 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
   console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query component-behavior <path> [--projection <id>] [--component <id>] [--json]");
   console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query import-plan <path>");
   console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
@@ -5302,6 +5303,25 @@ function workflowPresetSelectors({
   };
 }
 
+function generatorTargetsForWorkflowContext({
+  graph,
+  taskModeArtifact,
+  sliceArtifact = null,
+  diffArtifact = null,
+  maintainedBoundaryArtifact = null
+} = {}) {
+  if (!graph || !taskModeArtifact) {
+    return [];
+  }
+  return buildChangePlanPayload({
+    graph,
+    taskModeArtifact,
+    sliceArtifact,
+    diffArtifact,
+    maintainedBoundaryArtifact
+  }).generator_targets || [];
+}
+
 function importAdoptOnlyRequested({
   modeId,
   capabilityId,
@@ -5486,6 +5506,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { queryName: "write-scope", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "verification-targets") {
   commandArgs = { queryName: "verification-targets", inputPath: args[2] };
+} else if (args[0] === "query" && args[1] === "component-behavior") {
+  commandArgs = { queryName: "component-behavior", inputPath: commandPath(2) };
 } else if (args[0] === "query" && args[1] === "change-plan") {
   commandArgs = { queryName: "change-plan", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "import-plan") {
@@ -6691,6 +6713,21 @@ try {
     process.exit(0);
   }
 
+  if (commandArgs?.queryName === "component-behavior") {
+    const ast = parsePath(normalizeTopogramPath(inputPath));
+    const result = generateWorkspace(ast, {
+      target: "component-behavior-report",
+      projectionId,
+      componentId
+    });
+    if (!result.ok) {
+      console.error(formatValidationErrors(result.validation));
+      process.exit(1);
+    }
+    console.log(stableStringify(result.artifact));
+    process.exit((result.artifact.summary?.errors || 0) === 0 ? 0 : 1);
+  }
+
   if (commandArgs?.queryName === "change-plan") {
     const ast = parsePath(inputPath);
     const resolved = resolveWorkspace(ast);
@@ -7386,10 +7423,40 @@ try {
       process.exit(1);
     }
 
+    const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
+    const sliceResult = hasSelector
+      ? generateWorkspace(ast, {
+          target: "context-slice",
+          capabilityId,
+          workflowId,
+          projectionId,
+          componentId,
+          entityId,
+          journeyId,
+          surfaceId,
+          domainId
+        })
+      : null;
+    if (sliceResult && !sliceResult.ok) {
+      console.error(formatValidationErrors(sliceResult.validation));
+      process.exit(1);
+    }
+    const resolvedForGeneratorTargets = resolveWorkspace(ast);
+    if (!resolvedForGeneratorTargets.ok) {
+      console.error(formatValidationErrors(resolvedForGeneratorTargets.validation));
+      process.exit(1);
+    }
+    const generatorTargets = generatorTargetsForWorkflowContext({
+      graph: resolvedForGeneratorTargets.graph,
+      taskModeArtifact: result.artifact,
+      sliceArtifact: sliceResult?.artifact || null
+    });
+
     let importPlan = null;
     const resolvedWorkflowContextBase = {
       workspace: normalizeTopogramPath(inputPath),
       taskModeArtifact: result.artifact,
+      generatorTargets,
       selectors: workflowPresetSelectors({
         taskModeArtifact: result.artifact,
         providerId,
@@ -7451,6 +7518,11 @@ try {
       console.error(formatValidationErrors(taskModeResult.validation));
       process.exit(1);
     }
+    const resolvedForGeneratorTargets = resolveWorkspace(ast);
+    if (!resolvedForGeneratorTargets.ok) {
+      console.error(formatValidationErrors(resolvedForGeneratorTargets.validation));
+      process.exit(1);
+    }
 
     const hasSelector = Boolean(capabilityId || workflowId || projectionId || componentId || entityId || journeyId || surfaceId || domainId);
     const sliceResult = hasSelector
@@ -7485,6 +7557,12 @@ try {
       console.error(formatValidationErrors(maintainedBundleResult.validation));
       process.exit(1);
     }
+    const generatorTargets = generatorTargetsForWorkflowContext({
+      graph: resolvedForGeneratorTargets.graph,
+      taskModeArtifact: taskModeResult.artifact,
+      sliceArtifact: sliceResult?.artifact || null,
+      maintainedBoundaryArtifact: maintainedBundleResult?.artifact?.maintained_boundary || null
+    });
 
     let importPlan = null;
     if (modeId === "import-adopt") {
@@ -7515,6 +7593,7 @@ try {
       importPlan,
       reviewBoundary: sliceResult?.artifact?.review_boundary || null,
       maintainedBoundary: maintainedBundleResult?.artifact?.maintained_boundary || null,
+      generatorTargets,
       selectors: workflowPresetSelectors({
         taskModeArtifact: taskModeResult.artifact,
         providerId,
