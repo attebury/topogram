@@ -4,6 +4,7 @@ import path from "node:path";
 import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { generateCompileCheckBundle, generateCompileCheckPlan } from "../../src/generator/runtime/compile-check.js";
+import { generateRuntimeCheckBundle } from "../../src/generator/runtime/runtime-check.js";
 import { generateRuntimeSmokeBundle, generateRuntimeSmokePlan } from "../../src/generator/runtime/smoke.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -58,4 +59,17 @@ test("runtime smoke and compile plans keep required check contracts stable", () 
   const compileBundle = generateCompileCheckBundle(graph, options);
   assert.match(compileBundle["scripts/check.sh"], /Installing dependencies \(services\/app_api\)/);
   assert.match(compileBundle["scripts/check.sh"], /Running npm run check \(services\/app_api\)/);
+});
+
+test("runtime web_contract checks visible text rather than raw HTML source", () => {
+  const bundle = generateRuntimeCheckBundle(appBasicGraph(), { implementation: APP_BASIC_IMPLEMENTATION });
+  const script = bundle["scripts/check.mjs"];
+  assert.match(script, /const bodyText = visibleTextFromHtml\(body\);/);
+  assert.match(script, /!bodyText\.includes\(definition\.expectNotText\)/);
+
+  const [functionSource] = script.match(/function visibleTextFromHtml\(html\) \{[\s\S]*?\n\}/);
+  const visibleTextFromHtml = Function(`${functionSource}; return visibleTextFromHtml;`)();
+  const html = '<main>Back to Tasks</main><script>const label = "Edit Task";</script>';
+  assert.equal(html.includes("Edit Task"), true);
+  assert.equal(visibleTextFromHtml(html), "Back to Tasks");
 });
