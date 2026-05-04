@@ -56,8 +56,8 @@ jobs:
           VERSION="$(node -p "require('./engine/package.json').version")"
           TAG="topogram-v$VERSION"
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Release tag already exists: $TAG" >&2
-            exit 1
+            echo "Release tag already exists: $TAG"
+            exit 0
           fi
           git tag "$TAG"
           git push origin "$TAG"
