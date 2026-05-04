@@ -4980,7 +4980,7 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {
-  commandArgs = { trustTemplate: true, inputPath: commandPath(2) };
+  commandArgs = { trustTemplate: true, force: args.includes("--force"), inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "status") {
   commandArgs = { trustStatus: true, inputPath: commandPath(2) };
 } else if (args[0] === "trust" && args[1] === "diff") {
@@ -5133,6 +5133,7 @@ const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
+const shouldForce = Boolean(commandArgs?.force);
 const shouldCatalogList = Boolean(commandArgs?.catalogList);
 const shouldCatalogShow = Boolean(commandArgs?.catalogShow);
 const shouldCatalogDoctor = Boolean(commandArgs?.catalogDoctor);
@@ -5663,6 +5664,13 @@ try {
     const projectConfigInfo = loadProjectConfig(inputPath);
     if (!projectConfigInfo) {
       throw new Error("Cannot trust template files without topogram.project.json.");
+    }
+    const templateManifestPath = path.join(projectConfigInfo.configDir, "topogram-template.json");
+    if (!projectConfigInfo.config.template && fs.existsSync(templateManifestPath) && !shouldForce) {
+      throw new Error("Cannot write consumer template trust metadata in a template source repo. Template source repos should not contain .topogram-template-files.json or .topogram-template-trust.json. Run this command in a generated project, or pass --force if you intentionally need local trust metadata here.");
+    }
+    if (!projectConfigInfo.config.template && fs.existsSync(templateManifestPath) && shouldForce) {
+      console.warn("Warning: writing consumer template trust metadata in a template source repo because --force was provided.");
     }
     const fileManifest = writeTemplateFilesManifest(projectConfigInfo.configDir, projectConfigInfo.config);
     console.log(`Wrote .topogram-template-files.json with ${fileManifest.files.length} template-owned file hash(es).`);

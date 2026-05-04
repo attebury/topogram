@@ -2559,6 +2559,14 @@ test("topogram generate requires local executable implementation trust", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
 
+test("topogram trust template refuses template source repos without force", () => {
+  const trust = runCli(["trust", "template", builtInTemplateRoot]);
+  assert.notEqual(trust.status, 0, trust.stdout);
+  assert.match(trust.stderr, /Cannot write consumer template trust metadata in a template source repo/);
+  assert.equal(fs.existsSync(path.join(builtInTemplateRoot, ".topogram-template-files.json")), false);
+  assert.equal(fs.existsSync(path.join(builtInTemplateRoot, ".topogram-template-trust.json")), false);
+});
+
 test("topogram generate rejects stale template trust metadata", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-stale-"));
   const projectRoot = path.join(root, "starter");

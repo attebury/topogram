@@ -44,6 +44,12 @@ For npm or GitHub Packages, keep the package payload narrow:
 }
 ```
 
+Do not include consumer workspace metadata in a template package. In particular,
+`.topogram-template-files.json` and `.topogram-template-trust.json` are written
+inside projects created from a template; they should not live in the template
+source repo or package payload. Add them to the template repo `.gitignore` if
+you work with local trust commands while authoring.
+
 ## Usage
 
 Use the default catalog-backed neutral starter:
@@ -216,6 +222,9 @@ load that code during `topogram generate`. `topogram new` writes
 `.topogram-template-trust.json` with the template id, template version, source,
 requested package or path, local source root where available, implementation
 module, and SHA-256 hashes for the copied `implementation/` files.
+`topogram trust template` is intended for generated consumer projects after
+human review. When run directly in a template source repo, it refuses to write
+consumer trust metadata unless `--force` is provided.
 
 If the trust file is missing or no longer matches `topogram.project.json`,
 or if `implementation/` changed since it was trusted, `topogram check` and

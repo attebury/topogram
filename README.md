@@ -134,6 +134,9 @@ reviewing copied or edited `implementation/` code. The same command records the
 `topogram template status` for compact trust metadata, then `topogram trust
 status` and `topogram trust diff` to inspect changed files before refreshing
 trust.
+Those `.topogram-template-*` files are consumer project metadata, not template
+source files. `topogram trust template` refuses to write them in a template
+source repo unless `--force` is provided.
 
 Inspect, plan, or apply a template update:
 
