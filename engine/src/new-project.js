@@ -1924,6 +1924,7 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
       check: "topogram check",
       "check:json": "topogram check --json",
       "query:list": "topogram query list --json",
+      "query:show": "topogram query show",
       generate: "topogram generate",
       "template:explain": "topogram template explain",
       "template:status": "topogram template status",

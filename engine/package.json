@@ -1,6 +1,6 @@
 {
   "name": "@attebury/topogram",
-  "version": "0.3.30",
+  "version": "0.3.31",
   "description": "Topogram CLI for checking Topogram workspaces and generating app bundles.",
   "license": "Apache-2.0",
   "repository": {

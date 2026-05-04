@@ -138,6 +138,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram query list [--json]");
+  console.log("   or: topogram query show <name> [--json]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
@@ -178,6 +179,7 @@ function printUsage(options = {}) {
   console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram component behavior --projection proj_ui_web");
   console.log("  topogram query list");
+  console.log("  topogram query show component-behavior");
   console.log("  topogram query component-behavior ./topogram --projection proj_ui_web --json");
   console.log("  topogram generator list");
   console.log("  topogram generator show @attebury/topogram-generator-react-web");

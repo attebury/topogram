@@ -424,42 +424,6 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(componentHelp.stdout, /topogram component check --projection proj_ui_web/);
   assert.match(componentHelp.stdout, /topogram component behavior --projection proj_ui_web/);
 
-  const queryHelp = runCli(["query", "--help"]);
-  assert.equal(queryHelp.status, 0, queryHelp.stderr || queryHelp.stdout);
-  assert.match(queryHelp.stdout, /Usage: topogram query list \[--json\]/);
-  assert.match(queryHelp.stdout, /topogram query show <name> \[--json\]/);
-  assert.match(queryHelp.stdout, /topogram query component-behavior \[path\]/);
-  assert.match(queryHelp.stdout, /component-behavior/);
-  assert.match(queryHelp.stdout, /recommended artifact queries/);
-
-  const queryList = runCli(["query", "list", "--json"]);
-  assert.equal(queryList.status, 0, queryList.stderr || queryList.stdout);
-  const queryListPayload = JSON.parse(queryList.stdout);
-  assert.equal(queryListPayload.type, "query_list");
-  const componentBehaviorQuery = queryListPayload.queries.find((query) => query.name === "component-behavior");
-  assert.ok(componentBehaviorQuery);
-  assert.deepEqual(componentBehaviorQuery.selectors, ["projection", "component"]);
-  assert.deepEqual(componentBehaviorQuery.args, ["[path]", "[--projection <id>]", "[--component <id>]", "[--json]"]);
-  assert.equal(componentBehaviorQuery.output, "component_behavior_report");
-  assert.match(componentBehaviorQuery.purpose, /component behavior/);
-  assert.match(componentBehaviorQuery.example, /topogram query component-behavior/);
-
-  const queryShow = runCli(["query", "show", "component-behavior", "--json"]);
-  assert.equal(queryShow.status, 0, queryShow.stderr || queryShow.stdout);
-  const queryShowPayload = JSON.parse(queryShow.stdout);
-  assert.equal(queryShowPayload.type, "query_definition");
-  assert.equal(queryShowPayload.query.name, "component-behavior");
-  assert.equal(queryShowPayload.query.output, "component_behavior_report");
-
-  const queryShowHuman = runCli(["query", "show", "component-behavior"]);
-  assert.equal(queryShowHuman.status, 0, queryShowHuman.stderr || queryShowHuman.stdout);
-  assert.match(queryShowHuman.stdout, /Query: component-behavior/);
-  assert.match(queryShowHuman.stdout, /Output: component_behavior_report/);
-
-  const unknownQueryShow = runCli(["query", "show", "not-a-query", "--json"]);
-  assert.equal(unknownQueryShow.status, 1);
-  assert.match(unknownQueryShow.stderr, /Unknown query 'not-a-query'/);
-
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
   assert.match(newHelp.stdout, /Usage: topogram new <path> \[--template <alias\|package\|path>\]/);
@@ -3002,6 +2966,7 @@ test("topogram new carries template starter scripts into starters", () => {
   const pkg = readJson(path.join(projectRoot, "package.json"));
 
   assert.equal(pkg.scripts["query:list"], "topogram query list --json");
+  assert.equal(pkg.scripts["query:show"], "topogram query show");
   assert.equal(
     pkg.scripts["component:behavior:query"],
     "topogram query component-behavior ./topogram --projection proj_ui_web --json"

@@ -131,8 +131,8 @@ shared starter examples and are surfaced through the `attebury/topograms`
 catalog. Generated projects include a project `.npmrc` that reads
 `${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read GitHub
 Packages when the CLI dependency comes from `@attebury/topogram`.
-All generated starters include `npm run query:list` as the default local query
-discovery command.
+All generated starters include `npm run query:list` and `npm run query:show -- <name>`
+as default local query discovery commands.
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after
