@@ -152,6 +152,7 @@ component component_invalid_behaviors {
   behaviors {
     selection mode sometimes state missing_state emits missing_event
     sorting unknown true
+    bulk_action actions [missing_action]
   }
   status active
 }
@@ -164,6 +165,7 @@ component component_invalid_behaviors {
   assert.match(messages, /behavior 'selection' references unknown event 'missing_event'/);
   assert.match(messages, /behavior 'selection' has invalid mode 'sometimes'/);
   assert.match(messages, /behavior 'sorting' has unsupported directive 'unknown'/);
+  assert.match(messages, /behavior 'bulk_action' references unknown event or capability 'missing_action'/);
 });
 
 test("component validator rejects removed consumers field", () => {
@@ -749,6 +751,213 @@ projection proj_ui {
       }
     }
   ]);
+});
+
+test("component behavior capability action directives surface command effects", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+capability cap_update_item {
+  name "Update Item"
+  description "Update item"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  category collection
+  props {
+    rows array required
+  }
+  events {
+    row_update shape_event_payload
+  }
+  behaviors {
+    optimistic_update actions [cap_update_item] rollback true
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items, cap_update_item]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items event row_update action cap_update_item
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.warnings, 0);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].actions, [
+    {
+      event: null,
+      capability: {
+        id: "cap_update_item",
+        kind: "capability"
+      },
+      bound: true,
+      bindings: [
+        {
+          event: "row_update",
+          action: "action",
+          target: {
+            id: "cap_update_item",
+            kind: "capability"
+          }
+        }
+      ],
+      effects: [
+        {
+          type: "command",
+          event: "row_update",
+          capability: {
+            id: "cap_update_item",
+            kind: "capability"
+          }
+        }
+      ]
+    }
+  ]);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].effects, [
+    {
+      type: "command",
+      event: "row_update",
+      capability: {
+        id: "cap_update_item",
+        kind: "capability"
+      }
+    }
+  ]);
+});
+
+test("component behavior capability action directives warn when unbound", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+capability cap_update_item {
+  name "Update Item"
+  description "Update item"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  category collection
+  props {
+    rows array required
+  }
+  events {
+    row_update shape_event_payload
+  }
+  behaviors {
+    optimistic_update actions [cap_update_item] rollback true
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items, cap_update_item]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["component_behavior_action_unbound"]);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].actions, [
+    {
+      event: null,
+      capability: {
+        id: "cap_update_item",
+        kind: "capability"
+      },
+      bound: false,
+      bindings: [],
+      effects: [
+        {
+          type: "command",
+          event: null,
+          capability: {
+            id: "cap_update_item",
+            kind: "capability"
+          },
+          source: "behavior"
+        }
+      ]
+    }
+  ]);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].status, "partial");
 });
 
 test("component-conformance-report filters by component and rejects unknown selectors", () => {

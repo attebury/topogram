@@ -178,7 +178,24 @@ function validateSymbolList(errors, statement, fieldMap, key, allowed, label) {
   }
 }
 
-function validateComponentBehaviors(errors, statement, fieldMap) {
+function validateBehaviorActionReferences(errors, statement, registry, kind, directive, valueToken, eventNames) {
+  for (const actionId of tokenValues(valueToken)) {
+    if (eventNames.has(actionId)) {
+      continue;
+    }
+    const target = registry.get(actionId);
+    if (target?.kind === "capability") {
+      continue;
+    }
+    pushError(
+      errors,
+      `Component ${statement.id} behavior '${kind}' references unknown event or capability '${actionId}' for '${directive}'`,
+      valueToken.loc
+    );
+  }
+}
+
+function validateComponentBehaviors(errors, statement, fieldMap, registry) {
   validateSymbolList(errors, statement, fieldMap, "behavior", COMPONENT_BEHAVIOR_KINDS, "behavior");
 
   const field = fieldMap.get("behaviors")?.[0];
@@ -229,6 +246,9 @@ function validateComponentBehaviors(errors, statement, fieldMap) {
           }
         }
       }
+      if (directive === "actions" || directive === "submit") {
+        validateBehaviorActionReferences(errors, statement, registry, kind, directive, valueToken, eventNames);
+      }
       if (kind === "selection" && directive === "mode" && !["single", "multi", "none"].includes(tokenValue(valueToken))) {
         pushError(errors, `Component ${statement.id} behavior 'selection' has invalid mode '${tokenValue(valueToken)}'`, valueToken.loc);
       }
@@ -248,7 +268,7 @@ export function validateComponent(errors, statement, fieldMap, registry) {
   validateComponentProps(errors, statement);
   validateComponentEvents(errors, statement, registry);
   validateComponentSlots(errors, statement);
-  validateComponentBehaviors(errors, statement, fieldMap);
+  validateComponentBehaviors(errors, statement, fieldMap, registry);
   validateSymbolList(errors, statement, fieldMap, "patterns", UI_PATTERN_KINDS, "pattern");
   validateSymbolList(errors, statement, fieldMap, "regions", UI_REGION_KINDS, "region");
 }

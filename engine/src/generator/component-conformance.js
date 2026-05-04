@@ -344,23 +344,72 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
         }));
       }
     }
-    const declaredActionEvents = [
+    const declaredActions = [
       ...(Array.isArray(behavior.directives?.actions) ? behavior.directives.actions : [behavior.directives?.actions].filter(Boolean)),
       ...(Array.isArray(behavior.directives?.submit) ? behavior.directives.submit : [behavior.directives?.submit].filter(Boolean))
-    ].filter((eventName) => eventNames.has(eventName));
-    for (const eventName of declaredActionEvents) {
-      if (!(usage.eventBindings || []).some((binding) => binding.event === eventName)) {
+    ];
+    for (const actionTarget of declaredActions) {
+      if (eventNames.has(actionTarget)) {
+        if (!(usage.eventBindings || []).some((binding) => binding.event === actionTarget)) {
+          checks.push(checkRecord({
+            code: "component_behavior_action_unbound",
+            severity: "warning",
+            message: `Behavior '${behavior.kind}' declares action event '${actionTarget}', but this projection usage does not bind that event to navigation or an action.`,
+            projection,
+            sourceProjection,
+            component,
+            usage,
+            event: actionTarget,
+            behavior: behavior.kind,
+            suggestedFix: `Add 'event ${actionTarget} action <capability>' or 'event ${actionTarget} navigate <screen>' to the projection ui_components entry.`
+          }));
+        }
+        continue;
+      }
+
+      const target = statements.get(actionTarget);
+      if (!target || target.kind !== "capability") {
         checks.push(checkRecord({
-          code: "component_behavior_action_unbound",
-          severity: "warning",
-          message: `Behavior '${behavior.kind}' declares action event '${eventName}', but this projection usage does not bind that event to navigation or an action.`,
+          code: "component_behavior_action_missing",
+          severity: "error",
+          message: `Behavior '${behavior.kind}' references missing capability action '${actionTarget}'.`,
           projection,
           sourceProjection,
           component,
           usage,
-          event: eventName,
           behavior: behavior.kind,
-          suggestedFix: `Add 'event ${eventName} action <capability>' or 'event ${eventName} navigate <screen>' to the projection ui_components entry.`
+          suggestedFix: "Update the behavior directive or declare the referenced capability."
+        }));
+        continue;
+      }
+      if (!realizedIds.has(actionTarget)) {
+        checks.push(checkRecord({
+          code: "component_behavior_action_not_in_projection",
+          severity: "error",
+          message: `Behavior '${behavior.kind}' references capability '${actionTarget}', but projection '${sourceProjection.id}' does not realize it.`,
+          projection,
+          sourceProjection,
+          component,
+          usage,
+          behavior: behavior.kind,
+          suggestedFix: `Add '${actionTarget}' to projection '${sourceProjection.id}' realizes or choose a capability already in this projection context.`
+        }));
+      }
+      if (!(usage.eventBindings || []).some((binding) =>
+        binding.action === "action" &&
+        binding.target?.id === actionTarget &&
+        binding.target?.kind === "capability"
+      )) {
+        checks.push(checkRecord({
+          code: "component_behavior_action_unbound",
+          severity: "warning",
+          message: `Behavior '${behavior.kind}' declares capability action '${actionTarget}', but this projection usage does not bind any component event to that capability.`,
+          projection,
+          sourceProjection,
+          component,
+          usage,
+          behavior: behavior.kind,
+          suggestedFix: `Add 'event <component_event> action ${actionTarget}' to the projection ui_components entry.`
         }));
       }
     }

@@ -93,6 +93,7 @@ component component_ui_data_grid {
   behaviors {
     selection mode multi state selected_ids emits row_select
     sorting fields [title, status, created_at] default [created_at, desc]
+    bulk_action actions [cap_export_tasks] state selected_ids emits export_request
   }
   regions [results, toolbar]
   version "1.0"
@@ -118,5 +119,7 @@ component events, and binding targets. Component behavior declarations are
 realized through those projection bindings: generated UI contracts include
 `behaviorRealizations` with data dependencies, emitted-event bindings,
 navigation or command effects, and `declared`/`realized`/`partial` status.
+Behavior `actions` and `submit` directives may reference declared component
+events or existing capabilities.
 
 See [Components](./components.md) for generator output and roadmap details.

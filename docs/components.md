@@ -52,12 +52,19 @@ behaviors {
   selection mode multi state selected_ids emits row_select
   sorting fields [title, status, created_at] default [created_at, desc]
   pagination mode cursor page_size 25
+  bulk_action actions [cap_export_tasks] state selected_ids emits export_request
 }
 ```
 
 Supported behavior kinds are `selection`, `sorting`, `filtering`, `search`,
 `pagination`, `grouping`, `drag_drop`, `inline_edit`, `bulk_action`,
 `optimistic_update`, `realtime_update`, and `keyboard_navigation`.
+
+`emits` always references component events. `actions` and `submit` may reference
+either component events or capabilities. Prefer capability ids when the behavior
+is meant to invoke a domain command/query; the projection usage still binds the
+concrete component event to that capability with
+`event <component_event> action <capability>`.
 
 Component behavior is declared on the component, but realized by projection
 usage. A projection `ui_components` entry supplies concrete data bindings and
@@ -69,8 +76,8 @@ usage:
   projection, and its default value.
 - `emits` records each behavior-emitted event and whether the projection binds
   it.
-- `actions` records action/submit directive events and whether the projection
-  binds them.
+- `actions` records action/submit directive events or capabilities and whether
+  the projection binds them.
 - `effects` records concrete outcomes from bound events, using `navigation` for
   screen transitions and `command` for capability actions.
 - `status` is `declared`, `realized`, or `partial`.
@@ -105,7 +112,8 @@ Bare unquoted symbols other than `true`, `false`, `null`, and numerics are passe
 - `slots` entries have a symbol name and text description.
 - `behavior` and `behaviors` use the supported interaction vocabulary.
 - Structured behavior entries reference existing component props/events where
-  applicable.
+  applicable. Action-like behavior entries reference either declared component
+  events or existing capabilities.
 - `patterns` and `regions` use the shared UI vocabulary.
 - `dependencies` reference existing statements.
 
@@ -196,6 +204,9 @@ between component behavior declarations and concrete data/event/effect wiring.
 If a behavior declares `emits row_select` but the projection does not bind
 `event row_select navigate <screen>` or `event row_select action <capability>`,
 the realization is `partial` and `component-conformance-report` emits a warning.
+If a behavior declares `actions [cap_export_tasks]`, the realization includes a
+command effect for that capability and remains `partial` until a projection
+usage binds a component event to `cap_export_tasks`.
 
 SvelteKit and React generation can consume supported `ui_components` bindings.
 Every web generator should be contract-complete by default: the Topogram

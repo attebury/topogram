@@ -67,6 +67,46 @@ function eventRealizations(usage, eventNames) {
   });
 }
 
+function capabilityActionRealization(usage, capabilityId) {
+  const bindings = (usage?.eventBindings || [])
+    .filter((binding) =>
+      binding.action === "action" &&
+      binding.target?.kind === "capability" &&
+      binding.target?.id === capabilityId
+    );
+  const capability = {
+    id: capabilityId,
+    kind: "capability"
+  };
+  return {
+    event: null,
+    capability,
+    bound: bindings.length > 0,
+    bindings: bindings.map((binding) => ({
+      event: binding.event || null,
+      action: binding.action || null,
+      target: binding.target || null
+    })),
+    effects: bindings.length > 0
+      ? bindings.map(effectFromEventBinding)
+      : [{
+          type: "command",
+          event: null,
+          capability,
+          source: "behavior"
+        }]
+  };
+}
+
+function actionRealizations(usage, actionNames, eventNames) {
+  return actionNames.map((actionName) => {
+    if (eventNames.has(actionName)) {
+      return eventRealizations(usage, [actionName])[0];
+    }
+    return capabilityActionRealization(usage, actionName);
+  });
+}
+
 function behaviorStatus({ hasDirectives, state, emits }) {
   const hasMissingEventBinding = emits.some((entry) => !entry.bound);
   if (hasMissingEventBinding) {
@@ -92,6 +132,7 @@ function behaviorStatus({ hasDirectives, state, emits }) {
  */
 export function buildComponentBehaviorRealizations(contract, usage) {
   const props = propByName(contract);
+  const eventNames = new Set((contract?.events || []).map((event) => event.id).filter(Boolean));
   return (contract?.behaviors || []).map((behavior) => {
     const directives = behavior.directives || {};
     const statePropName = directives.state || null;
@@ -106,10 +147,10 @@ export function buildComponentBehaviorRealizations(contract, usage) {
         }
       : null;
     const emits = eventRealizations(usage, asArray(directives.emits));
-    const actions = eventRealizations(usage, [
+    const actions = actionRealizations(usage, [
       ...asArray(directives.actions),
       ...asArray(directives.submit)
-    ]);
+    ], eventNames);
     const dataDependencies = (usage?.dataBindings || []).map((binding) => ({
       prop: binding.prop || null,
       source: binding.source || null
