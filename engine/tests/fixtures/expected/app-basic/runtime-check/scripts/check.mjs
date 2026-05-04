@@ -258,6 +258,21 @@ function preconditionStatusFor(contract) {
   return contract.endpoint.preconditions?.[0]?.error || 412;
 }
 
+function visibleTextFromHtml(html) {
+  return String(html || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function checkResultTemplate(definition) {
   return {
     id: definition.id,
@@ -282,10 +297,11 @@ async function runCheck(definition) {
     } else if (definition.kind === "web_contract") {
       const response = await fetchWithStackHint(new URL(resolveCheckPath(definition.path), webBase()), undefined, "web app");
       const body = await response.text();
+      const bodyText = visibleTextFromHtml(body);
       assertCondition(response.status === definition.expectStatus, `web readiness expected ${definition.expectStatus}, got ${response.status}`);
-      assertCondition(body.includes(definition.expectText), `web readiness did not include expected text: ${definition.expectText}`);
+      assertCondition(bodyText.includes(definition.expectText), `web readiness did not include expected text: ${definition.expectText}`);
       if (definition.expectNotText) {
-        assertCondition(!body.includes(definition.expectNotText), `web readiness unexpectedly included text: ${definition.expectNotText}`);
+        assertCondition(!bodyText.includes(definition.expectNotText), `web readiness unexpectedly included text: ${definition.expectNotText}`);
       }
     } else if (definition.kind === "web_browser_contract") {
       const bodyText = await runSafariBrowserCheck(definition);
