@@ -20,7 +20,10 @@ package.json           # required for npm packages
   "version": "0.1.0",
   "kind": "starter",
   "topogramVersion": "0.1",
-  "includesExecutableImplementation": true
+  "includesExecutableImplementation": true,
+  "starterScripts": {
+    "component:behavior:query": "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+  }
 }
 ```
 
@@ -28,6 +31,11 @@ Set `includesExecutableImplementation` to `true` when the pack ships an
 `implementation/` provider. `topogram new` copies that code but does not run it.
 `topogram generate` may load it later through `topogram.project.json`, so
 generated projects record local trust in `.topogram-template-trust.json`.
+
+Use `starterScripts` only for template-specific root `package.json` commands.
+The CLI keeps generic scripts such as `check`, `generate`, and `template:status`
+standard across starters, while template packs can add focused commands that are
+valid for their own topology.
 
 ## Package Files
 

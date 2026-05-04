@@ -137,6 +137,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
+  console.log("   or: topogram query list [--json]");
   console.log("   or: topogram trust template [path]");
   console.log("   or: topogram trust status [path] [--json]");
   console.log("   or: topogram trust diff [path] [--json]");
@@ -176,6 +177,8 @@ function printUsage(options = {}) {
   console.log("  topogram check --json");
   console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram component behavior --projection proj_ui_web");
+  console.log("  topogram query list");
+  console.log("  topogram query component-behavior ./topogram --projection proj_ui_web --json");
   console.log("  topogram generator list");
   console.log("  topogram generator show @attebury/topogram-generator-react-web");
   console.log("  topogram generator check ./generator-package");
@@ -338,6 +341,103 @@ function printComponentHelp() {
   console.log("  topogram component behavior");
   console.log("  topogram component behavior --projection proj_ui_web");
   console.log("  topogram component behavior ./topogram --component component_ui_data_grid --json");
+}
+
+function queryDefinitions() {
+  return [
+    {
+      name: "slice",
+      description: "Return a focused semantic context slice for one selected surface.",
+      selectors: ["capability", "workflow", "projection", "component", "entity", "journey", "domain"],
+      example: "topogram query slice ./topogram --component component_ui_data_grid"
+    },
+    {
+      name: "verification-targets",
+      description: "Return the smallest verification target set for a mode, selector, or diff.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      example: "topogram query verification-targets ./topogram --component component_ui_data_grid"
+    },
+    {
+      name: "component-behavior",
+      description: "Return component behavior realization data grouped by component, screen, capability, and effect.",
+      selectors: ["projection", "component"],
+      example: "topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json"
+    },
+    {
+      name: "change-plan",
+      description: "Return the semantic change plan, generator targets, risk, and alignment recommendations.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      example: "topogram query change-plan ./topogram --component component_ui_data_grid"
+    },
+    {
+      name: "review-packet",
+      description: "Return the review packet for a selected change or diff.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      example: "topogram query review-packet ./topogram --component component_ui_data_grid"
+    },
+    {
+      name: "resolved-workflow-context",
+      description: "Return resolved workflow guidance, artifact load order, preset policy, and recommended artifact queries.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
+      example: "topogram query resolved-workflow-context ./topogram --mode modeling --component component_ui_data_grid --json"
+    },
+    {
+      name: "single-agent-plan",
+      description: "Return a single-agent operating plan for a mode and optional selector.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      example: "topogram query single-agent-plan ./topogram --mode modeling --component component_ui_data_grid --json"
+    },
+    {
+      name: "risk-summary",
+      description: "Return the risk summary for a selected change, mode, or diff.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      example: "topogram query risk-summary ./topogram --component component_ui_data_grid"
+    },
+    {
+      name: "proceed-decision",
+      description: "Return a proceed/no-go decision for the current selected work.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      example: "topogram query proceed-decision ./topogram --mode verification"
+    },
+    {
+      name: "write-scope",
+      description: "Return safe edit boundaries for a selected mode or semantic surface.",
+      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      example: "topogram query write-scope ./topogram --component component_ui_data_grid"
+    }
+  ];
+}
+
+function buildQueryListPayload() {
+  return {
+    type: "query_list",
+    version: 1,
+    queries: queryDefinitions()
+  };
+}
+
+function printQueryHelp() {
+  console.log("Usage: topogram query list [--json]");
+  console.log("   or: topogram query component-behavior [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("   or: topogram query <name> [path] [selectors] [--json]");
+  console.log("");
+  console.log("Agent-facing queries return focused JSON packets for context, review, verification, and generation follow-up.");
+  console.log("");
+  console.log("Common queries:");
+  for (const query of queryDefinitions()) {
+    console.log(`  ${query.name}`);
+    console.log(`    ${query.description}`);
+    console.log(`    example: ${query.example}`);
+  }
+}
+
+function printQueryList(payload) {
+  console.log("Topogram queries:");
+  for (const query of payload.queries) {
+    console.log(`- ${query.name}: ${query.description}`);
+    console.log(`  selectors: ${query.selectors.join(", ") || "none"}`);
+    console.log(`  example: ${query.example}`);
+  }
 }
 
 function printGeneratorHelp() {
@@ -543,6 +643,10 @@ function printCommandHelp(command) {
   }
   if (command === "component") {
     printComponentHelp();
+    return true;
+  }
+  if (command === "query") {
+    printQueryHelp();
     return true;
   }
   if (command === "generator") {
@@ -5480,6 +5584,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { workflowName: "reconcile", inputPath: args[1] };
 } else if (args[0] === "adoption" && args[1] === "status") {
   commandArgs = { workflowName: "adoption-status", inputPath: args[2] };
+} else if (args[0] === "query" && args[1] === "list") {
+  commandArgs = { queryList: true, inputPath: null };
 } else if (args[0] === "query" && args[1] === "task-mode") {
   commandArgs = { generateTarget: "context-task-mode", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "adoption-plan") {
@@ -5546,6 +5652,9 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { queryName: "auth-hints", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "auth-review-packet") {
   commandArgs = { queryName: "auth-review-packet", inputPath: args[2] };
+} else if (args[0] === "query") {
+  printQueryHelp();
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "sdlc" && args[1] === "transition") {
   const sdlcInput = args[4] && !args[4].startsWith("--") ? args[4] : ".";
   commandArgs = { sdlcCommand: "transition", inputPath: sdlcInput, sdlcId: args[2], sdlcTargetStatus: args[3] };
@@ -5592,6 +5701,7 @@ const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
 const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
 const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
+const shouldQueryList = Boolean(commandArgs?.queryList);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateShow = Boolean(commandArgs?.templateShow);
 const shouldTemplateExplain = Boolean(commandArgs?.templateExplain);
@@ -5762,6 +5872,16 @@ try {
       printReleaseStatus(payload);
     }
     process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldQueryList) {
+    const payload = buildQueryListPayload();
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printQueryList(payload);
+    }
+    process.exit(0);
   }
 
   if (shouldComponentCheck) {

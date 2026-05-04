@@ -376,6 +376,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
   assert.match(help.stdout, /topogram component check --projection proj_ui_web/);
   assert.match(help.stdout, /topogram component behavior --projection proj_ui_web/);
+  assert.match(help.stdout, /topogram query list/);
+  assert.match(help.stdout, /topogram query component-behavior \.\/topogram --projection proj_ui_web --json/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
@@ -421,6 +423,22 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(componentHelp.stdout, /topogram component behavior \[path\]/);
   assert.match(componentHelp.stdout, /topogram component check --projection proj_ui_web/);
   assert.match(componentHelp.stdout, /topogram component behavior --projection proj_ui_web/);
+
+  const queryHelp = runCli(["query", "--help"]);
+  assert.equal(queryHelp.status, 0, queryHelp.stderr || queryHelp.stdout);
+  assert.match(queryHelp.stdout, /Usage: topogram query list \[--json\]/);
+  assert.match(queryHelp.stdout, /topogram query component-behavior \[path\]/);
+  assert.match(queryHelp.stdout, /component-behavior/);
+  assert.match(queryHelp.stdout, /recommended artifact queries/);
+
+  const queryList = runCli(["query", "list", "--json"]);
+  assert.equal(queryList.status, 0, queryList.stderr || queryList.stdout);
+  const queryListPayload = JSON.parse(queryList.stdout);
+  assert.equal(queryListPayload.type, "query_list");
+  const componentBehaviorQuery = queryListPayload.queries.find((query) => query.name === "component-behavior");
+  assert.ok(componentBehaviorQuery);
+  assert.deepEqual(componentBehaviorQuery.selectors, ["projection", "component"]);
+  assert.match(componentBehaviorQuery.example, /topogram query component-behavior/);
 
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
@@ -2946,6 +2964,27 @@ test("topogram new carries template generator package dependencies into starters
   assert.equal(pkg.devDependencies["@scope/topogram-generator-web"], "^0.1.0");
   assert.equal(pkg.devDependencies["@scope/topogram-generator-api"], "~0.2.0");
   assert.equal(pkg.devDependencies["@scope/not-a-generator"], undefined);
+});
+
+test("topogram new carries template starter scripts into starters", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-starter-scripts-"));
+  const templateRoot = copyBuiltInTemplate(root, "template");
+  const manifestPath = path.join(templateRoot, "topogram-template.json");
+  const manifest = readJson(manifestPath);
+  manifest.starterScripts = {
+    "component:behavior:query": "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+  };
+  writeJson(manifestPath, manifest);
+  const projectRoot = path.join(root, "starter");
+
+  const create = runCli(["new", projectRoot, "--template", templateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const pkg = readJson(path.join(projectRoot, "package.json"));
+
+  assert.equal(
+    pkg.scripts["component:behavior:query"],
+    "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+  );
 });
 
 test("package-backed templates can inspect and recommend latest versions explicitly", () => {

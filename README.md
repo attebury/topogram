@@ -114,11 +114,15 @@ The JSON form is intended for agents and setup scripts:
 
 ```bash
 topogram new --list-templates --json
+topogram query list --json
 ```
 
 Each template item includes `surfaces`, `generators`, `stack`,
 `includesExecutableImplementation`, and `recommendedCommand` so tools can pick a
 starter without scraping human output.
+Use `topogram query list` to discover focused agent packets such as
+`component-behavior`, `change-plan`, `review-packet`, and
+`resolved-workflow-context`.
 
 The package-backed starter templates in `topogram-starters` are the canonical
 shared starter examples and are surfaced through the `attebury/topograms`

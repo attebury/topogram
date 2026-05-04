@@ -68,6 +68,7 @@ const SURFACE_ORDER = new Map([
  * @property {string} topogramVersion
  * @property {boolean} [includesExecutableImplementation]
  * @property {string} [description]
+ * @property {Record<string, string>} [starterScripts]
  */
 
 /**
@@ -317,6 +318,19 @@ function validateTemplateManifest(value) {
     typeof manifest.includesExecutableImplementation !== "boolean"
   ) {
     throw new Error(`${TEMPLATE_MANIFEST} field 'includesExecutableImplementation' must be a boolean.`);
+  }
+  if (Object.prototype.hasOwnProperty.call(manifest, "starterScripts")) {
+    if (!manifest.starterScripts || typeof manifest.starterScripts !== "object" || Array.isArray(manifest.starterScripts)) {
+      throw new Error(`${TEMPLATE_MANIFEST} field 'starterScripts' must be an object of package.json script names to commands.`);
+    }
+    for (const [scriptName, command] of Object.entries(manifest.starterScripts)) {
+      if (typeof scriptName !== "string" || !scriptName.trim() || scriptName.startsWith("-") || scriptName.includes("\n")) {
+        throw new Error(`${TEMPLATE_MANIFEST} starterScripts contains an invalid script name.`);
+      }
+      if (typeof command !== "string" || !command.trim()) {
+        throw new Error(`${TEMPLATE_MANIFEST} starterScripts.${scriptName} must be a non-empty string.`);
+      }
+    }
   }
   return /** @type {TemplateManifest} */ (manifest);
 }
@@ -1897,6 +1911,7 @@ export function applyTemplateUpdate(options) {
 function writeProjectPackage(projectRoot, engineRoot, template) {
   const cliDependency = cliDependencyForProject(projectRoot, engineRoot);
   const generatorDependencies = generatorDependenciesForTemplate(template.root);
+  const starterScripts = template.manifest.starterScripts || {};
   const pkg = {
     name: packageNameFromPath(projectRoot),
     private: true,
@@ -1932,7 +1947,8 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
       "app:runtime-check": "npm --prefix ./app run runtime-check",
       "app:check": "npm run app:compile",
       "app:probe": "npm run app:smoke && npm run app:runtime-check",
-      "app:runtime": "npm --prefix ./app run runtime"
+      "app:runtime": "npm --prefix ./app run runtime",
+      ...starterScripts
     },
     devDependencies: {
       [cliDependency.name]: cliDependency.spec,
