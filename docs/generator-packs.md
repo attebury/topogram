@@ -109,7 +109,7 @@ resolve it during `topogram check` and `topogram generate`:
 ```json
 {
   "devDependencies": {
-    "@attebury/topogram": "^0.3.23",
+    "@attebury/topogram": "^0.3.24",
     "@attebury/topogram-generator-react-web": "^0.1.0"
   }
 }
@@ -117,6 +117,12 @@ resolve it during `topogram check` and `topogram generate`:
 
 The generator package must expose `topogram-generator.json`. The manifest `id`,
 `version`, `source`, and `package` must match the topology binding.
+
+Web generator adapters should consume the normalized UI contract instead of
+inferring behavior from framework code. Component usages include
+`behaviorRealizations`, which bridge component behavior declarations to concrete
+projection data bindings, event bindings, navigation effects, and command
+effects.
 
 ## Package Layout
 
