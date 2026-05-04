@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { generateApiContractGraph } from "./api.js";
 import {
   getGeneratorManifest,
+  packageGeneratorInstallHint,
   resolveGeneratorManifestForBinding,
   validateGeneratorManifest
 } from "./registry.js";
@@ -255,7 +256,8 @@ function loadPackageGeneratorAdapter(manifest, component, options = {}) {
   try {
     moduleValue = requireFromProject(rootDir)(packageName);
   } catch (error) {
-    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}`);
+    const installHint = packageGeneratorInstallHint(packageName);
+    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}${installHint ? `. ${installHint}` : ""}`);
   }
   const adapter = selectPackageExport(moduleValue, manifest.export);
   if (!adapter || typeof adapter.generate !== "function") {
@@ -301,7 +303,8 @@ export function resolveGeneratorForComponent(component, options = {}) {
   }
   const adapter = getBundledGeneratorAdapter(manifest.id);
   if (!adapter) {
-    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is not available. Package-backed generators must be installed before generation.`);
+    const installHint = packageGeneratorInstallHint(component?.generator?.package || manifest.package);
+    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is not available. Package-backed generators must be installed before generation.${installHint ? ` ${installHint}` : ""}`);
   }
   return { manifest, adapter };
 }

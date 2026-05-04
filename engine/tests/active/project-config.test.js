@@ -185,12 +185,50 @@ test("topogram generator list and show describe bundled and installed package ge
   assert.equal(packagePayload.ok, true);
   assert.equal(packagePayload.generator.id, "@scope/smoke-web");
   assert.equal(packagePayload.generator.package, packageName);
+  assert.equal(packagePayload.generator.installCommand, `npm install -D ${packageName}`);
   assert.equal(packagePayload.exampleTopologyBinding.generator.package, packageName);
+
+  const humanList = runCli(["generator", "list"], { cwd: root });
+  assert.equal(humanList.status, 0, humanList.stderr || humanList.stdout);
+  assert.match(humanList.stdout, /package-backed: 1; installed:/);
+  assert.match(humanList.stdout, /Source: package/);
+  assert.match(humanList.stdout, /Installed: yes/);
+  assert.match(humanList.stdout, new RegExp(`Install: npm install -D ${packageName.replace("/", "\\/")}`));
 
   const human = runCli(["generator", "show", "topogram/react"], { cwd: root });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Generator: topogram\/react@1/);
   assert.match(human.stdout, /Example topology binding:/);
+
+  const humanPackage = runCli(["generator", "show", packageName], { cwd: root });
+  assert.equal(humanPackage.status, 0, humanPackage.stderr || humanPackage.stdout);
+  assert.match(humanPackage.stdout, /Generator: @scope\/smoke-web@1/);
+  assert.match(humanPackage.stdout, /Source: package/);
+  assert.match(humanPackage.stdout, /Installed: yes/);
+  assert.match(humanPackage.stdout, new RegExp(`Install: npm install -D ${packageName.replace("/", "\\/")}`));
+  assert.match(humanPackage.stdout, /Example topology binding:/);
+});
+
+test("topogram generator list and show report missing package install commands", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-missing-discovery-"));
+  const packageName = "@scope/topogram-generator-missing";
+  writeJson(path.join(root, "package.json"), {
+    private: true,
+    devDependencies: {
+      [packageName]: "0.1.0"
+    }
+  });
+
+  const list = runCli(["generator", "list"], { cwd: root });
+  assert.notEqual(list.status, 0);
+  assert.match(list.stdout, /@scope\/topogram-generator-missing/);
+  assert.match(list.stdout, /Installed: no/);
+  assert.match(list.stdout, /Install: npm install -D @scope\/topogram-generator-missing/);
+
+  const show = runCli(["generator", "show", packageName], { cwd: root });
+  assert.notEqual(show.status, 0);
+  assert.match(show.stdout, /Generator not found/);
+  assert.match(show.stdout, /npm install -D @scope\/topogram-generator-missing/);
 });
 
 test("topogram generator check rejects invalid adapter exports", () => {
@@ -398,8 +436,38 @@ test("project config validation rejects missing and mismatched package-backed ge
 
   assert.equal(missingResult.ok, false);
   assert.match(missingResult.errors.map((error) => error.message).join("\n"), /could not be resolved/);
+  assert.match(missingResult.errors.map((error) => error.message).join("\n"), /npm install -D @scope\/topogram-generator-missing/);
   assert.equal(mismatchedResult.ok, false);
   assert.match(mismatchedResult.errors.map((error) => error.message).join("\n"), /does not match binding/);
+});
+
+test("topogram check reports install command for missing package-backed generator", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-generator-check-missing-"));
+  const projectRoot = path.join(root, "workspace");
+  fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const config = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
+  webComponent.generator = {
+    id: "@scope/missing-web",
+    version: "1",
+    package: "@scope/topogram-generator-missing"
+  };
+  writeJson(projectConfigPath, config);
+
+  const human = runCli(["check", "."], { cwd: projectRoot });
+  assert.notEqual(human.status, 0);
+  assert.match(human.stderr, /Component 'app_sveltekit'/);
+  assert.match(human.stderr, /npm install -D @scope\/topogram-generator-missing/);
+
+  const json = runCli(["check", ".", "--json"], { cwd: projectRoot });
+  assert.notEqual(json.status, 0);
+  const payload = JSON.parse(json.stdout);
+  assert.equal(payload.ok, false);
+  assert.equal(
+    payload.errors.some((error) => /npm install -D @scope\/topogram-generator-missing/.test(error.message)),
+    true
+  );
 });
 
 test("maintained app outputs are refused for generated app writes", () => {

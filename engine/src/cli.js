@@ -40,7 +40,8 @@ import { checkGeneratorPack } from "./generator/check.js";
 import {
   GENERATOR_MANIFESTS,
   getGeneratorManifest,
-  loadPackageGeneratorManifest
+  loadPackageGeneratorManifest,
+  packageGeneratorInstallCommand
 } from "./generator/registry.js";
 import {
   buildAuthHintsQueryPayload,
@@ -916,6 +917,7 @@ function printGeneratorCheck(payload) {
  * @returns {Record<string, any>}
  */
 function generatorManifestSummary(manifest, metadata = {}) {
+  const installCommand = manifest.package ? packageGeneratorInstallCommand(manifest.package) : null;
   return {
     id: manifest.id,
     version: manifest.version,
@@ -928,6 +930,7 @@ function generatorManifestSummary(manifest, metadata = {}) {
     source: manifest.source,
     ...(manifest.profile ? { profile: manifest.profile } : {}),
     ...(manifest.package ? { package: manifest.package } : {}),
+    ...(installCommand ? { installCommand } : {}),
     ...(manifest.planned ? { planned: true } : {}),
     installed: metadata.installed !== false,
     manifestPath: metadata.manifestPath || null,
@@ -1021,6 +1024,7 @@ function buildGeneratorListPayload(cwd) {
         errors: loaded.errors
       }));
     } else {
+      const installCommand = packageGeneratorInstallCommand(packageName);
       generators.push({
         id: null,
         version: null,
@@ -1032,6 +1036,7 @@ function buildGeneratorListPayload(cwd) {
         capabilities: {},
         source: "package",
         package: packageName,
+        ...(installCommand ? { installCommand } : {}),
         installed: false,
         manifestPath: loaded.manifestPath,
         packageRoot: loaded.packageRoot,
@@ -1119,18 +1124,31 @@ function buildGeneratorShowPayload(spec, cwd) {
  */
 function printGeneratorList(payload) {
   console.log("Topogram generators");
-  console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; planned: ${payload.summary.planned}`);
+  console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; installed: ${payload.summary.installed}; planned: ${payload.summary.planned}`);
   console.log("");
   for (const generator of payload.generators) {
     const id = generator.id || generator.package || "unknown";
-    const status = generator.errors.length > 0 ? "invalid" : generator.planned ? "planned" : generator.source;
+    const status = generator.errors.length > 0
+      ? "invalid"
+      : generator.planned
+        ? "planned"
+        : generator.source === "package"
+          ? (generator.installed ? "package installed" : "package missing")
+          : "bundled";
     const platforms = generator.projectionPlatforms.join(", ") || "none";
     const stack = Object.values(generator.stack || {}).join(" + ") || "not declared";
     console.log(`- ${id}${generator.version ? `@${generator.version}` : ""} (${generator.surface || "unknown"}, ${status})`);
+    console.log(`  Source: ${generator.source}`);
+    if (generator.source === "package") {
+      console.log(`  Installed: ${generator.installed ? "yes" : "no"}`);
+    }
     console.log(`  Platforms: ${platforms}`);
     console.log(`  Stack: ${stack}`);
     if (generator.package) {
       console.log(`  Package: ${generator.package}`);
+    }
+    if (generator.installCommand) {
+      console.log(`  Install: ${generator.installCommand}`);
     }
     for (const error of generator.errors || []) {
       console.log(`  Error: ${error}`);
@@ -1154,8 +1172,14 @@ function printGeneratorShow(payload) {
   console.log(`Generator: ${generator.id}@${generator.version}`);
   console.log(`Surface: ${generator.surface}`);
   console.log(`Source: ${generator.source}${generator.planned ? " (planned)" : ""}`);
+  if (generator.source === "package") {
+    console.log(`Installed: ${generator.installed ? "yes" : "no"}`);
+  }
   if (generator.package) {
     console.log(`Package: ${generator.package}`);
+  }
+  if (generator.installCommand) {
+    console.log(`Install: ${generator.installCommand}`);
   }
   if (generator.manifestPath) {
     console.log(`Manifest: ${generator.manifestPath}`);

@@ -190,6 +190,23 @@ function packageResolutionBase(rootDir) {
 }
 
 /**
+ * @param {string|null|undefined} packageName
+ * @returns {string|null}
+ */
+export function packageGeneratorInstallCommand(packageName) {
+  return packageName ? `npm install -D ${packageName}` : null;
+}
+
+/**
+ * @param {string|null|undefined} packageName
+ * @returns {string|null}
+ */
+export function packageGeneratorInstallHint(packageName) {
+  const command = packageGeneratorInstallCommand(packageName);
+  return command ? `Install it from the project root with: ${command}` : null;
+}
+
+/**
  * @param {string} packageName
  * @param {string|null|undefined} rootDir
  * @returns {{ manifestPath: string|null, packageRoot: string|null, error: string|null }}
@@ -222,10 +239,11 @@ export function resolvePackageGeneratorManifestPath(packageName, rootDir = proce
       };
     } catch {
       const detail = manifestError instanceof Error ? manifestError.message : String(manifestError);
+      const installHint = packageGeneratorInstallHint(packageName);
       return {
         manifestPath: null,
         packageRoot: null,
-        error: `Generator package '${packageName}' could not be resolved from '${rootDir || process.cwd()}': ${detail}`
+        error: `Generator package '${packageName}' could not be resolved from '${rootDir || process.cwd()}': ${detail}${installHint ? `. ${installHint}` : ""}`
       };
     }
   }

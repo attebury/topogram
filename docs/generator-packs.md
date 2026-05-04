@@ -91,16 +91,28 @@ Package-backed topology bindings include the package name explicitly:
   "type": "web",
   "projection": "proj_ui_web",
   "generator": {
-    "id": "@attebury/topogram-generator-react",
+    "id": "@attebury/topogram-generator-react-web",
     "version": "1",
-    "package": "@attebury/topogram-generator-react"
+    "package": "@attebury/topogram-generator-react-web"
   },
   "api": "app_api",
   "port": 5173
 }
 ```
 
-The package must expose `topogram-generator.json`. The manifest `id`,
+The project package must also declare the generator dependency so Node can
+resolve it during `topogram check` and `topogram generate`:
+
+```json
+{
+  "devDependencies": {
+    "@attebury/topogram": "^0.3.21",
+    "@attebury/topogram-generator-react-web": "^0.1.0"
+  }
+}
+```
+
+The generator package must expose `topogram-generator.json`. The manifest `id`,
 `version`, `source`, and `package` must match the topology binding.
 
 ## Package Layout
@@ -185,6 +197,14 @@ topogram generator show @scope/topogram-generator-example-web --json
 declared in the current `package.json` dependencies. `generator show` accepts a
 bundled generator id or an already installed package name and prints the
 manifest, stack, capabilities, and an example `topology.components[]` binding.
+
+When `topogram check` sees a package-backed topology binding whose package is
+not installed, it reports the component id, generator id/version, package name,
+and the install command to run from the project root:
+
+```bash
+npm install -D @scope/topogram-generator-example-web
+```
 
 Generator authors should expose `npm run check` and back it with:
 
