@@ -178,11 +178,15 @@ and `topogram new ./my-app` cannot resolve the default catalog-backed
       "id": "todo",
       "kind": "template",
       "package": "@attebury/topogram-template-todo",
-      "defaultVersion": "0.1.6",
+      "defaultVersion": "0.1.27",
       "description": "Todo app starter",
       "tags": ["todo", "sveltekit", "hono", "postgres"],
       "surfaces": ["web", "api", "database"],
-      "generators": ["topogram/sveltekit", "topogram/hono", "topogram/postgres"],
+      "generators": [
+        "@attebury/topogram-generator-sveltekit-web",
+        "@attebury/topogram-generator-hono-api",
+        "@attebury/topogram-generator-postgres-db"
+      ],
       "stack": "SvelteKit + Hono + Postgres",
       "trust": {
         "scope": "@attebury",

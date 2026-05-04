@@ -15,8 +15,9 @@ policy. Stack-specific realization belongs behind generator manifests.
   "type": "web",
   "projection": "proj_ui_web",
   "generator": {
-    "id": "topogram/react",
-    "version": "1"
+    "id": "@attebury/topogram-generator-react-web",
+    "version": "1",
+    "package": "@attebury/topogram-generator-react-web"
   },
   "api": "app_api",
   "port": 5173
@@ -37,11 +38,11 @@ scripts, Prisma schemas, or Drizzle schemas.
 
 ## Manifest
 
-Bundled and future package-backed generators use the same manifest shape:
+Package-backed and bundled fallback generators use the same manifest shape:
 
 ```json
 {
-  "id": "topogram/react",
+  "id": "@attebury/topogram-generator-react-web",
   "version": "1",
   "surface": "web",
   "projectionPlatforms": ["ui_web"],
@@ -57,15 +58,17 @@ Bundled and future package-backed generators use the same manifest shape:
     "components": true,
     "coverage": true
   },
-  "source": "bundled"
+  "source": "package",
+  "package": "@attebury/topogram-generator-react-web"
 }
 ```
 
-`source: "bundled"` means the generator ships with `@attebury/topogram`.
 `source: "package"` means the generator lives in an already installed package.
 Topogram does not dynamically install unknown generator packages; a project or
 template must declare and install the package through normal package-manager
 workflow before `topogram check` or `topogram generate` can use it.
+`source: "bundled"` means the generator ships with `@attebury/topogram` as a
+compatibility fallback for engine fixtures and older topology bindings.
 
 Manifest fields:
 
@@ -106,7 +109,7 @@ resolve it during `topogram check` and `topogram generate`:
 ```json
 {
   "devDependencies": {
-    "@attebury/topogram": "^0.3.21",
+    "@attebury/topogram": "^0.3.23",
     "@attebury/topogram-generator-react-web": "^0.1.0"
   }
 }
@@ -189,13 +192,13 @@ Consumers can inspect generator availability before editing topology bindings:
 ```bash
 topogram generator list
 topogram generator list --json
-topogram generator show topogram/react
+topogram generator show @attebury/topogram-generator-react-web
 topogram generator show @scope/topogram-generator-example-web --json
 ```
 
 `generator list` reports bundled generators plus installed generator packages
-declared in the current `package.json` dependencies. `generator show` accepts a
-bundled generator id or an already installed package name and prints the
+declared in the current `package.json` dependencies. `generator show` accepts an
+already installed package name or a bundled fallback generator id and prints the
 manifest, stack, capabilities, and an example `topology.components[]` binding.
 
 When `topogram check` sees a package-backed topology binding whose package is

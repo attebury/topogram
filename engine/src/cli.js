@@ -175,7 +175,7 @@ function printUsage(options = {}) {
   console.log("  topogram check --json");
   console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram generator list");
-  console.log("  topogram generator show topogram/react");
+  console.log("  topogram generator show @attebury/topogram-generator-react-web");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generate");
   console.log("");
@@ -340,14 +340,14 @@ function printGeneratorHelp() {
   console.log("");
   console.log("Notes:");
   console.log("  - list shows bundled generators plus installed package-backed generators declared in package.json.");
-  console.log("  - show accepts a bundled generator id such as topogram/react or an installed package name.");
+  console.log("  - show accepts an installed package name or a bundled fallback generator id.");
   console.log("  - check validates a local generator package path or an already installed package.");
   console.log("  - Topogram does not install generator packages during show or check.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram generator list");
   console.log("  topogram generator list --json");
-  console.log("  topogram generator show topogram/react");
+  console.log("  topogram generator show @attebury/topogram-generator-react-web");
   console.log("  topogram generator show @scope/topogram-generator-web --json");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator check @scope/topogram-generator-web --json");

@@ -245,7 +245,7 @@ export function validateCatalog(value, source = "") {
         severity: "warning",
         message: `Catalog entry '${id || entryPath}' generators should be an array of generator ids.`,
         path: source || null,
-        suggestedFix: "Use generator ids such as [\"topogram/sveltekit\", \"topogram/hono\"]."
+        suggestedFix: "Use package-backed generator ids such as [\"@attebury/topogram-generator-sveltekit-web\", \"@attebury/topogram-generator-hono-api\"]."
       }));
     }
     if (Object.prototype.hasOwnProperty.call(entry, "stack") && typeof entry.stack !== "string") {
