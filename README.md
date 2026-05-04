@@ -115,6 +115,7 @@ The JSON form is intended for agents and setup scripts:
 ```bash
 topogram new --list-templates --json
 topogram query list --json
+topogram query show component-behavior --json
 ```
 
 Each template item includes `surfaces`, `generators`, `stack`,
@@ -122,13 +123,16 @@ Each template item includes `surfaces`, `generators`, `stack`,
 starter without scraping human output.
 Use `topogram query list` to discover focused agent packets such as
 `component-behavior`, `change-plan`, `review-packet`, and
-`resolved-workflow-context`.
+`resolved-workflow-context`. Use `topogram query show <name>` when an agent
+needs the purpose, arguments, selectors, output type, and example for one query.
 
 The package-backed starter templates in `topogram-starters` are the canonical
 shared starter examples and are surfaced through the `attebury/topograms`
 catalog. Generated projects include a project `.npmrc` that reads
 `${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read GitHub
 Packages when the CLI dependency comes from `@attebury/topogram`.
+All generated starters include `npm run query:list` as the default local query
+discovery command.
 
 Executable templates such as `web-api` and `web-api-db` record local trust in
 `.topogram-template-trust.json`; refresh it with `topogram trust template` after

@@ -1923,6 +1923,7 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
       "source:status:remote": "topogram source status --remote",
       check: "topogram check",
       "check:json": "topogram check --json",
+      "query:list": "topogram query list --json",
       generate: "topogram generate",
       "template:explain": "topogram template explain",
       "template:status": "topogram template status",

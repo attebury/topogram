@@ -33,9 +33,9 @@ Set `includesExecutableImplementation` to `true` when the pack ships an
 generated projects record local trust in `.topogram-template-trust.json`.
 
 Use `starterScripts` only for template-specific root `package.json` commands.
-The CLI keeps generic scripts such as `check`, `generate`, and `template:status`
-standard across starters, while template packs can add focused commands that are
-valid for their own topology.
+The CLI keeps generic scripts such as `check`, `generate`, `query:list`, and
+`template:status` standard across starters, while template packs can add focused
+commands that are valid for their own topology.
 
 ## Package Files
 

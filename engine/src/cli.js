@@ -347,62 +347,92 @@ function queryDefinitions() {
   return [
     {
       name: "slice",
+      purpose: "Give an agent the smallest graph slice needed to reason about one selected semantic surface.",
       description: "Return a focused semantic context slice for one selected surface.",
       selectors: ["capability", "workflow", "projection", "component", "entity", "journey", "domain"],
+      args: ["[path]", "[selectors]", "[--json]"],
+      output: "context_slice",
       example: "topogram query slice ./topogram --component component_ui_data_grid"
     },
     {
       name: "verification-targets",
+      purpose: "Map a selected change or mode to the smallest verification set worth running.",
       description: "Return the smallest verification target set for a mode, selector, or diff.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "verification_targets",
       example: "topogram query verification-targets ./topogram --component component_ui_data_grid"
     },
     {
       name: "component-behavior",
+      purpose: "Show how reusable component behavior is realized by projection usage.",
       description: "Return component behavior realization data grouped by component, screen, capability, and effect.",
       selectors: ["projection", "component"],
+      args: ["[path]", "[--projection <id>]", "[--component <id>]", "[--json]"],
+      output: "component_behavior_report",
       example: "topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json"
     },
     {
       name: "change-plan",
+      purpose: "Summarize what a selected change affects before code or Topogram edits start.",
       description: "Return the semantic change plan, generator targets, risk, and alignment recommendations.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "change_plan_query",
       example: "topogram query change-plan ./topogram --component component_ui_data_grid"
     },
     {
       name: "review-packet",
+      purpose: "Bundle the context a human or agent needs to review a selected semantic change.",
       description: "Return the review packet for a selected change or diff.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "review_packet_query",
       example: "topogram query review-packet ./topogram --component component_ui_data_grid"
     },
     {
       name: "resolved-workflow-context",
+      purpose: "Resolve workflow guidance and artifact load order for a selected mode or change.",
       description: "Return resolved workflow guidance, artifact load order, preset policy, and recommended artifact queries.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
+      args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "resolved_workflow_context_query",
       example: "topogram query resolved-workflow-context ./topogram --mode modeling --component component_ui_data_grid --json"
     },
     {
       name: "single-agent-plan",
+      purpose: "Give one coding agent a bounded plan, artifact set, and write guidance.",
       description: "Return a single-agent operating plan for a mode and optional selector.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "single_agent_plan_query",
       example: "topogram query single-agent-plan ./topogram --mode modeling --component component_ui_data_grid --json"
     },
     {
       name: "risk-summary",
+      purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "risk_summary_query",
       example: "topogram query risk-summary ./topogram --component component_ui_data_grid"
     },
     {
       name: "proceed-decision",
+      purpose: "Tell a human or agent whether enough context and proof exist to proceed.",
       description: "Return a proceed/no-go decision for the current selected work.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "proceed_decision_query",
       example: "topogram query proceed-decision ./topogram --mode verification"
     },
     {
       name: "write-scope",
+      purpose: "Define where an agent may edit for a selected semantic surface.",
       description: "Return safe edit boundaries for a selected mode or semantic surface.",
       selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
+      output: "write_scope_query",
       example: "topogram query write-scope ./topogram --component component_ui_data_grid"
     }
   ];
@@ -416,8 +446,22 @@ function buildQueryListPayload() {
   };
 }
 
+function buildQueryShowPayload(name) {
+  const query = queryDefinitions().find((entry) => entry.name === name);
+  if (!query) {
+    const known = queryDefinitions().map((entry) => entry.name).join(", ");
+    throw new Error(`Unknown query '${name}'. Run 'topogram query list' to inspect available queries. Known queries: ${known}`);
+  }
+  return {
+    type: "query_definition",
+    version: 1,
+    query
+  };
+}
+
 function printQueryHelp() {
   console.log("Usage: topogram query list [--json]");
+  console.log("   or: topogram query show <name> [--json]");
   console.log("   or: topogram query component-behavior [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram query <name> [path] [selectors] [--json]");
   console.log("");
@@ -429,6 +473,17 @@ function printQueryHelp() {
     console.log(`    ${query.description}`);
     console.log(`    example: ${query.example}`);
   }
+}
+
+function printQueryDefinition(payload) {
+  const query = payload.query;
+  console.log(`Query: ${query.name}`);
+  console.log(`Purpose: ${query.purpose}`);
+  console.log(`Description: ${query.description}`);
+  console.log(`Output: ${query.output}`);
+  console.log(`Arguments: ${query.args.join(" ")}`);
+  console.log(`Selectors: ${query.selectors.join(", ") || "none"}`);
+  console.log(`Example: ${query.example}`);
 }
 
 function printQueryList(payload) {
@@ -5586,6 +5641,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { workflowName: "adoption-status", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "list") {
   commandArgs = { queryList: true, inputPath: null };
+} else if (args[0] === "query" && args[1] === "show") {
+  commandArgs = { queryShow: true, queryShowName: args[2] || null, inputPath: null };
 } else if (args[0] === "query" && args[1] === "task-mode") {
   commandArgs = { generateTarget: "context-task-mode", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "adoption-plan") {
@@ -5702,6 +5759,7 @@ const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
 const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
 const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldQueryList = Boolean(commandArgs?.queryList);
+const shouldQueryShow = Boolean(commandArgs?.queryShow);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
 const shouldTemplateShow = Boolean(commandArgs?.templateShow);
 const shouldTemplateExplain = Boolean(commandArgs?.templateExplain);
@@ -5839,6 +5897,12 @@ if (shouldPackageUpdateCli && !inputPath) {
   process.exit(1);
 }
 
+if (shouldQueryShow && !commandArgs?.queryShowName) {
+  console.error("Missing required <name>.");
+  printQueryHelp();
+  process.exit(1);
+}
+
 if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
@@ -5880,6 +5944,16 @@ try {
       console.log(stableStringify(payload));
     } else {
       printQueryList(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldQueryShow) {
+    const payload = buildQueryShowPayload(commandArgs.queryShowName);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printQueryDefinition(payload);
     }
     process.exit(0);
   }
