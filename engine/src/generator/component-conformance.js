@@ -1,4 +1,5 @@
 import { getProjection, sharedUiProjectionForWeb, uiProjectionCandidates } from "./surfaces/shared.js";
+import { buildComponentBehaviorRealizations } from "../component-behavior.js";
 
 function byId(entries = []) {
   return new Map(entries.map((entry) => [entry.id, entry]));
@@ -326,6 +327,41 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
           behavior: behavior.kind,
           suggestedFix: "Update the behavior directive or declare the referenced event."
         }));
+        continue;
+      }
+      if (!(usage.eventBindings || []).some((binding) => binding.event === eventName)) {
+        checks.push(checkRecord({
+          code: "component_behavior_event_unbound",
+          severity: "warning",
+          message: `Behavior '${behavior.kind}' emits event '${eventName}', but this projection usage does not bind that event to navigation or an action.`,
+          projection,
+          sourceProjection,
+          component,
+          usage,
+          event: eventName,
+          behavior: behavior.kind,
+          suggestedFix: `Add 'event ${eventName} navigate <screen>' or 'event ${eventName} action <capability>' to the projection ui_components entry.`
+        }));
+      }
+    }
+    const declaredActionEvents = [
+      ...(Array.isArray(behavior.directives?.actions) ? behavior.directives.actions : [behavior.directives?.actions].filter(Boolean)),
+      ...(Array.isArray(behavior.directives?.submit) ? behavior.directives.submit : [behavior.directives?.submit].filter(Boolean))
+    ].filter((eventName) => eventNames.has(eventName));
+    for (const eventName of declaredActionEvents) {
+      if (!(usage.eventBindings || []).some((binding) => binding.event === eventName)) {
+        checks.push(checkRecord({
+          code: "component_behavior_action_unbound",
+          severity: "warning",
+          message: `Behavior '${behavior.kind}' declares action event '${eventName}', but this projection usage does not bind that event to navigation or an action.`,
+          projection,
+          sourceProjection,
+          component,
+          usage,
+          event: eventName,
+          behavior: behavior.kind,
+          suggestedFix: `Add 'event ${eventName} action <capability>' or 'event ${eventName} navigate <screen>' to the projection ui_components entry.`
+        }));
       }
     }
   }
@@ -408,6 +444,7 @@ export function generateComponentConformanceReport(graph, options = {}) {
         component: summarizeComponent(component) || { id: componentId, name: componentId, category: null, version: null, status: null, source_path: null },
         data_bindings: entry.usage.dataBindings || [],
         event_bindings: entry.usage.eventBindings || [],
+        behavior_realizations: buildComponentBehaviorRealizations(componentContract(component), entry.usage),
         outcome,
         check_codes: usageChecks.map((check) => check.code)
       });

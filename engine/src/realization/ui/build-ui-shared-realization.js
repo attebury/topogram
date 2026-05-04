@@ -1,4 +1,5 @@
 import { getProjection, uiProjectionCandidates } from "../../generator/surfaces/shared.js";
+import { buildComponentBehaviorRealizations } from "../../component-behavior.js";
 
 function toBooleanFlag(value, fallback = false) {
   if (value === "true") return true;
@@ -85,6 +86,7 @@ function summarizeComponentRef(graph, componentId) {
 
 function buildComponentUsageContract(graph, entry) {
   const componentId = entry.component?.id || null;
+  const contract = componentId ? componentContractFor(graph, componentId) : null;
   return {
     type: "ui_component_usage",
     region: entry.region || null,
@@ -97,7 +99,8 @@ function buildComponentUsageContract(graph, entry) {
       event: binding.event || null,
       action: binding.action || null,
       target: binding.target || null
-    }))
+    })),
+    behaviorRealizations: buildComponentBehaviorRealizations(contract, entry)
   };
 }
 

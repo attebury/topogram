@@ -59,6 +59,26 @@ Supported behavior kinds are `selection`, `sorting`, `filtering`, `search`,
 `pagination`, `grouping`, `drag_drop`, `inline_edit`, `bulk_action`,
 `optimistic_update`, `realtime_update`, and `keyboard_navigation`.
 
+Component behavior is declared on the component, but realized by projection
+usage. A projection `ui_components` entry supplies concrete data bindings and
+event outcomes. Topogram derives a normalized behavior realization for each
+usage:
+
+- `dataDependencies` lists the prop/source bindings available to the behavior.
+- `state` records the behavior state prop, whether it is bound by the
+  projection, and its default value.
+- `emits` records each behavior-emitted event and whether the projection binds
+  it.
+- `actions` records action/submit directive events and whether the projection
+  binds them.
+- `effects` records concrete outcomes from bound events, using `navigation` for
+  screen transitions and `command` for capability actions.
+- `status` is `declared`, `realized`, or `partial`.
+
+This keeps behavior spec-driven: generators and agents consume the same
+normalized contract rather than inferring behavior from SvelteKit, React, or
+template implementation files.
+
 ### Prop defaults
 
 Each prop is `<name> <type> <required|optional> [default <literal>]`. Supported `default` literal forms are:
@@ -105,7 +125,9 @@ topogram generate ./topogram --generate ui-component-contract
 
 Passing `--component <id>` for a missing id is now a hard error rather than a silent `null` artifact, so typos surface immediately.
 
-The JSON artifact contains stable `props`, `events`, `slots`, `behavior`, `behaviors`, `patterns`, `regions`, and `dependencies` arrays for downstream tools.
+The JSON artifact contains stable `props`, `events`, `slots`, `behavior`,
+`behaviors`, `patterns`, `regions`, and `dependencies` arrays for downstream
+tools.
 
 ## Conformance Report
 
@@ -168,6 +190,12 @@ Generated UI contracts include the same usage metadata. Each screen gets a
 contract includes a top-level `components` map for the referenced component
 contracts. Concrete web projections inherit component usage from shared UI
 projections they realize.
+
+Each usage also includes `behaviorRealizations`, the projection-specific bridge
+between component behavior declarations and concrete data/event/effect wiring.
+If a behavior declares `emits row_select` but the projection does not bind
+`event row_select navigate <screen>` or `event row_select action <capability>`,
+the realization is `partial` and `component-conformance-report` emits a warning.
 
 SvelteKit and React generation can consume supported `ui_components` bindings.
 Every web generator should be contract-complete by default: the Topogram

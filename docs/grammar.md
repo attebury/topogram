@@ -113,6 +113,10 @@ projection proj_ui_shared {
 }
 ```
 
-Validation enforces known screens, regions, components, component props, component events, and binding targets.
+Validation enforces known screens, regions, components, component props,
+component events, and binding targets. Component behavior declarations are
+realized through those projection bindings: generated UI contracts include
+`behaviorRealizations` with data dependencies, emitted-event bindings,
+navigation or command effects, and `declared`/`realized`/`partial` status.
 
 See [Components](./components.md) for generator output and roadmap details.

@@ -314,6 +314,93 @@ test("projection ui_components resolve component placement and bindings", () => 
             kind: "screen"
           }
         }
+      ],
+      behaviorRealizations: [
+        {
+          kind: "selection",
+          source: "structured",
+          directives: {
+            mode: "multi",
+            state: "selected_ids",
+            emits: "row_select"
+          },
+          state: {
+            prop: "selected_ids",
+            requiredness: "optional",
+            bound: false,
+            source: null,
+            defaultValue: []
+          },
+          emits: [
+            {
+              event: "row_select",
+              bound: true,
+              bindings: [
+                {
+                  event: "row_select",
+                  action: "navigate",
+                  target: {
+                    id: "task_detail",
+                    kind: "screen"
+                  }
+                }
+              ],
+              effects: [
+                {
+                  type: "navigation",
+                  event: "row_select",
+                  target: {
+                    id: "task_detail",
+                    kind: "screen"
+                  }
+                }
+              ]
+            }
+          ],
+          actions: [],
+          dataDependencies: [
+            {
+              prop: "rows",
+              source: {
+                id: "cap_list_tasks",
+                kind: "capability"
+              }
+            }
+          ],
+          effects: [
+            {
+              type: "navigation",
+              event: "row_select",
+              target: {
+                id: "task_detail",
+                kind: "screen"
+              }
+            }
+          ],
+          status: "realized"
+        },
+        {
+          kind: "sorting",
+          source: "structured",
+          directives: {
+            fields: ["title", "status", "created_at"],
+            default: ["created_at", "desc"]
+          },
+          state: null,
+          emits: [],
+          actions: [],
+          dataDependencies: [
+            {
+              prop: "rows",
+              source: {
+                id: "cap_list_tasks",
+                kind: "capability"
+              }
+            }
+          ],
+          effects: [],
+          status: "realized"
+        }
       ]
     }
   ]);
@@ -444,6 +531,222 @@ projection proj_ui {
         emits: "row_select"
       },
       source: "structured"
+    }
+  ]);
+});
+
+test("component-conformance-report surfaces behavior realizations and unbound emitted events", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  category collection
+  props {
+    rows array required
+    selected_ids array optional default []
+  }
+  events {
+    row_select shape_event_payload
+  }
+  behaviors {
+    selection mode multi state selected_ids emits row_select
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.total_usages, 1);
+  assert.equal(report.artifact.summary.warning_usages, 1);
+  assert.equal(report.artifact.summary.warnings, 1);
+  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["component_behavior_event_unbound"]);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations, [
+    {
+      kind: "selection",
+      source: "structured",
+      directives: {
+        mode: "multi",
+        state: "selected_ids",
+        emits: "row_select"
+      },
+      state: {
+        prop: "selected_ids",
+        requiredness: "optional",
+        bound: false,
+        source: null,
+        defaultValue: []
+      },
+      emits: [
+        {
+          event: "row_select",
+          bound: false,
+          bindings: [],
+          effects: []
+        }
+      ],
+      actions: [],
+      dataDependencies: [
+        {
+          prop: "rows",
+          source: {
+            id: "cap_list_items",
+            kind: "capability"
+          }
+        }
+      ],
+      effects: [],
+      status: "partial"
+    }
+  ]);
+});
+
+test("component behavior action directives surface command effects", () => {
+  const ast = workspaceFromSource(`
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+capability cap_update_item {
+  name "Update Item"
+  description "Update item"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  category collection
+  props {
+    rows array required
+  }
+  events {
+    row_update shape_event_payload
+  }
+  behaviors {
+    optimistic_update actions [row_update] rollback true
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui {
+  name "UI"
+  description "UI"
+  platform ui_shared
+  realizes [cap_list_items, cap_update_item]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items event row_update action cap_update_item
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.warnings, 0);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].actions, [
+    {
+      event: "row_update",
+      bound: true,
+      bindings: [
+        {
+          event: "row_update",
+          action: "action",
+          target: {
+            id: "cap_update_item",
+            kind: "capability"
+          }
+        }
+      ],
+      effects: [
+        {
+          type: "command",
+          event: "row_update",
+          capability: {
+            id: "cap_update_item",
+            kind: "capability"
+          }
+        }
+      ]
+    }
+  ]);
+  assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].effects, [
+    {
+      type: "command",
+      event: "row_update",
+      capability: {
+        id: "cap_update_item",
+        kind: "capability"
+      }
     }
   ]);
 });
