@@ -104,6 +104,16 @@ export function buildOutputFiles(result, options = {}) {
     }];
   }
 
+  if (result.target === "component-behavior-report") {
+    const suffix = [options.projectionId, options.componentId].filter(Boolean).join(".");
+    return [{
+      path: suffix
+        ? `${suffix}.component-behavior-report.json`
+        : "component-behavior-report.json",
+      contents: result.artifact
+    }];
+  }
+
   if (result.target === "ui-web-debug") {
     return [
       {

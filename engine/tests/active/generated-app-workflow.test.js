@@ -375,6 +375,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram new \.\/my-app/);
   assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
   assert.match(help.stdout, /topogram component check --projection proj_ui_web/);
+  assert.match(help.stdout, /topogram component behavior --projection proj_ui_web/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
@@ -404,7 +405,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(generateHelp.stdout, /Explicit --generate targets print JSON by default and write files only with --write\./);
   assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-component-contract --component component_ui_data_grid --json/);
   assert.match(generateHelp.stdout, /component-conformance-report/);
+  assert.match(generateHelp.stdout, /component-behavior-report/);
   assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate component-conformance-report --projection proj_ui_web --json/);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate component-behavior-report --projection proj_ui_web --json/);
   assert.doesNotMatch(generateHelp.stdout, /Common commands:/);
 
   const helpGenerate = runCli(["help", "generate"]);
@@ -414,7 +417,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const componentHelp = runCli(["component", "--help"]);
   assert.equal(componentHelp.status, 0, componentHelp.stderr || componentHelp.stdout);
   assert.match(componentHelp.stdout, /Usage: topogram component check \[path\]/);
+  assert.match(componentHelp.stdout, /topogram component behavior \[path\]/);
   assert.match(componentHelp.stdout, /topogram component check --projection proj_ui_web/);
+  assert.match(componentHelp.stdout, /topogram component behavior --projection proj_ui_web/);
 
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
@@ -677,6 +682,62 @@ test("topogram component check reports conformance without writing app output", 
   ], { cwd });
   assert.notEqual(missing.status, 0);
   assert.match(missing.stderr, /No component found with id 'component_does_not_exist'/);
+});
+
+test("topogram component behavior reports behavior groups without writing app output", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-behavior-"));
+  const human = runCli([
+    "component",
+    "behavior",
+    fixtureRoot,
+    "--projection",
+    "proj_ui_web",
+    "--component",
+    "component_ui_data_grid"
+  ], { cwd });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Component behavior report passed\./);
+  assert.match(human.stdout, /Behaviors: 2 total, 2 realized, 0 partial, 0 declared/);
+  assert.match(human.stdout, /Affected projections: proj_ui_shared, proj_ui_web/);
+  assert.match(human.stdout, /Affected components: component_ui_data_grid/);
+  assert.match(human.stdout, /Affected capabilities: cap_list_tasks/);
+  assert.match(human.stdout, /Groups: 1 component\(s\), 1 screen\(s\), 1 capability group\(s\), 2 effect group\(s\)/);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior must not write the app shortcut output");
+
+  const json = runCli([
+    "component",
+    "behavior",
+    fixtureRoot,
+    "--projection",
+    "proj_ui_web",
+    "--json"
+  ], { cwd });
+  assert.equal(json.status, 0, json.stderr || json.stdout);
+  const report = JSON.parse(json.stdout);
+  assert.equal(report.type, "component_behavior_report");
+  assert.equal(report.filters.projection, "proj_ui_web");
+  assert.equal(report.summary.total_behaviors, 2);
+  assert.deepEqual(report.summary.affected_capabilities, ["cap_list_tasks"]);
+  assert.deepEqual(report.groups.components.map((group) => group.id), ["component_ui_data_grid"]);
+  assert.deepEqual(report.groups.screens.map((group) => group.id), ["task_list"]);
+  assert.deepEqual(report.groups.effects.map((group) => group.id), ["navigation", "none"]);
+
+  const reportOutDir = path.join(cwd, "behavior-reports");
+  const written = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "component-behavior-report",
+    "--projection",
+    "proj_ui_web",
+    "--write",
+    "--out-dir",
+    reportOutDir
+  ], { cwd });
+  assert.equal(written.status, 0, written.stderr || written.stdout);
+  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "component-behavior-report");
+  assert.equal(readJson(path.join(reportOutDir, "proj_ui_web.component-behavior-report.json")).summary.total_behaviors, 2);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior write must not write app shortcut output");
 });
 
 test("topogram catalog check validates catalog schema", () => {

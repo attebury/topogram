@@ -134,6 +134,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram release status [--json] [--strict]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram trust template [path]");
@@ -174,6 +175,7 @@ function printUsage(options = {}) {
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram component check --projection proj_ui_web");
+  console.log("  topogram component behavior --projection proj_ui_web");
   console.log("  topogram generator list");
   console.log("  topogram generator show @attebury/topogram-generator-react-web");
   console.log("  topogram generator check ./generator-package");
@@ -264,7 +266,7 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
-  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, component-conformance-report, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
+  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, component-conformance-report, component-behavior-report, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
@@ -298,6 +300,7 @@ function printGenerateHelp() {
   console.log("Common artifact targets:");
   console.log("  ui-component-contract");
   console.log("  component-conformance-report");
+  console.log("  component-behavior-report");
   console.log("  context-slice");
   console.log("  context-diff");
   console.log("  verification-targets");
@@ -315,13 +318,15 @@ function printGenerateHelp() {
   console.log("  topogram generate app ./topogram --out ./app");
   console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
   console.log("  topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json");
+  console.log("  topogram generate ./topogram --generate component-behavior-report --projection proj_ui_web --json");
   console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
 }
 
 function printComponentHelp() {
   console.log("Usage: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
   console.log("");
-  console.log("Checks projection ui_components usage against reusable component contracts.");
+  console.log("Checks projection ui_components usage against reusable component contracts and behavior realizations.");
   console.log("");
   console.log("Defaults: path is ./topogram.");
   console.log("");
@@ -329,6 +334,9 @@ function printComponentHelp() {
   console.log("  topogram component check");
   console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram component check ./topogram --component component_ui_data_grid --json");
+  console.log("  topogram component behavior");
+  console.log("  topogram component behavior --projection proj_ui_web");
+  console.log("  topogram component behavior ./topogram --component component_ui_data_grid --json");
 }
 
 function printGeneratorHelp() {
@@ -875,6 +883,52 @@ function printComponentConformanceReport(report) {
       console.log(`- ${filePath}`);
     }
   }
+}
+
+function printComponentBehaviorReport(report) {
+  const summary = report.summary || {};
+  const ok = (summary.errors || 0) === 0;
+  console.log(ok ? "Component behavior report passed." : "Component behavior report found issues.");
+  console.log(`Behaviors: ${summary.total_behaviors || 0} total, ${summary.realized || 0} realized, ${summary.partial || 0} partial, ${summary.declared || 0} declared`);
+  console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
+  if (report.filters?.projection) {
+    console.log(`Projection filter: ${report.filters.projection}`);
+  }
+  if (report.filters?.component) {
+    console.log(`Component filter: ${report.filters.component}`);
+  }
+  if ((summary.affected_projections || []).length > 0) {
+    console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
+  }
+  if ((summary.affected_components || []).length > 0) {
+    console.log(`Affected components: ${summary.affected_components.join(", ")}`);
+  }
+  if ((summary.affected_capabilities || []).length > 0) {
+    console.log(`Affected capabilities: ${summary.affected_capabilities.join(", ")}`);
+  }
+  const highlights = report.highlights || [];
+  if (highlights.length > 0) {
+    console.log("");
+    console.log("Behavior highlights:");
+    for (const highlight of highlights) {
+      const context = [
+        highlight.projection ? `projection ${highlight.projection}` : null,
+        highlight.component ? `component ${highlight.component}` : null,
+        highlight.screen ? `screen ${highlight.screen}` : null,
+        highlight.region ? `region ${highlight.region}` : null,
+        highlight.event ? `event ${highlight.event}` : null,
+        highlight.capability ? `capability ${highlight.capability}` : null,
+        highlight.behavior ? `behavior ${highlight.behavior}` : null
+      ].filter(Boolean).join(", ");
+      console.log(`- ${highlight.severity.toUpperCase()} ${highlight.code}${context ? ` (${context})` : ""}: ${highlight.message}`);
+      if (highlight.suggested_fix) {
+        console.log(`  Fix: ${highlight.suggested_fix}`);
+      }
+    }
+  }
+  const groupSummary = report.groups || {};
+  console.log("");
+  console.log(`Groups: ${(groupSummary.components || []).length} component(s), ${(groupSummary.screens || []).length} screen(s), ${(groupSummary.capabilities || []).length} capability group(s), ${(groupSummary.effects || []).length} effect group(s)`);
 }
 
 function printGeneratorCheck(payload) {
@@ -5328,6 +5382,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "component" && args[1] === "check") {
   commandArgs = { componentCheck: true, inputPath: commandPath(2) };
+} else if (args[0] === "component" && args[1] === "behavior") {
+  commandArgs = { componentBehavior: true, inputPath: commandPath(2) };
 } else if (args[0] === "component") {
   printComponentHelp();
   process.exit(args[1] ? 1 : 0);
@@ -5499,6 +5555,7 @@ const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
+const shouldComponentBehavior = Boolean(commandArgs?.componentBehavior);
 const shouldGeneratorList = Boolean(commandArgs?.generatorList);
 const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
 const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
@@ -5620,7 +5677,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldComponentCheck || shouldGeneratorCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -5650,7 +5707,7 @@ if (shouldPackageUpdateCli && !inputPath) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldComponentCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -5702,6 +5759,27 @@ try {
       console.log(stableStringify(report));
     } else {
       printComponentConformanceReport(report);
+    }
+    process.exit(ok ? 0 : 1);
+  }
+
+  if (shouldComponentBehavior) {
+    const ast = parsePath(inputPath);
+    const result = generateWorkspace(ast, {
+      target: "component-behavior-report",
+      projectionId,
+      componentId
+    });
+    if (!result.ok) {
+      console.error(formatValidationErrors(result.validation));
+      process.exit(1);
+    }
+    const report = result.artifact;
+    const ok = (report.summary?.errors || 0) === 0;
+    if (emitJson) {
+      console.log(stableStringify(report));
+    } else {
+      printComponentBehaviorReport(report);
     }
     process.exit(ok ? 0 : 1);
   }

@@ -173,6 +173,29 @@ artifact generation prints JSON and does not create an app bundle.
 when conformance errors are present, and emits the same report artifact with
 `--json`.
 
+## Behavior Report
+
+Use the behavior report when an agent needs a focused packet for component
+interactions rather than the full conformance report:
+
+```bash
+topogram component behavior ./topogram --projection proj_ui_web
+topogram component behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json
+```
+
+The equivalent artifact target is:
+
+```bash
+topogram generate ./topogram --generate component-behavior-report --projection proj_ui_web --json
+```
+
+The JSON artifact groups behavior realizations by component, screen,
+capability, and effect type. It highlights partial behavior and unbound
+behavior events/actions so an agent can move directly from Topogram intent to
+the projection wiring that needs attention. Like `component check`, it exits
+non-zero only when conformance errors are present and does not write app output
+unless the explicit artifact target is passed with `--write`.
+
 ## Projection Usage
 
 Projections own component placement and wiring. Use `ui_components` to bind a reusable component to a screen region, data source, and event outcome:

@@ -958,6 +958,34 @@ projection proj_ui {
     }
   ]);
   assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].status, "partial");
+
+  const behaviorReport = generateWorkspace(ast, {
+    target: "component-behavior-report",
+    projectionId: "proj_ui",
+    componentId: "component_grid"
+  });
+  assert.equal(behaviorReport.ok, true);
+  assert.equal(behaviorReport.artifact.type, "component_behavior_report");
+  assert.equal(behaviorReport.artifact.summary.total_usages, 1);
+  assert.equal(behaviorReport.artifact.summary.total_behaviors, 1);
+  assert.equal(behaviorReport.artifact.summary.partial, 1);
+  assert.deepEqual(behaviorReport.artifact.summary.affected_components, ["component_grid"]);
+  assert.deepEqual(behaviorReport.artifact.summary.affected_projections, ["proj_ui"]);
+  assert.deepEqual(behaviorReport.artifact.summary.affected_capabilities, ["cap_list_items", "cap_update_item"]);
+  assert.deepEqual(behaviorReport.artifact.groups.components.map((group) => group.id), ["component_grid"]);
+  assert.deepEqual(behaviorReport.artifact.groups.screens.map((group) => group.id), ["item_list"]);
+  assert.deepEqual(behaviorReport.artifact.groups.capabilities.map((group) => group.id), ["cap_list_items", "cap_update_item"]);
+  assert.deepEqual(behaviorReport.artifact.groups.effects.map((group) => group.id), ["command"]);
+  assert.equal(behaviorReport.artifact.behaviors[0].behavior.kind, "optimistic_update");
+  assert.deepEqual(behaviorReport.artifact.behaviors[0].effect_types, ["command"]);
+  assert.deepEqual(behaviorReport.artifact.behaviors[0].capabilities, ["cap_list_items", "cap_update_item"]);
+  assert.equal(
+    behaviorReport.artifact.highlights.some((highlight) =>
+      highlight.code === "component_behavior_action_unbound" &&
+      highlight.capability === "cap_update_item"
+    ),
+    true
+  );
 });
 
 test("component-conformance-report filters by component and rejects unknown selectors", () => {
