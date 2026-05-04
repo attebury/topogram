@@ -67,6 +67,22 @@ Topogram does not dynamically install unknown generator packages; a project or
 template must declare and install the package through normal package-manager
 workflow before `topogram check` or `topogram generate` can use it.
 
+Manifest fields:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `id` | yes | Stable generator id used by `topogram.project.json` topology bindings. Package-backed generators commonly use the package name. |
+| `version` | yes | Generator interface version, not necessarily the npm package version. Topology bindings must match it. |
+| `surface` | yes | One of `web`, `api`, `database`, or `native`; must match the topology component `type`. |
+| `projectionPlatforms` | yes | Projection platform keys this generator can realize, such as `ui_web`, `api`, `db_postgres`, `db_sqlite`, or `ui_ios`. |
+| `inputs` | yes | Normalized contract names the generator expects, such as `ui-web-contract`, `server-contract`, `api-contracts`, `db-contract`, or `db-lifecycle-plan`. |
+| `outputs` | yes | Artifact families produced by the generator, such as `web-app`, `api-service`, `db-lifecycle-bundle`, or `generation-coverage`. |
+| `stack` | yes | Human-readable stack metadata for docs, catalogs, and compatibility review. |
+| `capabilities` | yes | Boolean feature flags such as `routes`, `components`, `coverage`, `http`, `persistence`, or `migrations`. |
+| `source` | yes | `bundled` for CLI-owned adapters or `package` for external package-backed generators. |
+| `package` | package-backed | Package name used for Node resolution. Required when `source` is `package`. |
+| `export` | optional | Named export to load when the adapter is not the package default export. |
+
 Package-backed topology bindings include the package name explicitly:
 
 ```json
@@ -95,16 +111,38 @@ A package-backed generator should use this layout:
 topogram-generator.json
 package.json
 README.md
-src/index.js
+index.cjs
+scripts/verify.mjs
+.github/workflows/generator-verification.yml
+```
+
+The package should publish only the generator runtime and docs:
+
+```json
+{
+  "name": "@scope/topogram-generator-example-web",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "index.cjs",
+  "files": [
+    "index.cjs",
+    "topogram-generator.json",
+    "README.md"
+  ],
+  "scripts": {
+    "check": "topogram generator check ."
+  }
+}
 ```
 
 `topogram-generator.json` contains the manifest. The package export must provide
-an adapter with a synchronous `generate(context)` function:
+an adapter object with a matching `manifest` and synchronous `generate(context)`
+function:
 
 ```js
-export const manifest = { /* manifest */ };
+exports.manifest = require("./topogram-generator.json");
 
-export function generate({
+exports.generate = function generate({
   graph,
   projection,
   component,
@@ -118,15 +156,70 @@ export function generate({
     artifacts: {},
     diagnostics: []
   };
-}
+};
 ```
 
 The adapter receives normalized contracts and returns generated files relative
-to that component output directory. The v1 package loader uses Node package
-resolution from the project root and calls the installed package export directly;
-publish a CommonJS-compatible entry point such as `index.cjs` or a compatible
-package export. Templates may include implementation code to customize generated
-files, but reusable stack behavior should live in generator packages.
+to that component output directory. `files` must be an object whose keys are
+relative paths and whose values are string file contents. `artifacts` and
+`diagnostics` are optional.
+
+The v1 package loader uses Node package resolution from the project root and
+calls the installed package export directly; publish a CommonJS-compatible entry
+point such as `index.cjs` or a compatible package export. Templates may include
+implementation code to customize generated files, but reusable stack behavior
+should live in generator packages.
+
+## Conformance Check
+
+Generator authors should expose `npm run check` and back it with:
+
+```bash
+topogram generator check .
+topogram generator check . --json
+```
+
+The command validates:
+
+- `topogram-generator.json` exists and parses;
+- manifest schema fields are present and valid;
+- the adapter export can be loaded;
+- the adapter exports a manifest matching `topogram-generator.json`;
+- the adapter exports `generate(context)`;
+- a minimal smoke `generate(context)` call returns a valid `{ files }` object.
+
+Installed package-backed generators can also be checked from a consumer project:
+
+```bash
+topogram generator check @scope/topogram-generator-example-web
+topogram generator check @scope/topogram-generator-example-web --json
+```
+
+Topogram does not install packages during `generator check`. For private GitHub
+Packages, run `npm install` first with `NODE_AUTH_TOKEN` or an authenticated npm
+configuration.
+
+The smoke context is intentionally small. It proves the adapter boundary and
+manifest compatibility, not complete app behavior. Generator packages should add
+their own focused tests for framework-specific output, route generation,
+database lifecycle behavior, and compile/runtime checks.
+
+## Trust And Execution
+
+Generator packages are executable dependencies. Topogram never downloads or
+executes arbitrary generator code by catalog lookup alone. A project or template
+must declare generator package dependencies, install them through the package
+manager, and bind them in `topogram.project.json`. `topogram check` validates the
+installed manifest and compatibility. `topogram generate` loads the installed
+adapter and executes `generate(context)`.
+
+Use normal package trust controls:
+
+- review package source before adopting it;
+- pin versions in templates or lockfiles where reproducibility matters;
+- keep package `files` allowlists narrow;
+- avoid install lifecycle scripts unless they are truly needed;
+- use GitHub Packages access controls for private generators.
 
 ## Templates
 
@@ -135,3 +228,35 @@ implementation code. They should list used generator IDs in
 `topogram-template.json` for catalog display and compatibility review, but they
 should not be the long-term home for reusable React, SvelteKit, Hono, Express,
 Postgres, SQLite, Prisma, or Drizzle generation behavior.
+
+Template package `devDependencies` should include the generator packages used by
+topology bindings. A generated starter carries those dependencies into the
+consumer project, so `topogram check` and `topogram generate` can resolve the
+same package-backed generator manifests.
+
+Example topology component in a template:
+
+```json
+{
+  "id": "app_web",
+  "type": "web",
+  "projection": "proj_ui_web",
+  "generator": {
+    "id": "@scope/topogram-generator-example-web",
+    "version": "1",
+    "package": "@scope/topogram-generator-example-web"
+  },
+  "api": "app_api",
+  "port": 5173
+}
+```
+
+Example template package dependency:
+
+```json
+{
+  "devDependencies": {
+    "@scope/topogram-generator-example-web": "^0.1.0"
+  }
+}
+```

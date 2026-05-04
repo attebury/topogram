@@ -124,6 +124,46 @@ test("generator manifest validation rejects malformed manifests", () => {
   assert.match(result.errors.join("\n"), /package source/);
 });
 
+test("topogram generator check validates package-backed generators by package and path", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-check-"));
+  writeJson(path.join(root, "package.json"), { private: true });
+  const { packageName, packageRoot } = writePackageBackedGenerator(root);
+
+  const byPackage = runCli(["generator", "check", packageName, "--json"], { cwd: root });
+  assert.equal(byPackage.status, 0, byPackage.stderr || byPackage.stdout);
+  const packagePayload = JSON.parse(byPackage.stdout);
+  assert.equal(packagePayload.ok, true);
+  assert.equal(packagePayload.source, "package");
+  assert.equal(packagePayload.packageName, packageName);
+  assert.equal(packagePayload.manifest.id, "@scope/smoke-web");
+  assert.equal(packagePayload.checks.some((check) => check.name === "smoke-generate" && check.ok), true);
+
+  const byPath = runCli(["generator", "check", packageRoot, "--json"], { cwd: root });
+  assert.equal(byPath.status, 0, byPath.stderr || byPath.stdout);
+  const pathPayload = JSON.parse(byPath.stdout);
+  assert.equal(pathPayload.ok, true);
+  assert.equal(pathPayload.source, "path");
+  assert.equal(pathPayload.packageRoot, packageRoot);
+
+  const human = runCli(["generator", "check", packageRoot], { cwd: root });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Generator check passed/);
+  assert.match(human.stdout, /Smoke output:/);
+});
+
+test("topogram generator check rejects invalid adapter exports", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-check-invalid-"));
+  writeJson(path.join(root, "package.json"), { private: true });
+  const { packageName, packageRoot } = writePackageBackedGenerator(root);
+  fs.writeFileSync(path.join(packageRoot, "index.cjs"), "exports.manifest = require('./topogram-generator.json');\n", "utf8");
+
+  const checked = runCli(["generator", "check", packageName, "--json"], { cwd: root });
+  assert.notEqual(checked.status, 0, checked.stdout);
+  const payload = JSON.parse(checked.stdout);
+  assert.equal(payload.ok, false);
+  assert.match(payload.errors.join("\n"), /generate\(context\)/);
+});
+
 function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-project-"));
   const topogramRoot = path.join(root, "topogram");

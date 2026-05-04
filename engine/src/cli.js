@@ -36,6 +36,7 @@ import {
   writeTemplateTrustRecord
 } from "./template-trust.js";
 import { recommendedVerificationTargets } from "./generator/context/shared.js";
+import { checkGeneratorPack } from "./generator/check.js";
 import {
   buildAuthHintsQueryPayload,
   buildAuthReviewPacketPayload,
@@ -164,6 +165,7 @@ function printUsage(options = {}) {
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram component check --projection proj_ui_web");
+  console.log("  topogram generator check ./generator-package");
   console.log("  topogram generate");
   console.log("");
   console.log("Template and catalog discovery:");
@@ -834,6 +836,40 @@ function printComponentConformanceReport(report) {
     console.log("Write scope:");
     for (const filePath of writeScopePaths) {
       console.log(`- ${filePath}`);
+    }
+  }
+}
+
+function printGeneratorCheck(payload) {
+  console.log(payload.ok ? "Generator check passed." : "Generator check found issues.");
+  console.log(`Source: ${payload.sourceSpec}`);
+  console.log(`Type: ${payload.source}`);
+  if (payload.packageName) {
+    console.log(`Package: ${payload.packageName}`);
+  }
+  if (payload.manifestPath) {
+    console.log(`Manifest: ${payload.manifestPath}`);
+  }
+  if (payload.manifest) {
+    console.log(`Generator: ${payload.manifest.id}@${payload.manifest.version}`);
+    console.log(`Surface: ${payload.manifest.surface}`);
+    console.log(`Projection platforms: ${payload.manifest.projectionPlatforms.join(", ")}`);
+    console.log(`Source mode: ${payload.manifest.source}`);
+  }
+  console.log("");
+  console.log("Checks:");
+  for (const check of payload.checks || []) {
+    console.log(`- ${check.ok ? "PASS" : "FAIL"} ${check.name}: ${check.message}`);
+  }
+  if (payload.smoke) {
+    console.log("");
+    console.log(`Smoke output: ${payload.smoke.files} file(s), ${payload.smoke.artifacts} artifact(s), ${payload.smoke.diagnostics} diagnostic(s)`);
+  }
+  if ((payload.errors || []).length > 0) {
+    console.log("");
+    console.log("Errors:");
+    for (const error of payload.errors) {
+      console.log(`- ${error}`);
     }
   }
 }
@@ -4971,6 +5007,12 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "component") {
   printComponentHelp();
   process.exit(args[1] ? 1 : 0);
+} else if (args[0] === "generator" && args[1] === "check") {
+  commandArgs = { generatorCheck: true, inputPath: args[2] };
+} else if (args[0] === "generator") {
+  console.log("Topogram generator commands:");
+  console.log("  topogram generator check <path-or-package> [--json]");
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
@@ -5130,6 +5172,7 @@ const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
+const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
@@ -5248,7 +5291,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldComponentCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldGeneratorCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -5332,6 +5375,16 @@ try {
       printComponentConformanceReport(report);
     }
     process.exit(ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorCheck) {
+    const payload = checkGeneratorPack(inputPath, { cwd: process.cwd() });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldCatalogList) {
