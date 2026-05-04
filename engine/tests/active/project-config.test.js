@@ -151,6 +151,48 @@ test("topogram generator check validates package-backed generators by package an
   assert.match(human.stdout, /Smoke output:/);
 });
 
+test("topogram generator list and show describe bundled and installed package generators", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-discovery-"));
+  const { packageName } = writePackageBackedGenerator(root);
+  writeJson(path.join(root, "package.json"), {
+    private: true,
+    devDependencies: {
+      [packageName]: "0.1.0"
+    }
+  });
+
+  const list = runCli(["generator", "list", "--json"], { cwd: root });
+  assert.equal(list.status, 0, list.stderr || list.stdout);
+  const listPayload = JSON.parse(list.stdout);
+  assert.equal(listPayload.ok, true);
+  assert.equal(listPayload.generators.some((generator) => generator.id === "topogram/react" && generator.source === "bundled"), true);
+  const packageGenerator = listPayload.generators.find((generator) => generator.id === "@scope/smoke-web");
+  assert.equal(packageGenerator.package, packageName);
+  assert.equal(packageGenerator.installed, true);
+  assert.equal(packageGenerator.surface, "web");
+
+  const bundledShow = runCli(["generator", "show", "topogram/react", "--json"], { cwd: root });
+  assert.equal(bundledShow.status, 0, bundledShow.stderr || bundledShow.stdout);
+  const bundledPayload = JSON.parse(bundledShow.stdout);
+  assert.equal(bundledPayload.ok, true);
+  assert.equal(bundledPayload.generator.id, "topogram/react");
+  assert.equal(bundledPayload.exampleTopologyBinding.type, "web");
+  assert.equal(bundledPayload.exampleTopologyBinding.generator.id, "topogram/react");
+
+  const packageShow = runCli(["generator", "show", packageName, "--json"], { cwd: root });
+  assert.equal(packageShow.status, 0, packageShow.stderr || packageShow.stdout);
+  const packagePayload = JSON.parse(packageShow.stdout);
+  assert.equal(packagePayload.ok, true);
+  assert.equal(packagePayload.generator.id, "@scope/smoke-web");
+  assert.equal(packagePayload.generator.package, packageName);
+  assert.equal(packagePayload.exampleTopologyBinding.generator.package, packageName);
+
+  const human = runCli(["generator", "show", "topogram/react"], { cwd: root });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Generator: topogram\/react@1/);
+  assert.match(human.stdout, /Example topology binding:/);
+});
+
 test("topogram generator check rejects invalid adapter exports", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-check-invalid-"));
   writeJson(path.join(root, "package.json"), { private: true });

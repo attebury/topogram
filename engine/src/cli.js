@@ -38,6 +38,11 @@ import {
 import { recommendedVerificationTargets } from "./generator/context/shared.js";
 import { checkGeneratorPack } from "./generator/check.js";
 import {
+  GENERATOR_MANIFESTS,
+  getGeneratorManifest,
+  loadPackageGeneratorManifest
+} from "./generator/registry.js";
+import {
   buildAuthHintsQueryPayload,
   buildAuthReviewPacketPayload,
   buildCanonicalWritesPayloadForChangePlan,
@@ -151,6 +156,9 @@ function printUsage(options = {}) {
   console.log("   or: topogram template check <template-spec-or-path> [--json]");
   console.log("   or: topogram template update [path] --status|--recommend|--plan|--check|--apply [--template <spec>|--latest] [--json] [--out <path>]");
   console.log("   or: topogram template update [path] --accept-current|--accept-candidate|--delete-current <file> [--template <spec>] [--json]");
+  console.log("   or: topogram generator list [--json]");
+  console.log("   or: topogram generator show <id-or-package> [--json]");
+  console.log("   or: topogram generator check <path-or-package> [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
   console.log("");
@@ -165,6 +173,8 @@ function printUsage(options = {}) {
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram component check --projection proj_ui_web");
+  console.log("  topogram generator list");
+  console.log("  topogram generator show topogram/react");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generate");
   console.log("");
@@ -318,6 +328,28 @@ function printComponentHelp() {
   console.log("  topogram component check");
   console.log("  topogram component check --projection proj_ui_web");
   console.log("  topogram component check ./topogram --component component_ui_data_grid --json");
+}
+
+function printGeneratorHelp() {
+  console.log("Usage: topogram generator list [--json]");
+  console.log("   or: topogram generator show <id-or-package> [--json]");
+  console.log("   or: topogram generator check <path-or-package> [--json]");
+  console.log("");
+  console.log("Inspects generator manifests and checks generator pack conformance.");
+  console.log("");
+  console.log("Notes:");
+  console.log("  - list shows bundled generators plus installed package-backed generators declared in package.json.");
+  console.log("  - show accepts a bundled generator id such as topogram/react or an installed package name.");
+  console.log("  - check validates a local generator package path or an already installed package.");
+  console.log("  - Topogram does not install generator packages during show or check.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram generator list");
+  console.log("  topogram generator list --json");
+  console.log("  topogram generator show topogram/react");
+  console.log("  topogram generator show @scope/topogram-generator-web --json");
+  console.log("  topogram generator check ./generator-package");
+  console.log("  topogram generator check @scope/topogram-generator-web --json");
 }
 
 function printTemplateHelp() {
@@ -501,6 +533,10 @@ function printCommandHelp(command) {
   }
   if (command === "component") {
     printComponentHelp();
+    return true;
+  }
+  if (command === "generator") {
+    printGeneratorHelp();
     return true;
   }
   if (command === "template") {
@@ -872,6 +908,266 @@ function printGeneratorCheck(payload) {
       console.log(`- ${error}`);
     }
   }
+}
+
+/**
+ * @param {import("./generator/registry.js").GeneratorManifest} manifest
+ * @param {{ source?: string|null, manifestPath?: string|null, packageRoot?: string|null, installed?: boolean, errors?: string[] }} [metadata]
+ * @returns {Record<string, any>}
+ */
+function generatorManifestSummary(manifest, metadata = {}) {
+  return {
+    id: manifest.id,
+    version: manifest.version,
+    surface: manifest.surface,
+    projectionPlatforms: manifest.projectionPlatforms || [],
+    inputs: manifest.inputs || [],
+    outputs: manifest.outputs || [],
+    stack: manifest.stack || {},
+    capabilities: manifest.capabilities || {},
+    source: manifest.source,
+    ...(manifest.profile ? { profile: manifest.profile } : {}),
+    ...(manifest.package ? { package: manifest.package } : {}),
+    ...(manifest.planned ? { planned: true } : {}),
+    installed: metadata.installed !== false,
+    manifestPath: metadata.manifestPath || null,
+    packageRoot: metadata.packageRoot || null,
+    errors: metadata.errors || []
+  };
+}
+
+/**
+ * @param {string} surface
+ * @param {string[]} platforms
+ * @returns {string}
+ */
+function exampleProjectionId(surface, platforms = []) {
+  const platform = platforms[0] || "";
+  if (surface === "api") return "proj_api";
+  if (surface === "database") return platform === "db_sqlite" ? "proj_db_sqlite" : "proj_db_postgres";
+  if (surface === "native") return platform === "ui_android" ? "proj_ui_android" : "proj_ui_ios";
+  return "proj_ui_web";
+}
+
+/**
+ * @param {import("./generator/registry.js").GeneratorManifest} manifest
+ * @returns {Record<string, any>}
+ */
+function exampleTopologyBinding(manifest) {
+  const componentId = manifest.surface === "api"
+    ? "app_api"
+    : manifest.surface === "database"
+      ? "app_db"
+      : manifest.surface === "native"
+        ? "app_ios"
+        : "app_web";
+  return {
+    id: componentId,
+    type: manifest.surface,
+    projection: exampleProjectionId(manifest.surface, manifest.projectionPlatforms),
+    generator: {
+      id: manifest.id,
+      version: manifest.version,
+      ...(manifest.package ? { package: manifest.package } : {})
+    }
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {string[]}
+ */
+function declaredGeneratorPackages(cwd) {
+  const packagePath = path.join(cwd, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return [];
+  }
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  const dependencyBuckets = [
+    packageJson.dependencies,
+    packageJson.devDependencies,
+    packageJson.optionalDependencies,
+    packageJson.peerDependencies
+  ];
+  const packages = new Set();
+  for (const dependencies of dependencyBuckets) {
+    if (!dependencies || typeof dependencies !== "object" || Array.isArray(dependencies)) {
+      continue;
+    }
+    for (const name of Object.keys(dependencies)) {
+      if (name.includes("topogram-generator")) {
+        packages.add(name);
+      }
+    }
+  }
+  return [...packages].sort();
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, cwd: string, generators: Record<string, any>[], summary: Record<string, number> }}
+ */
+function buildGeneratorListPayload(cwd) {
+  const generators = GENERATOR_MANIFESTS
+    .map((manifest) => generatorManifestSummary(manifest))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  for (const packageName of declaredGeneratorPackages(cwd)) {
+    const loaded = loadPackageGeneratorManifest(packageName, cwd);
+    if (loaded.manifest) {
+      generators.push(generatorManifestSummary(loaded.manifest, {
+        installed: true,
+        manifestPath: loaded.manifestPath,
+        packageRoot: loaded.packageRoot,
+        errors: loaded.errors
+      }));
+    } else {
+      generators.push({
+        id: null,
+        version: null,
+        surface: null,
+        projectionPlatforms: [],
+        inputs: [],
+        outputs: [],
+        stack: {},
+        capabilities: {},
+        source: "package",
+        package: packageName,
+        installed: false,
+        manifestPath: loaded.manifestPath,
+        packageRoot: loaded.packageRoot,
+        errors: loaded.errors
+      });
+    }
+  }
+  generators.sort((left, right) => String(left.id || left.package || "").localeCompare(String(right.id || right.package || "")));
+  return {
+    ok: generators.every((generator) => generator.errors.length === 0),
+    cwd,
+    generators,
+    summary: {
+      total: generators.length,
+      bundled: generators.filter((generator) => generator.source === "bundled").length,
+      package: generators.filter((generator) => generator.source === "package").length,
+      installed: generators.filter((generator) => generator.installed).length,
+      planned: generators.filter((generator) => generator.planned).length
+    }
+  };
+}
+
+/**
+ * @param {string} spec
+ * @param {string} cwd
+ * @returns {{ ok: boolean, sourceSpec: string, generator: Record<string, any>|null, exampleTopologyBinding: Record<string, any>|null, errors: string[] }}
+ */
+function buildGeneratorShowPayload(spec, cwd) {
+  const errors = [];
+  if (!spec || spec.startsWith("-")) {
+    return {
+      ok: false,
+      sourceSpec: spec || "",
+      generator: null,
+      exampleTopologyBinding: null,
+      errors: ["Usage: topogram generator show <id-or-package>"]
+    };
+  }
+  const bundled = getGeneratorManifest(spec);
+  if (bundled) {
+    return {
+      ok: true,
+      sourceSpec: spec,
+      generator: generatorManifestSummary(bundled),
+      exampleTopologyBinding: exampleTopologyBinding(bundled),
+      errors: []
+    };
+  }
+  let packageName = spec;
+  try {
+    packageName = packageNameFromPackageSpec(spec);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error));
+  }
+  if (errors.length === 0) {
+    const loaded = loadPackageGeneratorManifest(packageName, cwd);
+    if (loaded.manifest) {
+      return {
+        ok: true,
+        sourceSpec: spec,
+        generator: generatorManifestSummary(loaded.manifest, {
+          installed: true,
+          manifestPath: loaded.manifestPath,
+          packageRoot: loaded.packageRoot,
+          errors: loaded.errors
+        }),
+        exampleTopologyBinding: exampleTopologyBinding(loaded.manifest),
+        errors: []
+      };
+    }
+    errors.push(...loaded.errors);
+  }
+  return {
+    ok: false,
+    sourceSpec: spec,
+    generator: null,
+    exampleTopologyBinding: null,
+    errors
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildGeneratorListPayload>} payload
+ * @returns {void}
+ */
+function printGeneratorList(payload) {
+  console.log("Topogram generators");
+  console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; planned: ${payload.summary.planned}`);
+  console.log("");
+  for (const generator of payload.generators) {
+    const id = generator.id || generator.package || "unknown";
+    const status = generator.errors.length > 0 ? "invalid" : generator.planned ? "planned" : generator.source;
+    const platforms = generator.projectionPlatforms.join(", ") || "none";
+    const stack = Object.values(generator.stack || {}).join(" + ") || "not declared";
+    console.log(`- ${id}${generator.version ? `@${generator.version}` : ""} (${generator.surface || "unknown"}, ${status})`);
+    console.log(`  Platforms: ${platforms}`);
+    console.log(`  Stack: ${stack}`);
+    if (generator.package) {
+      console.log(`  Package: ${generator.package}`);
+    }
+    for (const error of generator.errors || []) {
+      console.log(`  Error: ${error}`);
+    }
+  }
+}
+
+/**
+ * @param {ReturnType<typeof buildGeneratorShowPayload>} payload
+ * @returns {void}
+ */
+function printGeneratorShow(payload) {
+  if (!payload.ok || !payload.generator) {
+    console.log("Generator not found.");
+    for (const error of payload.errors || []) {
+      console.log(`- ${error}`);
+    }
+    return;
+  }
+  const generator = payload.generator;
+  console.log(`Generator: ${generator.id}@${generator.version}`);
+  console.log(`Surface: ${generator.surface}`);
+  console.log(`Source: ${generator.source}${generator.planned ? " (planned)" : ""}`);
+  if (generator.package) {
+    console.log(`Package: ${generator.package}`);
+  }
+  if (generator.manifestPath) {
+    console.log(`Manifest: ${generator.manifestPath}`);
+  }
+  console.log(`Projection platforms: ${generator.projectionPlatforms.join(", ") || "none"}`);
+  console.log(`Inputs: ${generator.inputs.join(", ") || "none"}`);
+  console.log(`Outputs: ${generator.outputs.join(", ") || "none"}`);
+  console.log(`Stack: ${Object.entries(generator.stack || {}).map(([key, value]) => `${key}=${value}`).join(", ") || "not declared"}`);
+  console.log(`Capabilities: ${Object.entries(generator.capabilities || {}).map(([key, value]) => `${key}=${value}`).join(", ") || "not declared"}`);
+  console.log("");
+  console.log("Example topology binding:");
+  console.log(stableStringify(payload.exampleTopologyBinding));
 }
 
 function combineProjectValidationResults(...results) {
@@ -5007,11 +5303,14 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "component") {
   printComponentHelp();
   process.exit(args[1] ? 1 : 0);
+} else if (args[0] === "generator" && args[1] === "list") {
+  commandArgs = { generatorList: true, inputPath: null };
+} else if (args[0] === "generator" && args[1] === "show") {
+  commandArgs = { generatorShow: true, inputPath: args[2] };
 } else if (args[0] === "generator" && args[1] === "check") {
   commandArgs = { generatorCheck: true, inputPath: args[2] };
 } else if (args[0] === "generator") {
-  console.log("Topogram generator commands:");
-  console.log("  topogram generator check <path-or-package> [--json]");
+  printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
@@ -5172,6 +5471,8 @@ const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
+const shouldGeneratorList = Boolean(commandArgs?.generatorList);
+const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
 const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
@@ -5383,6 +5684,26 @@ try {
       console.log(stableStringify(payload));
     } else {
       printGeneratorCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorList) {
+    const payload = buildGeneratorListPayload(process.cwd());
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorList(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorShow) {
+    const payload = buildGeneratorShowPayload(inputPath, process.cwd());
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorShow(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }

@@ -170,7 +170,21 @@ point such as `index.cjs` or a compatible package export. Templates may include
 implementation code to customize generated files, but reusable stack behavior
 should live in generator packages.
 
-## Conformance Check
+## Discovery And Conformance
+
+Consumers can inspect generator availability before editing topology bindings:
+
+```bash
+topogram generator list
+topogram generator list --json
+topogram generator show topogram/react
+topogram generator show @scope/topogram-generator-example-web --json
+```
+
+`generator list` reports bundled generators plus installed generator packages
+declared in the current `package.json` dependencies. `generator show` accepts a
+bundled generator id or an already installed package name and prints the
+manifest, stack, capabilities, and an example `topology.components[]` binding.
 
 Generator authors should expose `npm run check` and back it with:
 
