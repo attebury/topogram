@@ -7,6 +7,7 @@ import {
   getStatement,
   summarizeById,
   getWorkflowDoc,
+  relatedComponentsForProjection,
   relatedProjectionsForCapability,
   relatedProjectionsForComponent,
   relatedProjectionsForEntity,
@@ -1625,6 +1626,12 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       required: true,
       reason: `Component ${entry.id} changed directly, so its component contract should be refreshed.`
     });
+    addTarget({
+      target: "component-behavior-report",
+      component_id: entry.id,
+      required: true,
+      reason: `Component ${entry.id} changed directly, so behavior realizations should be reviewed across affected projections.`
+    });
   }
 
   for (const impact of projectionImpacts) {
@@ -1669,13 +1676,25 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    for (const componentId of impact.component_ids || []) {
+    const componentIds = stableSortedStrings([
+      ...(impact.component_ids || []),
+      ...(impact.kind === "ui" ? relatedComponentsForProjection(graph, projection) : [])
+    ]);
+
+    for (const componentId of componentIds) {
       addTarget({
         target: "ui-component-contract",
         component_id: componentId,
         projection_id: impact.projection_id,
         required: true,
         reason: `Projection ${impact.projection_id} is affected by component ${componentId}, so the component contract should be refreshed.`
+      });
+      addTarget({
+        target: "component-behavior-report",
+        component_id: componentId,
+        projection_id: impact.projection_id,
+        required: true,
+        reason: `Projection ${impact.projection_id} is affected by component ${componentId}, so behavior data/event/action wiring should be reviewed.`
       });
     }
 
@@ -2948,6 +2967,7 @@ export function buildReviewPacketPayloadForChangePlan({ changePlan, risk }) {
     diff_summary: changePlan.diff_summary || null,
     write_scope: changePlan.write_scope || null,
     verification_targets: changePlan.verification_targets || null,
+    generator_targets: changePlan.generator_targets || [],
     operator_loop: buildOperatorLoopSummary({
       mode: changePlan.mode || null,
       nextAction: changePlan.next_action || null,

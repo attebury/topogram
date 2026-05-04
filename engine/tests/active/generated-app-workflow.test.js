@@ -740,6 +740,54 @@ test("topogram component behavior reports behavior groups without writing app ou
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior write must not write app shortcut output");
 });
 
+test("agent review packets recommend component behavior reports for component impacts", () => {
+  const changePlan = runCli([
+    "query",
+    "change-plan",
+    fixtureRoot,
+    "--component",
+    "component_ui_data_grid"
+  ]);
+  assert.equal(changePlan.status, 0, changePlan.stderr || changePlan.stdout);
+  const changePayload = JSON.parse(changePlan.stdout);
+  assert.equal(changePayload.type, "change_plan_query");
+  assert.equal(
+    changePayload.generator_targets.some((target) =>
+      target.target === "component-behavior-report" &&
+      target.component_id === "component_ui_data_grid" &&
+      target.projection_id === "proj_ui_web"
+    ),
+    true
+  );
+  assert.equal(
+    changePayload.alignment_recommendations.some((recommendation) =>
+      recommendation.action === "regenerate_projection_targets" &&
+      recommendation.targets.includes("component-behavior-report")
+    ),
+    true
+  );
+
+  const reviewPacket = runCli([
+    "query",
+    "review-packet",
+    fixtureRoot,
+    "--component",
+    "component_ui_data_grid"
+  ]);
+  assert.equal(reviewPacket.status, 0, reviewPacket.stderr || reviewPacket.stdout);
+  const reviewPayload = JSON.parse(reviewPacket.stdout);
+  assert.equal(reviewPayload.type, "review_packet_query");
+  assert.equal(reviewPayload.source, "change-plan");
+  assert.equal(
+    reviewPayload.generator_targets.some((target) =>
+      target.target === "component-behavior-report" &&
+      target.component_id === "component_ui_data_grid" &&
+      target.projection_id === "proj_ui_web"
+    ),
+    true
+  );
+});
+
 test("topogram catalog check validates catalog schema", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-check-"));
   const validCatalog = createCatalog(root, [
