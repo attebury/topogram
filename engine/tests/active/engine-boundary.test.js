@@ -26,13 +26,13 @@ const externalProductReferences = [
   ["topogram", "template", productNameLower].join("-"),
   ["topogram", "demo", productNameLower].join("-"),
   ["topogram", productNameLower].join("-"),
-  ["@attebury", ["topogram", "template", productNameLower].join("-")].join("/")
+  ["@topogram", ["template", productNameLower].join("-")].join("/")
 ];
 const generatedWorkflowDirectProductReferences = [
   JSON.stringify(productNameLower),
   ["topogram", "template", productNameLower].join("-"),
   ["topogram", "demo", productNameLower].join("-"),
-  ["@attebury", ["topogram", "template", productNameLower].join("-")].join("/")
+  ["@topogram", ["template", productNameLower].join("-")].join("/")
 ];
 
 function visitFiles(root) {

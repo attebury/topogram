@@ -182,7 +182,7 @@ find_topogram_bin() {
     command -v topogram
     return
   fi
-  echo "Unable to locate the Topogram CLI. Install @attebury/topogram or set TOPOGRAM_BIN." >&2
+  echo "Unable to locate the Topogram CLI. Install @topogram/cli or set TOPOGRAM_BIN." >&2
   exit 1
 }
 discover_input_path() {

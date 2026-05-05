@@ -39,7 +39,7 @@ packs can add focused commands that are valid for their own topology.
 
 ## Package Files
 
-For npm or GitHub Packages, keep the package payload narrow:
+For npm packages, keep the package payload narrow:
 
 ```json
 {
@@ -103,10 +103,10 @@ npm pack --pack-destination /tmp/template-pack
 topogram new ./my-app --template /tmp/template-pack/scope-template-0.1.0.tgz
 ```
 
-Use a private GitHub Packages template:
+Use a package-backed template:
 
 ```bash
-topogram new ./todo-demo --template @attebury/topogram-template-todo
+topogram new ./todo-demo --template @topogram/template-todo
 ```
 
 Use a private catalog alias:
@@ -118,7 +118,7 @@ topogram new ./todo-demo --template todo
 ```
 
 Catalog aliases resolve to package specs such as
-`@attebury/topogram-template-todo@0.1.6`. The catalog is only an index; the
+`@topogram/template-todo@0.1.6`. The catalog is only an index; the
 template package remains the source of versioned starter content. See
 [Catalog](./catalog.md).
 
@@ -150,8 +150,8 @@ SvelteKit and React template implementations can render supported component
 usage with stable packaged helpers:
 
 ```js
-import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
-import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/react.js";
+import { renderSvelteKitComponentRegion } from "@topogram/cli/template-helpers/sveltekit.js";
+import { renderReactComponentRegion } from "@topogram/cli/template-helpers/react.js";
 ```
 
 Pass the screen contract, region, top-level component contracts, and the data
@@ -169,15 +169,17 @@ implementation or by generic generation.
 Vanilla web templates should still treat `ui_components` as contract metadata
 until a concrete helper exists.
 
-Private package consumers need registry auth in `.npmrc`:
+Public `@topogram/*` packages install from npmjs without extra `.npmrc`
+configuration. Private package consumers need registry-specific npm auth; for
+example, a private GitHub Packages scope might use:
 
 ```text
-@attebury:registry=https://npm.pkg.github.com
+@internal:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-For GitHub Actions consumers, grant the consuming repository access from the
-package page:
+For GitHub Actions consumers that use private GitHub Packages, grant the
+consuming repository access from the package page:
 
 1. Open the package.
 2. Go to Package settings.
@@ -186,27 +188,23 @@ package page:
 
 If `topogram new` cannot install a private template package, the CLI reports
 whether npm saw an auth failure, access denial, missing package/version, or
-integrity mismatch. For local runs, set `NODE_AUTH_TOKEN` to a token that can
-read GitHub Packages. For CI, confirm both the `.npmrc` token wiring and the
-package's Manage Actions access settings.
+integrity mismatch. For local runs and CI, configure the package host's normal
+npm token or trusted-publishing setup before running `npm install`.
 
 Consumer repos can update their Topogram CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
+topogram package update-cli --latest
 ```
 
-The command updates `@attebury/topogram`, refreshes stale lockfile tarball
+The command updates `@topogram/cli`, refreshes stale lockfile tarball
 metadata for the CLI package when needed, then runs any available consumer
 scripts named `cli:surface`, `doctor`, `catalog:show`,
 `catalog:template-show`, and `check` when dependencies were installed or
 already current.
-If npm package inspection fails because local npm auth is unavailable, the
-command can confirm the version through the GitHub Packages API and update the
-consumer files directly. That does not prove install auth and skips local
-verification scripts until `npm install`, `npm ci`, or CI refreshes
-`node_modules`; use `topogram setup package-auth` for local and CI package-read
-setup guidance.
+If npm package inspection fails, the command stops before mutating consumer
+files. Fix npm registry access and rerun it so the local verification scripts
+run against the installed package.
 
 Maintained apps can intentionally leave the template update workflow with
 `topogram template detach`. Detach removes template provenance from

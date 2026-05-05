@@ -10,7 +10,7 @@ The engine is the publishable private CLI package:
 
 ```json
 {
-  "name": "@attebury/topogram",
+  "name": "@topogram/cli",
   "bin": {
     "topogram": "./src/cli.js"
   }
@@ -107,7 +107,7 @@ topogram new ../web-api-demo --template web-api
 Create a starter project from a shared template package:
 
 ```bash
-topogram new ../todo-demo --template @attebury/topogram-template-todo
+topogram new ../todo-demo --template @topogram/template-todo
 topogram new ../todo-demo --template todo
 ```
 

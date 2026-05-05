@@ -1,6 +1,6 @@
 # Releasing Topogram CLI
 
-The CLI package is `@attebury/topogram`. Releases are manual and publish to GitHub Packages.
+The CLI package is `@topogram/cli`. Releases are manual and publish to npmjs.
 Run `topogram help release` for the CLI release-status command surface.
 
 ## Prepare
@@ -30,9 +30,7 @@ The workflow verifies the engine and packed CLI before publishing. It does not m
 ## After Publish
 
 Confirm the `Installed CLI First Use` workflow passes. It installs the published
-CLI and creates `hello-web` through the private catalog, so the `topogram` repo
-must have Read access under the starter package's Manage Actions access
-settings.
+CLI and creates `hello-web` through the public catalog.
 
 Check the release and known consumer pins:
 
@@ -53,24 +51,19 @@ version and rerun their verification. Consumer repos that include
 `topogram-cli.version` can use:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
+topogram package update-cli --latest
 ```
 
-If local npm auth is unavailable, `topogram package update-cli` can confirm the
-requested CLI version through the GitHub Packages API via `gh api` and update
-the consumer manifests directly. That fallback is only for rollout bookkeeping:
-it skips local verification scripts because `node_modules` may still contain
-the old CLI, and `npm install` or `npm ci` still need GitHub Packages auth for
-private package downloads.
+If npm package inspection is unavailable, `topogram package update-cli` stops
+before mutating consumer manifests. Fix npm registry access, rerun the update,
+and let the command run the consumer verification scripts.
 
-`topogram release status` uses the same GitHub Packages API fallback for
-release visibility. If npm registry inspection is unavailable but the API
-confirms the package version, release status reports an informational note
-instead of a release-blocking warning. Install and CI jobs still need npm auth
-when they download private packages.
+`topogram release status` checks npmjs package visibility. If npm registry
+inspection is unavailable, release status reports a warning; strict mode treats
+an unverifiable latest package version as release-blocking.
 
 Use `topogram setup package-auth` when a local or CI environment needs package
-read setup guidance.
+read setup guidance for private packages.
 
 After the package is published, the release tag exists, and known consumer pins
 have been rolled, run the strict release gate:

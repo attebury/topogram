@@ -17,8 +17,8 @@ function fail(message) {
   process.exit(1);
 }
 
-if (pkg.name !== "@attebury/topogram") {
-  fail(`Expected engine package name @attebury/topogram, found ${pkg.name}`);
+if (pkg.name !== "@topogram/cli") {
+  fail(`Expected engine package name @topogram/cli, found ${pkg.name}`);
 }
 
 const packageVersion = pkg.version;

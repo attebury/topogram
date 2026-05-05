@@ -8,7 +8,7 @@ import path from "node:path";
 
 import { writeTemplateTrustRecord } from "./template-trust.js";
 
-const CLI_PACKAGE_NAME = "@attebury/topogram";
+const CLI_PACKAGE_NAME = "@topogram/cli";
 const DEFAULT_TEMPLATE_NAME = "hello-web";
 const TEMPLATE_MANIFEST = "topogram-template.json";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
@@ -189,30 +189,13 @@ function cliDependencyForProject(projectRoot, engineRoot) {
 }
 
 /**
- * @param {{ name: string, spec: string }} cliDependency
- * @returns {boolean}
- */
-function needsGitHubPackagesNpmConfig(cliDependency) {
-  return cliDependency.name.startsWith("@attebury/") &&
-    !cliDependency.spec.startsWith("file:") &&
-    !cliDependency.spec.startsWith(".");
-}
-
-/**
  * @param {string} projectRoot
  * @param {{ name: string, spec: string }} cliDependency
  * @returns {void}
  */
 function writeProjectNpmConfig(projectRoot, cliDependency) {
-  if (!needsGitHubPackagesNpmConfig(cliDependency)) {
-    return;
-  }
-  const contents = [
-    "@attebury:registry=https://npm.pkg.github.com",
-    "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}",
-    ""
-  ].join("\n");
-  fs.writeFileSync(path.join(projectRoot, ".npmrc"), contents, "utf8");
+  void projectRoot;
+  void cliDependency;
 }
 
 /**
@@ -237,7 +220,7 @@ function generatorDependenciesForTemplate(templateRoot) {
   };
   return Object.fromEntries(Object.entries(dependencies).filter(([name, spec]) =>
     typeof name === "string" &&
-    name.includes("topogram-generator") &&
+    (name.includes("topogram-generator") || name.startsWith("@topogram/generator-")) &&
     typeof spec === "string" &&
     spec.length > 0
   ));
@@ -468,10 +451,10 @@ export function installPackageSpec(templateSpec) {
 function formatPackageInstallError(templateSpec, result) {
   const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
   const normalized = output.toLowerCase();
-  const npmrcHint = "Ensure this project has an .npmrc with @attebury:registry=https://npm.pkg.github.com and //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}.";
-  const packageAccessHint = "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.";
-  const authHint = "Set NODE_AUTH_TOKEN to a GitHub token with package read access, or configure npm auth for GitHub Packages.";
-  const doctorHint = "Run `topogram doctor` to check Node.js, npm, GitHub Packages, and catalog access.";
+  const npmrcHint = "Ensure npm can access the registry required by this template package.";
+  const packageAccessHint = "For private package registries, configure a token with package read access.";
+  const authHint = "For private template packages, configure npm auth for the package registry before installing.";
+  const doctorHint = "Run `topogram doctor` to check Node.js, npm, package, and catalog access.";
   if (result.error?.code === "ENOENT") {
     return [
       `Failed to install template package '${templateSpec}': npm was not found.`,
@@ -480,7 +463,7 @@ function formatPackageInstallError(templateSpec, result) {
   }
   if (/\b(e401|eneedauth)\b/.test(normalized) || normalized.includes("unauthenticated") || normalized.includes("authentication required")) {
     return [
-      `Authentication is required to install template package '${templateSpec}' from GitHub Packages.`,
+      `Authentication is required to install template package '${templateSpec}'.`,
       authHint,
       npmrcHint,
       packageAccessHint,
@@ -500,7 +483,7 @@ function formatPackageInstallError(templateSpec, result) {
   if (/\b(e404|404)\b/.test(normalized) || normalized.includes("not found")) {
     return [
       `Template package '${templateSpec}' was not found, or the current token does not have access to it.`,
-      "Check the package name/version and GitHub Packages access.",
+      "Check the package name/version and registry access.",
       packageAccessHint,
       doctorHint,
       output
@@ -509,7 +492,7 @@ function formatPackageInstallError(templateSpec, result) {
   if (/\beintegrity\b/.test(normalized) || normalized.includes("integrity checksum failed")) {
     return [
       `Package integrity failed while installing template package '${templateSpec}'.`,
-      "Refresh package-lock.json from the published GitHub Packages tarball instead of a local npm pack tarball.",
+      "Refresh package-lock.json from the published registry tarball instead of a local npm pack tarball.",
       output
     ].filter(Boolean).join("\n");
   }

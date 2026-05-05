@@ -265,8 +265,8 @@ Template implementations can call the packaged helpers directly when they need
 custom route structure:
 
 ```js
-import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
-import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/react.js";
+import { renderSvelteKitComponentRegion } from "@topogram/cli/template-helpers/sveltekit.js";
+import { renderReactComponentRegion } from "@topogram/cli/template-helpers/react.js";
 ```
 
 Vanilla web still emits component usage in contracts only. Its concrete

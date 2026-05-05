@@ -96,9 +96,9 @@ export function formatCatalogTemplateAliasError(templateName, catalogSource, err
     suggestions.length > 0 ? `Suggested templates: ${suggestions.join(", ")}.` : null,
     catalogDisabled ? "Unset TOPOGRAM_CATALOG_SOURCE=none, pass --catalog <source>, or use an explicit local path/package spec." : null,
     "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
-    catalogDisabled ? null : "For the private default catalog, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
-    "For private template packages, configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access.",
-    "Use a catalog alias such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @attebury/topogram-template-todo@0.1.6."
+    catalogDisabled ? null : "The default catalog is public. For private catalogs, set GITHUB_TOKEN or GH_TOKEN with repository read access, or run `gh auth login`.",
+    "For private template packages, configure registry-specific npm auth before installing.",
+    "Use a catalog alias such as hello-web/web-api/web-api-db, a local path, or a full package spec such as @topogram/template-todo@0.1.6."
   ].filter(Boolean).join("\n");
 }
 

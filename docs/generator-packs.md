@@ -15,9 +15,9 @@ policy. Stack-specific realization belongs behind generator manifests.
   "type": "web",
   "projection": "proj_ui_web",
   "generator": {
-    "id": "@attebury/topogram-generator-react-web",
+    "id": "@topogram/generator-react-web",
     "version": "1",
-    "package": "@attebury/topogram-generator-react-web"
+    "package": "@topogram/generator-react-web"
   },
   "api": "app_api",
   "port": 5173
@@ -42,7 +42,7 @@ Package-backed and bundled fallback generators use the same manifest shape:
 
 ```json
 {
-  "id": "@attebury/topogram-generator-react-web",
+  "id": "@topogram/generator-react-web",
   "version": "1",
   "surface": "web",
   "projectionPlatforms": ["ui_web"],
@@ -64,7 +64,7 @@ Package-backed and bundled fallback generators use the same manifest shape:
     "unsupported": "warning"
   },
   "source": "package",
-  "package": "@attebury/topogram-generator-react-web"
+  "package": "@topogram/generator-react-web"
 }
 ```
 
@@ -72,7 +72,7 @@ Package-backed and bundled fallback generators use the same manifest shape:
 Topogram does not dynamically install unknown generator packages; a project or
 template must declare and install the package through normal package-manager
 workflow before `topogram check` or `topogram generate` can use it.
-`source: "bundled"` means the generator ships with `@attebury/topogram` as a
+`source: "bundled"` means the generator ships with `@topogram/cli` as a
 compatibility fallback for engine fixtures and older topology bindings.
 
 Manifest fields:
@@ -100,9 +100,9 @@ Package-backed topology bindings include the package name explicitly:
   "type": "web",
   "projection": "proj_ui_web",
   "generator": {
-    "id": "@attebury/topogram-generator-react-web",
+    "id": "@topogram/generator-react-web",
     "version": "1",
-    "package": "@attebury/topogram-generator-react-web"
+    "package": "@topogram/generator-react-web"
   },
   "api": "app_api",
   "port": 5173
@@ -115,8 +115,8 @@ resolve it during `topogram check` and `topogram generate`:
 ```json
 {
   "devDependencies": {
-    "@attebury/topogram": "^0.3.24",
-    "@attebury/topogram-generator-react-web": "^0.1.0"
+    "@topogram/cli": "^0.3.24",
+    "@topogram/generator-react-web": "^0.1.0"
   }
 }
 ```
@@ -204,7 +204,7 @@ Consumers can inspect generator availability before editing topology bindings:
 ```bash
 topogram generator list
 topogram generator list --json
-topogram generator show @attebury/topogram-generator-react-web
+topogram generator show @topogram/generator-react-web
 topogram generator show @scope/topogram-generator-example-web --json
 ```
 
@@ -244,9 +244,9 @@ topogram generator check @scope/topogram-generator-example-web
 topogram generator check @scope/topogram-generator-example-web --json
 ```
 
-Topogram does not install packages during `generator check`. For private GitHub
-Packages, run `npm install` first with `NODE_AUTH_TOKEN` or an authenticated npm
-configuration.
+Topogram does not install packages during `generator check`. For private
+generator packages, run `npm install` first with the npm auth configuration
+required by that registry.
 
 The smoke context is intentionally small. It proves the adapter boundary and
 manifest compatibility, not complete app behavior. Generator packages should add
@@ -268,7 +268,7 @@ Use normal package trust controls:
 - pin versions in templates or lockfiles where reproducibility matters;
 - keep package `files` allowlists narrow;
 - avoid install lifecycle scripts unless they are truly needed;
-- use GitHub Packages access controls for private generators.
+- use the package host's access controls for private generators.
 
 ## Templates
 

@@ -15,7 +15,7 @@ TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
 CATALOG_FILE="$RUN_DIR/topograms.catalog.json"
 mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR"
 
-echo "Packing @attebury/topogram..."
+echo "Packing @topogram/cli..."
 PACK_NAME="$(cd "$ENGINE_DIR" && npm pack --silent --pack-destination "$PACK_DIR" | tail -n 1)"
 PACKAGE_TARBALL="$PACK_DIR/$PACK_NAME"
 
@@ -48,8 +48,8 @@ echo "Checking installed template helper imports..."
 (
   cd "$CONSUMER_DIR"
   node --input-type=module -e '
-    import { renderSvelteKitComponentRegion } from "@attebury/topogram/template-helpers/sveltekit.js";
-    import { renderReactComponentRegion } from "@attebury/topogram/template-helpers/react.js";
+    import { renderSvelteKitComponentRegion } from "@topogram/cli/template-helpers/sveltekit.js";
+    import { renderReactComponentRegion } from "@topogram/cli/template-helpers/react.js";
     const rendered = renderSvelteKitComponentRegion(
       {
         components: [
@@ -110,12 +110,12 @@ node --input-type=module -e '
       {
         id: "smoke",
         kind: "template",
-        package: "@attebury/topogram-template-smoke",
+        package: "@topogram/template-smoke",
         defaultVersion: "0.1.0",
         description: "Smoke template",
         tags: ["smoke"],
         trust: {
-          scope: "@attebury",
+          scope: "@topogram",
           includesExecutableImplementation: true
         }
       }
@@ -154,7 +154,7 @@ cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR
   node --input-type=module -e '
     import fs from "node:fs";
     const pkg = {
-      name: "@attebury/topogram-template-smoke",
+      name: "@topogram/template-smoke",
       version: "0.1.0",
       private: true,
       type: "module",

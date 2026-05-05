@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -48,12 +47,10 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: "@attebury"
+          registry-url: https://registry.npmjs.org
+          scope: "@topogram"
       - name: Run release status
         working-directory: topogram
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ inputs.strict }}" == "true" ]]; then
             npm run release:status:strict

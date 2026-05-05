@@ -50,8 +50,8 @@ topogram doctor --json
 topogram doctor --catalog ./topograms.catalog.json
 ```
 
-`topogram doctor` also checks Node.js, npm, GitHub Packages registry
-configuration, `NODE_AUTH_TOKEN`, and access to the installed CLI package.
+`topogram doctor` also checks Node.js, npm, public CLI package access, catalog
+reachability, and package access for catalog entries.
 
 Validate a local or remote catalog:
 
@@ -78,13 +78,13 @@ metadata. `topogram.project.json` records:
   "template": {
     "source": "package",
     "requested": "todo",
-    "sourceSpec": "@attebury/topogram-template-todo@0.1.6",
+    "sourceSpec": "@topogram/template-todo@0.1.6",
     "catalog": {
       "id": "todo",
-      "source": "github:attebury/topograms/topograms.catalog.json",
-      "package": "@attebury/topogram-template-todo",
+      "source": "https://raw.githubusercontent.com/attebury/topograms/main/topograms.catalog.json",
+      "package": "@topogram/template-todo",
       "version": "0.1.6",
-      "packageSpec": "@attebury/topogram-template-todo@0.1.6"
+      "packageSpec": "@topogram/template-todo@0.1.6"
     }
   }
 }
@@ -94,13 +94,12 @@ metadata. `topogram.project.json` records:
 checks, and trust policy. `requested` and `catalog` preserve the human-facing
 alias and catalog source for auditability.
 
-Package-backed catalog starters install `@attebury/topogram` from GitHub
-Packages in the generated project. The generated `.npmrc` reads
-`${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read the package:
+Package-backed catalog starters install public `@topogram/*` packages from
+npmjs in the generated project:
 
 ```bash
 cd ./hello-web
-NODE_AUTH_TOKEN=<github-token-with-package-read> npm install
+npm install
 npm run check
 npm run generate
 ```
@@ -177,19 +176,19 @@ and `topogram new ./my-app` cannot resolve the default catalog-backed
     {
       "id": "todo",
       "kind": "template",
-      "package": "@attebury/topogram-template-todo",
+      "package": "@topogram/template-todo",
       "defaultVersion": "0.1.27",
       "description": "Todo app starter",
       "tags": ["todo", "sveltekit", "hono", "postgres"],
       "surfaces": ["web", "api", "database"],
       "generators": [
-        "@attebury/topogram-generator-sveltekit-web",
-        "@attebury/topogram-generator-hono-api",
-        "@attebury/topogram-generator-postgres-db"
+        "@topogram/generator-sveltekit-web",
+        "@topogram/generator-hono-api",
+        "@topogram/generator-postgres-db"
       ],
       "stack": "SvelteKit + Hono + Postgres",
       "trust": {
-        "scope": "@attebury",
+        "scope": "@topogram",
         "includesExecutableImplementation": true,
         "notes": "Copies template implementation into the generated project."
       }
@@ -240,8 +239,8 @@ apply.
 
 ## Private Access
 
-For `github:attebury/topograms/topograms.catalog.json`, the CLI uses `gh api`.
-Set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate locally with:
+The default catalog is public. For private `github:` catalog sources, the CLI
+uses `gh api`. Set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate locally with:
 
 ```bash
 gh auth login
@@ -257,14 +256,14 @@ catalog aliases. If the alias cannot be resolved, Topogram stops with catalog
 guidance instead of falling through to an unrelated npm package install. Use a
 local path or full package spec when you do not want catalog resolution.
 
-For GitHub Actions consumers that need private packages, grant package access
-from the package page:
+For GitHub Actions consumers that need private packages, configure the package
+host's normal package-read access. For GitHub Packages, that means:
 
 1. Open the package.
 2. Go to Package settings.
 3. Under Manage Actions access, add the consumer repository.
 4. Grant Read access.
 
-The private `attebury/topograms` repo owns the catalog index. Template and
+The public `attebury/topograms` repo owns the catalog index. Template and
 topogram packages own versioned content. Demo repos consume the published CLI
 and catalog entries.

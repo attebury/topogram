@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -22,10 +21,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: "@attebury"
+          registry-url: https://registry.npmjs.org
+          scope: "@topogram"
       - name: Verify installed CLI first use
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash ./scripts/verify-installed-cli-first-use.sh

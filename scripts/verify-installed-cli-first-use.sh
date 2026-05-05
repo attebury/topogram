@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK_ROOT="$ROOT_DIR/.tmp/installed-cli-first-use"
 NPM_CACHE_DIR="$ROOT_DIR/.tmp/npm-cache"
-CLI_PACKAGE_SPEC="${TOPOGRAM_CLI_PACKAGE_SPEC:-@attebury/topogram@latest}"
+CLI_PACKAGE_SPEC="${TOPOGRAM_CLI_PACKAGE_SPEC:-@topogram/cli@latest}"
 
 mkdir -p "$WORK_ROOT" "$NPM_CACHE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
@@ -17,10 +17,6 @@ echo "Installing published Topogram CLI ($CLI_PACKAGE_SPEC)..."
 (
   cd "$CONSUMER_DIR"
   npm init -y >/dev/null
-  npm config set @attebury:registry https://npm.pkg.github.com --location=project
-  if [[ -n "${NODE_AUTH_TOKEN:-}" ]]; then
-    npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN" --location=project
-  fi
   npm install "$CLI_PACKAGE_SPEC" >/dev/null
 )
 
@@ -33,8 +29,8 @@ VERSION_JSON="$("$TOPOGRAM_BIN" version --json)"
 node --input-type=module - "$VERSION_JSON" "${EXPECTED_TOPOGRAM_CLI_VERSION:-}" <<'NODE'
 const payload = JSON.parse(process.argv[2]);
 const expected = process.argv[3] || "";
-if (payload.packageName !== "@attebury/topogram") {
-  throw new Error(`Expected @attebury/topogram, got ${payload.packageName}`);
+if (payload.packageName !== "@topogram/cli") {
+  throw new Error(`Expected @topogram/cli, got ${payload.packageName}`);
 }
 if (expected && payload.version !== expected) {
   throw new Error(`Expected Topogram CLI ${expected}, got ${payload.version}`);

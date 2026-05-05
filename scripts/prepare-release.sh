@@ -18,7 +18,7 @@ fi
 npm --prefix "$ENGINE_DIR" version "$VERSION" --no-git-tag-version --allow-same-version >/dev/null
 "$ROOT_DIR/scripts/check-release-version.sh"
 
-echo "Prepared @attebury/topogram@$VERSION"
+echo "Prepared @topogram/cli@$VERSION"
 echo
 echo "Next:"
 echo "  git add engine/package.json engine/package-lock.json"

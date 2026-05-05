@@ -8,21 +8,17 @@ Use Node 20+.
 
 ### First-Use Prerequisites
 
-For a private-package consumer project, configure GitHub Packages access and
-install the CLI as a project dependency:
+Install the public CLI as a project dependency:
 
 ```bash
-export NODE_AUTH_TOKEN=<github-token-with-package-read>
-npm config set @attebury:registry https://npm.pkg.github.com
-npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
-npm install --save-dev @attebury/topogram
+npm install --save-dev @topogram/cli
 npx topogram doctor
 ```
 
 Catalog aliases such as `hello-web`, `web-api-db`, and `todo` are resolved
-through the `attebury/topograms` catalog. Local runs can provide catalog access
-with `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth login`; package installs still need
-`NODE_AUTH_TOKEN` when reading private GitHub Packages.
+through the public `attebury/topograms` catalog. Private catalog sources can use
+`GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth login`. Public `@topogram/*` package
+installs should not require registry auth.
 
 `TOPOGRAM_CATALOG_SOURCE=none` intentionally disables catalog discovery. In
 that mode, `topogram template list` shows no shared starters and
@@ -37,7 +33,7 @@ Choose your starting point:
 npx topogram template list
 npx topogram new ./hello-web --template hello-web
 cd ./hello-web
-NODE_AUTH_TOKEN="$NODE_AUTH_TOKEN" npm install
+npm install
 npm run check
 npm run generate
 
@@ -142,9 +138,9 @@ needs the purpose, arguments, selectors, output type, and example for one query.
 
 The package-backed starter templates in `topogram-starters` are the canonical
 shared starter examples and are surfaced through the `attebury/topograms`
-catalog. Generated projects include a project `.npmrc` that reads
-`${NODE_AUTH_TOKEN}`, so run `npm install` with a token that can read GitHub
-Packages when the CLI dependency comes from `@attebury/topogram`.
+catalog. Generated projects depend on public `@topogram/*` packages, so a normal
+`npm install` should work unless the project also opts into private templates or
+generators.
 All generated starters include `npm run query:list` and `npm run query:show -- <name>`
 as default local query discovery commands.
 
@@ -176,13 +172,13 @@ topogram template explain
 topogram template status --latest
 topogram template policy check
 topogram template policy init
-topogram template policy pin @attebury/topogram-template-todo@0.1.6
+topogram template policy pin @topogram/template-todo@0.1.6
 topogram template update --status
 topogram template update --recommend
 topogram template update --recommend --latest
 topogram template update --plan
 topogram template update --check
-topogram template update --plan --template @attebury/topogram-template-todo@0.1.6
+topogram template update --plan --template @topogram/template-todo@0.1.6
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
@@ -245,7 +241,7 @@ Validate a reusable template pack:
 
 ```bash
 topogram template check ./my-template
-topogram template check @attebury/topogram-template-todo@0.1.6 --json
+topogram template check @topogram/template-todo@0.1.6 --json
 ```
 
 Template checks create a temporary starter, run `topogram check` behavior,
@@ -256,7 +252,7 @@ and a suggested fix when Topogram can infer one.
 To create a starter from a shared template pack:
 
 ```bash
-topogram new ./todo-demo --template @attebury/topogram-template-todo
+topogram new ./todo-demo --template @topogram/template-todo
 topogram new ./todo-demo --template todo
 topogram new ./hello-web --template hello-web
 ```
@@ -289,18 +285,17 @@ topogram generate
 
 See [Catalog](./docs/catalog.md).
 
-Private catalog and template package failures are normalized into actionable
-messages for missing auth, missing package access, missing package/version, and
-catalog source 404s. For private package consumers, configure `.npmrc` with the
-GitHub Packages registry and run with `NODE_AUTH_TOKEN` when npm needs package
-read access.
+Catalog and template package failures are normalized into actionable messages
+for missing auth, missing package access, missing package/version, and catalog
+source 404s. Public `@topogram/*` packages install from npmjs; private package
+consumers should configure the registry-specific npm auth their package host
+requires.
 
 Use `topogram version` to audit the installed CLI package, version, executable
 path, and Node runtime. Use `topogram doctor` when setup is unclear. It checks
-Node.js, npm, GitHub Packages registry configuration, `NODE_AUTH_TOKEN`,
-Topogram CLI package access, catalog reachability, GitHub token or `gh auth`
-readiness for private GitHub catalog sources, and npm package access for each
-catalog entry:
+Node.js, npm, public CLI package access, catalog reachability, GitHub token or
+`gh auth` readiness for private GitHub catalog sources, and npm package access
+for each catalog entry:
 
 ```bash
 topogram version
@@ -310,14 +305,10 @@ topogram doctor --json
 topogram doctor --catalog ./topograms.catalog.json
 ```
 
-Clean-machine private template flow:
+Clean-machine public template flow:
 
 ```bash
-export NODE_AUTH_TOKEN=<github-token-with-package-read>
-npm config set @attebury:registry https://npm.pkg.github.com
-npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
-npm install --global @attebury/topogram
-gh auth login
+npm install --global @topogram/cli
 topogram doctor
 topogram template list
 topogram catalog show todo
@@ -329,24 +320,23 @@ npm run generate
 npm run verify
 ```
 
-If `topogram new --template todo` fails before npm runs, fix catalog access:
-set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate `gh`. If it resolves the
-catalog alias but npm fails, fix GitHub Packages access and `NODE_AUTH_TOKEN`.
+If `topogram new --template todo` fails before npm runs, check catalog access or
+pass `--catalog <source>`. If it resolves the catalog alias but npm fails, check
+the package name/version and npm registry access.
 
 Consumer repos can update their CLI dependency with:
 
 ```bash
-NODE_AUTH_TOKEN=<github-token-with-package-read> topogram package update-cli --latest
+topogram package update-cli --latest
 ```
 
 The command resolves the latest published CLI package, updates
-`@attebury/topogram`, refreshes stale lockfile tarball metadata when needed,
+`@topogram/cli`, refreshes stale lockfile tarball metadata when needed,
 updates `topogram-cli.version` when the consumer repo has that convention file,
 then runs available checks when dependencies were installed or already current:
 `cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, and `check`.
-If npm auth is missing and the command falls back to direct file updates through
-the GitHub Packages API, it skips local checks until `npm install`, `npm ci`, or
-CI refreshes `node_modules`.
+If npm package inspection fails, the command stops before mutating consumer
+files; fix package access and rerun it.
 
 Create generated projects outside `engine/`. The engine is source and test code; generated app workspaces should live beside it, for example `./my-topogram-app`.
 
@@ -379,7 +369,7 @@ npm run app:runtime
 
 ## Engine
 
-The engine package publishes privately as `@attebury/topogram` and exposes the `topogram` bin:
+The engine package publishes privately as `@topogram/cli` and exposes the `topogram` bin:
 
 ```bash
 npm run new -- ./my-app --template ./engine/tests/fixtures/templates/hello-web

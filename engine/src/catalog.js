@@ -7,7 +7,7 @@ import path from "node:path";
 
 import { installPackageSpec } from "./new-project.js";
 
-export const DEFAULT_CATALOG_SOURCE = "github:attebury/topograms/topograms.catalog.json";
+export const DEFAULT_CATALOG_SOURCE = "https://raw.githubusercontent.com/attebury/topograms/main/topograms.catalog.json";
 export const CATALOG_FILE_NAME = "topograms.catalog.json";
 export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
 const KNOWN_CATALOG_SURFACES = new Set(["web", "api", "database", "native"]);
@@ -245,7 +245,7 @@ export function validateCatalog(value, source = "") {
         severity: "warning",
         message: `Catalog entry '${id || entryPath}' generators should be an array of generator ids.`,
         path: source || null,
-        suggestedFix: "Use package-backed generator ids such as [\"@attebury/topogram-generator-sveltekit-web\", \"@attebury/topogram-generator-hono-api\"]."
+        suggestedFix: "Use package-backed generator ids such as [\"@topogram/generator-sveltekit-web\", \"@topogram/generator-hono-api\"]."
       }));
     }
     if (Object.prototype.hasOwnProperty.call(entry, "stack") && typeof entry.stack !== "string") {

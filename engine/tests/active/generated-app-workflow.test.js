@@ -15,7 +15,7 @@ const npmCacheRoot = path.join(os.tmpdir(), "topogram-generated-app-workflow-npm
 fs.mkdirSync(npmCacheRoot, { recursive: true });
 const cliPackageVersion = JSON.parse(fs.readFileSync(path.join(engineRoot, "package.json"), "utf8")).version;
 const externalTodoCatalogAlias = "todo";
-const externalTodoTemplatePackageName = "@attebury/topogram-template-todo";
+const externalTodoTemplatePackageName = "@topogram/template-todo";
 const externalTodoTemplateVersion = "0.1.6";
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
 const knownCliConsumerRepos = ["topogram-starters", ...externalTodoConsumerRepos];
@@ -151,14 +151,14 @@ function copyAppBasicFixture(root, name = "app-basic") {
 test("topogram version reports package and runtime details", () => {
   const human = runCli(["version"]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, new RegExp(`Topogram CLI: @attebury/topogram@${cliPackageVersion.replaceAll(".", "\\.")}`));
+  assert.match(human.stdout, new RegExp(`Topogram CLI: @topogram/cli@${cliPackageVersion.replaceAll(".", "\\.")}`));
   assert.match(human.stdout, /Executable: /);
   assert.match(human.stdout, new RegExp(`Node: ${process.version.replaceAll(".", "\\.")}`));
 
   const json = runCli(["version", "--json"]);
   assert.equal(json.status, 0, json.stderr || json.stdout);
   const payload = JSON.parse(json.stdout);
-  assert.equal(payload.packageName, "@attebury/topogram");
+  assert.equal(payload.packageName, "@topogram/cli");
   assert.equal(payload.version, cliPackageVersion);
   assert.equal(payload.executablePath, path.join(engineRoot, "src", "cli.js"));
   assert.equal(payload.nodeVersion, process.version);
@@ -204,8 +204,8 @@ test("generic catalog fixture helper stays product-neutral", () => {
 
 test("external Todo fixture constants isolate intentional product coverage", () => {
   assert.equal(externalTodoCatalogAlias, "todo");
-  assert.equal(externalTodoTemplatePackageName, "@attebury/topogram-template-todo");
-  assert.equal(externalTodoTemplatePackageSpec(), "@attebury/topogram-template-todo@0.1.6");
+  assert.equal(externalTodoTemplatePackageName, "@topogram/template-todo");
+  assert.equal(externalTodoTemplatePackageSpec(), "@topogram/template-todo@0.1.6");
   assert.deepEqual(externalTodoConsumerRepos, ["topogram-template-todo", "topogram-demo-todo"]);
 });
 
@@ -252,8 +252,8 @@ if (args[0] === "--version") {
   process.exit(0);
 }
 if (args[0] === "config" && args[1] === "get") {
-  if (args[2] === "@attebury:registry") {
-    process.stdout.write((process.env.FAKE_NPM_ATTEBURY_REGISTRY || "https://npm.pkg.github.com") + "\\n");
+  if (args[2] === "@topogram:registry") {
+    process.stdout.write((process.env.FAKE_NPM_TOPOGRAM_REGISTRY || "undefined") + "\\n");
     process.exit(0);
   }
   process.stdout.write("undefined\\n");
@@ -486,8 +486,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const packageHelp = runCli(["package", "--help"]);
   assert.equal(packageHelp.status, 0, packageHelp.stderr || packageHelp.stdout);
   assert.match(packageHelp.stdout, /Usage: topogram package update-cli <version\|--latest>/);
-  assert.match(packageHelp.stdout, /GitHub Packages API confirms the version/);
-  assert.match(packageHelp.stdout, /Direct file updates skip local verification scripts/);
+  assert.match(packageHelp.stdout, /npmjs package inspection confirms the requested public CLI version/);
+  assert.match(packageHelp.stdout, /Available consumer verification scripts run after install/);
 
   const releaseHelp = runCli(["release", "--help"]);
   assert.equal(releaseHelp.status, 0, releaseHelp.stderr || releaseHelp.stdout);
@@ -527,8 +527,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
 
   const packageAuth = runCli(["setup", "package-auth"]);
   assert.equal(packageAuth.status, 0, packageAuth.stderr || packageAuth.stdout);
-  assert.match(packageAuth.stdout, /npm config set @attebury:registry https:\/\/npm\.pkg\.github\.com/);
-  assert.match(packageAuth.stdout, /Manage Actions access/);
+  assert.match(packageAuth.stdout, /npm install --save-dev @topogram\/cli/);
+  assert.match(packageAuth.stdout, /Private template or generator packages/);
 
   const catalogAuth = runCli(["setup", "catalog-auth"]);
   assert.equal(catalogAuth.status, 0, catalogAuth.stderr || catalogAuth.stdout);
@@ -1050,7 +1050,7 @@ test("topogram catalog doctor reports catalog and package access", () => {
   assert.equal(deniedPayload.packages.find((item) => item.id === "hello").diagnostics[0].code, "catalog_package_access_denied");
 });
 
-test("topogram doctor checks runtime, GitHub Packages, and catalog access", () => {
+test("topogram doctor checks runtime, public package access, and catalog access", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-"));
   const fakeNpmBin = createFakeNpm(root);
   const catalogPath = createCatalog(root, [
@@ -1058,7 +1058,6 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   ]);
   const env = {
     FAKE_NPM_LATEST_VERSION: "0.1.0",
-    NODE_AUTH_TOKEN: "test-token",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -1068,19 +1067,18 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   assert.equal(payload.ok, true);
   assert.equal(payload.node.ok, true);
   assert.equal(payload.npm.available, true);
-  assert.equal(payload.githubPackages.registryConfigured, true);
-  assert.equal(payload.githubPackages.nodeAuthTokenEnv, true);
-  assert.equal(payload.githubPackages.packageAccess.ok, true);
+  assert.equal(payload.packageRegistry.registryConfigured, true);
+  assert.equal(payload.packageRegistry.packageAccess.ok, true);
   assert.equal(payload.catalog.ok, true);
 
   const human = runCli(["doctor", "--catalog", catalogPath], { env });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram doctor passed/);
-  assert.match(human.stdout, /GitHub Packages registry: configured/);
-  assert.match(human.stdout, new RegExp(`CLI package access: @attebury/topogram@${cliPackageVersion.replaceAll(".", "\\.")} ok`));
+  assert.match(human.stdout, /npm registry: ok/);
+  assert.match(human.stdout, new RegExp(`CLI package access: @topogram/cli@${cliPackageVersion.replaceAll(".", "\\.")} ok`));
   assert.match(human.stdout, /Catalog package access: ok/);
   assert.match(human.stdout, /Setup guidance:/);
-  assert.match(human.stdout, /CLI package auth:/);
+  assert.match(human.stdout, /CLI package access:/);
   assert.match(human.stdout, /Catalog auth:/);
   assert.match(human.stdout, /Template package auth:/);
   assert.match(human.stdout, /Catalog disabled mode:/);
@@ -1088,14 +1086,14 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   const missingRegistry = runCli(["doctor", "--catalog", catalogPath, "--json"], {
     env: {
       ...env,
-      FAKE_NPM_ATTEBURY_REGISTRY: "undefined"
+      FAKE_NPM_TOPOGRAM_REGISTRY: "https://npm.pkg.github.com"
     }
   });
   assert.notEqual(missingRegistry.status, 0, missingRegistry.stdout);
   const missingRegistryPayload = JSON.parse(missingRegistry.stdout);
   assert.equal(missingRegistryPayload.ok, false);
   assert.equal(
-    missingRegistryPayload.diagnostics.some((diagnostic) => diagnostic.code === "github_packages_registry_not_configured"),
+    missingRegistryPayload.diagnostics.some((diagnostic) => diagnostic.code === "package_registry_registry_not_configured"),
     true
   );
 });
@@ -1329,8 +1327,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
       "@scope/topogram-template-sample@0.1.0": templateRoot
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
-    NODE_AUTH_TOKEN: "test-token",
-    TOPOGRAM_CLI_PACKAGE_SPEC: "@attebury/topogram.2.57",
+    TOPOGRAM_CLI_PACKAGE_SPEC: "@topogram/cli@0.2.57",
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
@@ -1360,10 +1357,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     version: "0.1.0",
     packageSpec: "@scope/topogram-template-sample@0.1.0"
   });
-  assert.equal(
-    readText(path.join(projectRoot, ".npmrc")),
-    "@attebury:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n"
-  );
+  assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
   const fileManifest = readJson(path.join(projectRoot, ".topogram-template-files.json"));
   assert.equal(fileManifest.template.requested, "sample-template");
@@ -1442,7 +1436,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(localSourcePayload.project.trust.status, "trusted");
   assert.equal(localSourcePayload.project.templateBaseline.status, "clean");
   assert.equal(
-    localSourcePayload.project.package.diagnostics.some((diagnostic) => diagnostic.code === "github_packages_check_failed"),
+    localSourcePayload.project.package.diagnostics.some((diagnostic) => diagnostic.code === "catalog_package_check_failed"),
     false
   );
   const localHumanSourceStatus = runCli(["source", "status", "--local"], {
@@ -1452,7 +1446,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(localHumanSourceStatus.status, 0, localHumanSourceStatus.stderr || localHumanSourceStatus.stdout);
   assert.match(localHumanSourceStatus.stdout, /Package checks: local\. Registry access skipped\./);
   assert.match(localHumanSourceStatus.stdout, /Template package: @scope\/topogram-template-sample@0\.1\.0 \(not checked, local mode\)/);
-  assert.doesNotMatch(localHumanSourceStatus.stdout, /github_packages_check_failed/);
+  assert.doesNotMatch(localHumanSourceStatus.stdout, /catalog_package_check_failed/);
 
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
@@ -1537,7 +1531,7 @@ test("topogram new explains external Todo catalog auth failures and neutral alia
   assert.match(auth.stderr, literalPattern(`Catalog template alias '${externalTodoCatalogAlias}' could not be resolved`));
   assert.match(auth.stderr, /Authentication is required to read private catalog/);
   assert.match(auth.stderr, /GITHUB_TOKEN or GH_TOKEN/);
-  assert.match(auth.stderr, /NODE_AUTH_TOKEN/);
+  assert.match(auth.stderr, /registry-specific npm auth/);
 
   const catalogPath = createCatalog(root, [
     sampleTemplateCatalogEntry({
@@ -1572,7 +1566,7 @@ test("topogram new explains external Todo catalog auth failures and neutral alia
   assert.match(missing.stderr, literalPattern(externalTodoTemplatePackageSpec()));
 });
 
-test("package-backed external Todo template installs explain private package auth failures", () => {
+test("package-backed external Todo template installs explain package auth failures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-auth-errors-"));
   const projectRoot = path.join(root, "starter");
   const fakeNpmBin = createFailingCommand(
@@ -1585,14 +1579,14 @@ test("package-backed external Todo template installs explain private package aut
   });
   assert.notEqual(create.status, 0, create.stdout);
   assert.match(create.stderr, literalPattern(`Authentication is required to install template package '${externalTodoTemplatePackageSpec()}'`));
-  assert.match(create.stderr, /NODE_AUTH_TOKEN/);
-  assert.match(create.stderr, /Manage Actions access/);
+  assert.match(create.stderr, /configure npm auth for the package registry/);
+  assert.match(create.stderr, /token with package read access/);
   assert.match(create.stderr, /topogram doctor/);
 
   const missingNpmBin = createFailingCommand(
     root,
     "npm",
-    `npm error code E404\nnpm error 404 Not Found - GET https://npm.pkg.github.com/${externalTodoTemplatePackageName.replace("/", "%2f")} - not_found\n`
+    `npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/${externalTodoTemplatePackageName.replace("/", "%2f")} - not_found\n`
   );
   const missing = runCli(["new", path.join(root, "missing"), "--template", externalTodoTemplatePackageSpec("9.9.9")], {
     env: { PATH: `${missingNpmBin}${path.delimiter}${process.env.PATH || ""}` }
@@ -1612,7 +1606,7 @@ test("package-backed external Todo template installs explain private package aut
   });
   assert.notEqual(forbidden.status, 0, forbidden.stdout);
   assert.match(forbidden.stderr, /Package access was denied while installing template package/);
-  assert.match(forbidden.stderr, /Manage Actions access/);
+  assert.match(forbidden.stderr, /token with package read access/);
   assert.match(forbidden.stderr, /topogram doctor/);
 
   const integrityNpmBin = createFailingCommand(
@@ -1625,7 +1619,7 @@ test("package-backed external Todo template installs explain private package aut
   });
   assert.notEqual(integrity.status, 0, integrity.stdout);
   assert.match(integrity.stderr, /Package integrity failed while installing template package/);
-  assert.match(integrity.stderr, /published GitHub Packages tarball/);
+  assert.match(integrity.stderr, /published registry tarball/);
 });
 
 test("private GitHub catalog failures explain auth and access setup", () => {
@@ -1671,7 +1665,7 @@ test("topogram package update-cli updates consumer dependency and runs available
       "check": "node -e true"
     },
     devDependencies: {
-      "@attebury/topogram": "^0.2.32"
+      "@topogram/cli": "^0.2.32"
     }
   });
   writeJson(path.join(projectRoot, "package-lock.json"), {
@@ -1687,15 +1681,14 @@ test("topogram package update-cli updates consumer dependency and runs available
     env: {
       FAKE_NPM_LATEST_VERSION: "0.2.37",
       FAKE_NPM_RUN_LOG: runLog,
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
-  assert.match(update.stdout, /Updated @attebury\/topogram to \^0\.2\.37/);
+  assert.match(update.stdout, /Updated @topogram\/cli to \^0\.2\.37/);
   assert.match(update.stdout, /Checks run: cli:surface, doctor, catalog:show, catalog:template-show, check/);
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.37");
-  assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"].version, "0.2.37");
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@topogram/cli"], "^0.2.37");
+  assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@topogram/cli"].version, "0.2.37");
   assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
     "cli:surface",
     "doctor",
@@ -1711,7 +1704,6 @@ test("topogram package update-cli updates consumer dependency and runs available
     cwd: minimalRoot,
     env: {
       FAKE_NPM_LATEST_VERSION: "0.2.37",
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
@@ -1733,7 +1725,7 @@ test("topogram package update-cli refreshes stale CLI lockfile tarball metadata"
       "cli:surface": "node -e 'throw new Error(\"should not run without refreshed node_modules\")'"
     },
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
+      "@topogram/cli": "^0.2.37"
     }
   });
   writeJson(path.join(projectRoot, "package-lock.json"), {
@@ -1744,12 +1736,12 @@ test("topogram package update-cli refreshes stale CLI lockfile tarball metadata"
       "": {
         name: "consumer",
         devDependencies: {
-          "@attebury/topogram": "^0.2.37"
+          "@topogram/cli": "^0.2.37"
         }
       },
-      "node_modules/@attebury/topogram": {
+      "node_modules/@topogram/cli": {
         version: "0.2.37",
-        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/local-pack-sha",
+        resolved: "https://registry.npmjs.org/@topogram/cli/-/cli-0.2.37.tgz",
         integrity: "sha512-local-pack-integrity",
         dev: true,
         bin: {
@@ -1763,14 +1755,13 @@ test("topogram package update-cli refreshes stale CLI lockfile tarball metadata"
     cwd: projectRoot,
     env: {
       FAKE_NPM_LATEST_VERSION: "0.2.37",
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
   const payload = JSON.parse(update.stdout);
   assert.equal(payload.lockfileSanitized, true);
-  const cliLockEntry = readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"];
+  const cliLockEntry = readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@topogram/cli"];
   assert.equal(cliLockEntry.version, "0.2.37");
   assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "resolved"), false);
   assert.equal(Object.prototype.hasOwnProperty.call(cliLockEntry, "integrity"), false);
@@ -1784,7 +1775,7 @@ test("topogram package update-cli --latest resolves latest and updates version c
     name: "consumer",
     private: true,
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
+      "@topogram/cli": "^0.2.37"
     }
   });
   fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
@@ -1793,7 +1784,6 @@ test("topogram package update-cli --latest resolves latest and updates version c
     cwd: projectRoot,
     env: {
       FAKE_NPM_LATEST_VERSION: "0.2.38",
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
@@ -1802,111 +1792,38 @@ test("topogram package update-cli --latest resolves latest and updates version c
   assert.equal(payload.requestedLatest, true);
   assert.equal(payload.requestedVersion, "0.2.38");
   assert.equal(payload.versionConventionUpdated, true);
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.38");
+  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@topogram/cli"], "^0.2.38");
   assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
 });
 
-test("topogram package update-cli falls back to GitHub API for private package inspection", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-gh-"));
+test("topogram package update-cli fails when public npm package inspection fails", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-npm-fail-"));
   const projectRoot = path.join(root, "consumer");
   fs.mkdirSync(projectRoot, { recursive: true });
   writePackageJson(projectRoot, {
     name: "consumer",
     private: true,
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
-    }
-  });
-  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
-  writeJson(path.join(projectRoot, "package-lock.json"), {
-    name: "consumer",
-    lockfileVersion: 3,
-    requires: true,
-    packages: {
-      "": {
-        name: "consumer",
-        devDependencies: {
-          "@attebury/topogram": "^0.2.37"
-        }
-      },
-      "node_modules/@attebury/topogram": {
-        version: "0.2.37",
-        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/local-pack-sha",
-        integrity: "sha512-local-pack-integrity",
-        dev: true
-      }
+      "@topogram/cli": "^0.2.37"
     }
   });
   const fakeNpmBin = createFailingCommand(
     root,
     "npm",
-    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://registry.npmjs.org/@topogram%2fcli\n"
   );
-  const fakeGhBin = createFakeGh(root, ["0.2.38", "0.2.37"]);
   const update = runCli(["package", "update-cli", "0.2.38", "--json"], {
     cwd: projectRoot,
     env: {
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
-  assert.equal(update.status, 0, update.stderr || update.stdout);
-  const payload = JSON.parse(update.stdout);
-  assert.equal(payload.packageCheckSource, "github-api");
-  assert.equal(payload.dependencyUpdatedBy, "manifest-lockfile");
-  assert.equal(payload.checkedVersion, "0.2.38");
-  assert.equal(payload.versionConventionUpdated, true);
-  assert.deepEqual(payload.scriptsRun, []);
-  assert.deepEqual(payload.skippedScripts, ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"]);
-  assert.equal(
-    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_check_via_github_api"),
-    true
-  );
-  assert.equal(
-    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_checks_skipped_after_file_update"),
-    true
-  );
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.38");
-  const lockEntry = readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@attebury/topogram"];
-  assert.equal(lockEntry.version, "0.2.38");
-  assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "resolved"), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(lockEntry, "integrity"), false);
-  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
+  assert.notEqual(update.status, 0, update.stdout);
+  assert.match(update.stderr, /Authentication is required to inspect @topogram\/cli@0\.2\.38/);
+  assert.match(update.stderr, /registry-specific npm auth/);
 });
 
-test("topogram package update-cli fallback leaves convention-only packages convention-only", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-convention-"));
-  const projectRoot = path.join(root, "consumer");
-  fs.mkdirSync(projectRoot, { recursive: true });
-  writePackageJson(projectRoot, {
-    name: "consumer",
-    private: true,
-    scripts: {
-      "pack:check": "node -e true"
-    }
-  });
-  fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
-  const fakeNpmBin = createFailingCommand(
-    root,
-    "npm",
-    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
-  );
-  const fakeGhBin = createFakeGh(root, ["0.2.38", "0.2.37"]);
-  const update = runCli(["package", "update-cli", "0.2.38", "--json"], {
-    cwd: projectRoot,
-    env: {
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
-    }
-  });
-  assert.equal(update.status, 0, update.stderr || update.stdout);
-  const payload = JSON.parse(update.stdout);
-  assert.equal(payload.packageCheckSource, "github-api");
-  assert.equal(payload.dependencyUpdatedBy, "version-convention");
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies, undefined);
-  assert.equal(fs.existsSync(path.join(projectRoot, "package-lock.json")), false);
-  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.38\n");
-});
-
-test("topogram package update-cli --latest falls back to GitHub API latest lookup", () => {
+test("topogram package update-cli --latest fails when latest npm lookup fails", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-latest-gh-"));
   const projectRoot = path.join(root, "consumer");
   fs.mkdirSync(projectRoot, { recursive: true });
@@ -1914,34 +1831,24 @@ test("topogram package update-cli --latest falls back to GitHub API latest looku
     name: "consumer",
     private: true,
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
+      "@topogram/cli": "^0.2.37"
     }
   });
   fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
   const fakeNpmBin = createFailingCommand(
     root,
     "npm",
-    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://registry.npmjs.org/@topogram%2fcli\n"
   );
-  const fakeGhBin = createFakeGh(root, ["0.2.39", "0.2.38"]);
   const update = runCli(["package", "update-cli", "--latest", "--json"], {
     cwd: projectRoot,
     env: {
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
-  assert.equal(update.status, 0, update.stderr || update.stdout);
-  const payload = JSON.parse(update.stdout);
-  assert.equal(payload.requestedLatest, true);
-  assert.equal(payload.requestedVersion, "0.2.39");
-  assert.equal(payload.packageCheckSource, "github-api");
-  assert.equal(payload.dependencyUpdatedBy, "manifest-lockfile");
-  assert.equal(
-    payload.diagnostics.some((diagnostic) => diagnostic.code === "package_update_cli_latest_via_github_api"),
-    true
-  );
-  assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@attebury/topogram"], "^0.2.39");
-  assert.equal(fs.readFileSync(path.join(projectRoot, "topogram-cli.version"), "utf8"), "0.2.39\n");
+  assert.notEqual(update.status, 0, update.stdout);
+  assert.match(update.stderr, /Authentication is required to inspect @topogram\/cli@latest/);
+  assert.match(update.stderr, /registry-specific npm auth/);
 });
 
 test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () => {
@@ -1952,7 +1859,7 @@ test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () =>
     name: "consumer",
     private: true,
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
+      "@topogram/cli": "^0.2.37"
     }
   });
   fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
@@ -1964,12 +1871,12 @@ test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () =>
       "": {
         name: "consumer",
         devDependencies: {
-          "@attebury/topogram": "^0.2.37"
+          "@topogram/cli": "^0.2.37"
         }
       },
-      "node_modules/@attebury/topogram": {
+      "node_modules/@topogram/cli": {
         version: "0.2.37",
-        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.36/local-pack-sha",
+        resolved: "https://registry.npmjs.org/@topogram/cli/-/cli-0.2.36.tgz",
         integrity: "sha512-local-pack-integrity",
         dev: true
       }
@@ -1980,7 +1887,6 @@ test("topogram doctor reports refreshable Topogram CLI lockfile metadata", () =>
     cwd: projectRoot,
     env: {
       FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
@@ -1998,7 +1904,7 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
     name: "consumer",
     private: true,
     devDependencies: {
-      "@attebury/topogram": "^0.2.37"
+      "@topogram/cli": "^0.2.37"
     }
   });
   fs.writeFileSync(path.join(projectRoot, "topogram-cli.version"), "0.2.37\n", "utf8");
@@ -2010,12 +1916,12 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
       "": {
         name: "consumer",
         devDependencies: {
-          "@attebury/topogram": "^0.2.37"
+          "@topogram/cli": "^0.2.37"
         }
       },
-      "node_modules/@attebury/topogram": {
+      "node_modules/@topogram/cli": {
         version: "0.2.37",
-        resolved: "https://npm.pkg.github.com/download/@attebury/topogram/0.2.37/registry-sha",
+        resolved: "https://registry.npmjs.org/@topogram/cli/-/cli-0.2.37.tgz",
         integrity: "sha512-registry-integrity",
         dev: true
       }
@@ -2026,7 +1932,6 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
     cwd: projectRoot,
     env: {
       FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      NODE_AUTH_TOKEN: "test-token",
       PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
@@ -2082,47 +1987,37 @@ test("topogram release status reports package, tag, and external Todo consumer p
   assert.match(human.stdout, literalPattern(`${externalTodoConsumerRepos[0]}: missing (missing)`));
 });
 
-test("topogram release status falls back to GitHub Packages API for latest version", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-gh-"));
+test("topogram release status warns when latest npm version cannot be checked", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-npm-unavailable-"));
   const fakeNpmBin = createFailingCommand(
     root,
     "npm",
-    "npm error code E401\nnpm error 401 Unauthorized - GET https://npm.pkg.github.com/@attebury%2ftopogram\n"
+    "npm error code E401\nnpm error 401 Unauthorized - GET https://registry.npmjs.org/@topogram%2fcli\n"
   );
   const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
-  const fakeGhBin = createFakeGh(root, [cliPackageVersion, "0.3.1"]);
   const status = runCli(["release", "status", "--json"], {
     cwd: root,
     env: {
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(status.status, 0, status.stderr || status.stdout);
   const payload = JSON.parse(status.stdout);
-  assert.equal(payload.latestVersion, cliPackageVersion);
-  assert.equal(payload.currentPublished, true);
-  assert.equal(
-    payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_via_github_api"),
-    true
-  );
-  assert.equal(
-    payload.diagnostics.find((diagnostic) => diagnostic.code === "release_latest_via_github_api")?.severity,
-    "info"
-  );
+  assert.equal(payload.latestVersion, null);
+  assert.equal(payload.currentPublished, null);
   assert.equal(
     payload.diagnostics.some((diagnostic) => diagnostic.code === "release_latest_unavailable"),
-    false
+    true
   );
 
   const human = runCli(["release", "status"], {
     cwd: root,
     env: {
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, /Note: npm registry latest lookup was unavailable; GitHub Packages API confirmed/);
-  assert.doesNotMatch(human.stdout, /Warning: npm registry latest lookup/);
+  assert.match(human.stdout, /Warning: Authentication is required to inspect @topogram\/cli@latest/);
 });
 
 test("topogram release status strict passes when package, tag, and consumers are current", () => {
@@ -2201,9 +2096,8 @@ test("topogram package update-cli explains private package auth failures", () =>
     env: { PATH: `${fakeNpmBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(update.status, 0, update.stdout);
-  assert.match(update.stderr, /Authentication is required to inspect @attebury\/topogram@0\.2\.37/);
-  assert.match(update.stderr, /NODE_AUTH_TOKEN/);
-  assert.match(update.stderr, /Manage Actions access/);
+  assert.match(update.stderr, /Authentication is required to inspect @topogram\/cli@0\.2\.37/);
+  assert.match(update.stderr, /registry-specific npm auth/);
 });
 
 test("topogram catalog copy installs pure topogram packages and rejects implementation code", () => {
@@ -2530,7 +2424,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts.status, undefined);
   assert.equal(pkg.scripts.inspect, undefined);
   assert.equal(pkg.scripts.build, undefined);
-  assert.equal(pkg.devDependencies["@attebury/topogram"].startsWith("file:"), true);
+  assert.equal(pkg.devDependencies["@topogram/cli"].startsWith("file:"), true);
   assert.equal(pkg.devDependencies.topogram, undefined);
   assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(pkg.scripts["template:status"], "topogram template status");
@@ -2557,8 +2451,8 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   const doctorPayload = JSON.parse(doctor.stdout);
-  assert.equal(doctorPayload.githubPackages.required, false);
-  assert.equal(doctorPayload.githubPackages.packageAccess.ok, true);
+  assert.equal(doctorPayload.packageRegistry.required, false);
+  assert.equal(doctorPayload.packageRegistry.packageAccess.ok, true);
   assert.equal(doctorPayload.catalog.ok, true);
 
   assert.match(create.stderr, /copied implementation\/ code/);
@@ -3394,7 +3288,7 @@ test("topogram template policy explain checks package scope from source spec", (
 
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
-  projectConfig.template.id = "@attebury/topogram-template-sample";
+  projectConfig.template.id = "@topogram/template-sample";
   projectConfig.template.version = "0.1.6";
   projectConfig.template.source = "package";
   projectConfig.template.requested = "sample-template";
@@ -3410,10 +3304,10 @@ test("topogram template policy explain checks package scope from source spec", (
 
   const policyPath = path.join(projectRoot, "topogram.template-policy.json");
   const policy = readJson(policyPath);
-  policy.allowedTemplateIds = ["@attebury/topogram-template-sample"];
-  policy.allowedPackageScopes = ["@attebury"];
+  policy.allowedTemplateIds = ["@topogram/template-sample"];
+  policy.allowedPackageScopes = ["@topogram"];
   policy.executableImplementation = "allow";
-  policy.pinnedVersions = { "@attebury/topogram-template-sample": "0.1.6" };
+  policy.pinnedVersions = { "@topogram/template-sample": "0.1.6" };
   writeJson(policyPath, policy);
 
   const check = runCli(["template", "policy", "check", "--json"], { cwd: projectRoot });
@@ -3429,7 +3323,7 @@ test("topogram template policy explain checks package scope from source spec", (
   const scopeRule = explainPayload.rules.find((rule) => rule.name === "allowed-package-scope");
   assert.equal(scopeRule.ok, false);
   assert.equal(scopeRule.actual, "@evil");
-  assert.equal(scopeRule.expected, "@attebury");
+  assert.equal(scopeRule.expected, "@topogram");
 
   const humanExplain = runCli(["template", "policy", "explain"], { cwd: projectRoot });
   assert.notEqual(humanExplain.status, 0, humanExplain.stdout);
@@ -3437,7 +3331,7 @@ test("topogram template policy explain checks package scope from source spec", (
   assert.match(humanExplain.stdout, /Decision: the current template is blocked by this project's template policy\./);
   assert.match(humanExplain.stdout, /FAIL Allowed package scope/);
   assert.match(humanExplain.stdout, /actual: @evil/);
-  assert.match(humanExplain.stdout, /expected: @attebury/);
+  assert.match(humanExplain.stdout, /expected: @topogram/);
 });
 
 test("topogram template check enforces caller template policy when present", () => {
@@ -3797,7 +3691,7 @@ test("topogram new supports packed npm template packs", () => {
   fs.mkdirSync(packRoot);
   fs.cpSync(builtInTemplateRoot, templatePackageRoot, { recursive: true });
   writePackageJson(templatePackageRoot, {
-    name: "@attebury/topogram-template-test",
+    name: "@topogram/template-test",
     version: "0.1.0",
     private: true,
     type: "module",

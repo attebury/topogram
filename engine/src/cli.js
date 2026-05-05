@@ -104,8 +104,8 @@ import {
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
-const CLI_PACKAGE_NAME = "@attebury/topogram";
-const GITHUB_PACKAGES_REGISTRY = "https://npm.pkg.github.com";
+const CLI_PACKAGE_NAME = "@topogram/cli";
+const NPMJS_REGISTRY = "https://registry.npmjs.org";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
 const KNOWN_CLI_CONSUMER_REPOS = ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"];
@@ -198,7 +198,7 @@ function printUsage(options = {}) {
   console.log("  topogram query show component-behavior");
   console.log("  topogram query component-behavior ./topogram --projection proj_ui_web --json");
   console.log("  topogram generator list");
-  console.log("  topogram generator show @attebury/topogram-generator-react-web");
+  console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generate");
   console.log("  topogram import ./existing-app --out ./imported-topogram");
@@ -538,7 +538,7 @@ function printGeneratorHelp() {
   console.log("Examples:");
   console.log("  topogram generator list");
   console.log("  topogram generator list --json");
-  console.log("  topogram generator show @attebury/topogram-generator-react-web");
+  console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator show @scope/topogram-generator-web --json");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator check @scope/topogram-generator-web --json");
@@ -588,7 +588,7 @@ function printCatalogHelp() {
 function printDoctorHelp() {
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("");
-  console.log("Checks local runtime, npm, GitHub Packages auth hints, CLI lockfile metadata, and catalog access.");
+  console.log("Checks local runtime, npm, public package access, CLI lockfile metadata, and catalog access.");
   console.log("");
   console.log("Related setup commands:");
   console.log("  topogram setup package-auth");
@@ -606,7 +606,7 @@ function printDoctorHelp() {
 function printSetupHelp() {
   console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("");
-  console.log("Prints setup guidance for private GitHub Packages and catalog access. This command does not write credentials.");
+  console.log("Prints setup guidance for public Topogram packages, private package auth, and catalog access. This command does not write credentials.");
   console.log("");
   console.log("Commands:");
   console.log("  topogram setup package-auth");
@@ -616,34 +616,26 @@ function printSetupHelp() {
 function printPackageAuthSetup() {
   console.log("Topogram package auth setup");
   console.log("");
-  console.log("Topogram CLI and template packages are published to GitHub Packages.");
+  console.log("Public Topogram CLI, generator, template, and starter packages are published to npmjs.");
   console.log("");
-  console.log("Local setup:");
-  console.log("  npm config set @attebury:registry https://npm.pkg.github.com");
-  console.log("  export NODE_AUTH_TOKEN=<github-token-with-package-read>");
-  console.log("  npm install");
+  console.log("Local public-package setup:");
+  console.log("  npm install --save-dev @topogram/cli");
   console.log("");
-  console.log("GitHub Actions setup:");
-  console.log("  permissions:");
-  console.log("    contents: read");
-  console.log("    packages: read");
-  console.log("  env:");
-  console.log("    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
-  console.log("");
-  console.log("If a consumer repo cannot read a private package, grant it access under the package settings Manage Actions access section.");
+  console.log("Private template or generator packages may still require registry-specific npm auth.");
   console.log("Run `topogram doctor` after setup.");
 }
 
 function printCatalogAuthSetup() {
   console.log("Topogram catalog auth setup");
   console.log("");
-  console.log("Private catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
+  console.log("The default Topogram catalog is public and does not require GitHub auth.");
+  console.log("Private GitHub catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
   console.log("");
-  console.log("Local setup:");
+  console.log("Private catalog local setup:");
   console.log("  gh auth login");
   console.log("  topogram catalog list");
   console.log("");
-  console.log("GitHub Actions setup:");
+  console.log("Private catalog GitHub Actions setup:");
   console.log("  permissions:");
   console.log("    contents: read");
   console.log("  env:");
@@ -659,10 +651,9 @@ function printPackageHelp() {
   console.log("Updates a consumer project to a Topogram CLI version and runs verification when dependencies are current.");
   console.log("");
   console.log("Behavior:");
-  console.log("  - npm package inspection and install are used when auth is configured.");
-  console.log("  - If npm inspection fails but GitHub Packages API confirms the version, package files are updated directly.");
-  console.log("  - Direct file updates skip local verification scripts because node_modules may still contain the old CLI.");
-  console.log("  - Direct file updates do not prove npm install auth. Run npm install or CI afterward.");
+  console.log("  - npmjs package inspection confirms the requested public CLI version.");
+  console.log("  - npm install updates package.json and package-lock.json.");
+  console.log("  - Available consumer verification scripts run after install.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram package update-cli 0.3.5");
@@ -1598,7 +1589,7 @@ function latestTemplateInfo(template) {
 /**
  * @param {string} requested
  * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm"|"github-api", dependencyUpdatedBy: "npm-install"|"manifest-lockfile"|"version-convention", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, dependencySpec: string, checkedVersion: string, packageCheckSource: "npm", dependencyUpdatedBy: "npm-install"|"manifest-lockfile"|"version-convention", lockfileSanitized: boolean, versionConventionUpdated: boolean, versionConventionPath: string|null, scriptsRun: string[], skippedScripts: string[], diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildPackageUpdateCliPayload(requested, options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -1610,38 +1601,13 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   if (!isPackageVersion(version)) {
     throw new Error("topogram package update-cli requires <version> or --latest.");
   }
-  if (!process.env.NODE_AUTH_TOKEN) {
-    diagnostics.push({
-      code: "node_auth_token_missing",
-      severity: "warning",
-      message: "NODE_AUTH_TOKEN is not set. npm may still work if GitHub Packages auth is configured globally.",
-      path: null,
-      suggestedFix: "Run with NODE_AUTH_TOKEN=<github-token-with-package-read> when npm needs GitHub Packages access."
-    });
-  }
   const exactSpec = `${CLI_PACKAGE_NAME}@${version}`;
   const dependencySpec = `${CLI_PACKAGE_NAME}@^${version}`;
-  const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${NPMJS_REGISTRY}`], cwd);
   let checkedVersion = null;
   let packageCheckSource = "npm";
   if (view.status !== 0) {
-    const fallback = topogramCliVersionExistsFromGithubApi(cwd, version);
-    if (!fallback.ok || !fallback.exists) {
-      throw new Error([
-        formatPackageUpdateNpmError(exactSpec, "inspect", view),
-        `GitHub API fallback also failed: ${fallback.message || `${exactSpec} was not found.`}`
-      ].filter(Boolean).join("\n"));
-    }
-    packageCheckSource = "github-api";
-    checkedVersion = version;
-    diagnostics.push({
-      code: "package_update_cli_check_via_github_api",
-      severity: "warning",
-      message: `npm package inspection failed, but GitHub Packages API confirmed ${exactSpec}.`,
-      path: CLI_PACKAGE_NAME,
-      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
-      cause: formatPackageUpdateNpmError(exactSpec, "inspect", view)
-    });
+    throw new Error(formatPackageUpdateNpmError(exactSpec, "inspect", view));
   } else {
     checkedVersion = String(view.stdout || "").trim().replace(/^"|"$/g, "");
     if (checkedVersion !== version) {
@@ -1651,27 +1617,10 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
   let dependencyUpdatedBy = "npm-install";
   if (packageCheckSource === "npm") {
-    const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+    const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${NPMJS_REGISTRY}`], cwd);
     if (install.status !== 0) {
-      if (!isPackageUpdateNpmAuthFailure(install)) {
-        throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
-      }
-      const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
-      dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
-      diagnostics.push({
-        code: "package_update_cli_install_manifest_fallback",
-        severity: "warning",
-        message: updateResult.packageJsonUpdated
-          ? `npm install failed due to package auth, so ${CLI_PACKAGE_NAME} files were updated directly.`
-          : `npm install failed due to package auth, so only topogram-cli.version will be updated.`,
-        path: cwd,
-        suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
-        cause: formatPackageUpdateNpmError(dependencySpec, "install", install)
-      });
+      throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
     }
-  } else {
-    const updateResult = updateTopogramCliDependencyFiles(cwd, version, dependencySpec);
-    dependencyUpdatedBy = updateResult.packageJsonUpdated ? "manifest-lockfile" : "version-convention";
   }
   const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
@@ -1686,7 +1635,7 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
       severity: "warning",
       message: "Consumer verification scripts were skipped because package files were updated without refreshing installed node_modules.",
       path: cwd,
-      suggestedFix: "Run npm install or npm ci with GitHub Packages auth, then rerun consumer verification."
+      suggestedFix: "Run npm install or npm ci, then rerun consumer verification."
     });
   } else {
     for (const scriptName of candidateScripts) {
@@ -1737,7 +1686,7 @@ function printPackageUpdateCli(payload) {
   console.log(`Checked package: ${payload.packageName}@${payload.checkedVersion} via ${payload.packageCheckSource}`);
   console.log(`Updated dependency: ${payload.dependencySpec} via ${payload.dependencyUpdatedBy}`);
   if (payload.lockfileSanitized) {
-    console.log("Lockfile: refreshed existing @attebury/topogram entry from registry metadata");
+    console.log("Lockfile: refreshed existing @topogram/cli entry from registry metadata");
   }
   if (payload.versionConventionUpdated) {
     console.log(`Version convention: updated ${payload.versionConventionPath}`);
@@ -1767,27 +1716,13 @@ function buildReleaseStatusPayload(options = {}) {
   try {
     latestVersion = latestTopogramCliVersion(cwd);
   } catch (error) {
-    const npmMessage = messageFromError(error);
-    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
-    if (fallback.ok && fallback.version) {
-      latestVersion = fallback.version;
-      diagnostics.push({
-        code: "release_latest_via_github_api",
-        severity: "info",
-        message: `npm registry latest lookup was unavailable; GitHub Packages API confirmed ${CLI_PACKAGE_NAME}@${fallback.version}.`,
-        path: CLI_PACKAGE_NAME,
-        suggestedFix: "No release action is required. Configure npm auth only when install-facing registry verification is needed.",
-        cause: npmMessage
-      });
-    } else {
-      diagnostics.push({
-        code: "release_latest_unavailable",
-        severity: "warning",
-        message: `${npmMessage}\nGitHub API fallback also failed: ${fallback.message || "unknown error"}`,
-        path: CLI_PACKAGE_NAME,
-        suggestedFix: "Check GitHub Packages auth, then rerun `topogram release status`."
-      });
-    }
+    diagnostics.push({
+      code: "release_latest_unavailable",
+      severity: "warning",
+      message: messageFromError(error),
+      path: CLI_PACKAGE_NAME,
+      suggestedFix: "Check npmjs access and rerun `topogram release status`."
+    });
   }
   const git = inspectReleaseGitTag(localVersion, cwd);
   diagnostics.push(...git.diagnostics);
@@ -1844,7 +1779,7 @@ function releaseStatusStrictDiagnostics(release) {
         ? `${CLI_PACKAGE_NAME}@${release.localVersion} is not the latest published version (${release.latestVersion}).`
         : `Latest published ${CLI_PACKAGE_NAME} version could not be verified.`,
       path: CLI_PACKAGE_NAME,
-      suggestedFix: "Publish the current CLI package version or fix GitHub Packages auth, then rerun `topogram release status --strict`."
+      suggestedFix: "Publish the current CLI package version or fix npm package registry auth, then rerun `topogram release status --strict`."
     });
   }
   if (release.git.local !== true) {
@@ -2044,30 +1979,30 @@ function summarizeConsumerPins(consumers) {
 
 /**
  * @param {string|null} source
- * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, githubPackages: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, packageRegistry: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
  */
 function buildDoctorPayload(source) {
   const projectCliDependency = readProjectCliDependencySpec(process.cwd());
-  const githubPackagesRequired = !isLocalCliDependencySpec(projectCliDependency);
+  const packageRegistryRequired = !isLocalCliDependencySpec(projectCliDependency);
   const node = checkDoctorNode();
   const npm = checkDoctorNpm();
-  const configuredRegistry = npm.available && githubPackagesRequired ? npmConfigGet("@attebury:registry") : null;
-  const registryConfigured = !githubPackagesRequired ||
-    normalizeRegistryUrl(configuredRegistry) === normalizeRegistryUrl(GITHUB_PACKAGES_REGISTRY);
+  const configuredRegistry = npm.available ? npmConfigGet("@topogram:registry") : null;
+  const registryConfigured = !configuredRegistry ||
+    normalizeRegistryUrl(configuredRegistry) === normalizeRegistryUrl(NPMJS_REGISTRY);
   const registryDiagnostics = [];
-  if (githubPackagesRequired && npm.available && !registryConfigured) {
+  if (packageRegistryRequired && npm.available && !registryConfigured) {
     registryDiagnostics.push({
-      code: "github_packages_registry_not_configured",
+      code: "package_registry_registry_not_configured",
       severity: "error",
-      message: `npm is not configured to resolve @attebury packages from ${GITHUB_PACKAGES_REGISTRY}.`,
+      message: `npm is configured to resolve @topogram packages from '${configuredRegistry}', not ${NPMJS_REGISTRY}.`,
       path: ".npmrc",
-      suggestedFix: "Run `npm config set @attebury:registry https://npm.pkg.github.com`, then rerun `topogram doctor`."
+      suggestedFix: "Remove the custom @topogram registry config or set it to https://registry.npmjs.org, then rerun `topogram doctor`."
     });
   }
-  const packageSpec = githubPackagesRequired ? `${CLI_PACKAGE_NAME}@${readInstalledCliPackageVersion()}` : null;
-  const packageAccess = githubPackagesRequired && npm.available
+  const packageSpec = packageRegistryRequired ? `${CLI_PACKAGE_NAME}@${readInstalledCliPackageVersion()}` : null;
+  const packageAccess = packageRegistryRequired && npm.available
     ? checkDoctorPackageAccess(packageSpec)
-    : githubPackagesRequired ? {
+    : packageRegistryRequired ? {
         ok: false,
         checkedVersion: null,
         diagnostics: [{
@@ -2084,21 +2019,10 @@ function buildDoctorPayload(source) {
       };
   const catalog = buildDoctorCatalogPayload(source);
   const lockfile = inspectTopogramCliLockfile(process.cwd());
-  const tokenDiagnostics = [];
-  if (githubPackagesRequired && !process.env.NODE_AUTH_TOKEN) {
-    tokenDiagnostics.push({
-      code: "node_auth_token_missing",
-      severity: "warning",
-      message: "NODE_AUTH_TOKEN is not set. npm may still work if GitHub Packages auth is configured globally.",
-      path: null,
-      suggestedFix: "Run with NODE_AUTH_TOKEN=<github-token-with-package-read> when npm needs GitHub Packages access."
-    });
-  }
   const diagnostics = [
     ...node.diagnostics,
     ...npm.diagnostics,
     ...registryDiagnostics,
-    ...tokenDiagnostics,
     ...packageAccess.diagnostics,
     ...lockfile.diagnostics,
     ...catalog.diagnostics
@@ -2110,10 +2034,10 @@ function buildDoctorPayload(source) {
     ok: errors.length === 0,
     node,
     npm,
-    githubPackages: {
-      required: githubPackagesRequired,
-      reason: githubPackagesRequired ? null : `Project uses local CLI dependency '${projectCliDependency}'.`,
-      registry: GITHUB_PACKAGES_REGISTRY,
+    packageRegistry: {
+      required: packageRegistryRequired,
+      reason: packageRegistryRequired ? null : `Project uses local CLI dependency '${projectCliDependency}'.`,
+      registry: NPMJS_REGISTRY,
       configuredRegistry,
       registryConfigured,
       nodeAuthTokenEnv: Boolean(process.env.NODE_AUTH_TOKEN),
@@ -2411,7 +2335,7 @@ function doctorPackageDiagnostic(packageSpec, result) {
   }, packageSpec, result);
   return {
     ...diagnostic,
-    code: diagnostic.code.replace(/^catalog_package_/, "github_packages_"),
+    code: diagnostic.code.replace(/^catalog_package_/, "package_registry_"),
     path: CLI_PACKAGE_NAME
   };
 }
@@ -2437,17 +2361,17 @@ function compareSemver(left, right) {
  */
 function printDoctorSetupGuidance(payload) {
   console.log("Setup guidance:");
-  if (payload.githubPackages.required) {
-    console.log(`- CLI package auth: configure @attebury packages for ${payload.githubPackages.registry} and provide NODE_AUTH_TOKEN, or run npm login for GitHub Packages.`);
+  if (payload.packageRegistry.required) {
+    console.log(`- CLI package access: public @topogram packages should install from ${payload.packageRegistry.registry} without auth.`);
   } else {
     console.log("- CLI package auth: skipped because this project uses a local Topogram CLI dependency.");
   }
   if (isCatalogSourceDisabled(payload.catalog.source)) {
     console.log("- Catalog auth: skipped because catalog discovery is disabled for this project.");
   } else {
-    console.log("- Catalog auth: provide GITHUB_TOKEN or GH_TOKEN for private catalog access; locally, `gh auth login` is also supported.");
+    console.log("- Catalog auth: the default catalog is public; private catalogs can use GITHUB_TOKEN, GH_TOKEN, or `gh auth login`.");
   }
-  console.log("- Template package auth: private template packages need NODE_AUTH_TOKEN during npm install in generated projects.");
+  console.log("- Template package auth: private template packages may need registry-specific npm auth during npm install.");
   console.log("- Catalog disabled mode: TOPOGRAM_CATALOG_SOURCE=none skips catalog aliases, including the default hello-web starter.");
 }
 
@@ -2459,15 +2383,14 @@ function printDoctor(payload) {
   console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
   console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
   console.log(`npm: ${payload.npm.available ? `${payload.npm.version || "available"} (ok)` : "not found"}`);
-  console.log(`GitHub Packages registry: ${payload.githubPackages.required ? (payload.githubPackages.registryConfigured ? "configured" : "not configured") : "not required"}`);
-  if (payload.githubPackages.reason) {
-    console.log(`GitHub Packages reason: ${payload.githubPackages.reason}`);
+  console.log(`npm registry: ${payload.packageRegistry.required ? (payload.packageRegistry.registryConfigured ? "ok" : "misconfigured") : "not required"}`);
+  if (payload.packageRegistry.reason) {
+    console.log(`npm registry reason: ${payload.packageRegistry.reason}`);
   }
-  if (payload.githubPackages.configuredRegistry) {
-    console.log(`Configured @attebury registry: ${payload.githubPackages.configuredRegistry}`);
+  if (payload.packageRegistry.configuredRegistry) {
+    console.log(`Configured @topogram registry: ${payload.packageRegistry.configuredRegistry}`);
   }
-  console.log(`NODE_AUTH_TOKEN: ${payload.githubPackages.nodeAuthTokenEnv ? "set" : "not set"}`);
-  console.log(`CLI package access: ${payload.githubPackages.required ? (payload.githubPackages.packageAccess.ok ? `${payload.githubPackages.packageSpec} ok` : `${payload.githubPackages.packageSpec} failed`) : "not checked"}`);
+  console.log(`CLI package access: ${payload.packageRegistry.required ? (payload.packageRegistry.packageAccess.ok ? `${payload.packageRegistry.packageSpec} ok` : `${payload.packageRegistry.packageSpec} failed`) : "not checked"}`);
   if (payload.lockfile.checked && payload.lockfile.packageVersion) {
     console.log(`CLI lockfile: ${payload.lockfile.packageVersion}${payload.lockfile.refreshRecommended ? " (refresh recommended)" : " (ok)"}`);
   }
@@ -2478,7 +2401,7 @@ function printDoctor(payload) {
     const failedPackages = payload.catalog.packages.filter((item) => !item.ok).length;
     console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
   }
-  if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.githubPackages.required) {
+  if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.packageRegistry.required) {
     console.log("Project provenance: run `topogram source status --local` for catalog, template, trust, and baseline details.");
   }
   printDoctorSetupGuidance(payload);
@@ -2521,7 +2444,7 @@ function runNpmForPackageUpdate(args, cwd) {
  * @returns {string}
  */
 function latestTopogramCliVersion(cwd) {
-  const result = runNpmForPackageUpdate(["view", CLI_PACKAGE_NAME, "version", "--json", `--registry=${GITHUB_PACKAGES_REGISTRY}`], cwd);
+  const result = runNpmForPackageUpdate(["view", CLI_PACKAGE_NAME, "version", "--json", `--registry=${NPMJS_REGISTRY}`], cwd);
   if (result.status !== 0) {
     throw new Error(formatPackageUpdateNpmError(`${CLI_PACKAGE_NAME}@latest`, "inspect", result));
   }
@@ -2542,107 +2465,8 @@ function resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics) {
   try {
     return latestTopogramCliVersion(cwd);
   } catch (error) {
-    const npmMessage = messageFromError(error);
-    const fallback = latestTopogramCliVersionFromGithubApi(cwd);
-    if (!fallback.ok || !fallback.version) {
-      throw new Error([
-        npmMessage,
-        `GitHub API fallback also failed: ${fallback.message || "unknown error"}`
-      ].filter(Boolean).join("\n"));
-    }
-    diagnostics.push({
-      code: "package_update_cli_latest_via_github_api",
-      severity: "warning",
-      message: `npm latest lookup failed, but GitHub Packages API reported ${CLI_PACKAGE_NAME}@${fallback.version}.`,
-      path: CLI_PACKAGE_NAME,
-      suggestedFix: "Configure npm auth for GitHub Packages before running npm install or npm ci in this consumer.",
-      cause: npmMessage
-    });
-    return fallback.version;
+    throw new Error(messageFromError(error));
   }
-}
-
-/**
- * @param {string} cwd
- * @returns {{ ok: boolean, versions: string[], message: string|null }}
- */
-function topogramCliVersionsFromGithubApi(cwd) {
-  const result = childProcess.spawnSync("gh", [
-    "api",
-    "-H",
-    "Accept: application/vnd.github+json",
-    "/users/attebury/packages/npm/topogram/versions?per_page=30"
-  ], {
-    cwd,
-    encoding: "utf8",
-    env: { ...process.env, PATH: process.env.PATH || "" }
-  });
-  if (result.status !== 0) {
-    return {
-      ok: false,
-      versions: [],
-      message: String(result.stderr || result.stdout || "gh api failed").trim()
-    };
-  }
-  let versions;
-  try {
-    versions = JSON.parse(String(result.stdout || "[]"));
-  } catch (error) {
-    return {
-      ok: false,
-      versions: [],
-      message: `GitHub Packages API returned invalid JSON: ${messageFromError(error)}`
-    };
-  }
-  return {
-    ok: true,
-    versions: Array.isArray(versions)
-      ? versions.map((item) => item?.name).filter((name) => isPackageVersion(name))
-      : [],
-    message: null
-  };
-}
-
-/**
- * @param {string} cwd
- * @param {string} version
- * @returns {{ ok: boolean, exists: boolean, version: string|null, message: string|null }}
- */
-function topogramCliVersionExistsFromGithubApi(cwd, version) {
-  const result = topogramCliVersionsFromGithubApi(cwd);
-  if (!result.ok) {
-    return { ok: false, exists: false, version: null, message: result.message };
-  }
-  return {
-    ok: true,
-    exists: result.versions.includes(version),
-    version: result.versions.includes(version) ? version : null,
-    message: result.versions.includes(version) ? null : `${CLI_PACKAGE_NAME}@${version} was not found via GitHub Packages API.`
-  };
-}
-
-/**
- * @param {string} cwd
- * @returns {{ ok: boolean, version: string|null, message: string|null }}
- */
-function latestTopogramCliVersionFromGithubApi(cwd) {
-  const result = topogramCliVersionsFromGithubApi(cwd);
-  if (!result.ok) {
-    return { ok: false, version: null, message: result.message };
-  }
-  const version = result.versions[0] || null;
-  if (!version) {
-    return {
-      ok: false,
-      version: null,
-      message: "GitHub Packages API returned no valid package versions."
-    };
-  }
-  return {
-    ok: true,
-    version,
-    message: null
-  };
 }
 
 /**
@@ -2661,7 +2485,7 @@ function writeTopogramCliVersionConventionIfPresent(cwd, version) {
 
 /**
  * Remove stale tarball metadata for the CLI package before npm installs the
- * requested version. GitHub Packages can repack publish metadata, so copying a
+ * requested version. npm package registry can repack publish metadata, so copying a
  * local npm-pack resolved URL or integrity into a consumer lockfile can make
  * npm ci fail with a checksum mismatch.
  *
@@ -2728,7 +2552,11 @@ function inspectTopogramCliLockfile(cwd) {
       Object.prototype.hasOwnProperty.call(entry, "integrity");
     const conventionVersion = readTopogramCliVersionConvention(cwd);
     const resolvedVersionMismatch = Boolean(result.packageVersion && result.resolvedVersion && result.resolvedVersion !== result.packageVersion);
-    const localTarballMetadata = Boolean(resolved && (/^file:/.test(resolved) || /\.tgz(?:$|[?#])/.test(resolved)));
+    const npmjsTarball = Boolean(resolved && normalizeRegistryUrl(resolved).startsWith(`${normalizeRegistryUrl(NPMJS_REGISTRY)}/`));
+    const localTarballMetadata = Boolean(resolved && (
+      /^file:/.test(resolved) ||
+      (!npmjsTarball && /\.tgz(?:$|[?#])/.test(resolved))
+    ));
     result.refreshRecommended = Boolean(
       result.packageVersion &&
       conventionVersion &&
@@ -2741,7 +2569,7 @@ function inspectTopogramCliLockfile(cwd) {
         severity: "warning",
         message: "package-lock.json contains stale Topogram CLI tarball metadata for the pinned version.",
         path: lockPath,
-        suggestedFix: `Run \`topogram package update-cli ${result.packageVersion}\` to refresh from GitHub Packages registry metadata.`
+        suggestedFix: `Run \`topogram package update-cli ${result.packageVersion}\` to refresh from npm registry metadata.`
       });
     }
   } catch (error) {
@@ -2761,7 +2589,7 @@ function inspectTopogramCliLockfile(cwd) {
  * @returns {string|null}
  */
 function resolvedTopogramCliVersion(resolved) {
-  const match = resolved.match(/\/download\/@attebury\/topogram\/([^/]+)/);
+  const match = resolved.match(/\/@topogram\/cli\/-\/cli-([^/.?#]+(?:\.[^/.?#]+){2}(?:[-+][^/?#]+)?)\.tgz/);
   return match ? match[1] : null;
 }
 
@@ -2898,29 +2726,28 @@ function formatPackageUpdateNpmError(spec, step, result) {
   if (isPackageUpdateNpmAuthFailure(result)) {
     return [
       `Authentication is required to ${step} ${spec}.`,
-      "Run with NODE_AUTH_TOKEN=<github-token-with-package-read>, or configure npm auth for GitHub Packages.",
-      "For GitHub Actions, grant the consumer repo package read access under the package settings Manage Actions access section.",
+      "Configure registry-specific npm auth when using private packages.",
       output
     ].filter(Boolean).join("\n");
   }
   if (/\be403\b/.test(normalized) || normalized.includes("forbidden") || normalized.includes("permission")) {
     return [
       `Package access was denied while trying to ${step} ${spec}.`,
-      "Check GitHub Packages read access and Manage Actions access for the consumer repo.",
+      "Check npm package registry read access for the consumer environment.",
       output
     ].filter(Boolean).join("\n");
   }
   if (/\b(e404|404)\b/.test(normalized) || normalized.includes("not found")) {
     return [
       `${spec} was not found, or the current token does not have access to it.`,
-      "Check the package version and GitHub Packages access.",
+      "Check the package version and npm package registry access.",
       output
     ].filter(Boolean).join("\n");
   }
   if (/\beintegrity\b/.test(normalized) || normalized.includes("integrity checksum failed")) {
     return [
       `Package integrity failed while trying to ${step} ${spec}.`,
-      "Regenerate package-lock.json from the published GitHub Packages tarball.",
+      "Regenerate package-lock.json from the published npm package registry tarball.",
       output
     ].filter(Boolean).join("\n");
   }
@@ -3991,7 +3818,7 @@ function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
       severity: "error",
       message: `Authentication is required to inspect package '${packageSpec}'.`,
       path: entry.id,
-      suggestedFix: "Configure .npmrc for https://npm.pkg.github.com and run with NODE_AUTH_TOKEN when npm needs package read access."
+      suggestedFix: "Configure registry-specific npm auth when using private packages."
     };
   }
   if (/\b(403|e403|forbidden|permission|denied)\b/.test(normalized)) {
@@ -4000,7 +3827,7 @@ function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
       severity: "error",
       message: `Package access was denied for '${packageSpec}'.`,
       path: entry.id,
-      suggestedFix: "Grant the consuming repository access under the package's Manage Actions access settings, or use a token with package read access."
+      suggestedFix: "Check package visibility and registry-specific npm auth for the consumer environment."
     };
   }
   if (/\b(404|e404|not found)\b/.test(normalized)) {
@@ -4009,7 +3836,7 @@ function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
       severity: "error",
       message: `Package '${packageSpec}' was not found, or the current npm token cannot see it.`,
       path: entry.id,
-      suggestedFix: "Check the package name/version and GitHub Packages access."
+      suggestedFix: "Check the package name/version and npm package registry access."
     };
   }
   return {
@@ -6088,7 +5915,9 @@ function templateCheckGeneratorDependencies(projectRoot) {
     ...(pkg.dependencies || {}),
     ...(pkg.devDependencies || {})
   };
-  return Object.keys(dependencies).filter((name) => name.includes("topogram-generator")).sort();
+  return Object.keys(dependencies).filter((name) =>
+    name.includes("topogram-generator") || name.startsWith("@topogram/generator-")
+  ).sort();
 }
 
 /**
@@ -6109,7 +5938,7 @@ function installTemplateCheckGeneratorDependencies(projectRoot, dependencies) {
     code: "template_generator_dependencies_install_failed",
     message: `Failed to install package-backed generator dependencies: ${dependencies.join(", ")}.`,
     path: path.join(projectRoot, "package.json"),
-    suggestedFix: `Run npm install with GitHub Packages access before checking this package-backed generator template.${output ? ` ${output.split(/\r?\n/).slice(-3).join(" ")}` : ""}`,
+    suggestedFix: `Run npm install before checking this package-backed generator template.${output ? ` ${output.split(/\r?\n/).slice(-3).join(" ")}` : ""}`,
     step: "generator-dependencies"
   });
 }

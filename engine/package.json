@@ -1,6 +1,6 @@
 {
-  "name": "@attebury/topogram",
-  "version": "0.3.33",
+  "name": "@topogram/cli",
+  "version": "0.3.34",
   "description": "Topogram CLI for checking Topogram workspaces and generating app bundles.",
   "license": "Apache-2.0",
   "repository": {
@@ -10,7 +10,7 @@
   },
   "type": "module",
   "bin": {
-    "topogram": "./src/cli.js"
+    "topogram": "src/cli.js"
   },
   "files": [
     "src",
@@ -23,7 +23,8 @@
     "node": ">=20"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "scripts": {
     "new": "node ./src/cli.js new",
