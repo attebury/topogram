@@ -197,6 +197,7 @@ were installed or already current.
 Informational scripts run independently. Verification scripts are mutually
 exclusive, with `verify` preferred over `pack:check`, and `pack:check`
 preferred over `check`.
+See [Consumer Script Contract](./consumer-scripts.md) for the script meanings.
 If npm package inspection fails, the command stops before mutating consumer
 files. Fix npm registry access and rerun it so the local verification scripts
 run against the installed package.

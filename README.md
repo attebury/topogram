@@ -395,6 +395,7 @@ packages live in `topogram-starters`, the generated Todo demo lives in
 `topogram-template-todo`.
 See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
 See [Catalog](./docs/catalog.md) for private catalog layout and commands.
+See [Consumer Script Contract](./docs/consumer-scripts.md) for update-cli check script semantics.
 
 ## License
 

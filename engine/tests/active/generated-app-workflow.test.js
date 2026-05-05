@@ -352,6 +352,25 @@ if (args[0] === "run") {
   if (process.env.FAKE_NPM_RUN_LOG) {
     fs.appendFileSync(process.env.FAKE_NPM_RUN_LOG, args[1] + "\\n", "utf8");
   }
+  if (process.env.FAKE_NPM_RUN_REAL === "1") {
+    const childProcess = require("node:child_process");
+    const pkgPath = path.join(process.cwd(), "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    const script = pkg.scripts && pkg.scripts[args[1]];
+    if (!script) {
+      process.stderr.write("Missing script: " + args[1] + "\\n");
+      process.exit(1);
+    }
+    const result = childProcess.spawnSync(script, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: process.env,
+      shell: true
+    });
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    process.exit(typeof result.status === "number" ? result.status : 1);
+  }
   process.stdout.write("ran " + args[1] + "\\n");
   process.exit(0);
 }
@@ -1755,6 +1774,53 @@ test("topogram package update-cli updates consumer dependency and runs available
     "check (covered by pack:check)"
   ]);
   assert.deepEqual(fs.readFileSync(packCheckRunLog, "utf8").trim().split("\n"), ["doctor", "pack:check"]);
+
+  const realScriptsRoot = path.join(root, "real-scripts-consumer");
+  fs.mkdirSync(path.join(realScriptsRoot, "scripts"), { recursive: true });
+  fs.writeFileSync(
+    path.join(realScriptsRoot, "scripts", "record.cjs"),
+    "const fs = require('node:fs'); fs.appendFileSync('./real-script-log.txt', process.argv[2] + '\\n');\n",
+    "utf8"
+  );
+  fs.writeFileSync(
+    path.join(realScriptsRoot, "scripts", "fail.cjs"),
+    "process.stderr.write('covered script should not run\\n'); process.exit(42);\n",
+    "utf8"
+  );
+  writePackageJson(realScriptsRoot, {
+    name: "real-scripts-consumer",
+    private: true,
+    scripts: {
+      doctor: "node ./scripts/record.cjs doctor",
+      check: "node ./scripts/fail.cjs",
+      "pack:check": "node ./scripts/record.cjs pack:check"
+    },
+    devDependencies: {
+      "@topogram/cli": "^0.2.32"
+    }
+  });
+  const realScriptsUpdate = runCli(["package", "update-cli", "0.2.37", "--json"], {
+    cwd: realScriptsRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.37",
+      FAKE_NPM_RUN_REAL: "1",
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(realScriptsUpdate.status, 0, realScriptsUpdate.stderr || realScriptsUpdate.stdout);
+  const realScriptsPayload = JSON.parse(realScriptsUpdate.stdout);
+  assert.deepEqual(realScriptsPayload.scriptsRun, ["doctor", "pack:check"]);
+  assert.deepEqual(realScriptsPayload.skippedScripts, [
+    "cli:surface",
+    "catalog:show",
+    "catalog:template-show",
+    "verify",
+    "check (covered by pack:check)"
+  ]);
+  assert.deepEqual(fs.readFileSync(path.join(realScriptsRoot, "real-script-log.txt"), "utf8").trim().split("\n"), [
+    "doctor",
+    "pack:check"
+  ]);
 
   const minimalRoot = path.join(root, "minimal");
   fs.mkdirSync(minimalRoot, { recursive: true });

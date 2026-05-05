@@ -59,6 +59,8 @@ topogram package update-cli --latest
 If npm package inspection is unavailable, `topogram package update-cli` stops
 before mutating consumer manifests. Fix npm registry access, rerun the update,
 and let the command run the consumer verification scripts.
+The consumer script contract is documented in
+[Consumer Script Contract](./consumer-scripts.md).
 
 `topogram release status` checks npmjs package visibility. If npm registry
 inspection is unavailable, release status reports a warning; strict mode treats
