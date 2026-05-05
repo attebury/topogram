@@ -45,8 +45,18 @@ jobs:
         run: bash ./scripts/verify-engine.sh
       - name: Verify packed CLI
         run: bash ./scripts/verify-cli-package.sh
+      - name: Check npm publish token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Missing NPM_TOKEN repository secret with npmjs publish access for @topogram/cli."
+            exit 1
+          fi
       - name: Publish package
         working-directory: engine
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public --tag "${{ inputs.dist_tag }}"
       - name: Create release tag
         if: ${{ inputs.create_tag }}

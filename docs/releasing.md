@@ -24,6 +24,8 @@ Use the GitHub Actions workflow `Publish CLI Package`.
 - `version` is optional. If supplied, it must match `engine/package.json`.
 - `dist_tag` defaults to `latest`.
 - `create_tag` defaults to `true` and creates `topogram-v<version>` after publish.
+- The repository must define `NPM_TOKEN` as an npmjs token with publish access
+  for `@topogram/cli`.
 
 The workflow verifies the engine and packed CLI before publishing. It does not mutate the package version in CI.
 
