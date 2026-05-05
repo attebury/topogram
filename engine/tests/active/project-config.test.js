@@ -161,7 +161,10 @@ test("topogram generator check validates package-backed generators by package an
 
 test("topogram generator list and show describe bundled and installed package generators", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-discovery-"));
-  const { packageName } = writePackageBackedGenerator(root);
+  const { packageName } = writePackageBackedGenerator(root, {
+    id: "@topogram/generator-smoke-web",
+    package: "@topogram/generator-smoke-web"
+  });
   writeJson(path.join(root, "package.json"), {
     private: true,
     devDependencies: {
@@ -174,7 +177,7 @@ test("topogram generator list and show describe bundled and installed package ge
   const listPayload = JSON.parse(list.stdout);
   assert.equal(listPayload.ok, true);
   assert.equal(listPayload.generators.some((generator) => generator.id === "topogram/react" && generator.source === "bundled"), true);
-  const packageGenerator = listPayload.generators.find((generator) => generator.id === "@scope/smoke-web");
+  const packageGenerator = listPayload.generators.find((generator) => generator.id === "@topogram/generator-smoke-web");
   assert.equal(packageGenerator.package, packageName);
   assert.equal(packageGenerator.installed, true);
   assert.equal(packageGenerator.surface, "web");
@@ -191,7 +194,7 @@ test("topogram generator list and show describe bundled and installed package ge
   assert.equal(packageShow.status, 0, packageShow.stderr || packageShow.stdout);
   const packagePayload = JSON.parse(packageShow.stdout);
   assert.equal(packagePayload.ok, true);
-  assert.equal(packagePayload.generator.id, "@scope/smoke-web");
+  assert.equal(packagePayload.generator.id, "@topogram/generator-smoke-web");
   assert.equal(packagePayload.generator.package, packageName);
   assert.equal(packagePayload.generator.installCommand, `npm install -D ${packageName}`);
   assert.equal(packagePayload.exampleTopologyBinding.generator.package, packageName);
@@ -210,7 +213,7 @@ test("topogram generator list and show describe bundled and installed package ge
 
   const humanPackage = runCli(["generator", "show", packageName], { cwd: root });
   assert.equal(humanPackage.status, 0, humanPackage.stderr || humanPackage.stdout);
-  assert.match(humanPackage.stdout, /Generator: @scope\/smoke-web@1/);
+  assert.match(humanPackage.stdout, /Generator: @topogram\/generator-smoke-web@1/);
   assert.match(humanPackage.stdout, /Source: package/);
   assert.match(humanPackage.stdout, /Installed: yes/);
   assert.match(humanPackage.stdout, new RegExp(`Install: npm install -D ${packageName.replace("/", "\\/")}`));

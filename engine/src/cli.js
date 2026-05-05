@@ -1277,7 +1277,7 @@ function declaredGeneratorPackages(cwd) {
       continue;
     }
     for (const name of Object.keys(dependencies)) {
-      if (name.includes("topogram-generator")) {
+      if (name.includes("topogram-generator") || name.startsWith("@topogram/generator-")) {
         packages.add(name);
       }
     }
