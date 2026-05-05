@@ -602,6 +602,15 @@ test("sveltekit generator routes render projection ui_components for provider-un
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-route-"));
   const workspaceRoot = copyAppBasicFixture(root);
   const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-shared.tg");
+  const componentPath = path.join(workspaceRoot, "components", "component-ui-data-grid.tg");
+  fs.writeFileSync(
+    componentPath,
+    fs.readFileSync(componentPath, "utf8").replace(
+      "  patterns [resource_table, data_grid_view]\n",
+      "  patterns [resource_table, data_grid_view, board_view]\n"
+    ),
+    "utf8"
+  );
   const source = fs.readFileSync(projectionPath, "utf8");
   fs.writeFileSync(
     projectionPath,
@@ -621,7 +630,7 @@ test("sveltekit generator routes render projection ui_components for provider-un
 
   const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte"));
   assert.match(boardPage, /data-topogram-component="component_ui_data_grid"/);
-  assert.match(boardPage, /class="component-card component-table"/);
+  assert.match(boardPage, /class="component-card component-board"/);
   assert.doesNotMatch(boardPage, /Sample rows/);
   const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
   const boardCoverage = coverage.screens.find((screen) => screen.id === "task_board");

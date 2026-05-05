@@ -66,8 +66,13 @@ is meant to invoke a domain command/query; the projection usage still binds the
 concrete component event to that capability with
 `event <component_event> action <capability>`.
 
-Component behavior is declared on the component, but realized by projection
-usage. A projection `ui_components` entry supplies concrete data bindings and
+Component behavior is declared on the component, but realized by shared
+projection usage. In v1, `ui_components` belongs on `ui_shared` projections.
+Concrete `ui_web`, iOS, and Android surfaces realize the shared projection and
+inherit that component wiring. This keeps one reusable component contract from
+splintering into stack-specific copies.
+
+A shared projection `ui_components` entry supplies concrete data bindings and
 event outcomes. Topogram derives a normalized behavior realization for each
 usage:
 
@@ -199,7 +204,9 @@ unless the explicit artifact target is passed with `--write`.
 
 ## Projection Usage
 
-Projections own component placement and wiring. Use `ui_components` to bind a reusable component to a screen region, data source, and event outcome:
+Shared UI projections own component placement and wiring. Use `ui_components`
+on `platform ui_shared` to bind a reusable component to a screen region, data
+source, and event outcome:
 
 ```text
 projection proj_ui_shared {
@@ -215,7 +222,12 @@ projection proj_ui_shared {
 }
 ```
 
-`topogram check` validates that the screen and region exist, the component exists, `data` bindings reference known component props and Topogram sources, and `event` bindings reference known component events.
+`topogram check` validates that the screen and region exist, the component
+exists, the component supports the region and region pattern when it declares
+constraints, `data` bindings reference known component props and Topogram
+sources, and `event` bindings reference known component events. Concrete
+surface projections that declare `ui_components` directly fail validation in
+v1; they should realize the shared UI projection instead.
 
 Generated UI contracts include the same usage metadata. Each screen gets a
 `components` array with placement, data bindings, and event bindings, and the

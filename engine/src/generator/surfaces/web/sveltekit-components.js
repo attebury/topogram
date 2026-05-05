@@ -107,24 +107,24 @@ function renderCollectionTable(usage, options) {
             <table class="resource-table data-grid">
               <thead>
                 <tr>
-                  <th>Task</th>
+                  <th>Name</th>
                   <th>Status</th>
-                  <th>Priority</th>
+                  <th>Summary</th>
                   <th>Owner</th>
                 </tr>
               </thead>
               <tbody>
-                {#each ${items} as task}
+                {#each ${items} as item}
                   <tr>
                     <td>
                       <div class="cell-stack">
-                        <a href={'/tasks/' + task.id}><strong>{task.title}</strong></a>
-                        {#if task.description}<span class="cell-secondary">{task.description}</span>{/if}
+                        <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
+                        {#if item.description || item.body}<span class="cell-secondary">{item.description ?? item.body}</span>{/if}
                       </div>
                     </td>
-                    <td><span class="badge">{task.status}</span></td>
-                    <td>{task.priority ?? "medium"}</td>
-                    <td>{task.owner_id ?? task.ownerId ?? "Unassigned"}</td>
+                    <td><span class="badge">{item.status ?? "active"}</span></td>
+                    <td>{item.priority ?? item.created_at ?? item.createdAt ?? "Ready"}</td>
+                    <td>{item.owner_id ?? item.ownerId ?? "Unassigned"}</td>
                   </tr>
                 {/each}
               </tbody>
@@ -140,7 +140,7 @@ function renderCollectionTable(usage, options) {
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  const taskParam = options.useTypescript ? "(task: any)" : "(task)";
+  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<div class="component-card component-board" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -152,8 +152,8 @@ function renderBoard(usage, options) {
             {#each ["draft", "active", "completed", "archived"] as status}
               <section class="board-column">
                 <h3>{status}</h3>
-                {#each ${items}.filter(${taskParam} => task.status === status) as task}
-                  <a class="board-card" href={'/tasks/' + task.id}>{task.title}</a>
+                {#each ${items}.filter(${itemParam} => item.status === status) as item}
+                  <div class="board-card">{item.title ?? item.name ?? item.message ?? item.id}</div>
                 {/each}
               </section>
             {/each}
@@ -168,7 +168,7 @@ function renderBoard(usage, options) {
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  const taskParam = options.useTypescript ? "(task: any)" : "(task)";
+  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<div class="component-card component-calendar" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -177,11 +177,11 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div class="calendar-list">
-            {#each ${items}.filter(${taskParam} => task.due_at || task.dueAt) as task}
-              <a href={'/tasks/' + task.id}>
-                <span>{task.due_at ?? task.dueAt}</span>
-                <strong>{task.title}</strong>
-              </a>
+            {#each ${items}.filter(${itemParam} => item.due_at || item.dueAt || item.created_at || item.createdAt) as item}
+              <div class="calendar-card">
+                <span>{item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt}</span>
+                <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
+              </div>
             {/each}
           </div>
         </div>`;

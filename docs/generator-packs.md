@@ -58,6 +58,11 @@ Package-backed and bundled fallback generators use the same manifest shape:
     "components": true,
     "coverage": true
   },
+  "componentSupport": {
+    "patterns": ["resource_table", "data_grid_view"],
+    "behaviors": ["selection", "sorting", "filtering"],
+    "unsupported": "warning"
+  },
   "source": "package",
   "package": "@attebury/topogram-generator-react-web"
 }
@@ -82,6 +87,7 @@ Manifest fields:
 | `outputs` | yes | Artifact families produced by the generator, such as `web-app`, `api-service`, `db-lifecycle-bundle`, or `generation-coverage`. |
 | `stack` | yes | Human-readable stack metadata for docs, catalogs, and compatibility review. |
 | `capabilities` | yes | Boolean feature flags such as `routes`, `components`, `coverage`, `http`, `persistence`, or `migrations`. |
+| `componentSupport` | optional | Declares supported component `patterns`, supported behavior kinds, and how unsupported component usage is handled: `error`, `warning`, or `contract-only`. |
 | `source` | yes | `bundled` for CLI-owned adapters or `package` for external package-backed generators. |
 | `package` | package-backed | Package name used for Node resolution. Required when `source` is `package`. |
 | `export` | optional | Named export to load when the adapter is not the package default export. |

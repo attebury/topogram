@@ -1980,6 +1980,38 @@ function collectAvailableUiRegionKeys(statement, registry) {
   return available;
 }
 
+function collectProjectionUiRegionPatterns(statement) {
+  const patterns = new Map();
+  for (const entry of blockEntries(getFieldValue(statement, "ui_screen_regions"))) {
+    const tokens = blockSymbolItems(entry).map((item) => item.value);
+    if (tokens[0] !== "screen" || !tokens[1] || tokens[2] !== "region" || !tokens[3]) {
+      continue;
+    }
+    for (let i = 4; i < tokens.length; i += 2) {
+      if (tokens[i] === "pattern" && tokens[i + 1]) {
+        patterns.set(`${tokens[1]}:${tokens[3]}`, tokens[i + 1]);
+      }
+    }
+  }
+  return patterns;
+}
+
+function collectAvailableUiRegionPatterns(statement, registry) {
+  const patterns = collectProjectionUiRegionPatterns(statement);
+  for (const targetId of symbolValues(getFieldValue(statement, "realizes"))) {
+    const target = registry.get(targetId);
+    if (target?.kind !== "projection") {
+      continue;
+    }
+    for (const [key, pattern] of collectProjectionUiRegionPatterns(target)) {
+      if (!patterns.has(key)) {
+        patterns.set(key, pattern);
+      }
+    }
+  }
+  return patterns;
+}
+
 function parseUiDirectiveMap(tokens, startIndex, errors, statement, entry, context) {
   const directives = new Map();
 
@@ -2442,8 +2474,17 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
     return;
   }
 
+  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
+    pushError(
+      errors,
+      `Projection ${statement.id} ui_components is only supported on ui_shared projections in v1; place reusable component wiring in the shared UI projection and have concrete surfaces realize it`,
+      componentsField.loc
+    );
+  }
+
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const availableRegions = collectAvailableUiRegionKeys(statement, registry);
+  const availableRegionPatterns = collectAvailableUiRegionPatterns(statement, registry);
 
   for (const entry of componentsField.value.entries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
@@ -2486,6 +2527,23 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
       .map((eventEntry) => eventEntry.items[0])
       .filter((item) => item?.type === "symbol")
       .map((item) => item.value));
+    const componentRegions = symbolValues(getFieldValue(component, "regions"));
+    const componentPatterns = symbolValues(getFieldValue(component, "patterns"));
+    if (componentRegions.length > 0 && !componentRegions.includes(regionName)) {
+      pushError(
+        errors,
+        `Projection ${statement.id} ui_components uses component '${componentId}' in region '${regionName}', but the component supports regions [${componentRegions.join(", ")}]`,
+        entry.loc
+      );
+    }
+    const regionPattern = availableRegionPatterns.get(`${screenId}:${regionName}`) || null;
+    if (regionPattern && componentPatterns.length > 0 && !componentPatterns.includes(regionPattern)) {
+      pushError(
+        errors,
+        `Projection ${statement.id} ui_components uses component '${componentId}' in '${screenId}:${regionName}' with pattern '${regionPattern}', but the component supports patterns [${componentPatterns.join(", ")}]`,
+        entry.loc
+      );
+    }
 
     for (let i = 6; i < tokens.length;) {
       const directive = tokens[i];

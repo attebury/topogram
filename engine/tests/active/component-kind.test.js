@@ -1073,6 +1073,116 @@ projection proj_ui {
   assert.match(messages, /references unknown navigation target 'item_detail'/);
 });
 
+test("projection ui_components are owned by shared UI projections in v1", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+shape shape_event_payload {
+  name "Event Payload"
+  description "Event payload"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  props {
+    rows array required
+  }
+  events {
+    row_select shape_event_payload
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [cap_list_items]
+  outputs [ui_contract, web_app]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_routes {
+    screen item_list path /items
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items event row_select navigate item_list
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  assert.match(
+    validation.errors.map((error) => error.message).join("\n"),
+    /ui_components is only supported on ui_shared projections in v1/
+  );
+});
+
+test("projection ui_components validate component region and pattern compatibility", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_summary {
+  name "Summary"
+  description "Summary component"
+  props {
+    rows array required
+  }
+  patterns [summary_stats]
+  regions [toolbar]
+  status active
+}
+
+projection proj_ui_shared {
+  name "Shared UI"
+  description "Shared UI projection"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_summary data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /supports regions \[toolbar\]/);
+  assert.match(messages, /with pattern 'resource_table'.*supports patterns \[summary_stats\]/);
+});
+
 test("component prop defaults preserve real values", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {

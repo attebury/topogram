@@ -213,7 +213,9 @@ export function makeCandidateRecord({
       ? "db"
       : kind === "capability"
         ? "api"
-        : null);
+        : kind === "component"
+          ? "ui"
+          : null);
   return {
     kind,
     id_hint: idHint,

@@ -112,6 +112,11 @@ test("generator manifest validation rejects malformed manifests", () => {
     outputs: [],
     stack: null,
     capabilities: [],
+    componentSupport: {
+      patterns: "resource_table",
+      behaviors: [1],
+      unsupported: "ignore"
+    },
     source: "package"
   });
 
@@ -121,6 +126,9 @@ test("generator manifest validation rejects malformed manifests", () => {
   assert.match(result.errors.join("\n"), /inputs/);
   assert.match(result.errors.join("\n"), /stack/);
   assert.match(result.errors.join("\n"), /capabilities/);
+  assert.match(result.errors.join("\n"), /componentSupport\.patterns/);
+  assert.match(result.errors.join("\n"), /componentSupport\.behaviors/);
+  assert.match(result.errors.join("\n"), /componentSupport\.unsupported/);
   assert.match(result.errors.join("\n"), /package source/);
 });
 

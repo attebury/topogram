@@ -15,6 +15,7 @@ import { createRequire } from "node:module";
  * @property {string[]} outputs
  * @property {Record<string, string>} stack
  * @property {Record<string, boolean>} capabilities
+ * @property {{ patterns?: string[], behaviors?: string[], unsupported?: "error"|"warning"|"contract-only" }} [componentSupport]
  * @property {"bundled"|"package"} source
  * @property {string} [profile]
  * @property {string} [package]
@@ -60,6 +61,7 @@ export const GENERATOR_MANIFESTS = [
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "browser", framework: "vanilla", language: "javascript" },
     capabilities: { routes: true, components: false, coverage: false },
+    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "vanilla"
   },
@@ -73,6 +75,11 @@ export const GENERATOR_MANIFESTS = [
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "node", framework: "sveltekit", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
+    componentSupport: {
+      patterns: ["summary_stats", "board_view", "calendar_view", "resource_table", "data_grid_view"],
+      behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
+      unsupported: "warning"
+    },
     source: "bundled",
     profile: "sveltekit"
   },
@@ -86,6 +93,11 @@ export const GENERATOR_MANIFESTS = [
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "browser", framework: "react", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
+    componentSupport: {
+      patterns: ["summary_stats", "board_view", "calendar_view", "resource_table", "data_grid_view"],
+      behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
+      unsupported: "warning"
+    },
     source: "bundled",
     profile: "react"
   },
@@ -99,6 +111,7 @@ export const GENERATOR_MANIFESTS = [
     outputs: ["native-app"],
     stack: { platform: "ios", framework: "swiftui", language: "swift" },
     capabilities: { routes: true, components: false, coverage: false },
+    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "swiftui"
   },
@@ -138,6 +151,7 @@ export const GENERATOR_MANIFESTS = [
     outputs: ["native-app"],
     stack: { platform: "android", framework: "compose", language: "kotlin" },
     capabilities: { routes: true, components: false, coverage: false },
+    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "compose",
     planned: true
@@ -389,6 +403,24 @@ export function validateGeneratorManifest(manifest) {
   }
   if (!manifest.capabilities || typeof manifest.capabilities !== "object" || Array.isArray(manifest.capabilities)) {
     errors.push(`${label} capabilities must be an object`);
+  }
+  if (manifest.componentSupport != null) {
+    if (typeof manifest.componentSupport !== "object" || Array.isArray(manifest.componentSupport)) {
+      errors.push(`${label} componentSupport must be an object when present`);
+    } else {
+      if (manifest.componentSupport.patterns != null && !isStringArray(manifest.componentSupport.patterns)) {
+        errors.push(`${label} componentSupport.patterns must be a string array`);
+      }
+      if (manifest.componentSupport.behaviors != null && !isStringArray(manifest.componentSupport.behaviors)) {
+        errors.push(`${label} componentSupport.behaviors must be a string array`);
+      }
+      if (
+        manifest.componentSupport.unsupported != null &&
+        !["error", "warning", "contract-only"].includes(manifest.componentSupport.unsupported)
+      ) {
+        errors.push(`${label} componentSupport.unsupported must be error, warning, or contract-only`);
+      }
+    }
   }
   if (!["bundled", "package"].includes(manifest.source)) {
     errors.push(`${label} source must be bundled or package`);

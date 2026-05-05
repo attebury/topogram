@@ -67,6 +67,9 @@ test("route fallback import fixture extracts API routes and React screens", () =
     "task_edit",
     "task_list"
   ]);
+  assert.deepEqual(candidateIds(summary.candidates.ui.components), [
+    "component_ui_task_list_results"
+  ]);
 });
 
 test("brownfield import creates editable Topogram workspace with source provenance", () => {
@@ -107,6 +110,40 @@ test("brownfield import creates editable Topogram workspace with source provenan
   const editedCheck = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(editedCheck.status, 0, editedCheck.stderr || editedCheck.stdout);
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
+});
+
+test("brownfield UI import writes reviewable component candidates and shared bindings", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-components."));
+  const targetRoot = path.join(runRoot, "imported");
+  const result = runCli([
+    "import",
+    path.join(importFixtureRoot, "route-fallback"),
+    "--out",
+    targetRoot,
+    "--from",
+    "api,ui",
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.candidateCounts.uiComponents, 1);
+
+  const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-shared.tg");
+  const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "components", "ui-task-list-results.tg");
+  assert.equal(fs.existsSync(sharedDraftPath), true);
+  assert.equal(fs.existsSync(componentDraftPath), true);
+
+  const sharedDraft = fs.readFileSync(sharedDraftPath, "utf8");
+  assert.match(sharedDraft, /ui_components \{/);
+  assert.match(sharedDraft, /screen task_list region results component component_ui_task_list_results data rows from cap_list_tasks/);
+  assert.doesNotMatch(sharedDraft, /\[object Object\]/);
+
+  const componentDraft = fs.readFileSync(componentDraftPath, "utf8");
+  assert.match(componentDraft, /component component_ui_task_list_results \{/);
+  assert.match(componentDraft, /patterns \[search_results\]/);
+  assert.match(componentDraft, /status proposed/);
 });
 
 test("brownfield import refresh updates candidates and provenance without overwriting adopted Topogram", () => {

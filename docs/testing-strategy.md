@@ -21,6 +21,19 @@ Engine fixtures should also avoid product-branded implementation names, package
 metadata, env vars, and generated labels. A fixture can use a sample domain, but
 its vocabulary should describe the fixture and the engine behavior under test.
 
+Tests must prove consumer-facing behavior, not paper over gaps. A check that
+only asserts a marker string, a file count, or a mocked happy path is not enough
+when the user contract is validation, generation, import adoption, app compile,
+or runtime behavior. If Topogram accepts intent, tests should either prove the
+intent is realized through the next meaningful boundary or assert the exact
+diagnostic that tells the user it is not supported.
+
+Component tests follow the same rule. If `ui_components` wiring is accepted,
+tests must cover validation, normalized contracts, import/adoption drafts, or
+generated markup/coverage as appropriate. Unsupported component usage should
+fail with a clear validation or conformance diagnostic, not disappear from a
+contract or generated app.
+
 Importer fixtures are intentionally narrow. The engine keeps only small,
 actively tested importer smoke inputs under `engine/tests/fixtures/import/`.
 Large brownfield source snapshots belong in `topogram-project` deferred code or

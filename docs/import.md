@@ -23,6 +23,8 @@ topogram check
 Topogram workspace containing:
 
 - `topogram/candidates/app/**` raw extractor findings and candidates
+- `topogram/candidates/app/ui/drafts/components/**` review-only UI component
+  candidates when reusable screen regions can be inferred
 - `topogram/candidates/reconcile/**` reviewable proposal bundles
 - `topogram.project.json` with maintained output ownership and no generated
   stack binding
@@ -100,6 +102,13 @@ Receipts also store hashes for written canonical files. Use
 adoption receipt, changed after adoption, were removed after adoption, or came
 from an older unverifiable receipt. This verification is audit-only:
 imported/adopted Topogram files are project-owned, and local edits remain valid.
+
+UI import also drafts shared projection wiring when component candidates are
+found. The files under `topogram/candidates/app/ui/drafts/**` are not canonical
+Topogram until a human or agent reviews and adopts them. Component candidates
+should be checked for props, behavior, events, regions, and patterns before
+promotion; the generated `ui_components` bindings are starting evidence, not a
+silent assertion that the imported app had a clean reusable component model.
 
 Adoption writes refuse to run when the original brownfield source evidence has
 changed since import:
