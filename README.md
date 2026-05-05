@@ -6,6 +6,20 @@ Topogram is being narrowed around one complete workflow: author a Topogram, gene
 
 Use Node 20+.
 
+For a minimal npmjs path, see [Fresh Install](./docs/fresh-install.md):
+
+```bash
+npm install --save-dev @topogram/cli
+npx topogram doctor
+npx topogram template list
+npx topogram new ./my-app --template hello-web
+cd ./my-app
+npm install
+npm run check
+npm run generate
+npm --prefix app run compile
+```
+
 ### First-Use Prerequisites
 
 Install the public CLI as a project dependency:

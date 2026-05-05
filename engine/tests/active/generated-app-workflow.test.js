@@ -463,6 +463,12 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram import adopt --list/);
   assert.match(help.stdout, /topogram import status/);
   assert.match(help.stdout, /topogram import history/);
+  assert.match(help.stdout, /Fresh install:/);
+  assert.match(help.stdout, /npm install --save-dev @topogram\/cli/);
+  assert.match(help.stdout, /npx topogram doctor/);
+  assert.match(help.stdout, /npx topogram template list/);
+  assert.match(help.stdout, /npx topogram new \.\/my-app --template hello-web/);
+  assert.match(help.stdout, /npm --prefix app run compile/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, literalPattern(`topogram catalog show ${externalTodoCatalogAlias}`));
   assert.match(help.stdout, /topogram source status/);
@@ -512,6 +518,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
   assert.match(newHelp.stdout, /Usage: topogram new <path> \[--template <alias\|package\|path>\]/);
+  assert.match(newHelp.stdout, /Fresh install flow:/);
+  assert.match(newHelp.stdout, /npx topogram new \.\/my-app --template hello-web/);
+  assert.match(newHelp.stdout, /npm --prefix app run compile/);
   assert.match(newHelp.stdout, /topogram new --list-templates/);
   assert.match(newHelp.stdout, /Default template: hello-web/);
 
@@ -530,6 +539,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const doctorHelp = runCli(["help", "doctor"]);
   assert.equal(doctorHelp.status, 0, doctorHelp.stderr || doctorHelp.stdout);
   assert.match(doctorHelp.stdout, /Usage: topogram doctor/);
+  assert.match(doctorHelp.stdout, /Fresh install check:/);
+  assert.match(doctorHelp.stdout, /npx topogram doctor/);
+  assert.match(doctorHelp.stdout, /npx topogram new \.\/my-app --template hello-web/);
   assert.match(doctorHelp.stdout, /topogram setup package-auth/);
   assert.match(doctorHelp.stdout, /Use `catalog doctor` when you only want catalog/);
 
