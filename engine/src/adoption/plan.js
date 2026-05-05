@@ -6,7 +6,7 @@ import {
   reviewBoundaryForImportProposal
 } from "../policy/review-boundaries.js";
 
-const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "docs", "journeys", "workflows", "verification", "ui"]);
+const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "components", "docs", "journeys", "workflows", "verification", "ui"]);
 
 function stableSortedStrings(values) {
   return [...new Set((values || []).filter(Boolean))].sort();
@@ -355,6 +355,7 @@ export function selectorMatchesItem(selector, item) {
   if (selector === "shapes") return item.kind === "shape";
   if (selector === "entities") return item.kind === "entity";
   if (selector === "capabilities") return item.kind === "capability";
+  if (selector === "components") return item.kind === "component";
   if (selector === "docs") return item.track === "docs";
   if (selector === "journeys") return item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/");
   if (selector === "workflows") return item.track === "workflows" || item.kind === "decision";

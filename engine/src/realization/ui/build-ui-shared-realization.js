@@ -84,12 +84,19 @@ function summarizeComponentRef(graph, componentId) {
   };
 }
 
-export function buildComponentUsageContract(graph, entry) {
+function regionContractFor(regionEntries, regionName) {
+  return (regionEntries || []).find((entry) => entry.region === regionName) || null;
+}
+
+export function buildComponentUsageContract(graph, entry, options = {}) {
   const componentId = entry.component?.id || null;
   const contract = componentId ? componentContractFor(graph, componentId) : null;
+  const region = options.region || null;
   return {
     type: "ui_component_usage",
     region: entry.region || null,
+    pattern: region?.pattern || null,
+    placement: region?.placement || null,
     component: componentId ? summarizeComponentRef(graph, componentId) : null,
     dataBindings: (entry.dataBindings || []).map((binding) => ({
       prop: binding.prop || null,
@@ -255,7 +262,9 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
       state: entry.state || null,
       variant: entry.variant || null
     })),
-    components: componentEntries.map((entry) => buildComponentUsageContract(graph, entry)),
+    components: componentEntries.map((entry) => buildComponentUsageContract(graph, entry, {
+      region: regionContractFor(regionEntries, entry.region)
+    })),
     patterns: [...patterns]
   };
 }

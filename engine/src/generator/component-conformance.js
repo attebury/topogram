@@ -65,12 +65,69 @@ function projectionRealizesIds(projection) {
   return new Set((projection?.realizes || []).map((ref) => ref.id).filter(Boolean));
 }
 
-function projectionScreenMap(projection) {
+function ownProjectionScreenMap(projection) {
   return new Map((projection?.uiScreens || []).map((screen) => [screen.id, screen]));
 }
 
-function projectionRegionKeys(projection) {
+function ownProjectionRegionKeys(projection) {
   return new Set((projection?.uiScreenRegions || []).map((entry) => `${entry.screenId}:${entry.region}`));
+}
+
+function projectionById(graph) {
+  return byId(graph.byKind.projection || []);
+}
+
+function projectionContext(graph, projection) {
+  const projections = [];
+  const seen = new Set();
+  const projectionsById = projectionById(graph);
+
+  function visit(current) {
+    if (!current || seen.has(current.id)) {
+      return;
+    }
+    seen.add(current.id);
+    projections.push(current);
+    for (const ref of current.realizes || []) {
+      const target = projectionsById.get(ref.id);
+      if (target) {
+        visit(target);
+      }
+    }
+  }
+
+  visit(projection);
+  return projections;
+}
+
+function projectionScreenMap(graph, projection) {
+  const screens = new Map();
+  for (const contextProjection of projectionContext(graph, projection).reverse()) {
+    for (const [id, screen] of ownProjectionScreenMap(contextProjection)) {
+      screens.set(id, screen);
+    }
+  }
+  return screens;
+}
+
+function projectionRegionKeys(graph, projection) {
+  const regions = new Set();
+  for (const contextProjection of projectionContext(graph, projection)) {
+    for (const key of ownProjectionRegionKeys(contextProjection)) {
+      regions.add(key);
+    }
+  }
+  return regions;
+}
+
+function projectionContextRealizesIds(graph, projection) {
+  const ids = new Set();
+  for (const contextProjection of projectionContext(graph, projection)) {
+    for (const id of projectionRealizesIds(contextProjection)) {
+      ids.add(id);
+    }
+  }
+  return ids;
 }
 
 function checkRecord({
@@ -122,9 +179,9 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
   const eventNames = new Set(events.map((event) => event.id));
   const boundProps = new Set((usage.dataBindings || []).map((binding) => binding.prop).filter(Boolean));
   const statements = byId(graph.statements || []);
-  const screens = projectionScreenMap(sourceProjection);
-  const regionKeys = projectionRegionKeys(sourceProjection);
-  const realizedIds = projectionRealizesIds(sourceProjection);
+  const screens = projectionScreenMap(graph, sourceProjection);
+  const regionKeys = projectionRegionKeys(graph, sourceProjection);
+  const realizedIds = projectionContextRealizesIds(graph, sourceProjection);
 
   if (!component) {
     checks.push(checkRecord({
@@ -270,13 +327,13 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
         checks.push(checkRecord({
           code: "component_event_action_not_in_projection",
           severity: "error",
-          message: `Event '${binding.event}' targets capability '${target.id}', but projection '${sourceProjection.id}' does not realize it.`,
+          message: `Event '${binding.event}' targets capability '${target.id}', but projection '${sourceProjection.id}' does not realize it through its UI context.`,
           projection,
           sourceProjection,
           component,
           usage,
           event: binding.event || null,
-          suggestedFix: `Add '${target.id}' to projection '${sourceProjection.id}' realizes or choose a capability already in this projection context.`
+          suggestedFix: `Add '${target.id}' to projection '${sourceProjection.id}' or an inherited shared projection realizes list, or choose a capability already in this projection context.`
         }));
       }
     } else {
@@ -491,8 +548,8 @@ export function generateComponentConformanceReport(graph, options = {}) {
         source_projection: entry.sourceProjection.id === entry.projection.id ? null : summarizeProjection(entry.sourceProjection),
         screen: {
           id: entry.usage.screenId || null,
-          kind: projectionScreenMap(entry.sourceProjection).get(entry.usage.screenId)?.kind || null,
-          title: projectionScreenMap(entry.sourceProjection).get(entry.usage.screenId)?.title || null
+          kind: projectionScreenMap(graph, entry.sourceProjection).get(entry.usage.screenId)?.kind || null,
+          title: projectionScreenMap(graph, entry.sourceProjection).get(entry.usage.screenId)?.title || null
         },
         region: entry.usage.region || null,
         component: summarizeComponent(component) || { id: componentId, name: componentId, category: null, version: null, status: null, source_path: null },

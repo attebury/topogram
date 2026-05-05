@@ -9,6 +9,7 @@ import { parsePath, parseSource } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { validateWorkspace } from "../../src/validator.js";
 import { generateWorkspace } from "../../src/generator/index.js";
+import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
@@ -289,10 +290,12 @@ test("projection ui_components resolve component placement and bindings", () => 
   assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
   const taskList = webContract.artifact.screens.find((screen) => screen.id === "task_list");
   assert.deepEqual(taskList.components, [
-    {
-      type: "ui_component_usage",
-      region: "results",
-      component: {
+      {
+        type: "ui_component_usage",
+        region: "results",
+        pattern: "resource_table",
+        placement: "primary",
+        component: {
         id: "component_ui_data_grid",
         name: "Data Grid",
         category: "collection",
@@ -1229,7 +1232,133 @@ projection proj_ui_web {
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.total_usages, 2);
+  assert.equal(report.artifact.summary.errors, 0);
   assert.deepEqual(report.artifact.summary.affected_components, ["component_shared_grid", "component_web_summary"]);
+  assert.deepEqual(report.artifact.projection_usages.map((entry) => entry.screen.kind), ["list", "list"]);
+});
+
+test("component usage contracts carry resolved region patterns", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_grid {
+  name "Grid"
+  description "Grid"
+  props {
+    rows array required
+  }
+  patterns [resource_table, board_view]
+  regions [results]
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [cap_list_items]
+  outputs [ui_contract, web_app]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+    screen item_board kind board title "Board" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+    screen item_board region results pattern board_view placement primary
+  }
+
+  ui_routes {
+    screen item_list path /items
+    screen item_board path /items/board
+  }
+
+  ui_components {
+    screen item_list region results component component_grid data rows from cap_list_items
+    screen item_board region results component component_grid data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  const patterns = Object.fromEntries(
+    webContract.artifact.screens.map((screen) => [screen.id, screen.components[0]?.pattern])
+  );
+  assert.deepEqual(patterns, {
+    item_board: "board_view",
+    item_list: "resource_table"
+  });
+});
+
+test("web generation fails instead of silently omitting unsupported component patterns", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_lookup {
+  name "Lookup"
+  description "Lookup component"
+  props {
+    rows array required
+  }
+  patterns [lookup_select]
+  regions [results]
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [cap_list_items]
+  outputs [ui_contract, web_app]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern lookup_select placement primary
+  }
+
+  ui_routes {
+    screen item_list path /items
+  }
+
+  ui_components {
+    screen item_list region results component component_lookup data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
+
+  assert.throws(
+    () => generateWorkspace(ast, {
+      target: "sveltekit-app",
+      projectionId: "proj_ui_web",
+      implementation: APP_BASIC_IMPLEMENTATION
+    }),
+    /unsupported SvelteKit component pattern 'lookup_select'/
+  );
 });
 
 test("projection ui_components validate component region and pattern compatibility", () => {

@@ -2,7 +2,7 @@
 
 /**
  * @typedef {{ id?: string, name?: string }} ComponentReference
- * @typedef {{ component?: ComponentReference, region?: string }} ComponentUsage
+ * @typedef {{ component?: ComponentReference, region?: string, pattern?: string }} ComponentUsage
  * @typedef {{ patterns?: string[] }} ComponentContract
  * @typedef {Record<string, ComponentContract>} ComponentContractMap
  * @typedef {{ itemsExpression?: string, componentContracts?: ComponentContractMap, useTypescript?: boolean }} RenderOptions
@@ -54,8 +54,22 @@ function componentPatterns(usage, componentContracts) {
  * @param {string} pattern
  * @returns {boolean}
  */
-function hasPattern(usage, componentContracts, pattern) {
-  return componentPatterns(usage, componentContracts).includes(pattern);
+function usagePattern(usage, componentContracts) {
+  return usage?.pattern || componentPatterns(usage, componentContracts)[0] || null;
+}
+
+export function svelteKitComponentUsageSupport(usage, componentContracts) {
+  const pattern = usagePattern(usage, componentContracts);
+  return {
+    pattern,
+    supported: [
+      "summary_stats",
+      "board_view",
+      "calendar_view",
+      "resource_table",
+      "data_grid_view"
+    ].includes(pattern || "")
+  };
 }
 
 /**
@@ -184,16 +198,17 @@ function renderCalendar(usage, options) {
  */
 function renderUsage(usage, options) {
   const componentContracts = options.componentContracts || {};
-  if (hasPattern(usage, componentContracts, "summary_stats")) {
+  const { pattern } = svelteKitComponentUsageSupport(usage, componentContracts);
+  if (pattern === "summary_stats") {
     return renderSummaryStats(usage, options);
   }
-  if (hasPattern(usage, componentContracts, "board_view")) {
+  if (pattern === "board_view") {
     return renderBoard(usage, options);
   }
-  if (hasPattern(usage, componentContracts, "calendar_view")) {
+  if (pattern === "calendar_view") {
     return renderCalendar(usage, options);
   }
-  if (hasPattern(usage, componentContracts, "resource_table") || hasPattern(usage, componentContracts, "data_grid_view")) {
+  if (pattern === "resource_table" || pattern === "data_grid_view") {
     return renderCollectionTable(usage, options);
   }
   return "";

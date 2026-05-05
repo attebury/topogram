@@ -83,7 +83,9 @@ export function buildWebRealization(graph, options = {}) {
     if ((screen.components || []).some((usage) => componentUsageFingerprint(usage) === componentUsageFingerprintFromEntry(entry))) {
       continue;
     }
-    screen.components = [...(screen.components || []), buildComponentUsageContract(graph, entry)];
+    screen.components = [...(screen.components || []), buildComponentUsageContract(graph, entry, {
+      region: (screen.regions || []).find((region) => region.region === entry.region) || null
+    })];
   }
 
   const appShell = projection.uiAppShell?.length || !sharedProjection ? concreteContract.appShell : sharedContract.appShell;

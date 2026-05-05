@@ -144,6 +144,28 @@ test("brownfield UI import writes reviewable component candidates and shared bin
   assert.match(componentDraft, /component component_ui_task_list_results \{/);
   assert.match(componentDraft, /patterns \[search_results\]/);
   assert.match(componentDraft, /status proposed/);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.summary.proposalItemCount, 9);
+  assert.deepEqual(planPayload.bundles[0].kindCounts, {
+    capability: 3,
+    component: 1,
+    doc: 1,
+    ui: 4
+  });
+  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const componentItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "component");
+  assert.deepEqual(componentItems.map((item) => item.item), ["component_ui_task_list_results"]);
+  assert.equal(componentItems[0].source_path, "candidates/reconcile/model/bundles/task/components/component_ui_task_list_results.tg");
+  assert.equal(componentItems[0].canonical_rel_path, "components/component-ui-task-list-results.tg");
+
+  const adopt = runCli(["import", "adopt", "components", targetRoot, "--write", "--json"]);
+  assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+  const adoptPayload = JSON.parse(adopt.stdout);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "component" && item.item === "component_ui_task_list_results"), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "components", "component-ui-task-list-results.tg")), true);
 });
 
 test("brownfield import refresh updates candidates and provenance without overwriting adopted Topogram", () => {

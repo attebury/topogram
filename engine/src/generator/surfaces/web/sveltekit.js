@@ -2,7 +2,10 @@ import { buildWebRealization } from "../../../realization/ui/index.js";
 import { lookupRouteSegment } from "../services/runtime-helpers.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
-import { renderSvelteKitComponentRegion } from "./sveltekit-components.js";
+import {
+  renderSvelteKitComponentRegion,
+  svelteKitComponentUsageSupport
+} from "./sveltekit-components.js";
 
 function routePathToSvelteKitDirectory(routePath) {
   if (!routePath || routePath === "/") {
@@ -186,7 +189,21 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
       const componentUsages = screenComponentUsages(screen).map((usage) => {
         const componentId = usage.component?.id || null;
         const marker = componentId ? `data-topogram-component="${componentId}"` : null;
+        const support = svelteKitComponentUsageSupport(usage, contract.components);
         const usageRendered = Boolean(marker && contents.includes(marker));
+        if (componentId && rendered && renderer !== "implementation" && !support.supported) {
+          diagnostics.push({
+            code: "component_pattern_not_supported",
+            severity: "error",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            pattern: support.pattern || null,
+            component: componentId,
+            message: `Screen '${screen.id}' uses component '${componentId}' with unsupported SvelteKit component pattern '${support.pattern || "(missing)"}'.`,
+            suggested_fix: "Use a supported component pattern for this generator or provide an implementation override."
+          });
+        }
         if (componentId && rendered && !usageRendered) {
           diagnostics.push({
             code: "component_usage_not_rendered",
@@ -202,6 +219,8 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
         return {
           component: componentId,
           region: usage.region || null,
+          pattern: support.pattern || null,
+          supported: support.supported,
           rendered: usageRendered,
           marker
         };
@@ -242,6 +261,15 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
     screens,
     diagnostics
   };
+}
+
+function assertGenerationCoverage(coverage) {
+  const errors = (coverage.diagnostics || []).filter((diagnostic) => diagnostic.severity === "error");
+  if (errors.length === 0) {
+    return;
+  }
+  const details = errors.map((diagnostic) => diagnostic.message).join("; ");
+  throw new Error(`SvelteKit generation coverage failed: ${details}`);
 }
 
 function resolveNavLinks(contract, webReference) {
@@ -415,7 +443,9 @@ function buildSvelteKitScaffold(contract, apiContracts, options = {}) {
     }
   }
 
-  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildSvelteKitGenerationCoverage(contract, files, implementationScreenIds), null, 2)}\n`;
+  const coverage = buildSvelteKitGenerationCoverage(contract, files, implementationScreenIds);
+  assertGenerationCoverage(coverage);
+  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(coverage, null, 2)}\n`;
   files["src/lib/topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   return files;
 }

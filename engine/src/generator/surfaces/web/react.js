@@ -1,6 +1,9 @@
 import { buildWebRealization } from "../../../realization/ui/index.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
-import { renderReactComponentRegion } from "./react-components.js";
+import {
+  reactComponentUsageSupport,
+  renderReactComponentRegion
+} from "./react-components.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
 
 function componentNameForScreen(screenId) {
@@ -214,7 +217,21 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
       const componentUsages = screenComponentUsages(screen).map((usage) => {
         const componentId = usage.component?.id || null;
         const marker = componentId ? `data-topogram-component="${componentId}"` : null;
+        const support = reactComponentUsageSupport(usage, contract.components);
         const usageRendered = Boolean(marker && contents.includes(marker));
+        if (componentId && rendered && !support.supported) {
+          diagnostics.push({
+            code: "component_pattern_not_supported",
+            severity: "error",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            pattern: support.pattern || null,
+            component: componentId,
+            message: `Screen '${screen.id}' uses component '${componentId}' with unsupported React component pattern '${support.pattern || "(missing)"}'.`,
+            suggested_fix: "Use a supported component pattern for this generator or provide an implementation override."
+          });
+        }
         if (componentId && rendered && !usageRendered) {
           diagnostics.push({
             code: "component_usage_not_rendered",
@@ -230,6 +247,8 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
         return {
           component: componentId,
           region: usage.region || null,
+          pattern: support.pattern || null,
+          supported: support.supported,
           rendered: usageRendered,
           marker
         };
@@ -270,6 +289,15 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
     screens,
     diagnostics
   };
+}
+
+function assertGenerationCoverage(coverage) {
+  const errors = (coverage.diagnostics || []).filter((diagnostic) => diagnostic.severity === "error");
+  if (errors.length === 0) {
+    return;
+  }
+  const details = errors.map((diagnostic) => diagnostic.message).join("; ");
+  throw new Error(`React generation coverage failed: ${details}`);
 }
 
 function buildAppTsx(contract, webReference) {
@@ -528,7 +556,9 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
     files[screenPagePath(screen)] = buildReactScreenPage(screen, contract);
   }
 
-  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(buildReactGenerationCoverage(contract, files, routeScreens), null, 2)}\n`;
+  const coverage = buildReactGenerationCoverage(contract, files, routeScreens);
+  assertGenerationCoverage(coverage);
+  files["src/lib/topogram/generation-coverage.json"] = `${JSON.stringify(coverage, null, 2)}\n`;
   return files;
 }
 

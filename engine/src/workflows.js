@@ -1464,6 +1464,27 @@ function renderCandidateUiReportDoc(screen, routes, actions) {
   return renderMarkdownDoc(metadata, body);
 }
 
+function renderCandidateComponent(component) {
+  const propName = component.data_prop || "rows";
+  const pattern = component.pattern || "search_results";
+  const region = component.region || "results";
+  return ensureTrailingNewline(
+    [
+      `component ${component.id_hint} {`,
+      `  name "${component.label || component.id_hint}"`,
+      '  description "Candidate reusable component inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
+      "  category collection",
+      "  props {",
+      `    ${propName} array required`,
+      "  }",
+      `  patterns [${pattern}]`,
+      `  regions [${region}]`,
+      "  status proposed",
+      "}"
+    ].join("\n")
+  );
+}
+
 function renderProjectionPatchDoc(patch) {
   const lines = [
     `# ${patch.projection_id} Patch Candidate`,
@@ -2393,6 +2414,7 @@ function getOrCreateCandidateBundle(bundles, conceptId, label) {
       enums: [],
       capabilities: [],
       shapes: [],
+      components: [],
       screens: [],
       uiRoutes: [],
       uiActions: [],
@@ -3160,6 +3182,18 @@ function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
       canonical_rel_path: `verifications/${dashedTopogramId(entry.id_hint)}.tg`
     });
   }
+  for (const entry of bundle.components || []) {
+    steps.push({
+      action: "promote_component",
+      item: entry.id_hint,
+      target: null,
+      confidence: entry.confidence || "low",
+      inference_summary: entry.inference_summary || null,
+      related_capabilities: [entry.data_source].filter(Boolean),
+      source_path: `candidates/reconcile/model/bundles/${bundle.slug}/components/${entry.id_hint}.tg`,
+      canonical_rel_path: `components/${dashedTopogramId(entry.id_hint)}.tg`
+    });
+  }
   for (const screen of bundle.screens) {
     steps.push({
       action: "promote_ui_report",
@@ -3640,7 +3674,7 @@ function bestContextBundleForCandidate(bundles, candidate) {
 function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const dbCandidates = appImport.candidates.db || { entities: [], enums: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
-  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [] };
+  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], components: [] };
   const workflowCandidates = appImport.candidates.workflows || { workflows: [], workflow_states: [], workflow_transitions: [] };
   const verificationCandidates = appImport.candidates.verification || { verifications: [], scenarios: [], frameworks: [], scripts: [] };
   const docCandidates = appImport.candidates.docs || [];
@@ -3651,6 +3685,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const canonicalRoleIds = new Set((graph?.byKind.role || []).map((entry) => entry.id));
   const canonicalEntityIds = new Set((graph?.byKind.entity || []).map((entry) => entry.id));
   const canonicalEnumIds = new Set((graph?.byKind.enum || []).map((entry) => entry.id));
+  const canonicalComponentIds = new Set((graph?.byKind.component || []).map((entry) => entry.id));
   const canonicalUi = collectCanonicalUiSurface(graph || { byKind: { projection: [] } });
   const canonicalWorkflow = collectCanonicalWorkflowSurface(graph || { byKind: { decision: [] }, docs: [] });
   const canonicalDocsByKind = new Map();
@@ -3749,6 +3784,24 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
     bundle.uiActions.push(entry);
   }
+  function componentConceptId(entry) {
+    if (entry.entity_id || entry.concept_id) {
+      return entry.entity_id || entry.concept_id;
+    }
+    const screenStem = String(entry.screen_id || entry.id_hint || "")
+      .replace(/_(list|index|table|grid|results)$/, "")
+      .replace(/^list_/, "");
+    return `entity_${canonicalCandidateTerm(screenStem || entry.id_hint)}`;
+  }
+
+  for (const entry of uiCandidates.components || []) {
+    if (canonicalComponentIds.has(entry.id_hint)) {
+      continue;
+    }
+    const conceptId = componentConceptId(entry);
+    const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
+    bundle.components.push(entry);
+  }
   for (const entry of workflowCandidates.workflows || []) {
     if (canonicalWorkflow.workflow_docs.includes(entry.id_hint)) {
       continue;
@@ -3834,6 +3887,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.enums.length > 0 ||
       bundle.capabilities.length > 0 ||
       bundle.shapes.length > 0 ||
+      bundle.components.length > 0 ||
       bundle.screens.length > 0 ||
       bundle.uiRoutes.length > 0 ||
       bundle.uiActions.length > 0 ||
@@ -3851,6 +3905,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         enums: bundle.enums.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         capabilities: bundle.capabilities.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         shapes: bundle.shapes.sort((a, b) => a.id.localeCompare(b.id)),
+        components: bundle.components.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         screens: bundle.screens.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         uiRoutes: bundle.uiRoutes.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         uiActions: bundle.uiActions.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
@@ -3952,6 +4007,9 @@ function buildCandidateModelFiles(graph, appImport, topogramRoot) {
     for (const entry of bundle.verifications || []) {
       files[`${bundleRoot}/verifications/${entry.id_hint}.tg`] = renderCandidateVerification(entry, entry.scenarios || []);
     }
+    for (const entry of bundle.components || []) {
+      files[`${bundleRoot}/components/${entry.id_hint}.tg`] = renderCandidateComponent(entry);
+    }
     for (const entry of bundle.docs) {
       if (entry.existing_canonical) {
         continue;
@@ -4021,6 +4079,8 @@ function canonicalRelativePathForItem(kind, item) {
       return `shapes/${dashedTopogramId(item)}.tg`;
     case "capability":
       return `capabilities/${dashedTopogramId(item)}.tg`;
+    case "component":
+      return `components/${dashedTopogramId(item)}.tg`;
     case "verification":
       return `verifications/${dashedTopogramId(item)}.tg`;
     default:
@@ -4048,6 +4108,8 @@ function candidateSourcePathForItem(bundle, kind, item) {
       return `${base}/shapes/${item}.tg`;
     case "capability":
       return `${base}/capabilities/${item}.tg`;
+    case "component":
+      return `${base}/components/${item}.tg`;
     case "verification":
       return `${base}/verifications/${item}.tg`;
     default:
@@ -4069,6 +4131,8 @@ function reasonForAdoptionItem(step) {
       return step.target ? `Promote this shape to support concept ${step.target}.` : "Promote this imported shape into canonical Topogram.";
     case "promote_capability":
       return "Promote this imported capability into canonical Topogram.";
+    case "promote_component":
+      return "Promote this imported reusable UI component into canonical Topogram.";
     case "merge_capability_into_existing_entity":
       return `Adopt this capability while preserving the existing canonical entity ${step.target}.`;
     case "promote_doc":
@@ -4113,6 +4177,9 @@ function recommendationForAdoptionItem(step) {
   }
   if (step.action === "apply_projection_ownership_patch") {
     return `Update \`${step.target}\` with inferred ownership auth rules for ${(step.related_capabilities || []).map((item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
+  }
+  if (step.action === "promote_component") {
+    return "Promote this reviewed component candidate before binding or reusing it from canonical projections.";
   }
   if (!["promote_actor", "promote_role"].includes(step.action)) {
     return null;
@@ -4232,6 +4299,7 @@ function buildAdoptionPlan(bundles) {
         step.action.includes("doc") ? "doc" :
         step.action.includes("decision") ? "decision" :
         step.action.includes("verification") ? "verification" :
+        step.action.includes("component") ? "component" :
         step.action.includes("ui_") ? "ui" :
         step.action.includes("actor") ? "actor" :
         step.action.includes("role") ? "role" :
@@ -4403,7 +4471,7 @@ function buildAdoptionPlan(bundles) {
   );
 }
 
-const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "docs", "journeys", "workflows", "verification", "ui"]);
+const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "components", "docs", "journeys", "workflows", "verification", "ui"]);
 
 function readAdoptionPlan(paths) {
   return readJsonIfExists(path.join(paths.topogramRoot, "candidates", "reconcile", "adoption-plan.json"));
