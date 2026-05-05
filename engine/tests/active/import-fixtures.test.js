@@ -109,6 +109,57 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
 });
 
+test("brownfield import refresh updates candidates and provenance without overwriting adopted Topogram", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-refresh."));
+  const sourceRoot = path.join(runRoot, "source");
+  const targetRoot = path.join(runRoot, "imported");
+  fs.cpSync(path.join(importFixtureRoot, "sql-openapi"), sourceRoot, { recursive: true });
+
+  const importResult = runCli(["import", sourceRoot, "--out", targetRoot, "--from", "db,api"]);
+  assert.equal(importResult.status, 0, importResult.stderr || importResult.stdout);
+
+  const write = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
+  assert.equal(write.status, 0, write.stderr || write.stdout);
+  const journeyPath = path.join(targetRoot, "topogram", "docs", "journeys", "task_journey.md");
+  fs.appendFileSync(journeyPath, "\nLocal owner note.\n");
+
+  fs.appendFileSync(
+    path.join(sourceRoot, "db", "schema.sql"),
+    "\nCREATE TABLE labels (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL\n);\n"
+  );
+
+  const dirtyCheck = runCli(["import", "check", targetRoot, "--json"]);
+  assert.equal(dirtyCheck.status, 1);
+  const dirtyPayload = JSON.parse(dirtyCheck.stdout);
+  assert.equal(dirtyPayload.import.status, "changed");
+  assert.deepEqual(dirtyPayload.import.content.changed, ["db/schema.sql"]);
+
+  const refresh = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--json"]);
+  assert.equal(refresh.status, 0, refresh.stderr || refresh.stdout);
+  const refreshPayload = JSON.parse(refresh.stdout);
+  assert.equal(refreshPayload.ok, true);
+  assert.equal(refreshPayload.previousImportStatus, "changed");
+  assert.equal(refreshPayload.currentImportStatus, "clean");
+  assert.equal(refreshPayload.candidateCounts.dbEntities, 3);
+  assert.equal(refreshPayload.removedCandidateFiles.rawCandidateFiles > 0, true);
+  assert.equal(refreshPayload.removedCandidateFiles.reconcileFiles > 0, true);
+  assert.equal(refreshPayload.writtenFiles.includes(".topogram-import.json"), true);
+  assert.equal(refreshPayload.writtenFiles.includes("topogram/docs/journeys/task_journey.md"), false);
+  assert.match(fs.readFileSync(journeyPath, "utf8"), /Local owner note/);
+
+  const refreshedDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "db", "candidates.json"), "utf8"));
+  assert.equal(candidateIds(refreshedDbCandidates.entities).includes("entity_label"), true);
+
+  const cleanCheck = runCli(["import", "check", targetRoot, "--json"]);
+  assert.equal(cleanCheck.status, 0, cleanCheck.stderr || cleanCheck.stdout);
+  assert.equal(JSON.parse(cleanCheck.stdout).import.status, "clean");
+
+  const humanRefresh = runCli(["import", "refresh", targetRoot]);
+  assert.equal(humanRefresh.status, 0, humanRefresh.stderr || humanRefresh.stdout);
+  assert.match(humanRefresh.stdout, /Refreshed brownfield import candidates/);
+  assert.match(humanRefresh.stdout, /Canonical Topogram files were not overwritten/);
+});
+
 test("brownfield import plan, adopt, and status expose public adoption UX", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-adoption."));
   const targetRoot = path.join(runRoot, "imported");
