@@ -156,6 +156,9 @@ function printUsage(options = {}) {
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
   console.log("   or: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
   console.log("   or: topogram import check [path] [--json]");
+  console.log("   or: topogram import plan [path] [--json]");
+  console.log("   or: topogram import adopt <selector> [path] [--dry-run|--write] [--json]");
+  console.log("   or: topogram import status [path] [--json]");
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
@@ -195,6 +198,9 @@ function printUsage(options = {}) {
   console.log("  topogram generate");
   console.log("  topogram import ./existing-app --out ./imported-topogram");
   console.log("  topogram import check ./imported-topogram");
+  console.log("  topogram import plan ./imported-topogram");
+  console.log("  topogram import adopt bundle:task ./imported-topogram --dry-run");
+  console.log("  topogram import status ./imported-topogram");
   console.log("");
   console.log("Template and catalog discovery:");
   console.log("  topogram template list");
@@ -689,6 +695,9 @@ function printSourceHelp() {
 function printImportHelp() {
   console.log("Usage: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
   console.log("   or: topogram import check [path] [--json]");
+  console.log("   or: topogram import plan [path] [--json]");
+  console.log("   or: topogram import adopt <selector> [path] [--dry-run|--write] [--json]");
+  console.log("   or: topogram import status [path] [--json]");
   console.log("");
   console.log("Creates an editable Topogram workspace from a brownfield app without modifying the app.");
   console.log("");
@@ -698,11 +707,16 @@ function printImportHelp() {
   console.log("  - writes topogram.project.json with maintained ownership and no generated stack binding");
   console.log(`  - writes ${TOPOGRAM_IMPORT_FILE} with source file hashes from import time`);
   console.log("  - imported Topogram artifacts are project-owned after creation");
+  console.log("  - adoption previews never write canonical Topogram files unless --write is passed");
   console.log("");
   console.log("Examples:");
   console.log("  topogram import ./existing-app --out ./imported-topogram");
   console.log("  topogram import ./existing-app --out ./imported-topogram --from db,api,ui");
   console.log("  topogram import check ./imported-topogram");
+  console.log("  topogram import plan ./imported-topogram");
+  console.log("  topogram import adopt bundle:task ./imported-topogram --dry-run");
+  console.log("  topogram import adopt bundle:task ./imported-topogram --write");
+  console.log("  topogram import status ./imported-topogram");
   console.log("  topogram import check --json");
 }
 
@@ -4276,6 +4290,9 @@ function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, options =
     candidateCounts,
     nextCommands: [
       "topogram import check",
+      "topogram import plan",
+      "topogram import adopt bundle:task --dry-run",
+      "topogram import status",
       "topogram check",
       "topogram query import-plan ./topogram"
     ]
@@ -4372,6 +4389,252 @@ function printBrownfieldImportCheck(payload) {
   }
   for (const error of payload.topogram.errors || []) {
     console.log(`Error: ${error.message}`);
+  }
+}
+
+function readJsonIfExists(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
+function countByField(items, fieldName) {
+  const counts = {};
+  for (const item of items || []) {
+    const key = item?.[fieldName] || "unknown";
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
+}
+
+function importProjectCommandPath(projectRoot) {
+  return shellCommandArg(path.relative(process.cwd(), projectRoot) || ".");
+}
+
+function importAdoptCommand(projectRoot, selector, write = false) {
+  return `topogram import adopt ${selector} ${importProjectCommandPath(projectRoot)} ${write ? "--write" : "--dry-run"}`;
+}
+
+function readImportAdoptionArtifacts(inputPath) {
+  const projectRoot = normalizeProjectRoot(inputPath);
+  const topogramRoot = normalizeTopogramPath(inputPath);
+  const reconcileRoot = path.join(topogramRoot, "candidates", "reconcile");
+  const paths = {
+    reconcileRoot,
+    adoptionPlanAgent: path.join(reconcileRoot, "adoption-plan.agent.json"),
+    adoptionPlan: path.join(reconcileRoot, "adoption-plan.json"),
+    adoptionStatus: path.join(reconcileRoot, "adoption-status.json"),
+    reconcileReport: path.join(reconcileRoot, "report.json")
+  };
+  if (!fs.existsSync(paths.adoptionPlanAgent)) {
+    throw new Error(`No import adoption plan found under '${reconcileRoot}'. Run 'topogram import <app-path> --out <target>' first.`);
+  }
+  return {
+    projectRoot,
+    topogramRoot,
+    paths,
+    adoptionPlan: JSON.parse(fs.readFileSync(paths.adoptionPlanAgent, "utf8")),
+    adoptionStatus: readJsonIfExists(paths.adoptionStatus),
+    reconcileReport: readJsonIfExists(paths.reconcileReport)
+  };
+}
+
+function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
+  const surfaces = adoptionPlan.imported_proposal_surfaces || [];
+  const slugs = [];
+  const surfaceMap = new Map();
+  for (const surface of surfaces) {
+    const slug = surface.bundle || "unbundled";
+    if (!surfaceMap.has(slug)) {
+      surfaceMap.set(slug, []);
+      slugs.push(slug);
+    }
+    surfaceMap.get(slug).push(surface);
+  }
+  for (const item of adoptionStatus?.bundle_priorities || []) {
+    if (item?.bundle && !surfaceMap.has(item.bundle)) {
+      surfaceMap.set(item.bundle, []);
+      slugs.push(item.bundle);
+    }
+  }
+  const blockersByBundle = new Map((adoptionStatus?.bundle_blockers || []).map((item) => [item.bundle, item]));
+  const prioritiesByBundle = new Map((adoptionStatus?.bundle_priorities || []).map((item) => [item.bundle, item]));
+  const bundles = slugs.sort((left, right) => left.localeCompare(right)).map((slug) => {
+    const bundleSurfaces = surfaceMap.get(slug) || [];
+    const blocker = blockersByBundle.get(slug) || null;
+    const priority = prioritiesByBundle.get(slug) || null;
+    const pendingItems = blocker?.pending_items || bundleSurfaces
+      .filter((item) => !["accept", "accepted", "applied"].includes(item.current_state))
+      .map((item) => item.item);
+    const appliedItems = blocker?.applied_items || [];
+    const blockedItems = blocker?.blocked_items || [];
+    return {
+      bundle: slug,
+      itemCount: bundleSurfaces.length,
+      pendingItemCount: pendingItems.length,
+      appliedItemCount: appliedItems.length,
+      blockedItemCount: blockedItems.length,
+      humanReviewRequiredCount: bundleSurfaces.filter((item) => item.human_review_required).length,
+      kindCounts: countByField(bundleSurfaces, "kind"),
+      complete: Boolean(priority?.is_complete) || (pendingItems.length === 0 && blockedItems.length === 0 && appliedItems.length > 0),
+      evidenceScore: priority?.evidence_score || 0,
+      why: priority?.operator_summary?.whyThisBundle || null,
+      nextCommand: importAdoptCommand(projectRoot, `bundle:${slug}`, false)
+    };
+  });
+  const nextBundle = bundles.find((bundle) => !bundle.complete && bundle.pendingItemCount > 0) || bundles.find((bundle) => !bundle.complete) || bundles[0] || null;
+  const blockedCount = bundles.reduce((total, bundle) => total + bundle.blockedItemCount, 0);
+  const pendingCount = bundles.reduce((total, bundle) => total + bundle.pendingItemCount, 0);
+  const appliedCount = adoptionStatus?.applied_item_count ?? bundles.reduce((total, bundle) => total + bundle.appliedItemCount, 0);
+  return {
+    summary: {
+      bundleCount: bundles.length,
+      proposalItemCount: surfaces.length,
+      pendingItemCount: pendingCount,
+      appliedItemCount: appliedCount,
+      blockedItemCount: blockedCount,
+      requiresHumanReviewCount: (adoptionPlan.requires_human_review || []).length || surfaces.filter((item) => item.human_review_required).length
+    },
+    bundles,
+    risks: [
+      ...(blockedCount > 0 ? [`${blockedCount} adoption item(s) are blocked.`] : []),
+      ...(((adoptionPlan.requires_human_review || []).length || surfaces.some((item) => item.human_review_required))
+        ? ["Imported proposal items require human review before adoption."]
+        : [])
+    ],
+    nextCommand: nextBundle ? nextBundle.nextCommand : `topogram import status ${importProjectCommandPath(projectRoot)}`
+  };
+}
+
+function buildBrownfieldImportPlanPayload(inputPath) {
+  const artifacts = readImportAdoptionArtifacts(inputPath);
+  const adoptionStatus = runWorkflow("adoption-status", artifacts.projectRoot).summary || artifacts.adoptionStatus || {};
+  const adoption = summarizeImportAdoption(artifacts.adoptionPlan, adoptionStatus, artifacts.projectRoot);
+  return {
+    ok: true,
+    projectRoot: artifacts.projectRoot,
+    topogramRoot: artifacts.topogramRoot,
+    artifacts: {
+      adoptionPlan: artifacts.paths.adoptionPlanAgent,
+      adoptionStatus: artifacts.paths.adoptionStatus,
+      reconcileReport: artifacts.paths.reconcileReport
+    },
+    ...adoption,
+    commands: {
+      check: `topogram import check ${importProjectCommandPath(artifacts.projectRoot)}`,
+      status: `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`,
+      next: adoption.nextCommand
+    }
+  };
+}
+
+function printBrownfieldImportPlan(payload) {
+  console.log(`Import adoption plan for ${payload.projectRoot}`);
+  console.log(`Proposal items: ${payload.summary.proposalItemCount}`);
+  console.log(`Bundles: ${payload.summary.bundleCount}`);
+  for (const bundle of payload.bundles) {
+    console.log(`- ${bundle.bundle}: ${bundle.itemCount} item(s), ${bundle.pendingItemCount} pending, ${bundle.appliedItemCount} applied`);
+    if (bundle.why) {
+      console.log(`  ${bundle.why}`);
+    }
+    console.log(`  Preview: ${bundle.nextCommand}`);
+  }
+  if (payload.risks.length > 0) {
+    console.log("Risks:");
+    for (const risk of payload.risks) {
+      console.log(`- ${risk}`);
+    }
+  }
+  console.log("");
+  console.log(`Next: ${payload.nextCommand}`);
+}
+
+function buildBrownfieldImportAdoptPayload(selector, inputPath, options = {}) {
+  if (!selector) {
+    throw new Error("Missing required <selector>. Example: topogram import adopt bundle:task --dry-run");
+  }
+  if (options.write && options.dryRun) {
+    throw new Error("Use either --dry-run or --write, not both.");
+  }
+  const artifacts = readImportAdoptionArtifacts(inputPath);
+  const result = runWorkflow("reconcile", artifacts.projectRoot, {
+    adopt: selector,
+    write: Boolean(options.write),
+    refreshAdopted: Boolean(options.refreshAdopted)
+  });
+  const outputRoot = path.resolve(result.defaultOutDir || artifacts.topogramRoot);
+  const writtenFiles = options.write ? writeRelativeFiles(outputRoot, result.files || {}) : [];
+  const summary = result.summary || {};
+  return {
+    ok: true,
+    projectRoot: artifacts.projectRoot,
+    topogramRoot: artifacts.topogramRoot,
+    selector,
+    dryRun: !options.write,
+    write: Boolean(options.write),
+    outputRoot,
+    promotedCanonicalItemCount: (summary.promoted_canonical_items || []).length,
+    promotedCanonicalItems: summary.promoted_canonical_items || [],
+    writtenFiles,
+    adoption: summary,
+    import: buildTopogramImportStatus(artifacts.projectRoot),
+    nextCommands: options.write
+      ? [
+          `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`,
+          `topogram check ${importProjectCommandPath(artifacts.projectRoot)}`
+        ]
+      : [
+          importAdoptCommand(artifacts.projectRoot, selector, true),
+          `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`
+        ]
+  };
+}
+
+function printBrownfieldImportAdopt(payload) {
+  console.log(`${payload.dryRun ? "Previewed" : "Applied"} import adoption for ${payload.selector}.`);
+  console.log(`Project: ${payload.projectRoot}`);
+  console.log(`Promoted canonical items: ${payload.promotedCanonicalItemCount}`);
+  console.log(`Written files: ${payload.writtenFiles.length}`);
+  if (payload.dryRun) {
+    console.log("No files were written. Re-run with --write to promote these candidates.");
+  }
+  console.log("");
+  console.log("Next steps:");
+  for (const command of payload.nextCommands) {
+    console.log(`  ${command}`);
+  }
+}
+
+function buildBrownfieldImportStatusPayload(inputPath) {
+  const artifacts = readImportAdoptionArtifacts(inputPath);
+  const importCheck = buildBrownfieldImportCheckPayload(artifacts.projectRoot);
+  const adoptionStatus = runWorkflow("adoption-status", artifacts.projectRoot).summary || artifacts.adoptionStatus || {};
+  const adoption = summarizeImportAdoption(artifacts.adoptionPlan, adoptionStatus, artifacts.projectRoot);
+  return {
+    ok: importCheck.ok,
+    projectRoot: artifacts.projectRoot,
+    topogramRoot: artifacts.topogramRoot,
+    import: importCheck.import,
+    topogram: importCheck.topogram,
+    adoption: {
+      status: adoptionStatus,
+      summary: adoption.summary,
+      bundles: adoption.bundles,
+      risks: adoption.risks,
+      nextCommand: adoption.nextCommand
+    },
+    errors: importCheck.errors
+  };
+}
+
+function printBrownfieldImportStatus(payload) {
+  console.log(`Import status: ${payload.import.status}`);
+  console.log(`Topogram check: ${payload.topogram.ok ? "passed" : "failed"}`);
+  console.log(`Adoption: ${payload.adoption.summary.appliedItemCount} applied, ${payload.adoption.summary.pendingItemCount} pending, ${payload.adoption.summary.blockedItemCount} blocked`);
+  const next = payload.adoption.nextCommand;
+  if (next) {
+    console.log(`Next: ${next}`);
   }
 }
 
@@ -5923,6 +6186,12 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { templateUpdate: true, inputPath: commandPath(2) };
 } else if (args[0] === "import" && args[1] === "check") {
   commandArgs = { importCheck: true, inputPath: commandPath(2, ".") };
+} else if (args[0] === "import" && args[1] === "plan") {
+  commandArgs = { importPlan: true, inputPath: commandPath(2, ".") };
+} else if (args[0] === "import" && args[1] === "adopt") {
+  commandArgs = { importAdopt: true, importAdoptSelector: args[2], inputPath: commandPath(3, ".") };
+} else if (args[0] === "import" && args[1] === "status") {
+  commandArgs = { importStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -6076,6 +6345,9 @@ const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
 const shouldImportWorkspace = Boolean(commandArgs?.importWorkspace);
 const shouldImportCheck = Boolean(commandArgs?.importCheck);
+const shouldImportPlan = Boolean(commandArgs?.importPlan);
+const shouldImportAdopt = Boolean(commandArgs?.importAdopt);
+const shouldImportStatus = Boolean(commandArgs?.importStatus);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -6204,6 +6476,18 @@ if (shouldPackageUpdateCli && !inputPath) {
 
 if (shouldImportWorkspace && !outPath) {
   console.error("Missing required --out <target>.");
+  printImportHelp();
+  process.exit(1);
+}
+
+if (shouldImportAdopt && (!commandArgs?.importAdoptSelector || commandArgs.importAdoptSelector.startsWith("-"))) {
+  console.error("Missing required <selector>.");
+  printImportHelp();
+  process.exit(1);
+}
+
+if (shouldImportAdopt && shouldWrite && args.includes("--dry-run")) {
+  console.error("Use either --dry-run or --write, not both.");
   printImportHelp();
   process.exit(1);
 }
@@ -6420,6 +6704,40 @@ try {
       console.log(stableStringify(payload));
     } else {
       printBrownfieldImportCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldImportPlan) {
+    const payload = buildBrownfieldImportPlanPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printBrownfieldImportPlan(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldImportAdopt) {
+    const payload = buildBrownfieldImportAdoptPayload(commandArgs.importAdoptSelector, inputPath, {
+      dryRun: args.includes("--dry-run"),
+      write: shouldWrite,
+      refreshAdopted
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printBrownfieldImportAdopt(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldImportStatus) {
+    const payload = buildBrownfieldImportStatusPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printBrownfieldImportStatus(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }

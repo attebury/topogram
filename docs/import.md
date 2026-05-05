@@ -7,6 +7,10 @@ artifacts to review, edit, and adopt.
 topogram import ./existing-app --out ./imported-topogram
 cd ./imported-topogram
 topogram import check
+topogram import plan
+topogram import adopt bundle:task --dry-run
+topogram import adopt bundle:task --write
+topogram import status
 topogram check
 ```
 
@@ -37,6 +41,24 @@ Topogram validity checks for the imported workspace. If the brownfield source
 changed after import, review the source changes and either rerun import into a
 fresh workspace or manually update the imported Topogram artifacts.
 
+Use the adoption commands to review and promote imported candidates into
+canonical Topogram files:
+
+```bash
+topogram import plan ./imported-topogram
+topogram import plan ./imported-topogram --json
+topogram import adopt bundle:task ./imported-topogram --dry-run
+topogram import adopt bundle:task ./imported-topogram --write
+topogram import status ./imported-topogram
+topogram import status ./imported-topogram --json
+```
+
+`topogram import plan` summarizes the reconcile proposal bundles and suggests
+the next adoption command. `topogram import adopt` is preview-only by default;
+it does not write canonical `topogram/**` files unless `--write` is passed.
+`topogram import status` combines source provenance, normal Topogram validity,
+and current adoption progress.
+
 Limit import scope with tracks when useful:
 
 ```bash
@@ -44,4 +66,3 @@ topogram import ./existing-app --out ./imported-topogram --from db,api,ui
 ```
 
 Supported tracks are `db`, `api`, `ui`, `workflows`, and `verification`.
-

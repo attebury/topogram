@@ -109,6 +109,56 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
 });
 
+test("brownfield import plan, adopt, and status expose public adoption UX", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-adoption."));
+  const targetRoot = path.join(runRoot, "imported");
+  const importResult = runCli([
+    "import",
+    path.join(importFixtureRoot, "sql-openapi"),
+    "--out",
+    targetRoot,
+    "--from",
+    "db,api"
+  ]);
+  assert.equal(importResult.status, 0, importResult.stderr || importResult.stdout);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.ok, true);
+  assert.deepEqual(planPayload.bundles.map((bundle) => bundle.bundle), ["task", "user"]);
+  assert.equal(planPayload.summary.proposalItemCount, 6);
+  assert.match(planPayload.nextCommand, /topogram import adopt bundle:task .* --dry-run/);
+
+  const preview = runCli(["import", "adopt", "bundle:task", targetRoot, "--json"]);
+  assert.equal(preview.status, 0, preview.stderr || preview.stdout);
+  const previewPayload = JSON.parse(preview.stdout);
+  assert.equal(previewPayload.dryRun, true);
+  assert.equal(previewPayload.write, false);
+  assert.equal(previewPayload.promotedCanonicalItemCount, 5);
+  assert.deepEqual(previewPayload.writtenFiles, []);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
+
+  const write = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
+  assert.equal(write.status, 0, write.stderr || write.stdout);
+  const writePayload = JSON.parse(write.stdout);
+  assert.equal(writePayload.dryRun, false);
+  assert.equal(writePayload.write, true);
+  assert.equal(writePayload.promotedCanonicalItemCount, 5);
+  assert.equal(writePayload.writtenFiles.includes("entities/entity-task.tg"), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
+
+  const status = runCli(["import", "status", targetRoot, "--json"]);
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.ok, true);
+  assert.equal(statusPayload.import.status, "clean");
+  assert.equal(statusPayload.topogram.ok, true);
+  assert.equal(statusPayload.adoption.summary.appliedItemCount, 5);
+  assert.equal(statusPayload.adoption.summary.pendingItemCount, 1);
+  assert.equal(statusPayload.adoption.bundles.find((bundle) => bundle.bundle === "task").complete, true);
+});
+
 test("brownfield import check reports changed source evidence", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-drift."));
   const sourceRoot = path.join(runRoot, "source");

@@ -380,6 +380,9 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram query component-behavior \.\/topogram --projection proj_ui_web --json/);
   assert.match(help.stdout, /topogram import \.\/existing-app --out \.\/imported-topogram/);
   assert.match(help.stdout, /topogram import check \.\/imported-topogram/);
+  assert.match(help.stdout, /topogram import plan/);
+  assert.match(help.stdout, /topogram import adopt/);
+  assert.match(help.stdout, /topogram import status/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
@@ -470,6 +473,10 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(importHelp.status, 0, importHelp.stderr || importHelp.stdout);
   assert.match(importHelp.stdout, /Usage: topogram import <app-path> --out <target>/);
   assert.match(importHelp.stdout, /topogram import check \[path\]/);
+  assert.match(importHelp.stdout, /topogram import plan \[path\]/);
+  assert.match(importHelp.stdout, /topogram import adopt <selector> \[path\]/);
+  assert.match(importHelp.stdout, /topogram import status \[path\]/);
+  assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --dry-run/);
   assert.match(importHelp.stdout, /imported Topogram artifacts are project-owned/i);
 
   const setupHelp = runCli(["setup", "--help"]);
