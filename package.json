@@ -5,6 +5,7 @@
     "new": "npm --prefix ./engine run new --",
     "create": "npm --prefix ./engine run new --",
     "smoke:test-app": "bash ./scripts/smoke-test-app.sh",
+    "smoke:fresh-npmjs": "bash ./scripts/verify-fresh-npmjs-smoke.sh",
     "cli:check": "bash ./scripts/verify-cli-package.sh",
     "cli:installed-check": "bash ./scripts/verify-installed-cli-first-use.sh",
     "release:prepare": "bash ./scripts/prepare-release.sh",

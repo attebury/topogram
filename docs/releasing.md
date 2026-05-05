@@ -34,6 +34,19 @@ The workflow verifies the engine and packed CLI before publishing. It does not m
 Confirm the `Installed CLI First Use` workflow passes. It installs the published
 CLI and creates `hello-web` through the public catalog.
 
+For deeper public-path release evidence, run the manual fresh npmjs smoke. It
+installs the published CLI in a disposable external consumer project, resolves a
+starter through the public catalog, checks/generates the starter, and compiles
+the generated app:
+
+```bash
+npm run smoke:fresh-npmjs
+```
+
+You can also run the manual GitHub Actions workflow `Fresh npmjs Smoke`. This
+live-service smoke depends on npmjs and the public catalog, so it is intentionally
+not part of fast push verification.
+
 Check the release and first-party consumer pins:
 
 ```bash

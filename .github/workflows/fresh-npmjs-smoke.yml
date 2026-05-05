@@ -1,0 +1,39 @@
+name: Fresh npmjs Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      cli_package_spec:
+        description: "Published CLI package spec to install"
+        required: true
+        default: "@topogram/cli@latest"
+        type: string
+      template:
+        description: "Public catalog template alias to create"
+        required: true
+        default: "hello-web"
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fresh-npmjs-smoke:
+    name: Fresh npmjs smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          scope: "@topogram"
+      - name: Verify public npmjs first-use path
+        env:
+          TOPOGRAM_CLI_PACKAGE_SPEC: ${{ inputs.cli_package_spec }}
+          TOPOGRAM_FRESH_SMOKE_TEMPLATE: ${{ inputs.template }}
+        run: npm run smoke:fresh-npmjs
