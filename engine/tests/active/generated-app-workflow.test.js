@@ -14,6 +14,19 @@ const fixtureTemplatesRoot = path.join(engineRoot, "tests", "fixtures", "templat
 const npmCacheRoot = path.join(os.tmpdir(), "topogram-generated-app-workflow-npm-cache");
 fs.mkdirSync(npmCacheRoot, { recursive: true });
 const cliPackageVersion = JSON.parse(fs.readFileSync(path.join(engineRoot, "package.json"), "utf8")).version;
+const externalTodoCatalogAlias = "todo";
+const externalTodoTemplatePackageName = "@attebury/topogram-template-todo";
+const externalTodoTemplateVersion = "0.1.6";
+const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
+const knownCliConsumerRepos = ["topogram-starters", ...externalTodoConsumerRepos];
+
+function externalTodoTemplatePackageSpec(version = externalTodoTemplateVersion) {
+  return `${externalTodoTemplatePackageName}@${version}`;
+}
+
+function literalPattern(value) {
+  return new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+}
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [path.join(engineRoot, "src", "cli.js"), ...args], {
@@ -187,6 +200,13 @@ test("generic catalog fixture helper stays product-neutral", () => {
   assert.equal(entry.id, "sample-template");
   assert.equal(entry.package, "@scope/topogram-template-sample");
   assert.doesNotMatch(serialized, /topogram-template-todo|Todo starter|"todo"/);
+});
+
+test("external Todo fixture constants isolate intentional product coverage", () => {
+  assert.equal(externalTodoCatalogAlias, "todo");
+  assert.equal(externalTodoTemplatePackageName, "@attebury/topogram-template-todo");
+  assert.equal(externalTodoTemplatePackageSpec(), "@attebury/topogram-template-todo@0.1.6");
+  assert.deepEqual(externalTodoConsumerRepos, ["topogram-template-todo", "topogram-demo-todo"]);
 });
 
 function createPureTopogramPackage(root, name = "topogram-package", options = {}) {
@@ -365,7 +385,7 @@ process.exit(1);
 }
 
 function writeKnownCliConsumerPins(root, version) {
-  for (const consumer of ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"]) {
+  for (const consumer of knownCliConsumerRepos) {
     fs.mkdirSync(path.join(root, consumer), { recursive: true });
     fs.writeFileSync(path.join(root, consumer, "topogram-cli.version"), `${version}\n`, "utf8");
   }
@@ -376,12 +396,12 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   assert.match(help.stdout, /topogram check \[path\]/);
   assert.match(help.stdout, /topogram generate \[path\]/);
-  assert.match(help.stdout, /topogram new <path> \[--template .*todo/);
+  assert.match(help.stdout, new RegExp(`topogram new <path> \\[--template .*${externalTodoCatalogAlias}`));
   assert.match(help.stdout, /topogram release status/);
   assert.match(help.stdout, /topogram setup package-auth/);
   assert.match(help.stdout, /topogram package update-cli <version\|--latest>/);
   assert.match(help.stdout, /topogram new \.\/my-app/);
-  assert.match(help.stdout, /topogram new \.\/my-app --template todo/);
+  assert.match(help.stdout, literalPattern(`topogram new ./my-app --template ${externalTodoCatalogAlias}`));
   assert.match(help.stdout, /topogram component check --projection proj_ui_web/);
   assert.match(help.stdout, /topogram component behavior --projection proj_ui_web/);
   assert.match(help.stdout, /topogram query list/);
@@ -394,12 +414,12 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram import status/);
   assert.match(help.stdout, /topogram import history/);
   assert.match(help.stdout, /Template and catalog discovery:/);
-  assert.match(help.stdout, /topogram catalog show todo/);
+  assert.match(help.stdout, literalPattern(`topogram catalog show ${externalTodoCatalogAlias}`));
   assert.match(help.stdout, /topogram source status/);
   assert.match(help.stdout, /topogram source status --remote/);
   assert.match(help.stdout, /topogram template list/);
   assert.match(help.stdout, /topogram template explain/);
-  assert.doesNotMatch(help.stdout, /topogram template show todo/);
+  assert.doesNotMatch(help.stdout, literalPattern(`topogram template show ${externalTodoCatalogAlias}`));
   assert.match(help.stdout, /Default starter: hello-web/);
   assert.match(help.stdout, /topogram template status --latest/);
   assert.match(help.stdout, /topogram template policy explain/);
@@ -1493,7 +1513,7 @@ test("catalog aliases resolve starter names", () => {
   assert.equal(readJson(path.join(catalogProjectRoot, "topogram.project.json")).template.catalog.id, "hello-web");
 });
 
-test("topogram new explains catalog alias resolution failures", () => {
+test("topogram new explains external Todo catalog auth failures and neutral alias suggestions", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-errors-"));
   const source = "github:attebury/topograms/topograms.catalog.json";
   const authGhBin = createFailingCommand(
@@ -1501,11 +1521,11 @@ test("topogram new explains catalog alias resolution failures", () => {
     "gh",
     "gh: Requires authentication (HTTP 401)\n"
   );
-  const auth = runCli(["new", path.join(root, "auth"), "--template", "todo", "--catalog", source], {
+  const auth = runCli(["new", path.join(root, "auth"), "--template", externalTodoCatalogAlias, "--catalog", source], {
     env: { PATH: `${authGhBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(auth.status, 0, auth.stdout);
-  assert.match(auth.stderr, /Catalog template alias 'todo' could not be resolved/);
+  assert.match(auth.stderr, literalPattern(`Catalog template alias '${externalTodoCatalogAlias}' could not be resolved`));
   assert.match(auth.stderr, /Authentication is required to read private catalog/);
   assert.match(auth.stderr, /GITHUB_TOKEN or GH_TOKEN/);
   assert.match(auth.stderr, /NODE_AUTH_TOKEN/);
@@ -1540,10 +1560,10 @@ test("topogram new explains catalog alias resolution failures", () => {
   assert.match(missing.stderr, /No template entry named 'react' was found in the catalog/);
   assert.match(missing.stderr, /Suggested templates: web-api, hello-web\./);
   assert.match(missing.stderr, /topogram template list/);
-  assert.match(missing.stderr, /@attebury\/topogram-template-todo@0\.1\.6/);
+  assert.match(missing.stderr, literalPattern(externalTodoTemplatePackageSpec()));
 });
 
-test("package-backed template installs explain private package auth failures", () => {
+test("package-backed external Todo template installs explain private package auth failures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-auth-errors-"));
   const projectRoot = path.join(root, "starter");
   const fakeNpmBin = createFailingCommand(
@@ -1551,11 +1571,11 @@ test("package-backed template installs explain private package auth failures", (
     "npm",
     "npm error code E401\nnpm error 401 Unauthorized - unauthenticated: User cannot be authenticated with the token provided.\n"
   );
-  const create = runCli(["new", projectRoot, "--template", "@attebury/topogram-template-todo@0.1.6"], {
+  const create = runCli(["new", projectRoot, "--template", externalTodoTemplatePackageSpec()], {
     env: { PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(create.status, 0, create.stdout);
-  assert.match(create.stderr, /Authentication is required to install template package '@attebury\/topogram-template-todo@0\.1\.6'/);
+  assert.match(create.stderr, literalPattern(`Authentication is required to install template package '${externalTodoTemplatePackageSpec()}'`));
   assert.match(create.stderr, /NODE_AUTH_TOKEN/);
   assert.match(create.stderr, /Manage Actions access/);
   assert.match(create.stderr, /topogram doctor/);
@@ -1563,9 +1583,9 @@ test("package-backed template installs explain private package auth failures", (
   const missingNpmBin = createFailingCommand(
     root,
     "npm",
-    "npm error code E404\nnpm error 404 Not Found - GET https://npm.pkg.github.com/@attebury%2ftopogram-template-todo - not_found\n"
+    `npm error code E404\nnpm error 404 Not Found - GET https://npm.pkg.github.com/${externalTodoTemplatePackageName.replace("/", "%2f")} - not_found\n`
   );
-  const missing = runCli(["new", path.join(root, "missing"), "--template", "@attebury/topogram-template-todo@9.9.9"], {
+  const missing = runCli(["new", path.join(root, "missing"), "--template", externalTodoTemplatePackageSpec("9.9.9")], {
     env: { PATH: `${missingNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(missing.status, 0, missing.stdout);
@@ -1578,7 +1598,7 @@ test("package-backed template installs explain private package auth failures", (
     "npm",
     "npm error code E403\nnpm error 403 Forbidden - permission denied\n"
   );
-  const forbidden = runCli(["new", path.join(root, "forbidden"), "--template", "@attebury/topogram-template-todo@0.1.6"], {
+  const forbidden = runCli(["new", path.join(root, "forbidden"), "--template", externalTodoTemplatePackageSpec()], {
     env: { PATH: `${forbiddenNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(forbidden.status, 0, forbidden.stdout);
@@ -1591,7 +1611,7 @@ test("package-backed template installs explain private package auth failures", (
     "npm",
     "npm error code EINTEGRITY\nnpm error integrity checksum failed\n"
   );
-  const integrity = runCli(["new", path.join(root, "integrity"), "--template", "@attebury/topogram-template-todo@0.1.6"], {
+  const integrity = runCli(["new", path.join(root, "integrity"), "--template", externalTodoTemplatePackageSpec()], {
     env: { PATH: `${integrityNpmBin}${path.delimiter}${process.env.PATH || ""}` }
   });
   assert.notEqual(integrity.status, 0, integrity.stdout);
@@ -2007,11 +2027,12 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "topogram_cli_lockfile_refresh_available"), false);
 });
 
-test("topogram release status reports package, tag, and consumer pin state", () => {
+test("topogram release status reports package, tag, and external Todo consumer pin state", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-"));
   fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
-  fs.mkdirSync(path.join(root, "topogram-template-todo"), { recursive: true });
-  fs.mkdirSync(path.join(root, "topogram-demo-todo"), { recursive: true });
+  for (const consumer of externalTodoConsumerRepos) {
+    fs.mkdirSync(path.join(root, consumer), { recursive: true });
+  }
   fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), `${cliPackageVersion}\n`, "utf8");
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
@@ -2037,7 +2058,7 @@ test("topogram release status reports package, tag, and consumer pin state", () 
   assert.equal(payload.consumerPins.missing, 2);
   assert.equal(payload.consumerPins.allKnownPinned, false);
   assert.deepEqual(payload.consumerPins.matchingNames, ["topogram-starters"]);
-  assert.deepEqual(payload.consumerPins.missingNames, ["topogram-template-todo", "topogram-demo-todo"]);
+  assert.deepEqual(payload.consumerPins.missingNames, externalTodoConsumerRepos);
 
   const human = runCli(["release", "status"], {
     cwd: root,
@@ -2049,7 +2070,7 @@ test("topogram release status reports package, tag, and consumer pin state", () 
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Consumer pins: 1\/3 pinned, 1 matching, 0 differing, 2 missing/);
   assert.match(human.stdout, /topogram-starters: .* \(matches\)/);
-  assert.match(human.stdout, /topogram-template-todo: missing \(missing\)/);
+  assert.match(human.stdout, literalPattern(`${externalTodoConsumerRepos[0]}: missing (missing)`));
 });
 
 test("topogram release status falls back to GitHub Packages API for latest version", () => {
@@ -2128,11 +2149,12 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(human.stdout, /Strict: enabled/);
 });
 
-test("topogram release status strict fails when release completion checks are not met", () => {
+test("topogram release status strict fails when external Todo consumer pins are missing", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-fail-"));
   fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
-  fs.mkdirSync(path.join(root, "topogram-template-todo"), { recursive: true });
-  fs.mkdirSync(path.join(root, "topogram-demo-todo"), { recursive: true });
+  for (const consumer of externalTodoConsumerRepos) {
+    fs.mkdirSync(path.join(root, consumer), { recursive: true });
+  }
   fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), "0.0.1\n", "utf8");
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, "topogram-v0.0.1");
