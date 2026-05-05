@@ -108,7 +108,32 @@ const CLI_PACKAGE_NAME = "@topogram/cli";
 const NPMJS_REGISTRY = "https://registry.npmjs.org";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
-const KNOWN_CLI_CONSUMER_REPOS = ["topogram-starters", "topogram-template-todo", "topogram-demo-todo"];
+const FIRST_PARTY_GENERATOR_REPOS = [
+  "topogram-generator-express-api",
+  "topogram-generator-hono-api",
+  "topogram-generator-postgres-db",
+  "topogram-generator-react-web",
+  "topogram-generator-sqlite-db",
+  "topogram-generator-sveltekit-web",
+  "topogram-generator-swiftui-native",
+  "topogram-generator-vanilla-web"
+];
+const KNOWN_CLI_CONSUMER_REPOS = [
+  ...FIRST_PARTY_GENERATOR_REPOS,
+  "topogram-starters",
+  "topogram-template-todo",
+  "topogram-demo-todo",
+  "topogram-hello"
+];
+const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
+  "cli:surface",
+  "doctor",
+  "catalog:show",
+  "catalog:template-show",
+  "check",
+  "pack:check",
+  "verify"
+];
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -654,6 +679,7 @@ function printPackageHelp() {
   console.log("  - npmjs package inspection confirms the requested public CLI version.");
   console.log("  - npm install updates package.json and package-lock.json.");
   console.log("  - Available consumer verification scripts run after install.");
+  console.log(`  - Recognized scripts: ${PACKAGE_UPDATE_CLI_CHECK_SCRIPTS.join(", ")}.`);
   console.log("");
   console.log("Examples:");
   console.log("  topogram package update-cli 0.3.5");
@@ -667,7 +693,7 @@ function printPackageHelp() {
 function printReleaseHelp() {
   console.log("Usage: topogram release status [--json] [--strict]");
   console.log("");
-  console.log("Checks the local CLI version, latest published package version, release tag, and known consumer pins.");
+  console.log("Checks the local CLI version, latest published package version, release tag, and first-party consumer pins.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram release status");
@@ -1625,7 +1651,7 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
   const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts : {};
-  const candidateScripts = ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"];
+  const candidateScripts = PACKAGE_UPDATE_CLI_CHECK_SCRIPTS;
   const scriptsRun = [];
   const skippedScripts = [];
   if (dependencyUpdatedBy !== "npm-install") {
@@ -1700,7 +1726,7 @@ function printPackageUpdateCli(payload) {
   console.log("  git diff package.json package-lock.json");
   console.log(`  git commit -am "Update Topogram CLI to ${payload.requestedVersion}"`);
   console.log("  git push");
-  console.log("  confirm Demo Verification passes");
+  console.log("  confirm the repo verification workflow passes");
 }
 
 /**
@@ -1804,9 +1830,9 @@ function releaseStatusStrictDiagnostics(release) {
     diagnostics.push({
       code: "release_consumer_pins_not_current",
       severity: "error",
-      message: `Known consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
+      message: `First-party consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
       path: "topogram-cli.version",
-      suggestedFix: "Roll known consumer repositories to the current CLI version before treating this release as complete."
+      suggestedFix: "Roll first-party consumer repositories to the current CLI version before treating this release as complete."
     });
   }
   return diagnostics;

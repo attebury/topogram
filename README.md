@@ -334,7 +334,8 @@ The command resolves the latest published CLI package, updates
 `@topogram/cli`, refreshes stale lockfile tarball metadata when needed,
 updates `topogram-cli.version` when the consumer repo has that convention file,
 then runs available checks when dependencies were installed or already current:
-`cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, and `check`.
+`cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, `check`,
+`pack:check`, and `verify`.
 If npm package inspection fails, the command stops before mutating consumer
 files; fix package access and rerun it.
 

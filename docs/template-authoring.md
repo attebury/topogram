@@ -192,8 +192,8 @@ topogram package update-cli --latest
 The command updates `@topogram/cli`, refreshes stale lockfile tarball
 metadata for the CLI package when needed, then runs any available consumer
 scripts named `cli:surface`, `doctor`, `catalog:show`,
-`catalog:template-show`, and `check` when dependencies were installed or
-already current.
+`catalog:template-show`, `check`, `pack:check`, and `verify` when dependencies
+were installed or already current.
 If npm package inspection fails, the command stops before mutating consumer
 files. Fix npm registry access and rerun it so the local verification scripts
 run against the installed package.

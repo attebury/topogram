@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       strict:
-        description: "Fail unless the package, release tag, and known consumer pins are current"
+        description: "Fail unless the package, release tag, and first-party consumer pins are current"
         required: true
         default: true
         type: boolean
@@ -26,6 +26,54 @@ jobs:
         with:
           path: topogram
           fetch-depth: 0
+      - name: Checkout Express API generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-express-api
+          path: topogram-generator-express-api
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout Hono API generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-hono-api
+          path: topogram-generator-hono-api
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout Postgres DB generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-postgres-db
+          path: topogram-generator-postgres-db
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout React web generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-react-web
+          path: topogram-generator-react-web
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout SQLite DB generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-sqlite-db
+          path: topogram-generator-sqlite-db
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout SvelteKit web generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-sveltekit-web
+          path: topogram-generator-sveltekit-web
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout SwiftUI native generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-swiftui-native
+          path: topogram-generator-swiftui-native
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout vanilla web generator
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-generator-vanilla-web
+          path: topogram-generator-vanilla-web
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
       - name: Checkout starters consumer
         uses: actions/checkout@v6
         with:
@@ -43,6 +91,12 @@ jobs:
         with:
           repository: attebury/topogram-demo-todo
           path: topogram-demo-todo
+          token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
+      - name: Checkout pure hello topogram consumer
+        uses: actions/checkout@v6
+        with:
+          repository: attebury/topogram-hello
+          path: topogram-hello
           token: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
       - uses: actions/setup-node@v6
         with:

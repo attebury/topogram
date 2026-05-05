@@ -34,19 +34,19 @@ The workflow verifies the engine and packed CLI before publishing. It does not m
 Confirm the `Installed CLI First Use` workflow passes. It installs the published
 CLI and creates `hello-web` through the public catalog.
 
-Check the release and known consumer pins:
+Check the release and first-party consumer pins:
 
 ```bash
 npm run release:status
 ```
 
-The status output includes a `consumerPins` summary for the known package
-consumers: `topogram-starters`, `topogram-template-todo`, and
-`topogram-demo-todo`. Patch CLI releases can roll through those
-`topogram-cli.version` pins without republishing starter or template packages.
-Only publish new starter/template package versions when their payload,
-implementation, package metadata, trust policy, catalog-facing metadata, or
-conformance requirements changed.
+The status output includes a `consumerPins` summary for first-party repos with
+`topogram-cli.version`: generator packages, `topogram-starters`,
+`topogram-template-todo`, `topogram-demo-todo`, and `topogram-hello`. Patch CLI
+releases can roll through those pins without republishing generator, starter,
+template, or pure Topogram packages. Only publish new package versions when
+their payload, implementation, package metadata, trust policy,
+catalog-facing metadata, or conformance requirements changed.
 
 Update package consumers, starting with `topogram-demo-todo`, to the published
 version and rerun their verification. Consumer repos that include
@@ -67,14 +67,14 @@ an unverifiable latest package version as release-blocking.
 Use `topogram setup package-auth` when a local or CI environment needs package
 read setup guidance for private packages.
 
-After the package is published, the release tag exists, and known consumer pins
-have been rolled, run the strict release gate:
+After the package is published, the release tag exists, and all first-party
+consumer pins have been rolled, run the strict release gate:
 
 ```bash
 npm run release:status:strict
 ```
 
 You can also run the manual GitHub Actions workflow `Release Status`. It checks
-out `topogram` plus the known consumer repos and runs the same strict gate. If
-the default workflow token cannot read one of those repositories, add a
+out `topogram` plus the first-party consumer repos and runs the same strict
+gate. If the default workflow token cannot read one of those repositories, add a
 `TOPOGRAM_RELEASE_STATUS_TOKEN` repository secret with read access.

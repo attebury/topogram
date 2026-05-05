@@ -17,8 +17,32 @@ const cliPackageVersion = JSON.parse(fs.readFileSync(path.join(engineRoot, "pack
 const externalTodoCatalogAlias = "todo";
 const externalTodoTemplatePackageName = "@topogram/template-todo";
 const externalTodoTemplateVersion = "0.1.6";
+const firstPartyGeneratorRepos = [
+  "topogram-generator-express-api",
+  "topogram-generator-hono-api",
+  "topogram-generator-postgres-db",
+  "topogram-generator-react-web",
+  "topogram-generator-sqlite-db",
+  "topogram-generator-sveltekit-web",
+  "topogram-generator-swiftui-native",
+  "topogram-generator-vanilla-web"
+];
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
-const knownCliConsumerRepos = ["topogram-starters", ...externalTodoConsumerRepos];
+const knownCliConsumerRepos = [
+  ...firstPartyGeneratorRepos,
+  "topogram-starters",
+  ...externalTodoConsumerRepos,
+  "topogram-hello"
+];
+const packageUpdateCliCheckScripts = [
+  "cli:surface",
+  "doctor",
+  "catalog:show",
+  "catalog:template-show",
+  "check",
+  "pack:check",
+  "verify"
+];
 
 function externalTodoTemplatePackageSpec(version = externalTodoTemplateVersion) {
   return `${externalTodoTemplatePackageName}@${version}`;
@@ -1654,16 +1678,14 @@ test("topogram package update-cli updates consumer dependency and runs available
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-update-cli-"));
   const projectRoot = path.join(root, "consumer");
   fs.mkdirSync(projectRoot, { recursive: true });
+  const scripts = {};
+  for (const scriptName of packageUpdateCliCheckScripts) {
+    scripts[scriptName] = "node -e true";
+  }
   writePackageJson(projectRoot, {
     name: "consumer",
     private: true,
-    scripts: {
-      "cli:surface": "node -e true",
-      "doctor": "node -e true",
-      "catalog:show": "node -e true",
-      "catalog:template-show": "node -e true",
-      "check": "node -e true"
-    },
+    scripts,
     devDependencies: {
       "@topogram/cli": "^0.2.32"
     }
@@ -1686,16 +1708,10 @@ test("topogram package update-cli updates consumer dependency and runs available
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
   assert.match(update.stdout, /Updated @topogram\/cli to \^0\.2\.37/);
-  assert.match(update.stdout, /Checks run: cli:surface, doctor, catalog:show, catalog:template-show, check/);
+  assert.match(update.stdout, literalPattern(`Checks run: ${packageUpdateCliCheckScripts.join(", ")}`));
   assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@topogram/cli"], "^0.2.37");
   assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@topogram/cli"].version, "0.2.37");
-  assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), [
-    "cli:surface",
-    "doctor",
-    "catalog:show",
-    "catalog:template-show",
-    "check"
-  ]);
+  assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), packageUpdateCliCheckScripts);
 
   const minimalRoot = path.join(root, "minimal");
   fs.mkdirSync(minimalRoot, { recursive: true });
@@ -1711,7 +1727,7 @@ test("topogram package update-cli updates consumer dependency and runs available
   const minimalPayload = JSON.parse(minimal.stdout);
   assert.equal(minimalPayload.ok, true);
   assert.deepEqual(minimalPayload.scriptsRun, []);
-  assert.deepEqual(minimalPayload.skippedScripts, ["cli:surface", "doctor", "catalog:show", "catalog:template-show", "check"]);
+  assert.deepEqual(minimalPayload.skippedScripts, packageUpdateCliCheckScripts);
 });
 
 test("topogram package update-cli refreshes stale CLI lockfile tarball metadata", () => {
@@ -1941,10 +1957,9 @@ test("topogram doctor accepts current Topogram CLI lockfile metadata", () => {
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "topogram_cli_lockfile_refresh_available"), false);
 });
 
-test("topogram release status reports package, tag, and external Todo consumer pin state", () => {
+test("topogram release status reports package, tag, and first-party consumer pin state", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-"));
-  fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
-  for (const consumer of externalTodoConsumerRepos) {
+  for (const consumer of knownCliConsumerRepos) {
     fs.mkdirSync(path.join(root, consumer), { recursive: true });
   }
   fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), `${cliPackageVersion}\n`, "utf8");
@@ -1965,14 +1980,14 @@ test("topogram release status reports package, tag, and external Todo consumer p
   assert.equal(payload.git.local, true);
   assert.equal(payload.git.remote, true);
   assert.equal(payload.consumers.find((consumer) => consumer.name === "topogram-starters").matchesLocal, true);
-  assert.equal(payload.consumerPins.known, 3);
+  assert.equal(payload.consumerPins.known, knownCliConsumerRepos.length);
   assert.equal(payload.consumerPins.pinned, 1);
   assert.equal(payload.consumerPins.matching, 1);
   assert.equal(payload.consumerPins.differing, 0);
-  assert.equal(payload.consumerPins.missing, 2);
+  assert.equal(payload.consumerPins.missing, knownCliConsumerRepos.length - 1);
   assert.equal(payload.consumerPins.allKnownPinned, false);
   assert.deepEqual(payload.consumerPins.matchingNames, ["topogram-starters"]);
-  assert.deepEqual(payload.consumerPins.missingNames, externalTodoConsumerRepos);
+  assert.deepEqual(payload.consumerPins.missingNames, knownCliConsumerRepos.filter((consumer) => consumer !== "topogram-starters"));
 
   const human = runCli(["release", "status"], {
     cwd: root,
@@ -1982,9 +1997,9 @@ test("topogram release status reports package, tag, and external Todo consumer p
     }
   });
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, /Consumer pins: 1\/3 pinned, 1 matching, 0 differing, 2 missing/);
+  assert.match(human.stdout, new RegExp(`Consumer pins: 1/${knownCliConsumerRepos.length} pinned, 1 matching, 0 differing, ${knownCliConsumerRepos.length - 1} missing`));
   assert.match(human.stdout, /topogram-starters: .* \(matches\)/);
-  assert.match(human.stdout, literalPattern(`${externalTodoConsumerRepos[0]}: missing (missing)`));
+  assert.match(human.stdout, literalPattern(`${firstPartyGeneratorRepos[0]}: missing (missing)`));
 });
 
 test("topogram release status warns when latest npm version cannot be checked", () => {
@@ -2053,10 +2068,9 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(human.stdout, /Strict: enabled/);
 });
 
-test("topogram release status strict fails when external Todo consumer pins are missing", () => {
+test("topogram release status strict fails when first-party consumer pins are missing", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-fail-"));
-  fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
-  for (const consumer of externalTodoConsumerRepos) {
+  for (const consumer of knownCliConsumerRepos) {
     fs.mkdirSync(path.join(root, consumer), { recursive: true });
   }
   fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), "0.0.1\n", "utf8");
