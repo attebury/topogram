@@ -77,6 +77,8 @@ topogram import plan ./imported-topogram --json
 topogram import adopt --list ./imported-topogram
 topogram import adopt bundle:task ./imported-topogram --dry-run
 topogram import adopt bundle:task ./imported-topogram --write
+topogram import adopt components ./imported-topogram --dry-run
+topogram import adopt components ./imported-topogram --write
 topogram import status ./imported-topogram
 topogram import status ./imported-topogram --json
 topogram import history ./imported-topogram
@@ -88,7 +90,10 @@ topogram import history ./imported-topogram --verify --json
 `topogram import plan` summarizes the reconcile proposal bundles and suggests
 the next adoption command. `topogram import adopt` is preview-only by default;
 it does not write canonical `topogram/**` files unless `--write` is passed.
-Use `topogram import adopt --list` to discover valid bundle selectors.
+Use `topogram import adopt --list` to discover valid bundle selectors. The
+`components` selector promotes reviewed component candidates into
+`topogram/components/**`; broad bundle selectors also include component
+candidate files when the bundle contains them.
 `topogram import status` combines source provenance, normal Topogram validity,
 and current adoption progress.
 
