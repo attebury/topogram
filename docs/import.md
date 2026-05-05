@@ -12,6 +12,7 @@ topogram import adopt --list
 topogram import adopt bundle:task --dry-run
 topogram import adopt bundle:task --write
 topogram import status
+topogram import history
 topogram check
 ```
 
@@ -53,6 +54,8 @@ topogram import adopt bundle:task ./imported-topogram --dry-run
 topogram import adopt bundle:task ./imported-topogram --write
 topogram import status ./imported-topogram
 topogram import status ./imported-topogram --json
+topogram import history ./imported-topogram
+topogram import history ./imported-topogram --json
 ```
 
 `topogram import plan` summarizes the reconcile proposal bundles and suggests
@@ -61,6 +64,11 @@ it does not write canonical `topogram/**` files unless `--write` is passed.
 Use `topogram import adopt --list` to discover valid bundle selectors.
 `topogram import status` combines source provenance, normal Topogram validity,
 and current adoption progress.
+
+Every adoption write appends a receipt to `.topogram-import-adoptions.jsonl`.
+Use `topogram import history` to inspect what selector was promoted, which
+canonical files were written, whether the write was forced, and the brownfield
+source provenance state at the time of the write.
 
 Adoption writes refuse to run when the original brownfield source evidence has
 changed since import:
@@ -71,10 +79,10 @@ topogram import adopt bundle:task ./imported-topogram --write
 ```
 
 If you reviewed the source drift and still want to promote the current
-candidates, make the override explicit:
+candidates, make the override explicit and record a reason:
 
 ```bash
-topogram import adopt bundle:task ./imported-topogram --write --force
+topogram import adopt bundle:task ./imported-topogram --write --force --reason "Reviewed source drift"
 ```
 
 Limit import scope with tracks when useful:

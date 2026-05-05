@@ -384,6 +384,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram import adopt/);
   assert.match(help.stdout, /topogram import adopt --list/);
   assert.match(help.stdout, /topogram import status/);
+  assert.match(help.stdout, /topogram import history/);
   assert.match(help.stdout, /Template and catalog discovery:/);
   assert.match(help.stdout, /topogram catalog show todo/);
   assert.match(help.stdout, /topogram source status/);
@@ -478,10 +479,13 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(importHelp.stdout, /topogram import adopt --list \[path\]/);
   assert.match(importHelp.stdout, /topogram import adopt <selector> \[path\]/);
   assert.match(importHelp.stdout, /--force/);
+  assert.match(importHelp.stdout, /--reason <text>/);
   assert.match(importHelp.stdout, /topogram import status \[path\]/);
+  assert.match(importHelp.stdout, /topogram import history \[path\]/);
   assert.match(importHelp.stdout, /topogram import adopt --list \.\/imported-topogram/);
   assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --dry-run/);
-  assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --write --force/);
+  assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --write --force --reason/);
+  assert.match(importHelp.stdout, /\.topogram-import-adoptions\.jsonl/);
   assert.match(importHelp.stdout, /imported Topogram artifacts are project-owned/i);
 
   const setupHelp = runCli(["setup", "--help"]);

@@ -157,14 +157,20 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(previewPayload.promotedCanonicalItemCount, 5);
   assert.deepEqual(previewPayload.writtenFiles, []);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
+  assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-import-adoptions.jsonl")), false);
 
   const write = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
   assert.equal(write.status, 0, write.stderr || write.stdout);
   const writePayload = JSON.parse(write.stdout);
   assert.equal(writePayload.dryRun, false);
   assert.equal(writePayload.write, true);
+  assert.equal(writePayload.forced, false);
   assert.equal(writePayload.promotedCanonicalItemCount, 5);
   assert.equal(writePayload.writtenFiles.includes("entities/entity-task.tg"), true);
+  assert.equal(writePayload.receipt.selector, "bundle:task");
+  assert.equal(writePayload.receipt.sourceProvenance.status, "clean");
+  assert.equal(writePayload.receipt.writtenFiles.includes("entities/entity-task.tg"), true);
+  assert.equal(writePayload.receiptPath, path.join(targetRoot, ".topogram-import-adoptions.jsonl"));
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
 
   const status = runCli(["import", "status", targetRoot, "--json"]);
@@ -176,12 +182,29 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(statusPayload.adoption.summary.appliedItemCount, 5);
   assert.equal(statusPayload.adoption.summary.pendingItemCount, 1);
   assert.equal(statusPayload.adoption.bundles.find((bundle) => bundle.bundle === "task").complete, true);
+  assert.equal(statusPayload.adoption.history.receiptCount, 1);
+  assert.equal(statusPayload.adoption.history.forcedWriteCount, 0);
 
   const humanStatus = runCli(["import", "status", targetRoot]);
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
   assert.match(humanStatus.stdout, /Import status: clean/);
   assert.match(humanStatus.stdout, /Topogram check: passed/);
   assert.match(humanStatus.stdout, /Adoption: 5 applied, 1 pending, 0 blocked/);
+
+  const history = runCli(["import", "history", targetRoot, "--json"]);
+  assert.equal(history.status, 0, history.stderr || history.stdout);
+  const historyPayload = JSON.parse(history.stdout);
+  assert.equal(historyPayload.summary.receiptCount, 1);
+  assert.equal(historyPayload.summary.writeCount, 1);
+  assert.equal(historyPayload.summary.forcedWriteCount, 0);
+  assert.equal(historyPayload.receipts[0].selector, "bundle:task");
+  assert.equal(historyPayload.receipts[0].sourceProvenance.status, "clean");
+
+  const humanHistory = runCli(["import", "history", targetRoot]);
+  assert.equal(humanHistory.status, 0, humanHistory.stderr || humanHistory.stdout);
+  assert.match(humanHistory.stdout, /Import adoption history for/);
+  assert.match(humanHistory.stdout, /Receipts: 1/);
+  assert.match(humanHistory.stdout, /bundle:task/);
 });
 
 test("brownfield import check reports changed source evidence", () => {
@@ -207,13 +230,30 @@ test("brownfield import check reports changed source evidence", () => {
   assert.match(refusedWrite.stderr, /Refusing to write import adoption because brownfield source provenance is changed/);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
 
-  const forcedWrite = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--force", "--json"]);
+  const missingReason = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--force", "--json"]);
+  assert.equal(missingReason.status, 1);
+  assert.match(missingReason.stderr, /Forced import adoption writes require --reason <text>/);
+  assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-import-adoptions.jsonl")), false);
+
+  const forcedWrite = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--force", "--reason", "Reviewed source drift", "--json"]);
   assert.equal(forcedWrite.status, 0, forcedWrite.stderr || forcedWrite.stdout);
   const forcedPayload = JSON.parse(forcedWrite.stdout);
   assert.equal(forcedPayload.forced, true);
+  assert.equal(forcedPayload.reason, "Reviewed source drift");
   assert.equal(forcedPayload.import.status, "changed");
   assert.equal(forcedPayload.warnings.length, 1);
+  assert.equal(forcedPayload.receipt.forced, true);
+  assert.equal(forcedPayload.receipt.reason, "Reviewed source drift");
+  assert.equal(forcedPayload.receipt.sourceProvenance.status, "changed");
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
+
+  const history = runCli(["import", "history", targetRoot, "--json"]);
+  assert.equal(history.status, 0, history.stderr || history.stdout);
+  const historyPayload = JSON.parse(history.stdout);
+  assert.equal(historyPayload.summary.receiptCount, 1);
+  assert.equal(historyPayload.summary.forcedWriteCount, 1);
+  assert.equal(historyPayload.receipts[0].reason, "Reviewed source drift");
+  assert.equal(historyPayload.receipts[0].sourceProvenance.status, "changed");
 });
 
 function candidateIds(items) {
