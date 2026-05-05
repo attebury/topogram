@@ -171,20 +171,12 @@ until a concrete helper exists.
 
 Public `@topogram/*` packages install from npmjs without extra `.npmrc`
 configuration. Private package consumers need registry-specific npm auth; for
-example, a private GitHub Packages scope might use:
+example, a private npm org scope might use:
 
 ```text
-@internal:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+@internal:registry=https://registry.npmjs.org
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
 ```
-
-For GitHub Actions consumers that use private GitHub Packages, grant the
-consuming repository access from the package page:
-
-1. Open the package.
-2. Go to Package settings.
-3. Under Manage Actions access, add the consumer repository.
-4. Grant Read access.
 
 If `topogram new` cannot install a private template package, the CLI reports
 whether npm saw an auth failure, access denial, missing package/version, or

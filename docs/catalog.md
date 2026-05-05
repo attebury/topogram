@@ -256,13 +256,11 @@ catalog aliases. If the alias cannot be resolved, Topogram stops with catalog
 guidance instead of falling through to an unrelated npm package install. Use a
 local path or full package spec when you do not want catalog resolution.
 
-For GitHub Actions consumers that need private packages, configure the package
-host's normal package-read access. For GitHub Packages, that means:
-
-1. Open the package.
-2. Go to Package settings.
-3. Under Manage Actions access, add the consumer repository.
-4. Grant Read access.
+Public `@topogram/*` catalog packages install from npmjs without extra package
+registry setup. Consumers that use private catalog packages should configure the
+package host's normal npm read token before running `topogram new` or
+`topogram catalog copy`. Keep that auth scoped to the private package scope; do
+not require it for the public Topogram packages.
 
 The public `attebury/topograms` repo owns the catalog index. Template and
 topogram packages own versioned content. Demo repos consume the published CLI
