@@ -134,6 +134,8 @@ const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
   "pack:check",
   "verify"
 ];
+const PACKAGE_UPDATE_CLI_INFO_SCRIPTS = ["cli:surface", "doctor", "catalog:show", "catalog:template-show"];
+const PACKAGE_UPDATE_CLI_VERIFICATION_SCRIPTS = ["verify", "pack:check", "check"];
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -680,6 +682,7 @@ function printPackageHelp() {
   console.log("  - npm install updates package.json and package-lock.json.");
   console.log("  - Available consumer verification scripts run after install.");
   console.log(`  - Recognized scripts: ${PACKAGE_UPDATE_CLI_CHECK_SCRIPTS.join(", ")}.`);
+  console.log("  - Verification scripts are selected by strength: verify, then pack:check, then check.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram package update-cli 0.3.5");
@@ -1651,11 +1654,10 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const versionConvention = writeTopogramCliVersionConventionIfPresent(cwd, version);
   const packageJson = readPackageJsonForUpdate(cwd);
   const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts : {};
-  const candidateScripts = PACKAGE_UPDATE_CLI_CHECK_SCRIPTS;
   const scriptsRun = [];
   const skippedScripts = [];
   if (dependencyUpdatedBy !== "npm-install") {
-    skippedScripts.push(...candidateScripts);
+    skippedScripts.push(...PACKAGE_UPDATE_CLI_CHECK_SCRIPTS);
     diagnostics.push({
       code: "package_update_cli_checks_skipped_after_file_update",
       severity: "warning",
@@ -1664,11 +1666,23 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
       suggestedFix: "Run npm install or npm ci, then rerun consumer verification."
     });
   } else {
-    for (const scriptName of candidateScripts) {
+    const scriptsToRun = packageUpdateCliScriptsToRun(scripts);
+    for (const scriptName of PACKAGE_UPDATE_CLI_INFO_SCRIPTS) {
       if (!Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
         skippedScripts.push(scriptName);
-        continue;
       }
+    }
+    for (const scriptName of PACKAGE_UPDATE_CLI_VERIFICATION_SCRIPTS) {
+      if (!Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+        skippedScripts.push(scriptName);
+      } else if (!scriptsToRun.includes(scriptName)) {
+        const coveringScript = scriptsToRun.find((candidate) =>
+          PACKAGE_UPDATE_CLI_VERIFICATION_SCRIPTS.includes(candidate)
+        );
+        skippedScripts.push(`${scriptName} (covered by ${coveringScript})`);
+      }
+    }
+    for (const scriptName of scriptsToRun) {
       const result = runNpmForPackageUpdate(["run", scriptName], cwd);
       if (result.status !== 0) {
         throw new Error(formatPackageUpdateNpmError(`npm run ${scriptName}`, "check", result));
@@ -1693,6 +1707,26 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
     diagnostics,
     errors: []
   };
+}
+
+/**
+ * @param {Record<string, any>} scripts
+ * @returns {string[]}
+ */
+function packageUpdateCliScriptsToRun(scripts) {
+  const selected = [];
+  for (const scriptName of PACKAGE_UPDATE_CLI_INFO_SCRIPTS) {
+    if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) {
+      selected.push(scriptName);
+    }
+  }
+  const verificationScript = PACKAGE_UPDATE_CLI_VERIFICATION_SCRIPTS.find((scriptName) =>
+    Object.prototype.hasOwnProperty.call(scripts, scriptName)
+  );
+  if (verificationScript) {
+    selected.push(verificationScript);
+  }
+  return selected;
 }
 
 /**

@@ -194,6 +194,9 @@ metadata for the CLI package when needed, then runs any available consumer
 scripts named `cli:surface`, `doctor`, `catalog:show`,
 `catalog:template-show`, `check`, `pack:check`, and `verify` when dependencies
 were installed or already current.
+Informational scripts run independently. Verification scripts are mutually
+exclusive, with `verify` preferred over `pack:check`, and `pack:check`
+preferred over `check`.
 If npm package inspection fails, the command stops before mutating consumer
 files. Fix npm registry access and rerun it so the local verification scripts
 run against the installed package.

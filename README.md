@@ -336,6 +336,9 @@ updates `topogram-cli.version` when the consumer repo has that convention file,
 then runs available checks when dependencies were installed or already current:
 `cli:surface`, `doctor`, `catalog:show`, `catalog:template-show`, `check`,
 `pack:check`, and `verify`.
+Informational scripts run independently. Verification scripts are mutually
+exclusive, with `verify` preferred over `pack:check`, and `pack:check`
+preferred over `check`.
 If npm package inspection fails, the command stops before mutating consumer
 files; fix package access and rerun it.
 

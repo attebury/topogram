@@ -43,6 +43,13 @@ const packageUpdateCliCheckScripts = [
   "pack:check",
   "verify"
 ];
+const packageUpdateCliPreferredScripts = [
+  "cli:surface",
+  "doctor",
+  "catalog:show",
+  "catalog:template-show",
+  "verify"
+];
 
 function externalTodoTemplatePackageSpec(version = externalTodoTemplateVersion) {
   return `${externalTodoTemplatePackageName}@${version}`;
@@ -1708,10 +1715,46 @@ test("topogram package update-cli updates consumer dependency and runs available
   });
   assert.equal(update.status, 0, update.stderr || update.stdout);
   assert.match(update.stdout, /Updated @topogram\/cli to \^0\.2\.37/);
-  assert.match(update.stdout, literalPattern(`Checks run: ${packageUpdateCliCheckScripts.join(", ")}`));
+  assert.match(update.stdout, literalPattern(`Checks run: ${packageUpdateCliPreferredScripts.join(", ")}`));
+  assert.match(update.stdout, literalPattern("Checks skipped: pack:check (covered by verify), check (covered by verify)"));
   assert.equal(readJson(path.join(projectRoot, "package.json")).devDependencies["@topogram/cli"], "^0.2.37");
   assert.equal(readJson(path.join(projectRoot, "package-lock.json")).packages["node_modules/@topogram/cli"].version, "0.2.37");
-  assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), packageUpdateCliCheckScripts);
+  assert.deepEqual(fs.readFileSync(runLog, "utf8").trim().split("\n"), packageUpdateCliPreferredScripts);
+
+  const packCheckRoot = path.join(root, "pack-check-consumer");
+  fs.mkdirSync(packCheckRoot, { recursive: true });
+  writePackageJson(packCheckRoot, {
+    name: "pack-check-consumer",
+    private: true,
+    scripts: {
+      doctor: "node -e true",
+      check: "node -e true",
+      "pack:check": "node -e true"
+    },
+    devDependencies: {
+      "@topogram/cli": "^0.2.32"
+    }
+  });
+  const packCheckRunLog = path.join(root, "pack-check-npm-run.log");
+  const packCheckUpdate = runCli(["package", "update-cli", "0.2.37", "--json"], {
+    cwd: packCheckRoot,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.2.37",
+      FAKE_NPM_RUN_LOG: packCheckRunLog,
+      PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(packCheckUpdate.status, 0, packCheckUpdate.stderr || packCheckUpdate.stdout);
+  const packCheckPayload = JSON.parse(packCheckUpdate.stdout);
+  assert.deepEqual(packCheckPayload.scriptsRun, ["doctor", "pack:check"]);
+  assert.deepEqual(packCheckPayload.skippedScripts, [
+    "cli:surface",
+    "catalog:show",
+    "catalog:template-show",
+    "verify",
+    "check (covered by pack:check)"
+  ]);
+  assert.deepEqual(fs.readFileSync(packCheckRunLog, "utf8").trim().split("\n"), ["doctor", "pack:check"]);
 
   const minimalRoot = path.join(root, "minimal");
   fs.mkdirSync(minimalRoot, { recursive: true });
@@ -1727,7 +1770,15 @@ test("topogram package update-cli updates consumer dependency and runs available
   const minimalPayload = JSON.parse(minimal.stdout);
   assert.equal(minimalPayload.ok, true);
   assert.deepEqual(minimalPayload.scriptsRun, []);
-  assert.deepEqual(minimalPayload.skippedScripts, packageUpdateCliCheckScripts);
+  assert.deepEqual(minimalPayload.skippedScripts, [
+    "cli:surface",
+    "doctor",
+    "catalog:show",
+    "catalog:template-show",
+    "verify",
+    "pack:check",
+    "check"
+  ]);
 });
 
 test("topogram package update-cli refreshes stale CLI lockfile tarball metadata", () => {
