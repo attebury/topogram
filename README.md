@@ -294,7 +294,7 @@ requires.
 Use `topogram version` to audit the installed CLI package, version, executable
 path, and Node runtime. Use `topogram doctor` when setup is unclear. It checks
 Node.js, npm, public CLI package access, catalog reachability, GitHub token or
-`gh auth` readiness for private GitHub catalog sources, and npm package access
+`gh auth` readiness for restricted GitHub catalog sources, and npm package access
 for each catalog entry:
 
 ```bash

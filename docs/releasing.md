@@ -73,7 +73,6 @@ npm run release:status:strict
 ```
 
 You can also run the manual GitHub Actions workflow `Release Status`. It checks
-out `topogram` plus the known consumer repos and runs the same strict gate. If a
-consumer repo is private and the default workflow token cannot read it, add a
-`TOPOGRAM_RELEASE_STATUS_TOKEN` repository secret with read access to those
-repos.
+out `topogram` plus the known consumer repos and runs the same strict gate. If
+the default workflow token cannot read one of those repositories, add a
+`TOPOGRAM_RELEASE_STATUS_TOKEN` repository secret with read access.

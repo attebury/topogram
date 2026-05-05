@@ -1622,7 +1622,7 @@ test("package-backed external Todo template installs explain package auth failur
   assert.match(integrity.stderr, /published registry tarball/);
 });
 
-test("private GitHub catalog failures explain auth and access setup", () => {
+test("restricted GitHub catalog failures explain auth and access setup", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-auth-errors-"));
   const source = "github:attebury/topograms/topograms.catalog.json";
   const authGhBin = createFailingCommand(

@@ -39,7 +39,7 @@ topogram catalog doctor --catalog ./topograms.catalog.json
 ```
 
 `catalog doctor` loads and validates the catalog, reports GitHub token or
-`gh auth` readiness for private GitHub catalog sources, and checks each entry's
+`gh auth` readiness for restricted GitHub catalog sources, and checks each entry's
 package/version with npm. It is read-only and does not install packages.
 
 For a complete new-user setup check, prefer the top-level doctor:

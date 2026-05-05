@@ -629,19 +629,19 @@ function printCatalogAuthSetup() {
   console.log("Topogram catalog auth setup");
   console.log("");
   console.log("The default Topogram catalog is public and does not require GitHub auth.");
-  console.log("Private GitHub catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
+  console.log("Restricted GitHub catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
   console.log("");
-  console.log("Private catalog local setup:");
+  console.log("Restricted catalog local setup:");
   console.log("  gh auth login");
   console.log("  topogram catalog list");
   console.log("");
-  console.log("Private catalog GitHub Actions setup:");
+  console.log("Restricted catalog GitHub Actions setup:");
   console.log("  permissions:");
   console.log("    contents: read");
   console.log("  env:");
   console.log("    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
   console.log("");
-  console.log("For private catalog repos, grant the workflow token or PAT read access to the catalog repository.");
+  console.log("For restricted catalog repositories, grant the workflow token or PAT read access.");
   console.log("Run `topogram catalog doctor` after setup.");
 }
 
