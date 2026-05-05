@@ -481,10 +481,11 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(importHelp.stdout, /--force/);
   assert.match(importHelp.stdout, /--reason <text>/);
   assert.match(importHelp.stdout, /topogram import status \[path\]/);
-  assert.match(importHelp.stdout, /topogram import history \[path\]/);
+  assert.match(importHelp.stdout, /topogram import history \[path\] \[--verify\]/);
   assert.match(importHelp.stdout, /topogram import adopt --list \.\/imported-topogram/);
   assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --dry-run/);
   assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --write --force --reason/);
+  assert.match(importHelp.stdout, /topogram import history \.\/imported-topogram --verify/);
   assert.match(importHelp.stdout, /\.topogram-import-adoptions\.jsonl/);
   assert.match(importHelp.stdout, /imported Topogram artifacts are project-owned/i);
 

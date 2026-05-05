@@ -161,7 +161,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram import adopt --list [path] [--json]");
   console.log("   or: topogram import adopt <selector> [path] [--dry-run|--write] [--force --reason <text>] [--json]");
   console.log("   or: topogram import status [path] [--json]");
-  console.log("   or: topogram import history [path] [--json]");
+  console.log("   or: topogram import history [path] [--verify] [--json]");
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
@@ -205,7 +205,7 @@ function printUsage(options = {}) {
   console.log("  topogram import adopt --list ./imported-topogram");
   console.log("  topogram import adopt bundle:task ./imported-topogram --dry-run");
   console.log("  topogram import status ./imported-topogram");
-  console.log("  topogram import history ./imported-topogram");
+  console.log("  topogram import history ./imported-topogram --verify");
   console.log("");
   console.log("Template and catalog discovery:");
   console.log("  topogram template list");
@@ -704,7 +704,7 @@ function printImportHelp() {
   console.log("   or: topogram import adopt --list [path] [--json]");
   console.log("   or: topogram import adopt <selector> [path] [--dry-run|--write] [--force --reason <text>] [--json]");
   console.log("   or: topogram import status [path] [--json]");
-  console.log("   or: topogram import history [path] [--json]");
+  console.log("   or: topogram import history [path] [--verify] [--json]");
   console.log("");
   console.log("Creates an editable Topogram workspace from a brownfield app without modifying the app.");
   console.log("");
@@ -730,6 +730,7 @@ function printImportHelp() {
   console.log("  topogram import adopt bundle:task ./imported-topogram --write --force --reason \"Reviewed source drift\"");
   console.log("  topogram import status ./imported-topogram");
   console.log("  topogram import history ./imported-topogram");
+  console.log("  topogram import history ./imported-topogram --verify");
   console.log("  topogram import check --json");
 }
 
@@ -4630,6 +4631,18 @@ function printBrownfieldImportAdoptList(payload) {
   console.log(`Next: ${payload.nextCommand}`);
 }
 
+function writtenFileHashesForReceipt(outputRoot, writtenFiles) {
+  return (writtenFiles || []).map((relativePath) => {
+    const filePath = path.join(outputRoot, relativePath);
+    const hash = fs.existsSync(filePath) ? projectFileHash(filePath) : null;
+    return {
+      path: relativePath,
+      sha256: hash?.sha256 || null,
+      size: hash?.size || null
+    };
+  });
+}
+
 function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus, summary, writtenFiles, outputRoot }) {
   return {
     type: "topogram_import_adoption_receipt",
@@ -4663,6 +4676,7 @@ function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus
       changeType: item.change_type || null
     })),
     writtenFiles,
+    writtenFileHashes: writtenFileHashesForReceipt(outputRoot, writtenFiles),
     outputRoot
   };
 }
@@ -4782,16 +4796,90 @@ function printBrownfieldImportStatus(payload) {
   }
 }
 
-function buildBrownfieldImportHistoryPayload(inputPath) {
+function verifyImportAdoptionReceipts(projectRoot, receipts) {
+  const topogramRoot = normalizeTopogramPath(projectRoot);
+  const files = [];
+  for (const receipt of receipts || []) {
+    const hashedFiles = Array.isArray(receipt.writtenFileHashes) ? receipt.writtenFileHashes : [];
+    const hashedPaths = new Set(hashedFiles.map((item) => item.path));
+    for (const item of hashedFiles) {
+      const relativePath = item.path;
+      const filePath = path.join(topogramRoot, relativePath);
+      if (!fs.existsSync(filePath)) {
+        files.push({
+          receiptTimestamp: receipt.timestamp || null,
+          selector: receipt.selector || null,
+          path: relativePath,
+          status: "removed",
+          expectedSha256: item.sha256 || null,
+          currentSha256: null,
+          expectedSize: item.size ?? null,
+          currentSize: null
+        });
+        continue;
+      }
+      const currentHash = projectFileHash(filePath);
+      const matches = item.sha256 === currentHash.sha256 && item.size === currentHash.size;
+      files.push({
+        receiptTimestamp: receipt.timestamp || null,
+        selector: receipt.selector || null,
+        path: relativePath,
+        status: matches ? "matched" : "changed",
+        expectedSha256: item.sha256 || null,
+        currentSha256: currentHash.sha256,
+        expectedSize: item.size ?? null,
+        currentSize: currentHash.size
+      });
+    }
+    for (const relativePath of receipt.writtenFiles || []) {
+      if (hashedPaths.has(relativePath)) {
+        continue;
+      }
+      files.push({
+        receiptTimestamp: receipt.timestamp || null,
+        selector: receipt.selector || null,
+        path: relativePath,
+        status: "unverifiable",
+        expectedSha256: null,
+        currentSha256: null,
+        expectedSize: null,
+        currentSize: null
+      });
+    }
+  }
+  const summary = {
+    checkedFileCount: files.length,
+    matchedFileCount: files.filter((item) => item.status === "matched").length,
+    changedFileCount: files.filter((item) => item.status === "changed").length,
+    removedFileCount: files.filter((item) => item.status === "removed").length,
+    unverifiableFileCount: files.filter((item) => item.status === "unverifiable").length
+  };
+  const status = summary.changedFileCount > 0 || summary.removedFileCount > 0
+    ? "changed"
+    : summary.unverifiableFileCount > 0
+      ? "unverifiable"
+      : "matched";
+  return {
+    status,
+    summary,
+    files,
+    auditOnly: true,
+    note: "History verification is audit-only. Imported/adopted Topogram files are project-owned, and edits do not make the workspace invalid."
+  };
+}
+
+function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const historyPath = importAdoptionsPath(projectRoot);
   const receipts = readImportAdoptionReceipts(projectRoot);
   const forcedWrites = receipts.filter((receipt) => receipt.forced);
+  const verification = options.verify ? verifyImportAdoptionReceipts(projectRoot, receipts) : null;
   return {
     ok: true,
     projectRoot,
     path: historyPath,
     exists: fs.existsSync(historyPath),
+    verified: Boolean(options.verify),
     summary: {
       receiptCount: receipts.length,
       writeCount: receipts.filter((receipt) => receipt.mode === "write").length,
@@ -4799,6 +4887,7 @@ function buildBrownfieldImportHistoryPayload(inputPath) {
       lastTimestamp: receipts[receipts.length - 1]?.timestamp || null,
       lastSelector: receipts[receipts.length - 1]?.selector || null
     },
+    verification,
     receipts
   };
 }
@@ -4815,6 +4904,16 @@ function printBrownfieldImportHistory(payload) {
     const forced = receipt.forced ? " forced" : "";
     const reason = receipt.reason ? ` reason="${receipt.reason}"` : "";
     console.log(`- ${receipt.timestamp}: ${receipt.selector}${forced}, ${receipt.writtenFiles?.length || 0} file(s), source=${receipt.sourceProvenance?.status || "unknown"}${reason}`);
+  }
+  if (payload.verification) {
+    const summary = payload.verification.summary;
+    console.log("");
+    console.log(`Verification: ${payload.verification.status}`);
+    console.log(`Matched: ${summary.matchedFileCount}; changed: ${summary.changedFileCount}; removed: ${summary.removedFileCount}; unverifiable: ${summary.unverifiableFileCount}`);
+    for (const file of payload.verification.files.filter((item) => item.status !== "matched")) {
+      console.log(`- ${file.path}: ${file.status}`);
+    }
+    console.log(payload.verification.note);
   }
 }
 
@@ -6284,6 +6383,33 @@ function commandPath(index, fallback = "./topogram") {
   return value && !value.startsWith("-") ? value : fallback;
 }
 
+function commandOperandFrom(index, fallback = ".") {
+  const valueFlags = new Set([
+    "--accept-current",
+    "--accept-candidate",
+    "--delete-current",
+    "--from",
+    "--out",
+    "--out-dir",
+    "--reason",
+    "--template",
+    "--version"
+  ]);
+  for (let i = index; i < args.length; i += 1) {
+    const value = args[i];
+    if (!value) {
+      continue;
+    }
+    if (!value.startsWith("-")) {
+      return value;
+    }
+    if (valueFlags.has(value)) {
+      i += 1;
+    }
+  }
+  return fallback;
+}
+
 let commandArgs = null;
 let inputPath = args[0];
 if (args[0] === "version" || args[0] === "--version") {
@@ -6375,7 +6501,7 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "import" && args[1] === "status") {
   commandArgs = { importStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "import" && args[1] === "history") {
-  commandArgs = { importHistory: true, inputPath: commandPath(2, ".") };
+  commandArgs = { importHistory: true, inputPath: commandOperandFrom(2, ".") };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
@@ -6945,7 +7071,7 @@ try {
   }
 
   if (shouldImportHistory) {
-    const payload = buildBrownfieldImportHistoryPayload(inputPath);
+    const payload = buildBrownfieldImportHistoryPayload(inputPath, { verify: args.includes("--verify") });
     if (emitJson) {
       console.log(stableStringify(payload));
     } else {

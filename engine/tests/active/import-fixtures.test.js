@@ -170,6 +170,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(writePayload.receipt.selector, "bundle:task");
   assert.equal(writePayload.receipt.sourceProvenance.status, "clean");
   assert.equal(writePayload.receipt.writtenFiles.includes("entities/entity-task.tg"), true);
+  assert.equal(writePayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256 && item.size > 0), true);
   assert.equal(writePayload.receiptPath, path.join(targetRoot, ".topogram-import-adoptions.jsonl"));
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
 
@@ -199,12 +200,48 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(historyPayload.summary.forcedWriteCount, 0);
   assert.equal(historyPayload.receipts[0].selector, "bundle:task");
   assert.equal(historyPayload.receipts[0].sourceProvenance.status, "clean");
+  assert.equal(historyPayload.receipts[0].writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256), true);
+
+  const cleanVerify = runCli(["import", "history", "--verify", targetRoot, "--json"]);
+  assert.equal(cleanVerify.status, 0, cleanVerify.stderr || cleanVerify.stdout);
+  const cleanVerifyPayload = JSON.parse(cleanVerify.stdout);
+  assert.equal(cleanVerifyPayload.verified, true);
+  assert.equal(cleanVerifyPayload.verification.status, "matched");
+  assert.equal(cleanVerifyPayload.verification.summary.changedFileCount, 0);
+  assert.equal(cleanVerifyPayload.verification.summary.removedFileCount, 0);
+  assert.equal(cleanVerifyPayload.verification.summary.matchedFileCount, writePayload.writtenFiles.length);
+
+  fs.appendFileSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg"), "\n");
+  const changedVerify = runCli(["import", "history", targetRoot, "--verify", "--json"]);
+  assert.equal(changedVerify.status, 0, changedVerify.stderr || changedVerify.stdout);
+  const changedVerifyPayload = JSON.parse(changedVerify.stdout);
+  assert.equal(changedVerifyPayload.verification.status, "changed");
+  assert.equal(changedVerifyPayload.verification.summary.changedFileCount, 1);
+  assert.equal(changedVerifyPayload.verification.files.find((item) => item.path === "entities/entity-task.tg").status, "changed");
+
+  const editedCheck = runCli(["import", "check", targetRoot, "--json"]);
+  assert.equal(editedCheck.status, 0, editedCheck.stderr || editedCheck.stdout);
+  assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
+
+  fs.rmSync(path.join(targetRoot, "topogram", "docs", "journeys", "task_journey.md"));
+  const removedVerify = runCli(["import", "history", targetRoot, "--verify", "--json"]);
+  assert.equal(removedVerify.status, 0, removedVerify.stderr || removedVerify.stdout);
+  const removedVerifyPayload = JSON.parse(removedVerify.stdout);
+  assert.equal(removedVerifyPayload.verification.summary.removedFileCount, 1);
+  assert.equal(removedVerifyPayload.verification.files.find((item) => item.path === "docs/journeys/task_journey.md").status, "removed");
 
   const humanHistory = runCli(["import", "history", targetRoot]);
   assert.equal(humanHistory.status, 0, humanHistory.stderr || humanHistory.stdout);
   assert.match(humanHistory.stdout, /Import adoption history for/);
   assert.match(humanHistory.stdout, /Receipts: 1/);
   assert.match(humanHistory.stdout, /bundle:task/);
+
+  const humanVerify = runCli(["import", "history", targetRoot, "--verify"]);
+  assert.equal(humanVerify.status, 0, humanVerify.stderr || humanVerify.stdout);
+  assert.match(humanVerify.stdout, /Verification: changed/);
+  assert.match(humanVerify.stdout, /entities\/entity-task\.tg: changed/);
+  assert.match(humanVerify.stdout, /docs\/journeys\/task_journey\.md: removed/);
+  assert.match(humanVerify.stdout, /audit-only/);
 });
 
 test("brownfield import check reports changed source evidence", () => {
@@ -245,6 +282,7 @@ test("brownfield import check reports changed source evidence", () => {
   assert.equal(forcedPayload.receipt.forced, true);
   assert.equal(forcedPayload.receipt.reason, "Reviewed source drift");
   assert.equal(forcedPayload.receipt.sourceProvenance.status, "changed");
+  assert.equal(forcedPayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
 
   const history = runCli(["import", "history", targetRoot, "--json"]);

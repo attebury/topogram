@@ -56,6 +56,8 @@ topogram import status ./imported-topogram
 topogram import status ./imported-topogram --json
 topogram import history ./imported-topogram
 topogram import history ./imported-topogram --json
+topogram import history ./imported-topogram --verify
+topogram import history ./imported-topogram --verify --json
 ```
 
 `topogram import plan` summarizes the reconcile proposal bundles and suggests
@@ -69,6 +71,12 @@ Every adoption write appends a receipt to `.topogram-import-adoptions.jsonl`.
 Use `topogram import history` to inspect what selector was promoted, which
 canonical files were written, whether the write was forced, and the brownfield
 source provenance state at the time of the write.
+
+Receipts also store hashes for written canonical files. Use
+`topogram import history --verify` to audit whether those files still match the
+adoption receipt, changed after adoption, were removed after adoption, or came
+from an older unverifiable receipt. This verification is audit-only:
+imported/adopted Topogram files are project-owned, and local edits remain valid.
 
 Adoption writes refuse to run when the original brownfield source evidence has
 changed since import:
