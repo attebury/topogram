@@ -84,7 +84,7 @@ function summarizeComponentRef(graph, componentId) {
   };
 }
 
-function buildComponentUsageContract(graph, entry) {
+export function buildComponentUsageContract(graph, entry) {
   const componentId = entry.component?.id || null;
   const contract = componentId ? componentContractFor(graph, componentId) : null;
   return {
@@ -104,7 +104,7 @@ function buildComponentUsageContract(graph, entry) {
   };
 }
 
-function buildComponentContractMap(graph, componentUsages) {
+export function buildComponentContractMap(graph, componentUsages) {
   return Object.fromEntries(
     [...new Set(componentUsages.map((entry) => entry.component?.id).filter(Boolean))]
       .sort()

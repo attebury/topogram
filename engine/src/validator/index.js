@@ -2474,14 +2474,6 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
     return;
   }
 
-  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
-    pushError(
-      errors,
-      `Projection ${statement.id} ui_components is only supported on ui_shared projections in v1; place reusable component wiring in the shared UI projection and have concrete surfaces realize it`,
-      componentsField.loc
-    );
-  }
-
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const availableRegions = collectAvailableUiRegionKeys(statement, registry);
   const availableRegionPatterns = collectAvailableUiRegionPatterns(statement, registry);

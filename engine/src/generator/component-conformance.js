@@ -420,17 +420,22 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
 
 function projectionUsageEntries(graph, projection) {
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
-  const sourceProjection = sharedProjection || projection;
-  const usages = sourceProjection.uiComponents || [];
-  if (usages.length === 0) {
-    return [];
+  const entries = [];
+  if (sharedProjection) {
+    entries.push(...(sharedProjection.uiComponents || []).map((usage, index) => ({
+      projection,
+      sourceProjection: sharedProjection,
+      usage,
+      index
+    })));
   }
-  return usages.map((usage, index) => ({
+  entries.push(...(projection.uiComponents || []).map((usage, index) => ({
     projection,
-    sourceProjection,
+    sourceProjection: projection,
     usage,
     index
-  }));
+  })));
+  return entries;
 }
 
 function candidateProjections(graph, projectionId) {

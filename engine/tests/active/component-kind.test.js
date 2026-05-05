@@ -1073,7 +1073,7 @@ projection proj_ui {
   assert.match(messages, /references unknown navigation target 'item_detail'/);
 });
 
-test("projection ui_components are owned by shared UI projections in v1", () => {
+test("projection ui_components can be declared directly on concrete UI projections", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1128,11 +1128,108 @@ projection proj_ui_web {
 }
 `);
   const validation = validateWorkspace(ast);
-  assert.equal(validation.ok, false);
-  assert.match(
-    validation.errors.map((error) => error.message).join("\n"),
-    /ui_components is only supported on ui_shared projections in v1/
-  );
+  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  assert.equal(webContract.artifact.components.component_grid.id, "component_grid");
+  const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
+  assert.equal(screen.components.length, 1);
+  assert.equal(screen.components[0].component.id, "component_grid");
+});
+
+test("concrete ui_components compose with inherited shared UI components", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+component component_shared_grid {
+  name "Shared Grid"
+  description "Shared grid"
+  props {
+    rows array required
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+component component_web_summary {
+  name "Web Summary"
+  description "Web-only summary"
+  props {
+    rows array required
+  }
+  patterns [resource_table]
+  regions [results]
+  status active
+}
+
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_components {
+    screen item_list region results component component_shared_grid data rows from cap_list_items
+  }
+
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [proj_ui_shared]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen item_list path /items
+  }
+
+  ui_components {
+    screen item_list region results component component_web_summary data rows from cap_list_items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  assert.deepEqual(Object.keys(webContract.artifact.components).sort(), ["component_shared_grid", "component_web_summary"]);
+  const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
+  assert.deepEqual(screen.components.map((entry) => entry.component.id), ["component_shared_grid", "component_web_summary"]);
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.total_usages, 2);
+  assert.deepEqual(report.artifact.summary.affected_components, ["component_shared_grid", "component_web_summary"]);
 });
 
 test("projection ui_components validate component region and pattern compatibility", () => {

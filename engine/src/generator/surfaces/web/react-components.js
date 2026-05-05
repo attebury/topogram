@@ -74,7 +74,6 @@ function hasPattern(usage, componentContracts, pattern) {
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "items";
-  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<section className="component-card component-summary" data-topogram-component="${escapeAttribute(componentId(usage))}">
           <div>
             <p className="component-eyebrow">Component</p>
@@ -86,12 +85,12 @@ function renderSummaryStats(usage, options) {
               <span>Total</span>
             </div>
             <div>
-              <strong>{${items}.filter(${itemParam} => item.status === "active").length}</strong>
-              <span>Active</span>
+              <strong>{Object.keys(${items}[0] ?? {}).length}</strong>
+              <span>Fields</span>
             </div>
             <div>
-              <strong>{${items}.filter(${itemParam} => item.status === "completed").length}</strong>
-              <span>Completed</span>
+              <strong>{${items}.filter((item: any) => item && (item.id ?? item.uuid ?? item.key)).length}</strong>
+              <span>Identified</span>
             </div>
           </div>
         </section>`;
@@ -117,24 +116,17 @@ function renderCollectionTable(usage, options) {
             <table className="resource-table data-grid">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Summary</th>
-                  <th>Owner</th>
+                  {Object.keys(${items}[0] ?? {}).slice(0, 4).map((field) => (
+                    <th key={field}>{field}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {${items}.map(${itemParam} => (
                   <tr key={String(item.id ?? item.title ?? item.name ?? item.message)}>
-                    <td>
-                      <div className="cell-stack">
-                        <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
-                        {(item.description || item.body) ? <span className="cell-secondary">{item.description ?? item.body}</span> : null}
-                      </div>
-                    </td>
-                    <td><span className="badge">{item.status ?? "active"}</span></td>
-                    <td>{item.priority ?? item.created_at ?? item.createdAt ?? "Ready"}</td>
-                    <td>{item.owner_id ?? item.ownerId ?? "Unassigned"}</td>
+                    {Object.keys(${items}[0] ?? {}).slice(0, 4).map((field) => (
+                      <td key={field}>{String(item?.[field] ?? "")}</td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
@@ -159,12 +151,12 @@ function renderBoard(usage, options) {
             </div>
           </div>
           <div className="board-grid">
-            {["draft", "active", "completed", "archived"].map((status) => (
-              <section className="board-column" key={status}>
-                <h3>{status}</h3>
-                {${items}.filter(${itemParam} => item.status === status).map(${itemParam} => (
+            {Array.from(new Set(${items}.map((item: any) => item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items"))).map((group) => (
+              <section className="board-column" key={String(group)}>
+                <h3>{String(group)}</h3>
+                {${items}.filter(${itemParam} => (item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items") === group).map(${itemParam} => (
                   <div className="board-card" key={String(item.id ?? item.title ?? item.name)}>
-                    {item.title ?? item.name ?? item.message ?? item.id}
+                    {item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}
                   </div>
                 ))}
               </section>
@@ -189,10 +181,10 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div className="calendar-list">
-            {${items}.filter(${itemParam} => item.due_at || item.dueAt || item.created_at || item.createdAt).map(${itemParam} => (
+            {${items}.filter(${itemParam} => item.date || item.due_at || item.dueAt || item.created_at || item.createdAt || item.updated_at || item.updatedAt).map(${itemParam} => (
               <div className="calendar-card" key={String(item.id ?? item.title ?? item.name)}>
-                <span>{item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt}</span>
-                <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
+                <span>{item.date ?? item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt ?? item.updated_at ?? item.updatedAt}</span>
+                <strong>{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
               </div>
             ))}
           </div>

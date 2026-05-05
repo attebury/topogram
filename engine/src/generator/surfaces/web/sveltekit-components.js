@@ -65,7 +65,6 @@ function hasPattern(usage, componentContracts, pattern) {
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<section class="component-card component-summary" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div>
             <p class="component-eyebrow">Component</p>
@@ -77,12 +76,12 @@ function renderSummaryStats(usage, options) {
               <span>Total</span>
             </div>
             <div>
-              <strong>{${items}.filter(${itemParam} => item.status === "active").length}</strong>
-              <span>Active</span>
+              <strong>{Object.keys(${items}[0] ?? {}).length}</strong>
+              <span>Fields</span>
             </div>
             <div>
-              <strong>{${items}.filter(${itemParam} => item.status === "completed").length}</strong>
-              <span>Completed</span>
+              <strong>{${items}.filter((item) => item && (item.id ?? item.uuid ?? item.key)).length}</strong>
+              <span>Identified</span>
             </div>
           </div>
         </section>`;
@@ -107,24 +106,17 @@ function renderCollectionTable(usage, options) {
             <table class="resource-table data-grid">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Summary</th>
-                  <th>Owner</th>
+                  {#each Object.keys(${items}[0] ?? {}).slice(0, 4) as field}
+                    <th>{field}</th>
+                  {/each}
                 </tr>
               </thead>
               <tbody>
                 {#each ${items} as item}
                   <tr>
-                    <td>
-                      <div class="cell-stack">
-                        <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
-                        {#if item.description || item.body}<span class="cell-secondary">{item.description ?? item.body}</span>{/if}
-                      </div>
-                    </td>
-                    <td><span class="badge">{item.status ?? "active"}</span></td>
-                    <td>{item.priority ?? item.created_at ?? item.createdAt ?? "Ready"}</td>
-                    <td>{item.owner_id ?? item.ownerId ?? "Unassigned"}</td>
+                    {#each Object.keys(${items}[0] ?? {}).slice(0, 4) as field}
+                      <td>{String(item?.[field] ?? "")}</td>
+                    {/each}
                   </tr>
                 {/each}
               </tbody>
@@ -140,7 +132,6 @@ function renderCollectionTable(usage, options) {
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<div class="component-card component-board" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -149,11 +140,11 @@ function renderBoard(usage, options) {
             </div>
           </div>
           <div class="board-grid">
-            {#each ["draft", "active", "completed", "archived"] as status}
+            {#each Array.from(new Set(${items}.map((item) => item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items"))) as group}
               <section class="board-column">
-                <h3>{status}</h3>
-                {#each ${items}.filter(${itemParam} => item.status === status) as item}
-                  <div class="board-card">{item.title ?? item.name ?? item.message ?? item.id}</div>
+                <h3>{group}</h3>
+                {#each ${items}.filter((item) => (item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items") === group) as item}
+                  <div class="board-card">{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</div>
                 {/each}
               </section>
             {/each}
@@ -168,7 +159,6 @@ function renderBoard(usage, options) {
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  const itemParam = options.useTypescript ? "(item: any)" : "(item)";
   return `<div class="component-card component-calendar" data-topogram-component="${escapeHtml(componentId(usage))}">
           <div class="component-header">
             <div>
@@ -177,10 +167,10 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div class="calendar-list">
-            {#each ${items}.filter(${itemParam} => item.due_at || item.dueAt || item.created_at || item.createdAt) as item}
+            {#each ${items}.filter((item) => item?.date || item?.due_at || item?.dueAt || item?.created_at || item?.createdAt || item?.updated_at || item?.updatedAt) as item}
               <div class="calendar-card">
-                <span>{item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt}</span>
-                <strong>{item.title ?? item.name ?? item.message ?? item.id}</strong>
+                <span>{item.date ?? item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt ?? item.updated_at ?? item.updatedAt}</span>
+                <strong>{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
               </div>
             {/each}
           </div>

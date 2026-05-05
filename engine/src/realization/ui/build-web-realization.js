@@ -1,6 +1,10 @@
 import { buildApiRealization } from "../api/index.js";
 import { generatorDefaultsMap, getProjection, sharedUiProjectionForWeb } from "../../generator/surfaces/shared.js";
-import { buildUiSharedRealization } from "./build-ui-shared-realization.js";
+import {
+  buildComponentContractMap,
+  buildComponentUsageContract,
+  buildUiSharedRealization
+} from "./build-ui-shared-realization.js";
 
 function collectCapabilityIds(contract) {
   const capabilityIds = new Set();
@@ -36,6 +40,7 @@ export function buildWebRealization(graph, options = {}) {
         components: {},
         screens: []
       };
+  const concreteContract = buildUiSharedRealization(graph, { projectionId: projection.id });
 
   const routeMap = new Map((projection.uiRoutes || []).map((entry) => [entry.screenId, entry]));
   const uiWebByScreen = new Map();
@@ -55,6 +60,39 @@ export function buildWebRealization(graph, options = {}) {
     }
   }
 
+  const screenMap = new Map((sharedContract.screens || []).map((screen) => [screen.id, { ...screen, components: [...(screen.components || [])] }]));
+  for (const screen of concreteContract.screens || []) {
+    if (!screenMap.has(screen.id)) {
+      screenMap.set(screen.id, { ...screen, components: [...(screen.components || [])] });
+      continue;
+    }
+    const existing = screenMap.get(screen.id);
+    screenMap.set(screen.id, {
+      ...existing,
+      ...screen,
+      components: [...(existing.components || []), ...(screen.components || [])],
+      regions: mergeByKey(existing.regions || [], screen.regions || [], (entry) => entry.region),
+      patterns: [...new Set([...(existing.patterns || []), ...(screen.patterns || [])])]
+    });
+  }
+  for (const entry of projection.uiComponents || []) {
+    if (!screenMap.has(entry.screenId)) {
+      continue;
+    }
+    const screen = screenMap.get(entry.screenId);
+    if ((screen.components || []).some((usage) => componentUsageFingerprint(usage) === componentUsageFingerprintFromEntry(entry))) {
+      continue;
+    }
+    screen.components = [...(screen.components || []), buildComponentUsageContract(graph, entry)];
+  }
+
+  const appShell = projection.uiAppShell?.length || !sharedProjection ? concreteContract.appShell : sharedContract.appShell;
+  const navigation = projection.uiNavigation?.length || !sharedProjection ? concreteContract.navigation : sharedContract.navigation;
+  const componentContracts = {
+    ...(sharedContract.components || {}),
+    ...buildComponentContractMap(graph, projection.uiComponents || [])
+  };
+
   const contract = {
     projection: {
       id: projection.id,
@@ -69,18 +107,18 @@ export function buildWebRealization(graph, options = {}) {
       : null,
     generatorDefaults: generatorDefaultsMap(projection),
     outputs: projection.outputs,
-    components: sharedContract.components || {},
-    appShell: sharedContract.appShell || null,
+    components: componentContracts,
+    appShell: appShell || null,
     navigation: {
-      groups: sharedContract.navigation?.groups || [],
-      patterns: sharedContract.navigation?.patterns || [],
-      defaultScreenId: sharedContract.navigation?.defaultScreenId || null,
-      items: (sharedContract.navigation?.items || []).map((item) => ({
+      groups: navigation?.groups || [],
+      patterns: navigation?.patterns || [],
+      defaultScreenId: navigation?.defaultScreenId || null,
+      items: (navigation?.items || []).map((item) => ({
         ...item,
         route: routeMap.get(item.screenId)?.path || item.route || null
       }))
     },
-    screens: sharedContract.screens.map((screen) => ({
+    screens: [...screenMap.values()].map((screen) => ({
       ...screen,
       route: routeMap.get(screen.id)?.path || null,
       web: Object.fromEntries((uiWebByScreen.get(screen.id) || []).map((entry) => [entry.directive, entry.value])),
@@ -94,7 +132,7 @@ export function buildWebRealization(graph, options = {}) {
           })
       )
     })),
-    sitemap: (sharedContract.navigation?.items || [])
+    sitemap: (navigation?.items || [])
       .map((item) => ({
         screenId: item.screenId,
         label: item.label,
@@ -123,4 +161,29 @@ export function buildWebRealization(graph, options = {}) {
     capabilityIds,
     apiContracts
   };
+}
+
+function mergeByKey(left, right, keyFn) {
+  const output = new Map();
+  for (const entry of left) output.set(keyFn(entry), entry);
+  for (const entry of right) output.set(keyFn(entry), { ...(output.get(keyFn(entry)) || {}), ...entry });
+  return [...output.values()];
+}
+
+function componentUsageFingerprint(usage) {
+  return [
+    usage?.region || "",
+    usage?.component?.id || "",
+    ...(usage?.dataBindings || []).map((binding) => `data:${binding.prop}:${binding.source?.id || ""}`),
+    ...(usage?.eventBindings || []).map((binding) => `event:${binding.event}:${binding.action}:${binding.target?.id || ""}`)
+  ].join("|");
+}
+
+function componentUsageFingerprintFromEntry(entry) {
+  return [
+    entry?.region || "",
+    entry?.component?.id || "",
+    ...(entry?.dataBindings || []).map((binding) => `data:${binding.prop}:${binding.source?.id || ""}`),
+    ...(entry?.eventBindings || []).map((binding) => `event:${binding.event}:${binding.action}:${binding.target?.id || ""}`)
+  ].join("|");
 }
