@@ -1,8 +1,0 @@
-[
-  {
-    "kind": "prisma_schema",
-    "file": "engine/tests/fixtures/import/nest-graphql-source/prisma/schema.prisma",
-    "entity_count": 2,
-    "enum_count": 0
-  }
-]

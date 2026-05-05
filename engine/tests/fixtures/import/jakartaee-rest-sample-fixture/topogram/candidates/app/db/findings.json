@@ -1,8 +1,0 @@
-[
-  {
-    "kind": "jpa_entity",
-    "file": "src/main/java/com/example/domain/task/Task.java",
-    "entity": "task",
-    "field_count": 5
-  }
-]

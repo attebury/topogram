@@ -1,6 +1,0 @@
-# imported confidence: medium
-# imported source_kind: schema
-# imported provenance: #10 - Clean Architecture Version (RxDart + Provider)/lib/features/user/domain/entities/user_entity.dart
-enum enum_user_user-status {
-  values [inactive, active, all]
-}

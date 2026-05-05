@@ -1,9 +1,0 @@
-[
-  {
-    "kind": "graphql_code_first_operations",
-    "files": [
-      "engine/tests/fixtures/import/graphql-nexus-source/src/schema.ts"
-    ],
-    "operation_count": 9
-  }
-]

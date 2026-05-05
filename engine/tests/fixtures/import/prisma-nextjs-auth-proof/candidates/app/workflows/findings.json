@@ -1,9 +1,0 @@
-[
-  {
-    "kind": "workflow_inference",
-    "workflow_count": 2,
-    "workflow_doc_signals": [
-      "lifecycle-flow"
-    ]
-  }
-]

@@ -1,8 +1,0 @@
-[
-  {
-    "kind": "liquibase_schema",
-    "file": "service/src/main/resources/db/changelog/changes/01-schema.xml",
-    "entity_count": 7,
-    "relation_count": 9
-  }
-]

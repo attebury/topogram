@@ -1,9 +1,0 @@
-[
-  {
-    "kind": "react_native_repository",
-    "files": [
-      "src/post/infrastructure/implementations/PostRepository.ts"
-    ],
-    "capability_count": 2
-  }
-]

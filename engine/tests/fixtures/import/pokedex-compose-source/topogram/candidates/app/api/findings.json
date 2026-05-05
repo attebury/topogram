@@ -1,9 +1,0 @@
-[
-  {
-    "kind": "android_retrofit",
-    "files": [
-      "core/network/src/main/kotlin/com/skydoves/pokedex/compose/core/network/service/PokedexService.kt"
-    ],
-    "capability_count": 2
-  }
-]

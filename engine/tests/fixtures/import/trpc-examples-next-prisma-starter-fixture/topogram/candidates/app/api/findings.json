@@ -1,9 +1,0 @@
-[
-  {
-    "kind": "trpc_procedures",
-    "files": [
-      "src/server/routers/post.ts"
-    ],
-    "capability_count": 3
-  }
-]

@@ -1,7 +1,0 @@
-[
-  {
-    "kind": "react_native_domain_entity",
-    "file": "src/post/domain/entities/PostEntity.ts",
-    "entity_id": "entity_post"
-  }
-]

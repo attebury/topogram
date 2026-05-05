@@ -1,6 +1,0 @@
-actor actor_user {
-  name "User"
-  description "Fixture actor for incomplete import tests"
-
-  status active
-}

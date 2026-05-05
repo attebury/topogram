@@ -18,6 +18,11 @@ engine/tests/fixtures/
 
 Engine tests must not import or reference generated demo workspaces. Generated apps are consumer verification targets, not engine dependencies.
 
+Importer fixtures are intentionally narrow. The engine keeps only small,
+actively tested importer smoke inputs under `engine/tests/fixtures/import/`.
+Large brownfield source snapshots belong in `topogram-project` deferred code or
+a dedicated corpus repo, not in the active engine fixture tree.
+
 ## CLI Package
 
 Run the private CLI package smoke test from the repo root:

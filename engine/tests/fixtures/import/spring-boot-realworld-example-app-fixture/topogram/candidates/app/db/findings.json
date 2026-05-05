@@ -1,8 +1,0 @@
-[
-  {
-    "kind": "mybatis_schema",
-    "file": "src/main/resources/db/migration/V1__create_tables.sql",
-    "entity_count": 7,
-    "relation_count": 0
-  }
-]

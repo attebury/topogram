@@ -1,9 +1,0 @@
-{
-  "approved_review_groups": [],
-  "items": [],
-  "projection_review_groups": [],
-  "type": "reconcile_adoption_plan",
-  "ui_review_groups": [],
-  "workflow_review_groups": [],
-  "workspace": "engine/tests/fixtures/import/realworld-backend-spring-fixture/topogram/topogram"
-}
