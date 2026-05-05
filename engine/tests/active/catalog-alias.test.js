@@ -8,8 +8,8 @@ import {
 
 test("catalog alias candidates exclude package specs, paths, and tarballs", () => {
   assert.equal(isCatalogAliasCandidate("hello-web"), true);
-  assert.equal(isCatalogAliasCandidate("todo"), true);
-  assert.equal(isCatalogAliasCandidate("@attebury/topogram-template-todo"), false);
+  assert.equal(isCatalogAliasCandidate("sample-template"), true);
+  assert.equal(isCatalogAliasCandidate("@scope/topogram-template-sample"), false);
   assert.equal(isCatalogAliasCandidate("./local-template"), false);
   assert.equal(isCatalogAliasCandidate("../local-template"), false);
   assert.equal(isCatalogAliasCandidate("/tmp/local-template"), false);

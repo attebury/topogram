@@ -5,16 +5,34 @@ import test from "node:test";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const testsRoot = path.join(repoRoot, "engine", "tests");
+const activeTestsRoot = path.join(testsRoot, "active");
 const fixturesRoot = path.join(testsRoot, "fixtures");
+const productNameLower = ["to", "do"].join("");
+const productNameTitle = ["To", "do"].join("");
+const generatedWorkflowBoundaryFile = path.join(activeTestsRoot, "generated-app-workflow.test.js");
 const forbiddenDemoReferences = [
   ["demos", "generated"].join("/"),
-  ["todo", "demo", "app"].join("-")
+  [productNameLower, "demo", "app"].join("-")
 ];
 const forbiddenFixtureReferences = [
   "TODO_",
-  "Todo",
-  "topogram_todo",
-  "topogram-todo"
+  productNameTitle,
+  ["topogram", productNameLower].join("_"),
+  ["topogram", productNameLower].join("-")
+];
+const externalProductReferences = [
+  productNameLower,
+  productNameTitle,
+  ["topogram", "template", productNameLower].join("-"),
+  ["topogram", "demo", productNameLower].join("-"),
+  ["topogram", productNameLower].join("-"),
+  ["@attebury", ["topogram", "template", productNameLower].join("-")].join("/")
+];
+const generatedWorkflowDirectProductReferences = [
+  JSON.stringify(productNameLower),
+  ["topogram", "template", productNameLower].join("-"),
+  ["topogram", "demo", productNameLower].join("-"),
+  ["@attebury", ["topogram", "template", productNameLower].join("-")].join("/")
 ];
 
 function visitFiles(root) {
@@ -43,7 +61,7 @@ test("engine tests do not reference generated demo workspaces", () => {
   assert.deepEqual(offenders, []);
 });
 
-test("engine fixtures do not carry Todo-specific vocabulary", () => {
+test("engine fixtures do not carry product-specific vocabulary", () => {
   const offenders = [];
   for (const file of visitFiles(fixturesRoot)) {
     const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
@@ -52,6 +70,30 @@ test("engine fixtures do not carry Todo-specific vocabulary", () => {
       offenders.push(relative);
     }
   }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("active engine tests keep product-specific references in the named boundary file", () => {
+  const offenders = [];
+  for (const file of visitFiles(activeTestsRoot)) {
+    if (file === generatedWorkflowBoundaryFile) continue;
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (externalProductReferences.some((reference) => contents.includes(reference))) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("generated workflow keeps direct product literals near named constants", () => {
+  const contents = fs.readFileSync(generatedWorkflowBoundaryFile, "utf8");
+  const boundaryIndex = contents.indexOf("function createPureTopogramPackage");
+  assert.notEqual(boundaryIndex, -1);
+  const tail = contents.slice(boundaryIndex);
+  const offenders = generatedWorkflowDirectProductReferences.filter((reference) => tail.includes(reference));
 
   assert.deepEqual(offenders, []);
 });
