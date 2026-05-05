@@ -161,14 +161,14 @@ function createCatalog(root, entries) {
   return catalogPath;
 }
 
-function catalogEntry(overrides = {}) {
+function sampleTemplateCatalogEntry(overrides = {}) {
   return {
-    id: "todo",
+    id: "sample-template",
     kind: "template",
-    package: "@scope/topogram-template-todo",
+    package: "@scope/topogram-template-sample",
     defaultVersion: "0.1.0",
-    description: "Todo starter",
-    tags: ["todo", "demo"],
+    description: "Sample starter",
+    tags: ["sample", "template"],
     surfaces: ["web", "api", "database"],
     generators: ["topogram/sveltekit", "topogram/hono", "topogram/postgres"],
     stack: "SvelteKit + Hono + Postgres",
@@ -180,6 +180,14 @@ function catalogEntry(overrides = {}) {
     ...overrides
   };
 }
+
+test("generic catalog fixture helper stays product-neutral", () => {
+  const entry = sampleTemplateCatalogEntry();
+  const serialized = JSON.stringify(entry);
+  assert.equal(entry.id, "sample-template");
+  assert.equal(entry.package, "@scope/topogram-template-sample");
+  assert.doesNotMatch(serialized, /topogram-template-todo|Todo starter|"todo"/);
+});
 
 function createPureTopogramPackage(root, name = "topogram-package", options = {}) {
   const packageRoot = path.join(root, name);
@@ -884,8 +892,8 @@ test("agent review packets recommend component behavior reports for component im
 test("topogram catalog check validates catalog schema", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-check-"));
   const validCatalog = createCatalog(root, [
-    catalogEntry(),
-    catalogEntry({
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -906,29 +914,29 @@ test("topogram catalog check validates catalog schema", () => {
   assert.equal(payload.catalog.entries.length, 2);
 
   const duplicateCatalog = createCatalog(path.join(root, "duplicate"), [
-    catalogEntry(),
-    catalogEntry({ id: "todo", package: "@scope/topogram-template-other" })
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({ id: "sample-template", package: "@scope/topogram-template-other" })
   ]);
   const duplicate = runCli(["catalog", "check", duplicateCatalog, "--json"]);
   assert.notEqual(duplicate.status, 0, duplicate.stdout);
   assert.equal(JSON.parse(duplicate.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_duplicate_id"), true);
 
   const invalidKindCatalog = createCatalog(path.join(root, "invalid-kind"), [
-    catalogEntry({ kind: "app" })
+    sampleTemplateCatalogEntry({ kind: "app" })
   ]);
   const invalidKind = runCli(["catalog", "check", invalidKindCatalog, "--json"]);
   assert.notEqual(invalidKind.status, 0, invalidKind.stdout);
   assert.equal(JSON.parse(invalidKind.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_invalid_kind"), true);
 
   const missingPackageCatalog = createCatalog(path.join(root, "missing-package"), [
-    catalogEntry({ package: "" })
+    sampleTemplateCatalogEntry({ package: "" })
   ]);
   const missingPackage = runCli(["catalog", "check", missingPackageCatalog, "--json"]);
   assert.notEqual(missingPackage.status, 0, missingPackage.stdout);
   assert.equal(JSON.parse(missingPackage.stdout).diagnostics.some((diagnostic) => diagnostic.code === "catalog_entry_field_missing"), true);
 
   const executableTopogramCatalog = createCatalog(path.join(root, "executable-topogram"), [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "unsafe",
       kind: "topogram",
       package: "@scope/topogram-unsafe",
@@ -946,7 +954,7 @@ test("topogram catalog check validates catalog schema", () => {
   );
 
   const optionalMetadataCatalog = createCatalog(path.join(root, "optional-metadata"), [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       surfaces: ["web", "spaceship"],
       generators: "topogram/hono",
       stack: ["Hono"]
@@ -965,8 +973,8 @@ test("topogram catalog doctor reports catalog and package access", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-doctor-"));
   const fakeNpmBin = createFakeNpm(root);
   const catalogPath = createCatalog(root, [
-    catalogEntry(),
-    catalogEntry({
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -992,13 +1000,13 @@ test("topogram catalog doctor reports catalog and package access", () => {
   assert.equal(payload.catalog.entries, 2);
   assert.equal(payload.packages.length, 2);
   assert.equal(payload.packages.every((item) => item.ok), true);
-  assert.equal(payload.packages[0].packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(payload.packages[0].packageSpec, "@scope/topogram-template-sample@0.1.0");
 
   const human = runCli(["catalog", "doctor", "--catalog", catalogPath], { env });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Catalog doctor passed/);
   assert.match(human.stdout, /Catalog reachable: yes/);
-  assert.match(human.stdout, /@scope\/topogram-template-todo@0\.1\.0 ok/);
+  assert.match(human.stdout, /@scope\/topogram-template-sample@0\.1\.0 ok/);
 
   const denied = runCli(["catalog", "doctor", "--catalog", catalogPath, "--json"], {
     env: {
@@ -1017,7 +1025,7 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-doctor-"));
   const fakeNpmBin = createFakeNpm(root);
   const catalogPath = createCatalog(root, [
-    catalogEntry()
+    sampleTemplateCatalogEntry()
   ]);
   const env = {
     FAKE_NPM_LATEST_VERSION: "0.1.0",
@@ -1066,8 +1074,8 @@ test("topogram doctor checks runtime, GitHub Packages, and catalog access", () =
 test("topogram catalog show describes template and topogram entries", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-show-"));
   const catalogPath = createCatalog(root, [
-    catalogEntry(),
-    catalogEntry({
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -1081,16 +1089,16 @@ test("topogram catalog show describes template and topogram entries", () => {
     })
   ]);
 
-  const template = runCli(["catalog", "show", "todo", "--catalog", catalogPath, "--json"]);
+  const template = runCli(["catalog", "show", "sample-template", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
   const templatePayload = JSON.parse(template.stdout);
   assert.equal(templatePayload.ok, true);
   assert.equal(templatePayload.entry.kind, "template");
-  assert.equal(templatePayload.entry.package, "@scope/topogram-template-todo");
-  assert.equal(templatePayload.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(templatePayload.entry.package, "@scope/topogram-template-sample");
+  assert.equal(templatePayload.packageSpec, "@scope/topogram-template-sample@0.1.0");
   assert.equal(
     templatePayload.commands.primary,
-    `topogram new ./my-app --template todo --catalog ${catalogPath}`
+    `topogram new ./my-app --template sample-template --catalog ${catalogPath}`
   );
 
   const topogram = runCli(["catalog", "show", "hello", "--catalog", catalogPath, "--json"]);
@@ -1134,7 +1142,7 @@ test("topogram catalog show describes template and topogram entries", () => {
 test("topogram template list includes catalog template aliases", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-template-list-"));
   const catalogPath = createCatalog(root, [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "hello-web",
       package: "@scope/topogram-starter-hello-web",
       defaultVersion: "0.1.0",
@@ -1148,8 +1156,8 @@ test("topogram template list includes catalog template aliases", () => {
         includesExecutableImplementation: false
       }
     }),
-    catalogEntry(),
-    catalogEntry({
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -1180,45 +1188,45 @@ test("topogram template list includes catalog template aliases", () => {
     `topogram new ./my-app --template hello-web --catalog ${catalogPath}`
   );
   assert.equal(helloWebTemplate.commands.primary, helloWebTemplate.recommendedCommand);
-  const todoTemplate = payload.templates.find((template) => template.id === "todo");
-  assert.ok(todoTemplate);
-  assert.equal(todoTemplate.source, "catalog");
-  assert.equal(todoTemplate.package, "@scope/topogram-template-todo");
-  assert.equal(todoTemplate.isDefault, false);
-  assert.deepEqual(todoTemplate.surfaces, ["web", "api", "database"]);
-  assert.deepEqual(todoTemplate.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
-  assert.equal(todoTemplate.stack, "SvelteKit + Hono + Postgres");
-  assert.equal(todoTemplate.includesExecutableImplementation, true);
+  const sampleTemplate = payload.templates.find((template) => template.id === "sample-template");
+  assert.ok(sampleTemplate);
+  assert.equal(sampleTemplate.source, "catalog");
+  assert.equal(sampleTemplate.package, "@scope/topogram-template-sample");
+  assert.equal(sampleTemplate.isDefault, false);
+  assert.deepEqual(sampleTemplate.surfaces, ["web", "api", "database"]);
+  assert.deepEqual(sampleTemplate.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
+  assert.equal(sampleTemplate.stack, "SvelteKit + Hono + Postgres");
+  assert.equal(sampleTemplate.includesExecutableImplementation, true);
   assert.equal(
-    todoTemplate.recommendedCommand,
-    `topogram new ./my-app --template todo --catalog ${catalogPath}`
+    sampleTemplate.recommendedCommand,
+    `topogram new ./my-app --template sample-template --catalog ${catalogPath}`
   );
-  assert.equal(todoTemplate.commands.primary, todoTemplate.recommendedCommand);
+  assert.equal(sampleTemplate.commands.primary, sampleTemplate.recommendedCommand);
   assert.equal(payload.templates.some((template) => template.id === "hello"), false);
 
   const aliasList = runCli(["new", "--list-templates", "--json", "--catalog", catalogPath]);
   assert.equal(aliasList.status, 0, aliasList.stderr || aliasList.stdout);
   const aliasPayload = JSON.parse(aliasList.stdout);
   assert.equal(aliasPayload.catalog.loaded, true);
-  assert.equal(aliasPayload.templates.some((template) => template.id === "todo"), true);
+  assert.equal(aliasPayload.templates.some((template) => template.id === "sample-template"), true);
 
   const listHuman = runCli(["template", "list", "--catalog", catalogPath]);
   assert.equal(listHuman.status, 0, listHuman.stderr || listHuman.stdout);
   assert.match(listHuman.stdout, /Template starters:/);
   assert.match(listHuman.stdout, /Catalog aliases resolve to versioned package installs/);
   assert.match(listHuman.stdout, /hello-web@0\.1\.0 \(default\)/);
-  assert.match(listHuman.stdout, /todo@0\.1\.0/);
+  assert.match(listHuman.stdout, /sample-template@0\.1\.0/);
   assert.match(listHuman.stdout, /Source: catalog \| Surfaces: web, api, database \| Stack: SvelteKit \+ Hono \+ Postgres \| Executable implementation: yes/);
-  assert.match(listHuman.stdout, /topogram new \.\/my-app --template todo/);
+  assert.match(listHuman.stdout, /topogram new \.\/my-app --template sample-template/);
 
   const human = runCli(["catalog", "list", "--catalog", catalogPath]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Catalog entries:/);
   assert.match(human.stdout, /Template entries create starters with `topogram new`/);
-  assert.match(human.stdout, /todo \(template\)/);
-  assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(human.stdout, /sample-template \(template\)/);
+  assert.match(human.stdout, /Package: @scope\/topogram-template-sample@0\.1\.0/);
   assert.match(human.stdout, /Executable implementation: yes/);
-  assert.match(human.stdout, /New: topogram new \.\/my-app --template todo/);
+  assert.match(human.stdout, /New: topogram new \.\/my-app --template sample-template/);
   assert.match(human.stdout, /hello \(topogram\)/);
   assert.match(human.stdout, /Copy: topogram catalog copy hello \.\/hello-topogram/);
 });
@@ -1226,8 +1234,8 @@ test("topogram template list includes catalog template aliases", () => {
 test("topogram template show describes catalog templates", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-show-"));
   const catalogPath = createCatalog(root, [
-    catalogEntry(),
-    catalogEntry({
+    sampleTemplateCatalogEntry(),
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -1241,13 +1249,13 @@ test("topogram template show describes catalog templates", () => {
     })
   ]);
 
-  const template = runCli(["template", "show", "todo", "--catalog", catalogPath, "--json"]);
+  const template = runCli(["template", "show", "sample-template", "--catalog", catalogPath, "--json"]);
   assert.equal(template.status, 0, template.stderr || template.stdout);
   const templatePayload = JSON.parse(template.stdout);
   assert.equal(templatePayload.ok, true);
   assert.equal(templatePayload.source, "catalog");
   assert.equal(templatePayload.template.kind, "template");
-  assert.equal(templatePayload.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(templatePayload.packageSpec, "@scope/topogram-template-sample@0.1.0");
   assert.deepEqual(templatePayload.decision.surfaces, ["web", "api", "database"]);
   assert.equal(templatePayload.decision.stack, "SvelteKit + Hono + Postgres");
   assert.deepEqual(templatePayload.decision.generators, ["topogram/sveltekit", "topogram/hono", "topogram/postgres"]);
@@ -1255,21 +1263,21 @@ test("topogram template show describes catalog templates", () => {
   assert.match(templatePayload.decision.policyImpact, /Copies implementation\/ code/);
   assert.equal(
     templatePayload.commands.primary,
-    `topogram new ./my-app --template todo --catalog ${catalogPath}`
+    `topogram new ./my-app --template sample-template --catalog ${catalogPath}`
   );
 
-  const human = runCli(["template", "show", "todo", "--catalog", catalogPath]);
+  const human = runCli(["template", "show", "sample-template", "--catalog", catalogPath]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, /Template: todo/);
+  assert.match(human.stdout, /Template: sample-template/);
   assert.match(human.stdout, /Source: catalog/);
   assert.match(human.stdout, /What it creates:/);
   assert.match(human.stdout, /Surfaces: web, api, database/);
   assert.match(human.stdout, /Stack: SvelteKit \+ Hono \+ Postgres/);
-  assert.match(human.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(human.stdout, /Package: @scope\/topogram-template-sample@0\.1\.0/);
   assert.match(human.stdout, /Policy impact: Copies implementation\/ code/);
   assert.doesNotMatch(human.stdout, /Details:\nStack:/);
   assert.match(human.stdout, /Recommended command:/);
-  assert.match(human.stdout, /topogram new \.\/my-app --template todo/);
+  assert.match(human.stdout, /topogram new \.\/my-app --template sample-template/);
 
   const nonTemplate = runCli(["template", "show", "hello", "--catalog", catalogPath, "--json"]);
   assert.notEqual(nonTemplate.status, 0, nonTemplate.stdout);
@@ -1278,18 +1286,18 @@ test("topogram template show describes catalog templates", () => {
 
 test("topogram new resolves catalog template aliases to package specs", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-"));
-  const templateRoot = copyBuiltInTemplate(root, "todo-template");
+  const templateRoot = copyBuiltInTemplate(root, "sample-template");
   const manifestPath = path.join(templateRoot, "topogram-template.json");
   const manifest = readJson(manifestPath);
-  manifest.id = "@scope/topogram-template-todo";
+  manifest.id = "@scope/topogram-template-sample";
   manifest.version = "0.1.0";
   writeJson(manifestPath, manifest);
-  const catalogPath = createCatalog(root, [catalogEntry()]);
+  const catalogPath = createCatalog(root, [sampleTemplateCatalogEntry()]);
   const fakeNpmBin = createFakeNpm(root);
   const projectRoot = path.join(root, "starter");
   const env = {
     FAKE_NPM_PACKAGES: JSON.stringify({
-      "@scope/topogram-template-todo@0.1.0": templateRoot
+      "@scope/topogram-template-sample@0.1.0": templateRoot
     }),
     FAKE_NPM_LATEST_VERSION: "0.1.0",
     NODE_AUTH_TOKEN: "test-token",
@@ -1297,13 +1305,13 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
 
-  const create = runCli(["new", projectRoot, "--template", "todo", "--catalog", catalogPath], { env });
+  const create = runCli(["new", projectRoot, "--template", "sample-template", "--catalog", catalogPath], { env });
   assert.equal(create.status, 0, create.stderr || create.stdout);
-  assert.match(create.stdout, /Template: @scope\/topogram-template-todo/);
+  assert.match(create.stdout, /Template: @scope\/topogram-template-sample/);
   assert.match(create.stdout, /Source: package/);
-  assert.match(create.stdout, /Source spec: @scope\/topogram-template-todo@0\.1\.0/);
-  assert.match(create.stdout, /Catalog: todo from /);
-  assert.match(create.stdout, /Package: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(create.stdout, /Source spec: @scope\/topogram-template-sample@0\.1\.0/);
+  assert.match(create.stdout, /Catalog: sample-template from /);
+  assert.match(create.stdout, /Package: @scope\/topogram-template-sample@0\.1\.0/);
   assert.match(create.stdout, /Executable implementation: yes/);
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
   assert.match(create.stdout, /Trust: \.topogram-template-trust\.json/);
@@ -1312,16 +1320,16 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(create.stdout, /npm run template:policy:explain/);
   assert.match(create.stdout, /npm run trust:status/);
   const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
-  assert.equal(projectConfig.template.id, "@scope/topogram-template-todo");
+  assert.equal(projectConfig.template.id, "@scope/topogram-template-sample");
   assert.equal(projectConfig.template.source, "package");
-  assert.equal(projectConfig.template.requested, "todo");
-  assert.equal(projectConfig.template.sourceSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(projectConfig.template.requested, "sample-template");
+  assert.equal(projectConfig.template.sourceSpec, "@scope/topogram-template-sample@0.1.0");
   assert.deepEqual(projectConfig.template.catalog, {
-    id: "todo",
+    id: "sample-template",
     source: catalogPath,
-    package: "@scope/topogram-template-todo",
+    package: "@scope/topogram-template-sample",
     version: "0.1.0",
-    packageSpec: "@scope/topogram-template-todo@0.1.0"
+    packageSpec: "@scope/topogram-template-sample@0.1.0"
   });
   assert.equal(
     readText(path.join(projectRoot, ".npmrc")),
@@ -1329,34 +1337,34 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   );
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
   const fileManifest = readJson(path.join(projectRoot, ".topogram-template-files.json"));
-  assert.equal(fileManifest.template.requested, "todo");
+  assert.equal(fileManifest.template.requested, "sample-template");
   assert.deepEqual(fileManifest.template.catalog, projectConfig.template.catalog);
   const trustRecord = readJson(path.join(projectRoot, ".topogram-template-trust.json"));
-  assert.equal(trustRecord.template.requested, "todo");
+  assert.equal(trustRecord.template.requested, "sample-template");
   assert.deepEqual(trustRecord.template.catalog, projectConfig.template.catalog);
 
   const status = runCli(["template", "status", "--json"], { cwd: projectRoot });
   assert.equal(status.status, 0, status.stderr || status.stdout);
   const statusPayload = JSON.parse(status.stdout);
-  assert.equal(statusPayload.template.requested, "todo");
+  assert.equal(statusPayload.template.requested, "sample-template");
   assert.deepEqual(statusPayload.template.catalog, projectConfig.template.catalog);
 
   const humanStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
-  assert.match(humanStatus.stdout, /Requested: todo/);
-  assert.match(humanStatus.stdout, /Catalog: todo from /);
+  assert.match(humanStatus.stdout, /Requested: sample-template/);
+  assert.match(humanStatus.stdout, /Catalog: sample-template from /);
 
   const sourceStatus = runCli(["source", "status", "--json"], { cwd: projectRoot, env });
   assert.equal(sourceStatus.status, 0, sourceStatus.stderr || sourceStatus.stdout);
   const sourcePayload = JSON.parse(sourceStatus.stdout);
   assert.equal(sourcePayload.exists, false);
-  assert.equal(sourcePayload.project.catalog.id, "todo");
+  assert.equal(sourcePayload.project.catalog.id, "sample-template");
   assert.equal(sourcePayload.project.catalog.source, catalogPath);
-  assert.equal(sourcePayload.project.template.id, "@scope/topogram-template-todo");
-  assert.equal(sourcePayload.project.template.requested, "todo");
-  assert.equal(sourcePayload.project.template.sourceSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(sourcePayload.project.template.id, "@scope/topogram-template-sample");
+  assert.equal(sourcePayload.project.template.requested, "sample-template");
+  assert.equal(sourcePayload.project.template.sourceSpec, "@scope/topogram-template-sample@0.1.0");
   assert.equal(sourcePayload.project.template.includesExecutableImplementation, true);
-  assert.equal(sourcePayload.project.package.package, "@scope/topogram-template-todo");
+  assert.equal(sourcePayload.project.package.package, "@scope/topogram-template-sample");
   assert.equal(sourcePayload.project.package.currentVersion, "0.1.0");
   assert.equal(sourcePayload.project.package.latestVersion, "0.1.0");
   assert.equal(sourcePayload.project.package.current, true);
@@ -1376,8 +1384,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(humanSourceStatus.status, 0, humanSourceStatus.stderr || humanSourceStatus.stdout);
   assert.match(humanSourceStatus.stdout, /Topogram source status: no provenance/);
   assert.match(humanSourceStatus.stdout, /Package checks: remote\. Use --local to skip registry access\./);
-  assert.match(humanSourceStatus.stdout, /Project catalog: todo from /);
-  assert.match(humanSourceStatus.stdout, /Template: @scope\/topogram-template-todo@0\.1\.0/);
+  assert.match(humanSourceStatus.stdout, /Project catalog: sample-template from /);
+  assert.match(humanSourceStatus.stdout, /Template: @scope\/topogram-template-sample@0\.1\.0/);
   assert.match(humanSourceStatus.stdout, /Executable implementation: yes/);
   assert.match(humanSourceStatus.stdout, /Implementation trust: trusted/);
   assert.match(humanSourceStatus.stdout, /Template baseline: matches-template/);
@@ -1396,7 +1404,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   });
   assert.equal(localSourceStatus.status, 0, localSourceStatus.stderr || localSourceStatus.stdout);
   const localSourcePayload = JSON.parse(localSourceStatus.stdout);
-  assert.equal(localSourcePayload.project.package.packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(localSourcePayload.project.package.packageSpec, "@scope/topogram-template-sample@0.1.0");
   assert.equal(localSourcePayload.project.package.checked, false);
   assert.equal(localSourcePayload.project.package.currentVersion, null);
   assert.equal(localSourcePayload.project.package.latestVersion, null);
@@ -1414,7 +1422,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   });
   assert.equal(localHumanSourceStatus.status, 0, localHumanSourceStatus.stderr || localHumanSourceStatus.stdout);
   assert.match(localHumanSourceStatus.stdout, /Package checks: local\. Registry access skipped\./);
-  assert.match(localHumanSourceStatus.stdout, /Template package: @scope\/topogram-template-todo@0\.1\.0 \(not checked, local mode\)/);
+  assert.match(localHumanSourceStatus.stdout, /Template package: @scope\/topogram-template-sample@0\.1\.0 \(not checked, local mode\)/);
   assert.doesNotMatch(localHumanSourceStatus.stdout, /github_packages_check_failed/);
 
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
@@ -1423,7 +1431,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(doctorPayload.catalog.source, catalogPath);
   assert.equal(doctorPayload.catalog.catalog.reachable, true);
   assert.equal(doctorPayload.catalog.packages.length, 1);
-  assert.equal(doctorPayload.catalog.packages[0].packageSpec, "@scope/topogram-template-todo@0.1.0");
+  assert.equal(doctorPayload.catalog.packages[0].packageSpec, "@scope/topogram-template-sample@0.1.0");
   assert.equal(doctorPayload.catalog.packages[0].ok, true);
   assert.equal(
     doctorPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_check_skipped"),
@@ -1455,7 +1463,7 @@ test("catalog aliases resolve starter names", () => {
   manifest.version = "0.1.0";
   writeJson(manifestPath, manifest);
   const catalogPath = createCatalog(root, [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "hello-web",
       package: "@scope/topogram-starter-hello-web",
       description: "Catalog hello web starter",
@@ -1503,14 +1511,14 @@ test("topogram new explains catalog alias resolution failures", () => {
   assert.match(auth.stderr, /NODE_AUTH_TOKEN/);
 
   const catalogPath = createCatalog(root, [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "hello-web",
       package: "@scope/topogram-starter-hello-web",
       description: "Vanilla HTML/CSS/JS web starter",
       surfaces: ["web"],
       tags: ["hello", "web"]
     }),
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "web-api",
       package: "@scope/topogram-starter-web-api",
       description: "React and Express starter",
@@ -1518,7 +1526,7 @@ test("topogram new explains catalog alias resolution failures", () => {
       stack: "React + Express",
       tags: ["react", "express", "web", "api"]
     }),
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "web-api-db",
       package: "@scope/topogram-starter-web-api-db",
       description: "SvelteKit, Hono, and Postgres starter",
@@ -2172,7 +2180,7 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   const packageRoot = createPureTopogramPackage(root, "hello-topogram-package");
   const unsafePackageRoot = createPureTopogramPackage(root, "unsafe-topogram-package", { implementation: true });
   const catalogPath = createCatalog(root, [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
       package: "@scope/topogram-hello",
@@ -2184,7 +2192,7 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
         includesExecutableImplementation: false
       }
     }),
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "unsafe-package",
       kind: "topogram",
       package: "@scope/topogram-unsafe-package",
@@ -2328,7 +2336,7 @@ test("topogram new defaults to the catalog hello-web starter", () => {
   const fakeNpmBin = createFakeNpm(root);
   const templateRoot = path.join(fixtureTemplatesRoot, "hello-web");
   const catalogPath = createCatalog(root, [
-    catalogEntry({
+    sampleTemplateCatalogEntry({
       id: "hello-web",
       package: "@scope/topogram-starter-hello-web",
       defaultVersion: "0.1.0",
@@ -3355,26 +3363,26 @@ test("topogram template policy explain checks package scope from source spec", (
 
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
-  projectConfig.template.id = "@attebury/topogram-template-todo";
+  projectConfig.template.id = "@attebury/topogram-template-sample";
   projectConfig.template.version = "0.1.6";
   projectConfig.template.source = "package";
-  projectConfig.template.requested = "todo";
-  projectConfig.template.sourceSpec = "@evil/topogram-template-todo@0.1.6";
+  projectConfig.template.requested = "sample-template";
+  projectConfig.template.sourceSpec = "@evil/topogram-template-sample@0.1.6";
   projectConfig.template.catalog = {
-    id: "todo",
+    id: "sample-template",
     source: "./topograms.catalog.json",
-    package: "@evil/topogram-template-todo",
+    package: "@evil/topogram-template-sample",
     version: "0.1.6",
-    packageSpec: "@evil/topogram-template-todo@0.1.6"
+    packageSpec: "@evil/topogram-template-sample@0.1.6"
   };
   writeJson(projectConfigPath, projectConfig);
 
   const policyPath = path.join(projectRoot, "topogram.template-policy.json");
   const policy = readJson(policyPath);
-  policy.allowedTemplateIds = ["@attebury/topogram-template-todo"];
+  policy.allowedTemplateIds = ["@attebury/topogram-template-sample"];
   policy.allowedPackageScopes = ["@attebury"];
   policy.executableImplementation = "allow";
-  policy.pinnedVersions = { "@attebury/topogram-template-todo": "0.1.6" };
+  policy.pinnedVersions = { "@attebury/topogram-template-sample": "0.1.6" };
   writeJson(policyPath, policy);
 
   const check = runCli(["template", "policy", "check", "--json"], { cwd: projectRoot });
@@ -3386,7 +3394,7 @@ test("topogram template policy explain checks package scope from source spec", (
   assert.notEqual(explain.status, 0, explain.stdout);
   const explainPayload = JSON.parse(explain.stdout);
   assert.equal(explainPayload.package.scope, "@evil");
-  assert.equal(explainPayload.catalog.packageSpec, "@evil/topogram-template-todo@0.1.6");
+  assert.equal(explainPayload.catalog.packageSpec, "@evil/topogram-template-sample@0.1.6");
   const scopeRule = explainPayload.rules.find((rule) => rule.name === "allowed-package-scope");
   assert.equal(scopeRule.ok, false);
   assert.equal(scopeRule.actual, "@evil");
