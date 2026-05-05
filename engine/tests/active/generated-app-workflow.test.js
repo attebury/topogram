@@ -474,7 +474,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const importHelp = runCli(["import", "--help"]);
   assert.equal(importHelp.status, 0, importHelp.stderr || importHelp.stdout);
   assert.match(importHelp.stdout, /Usage: topogram import <app-path> --out <target>/);
-  assert.match(importHelp.stdout, /topogram import refresh \[path\] \[--from <app-path>\]/);
+  assert.match(importHelp.stdout, /topogram import refresh \[path\] \[--from <app-path>\] \[--dry-run\]/);
+  assert.match(importHelp.stdout, /topogram import diff \[path\]/);
   assert.match(importHelp.stdout, /topogram import check \[path\]/);
   assert.match(importHelp.stdout, /topogram import plan \[path\]/);
   assert.match(importHelp.stdout, /topogram import adopt --list \[path\]/);
@@ -484,7 +485,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(importHelp.stdout, /topogram import status \[path\]/);
   assert.match(importHelp.stdout, /topogram import history \[path\] \[--verify\]/);
   assert.match(importHelp.stdout, /topogram import adopt --list \.\/imported-topogram/);
-  assert.match(importHelp.stdout, /topogram import refresh \.\/imported-topogram --from \.\/existing-app/);
+  assert.match(importHelp.stdout, /topogram import diff \.\/imported-topogram/);
+  assert.match(importHelp.stdout, /topogram import refresh \.\/imported-topogram --from \.\/existing-app --dry-run/);
   assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --dry-run/);
   assert.match(importHelp.stdout, /topogram import adopt bundle:task .* --write --force --reason/);
   assert.match(importHelp.stdout, /topogram import history \.\/imported-topogram --verify/);

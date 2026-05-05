@@ -134,12 +134,41 @@ test("brownfield import refresh updates candidates and provenance without overwr
   assert.equal(dirtyPayload.import.status, "changed");
   assert.deepEqual(dirtyPayload.import.content.changed, ["db/schema.sql"]);
 
+  const beforeDryRunRecord = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-import.json"), "utf8"));
+  assert.equal(beforeDryRunRecord.refreshedAt, undefined);
+  const diff = runCli(["import", "diff", targetRoot, "--json"]);
+  assert.equal(diff.status, 0, diff.stderr || diff.stdout);
+  const diffPayload = JSON.parse(diff.stdout);
+  assert.equal(diffPayload.importStatus, "changed");
+  assert.equal(diffPayload.sourceDiff.counts.changed, 1);
+  assert.deepEqual(diffPayload.sourceDiff.changed, ["db/schema.sql"]);
+  assert.deepEqual(diffPayload.candidateCountDeltas.deltas.dbEntities, { previous: 2, next: 3, delta: 1 });
+  assert.equal(diffPayload.adoptionPlanDeltas.added.length > 0, true);
+  assert.equal(diffPayload.receiptVerification.status, "changed");
+
+  const dryRun = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--dry-run", "--json"]);
+  assert.equal(dryRun.status, 0, dryRun.stderr || dryRun.stdout);
+  const dryRunPayload = JSON.parse(dryRun.stdout);
+  assert.equal(dryRunPayload.dryRun, true);
+  assert.equal(dryRunPayload.previousImportStatus, "changed");
+  assert.equal(dryRunPayload.currentImportStatus, "changed");
+  assert.equal(dryRunPayload.writtenFiles.length, 0);
+  assert.equal(dryRunPayload.plannedFiles.includes(".topogram-import.json"), true);
+  assert.deepEqual(dryRunPayload.candidateCountDeltas.deltas.dbEntities, { previous: 2, next: 3, delta: 1 });
+  const afterDryRunRecord = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-import.json"), "utf8"));
+  assert.equal(afterDryRunRecord.refreshedAt, undefined);
+  const dryRunDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "db", "candidates.json"), "utf8"));
+  assert.equal(candidateIds(dryRunDbCandidates.entities).includes("entity_label"), false);
+
   const refresh = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--json"]);
   assert.equal(refresh.status, 0, refresh.stderr || refresh.stdout);
   const refreshPayload = JSON.parse(refresh.stdout);
   assert.equal(refreshPayload.ok, true);
+  assert.equal(refreshPayload.dryRun, false);
   assert.equal(refreshPayload.previousImportStatus, "changed");
   assert.equal(refreshPayload.currentImportStatus, "clean");
+  assert.equal(refreshPayload.refreshMetadata.previousSourceStatus, "changed");
+  assert.deepEqual(refreshPayload.refreshMetadata.sourceDiffCounts, { changed: 1, added: 0, removed: 0 });
   assert.equal(refreshPayload.candidateCounts.dbEntities, 3);
   assert.equal(refreshPayload.removedCandidateFiles.rawCandidateFiles > 0, true);
   assert.equal(refreshPayload.removedCandidateFiles.reconcileFiles > 0, true);
@@ -149,6 +178,10 @@ test("brownfield import refresh updates candidates and provenance without overwr
 
   const refreshedDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "db", "candidates.json"), "utf8"));
   assert.equal(candidateIds(refreshedDbCandidates.entities).includes("entity_label"), true);
+  const refreshedRecord = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-import.json"), "utf8"));
+  assert.equal(typeof refreshedRecord.refreshedAt, "string");
+  assert.equal(refreshedRecord.refresh.previousSourceStatus, "changed");
+  assert.deepEqual(refreshedRecord.refresh.sourceDiffCounts, { changed: 1, added: 0, removed: 0 });
 
   const cleanCheck = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(cleanCheck.status, 0, cleanCheck.stderr || cleanCheck.stdout);

@@ -7,6 +7,8 @@ artifacts to review, edit, and adopt.
 topogram import ./existing-app --out ./imported-topogram
 cd ./imported-topogram
 topogram import check
+topogram import diff
+topogram import refresh . --from ../existing-app --dry-run
 topogram import refresh . --from ../existing-app
 topogram import plan
 topogram import adopt --list
@@ -48,7 +50,9 @@ Use `topogram import refresh` when the brownfield app changed and you want a
 new candidate/reconcile plan without losing local Topogram edits:
 
 ```bash
+topogram import diff ./imported-topogram
 topogram import refresh ./imported-topogram --from ./existing-app
+topogram import refresh ./imported-topogram --dry-run --json
 topogram import refresh ./imported-topogram --json
 ```
 
@@ -56,7 +60,11 @@ Refresh rewrites only `topogram/candidates/app/**`,
 `topogram/candidates/reconcile/**`, and `.topogram-import.json`. It does not
 overwrite adopted or canonical `topogram/**` files. The refreshed provenance
 hashes the source at the moment of refresh, so `topogram import check` returns
-to clean after the new source evidence is accepted.
+to clean after the new source evidence is accepted. `topogram import diff` and
+`topogram import refresh --dry-run` preview the source diff, candidate count
+deltas, adoption-plan deltas, and adopted-file receipt audit without writing.
+After a write refresh, `.topogram-import.json` records `refreshedAt`, the
+previous source status, and source diff counts for the accepted refresh.
 
 Use the adoption commands to review and promote imported candidates into
 canonical Topogram files:

@@ -39,10 +39,12 @@ export function collectImportSourceFileRecords(sourceRoot, options = {}) {
 
 export function writeTopogramImportRecord(projectRoot, input) {
   const resolvedProjectRoot = path.resolve(projectRoot);
+  const timestamp = input.timestamp || new Date().toISOString();
   const record = {
     version: "0.1",
     kind: "brownfield-import",
-    importedAt: new Date().toISOString(),
+    importedAt: input.importedAt || timestamp,
+    ...(input.refreshedAt ? { refreshedAt: input.refreshedAt } : {}),
     source: {
       path: path.resolve(input.sourceRoot),
       hashAlgorithm: "sha256",
@@ -57,6 +59,7 @@ export function writeTopogramImportRecord(projectRoot, input) {
       importedArtifacts: "project-owned",
       note: "Topogram artifacts created by import are editable after import. Source hashes record the brownfield app evidence trusted at import time."
     },
+    ...(input.refresh ? { refresh: input.refresh } : {}),
     files: input.files || []
   };
   const importPath = path.join(resolvedProjectRoot, TOPOGRAM_IMPORT_FILE);
@@ -153,4 +156,3 @@ export function buildTopogramImportStatus(projectRoot) {
     errors: clean ? [] : ["Imported source files changed since import."]
   };
 }
-
