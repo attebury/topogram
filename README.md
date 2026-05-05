@@ -373,7 +373,7 @@ npm run app:runtime
 
 ## Engine
 
-The engine package publishes privately as `@topogram/cli` and exposes the `topogram` bin:
+The engine package publishes publicly to npmjs as `@topogram/cli` and exposes the `topogram` bin:
 
 ```bash
 npm run new -- ./my-app --template ./engine/tests/fixtures/templates/hello-web
