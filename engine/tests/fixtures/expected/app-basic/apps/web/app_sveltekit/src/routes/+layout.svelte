@@ -4,7 +4,7 @@
 
 <div class="app-shell" data-shell="bottom_tabs" data-windowing="single_window" data-navigation-patterns="bottom_tabs stack_navigation">
   <header class="app-nav">
-  <a class="brand" href="/">Topogram Todo</a>
+  <a class="brand" href="/">Topogram Work Tracker</a>
 </header>
 
 <slot />

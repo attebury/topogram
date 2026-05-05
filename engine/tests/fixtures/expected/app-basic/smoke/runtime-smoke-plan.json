@@ -1,6 +1,6 @@
 {
   "type": "runtime_smoke_plan",
-  "name": "Todo Runtime Smoke Plan",
+  "name": "Work Tracker Runtime Smoke Plan",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web"
@@ -43,7 +43,7 @@
     "sources": [
       {
         "id": "ver_runtime_smoke",
-        "name": "Todo runtime smoke",
+        "name": "Work Tracker runtime smoke",
         "method": "smoke",
         "validates": [
           "cap_create_task",

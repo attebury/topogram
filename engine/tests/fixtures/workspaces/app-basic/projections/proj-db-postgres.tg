@@ -1,6 +1,6 @@
 projection proj_db_postgres {
-  name "Todo Postgres DB"
-  description "Postgres persistence realization for the Todo domain"
+  name "Work Tracker Postgres DB"
+  description "Postgres persistence realization for the work tracking domain"
 
   platform db_postgres
   realizes [entity_task, entity_project, entity_user]

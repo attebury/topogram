@@ -28,13 +28,13 @@ async function main() {
     where: { name: "Demo Project" },
     update: {
       status: "active",
-      description: "Seeded demo project for the generated Todo runtime",
+      description: "Seeded demo project for the generated work-tracker runtime",
       owner_id: demoUserId
     },
     create: {
       id: demoProjectId,
       name: "Demo Project",
-      description: "Seeded demo project for the generated Todo runtime",
+      description: "Seeded demo project for the generated work-tracker runtime",
       status: "active",
       owner_id: demoUserId,
       created_at: now

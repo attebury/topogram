@@ -1,6 +1,6 @@
 projection proj_ui_shared {
-  name "Todo Shared UI"
-  description "Platform-neutral UI semantics for the Todo product"
+  name "Work Tracker Shared UI"
+  description "Platform-neutral UI semantics for the work-tracker fixture"
 
   platform ui_shared
   realizes [
@@ -25,7 +25,7 @@ projection proj_ui_shared {
   outputs [ui_contract]
 
   ui_app_shell {
-    brand "Topogram Todo"
+    brand "Topogram Work Tracker"
     shell bottom_tabs
     global_search true
     notifications true

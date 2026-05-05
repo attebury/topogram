@@ -1,33 +1,33 @@
-import { TODO_BACKEND_REFERENCE } from "../backend/reference.js";
+import { APP_BASIC_BACKEND_REFERENCE } from "../backend/reference.js";
 
-export const TODO_RUNTIME_REFERENCE = {
+export const APP_BASIC_RUNTIME_REFERENCE = {
   localDbProjectionId: "proj_db_postgres",
-  serviceName: TODO_BACKEND_REFERENCE.serviceName,
+  serviceName: APP_BASIC_BACKEND_REFERENCE.serviceName,
   ports: {
     server: 3000,
     web: 5173
   },
   environment: {
-    name: "Todo Local Runtime Stack",
-    databaseName: "topogram_todo",
+    name: "Work Tracker Local Runtime Stack",
+    databaseName: "topogram_work_tracker",
     envExample: `TOPOGRAM_AUTH_PROFILE=bearer_demo
-TOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token
-TOPOGRAM_AUTH_USER_ID=${TODO_BACKEND_REFERENCE.demo.userId}
+TOPOGRAM_AUTH_TOKEN=topogram-work-tracker-demo-token
+TOPOGRAM_AUTH_USER_ID=${APP_BASIC_BACKEND_REFERENCE.demo.userId}
 TOPOGRAM_AUTH_PERMISSIONS=*
-PUBLIC_TOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token
-PUBLIC_TOPOGRAM_AUTH_USER_ID=${TODO_BACKEND_REFERENCE.demo.userId}
+PUBLIC_TOPOGRAM_AUTH_TOKEN=topogram-work-tracker-demo-token
+PUBLIC_TOPOGRAM_AUTH_USER_ID=${APP_BASIC_BACKEND_REFERENCE.demo.userId}
 PUBLIC_TOPOGRAM_AUTH_PERMISSIONS=*
-PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=${TODO_BACKEND_REFERENCE.demo.taskId}
-PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=${TODO_BACKEND_REFERENCE.demo.projectId}
-TOPOGRAM_DEMO_PRIMARY_ID=${TODO_BACKEND_REFERENCE.demo.taskId}
-TOPOGRAM_DEMO_CONTAINER_ID=${TODO_BACKEND_REFERENCE.demo.projectId}`
+PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=${APP_BASIC_BACKEND_REFERENCE.demo.taskId}
+PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=${APP_BASIC_BACKEND_REFERENCE.demo.projectId}
+TOPOGRAM_DEMO_PRIMARY_ID=${APP_BASIC_BACKEND_REFERENCE.demo.taskId}
+TOPOGRAM_DEMO_CONTAINER_ID=${APP_BASIC_BACKEND_REFERENCE.demo.projectId}`
   },
   compileCheck: {
-    name: "Todo Generated Compile Checks"
+    name: "Work Tracker Generated Compile Checks"
   },
   smoke: {
-    name: "Todo Runtime Smoke Plan",
-    bundleTitle: "Todo Runtime Smoke Bundle",
+    name: "Work Tracker Runtime Smoke Plan",
+    bundleTitle: "Work Tracker Runtime Smoke Bundle",
     defaultContainerEnvVar: "TOPOGRAM_DEMO_CONTAINER_ID",
     webPath: "/tasks",
     expectText: "Tasks",
@@ -40,8 +40,8 @@ TOPOGRAM_DEMO_CONTAINER_ID=${TODO_BACKEND_REFERENCE.demo.projectId}`
     }
   },
   runtimeCheck: {
-    name: "Todo Runtime Check Plan",
-    bundleTitle: "Todo Runtime Check Bundle",
+    name: "Work Tracker Runtime Check Plan",
+    bundleTitle: "Work Tracker Runtime Check Bundle",
     requiredEnv: [
       "TOPOGRAM_API_BASE_URL",
       "TOPOGRAM_WEB_BASE_URL",
@@ -75,13 +75,13 @@ TOPOGRAM_DEMO_CONTAINER_ID=${TODO_BACKEND_REFERENCE.demo.projectId}`
     ]
   },
   appBundle: {
-    name: "Topogram Todo App Bundle",
-    demoContainerName: TODO_BACKEND_REFERENCE.demo.project.name,
-    demoPrimaryTitle: TODO_BACKEND_REFERENCE.demo.tasks[0].title
+    name: "Topogram Work Tracker App Bundle",
+    demoContainerName: APP_BASIC_BACKEND_REFERENCE.demo.project.name,
+    demoPrimaryTitle: APP_BASIC_BACKEND_REFERENCE.demo.tasks[0].title
   },
   demoEnv: {
-    userId: TODO_BACKEND_REFERENCE.demo.userId,
-    containerId: TODO_BACKEND_REFERENCE.demo.projectId,
-    primaryId: TODO_BACKEND_REFERENCE.demo.taskId
+    userId: APP_BASIC_BACKEND_REFERENCE.demo.userId,
+    containerId: APP_BASIC_BACKEND_REFERENCE.demo.projectId,
+    primaryId: APP_BASIC_BACKEND_REFERENCE.demo.taskId
   }
 };

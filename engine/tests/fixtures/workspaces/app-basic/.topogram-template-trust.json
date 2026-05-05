@@ -1,7 +1,7 @@
 {
   "version": "1",
   "trustPolicy": "topogram-template-executable-implementation-v1",
-  "trustedAt": "2026-05-01T12:49:37.810Z",
+  "trustedAt": "2026-05-05T05:26:22.549Z",
   "template": {
     "id": null,
     "version": null,
@@ -19,62 +19,62 @@
   "content": {
     "algorithm": "sha256",
     "root": "implementation",
-    "digest": "f680da9836ec1a473fadc463acb347f5d61894c10178e3f48359e44aa2714d14",
+    "digest": "8e78ed7387141426bd7e3a4954c2472bdf802de91e529f66e5fed799f8bc85cd",
     "files": [
       {
         "path": "backend/reference.js",
-        "sha256": "fdc2a8c808da34fc61dc752056d4d335cfda8f5272ab5bef44228521432d2ccf",
-        "size": 6077
+        "sha256": "d40e2fbfc16fe2c53cb84b8225ac4c153e134b4192842423b6355a92f2870870",
+        "size": 6103
       },
       {
         "path": "backend/repository-reference.js",
-        "sha256": "25998b14ffa505c9943f23c4be0e4483d82f3c11e8c26d9da1b9da7c78b2607e",
-        "size": 2564
+        "sha256": "597dc3720c195a4a98f2a3a5c2abd33d48289afc051d32c60771fe43f4118db5",
+        "size": 2590
       },
       {
         "path": "backend/repository-renderers.js",
-        "sha256": "fd975223dc6194cff3a0faf3a800ddd481da676a66677d8e0f1244f6a5c5619a",
-        "size": 24064
+        "sha256": "cf5096e3a706cee2c15f379c4205f3cdd6e134771bbe054f503628a32ac5661a",
+        "size": 24072
       },
       {
         "path": "index.js",
-        "sha256": "91949083cbf6a240e34440e9f8005d0d0ef3c329cf7500958f4875be5c0d224f",
-        "size": 1836
+        "sha256": "afff0144ad7f332f6dfe7e01930e74e33b23cb6a1b8d6acb6d6b05d3f00c62f5",
+        "size": 1960
       },
       {
         "path": "README.md",
-        "sha256": "01161d433c8f5e715f8959de0fb596549d31307feeeae0afecfa753dbd93a428",
-        "size": 311
+        "sha256": "d7f32b034f23a3cc2cf533db4b19a6794dbfcd79109d10011b3ea7ca5324482f",
+        "size": 322
       },
       {
         "path": "runtime/check-renderers.js",
-        "sha256": "70ad1c8444c1a5c4ac033d74bf7236cec894acbe3497bb9ff4def3dab2b11f26",
-        "size": 12956
+        "sha256": "0e42a917582f79368bcbb5b8147022ee5e0e702cd44a62b567e605dcaa49c232",
+        "size": 12972
       },
       {
         "path": "runtime/checks.js",
-        "sha256": "cfd4b1e805c4546282fd2ea3c19c004f1306257991bcf1f2cdb46b9b0b116b01",
-        "size": 5367
+        "sha256": "e8fa03dc66293eaa7bec0c31b2431754da045c0849d572b19bf0c65358ac12b6",
+        "size": 5372
       },
       {
         "path": "runtime/reference.js",
-        "sha256": "d7a4a6b94e5efaf783f68eaa6715ddb6550898280764d4e423fbce278d29e34c",
-        "size": 3136
+        "sha256": "7f24e3bb3e333db9d4dd7bc31f070a63ed3148211cac5fc43d215d4c76766ef2",
+        "size": 3286
       },
       {
         "path": "web/reference.js",
-        "sha256": "dc634a8c042d5026975ef1f67ee7cd0e66afa207d3c76b29ca57e5d3942cedb0",
-        "size": 1739
+        "sha256": "38b260a8067944b0861a8891b8c31565816454d95b2fd729ddaf3cd45e944019",
+        "size": 1752
       },
       {
         "path": "web/renderers.js",
-        "sha256": "f89e222be70b2927b079e6d90deb7cc65de045539e45087795966baecf9e3342",
-        "size": 45305
+        "sha256": "eddfca741d8fa8b3ab5ac9a387dda807635ac03b9dc8b1803970b7f10c3017e8",
+        "size": 45358
       },
       {
         "path": "web/screens-reference.js",
-        "sha256": "10caf15e17253fde20b551cf02e87914d2e9b8c8bd24df755a40cc2240d9d964",
-        "size": 508
+        "sha256": "7772c4982934050e3c6c01d55d2c835cb3f3b0d4dcd55941ffd89a057305d3a2",
+        "size": 513
       }
     ]
   }

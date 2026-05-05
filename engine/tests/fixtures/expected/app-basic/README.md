@@ -1,4 +1,4 @@
-# Topogram Todo App Bundle
+# Topogram Work Tracker App Bundle
 
 This is the polished generated app bundle for Topogram v0.1.
 

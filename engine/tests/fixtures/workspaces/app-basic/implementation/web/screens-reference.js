@@ -1,4 +1,4 @@
-export const TODO_WEB_SCREEN_REFERENCE = {
+export const APP_BASIC_WEB_SCREEN_REFERENCE = {
   projectListScreenId: "project_list",
   projectDetailScreenId: "project_detail",
   projectCreateScreenId: "project_create",

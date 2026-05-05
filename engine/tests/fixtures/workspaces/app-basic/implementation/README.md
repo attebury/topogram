@@ -1,10 +1,11 @@
-# Todo Implementation
+# App-Basic Implementation
 
-This folder holds Todo-specific implementation details that should not live in the generic Topogram engine.
+This folder holds app-basic fixture implementation details that should not live
+in the generic Topogram engine.
 
 Examples include:
 
 - demo seed data
-- Todo-specific runtime metadata
-- future Todo-owned verification definitions
-- future Todo-owned backend/web reference implementation choices
+- app-basic fixture runtime metadata
+- future app-basic verification definitions
+- future app-basic backend/web reference implementation choices

@@ -1,4 +1,4 @@
-# Todo Postgres DB Lifecycle
+# Work Tracker Postgres DB Lifecycle
 
 This bundle gives agents a repeatable database workflow for projection `proj_db_postgres`.
 

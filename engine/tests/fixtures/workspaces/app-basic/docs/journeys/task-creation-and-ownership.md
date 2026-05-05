@@ -35,7 +35,8 @@ tags:
   - ownership
 ---
 
-This journey captures the most common Todo flow: turning a piece of work into a tracked task with clear ownership.
+This journey captures the most common work-tracker flow: turning a piece of
+work into a tracked task with clear ownership.
 
 The user intent is not just to persist a row. The user needs confidence that the task belongs to the correct project, follows ownership rules, and shows up immediately in the standard list and detail views used to manage work.
 

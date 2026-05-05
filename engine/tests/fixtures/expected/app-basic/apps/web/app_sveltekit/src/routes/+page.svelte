@@ -100,7 +100,7 @@
   <div class="stack">
     <section class="card hero">
       <div>
-        <h1>Todo Web UI</h1>
+        <h1>Work Tracker Web UI</h1>
         <p>Generated from Topogram via the `sveltekit` profile and wired to a multi-resource workspace for tasks, projects, and users.</p>
       </div>
       <div class="button-row">

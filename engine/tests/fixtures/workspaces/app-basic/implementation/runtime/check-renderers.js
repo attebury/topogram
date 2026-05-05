@@ -1,4 +1,4 @@
-export function renderTodoRuntimeCheckState() {
+export function renderAppBasicRuntimeCheckState() {
   return `const state = {
   createdPrimary: null,
   latestPrimary: null,
@@ -6,7 +6,7 @@ export function renderTodoRuntimeCheckState() {
 };`;
 }
 
-export function renderTodoRuntimeCheckCreatePayload() {
+export function renderAppBasicRuntimeCheckCreatePayload() {
   return `function createPayload(overrides = {}) {
   return {
     title: "Runtime Check Task",
@@ -19,7 +19,7 @@ export function renderTodoRuntimeCheckCreatePayload() {
 }`;
 }
 
-export function renderTodoRuntimeCheckHelpers() {
+export function renderAppBasicRuntimeCheckHelpers() {
   return `async function waitForExportJob(jobId, { attempts = 10, delayMs = 25 } = {}) {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const { response, responseBody } = await requestContract("cap_get_task_export_job", {
@@ -37,7 +37,7 @@ export function renderTodoRuntimeCheckHelpers() {
 }`;
 }
 
-export function renderTodoRuntimeCheckCases() {
+export function renderAppBasicRuntimeCheckCases() {
   return `    } else if (definition.id === "api_seed_task_ready") {
       const { contract, response, responseBody } = await requestContract(definition.capabilityId, {
         pathParams: inferPathParams(contractFor(definition.capabilityId), definition.pathParams)

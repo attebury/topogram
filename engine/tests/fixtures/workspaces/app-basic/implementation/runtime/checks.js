@@ -1,4 +1,4 @@
-export const TODO_RUNTIME_CHECKS = {
+export const APP_BASIC_RUNTIME_CHECKS = {
   environmentStage: {
     id: "environment",
     name: "Environment Readiness",

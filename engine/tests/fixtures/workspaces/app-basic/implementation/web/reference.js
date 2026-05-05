@@ -1,5 +1,5 @@
-export const TODO_WEB_REFERENCE = {
-  brandName: "Topogram Todo",
+export const APP_BASIC_WEB_REFERENCE = {
+  brandName: "Topogram Work Tracker",
   client: {
     primaryParam: "task_id",
     functionNames: {

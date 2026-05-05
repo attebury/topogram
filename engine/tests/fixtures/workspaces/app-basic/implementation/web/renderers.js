@@ -2,9 +2,9 @@ import { renderSvelteKitRedirectingAction } from "../../../../../../src/generato
 import {
   renderSvelteKitComponentRegion
 } from "../../../../../../src/generator/surfaces/web/sveltekit-components.js";
-import { TODO_WEB_SCREEN_REFERENCE } from "./screens-reference.js";
+import { APP_BASIC_WEB_SCREEN_REFERENCE } from "./screens-reference.js";
 
-export function renderTodoHomePage({
+export function renderAppBasicHomePage({
   useTypescript,
   demoPrimaryEnvVar,
   screens,
@@ -55,7 +55,7 @@ export function renderTodoHomePage({
 `;
 }
 
-export function renderTodoTaskRoutes({
+export function renderAppBasicTaskRoutes({
   useTypescript,
   contract,
   taskList,
@@ -663,14 +663,14 @@ export const load: PageLoad = async ({ fetch, params }) => {
 </main>
 `;
 
-  const projectList = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.projectListScreenId);
-  const projectDetail = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.projectDetailScreenId);
-  const projectCreate = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.projectCreateScreenId);
-  const projectEdit = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.projectEditScreenId);
-  const userList = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.userListScreenId);
-  const userDetail = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.userDetailScreenId);
-  const userCreate = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.userCreateScreenId);
-  const userEdit = contract?.screens?.find((screen) => screen.id === TODO_WEB_SCREEN_REFERENCE.userEditScreenId);
+  const projectList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectListScreenId);
+  const projectDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectDetailScreenId);
+  const projectCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectCreateScreenId);
+  const projectEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectEditScreenId);
+  const userList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userListScreenId);
+  const userDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userDetailScreenId);
+  const userCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userCreateScreenId);
+  const userEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userEditScreenId);
 
   if (projectList && projectDetail && projectCreate && projectEdit) {
     files["projects/+page.ts"] = `import type { PageLoad } from "./$types";

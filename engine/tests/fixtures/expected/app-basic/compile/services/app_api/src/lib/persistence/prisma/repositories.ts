@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import type { TodoRepository } from "../repositories";
+import type { AppBasicRepository } from "../repositories";
 import type {
   GetProjectInput,
   GetProjectResult,
@@ -121,7 +121,7 @@ function mapTaskRecord(task: {
   };
 }
 
-export class PrismaTodoRepository implements TodoRepository {
+export class PrismaAppBasicRepository implements AppBasicRepository {
   private readonly exportJobs = new Map<string, StoredExportJob>();
 
   constructor(private readonly prisma: PrismaClient) {}

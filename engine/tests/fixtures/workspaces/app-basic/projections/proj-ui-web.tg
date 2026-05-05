@@ -1,6 +1,6 @@
 projection proj_ui_web {
-  name "Todo Web UI"
-  description "Web realization for the shared Todo UI using a SvelteKit profile"
+  name "Work Tracker Web UI"
+  description "Web realization for the shared work-tracker UI using a SvelteKit profile"
 
   platform ui_web
   realizes [

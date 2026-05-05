@@ -38,7 +38,7 @@ import type {
   UpdateUserResult,
 } from "./types";
 
-export interface TodoRepository {
+export interface AppBasicRepository {
   getProject(input: GetProjectInput): Promise<GetProjectResult>;
   listProjects(input: ListProjectsInput): Promise<ListProjectsResult>;
   createProject(input: CreateProjectInput): Promise<CreateProjectResult>;

@@ -1,6 +1,6 @@
 {
   "type": "app_bundle_plan",
-  "name": "Topogram Todo App Bundle",
+  "name": "Topogram Work Tracker App Bundle",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web",
@@ -49,22 +49,22 @@
   },
   "runtimeReference": {
     "localDbProjectionId": "proj_db_postgres",
-    "serviceName": "topogram-todo-server",
+    "serviceName": "topogram-work-tracker-server",
     "ports": {
       "server": 3000,
       "web": 5173
     },
     "environment": {
-      "name": "Todo Local Runtime Stack",
-      "databaseName": "topogram_todo",
-      "envExample": "TOPOGRAM_AUTH_PROFILE=bearer_demo\nTOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token\nTOPOGRAM_AUTH_USER_ID=11111111-1111-4111-8111-111111111111\nTOPOGRAM_AUTH_PERMISSIONS=*\nPUBLIC_TOPOGRAM_AUTH_TOKEN=topogram-todo-demo-token\nPUBLIC_TOPOGRAM_AUTH_USER_ID=11111111-1111-4111-8111-111111111111\nPUBLIC_TOPOGRAM_AUTH_PERMISSIONS=*\nPUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=33333333-3333-4333-8333-333333333333\nPUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=22222222-2222-4222-8222-222222222222\nTOPOGRAM_DEMO_PRIMARY_ID=33333333-3333-4333-8333-333333333333\nTOPOGRAM_DEMO_CONTAINER_ID=22222222-2222-4222-8222-222222222222"
+      "name": "Work Tracker Local Runtime Stack",
+      "databaseName": "topogram_work_tracker",
+      "envExample": "TOPOGRAM_AUTH_PROFILE=bearer_demo\nTOPOGRAM_AUTH_TOKEN=topogram-work-tracker-demo-token\nTOPOGRAM_AUTH_USER_ID=11111111-1111-4111-8111-111111111111\nTOPOGRAM_AUTH_PERMISSIONS=*\nPUBLIC_TOPOGRAM_AUTH_TOKEN=topogram-work-tracker-demo-token\nPUBLIC_TOPOGRAM_AUTH_USER_ID=11111111-1111-4111-8111-111111111111\nPUBLIC_TOPOGRAM_AUTH_PERMISSIONS=*\nPUBLIC_TOPOGRAM_DEMO_PRIMARY_ID=33333333-3333-4333-8333-333333333333\nPUBLIC_TOPOGRAM_DEMO_CONTAINER_ID=22222222-2222-4222-8222-222222222222\nTOPOGRAM_DEMO_PRIMARY_ID=33333333-3333-4333-8333-333333333333\nTOPOGRAM_DEMO_CONTAINER_ID=22222222-2222-4222-8222-222222222222"
     },
     "compileCheck": {
-      "name": "Todo Generated Compile Checks"
+      "name": "Work Tracker Generated Compile Checks"
     },
     "smoke": {
-      "name": "Todo Runtime Smoke Plan",
-      "bundleTitle": "Todo Runtime Smoke Bundle",
+      "name": "Work Tracker Runtime Smoke Plan",
+      "bundleTitle": "Work Tracker Runtime Smoke Bundle",
       "defaultContainerEnvVar": "TOPOGRAM_DEMO_CONTAINER_ID",
       "webPath": "/tasks",
       "expectText": "Tasks",
@@ -82,7 +82,7 @@
         "sources": [
           {
             "id": "ver_runtime_smoke",
-            "name": "Todo runtime smoke",
+            "name": "Work Tracker runtime smoke",
             "method": "smoke",
             "validates": [
               "cap_create_task",
@@ -112,8 +112,8 @@
       }
     },
     "runtimeCheck": {
-      "name": "Todo Runtime Check Plan",
-      "bundleTitle": "Todo Runtime Check Bundle",
+      "name": "Work Tracker Runtime Check Plan",
+      "bundleTitle": "Work Tracker Runtime Check Bundle",
       "requiredEnv": [
         "TOPOGRAM_API_BASE_URL",
         "TOPOGRAM_WEB_BASE_URL",
@@ -230,7 +230,7 @@
       }
     },
     "appBundle": {
-      "name": "Topogram Todo App Bundle",
+      "name": "Topogram Work Tracker App Bundle",
       "demoContainerName": "Demo Project",
       "demoPrimaryTitle": "Seeded Demo Task"
     },

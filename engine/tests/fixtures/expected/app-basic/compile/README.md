@@ -1,4 +1,4 @@
-# Todo Generated Compile Checks
+# Work Tracker Generated Compile Checks
 
 This bundle verifies that the generated server and web projects typecheck and build.
 

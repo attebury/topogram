@@ -1,5 +1,5 @@
 actor user {
   name "User"
-  description "A person interacting with the Todo application"
+  description "A person interacting with the work-tracker application"
   status active
 }

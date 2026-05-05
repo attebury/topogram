@@ -433,10 +433,10 @@ function buildDrizzleRepositoryBody({
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
-export function renderTodoPrismaRepositoryBody(args) {
+export function renderAppBasicPrismaRepositoryBody(args) {
   return buildPrismaRepositoryBody(args);
 }
 
-export function renderTodoDrizzleRepositoryBody(args) {
+export function renderAppBasicDrizzleRepositoryBody(args) {
   return buildDrizzleRepositoryBody(args);
 }

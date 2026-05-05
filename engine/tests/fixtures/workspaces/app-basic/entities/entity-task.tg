@@ -1,6 +1,6 @@
 entity entity_task {
   name "Task"
-  description "A unit of work tracked in the Todo domain"
+  description "A unit of work tracked in the work tracking domain"
 
   fields {
     id uuid required

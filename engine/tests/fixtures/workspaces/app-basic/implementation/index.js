@@ -1,51 +1,51 @@
-import { TODO_BACKEND_REFERENCE } from "./backend/reference.js";
-import { TODO_BACKEND_REPOSITORY_REFERENCE } from "./backend/repository-reference.js";
+import { APP_BASIC_BACKEND_REFERENCE } from "./backend/reference.js";
+import { APP_BASIC_BACKEND_REPOSITORY_REFERENCE } from "./backend/repository-reference.js";
 import {
-  renderTodoDrizzleRepositoryBody,
-  renderTodoPrismaRepositoryBody
+  renderAppBasicDrizzleRepositoryBody,
+  renderAppBasicPrismaRepositoryBody
 } from "./backend/repository-renderers.js";
-import { TODO_RUNTIME_REFERENCE } from "./runtime/reference.js";
-import { TODO_RUNTIME_CHECKS } from "./runtime/checks.js";
+import { APP_BASIC_RUNTIME_REFERENCE } from "./runtime/reference.js";
+import { APP_BASIC_RUNTIME_CHECKS } from "./runtime/checks.js";
 import {
-  renderTodoRuntimeCheckCases,
-  renderTodoRuntimeCheckCreatePayload,
-  renderTodoRuntimeCheckHelpers,
-  renderTodoRuntimeCheckState
+  renderAppBasicRuntimeCheckCases,
+  renderAppBasicRuntimeCheckCreatePayload,
+  renderAppBasicRuntimeCheckHelpers,
+  renderAppBasicRuntimeCheckState
 } from "./runtime/check-renderers.js";
-import { TODO_WEB_REFERENCE } from "./web/reference.js";
-import { TODO_WEB_SCREEN_REFERENCE } from "./web/screens-reference.js";
+import { APP_BASIC_WEB_REFERENCE } from "./web/reference.js";
+import { APP_BASIC_WEB_SCREEN_REFERENCE } from "./web/screens-reference.js";
 import {
-  renderTodoHomePage,
-  renderTodoTaskRoutes
+  renderAppBasicHomePage,
+  renderAppBasicTaskRoutes
 } from "./web/renderers.js";
 
 export const APP_BASIC_IMPLEMENTATION = {
   exampleId: "app-basic-fixture",
   exampleRoot: "/engine/tests/fixtures/workspaces/app-basic",
   backend: {
-    reference: TODO_BACKEND_REFERENCE,
-    repositoryReference: TODO_BACKEND_REPOSITORY_REFERENCE,
+    reference: APP_BASIC_BACKEND_REFERENCE,
+    repositoryReference: APP_BASIC_BACKEND_REPOSITORY_REFERENCE,
     repositoryRenderers: {
-      renderPrismaRepositoryBody: renderTodoPrismaRepositoryBody,
-      renderDrizzleRepositoryBody: renderTodoDrizzleRepositoryBody
+      renderPrismaRepositoryBody: renderAppBasicPrismaRepositoryBody,
+      renderDrizzleRepositoryBody: renderAppBasicDrizzleRepositoryBody
     }
   },
   runtime: {
-    reference: TODO_RUNTIME_REFERENCE,
-    checks: TODO_RUNTIME_CHECKS,
+    reference: APP_BASIC_RUNTIME_REFERENCE,
+    checks: APP_BASIC_RUNTIME_CHECKS,
     checkRenderers: {
-      renderRuntimeCheckState: renderTodoRuntimeCheckState,
-      renderRuntimeCheckCreatePayload: renderTodoRuntimeCheckCreatePayload,
-      renderRuntimeCheckHelpers: renderTodoRuntimeCheckHelpers,
-      renderRuntimeCheckCases: renderTodoRuntimeCheckCases
+      renderRuntimeCheckState: renderAppBasicRuntimeCheckState,
+      renderRuntimeCheckCreatePayload: renderAppBasicRuntimeCheckCreatePayload,
+      renderRuntimeCheckHelpers: renderAppBasicRuntimeCheckHelpers,
+      renderRuntimeCheckCases: renderAppBasicRuntimeCheckCases
     }
   },
   web: {
-    reference: TODO_WEB_REFERENCE,
-    screenReference: TODO_WEB_SCREEN_REFERENCE,
+    reference: APP_BASIC_WEB_REFERENCE,
+    screenReference: APP_BASIC_WEB_SCREEN_REFERENCE,
     renderers: {
-      renderHomePage: renderTodoHomePage,
-      renderRoutes: renderTodoTaskRoutes
+      renderHomePage: renderAppBasicHomePage,
+      renderRoutes: renderAppBasicTaskRoutes
     }
   }
 };

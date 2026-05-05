@@ -1,14 +1,14 @@
 import { serve } from "@hono/node-server";
 import { PrismaClient } from "@prisma/client";
 import { createApp } from "./lib/server/app";
-import { PrismaTodoRepository } from "./lib/persistence/prisma/repositories";
+import { PrismaAppBasicRepository } from "./lib/persistence/prisma/repositories";
 import { authorizeWithGeneratedAuthProfile } from "./lib/server/helpers";
 
 export function createServer() {
   const prisma = new PrismaClient();
-  const todoRepository = new PrismaTodoRepository(prisma);
+  const appBasicRepository = new PrismaAppBasicRepository(prisma);
   return createApp({
-    todoRepository,
+    appBasicRepository,
     ready: async () => {
       await prisma.$queryRaw`SELECT 1`;
     },
@@ -26,4 +26,4 @@ serve({
   port
 });
 
-console.log(`topogram-todo-server listening on http://localhost:${port}`);
+console.log(`topogram-work-tracker-server listening on http://localhost:${port}`);

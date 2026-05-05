@@ -1,6 +1,6 @@
 projection proj_ui_web_react {
-  name "Todo Web UI (React)"
-  description "Web realization for the shared Todo UI using a React profile"
+  name "Work Tracker Web UI (React)"
+  description "Web realization for the shared work-tracker UI using a React profile"
 
   platform ui_web
   realizes [

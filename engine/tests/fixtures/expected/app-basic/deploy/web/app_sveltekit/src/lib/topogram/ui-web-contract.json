@@ -1,12 +1,12 @@
 {
   "projection": {
     "id": "proj_ui_web",
-    "name": "Todo Web UI",
+    "name": "Work Tracker Web UI",
     "platform": "ui_web"
   },
   "sharedProjection": {
     "id": "proj_ui_shared",
-    "name": "Todo Shared UI"
+    "name": "Work Tracker Shared UI"
   },
   "generatorDefaults": {
     "profile": "sveltekit",
@@ -18,7 +18,7 @@
     "web_app"
   ],
   "appShell": {
-    "brand": "Topogram Todo",
+    "brand": "Topogram Work Tracker",
     "shell": "bottom_tabs",
     "primaryNav": "primary",
     "secondaryNav": "secondary",

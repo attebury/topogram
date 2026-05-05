@@ -1,6 +1,6 @@
 {
   "type": "runtime_check_plan",
-  "name": "Todo Runtime Check Plan",
+  "name": "Work Tracker Runtime Check Plan",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web",

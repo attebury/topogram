@@ -1,4 +1,4 @@
-export const TODO_BACKEND_REPOSITORY_REFERENCE = {
+export const APP_BASIC_BACKEND_REPOSITORY_REFERENCE = {
   capabilityIds: [
     "cap_get_project",
     "cap_list_projects",
@@ -29,10 +29,10 @@ export const TODO_BACKEND_REPOSITORY_REFERENCE = {
     versionField: "updated_at"
   },
   downloadCapabilityId: "cap_download_task_export",
-  repositoryInterfaceName: "TodoRepository",
-  prismaRepositoryClassName: "PrismaTodoRepository",
-  drizzleRepositoryClassName: "DrizzleTodoRepository",
-  dependencyName: "todoRepository",
+  repositoryInterfaceName: "AppBasicRepository",
+  prismaRepositoryClassName: "PrismaAppBasicRepository",
+  drizzleRepositoryClassName: "DrizzleAppBasicRepository",
+  dependencyName: "appBasicRepository",
   lookupBindings: [
     {
       entityId: "entity_project",
@@ -49,7 +49,7 @@ export const TODO_BACKEND_REPOSITORY_REFERENCE = {
     filename: "task-export.zip",
     contentType: "application/zip"
   },
-  drizzleHint: "Use the Prisma profile for the runnable Todo runtime or fill in the Drizzle query logic here.",
+  drizzleHint: "Use the Prisma profile for the runnable app-basic runtime or fill in the Drizzle query logic here.",
   drizzleSchemaImports: ["tasksTable", "projectsTable", "usersTable"],
   additionalTypeNames: [
     "DownloadTaskExportInput",

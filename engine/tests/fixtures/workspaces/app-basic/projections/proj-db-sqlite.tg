@@ -1,6 +1,6 @@
 projection proj_db_sqlite {
-  name "Todo SQLite DB"
-  description "SQLite persistence realization for the Todo domain"
+  name "Work Tracker SQLite DB"
+  description "SQLite persistence realization for the work tracking domain"
 
   platform db_sqlite
   realizes [entity_task, entity_project, entity_user]

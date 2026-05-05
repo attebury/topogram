@@ -1,6 +1,6 @@
 verification ver_runtime_smoke {
-  name "Todo runtime smoke"
-  description "Covers the minimum web and API checks for the generated Todo stack."
+  name "Work Tracker runtime smoke"
+  description "Covers the minimum web and API checks for the generated work-tracker stack."
 
   validates [cap_create_task, cap_get_task, cap_list_tasks]
   method smoke

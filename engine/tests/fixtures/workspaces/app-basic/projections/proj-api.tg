@@ -1,6 +1,6 @@
 projection proj_api {
   name "API"
-  description "HTTP API realization for Todo"
+  description "HTTP API realization for the work-tracker fixture"
   platform dotnet
 
   realizes [cap_create_task, cap_get_task, cap_update_task, cap_complete_task, cap_list_tasks, cap_delete_task, cap_export_tasks, cap_get_task_export_job, cap_download_task_export, cap_list_projects, cap_get_project, cap_create_project, cap_update_project, cap_list_users, cap_get_user, cap_create_user, cap_update_user]

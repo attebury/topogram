@@ -1,10 +1,10 @@
 import type { Context } from "hono";
-import type { TodoRepository } from "../persistence/repositories";
+import type { AppBasicRepository } from "../persistence/repositories";
 import type { AuthorizationContext } from "./helpers";
 import { serverContract } from "../topogram/server-contract";
 
 export interface ServerDependencies {
-  todoRepository: TodoRepository;
+  appBasicRepository: AppBasicRepository;
   ready?: () => Promise<void> | void;
   authorize?: (
     ctx: Context,

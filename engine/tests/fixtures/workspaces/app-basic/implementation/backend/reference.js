@@ -1,7 +1,7 @@
-export const TODO_BACKEND_REFERENCE = {
-  serviceName: "topogram-todo-server",
+export const APP_BASIC_BACKEND_REFERENCE = {
+  serviceName: "topogram-work-tracker-server",
   renderSeedScript() {
-    const reference = TODO_BACKEND_REFERENCE;
+    const reference = APP_BASIC_BACKEND_REFERENCE;
     const serializedTasks = JSON.stringify(reference.demo.tasks, null, 2).replace(/"NOW"/g, "now");
     return `import { PrismaClient } from "@prisma/client";
 
@@ -107,7 +107,7 @@ main()
     },
     project: {
       name: "Demo Project",
-      description: "Seeded demo project for the generated Todo runtime",
+      description: "Seeded demo project for the generated work-tracker runtime",
       status: "active"
     },
     tasks: [
