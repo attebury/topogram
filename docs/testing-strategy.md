@@ -17,6 +17,9 @@ engine/tests/fixtures/
 ```
 
 Engine tests must not import or reference generated demo workspaces. Generated apps are consumer verification targets, not engine dependencies.
+Engine fixtures should also avoid product-branded implementation names, package
+metadata, env vars, and generated labels. A fixture can use a sample domain, but
+its vocabulary should describe the fixture and the engine behavior under test.
 
 Importer fixtures are intentionally narrow. The engine keeps only small,
 actively tested importer smoke inputs under `engine/tests/fixtures/import/`.
