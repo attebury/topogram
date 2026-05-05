@@ -3811,7 +3811,7 @@ test("repo root new script creates a generated app starter project outside engin
 test("repo root smoke test app script creates and generates disposable app", () => {
   const result = runNpm(["run", "smoke:test-app"], repoRoot);
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /Smoke test app generated/);
+  assert.match(result.stdout, /Smoke test app generated and verified/);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, ".tmp", "smoke-test-app", "app", ".topogram-generated.json")), true);
 });

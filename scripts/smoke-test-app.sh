@@ -12,9 +12,7 @@ npm run new -- "$SMOKE_APP_DIR" --template "$ROOT_DIR/engine/tests/fixtures/temp
 npm --prefix "$SMOKE_APP_DIR" install
 npm --prefix "$SMOKE_APP_DIR" run check
 npm --prefix "$SMOKE_APP_DIR" run generate
+npm --prefix "$SMOKE_APP_DIR" run verify
 
 echo
-echo "Smoke test app generated at $SMOKE_APP_DIR"
-echo "Next:"
-echo "  cd .tmp/smoke-test-app"
-echo "  npm run verify"
+echo "Smoke test app generated and verified at $SMOKE_APP_DIR"

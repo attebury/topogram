@@ -34,6 +34,10 @@ npm run cli:check
 This packs `@attebury/topogram`, installs it into a disposable consumer project, creates a starter with the installed `topogram` binary, then checks and generates the starter.
 It also packs and consumes a local template tarball so template-package behavior stays covered without depending on the Todo demo.
 
+The root `npm run smoke:test-app` command is a local first-use smoke for the
+source checkout. It must run the generated starter's `verify` script after
+generation; generate-only is not verification.
+
 ## Generated Todo Demo Consumer
 
 The generated Todo demo lives in the private `topogram-demo-todo` repo. It consumes `@attebury/topogram` from GitHub Packages and owns the package-consumer workflow:
