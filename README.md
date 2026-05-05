@@ -49,6 +49,20 @@ npx topogram source status --local
 npx topogram check
 ```
 
+For an existing app, import into a separate editable Topogram workspace:
+
+```bash
+npx topogram import ./existing-app --out ./imported-topogram
+cd ./imported-topogram
+npx topogram import check
+npx topogram check
+```
+
+Import writes candidate artifacts and `.topogram-import.json` source hashes.
+The imported Topogram files are project-owned after creation; edit them freely
+and use `topogram import check` to verify the brownfield source evidence that
+was trusted at import time. See [docs/import.md](docs/import.md).
+
 For executable templates, review the copied `implementation/` directory before
 generation, then use:
 

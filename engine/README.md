@@ -30,6 +30,8 @@ topogram catalog list
 topogram catalog show todo
 topogram catalog check topograms.catalog.json
 topogram catalog copy hello ../hello-topogram
+topogram import ../existing-app --out ../imported-topogram
+topogram import check ../imported-topogram
 topogram release status
 topogram package update-cli --latest
 topogram source status ../hello-topogram --local

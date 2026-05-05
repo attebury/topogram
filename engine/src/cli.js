@@ -86,6 +86,12 @@ import {
   loadCatalog,
   TOPOGRAM_SOURCE_FILE
 } from "./catalog.js";
+import {
+  buildTopogramImportStatus,
+  collectImportSourceFileRecords,
+  TOPOGRAM_IMPORT_FILE,
+  writeTopogramImportRecord
+} from "./import/provenance.js";
 import { resolveCatalogTemplateAlias } from "./cli/catalog-alias.js";
 import {
   formatProjectConfigErrors,
@@ -148,6 +154,8 @@ function printUsage(options = {}) {
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
+  console.log("   or: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
+  console.log("   or: topogram import check [path] [--json]");
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
@@ -185,6 +193,8 @@ function printUsage(options = {}) {
   console.log("  topogram generator show @attebury/topogram-generator-react-web");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generate");
+  console.log("  topogram import ./existing-app --out ./imported-topogram");
+  console.log("  topogram import check ./imported-topogram");
   console.log("");
   console.log("Template and catalog discovery:");
   console.log("  topogram template list");
@@ -676,6 +686,26 @@ function printSourceHelp() {
   console.log("  topogram source status --json");
 }
 
+function printImportHelp() {
+  console.log("Usage: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
+  console.log("   or: topogram import check [path] [--json]");
+  console.log("");
+  console.log("Creates an editable Topogram workspace from a brownfield app without modifying the app.");
+  console.log("");
+  console.log("Behavior:");
+  console.log("  - writes raw import candidates under topogram/candidates/app");
+  console.log("  - writes reconcile proposal bundles under topogram/candidates/reconcile");
+  console.log("  - writes topogram.project.json with maintained ownership and no generated stack binding");
+  console.log(`  - writes ${TOPOGRAM_IMPORT_FILE} with source file hashes from import time`);
+  console.log("  - imported Topogram artifacts are project-owned after creation");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram import ./existing-app --out ./imported-topogram");
+  console.log("  topogram import ./existing-app --out ./imported-topogram --from db,api,ui");
+  console.log("  topogram import check ./imported-topogram");
+  console.log("  topogram import check --json");
+}
+
 function printCheckHelp() {
   console.log("Usage: topogram check [path] [--json]");
   console.log("");
@@ -736,6 +766,10 @@ function printCommandHelp(command) {
   }
   if (command === "source") {
     printSourceHelp();
+    return true;
+  }
+  if (command === "import") {
+    printImportHelp();
     return true;
   }
   if (command === "check") {
@@ -4082,6 +4116,266 @@ function printCatalogCopy(payload) {
 }
 
 /**
+ * @param {string} targetPath
+ * @returns {void}
+ */
+function ensureEmptyImportTarget(targetPath) {
+  if (!fs.existsSync(targetPath)) {
+    fs.mkdirSync(targetPath, { recursive: true });
+    return;
+  }
+  if (!fs.statSync(targetPath).isDirectory()) {
+    throw new Error(`Cannot import into non-directory path '${targetPath}'.`);
+  }
+  const entries = fs.readdirSync(targetPath).filter((entry) => entry !== ".DS_Store");
+  if (entries.length > 0) {
+    throw new Error(`Refusing to import into non-empty directory '${targetPath}'.`);
+  }
+}
+
+/**
+ * @param {string} outDir
+ * @param {Record<string, any>} files
+ * @returns {string[]}
+ */
+function writeRelativeFiles(outDir, files) {
+  const written = [];
+  for (const [relativePath, contents] of Object.entries(files || {})) {
+    const normalizedRelativePath = relativePath.replaceAll(path.sep, "/");
+    const destination = path.join(outDir, normalizedRelativePath);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, typeof contents === "string" ? contents : `${stableStringify(contents)}\n`, "utf8");
+    written.push(normalizedRelativePath);
+  }
+  return written.sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * @returns {Record<string, any>}
+ */
+function importedProjectConfig() {
+  return {
+    version: "0.1",
+    outputs: {
+      maintained_app: {
+        path: "./app",
+        ownership: "maintained"
+      }
+    },
+    topology: {
+      components: []
+    }
+  };
+}
+
+/**
+ * @param {string} sourceRoot
+ * @param {string} targetRoot
+ * @param {ReturnType<typeof runWorkflow>["summary"]} importSummary
+ * @returns {string}
+ */
+function importedWorkspaceReadme(sourceRoot, targetRoot, importSummary) {
+  return [
+    "# Imported Topogram Workspace",
+    "",
+    "This workspace was created from a brownfield app import.",
+    "",
+    `- Imported source: \`${sourceRoot}\``,
+    `- Target workspace: \`${targetRoot}\``,
+    `- Tracks: ${(importSummary.tracks || []).join(", ") || "none"}`,
+    `- Provenance: \`${TOPOGRAM_IMPORT_FILE}\``,
+    "",
+    "Imported Topogram artifacts are project-owned after creation. Edit them directly, promote candidates deliberately, and run `topogram check` before generation or maintained-app work.",
+    "",
+    "Useful commands:",
+    "",
+    "```sh",
+    "topogram import check",
+    "topogram check",
+    "topogram query import-plan ./topogram",
+    "```",
+    ""
+  ].join("\n");
+}
+
+/**
+ * @param {Record<string, any>} summary
+ * @returns {Record<string, number>}
+ */
+function importCandidateCounts(summary) {
+  const candidates = summary.candidates || {};
+  return {
+    dbEntities: candidates.db?.entities?.length || 0,
+    dbEnums: candidates.db?.enums?.length || 0,
+    apiCapabilities: candidates.api?.capabilities?.length || 0,
+    apiRoutes: candidates.api?.routes?.length || 0,
+    uiScreens: candidates.ui?.screens?.length || 0,
+    uiRoutes: candidates.ui?.routes?.length || 0,
+    workflows: candidates.workflows?.workflows?.length || 0,
+    verifications: candidates.verification?.verifications?.length || 0
+  };
+}
+
+/**
+ * @param {string} sourcePath
+ * @param {string} targetPath
+ * @param {{ from?: string|null }} [options]
+ * @returns {{ ok: boolean, sourcePath: string, targetPath: string, topogramRoot: string, projectConfigPath: string, provenancePath: string, tracks: string[], sourceFiles: number, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], candidateCounts: Record<string, number>, nextCommands: string[] }}
+ */
+function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, options = {}) {
+  const sourceRoot = path.resolve(sourcePath);
+  const targetRoot = path.resolve(targetPath);
+  if (!fs.existsSync(sourceRoot) || !fs.statSync(sourceRoot).isDirectory()) {
+    throw new Error(`Cannot import missing app directory '${sourcePath}'.`);
+  }
+  if (sourceRoot === targetRoot) {
+    throw new Error("Refusing to import into the same directory as the brownfield app.");
+  }
+  ensureEmptyImportTarget(targetRoot);
+
+  const topogramRoot = path.join(targetRoot, "topogram");
+  fs.mkdirSync(topogramRoot, { recursive: true });
+  const sourceFiles = collectImportSourceFileRecords(sourceRoot, { excludeRoots: [targetRoot] });
+  const importResult = runWorkflow("import-app", sourceRoot, { from: options.from || null });
+  const rawCandidateFiles = writeRelativeFiles(topogramRoot, importResult.files || {});
+
+  const projectConfigPath = path.join(targetRoot, "topogram.project.json");
+  fs.writeFileSync(projectConfigPath, `${stableStringify(importedProjectConfig())}\n`, "utf8");
+  fs.writeFileSync(path.join(targetRoot, "README.md"), importedWorkspaceReadme(sourceRoot, targetRoot, importResult.summary), "utf8");
+
+  const reconcileResult = runWorkflow("reconcile", targetRoot, {});
+  const reconcileFiles = writeRelativeFiles(topogramRoot, reconcileResult.files || {});
+  const candidateCounts = importCandidateCounts(importResult.summary);
+  const provenance = writeTopogramImportRecord(targetRoot, {
+    sourceRoot,
+    ignoredRoots: [targetRoot],
+    tracks: importResult.summary.tracks || [],
+    findingsCount: importResult.summary.findings_count || 0,
+    candidateCounts,
+    files: sourceFiles
+  });
+  const writtenFiles = [
+    "README.md",
+    "topogram.project.json",
+    TOPOGRAM_IMPORT_FILE,
+    ...rawCandidateFiles.map((filePath) => `topogram/${filePath}`),
+    ...reconcileFiles.map((filePath) => `topogram/${filePath}`)
+  ].sort((a, b) => a.localeCompare(b));
+  return {
+    ok: true,
+    sourcePath: sourceRoot,
+    targetPath: targetRoot,
+    topogramRoot,
+    projectConfigPath,
+    provenancePath: provenance.path,
+    tracks: importResult.summary.tracks || [],
+    sourceFiles: sourceFiles.length,
+    rawCandidateFiles: rawCandidateFiles.length,
+    reconcileFiles: reconcileFiles.length,
+    writtenFiles,
+    candidateCounts,
+    nextCommands: [
+      "topogram import check",
+      "topogram check",
+      "topogram query import-plan ./topogram"
+    ]
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildBrownfieldImportWorkspacePayload>} payload
+ * @returns {void}
+ */
+function printBrownfieldImportWorkspace(payload) {
+  console.log(`Imported brownfield app to ${payload.targetPath}.`);
+  console.log(`Source: ${payload.sourcePath}`);
+  console.log(`Topogram: ${payload.topogramRoot}`);
+  console.log(`Project config: ${payload.projectConfigPath}`);
+  console.log(`Import provenance: ${payload.provenancePath}`);
+  console.log(`Tracked source files: ${payload.sourceFiles}`);
+  console.log(`Raw candidate files: ${payload.rawCandidateFiles}`);
+  console.log(`Reconcile proposal files: ${payload.reconcileFiles}`);
+  console.log("Imported Topogram artifacts are project-owned after creation; source hashes record the app evidence trusted at import time.");
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);
+  for (const command of payload.nextCommands) {
+    console.log(`  ${command}`);
+  }
+}
+
+/**
+ * @param {string} inputPath
+ * @returns {ReturnType<typeof checkSummaryPayload>}
+ */
+function buildTopogramCheckPayloadForPath(inputPath) {
+  const ast = parsePath(inputPath);
+  const resolved = resolveWorkspace(ast);
+  const explicitProjectConfig = loadProjectConfig(inputPath);
+  const projectValidation = explicitProjectConfig
+    ? combineProjectValidationResults(
+        validateProjectConfig(explicitProjectConfig.config, resolved.ok ? resolved.graph : null, { configDir: explicitProjectConfig.configDir }),
+        validateProjectOutputOwnership(explicitProjectConfig),
+        validateProjectImplementationTrust(explicitProjectConfig)
+      )
+    : { ok: false, errors: [{ message: "Missing topogram.project.json or compatible topogram.implementation.json", loc: null }] };
+  return checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo: explicitProjectConfig, projectValidation });
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {{ ok: boolean, projectRoot: string, import: ReturnType<typeof buildTopogramImportStatus>, topogram: ReturnType<typeof buildTopogramCheckPayloadForPath>, errors: any[] }}
+ */
+function buildBrownfieldImportCheckPayload(projectRoot) {
+  const resolvedRoot = normalizeProjectRoot(projectRoot);
+  const importStatus = buildTopogramImportStatus(resolvedRoot);
+  const topogramCheck = buildTopogramCheckPayloadForPath(resolvedRoot);
+  return {
+    ok: importStatus.ok && topogramCheck.ok,
+    projectRoot: resolvedRoot,
+    import: importStatus,
+    topogram: topogramCheck,
+    errors: [
+      ...(importStatus.errors || []).map((message) => ({ source: "import", message })),
+      ...(topogramCheck.errors || [])
+    ]
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildBrownfieldImportCheckPayload>} payload
+ * @returns {void}
+ */
+function printBrownfieldImportCheck(payload) {
+  console.log(`Topogram import check: ${payload.import.status}`);
+  console.log(`Project: ${payload.projectRoot}`);
+  if (payload.import.source?.source?.path) {
+    console.log(`Imported source: ${payload.import.source.source.path}`);
+  }
+  console.log(`Provenance: ${payload.import.path}`);
+  if (payload.import.source?.files) {
+    console.log(`Trusted source files: ${payload.import.source.files.length}`);
+  }
+  if (payload.import.status === "changed") {
+    console.log(`Changed source files: ${payload.import.content.changed.length}`);
+    console.log(`Added source files: ${payload.import.content.added.length}`);
+    console.log(`Removed source files: ${payload.import.content.removed.length}`);
+  }
+  console.log(`Topogram check: ${payload.topogram.ok ? "passed" : "failed"}`);
+  console.log("Imported Topogram artifacts are project-owned; import check compares only the brownfield source hashes trusted at import time plus normal Topogram validity.");
+  for (const diagnostic of payload.import.diagnostics || []) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`Fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+  for (const error of payload.topogram.errors || []) {
+    console.log(`Error: ${error.message}`);
+  }
+}
+
+/**
  * @param {string} filePath
  * @returns {{ sha256: string, size: number }}
  */
@@ -5627,10 +5921,17 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { templateCheck: true, inputPath: args[2] };
 } else if (args[0] === "template" && args[1] === "update") {
   commandArgs = { templateUpdate: true, inputPath: commandPath(2) };
+} else if (args[0] === "import" && args[1] === "check") {
+  commandArgs = { importCheck: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "import" && args[1] === "app") {
   commandArgs = { workflowName: "import-app", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] === "docs") {
   commandArgs = { workflowName: "scan-docs", inputPath: args[2] };
+} else if (args[0] === "import" && args[1] && !args[1].startsWith("-")) {
+  commandArgs = { importWorkspace: true, inputPath: args[1] };
+} else if (args[0] === "import") {
+  printImportHelp();
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "generate" && args[1] === "journeys") {
   commandArgs = { workflowName: "generate-journeys", inputPath: args[2] };
 } else if (args[0] === "report" && args[1] === "gaps") {
@@ -5773,6 +6074,8 @@ const shouldTemplatePolicyExplain = Boolean(commandArgs?.templatePolicyExplain);
 const shouldTemplatePolicyPin = Boolean(commandArgs?.templatePolicyPin);
 const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
 const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
+const shouldImportWorkspace = Boolean(commandArgs?.importWorkspace);
+const shouldImportCheck = Boolean(commandArgs?.importCheck);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
@@ -5896,6 +6199,12 @@ if (shouldCatalogCopy && (!commandArgs?.catalogId || !inputPath)) {
 if (shouldPackageUpdateCli && !inputPath) {
   console.error("Missing required <version>.");
   printUsage();
+  process.exit(1);
+}
+
+if (shouldImportWorkspace && !outPath) {
+  console.error("Missing required --out <target>.");
+  printImportHelp();
   process.exit(1);
 }
 
@@ -6093,6 +6402,26 @@ try {
       printPackageUpdateCli(payload);
     }
     process.exit(0);
+  }
+
+  if (shouldImportWorkspace) {
+    const payload = buildBrownfieldImportWorkspacePayload(inputPath, outPath, { from: fromValue });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printBrownfieldImportWorkspace(payload);
+    }
+    process.exit(0);
+  }
+
+  if (shouldImportCheck) {
+    const payload = buildBrownfieldImportCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printBrownfieldImportCheck(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldSourceStatus) {
