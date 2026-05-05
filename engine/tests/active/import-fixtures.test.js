@@ -130,6 +130,25 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(planPayload.summary.proposalItemCount, 6);
   assert.match(planPayload.nextCommand, /topogram import adopt bundle:task .* --dry-run/);
 
+  const humanPlan = runCli(["import", "plan", targetRoot]);
+  assert.equal(humanPlan.status, 0, humanPlan.stderr || humanPlan.stdout);
+  assert.match(humanPlan.stdout, /Import adoption plan for/);
+  assert.match(humanPlan.stdout, /- task: 5 item\(s\), 5 pending, 0 applied/);
+  assert.match(humanPlan.stdout, /Next: topogram import adopt bundle:task .* --dry-run/);
+
+  const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  assert.equal(selectorPayload.selectorCount, 2);
+  assert.deepEqual(selectorPayload.selectors.map((selector) => selector.selector), ["bundle:task", "bundle:user"]);
+  assert.match(selectorPayload.selectors[0].previewCommand, /topogram import adopt bundle:task .* --dry-run/);
+  assert.match(selectorPayload.selectors[0].writeCommand, /topogram import adopt bundle:task .* --write/);
+
+  const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
+  assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
+  assert.match(humanSelectorList.stdout, /Import adoption selectors for/);
+  assert.match(humanSelectorList.stdout, /bundle:task/);
+
   const preview = runCli(["import", "adopt", "bundle:task", targetRoot, "--json"]);
   assert.equal(preview.status, 0, preview.stderr || preview.stdout);
   const previewPayload = JSON.parse(preview.stdout);
@@ -157,6 +176,12 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(statusPayload.adoption.summary.appliedItemCount, 5);
   assert.equal(statusPayload.adoption.summary.pendingItemCount, 1);
   assert.equal(statusPayload.adoption.bundles.find((bundle) => bundle.bundle === "task").complete, true);
+
+  const humanStatus = runCli(["import", "status", targetRoot]);
+  assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
+  assert.match(humanStatus.stdout, /Import status: clean/);
+  assert.match(humanStatus.stdout, /Topogram check: passed/);
+  assert.match(humanStatus.stdout, /Adoption: 5 applied, 1 pending, 0 blocked/);
 });
 
 test("brownfield import check reports changed source evidence", () => {
@@ -176,6 +201,19 @@ test("brownfield import check reports changed source evidence", () => {
   assert.equal(payload.import.status, "changed");
   assert.deepEqual(payload.import.content.changed, ["openapi.yaml"]);
   assert.equal(payload.topogram.ok, true);
+
+  const refusedWrite = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
+  assert.equal(refusedWrite.status, 1);
+  assert.match(refusedWrite.stderr, /Refusing to write import adoption because brownfield source provenance is changed/);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
+
+  const forcedWrite = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--force", "--json"]);
+  assert.equal(forcedWrite.status, 0, forcedWrite.stderr || forcedWrite.stdout);
+  const forcedPayload = JSON.parse(forcedWrite.stdout);
+  assert.equal(forcedPayload.forced, true);
+  assert.equal(forcedPayload.import.status, "changed");
+  assert.equal(forcedPayload.warnings.length, 1);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
 });
 
 function candidateIds(items) {

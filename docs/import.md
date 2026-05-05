@@ -8,6 +8,7 @@ topogram import ./existing-app --out ./imported-topogram
 cd ./imported-topogram
 topogram import check
 topogram import plan
+topogram import adopt --list
 topogram import adopt bundle:task --dry-run
 topogram import adopt bundle:task --write
 topogram import status
@@ -47,6 +48,7 @@ canonical Topogram files:
 ```bash
 topogram import plan ./imported-topogram
 topogram import plan ./imported-topogram --json
+topogram import adopt --list ./imported-topogram
 topogram import adopt bundle:task ./imported-topogram --dry-run
 topogram import adopt bundle:task ./imported-topogram --write
 topogram import status ./imported-topogram
@@ -56,8 +58,24 @@ topogram import status ./imported-topogram --json
 `topogram import plan` summarizes the reconcile proposal bundles and suggests
 the next adoption command. `topogram import adopt` is preview-only by default;
 it does not write canonical `topogram/**` files unless `--write` is passed.
+Use `topogram import adopt --list` to discover valid bundle selectors.
 `topogram import status` combines source provenance, normal Topogram validity,
 and current adoption progress.
+
+Adoption writes refuse to run when the original brownfield source evidence has
+changed since import:
+
+```bash
+topogram import check ./imported-topogram
+topogram import adopt bundle:task ./imported-topogram --write
+```
+
+If you reviewed the source drift and still want to promote the current
+candidates, make the override explicit:
+
+```bash
+topogram import adopt bundle:task ./imported-topogram --write --force
+```
 
 Limit import scope with tracks when useful:
 
