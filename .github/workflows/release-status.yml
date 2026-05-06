@@ -105,6 +105,8 @@ jobs:
           scope: "@topogram"
       - name: Run release status
         working-directory: topogram
+        env:
+          GH_TOKEN: ${{ secrets.TOPOGRAM_RELEASE_STATUS_TOKEN || github.token }}
         run: |
           if [[ "${{ inputs.strict }}" == "true" ]]; then
             npm run release:status:strict

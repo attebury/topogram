@@ -63,7 +63,24 @@ catalog-facing metadata, or conformance requirements changed.
 
 Update package consumers, starting with `topogram-demo-todo`, to the published
 version and rerun their verification. Consumer repos that include
-`topogram-cli.version` can use:
+`topogram-cli.version` can be rolled as a batch from the Topogram source repo:
+
+```bash
+npm run release:roll-consumers -- 0.3.46
+```
+
+Use `--latest` after npmjs reports the new package version:
+
+```bash
+npm run release:roll-consumers -- --latest
+```
+
+The rollout command updates every known first-party consumer repo, runs each
+consumer's available checks, commits the pin change, pushes `main`, and prints
+the latest expected workflow URL for each repo. It refuses dirty consumer
+worktrees so unrelated local edits do not get swept into release commits.
+
+For one-off consumer work, run the lower-level command inside that repo:
 
 ```bash
 topogram package update-cli --latest
@@ -82,8 +99,9 @@ an unverifiable latest package version as release-blocking.
 Use `topogram setup package-auth` when a local or CI environment needs package
 read setup guidance for private packages.
 
-After the package is published, the release tag exists, and all first-party
-consumer pins have been rolled, run the strict release gate:
+After the package is published, the release tag exists, all first-party consumer
+pins have been rolled, and their verification workflows have passed on the
+rolled commits, run the strict release gate:
 
 ```bash
 npm run release:status:strict
@@ -91,5 +109,8 @@ npm run release:status:strict
 
 You can also run the manual GitHub Actions workflow `Release Status`. It checks
 out `topogram` plus the first-party consumer repos and runs the same strict
-gate. If the default workflow token cannot read one of those repositories, add a
-`TOPOGRAM_RELEASE_STATUS_TOKEN` repository secret with read access.
+gate. Strict mode verifies npmjs latest, the local and remote release tag,
+consumer pins, and the latest expected GitHub Actions workflow for each
+consumer repo. If the default workflow token cannot read one of those
+repositories or its Actions runs, add a `TOPOGRAM_RELEASE_STATUS_TOKEN`
+repository secret with read access.

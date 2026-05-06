@@ -12,6 +12,7 @@
     "release:check": "bash ./scripts/check-release-version.sh",
     "release:status": "node ./engine/src/cli.js release status",
     "release:status:strict": "node ./engine/src/cli.js release status --strict",
+    "release:roll-consumers": "node ./engine/src/cli.js release roll-consumers",
     "check": "npm --prefix ./engine run check",
     "test": "npm --prefix ./engine test",
     "engine:install": "npm --prefix ./engine install",

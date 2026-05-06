@@ -137,6 +137,20 @@ const KNOWN_CLI_CONSUMER_REPOS = [
   "topogram-demo-todo",
   "topogram-hello"
 ];
+const KNOWN_CLI_CONSUMER_WORKFLOWS = {
+  "topogram-generator-express-api": "Generator Verification",
+  "topogram-generator-hono-api": "Generator Verification",
+  "topogram-generator-postgres-db": "Generator Verification",
+  "topogram-generator-react-web": "Generator Verification",
+  "topogram-generator-sqlite-db": "Generator Verification",
+  "topogram-generator-sveltekit-web": "Generator Verification",
+  "topogram-generator-swiftui-native": "Generator Verification",
+  "topogram-generator-vanilla-web": "Generator Verification",
+  "topogram-starters": "Starter Verification",
+  "topogram-template-todo": "Template Verification",
+  "topogram-demo-todo": "Demo Verification",
+  "topogram-hello": "Topogram Package Verification"
+};
 const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
   "cli:surface",
   "doctor",
@@ -178,6 +192,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("Usage: topogram release status [--json] [--strict]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
@@ -231,6 +246,7 @@ function printUsage(options = {}) {
   console.log("  topogram doctor");
   console.log("  topogram setup package-auth");
   console.log("  topogram release status");
+  console.log("  topogram release roll-consumers --latest");
   console.log("  topogram new ./my-app");
   console.log("  topogram new --list-templates");
   console.log("  topogram new ./my-app --template todo");
@@ -744,13 +760,17 @@ function printPackageHelp() {
 
 function printReleaseHelp() {
   console.log("Usage: topogram release status [--json] [--strict]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push]");
   console.log("");
-  console.log("Checks the local CLI version, latest published package version, release tag, and first-party consumer pins.");
+  console.log("Checks the local CLI version, latest published package version, release tag, first-party consumer pins, and strict consumer CI state.");
+  console.log("Rolls first-party consumers to a published CLI version, runs their checks, commits, pushes, and prints latest workflow URLs.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram release status");
   console.log("  topogram release status --json");
   console.log("  topogram release status --strict");
+  console.log("  topogram release roll-consumers 0.3.46");
+  console.log("  topogram release roll-consumers --latest");
   console.log("");
   console.log("Release preparation and publishing are repo-level tasks in the Topogram source checkout:");
   console.log("  npm run release:prepare -- <version>");
@@ -2493,8 +2513,208 @@ function printPackageUpdateCli(payload) {
 }
 
 /**
- * @param {{ cwd?: string }} [options]
- * @returns {{ ok: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: { tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumers: Array<{ name: string, path: string, version: string|null, found: boolean, matchesLocal: boolean|null }>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @param {string} requested
+ * @param {{ cwd?: string, push?: boolean }} [options]
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, pushed: boolean, consumers: Array<Record<string, any>>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ */
+function buildReleaseRollConsumersPayload(requested, options = {}) {
+  const cwd = options.cwd || process.cwd();
+  const push = options.push !== false;
+  const requestedLatest = requested === "latest" || requested === "--latest";
+  const diagnostics = [];
+  const version = requestedLatest
+    ? resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics)
+    : requested;
+  if (!isPackageVersion(version)) {
+    throw new Error("topogram release roll-consumers requires <version> or --latest.");
+  }
+  const consumers = [];
+  for (const consumer of discoverTopogramCliVersionConsumers(cwd)) {
+    const workflow = expectedConsumerWorkflowName(consumer.name);
+    const item = {
+      name: consumer.name,
+      root: consumer.root,
+      workflow,
+      updated: false,
+      committed: false,
+      pushed: false,
+      commit: null,
+      update: null,
+      ci: null,
+      diagnostics: []
+    };
+    consumers.push(item);
+    if (!consumer.root || !fs.existsSync(consumer.root)) {
+      item.diagnostics.push({
+        code: "release_consumer_repo_missing",
+        severity: "error",
+        message: `First-party consumer repo ${consumer.name} was not found.`,
+        path: consumer.path,
+        suggestedFix: `Clone ${consumer.name} beside the topogram repo, then rerun roll-consumers.`
+      });
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    const packagePath = path.join(consumer.root, "package.json");
+    if (!fs.existsSync(packagePath)) {
+      item.diagnostics.push({
+        code: "release_consumer_package_missing",
+        severity: "error",
+        message: `First-party consumer repo ${consumer.name} does not contain package.json.`,
+        path: packagePath,
+        suggestedFix: "Only package-backed first-party consumers can be rolled by this command."
+      });
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    const clean = inspectGitWorktreeClean(consumer.root);
+    if (clean.ok !== true) {
+      item.diagnostics.push({
+        code: "release_consumer_worktree_dirty",
+        severity: "error",
+        message: clean.error || `First-party consumer repo ${consumer.name} has uncommitted changes.`,
+        path: consumer.root,
+        suggestedFix: "Commit, stash, or discard unrelated consumer changes before rolling the CLI version."
+      });
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    try {
+      item.update = buildPackageUpdateCliPayload(version, { cwd: consumer.root });
+      item.updated = true;
+    } catch (error) {
+      item.diagnostics.push({
+        code: "release_consumer_update_failed",
+        severity: "error",
+        message: `Failed to update ${consumer.name}: ${messageFromError(error)}`,
+        path: consumer.root,
+        suggestedFix: "Fix the consumer update/check failure, then rerun roll-consumers."
+      });
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    const filesToStage = ["package.json", "package-lock.json", "topogram-cli.version"]
+      .filter((file) => fs.existsSync(path.join(consumer.root, file)));
+    const addResult = runGit(["add", ...filesToStage], consumer.root);
+    if (addResult.status !== 0) {
+      item.diagnostics.push(commandDiagnostic({
+        code: "release_consumer_git_add_failed",
+        severity: "error",
+        message: `Failed to stage ${consumer.name} CLI update.`,
+        path: consumer.root,
+        suggestedFix: "Inspect git output, stage the changed files manually, then commit and push.",
+        result: addResult
+      }));
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    const staged = hasStagedGitChanges(consumer.root);
+    if (!staged.ok) {
+      item.diagnostics.push(commandDiagnostic({
+        code: "release_consumer_git_diff_failed",
+        severity: "error",
+        message: `Could not inspect staged changes for ${consumer.name}.`,
+        path: consumer.root,
+        suggestedFix: "Inspect git status manually before committing.",
+        result: staged.result
+      }));
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    if (!staged.changed) {
+      item.ci = inspectConsumerCi(consumer, { strict: false });
+      item.diagnostics.push(...item.ci.diagnostics);
+      diagnostics.push(...item.ci.diagnostics);
+      continue;
+    }
+    const commitResult = runGit(["commit", "-m", `Update Topogram CLI to ${version}`], consumer.root);
+    if (commitResult.status !== 0) {
+      item.diagnostics.push(commandDiagnostic({
+        code: "release_consumer_git_commit_failed",
+        severity: "error",
+        message: `Failed to commit ${consumer.name} CLI update.`,
+        path: consumer.root,
+        suggestedFix: "Inspect git output, commit the consumer update manually, then push.",
+        result: commitResult
+      }));
+      diagnostics.push(...item.diagnostics);
+      continue;
+    }
+    item.committed = true;
+    item.commit = currentGitHead(consumer.root);
+    if (push) {
+      const pushResult = runGit(["push", "origin", "main"], consumer.root);
+      if (pushResult.status !== 0) {
+        item.diagnostics.push(commandDiagnostic({
+          code: "release_consumer_git_push_failed",
+          severity: "error",
+          message: `Failed to push ${consumer.name} CLI update.`,
+          path: consumer.root,
+          suggestedFix: "Push the consumer update manually, then confirm its verification workflow passes.",
+          result: pushResult
+        }));
+        diagnostics.push(...item.diagnostics);
+        continue;
+      }
+      item.pushed = true;
+    }
+    item.ci = inspectConsumerCi(consumer, { strict: false });
+    item.diagnostics.push(...item.ci.diagnostics);
+    diagnostics.push(...item.ci.diagnostics);
+  }
+  const errors = diagnostics
+    .filter((diagnostic) => diagnostic.severity === "error")
+    .map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    packageName: CLI_PACKAGE_NAME,
+    requestedVersion: version,
+    requestedLatest,
+    pushed: push,
+    consumers,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildReleaseRollConsumersPayload>} payload
+ * @returns {void}
+ */
+function printReleaseRollConsumers(payload) {
+  console.log(payload.ok ? "Topogram consumer rollout completed." : "Topogram consumer rollout found issues.");
+  if (payload.requestedLatest) {
+    console.log(`Resolved latest version: ${payload.requestedVersion}`);
+  }
+  console.log(`Package: ${payload.packageName}@${payload.requestedVersion}`);
+  console.log(`Push: ${payload.pushed ? "enabled" : "disabled"}`);
+  for (const consumer of payload.consumers) {
+    const state = consumer.committed
+      ? consumer.pushed ? "pushed" : "committed"
+      : consumer.updated ? "updated" : "skipped";
+    console.log(`- ${consumer.name}: ${state}`);
+    if (consumer.update) {
+      console.log(`  Checks run: ${consumer.update.scriptsRun.join(", ") || "none"}`);
+    }
+    if (consumer.commit) {
+      console.log(`  Commit: ${consumer.commit}`);
+    }
+    if (consumer.ci?.run?.url) {
+      const run = consumer.ci.run;
+      console.log(`  CI: ${run.workflowName || consumer.workflow} ${run.status || "unknown"}/${run.conclusion || "unknown"} ${run.url}`);
+    } else if (consumer.workflow) {
+      console.log(`  CI: ${consumer.workflow} not found`);
+    }
+    for (const diagnostic of consumer.diagnostics || []) {
+      const label = diagnostic.severity === "error" ? "Error" : diagnostic.severity === "warning" ? "Warning" : "Note";
+      console.log(`  ${label}: ${diagnostic.message}`);
+    }
+  }
+}
+
+/**
+ * @param {{ cwd?: string, strict?: boolean }} [options]
+ * @returns {{ ok: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: { tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<Record<string, any>> }, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumerCi: ReturnType<typeof summarizeConsumerCi>, consumers: Array<{ name: string, root: string|null, path: string, version: string|null, found: boolean, matchesLocal: boolean|null, workflow: string|null, ci: ReturnType<typeof inspectConsumerCi>|null }>, diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildReleaseStatusPayload(options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -2517,9 +2737,20 @@ function buildReleaseStatusPayload(options = {}) {
   diagnostics.push(...git.diagnostics);
   const consumers = discoverTopogramCliVersionConsumers(cwd).map((consumer) => ({
     ...consumer,
-    matchesLocal: consumer.version ? consumer.version === localVersion : null
+    matchesLocal: consumer.version ? consumer.version === localVersion : null,
+    workflow: expectedConsumerWorkflowName(consumer.name),
+    ci: null
   }));
+  if (strict) {
+    for (const consumer of consumers) {
+      if (consumer.matchesLocal === true) {
+        consumer.ci = inspectConsumerCi(consumer, { strict: true });
+        diagnostics.push(...consumer.ci.diagnostics);
+      }
+    }
+  }
   const consumerPins = summarizeConsumerPins(consumers);
+  const consumerCi = summarizeConsumerCi(consumers);
   const currentPublished = latestVersion ? latestVersion === localVersion : null;
   if (strict) {
     diagnostics.push(...releaseStatusStrictDiagnostics({
@@ -2527,7 +2758,8 @@ function buildReleaseStatusPayload(options = {}) {
       latestVersion,
       currentPublished,
       git,
-      consumerPins
+      consumerPins,
+      consumerCi
     }));
   }
   const errors = diagnostics
@@ -2542,6 +2774,7 @@ function buildReleaseStatusPayload(options = {}) {
     currentPublished,
     git,
     consumerPins,
+    consumerCi,
     consumers,
     diagnostics,
     errors
@@ -2554,7 +2787,8 @@ function buildReleaseStatusPayload(options = {}) {
  *   latestVersion: string|null,
  *   currentPublished: boolean|null,
  *   git: ReturnType<typeof inspectReleaseGitTag>,
- *   consumerPins: ReturnType<typeof summarizeConsumerPins>
+ *   consumerPins: ReturnType<typeof summarizeConsumerPins>,
+ *   consumerCi: ReturnType<typeof summarizeConsumerCi>
  * }} release
  * @returns {Array<{ code: string, severity: "error", message: string, path: string, suggestedFix: string }>}
  */
@@ -2598,6 +2832,15 @@ function releaseStatusStrictDiagnostics(release) {
       suggestedFix: "Roll first-party consumer repositories to the current CLI version before treating this release as complete."
     });
   }
+  if (release.consumerCi.allCheckedAndPassing !== true) {
+    diagnostics.push({
+      code: "release_consumer_ci_not_current",
+      severity: "error",
+      message: "First-party consumer verification workflows are not all passing on the checked-out consumer commits.",
+      path: "GitHub Actions",
+      suggestedFix: "Wait for or fix the consumer verification workflows, then rerun `topogram release status --strict`."
+    });
+  }
   return diagnostics;
 }
 
@@ -2618,13 +2861,27 @@ function printReleaseStatus(payload) {
     `Consumer pins: ${payload.consumerPins.pinned}/${payload.consumerPins.known} pinned, ` +
     `${payload.consumerPins.matching} matching, ${payload.consumerPins.differing} differing, ${payload.consumerPins.missing} missing`
   );
+  if (payload.strict) {
+    console.log(
+      `Consumer CI: ${payload.consumerCi.passing}/${payload.consumerCi.checked} passing, ` +
+      `${payload.consumerCi.failing} failing, ${payload.consumerCi.unavailable} unavailable, ${payload.consumerCi.skipped} skipped`
+    );
+  }
   for (const consumer of payload.consumers) {
     const status = consumer.matchesLocal === true
       ? "matches"
       : consumer.matchesLocal === false
         ? "differs"
         : "missing";
-    console.log(`- ${consumer.name}: ${consumer.version || "missing"} (${status})`);
+    const ciStatus = consumer.ci?.run
+      ? `; ${consumer.ci.run.workflowName || consumer.workflow}: ${consumer.ci.run.status || "unknown"}/${consumer.ci.run.conclusion || "unknown"}`
+      : consumer.ci?.checked
+        ? `; ${consumer.workflow || "workflow"} unavailable`
+        : "";
+    console.log(`- ${consumer.name}: ${consumer.version || "missing"} (${status})${ciStatus}`);
+    if (consumer.ci?.run?.url) {
+      console.log(`  CI: ${consumer.ci.run.url}`);
+    }
   }
   if (payload.diagnostics.length > 0) {
     console.log("Diagnostics:");
@@ -2698,8 +2955,235 @@ function inspectReleaseGitTag(version, cwd) {
 }
 
 /**
+ * @param {string} name
+ * @returns {string|null}
+ */
+function expectedConsumerWorkflowName(name) {
+  return KNOWN_CLI_CONSUMER_WORKFLOWS[name] || null;
+}
+
+/**
+ * @param {string[]} args
  * @param {string} cwd
- * @returns {Array<{ name: string, path: string, version: string|null, found: boolean }>}
+ * @returns {ReturnType<typeof childProcess.spawnSync>}
+ */
+function runGit(args, cwd) {
+  return childProcess.spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, dirty: boolean|null, error: string|null }}
+ */
+function inspectGitWorktreeClean(cwd) {
+  const result = runGit(["status", "--porcelain"], cwd);
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      dirty: null,
+      error: `Could not inspect git status: ${commandOutput(result) || "unknown error"}`
+    };
+  }
+  const dirty = String(result.stdout || "").trim().length > 0;
+  return {
+    ok: !dirty,
+    dirty,
+    error: dirty ? "Consumer repo has uncommitted changes." : null
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, changed: boolean, result: ReturnType<typeof childProcess.spawnSync> }}
+ */
+function hasStagedGitChanges(cwd) {
+  const result = runGit(["diff", "--cached", "--quiet"], cwd);
+  return {
+    ok: result.status === 0 || result.status === 1,
+    changed: result.status === 1,
+    result
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {string|null}
+ */
+function currentGitHead(cwd) {
+  const result = runGit(["rev-parse", "HEAD"], cwd);
+  return result.status === 0 ? String(result.stdout || "").trim() || null : null;
+}
+
+/**
+ * @param {{ code: string, severity: "error"|"warning", message: string, path: string|null, suggestedFix: string, result: ReturnType<typeof childProcess.spawnSync> }} input
+ * @returns {{ code: string, severity: "error"|"warning", message: string, path: string|null, suggestedFix: string }}
+ */
+function commandDiagnostic(input) {
+  const output = commandOutput(input.result);
+  return {
+    code: input.code,
+    severity: input.severity,
+    message: output ? `${input.message}\n${output}` : input.message,
+    path: input.path,
+    suggestedFix: input.suggestedFix
+  };
+}
+
+/**
+ * @param {ReturnType<typeof childProcess.spawnSync>} result
+ * @returns {string}
+ */
+function commandOutput(result) {
+  return [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+}
+
+/**
+ * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
+ * @param {{ strict?: boolean }} [options]
+ * @returns {{ checked: boolean, ok: boolean|null, expectedWorkflow: string|null, headSha: string|null, run: { databaseId?: number, workflowName?: string, status?: string, conclusion?: string, headSha?: string, url?: string }|null, diagnostics: Array<Record<string, any>> }}
+ */
+function inspectConsumerCi(consumer, options = {}) {
+  const diagnostics = [];
+  const expectedWorkflow = consumer.workflow || expectedConsumerWorkflowName(consumer.name);
+  if (!consumer.root || !fs.existsSync(consumer.root)) {
+    return {
+      checked: false,
+      ok: null,
+      expectedWorkflow,
+      headSha: null,
+      run: null,
+      diagnostics: []
+    };
+  }
+  const headSha = currentGitHead(consumer.root);
+  if (!headSha) {
+    diagnostics.push({
+      code: "release_consumer_head_unavailable",
+      severity: options.strict ? "error" : "warning",
+      message: `Could not inspect local HEAD for ${consumer.name}.`,
+      path: consumer.root,
+      suggestedFix: "Run from a checked-out consumer git repository."
+    });
+  }
+  if (!expectedWorkflow) {
+    diagnostics.push({
+      code: "release_consumer_workflow_unknown",
+      severity: options.strict ? "error" : "warning",
+      message: `No expected verification workflow is configured for ${consumer.name}.`,
+      path: consumer.name,
+      suggestedFix: "Add the consumer repo to KNOWN_CLI_CONSUMER_WORKFLOWS."
+    });
+    return {
+      checked: true,
+      ok: false,
+      expectedWorkflow,
+      headSha,
+      run: null,
+      diagnostics
+    };
+  }
+  const result = childProcess.spawnSync("gh", [
+    "run",
+    "list",
+    "--repo",
+    `attebury/${consumer.name}`,
+    "--branch",
+    "main",
+    "--workflow",
+    expectedWorkflow,
+    "--limit",
+    "1",
+    "--json",
+    "databaseId,workflowName,status,conclusion,headSha,url"
+  ], {
+    cwd: consumer.root,
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (result.status !== 0) {
+    diagnostics.push(commandDiagnostic({
+      code: "release_consumer_ci_unavailable",
+      severity: options.strict ? "error" : "warning",
+      message: `Could not inspect ${expectedWorkflow} for ${consumer.name}.`,
+      path: `attebury/${consumer.name}`,
+      suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
+      result
+    }));
+    return {
+      checked: true,
+      ok: false,
+      expectedWorkflow,
+      headSha,
+      run: null,
+      diagnostics
+    };
+  }
+  let runs = [];
+  try {
+    runs = JSON.parse(String(result.stdout || "[]"));
+  } catch (error) {
+    diagnostics.push({
+      code: "release_consumer_ci_unreadable",
+      severity: options.strict ? "error" : "warning",
+      message: `Could not parse ${consumer.name} workflow status: ${messageFromError(error)}`,
+      path: `attebury/${consumer.name}`,
+      suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
+    });
+  }
+  const run = Array.isArray(runs) && runs.length > 0 ? runs[0] : null;
+  if (!run) {
+    diagnostics.push({
+      code: "release_consumer_ci_missing",
+      severity: options.strict ? "error" : "warning",
+      message: `${consumer.name} has no ${expectedWorkflow} run on main.`,
+      path: `attebury/${consumer.name}`,
+      suggestedFix: "Push the consumer repo and wait for its verification workflow."
+    });
+    return {
+      checked: true,
+      ok: false,
+      expectedWorkflow,
+      headSha,
+      run: null,
+      diagnostics
+    };
+  }
+  if (headSha && run.headSha && run.headSha !== headSha) {
+    diagnostics.push({
+      code: "release_consumer_ci_head_mismatch",
+      severity: options.strict ? "error" : "warning",
+      message: `${consumer.name} latest ${expectedWorkflow} run is for ${run.headSha}, not checked-out HEAD ${headSha}.`,
+      path: run.url || `attebury/${consumer.name}`,
+      suggestedFix: "Wait for the verification workflow on the current consumer commit, then rerun release status."
+    });
+  }
+  if (run.status !== "completed" || run.conclusion !== "success") {
+    diagnostics.push({
+      code: "release_consumer_ci_not_successful",
+      severity: options.strict ? "error" : "warning",
+      message: `${consumer.name} ${expectedWorkflow} is ${run.status || "unknown"}/${run.conclusion || "unknown"}.`,
+      path: run.url || `attebury/${consumer.name}`,
+      suggestedFix: "Wait for or fix the consumer verification workflow, then rerun release status."
+    });
+  }
+  return {
+    checked: true,
+    ok: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length === 0 &&
+      (!options.strict || (run.status === "completed" && run.conclusion === "success" && (!headSha || !run.headSha || run.headSha === headSha))),
+    expectedWorkflow,
+    headSha,
+    run,
+    diagnostics
+  };
+}
+
+/**
+ * @param {string} cwd
+ * @returns {Array<{ name: string, root: string|null, path: string, version: string|null, found: boolean }>}
  */
 function discoverTopogramCliVersionConsumers(cwd) {
   const roots = [];
@@ -2718,6 +3202,7 @@ function discoverTopogramCliVersionConsumers(cwd) {
       if (fs.existsSync(consumerRoot) && !fs.existsSync(versionPath)) {
         found = {
           name,
+          root: consumerRoot,
           path: versionPath,
           version: null,
           found: false
@@ -2729,6 +3214,7 @@ function discoverTopogramCliVersionConsumers(cwd) {
       }
       found = {
         name,
+        root: consumerRoot,
         path: versionPath,
         version: fs.readFileSync(versionPath, "utf8").trim() || null,
         found: true
@@ -2737,6 +3223,7 @@ function discoverTopogramCliVersionConsumers(cwd) {
     }
     consumers.push(found || {
       name,
+      root: null,
       path: path.join(roots[0], name, "topogram-cli.version"),
       version: null,
       found: false
@@ -2763,6 +3250,30 @@ function summarizeConsumerPins(consumers) {
     matchingNames,
     differingNames,
     missingNames
+  };
+}
+
+/**
+ * @param {Array<{ name: string, matchesLocal?: boolean|null, ci?: ReturnType<typeof inspectConsumerCi>|null }>} consumers
+ * @returns {{ checked: number, passing: number, failing: number, unavailable: number, skipped: number, allCheckedAndPassing: boolean, passingNames: string[], failingNames: string[], unavailableNames: string[], skippedNames: string[] }}
+ */
+function summarizeConsumerCi(consumers) {
+  const checked = consumers.filter((consumer) => consumer.ci?.checked);
+  const passingNames = checked.filter((consumer) => consumer.ci?.ok === true).map((consumer) => consumer.name);
+  const failingNames = checked.filter((consumer) => consumer.ci?.ok === false && consumer.ci?.run).map((consumer) => consumer.name);
+  const unavailableNames = checked.filter((consumer) => consumer.ci?.ok === false && !consumer.ci?.run).map((consumer) => consumer.name);
+  const skippedNames = consumers.filter((consumer) => !consumer.ci?.checked).map((consumer) => consumer.name);
+  return {
+    checked: checked.length,
+    passing: passingNames.length,
+    failing: failingNames.length,
+    unavailable: unavailableNames.length,
+    skipped: skippedNames.length,
+    allCheckedAndPassing: consumers.length > 0 && checked.length === consumers.length && failingNames.length === 0 && unavailableNames.length === 0,
+    passingNames,
+    failingNames,
+    unavailableNames,
+    skippedNames
   };
 }
 
@@ -7607,6 +8118,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
 } else if (args[0] === "release" && args[1] === "status") {
   commandArgs = { releaseStatus: true, inputPath: null };
+} else if (args[0] === "release" && args[1] === "roll-consumers") {
+  commandArgs = { releaseRollConsumers: true, releaseRollVersion: args[2], inputPath: null };
 } else if (args[0] === "new" || args[0] === "create") {
   commandArgs = args.includes("--list-templates")
     ? { templateList: true, inputPath: null }
@@ -7823,9 +8336,11 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
 }
 const emitJson = args.includes("--json");
 const strictReleaseStatus = args.includes("--strict");
+const shouldPushReleaseConsumers = !args.includes("--no-push");
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
+const shouldReleaseRollConsumers = Boolean(commandArgs?.releaseRollConsumers);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
 const shouldComponentBehavior = Boolean(commandArgs?.componentBehavior);
@@ -8055,6 +8570,18 @@ try {
       console.log(stableStringify(payload));
     } else {
       printReleaseStatus(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldReleaseRollConsumers) {
+    const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, {
+      push: shouldPushReleaseConsumers
+    });
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printReleaseRollConsumers(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }
