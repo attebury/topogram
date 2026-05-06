@@ -10,7 +10,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | --- | --- | --- |
 | `@topogram/cli` | `0.3.46` | `attebury/topogram` Fresh npmjs Smoke and Installed CLI First Use passed on `main` |
 | `attebury/topograms` catalog | `6189159` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.31` |
-| `topogram-demo-todo` | `80a127b` | Demo Verification passed from default catalog creation through runtime |
+| `topogram-demo-todo` | `28c8bb5` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
