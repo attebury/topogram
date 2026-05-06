@@ -5565,6 +5565,32 @@ function importAdoptCommand(projectRoot, selector, write = false) {
   return `topogram import adopt ${selector} ${importProjectCommandPath(projectRoot)} ${write ? "--write" : "--dry-run"}`;
 }
 
+const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
+  {
+    selector: "from-plan",
+    kind: "plan",
+    label: "approved or pending plan items",
+    matches: (item) => item.current_state === "stage" || item.current_state === "accept"
+  },
+  { selector: "actors", kind: "kind", label: "actors", matches: (item) => item.kind === "actor" },
+  { selector: "roles", kind: "kind", label: "roles", matches: (item) => item.kind === "role" },
+  { selector: "enums", kind: "kind", label: "enums", matches: (item) => item.kind === "enum" },
+  { selector: "shapes", kind: "kind", label: "shapes", matches: (item) => item.kind === "shape" },
+  { selector: "entities", kind: "kind", label: "entities", matches: (item) => item.kind === "entity" },
+  { selector: "capabilities", kind: "kind", label: "capabilities", matches: (item) => item.kind === "capability" },
+  { selector: "components", kind: "kind", label: "components", matches: (item) => item.kind === "component" },
+  { selector: "docs", kind: "track", label: "docs", matches: (item) => item.track === "docs" },
+  {
+    selector: "journeys",
+    kind: "track",
+    label: "journey docs",
+    matches: (item) => item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/")
+  },
+  { selector: "workflows", kind: "track", label: "workflows", matches: (item) => item.track === "workflows" || item.kind === "decision" },
+  { selector: "verification", kind: "kind", label: "verification", matches: (item) => item.kind === "verification" },
+  { selector: "ui", kind: "track", label: "UI reports and components", matches: (item) => item.track === "ui" }
+];
+
 function readImportAdoptionArtifacts(inputPath) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const topogramRoot = normalizeTopogramPath(inputPath);
@@ -5587,6 +5613,27 @@ function readImportAdoptionArtifacts(inputPath) {
     adoptionStatus: readJsonIfExists(paths.adoptionStatus),
     reconcileReport: readJsonIfExists(paths.reconcileReport)
   };
+}
+
+function buildBrownfieldBroadAdoptSelectors(projectRoot, adoptionPlan) {
+  const surfaces = adoptionPlan.imported_proposal_surfaces || [];
+  return BROWNFIELD_BROAD_ADOPT_SELECTORS.map((definition) => {
+    const items = surfaces.filter(definition.matches);
+    const pendingItems = items.filter((item) => !["accept", "accepted", "applied"].includes(item.current_state));
+    const appliedItems = items.filter((item) => ["accept", "accepted", "applied"].includes(item.current_state));
+    const blockedItems = items.filter((item) => item.human_review_required);
+    return {
+      selector: definition.selector,
+      kind: definition.kind,
+      label: definition.label,
+      itemCount: items.length,
+      pendingItemCount: pendingItems.length,
+      appliedItemCount: appliedItems.length,
+      blockedItemCount: blockedItems.length,
+      previewCommand: importAdoptCommand(projectRoot, definition.selector, false),
+      writeCommand: importAdoptCommand(projectRoot, definition.selector, true)
+    };
+  }).filter((selector) => selector.itemCount > 0);
 }
 
 function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
@@ -5700,6 +5747,7 @@ function printBrownfieldImportPlan(payload) {
 }
 
 function buildBrownfieldImportAdoptListPayload(inputPath) {
+  const artifacts = readImportAdoptionArtifacts(inputPath);
   const plan = buildBrownfieldImportPlanPayload(inputPath);
   const selectors = plan.bundles.map((bundle) => ({
     selector: `bundle:${bundle.bundle}`,
@@ -5713,12 +5761,15 @@ function buildBrownfieldImportAdoptListPayload(inputPath) {
     previewCommand: importAdoptCommand(plan.projectRoot, `bundle:${bundle.bundle}`, false),
     writeCommand: importAdoptCommand(plan.projectRoot, `bundle:${bundle.bundle}`, true)
   }));
+  const broadSelectors = buildBrownfieldBroadAdoptSelectors(plan.projectRoot, artifacts.adoptionPlan);
   return {
     ok: true,
     projectRoot: plan.projectRoot,
     topogramRoot: plan.topogramRoot,
     selectorCount: selectors.length,
     selectors,
+    broadSelectorCount: broadSelectors.length,
+    broadSelectors,
     nextCommand: selectors.find((selector) => !selector.complete)?.previewCommand || plan.commands.status
   };
 }
@@ -5733,6 +5784,15 @@ function printBrownfieldImportAdoptList(payload) {
     console.log(`- ${selector.selector}: ${selector.itemCount} item(s), ${selector.pendingItemCount} pending, ${selector.appliedItemCount} applied`);
     console.log(`  Preview: ${selector.previewCommand}`);
     console.log(`  Write: ${selector.writeCommand}`);
+  }
+  if (payload.broadSelectors.length > 0) {
+    console.log("");
+    console.log("Broad selectors:");
+    for (const selector of payload.broadSelectors) {
+      console.log(`- ${selector.selector}: ${selector.itemCount} ${selector.label}`);
+      console.log(`  Preview: ${selector.previewCommand}`);
+      console.log(`  Write: ${selector.writeCommand}`);
+    }
   }
   console.log("");
   console.log(`Next: ${payload.nextCommand}`);

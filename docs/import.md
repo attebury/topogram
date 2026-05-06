@@ -94,6 +94,10 @@ Use `topogram import adopt --list` to discover valid bundle selectors. The
 `components` selector promotes reviewed component candidates into
 `topogram/components/**`; broad bundle selectors also include component
 candidate files when the bundle contains them.
+The list output now includes both bundle selectors, such as `bundle:task`, and
+broad selectors, such as `components`, `ui`, `capabilities`, and `from-plan`.
+Use the broad `components` selector when you want to promote reusable UI
+contracts separately from screen reports or API/model candidates.
 `topogram import status` combines source provenance, normal Topogram validity,
 and current adoption progress.
 

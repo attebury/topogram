@@ -1679,7 +1679,8 @@ function summarizeBundleParticipants(bundle) {
 }
 
 function summarizeBundleSurface(bundle, values, empty = "_none_") {
-  return values.length ? values.map((item) => `\`${item}\``).join(", ") : empty;
+  const list = Array.isArray(values) ? values : [];
+  return list.length ? list.map((item) => `\`${item}\``).join(", ") : empty;
 }
 
 function buildBundleOperatorSummary(bundle) {
@@ -1693,6 +1694,7 @@ function buildBundleOperatorSummary(bundle) {
     bundle.id;
   const participants = summarizeBundleParticipants(bundle);
   const capabilityIds = [...new Set((bundle.capabilities || []).map((entry) => entry.id_hint))].slice(0, 4);
+  const componentIds = [...new Set((bundle.components || []).map((entry) => entry.id_hint))].slice(0, 4);
   const screenIds = [...new Set((bundle.screens || []).map((entry) => entry.id_hint))].slice(0, 4);
   const routePaths = [...new Set((bundle.uiRoutes || []).map((entry) => entry.path).filter(Boolean))].slice(0, 4);
   const workflowIds = [...new Set((bundle.workflows || []).map((entry) => entry.id_hint))].slice(0, 4);
@@ -1708,6 +1710,7 @@ function buildBundleOperatorSummary(bundle) {
   const evidenceKinds = [
     (bundle.entities || []).length > 0 ? "entity evidence" : null,
     (bundle.capabilities || []).length > 0 ? "API capability evidence" : null,
+    (bundle.components || []).length > 0 ? "UI component evidence" : null,
     (bundle.screens || []).length > 0 || (bundle.uiRoutes || []).length > 0 ? "UI screen/route evidence" : null,
     (bundle.workflows || []).length > 0 ? "workflow evidence" : null,
     (bundle.docs || []).length > 0 ? "doc evidence" : null,
@@ -1723,6 +1726,7 @@ function buildBundleOperatorSummary(bundle) {
     primaryEntityId,
     participants,
     capabilityIds,
+    componentIds,
     screenIds,
     routePaths,
     workflowIds,
@@ -2711,6 +2715,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `Enums: ${bundle.enums.length}`,
     `Capabilities: ${bundle.capabilities.length}`,
     `Shapes: ${bundle.shapes.length}`,
+    `Components: ${bundle.components.length}`,
     `Screens: ${bundle.screens.length}`,
     `UI routes: ${bundle.uiRoutes.length}`,
     `UI actions: ${bundle.uiActions.length}`,
@@ -2728,6 +2733,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `- Primary entity: ${summary.primaryEntityId ? `\`${summary.primaryEntityId}\`` : "_none_"}`,
     `- Participants: ${summary.participants.label}`,
     `- Main capabilities: ${summarizeBundleSurface(bundle, summary.capabilityIds)}`,
+    `- Main components: ${summarizeBundleSurface(bundle, summary.componentIds)}`,
     `- Main screens: ${summarizeBundleSurface(bundle, summary.screenIds)}`,
     `- Main routes: ${summarizeBundleSurface(bundle, summary.routePaths)}`,
     `- Main workflows: ${summarizeBundleSurface(bundle, summary.workflowIds)}`,
@@ -7581,6 +7587,7 @@ function reconcileWorkflow(inputPath, options = {}) {
       enums: bundle.enums.map((entry) => entry.id_hint),
       capabilities: bundle.capabilities.map((entry) => entry.id_hint),
       shapes: bundle.shapes.map((entry) => entry.id),
+      components: bundle.components.map((entry) => entry.id_hint),
       screens: bundle.screens.map((entry) => entry.id_hint),
       workflows: bundle.workflows.map((entry) => entry.id_hint),
       docs: bundle.docs.map((entry) => entry.id),
@@ -7604,10 +7611,11 @@ function reconcileWorkflow(inputPath, options = {}) {
     : "## Promoted Canonical Items";
   files["candidates/reconcile/report.json"] = `${stableStringify(report)}\n`;
   const candidateModelBundlesMarkdown = report.candidate_model_bundles.length
-    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
+    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.components.length} components, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
   - primary concept \`${bundle.operator_summary.primaryConcept}\`${bundle.operator_summary.primaryEntityId ? `, primary entity \`${bundle.operator_summary.primaryEntityId}\`` : ""}
   - participants ${bundle.operator_summary.participants.label}
   - main capabilities ${summarizeBundleSurface(bundle, bundle.operator_summary.capabilityIds)}
+  - main components ${summarizeBundleSurface(bundle, bundle.operator_summary.componentIds)}
   - main routes ${summarizeBundleSurface(bundle, bundle.operator_summary.routePaths)}
   - candidate maintained seam mappings ${renderMaintainedSeamCandidatesInline(bundle)}
   - permission hints ${bundle.auth_permission_hints?.length ? bundle.auth_permission_hints.map((entry) => formatAuthPermissionHintInline(entry)).join(", ") : "_none_"}

@@ -155,6 +155,8 @@ shared starter examples and are surfaced through the `attebury/topograms`
 catalog. Generated projects depend on public `@topogram/*` packages, so a normal
 `npm install` should work unless the project also opts into private templates or
 generators.
+The dated package/catalog compatibility snapshot is recorded in
+[Known-Good Release Matrix](./docs/release-matrix.md).
 All generated starters include `npm run query:list` and `npm run query:show -- <name>`
 as default local query discovery commands.
 

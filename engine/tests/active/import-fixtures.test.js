@@ -160,12 +160,38 @@ test("brownfield UI import writes reviewable component candidates and shared bin
   assert.deepEqual(componentItems.map((item) => item.item), ["component_ui_task_list_results"]);
   assert.equal(componentItems[0].source_path, "candidates/reconcile/model/bundles/task/components/component_ui_task_list_results.tg");
   assert.equal(componentItems[0].canonical_rel_path, "components/component-ui-task-list-results.tg");
+  const reconcileReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.md"), "utf8");
+  assert.match(reconcileReport, /1 components/);
+  assert.match(reconcileReport, /main components `component_ui_task_list_results`/);
+  const bundleReadme = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
+  assert.match(bundleReadme, /Components: 1/);
+  assert.match(bundleReadme, /Main components: `component_ui_task_list_results`/);
+
+  const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  const componentSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "components");
+  assert.equal(componentSelector.itemCount, 1);
+  assert.match(componentSelector.previewCommand, /topogram import adopt components .* --dry-run/);
+  assert.match(componentSelector.writeCommand, /topogram import adopt components .* --write/);
+
+  const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
+  assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
+  assert.match(humanSelectorList.stdout, /Broad selectors:/);
+  assert.match(humanSelectorList.stdout, /components: 1 components/);
 
   const adopt = runCli(["import", "adopt", "components", targetRoot, "--write", "--json"]);
   assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
   const adoptPayload = JSON.parse(adopt.stdout);
   assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "component" && item.item === "component_ui_task_list_results"), true);
+  assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "components/component-ui-task-list-results.tg" && item.sha256 && item.size > 0), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "components", "component-ui-task-list-results.tg")), true);
+
+  const check = runCli(["check", targetRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const status = runCli(["import", "status", targetRoot, "--json"]);
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 1);
 });
 
 test("brownfield import refresh updates candidates and provenance without overwriting adopted Topogram", () => {
@@ -286,11 +312,15 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.deepEqual(selectorPayload.selectors.map((selector) => selector.selector), ["bundle:task", "bundle:user"]);
   assert.match(selectorPayload.selectors[0].previewCommand, /topogram import adopt bundle:task .* --dry-run/);
   assert.match(selectorPayload.selectors[0].writeCommand, /topogram import adopt bundle:task .* --write/);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "from-plan"), true);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "capabilities"), true);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "entities"), true);
 
   const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
   assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
   assert.match(humanSelectorList.stdout, /Import adoption selectors for/);
   assert.match(humanSelectorList.stdout, /bundle:task/);
+  assert.match(humanSelectorList.stdout, /Broad selectors:/);
 
   const preview = runCli(["import", "adopt", "bundle:task", targetRoot, "--json"]);
   assert.equal(preview.status, 0, preview.stderr || preview.stdout);
