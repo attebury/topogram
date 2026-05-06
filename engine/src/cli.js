@@ -191,8 +191,8 @@ function printUsage(options = {}) {
   console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
   console.log("Usage: topogram setup package-auth|catalog-auth");
-  console.log("Usage: topogram release status [--json] [--strict]");
-  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push]");
+  console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
   console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
@@ -759,18 +759,19 @@ function printPackageHelp() {
 }
 
 function printReleaseHelp() {
-  console.log("Usage: topogram release status [--json] [--strict]");
-  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push]");
+  console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
   console.log("");
   console.log("Checks the local CLI version, latest published package version, release tag, first-party consumer pins, and strict consumer CI state.");
-  console.log("Rolls first-party consumers to a published CLI version, runs their checks, commits, pushes, and prints latest workflow URLs.");
+  console.log("Rolls first-party consumers to a published CLI version, runs their checks, commits, pushes, and can wait for current workflow runs.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram release status");
   console.log("  topogram release status --json");
   console.log("  topogram release status --strict");
-  console.log("  topogram release roll-consumers 0.3.46");
-  console.log("  topogram release roll-consumers --latest");
+  console.log("  topogram release status --strict --write-report ./release-baseline.md");
+  console.log("  topogram release roll-consumers 0.3.46 --watch");
+  console.log("  topogram release roll-consumers --latest --watch");
   console.log("");
   console.log("Release preparation and publishing are repo-level tasks in the Topogram source checkout:");
   console.log("  npm run release:prepare -- <version>");
@@ -2514,14 +2515,35 @@ function printPackageUpdateCli(payload) {
 
 /**
  * @param {string} requested
- * @param {{ cwd?: string, push?: boolean }} [options]
- * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, pushed: boolean, consumers: Array<Record<string, any>>, diagnostics: Array<Record<string, any>>, errors: string[] }}
+ * @param {{ cwd?: string, push?: boolean, watch?: boolean }} [options]
+ * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, pushed: boolean, watched: boolean, consumers: Array<Record<string, any>>, diagnostics: Array<Record<string, any>>, errors: string[] }}
  */
 function buildReleaseRollConsumersPayload(requested, options = {}) {
   const cwd = options.cwd || process.cwd();
   const push = options.push !== false;
+  const watch = Boolean(options.watch);
   const requestedLatest = requested === "latest" || requested === "--latest";
   const diagnostics = [];
+  if (watch && !push) {
+    diagnostics.push({
+      code: "release_roll_watch_requires_push",
+      severity: "error",
+      message: "`topogram release roll-consumers --watch` requires pushing consumer commits.",
+      path: "release roll-consumers",
+      suggestedFix: "Remove --no-push or run without --watch and verify consumer CI separately."
+    });
+    return {
+      ok: false,
+      packageName: CLI_PACKAGE_NAME,
+      requestedVersion: requestedLatest ? "latest" : requested,
+      requestedLatest,
+      pushed: push,
+      watched: watch,
+      consumers: [],
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
+  }
   const version = requestedLatest
     ? resolveLatestTopogramCliVersionForPackageUpdate(cwd, diagnostics)
     : requested;
@@ -2622,7 +2644,9 @@ function buildReleaseRollConsumersPayload(requested, options = {}) {
       continue;
     }
     if (!staged.changed) {
-      item.ci = inspectConsumerCi(consumer, { strict: false });
+      item.ci = watch
+        ? waitForConsumerCi(consumer)
+        : inspectConsumerCi(consumer, { strict: false });
       item.diagnostics.push(...item.ci.diagnostics);
       diagnostics.push(...item.ci.diagnostics);
       continue;
@@ -2658,7 +2682,9 @@ function buildReleaseRollConsumersPayload(requested, options = {}) {
       }
       item.pushed = true;
     }
-    item.ci = inspectConsumerCi(consumer, { strict: false });
+    item.ci = watch
+      ? waitForConsumerCi(consumer)
+      : inspectConsumerCi(consumer, { strict: false });
     item.diagnostics.push(...item.ci.diagnostics);
     diagnostics.push(...item.ci.diagnostics);
   }
@@ -2671,6 +2697,7 @@ function buildReleaseRollConsumersPayload(requested, options = {}) {
     requestedVersion: version,
     requestedLatest,
     pushed: push,
+    watched: watch,
     consumers,
     diagnostics,
     errors
@@ -2688,6 +2715,7 @@ function printReleaseRollConsumers(payload) {
   }
   console.log(`Package: ${payload.packageName}@${payload.requestedVersion}`);
   console.log(`Push: ${payload.pushed ? "enabled" : "disabled"}`);
+  console.log(`Watch: ${payload.watched ? "enabled" : "disabled"}`);
   for (const consumer of payload.consumers) {
     const state = consumer.committed
       ? consumer.pushed ? "pushed" : "committed"
@@ -2805,13 +2833,13 @@ function releaseStatusStrictDiagnostics(release) {
       suggestedFix: "Publish the current CLI package version or fix npm package registry auth, then rerun `topogram release status --strict`."
     });
   }
-  if (release.git.local !== true) {
+  if (release.git.local !== true && release.git.remote !== true) {
     diagnostics.push({
       code: "release_local_tag_missing",
       severity: "error",
       message: `Release tag ${release.git.tag} is missing locally.`,
       path: release.git.tag,
-      suggestedFix: `Fetch or create the local ${release.git.tag} tag before treating this release as complete.`
+      suggestedFix: `Fetch, create, or push ${release.git.tag} before treating this release as complete.`
     });
   }
   if (release.git.remote !== true) {
@@ -2897,6 +2925,62 @@ function printReleaseStatus(payload) {
       }
     }
   }
+}
+
+/**
+ * @param {ReturnType<typeof buildReleaseStatusPayload>} payload
+ * @returns {string}
+ */
+function renderReleaseStatusMarkdown(payload) {
+  const lines = [
+    `# Topogram CLI release ${payload.localVersion}`,
+    "",
+    `Date checked: ${new Date().toISOString().slice(0, 10)}`,
+    "",
+    "## Summary",
+    "",
+    `- Package: \`${payload.packageName}@${payload.localVersion}\``,
+    `- Latest published: \`${payload.latestVersion || "unknown"}\`${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`,
+    `- Release tag: \`${payload.git.tag}\` (local=${labelBoolean(payload.git.local)}, remote=${labelBoolean(payload.git.remote)})`,
+    `- Consumer pins: ${payload.consumerPins.matching}/${payload.consumerPins.known} matching`,
+    `- Consumer CI: ${payload.consumerCi.passing}/${payload.consumerCi.checked} passing`,
+    `- Strict status: ${payload.ok ? "passed" : "failed"}`,
+    "",
+    "## Consumers",
+    "",
+    "| Repo | Pin | Workflow | Status | Run |",
+    "| --- | --- | --- | --- | --- |"
+  ];
+  for (const consumer of payload.consumers) {
+    const workflow = consumer.workflow || consumer.ci?.expectedWorkflow || "";
+    const run = consumer.ci?.run;
+    const status = run ? `${run.status || "unknown"}/${run.conclusion || "unknown"}` : consumer.ci?.checked ? "unavailable" : "not checked";
+    const url = run?.url ? `[${run.databaseId || "run"}](${run.url})` : "";
+    lines.push(`| \`${consumer.name}\` | \`${consumer.version || "missing"}\` | ${escapeMarkdownTableCell(workflow)} | ${escapeMarkdownTableCell(status)} | ${url} |`);
+  }
+  if (payload.diagnostics.length > 0) {
+    lines.push("", "## Diagnostics", "");
+    for (const diagnostic of payload.diagnostics) {
+      const label = diagnostic.severity === "warning"
+        ? "Warning"
+        : diagnostic.severity === "info"
+          ? "Note"
+          : "Error";
+      lines.push(`- **${label}** \`${diagnostic.code}\`: ${diagnostic.message}`);
+      if (diagnostic.suggestedFix) {
+        lines.push(`  Fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * @param {string|null|undefined} value
+ * @returns {string}
+ */
+function escapeMarkdownTableCell(value) {
+  return String(value || "").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 
 /**
@@ -3039,6 +3123,64 @@ function commandDiagnostic(input) {
  */
 function commandOutput(result) {
   return [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
+}
+
+/**
+ * @param {number} ms
+ * @returns {void}
+ */
+function sleepSync(ms) {
+  if (ms <= 0) {
+    return;
+  }
+  const buffer = new SharedArrayBuffer(4);
+  const view = new Int32Array(buffer);
+  Atomics.wait(view, 0, 0, ms);
+}
+
+/**
+ * @param {string} name
+ * @param {number} fallback
+ * @returns {number}
+ */
+function positiveIntegerEnv(name, fallback) {
+  const value = Number.parseInt(process.env[name] || "", 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+/**
+ * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
+ * @param {{ timeoutMs?: number, intervalMs?: number }} [options]
+ * @returns {ReturnType<typeof inspectConsumerCi>}
+ */
+function waitForConsumerCi(consumer, options = {}) {
+  const timeoutMs = options.timeoutMs || positiveIntegerEnv("TOPOGRAM_RELEASE_WATCH_TIMEOUT_MS", 20 * 60 * 1000);
+  const intervalMs = options.intervalMs || positiveIntegerEnv("TOPOGRAM_RELEASE_WATCH_INTERVAL_MS", 5000);
+  const startedAt = Date.now();
+  let latest = inspectConsumerCi(consumer, { strict: false });
+  while (true) {
+    const currentRun = latest.run &&
+      latest.headSha &&
+      latest.run.headSha &&
+      latest.run.headSha === latest.headSha;
+    if (currentRun && latest.run.status === "completed") {
+      return inspectConsumerCi(consumer, { strict: true });
+    }
+    if (Date.now() - startedAt >= timeoutMs) {
+      const strictLatest = inspectConsumerCi(consumer, { strict: true });
+      strictLatest.diagnostics.push({
+        code: "release_consumer_ci_watch_timeout",
+        severity: "error",
+        message: `${consumer.name} verification workflow did not complete on the current commit before the watch timeout.`,
+        path: strictLatest.run?.url || `attebury/${consumer.name}`,
+        suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status."
+      });
+      strictLatest.ok = false;
+      return strictLatest;
+    }
+    sleepSync(intervalMs);
+    latest = inspectConsumerCi(consumer, { strict: false });
+  }
 }
 
 /**
@@ -8337,6 +8479,14 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
 const emitJson = args.includes("--json");
 const strictReleaseStatus = args.includes("--strict");
 const shouldPushReleaseConsumers = !args.includes("--no-push");
+const shouldWatchReleaseConsumers = args.includes("--watch");
+const shouldPrintReleaseMarkdown = args.includes("--markdown");
+const releaseReportIndex = args.indexOf("--write-report");
+const releaseReportPath = releaseReportIndex >= 0 &&
+  args[releaseReportIndex + 1] &&
+  !args[releaseReportIndex + 1].startsWith("-")
+  ? args[releaseReportIndex + 1]
+  : null;
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
@@ -8515,6 +8665,18 @@ if (shouldPackageUpdateCli && !inputPath) {
   process.exit(1);
 }
 
+if (shouldReleaseStatus && args.includes("--write-report") && !releaseReportPath) {
+  console.error("Missing required --write-report <path>.");
+  printReleaseHelp();
+  process.exit(1);
+}
+
+if (shouldReleaseRollConsumers && shouldWatchReleaseConsumers && !shouldPushReleaseConsumers) {
+  console.error("Use either --watch or --no-push, not both.");
+  printReleaseHelp();
+  process.exit(1);
+}
+
 if (shouldImportWorkspace && !outPath) {
   console.error("Missing required --out <target>.");
   printImportHelp();
@@ -8566,17 +8728,28 @@ try {
 
   if (shouldReleaseStatus) {
     const payload = buildReleaseStatusPayload({ strict: strictReleaseStatus });
+    if (releaseReportPath) {
+      const target = path.resolve(releaseReportPath);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, renderReleaseStatusMarkdown(payload), "utf8");
+    }
     if (emitJson) {
       console.log(stableStringify(payload));
+    } else if (shouldPrintReleaseMarkdown) {
+      console.log(renderReleaseStatusMarkdown(payload).trimEnd());
     } else {
       printReleaseStatus(payload);
+      if (releaseReportPath) {
+        console.log(`Report: ${path.resolve(releaseReportPath)}`);
+      }
     }
     process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldReleaseRollConsumers) {
     const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, {
-      push: shouldPushReleaseConsumers
+      push: shouldPushReleaseConsumers,
+      watch: shouldWatchReleaseConsumers
     });
     if (emitJson) {
       console.log(stableStringify(payload));

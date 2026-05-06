@@ -414,12 +414,15 @@ function log(command) {
   fs.appendFileSync(logPath, process.cwd() + " :: " + command + "\\n", "utf8");
 }
 if (args[0] === "tag" && args[1] === "--list") {
-  if (args[2] === tag) {
+  if (args[2] === tag && process.env.FAKE_GIT_LOCAL_TAG !== "0") {
     process.stdout.write(tag + "\\n");
   }
   process.exit(0);
 }
 if (args[0] === "ls-remote" && args.includes("refs/tags/" + tag)) {
+  if (process.env.FAKE_GIT_REMOTE_TAG === "0") {
+    process.exit(2);
+  }
   process.stdout.write("abc123\\trefs/tags/" + tag + "\\n");
   process.exit(0);
 }
@@ -466,17 +469,32 @@ function createFakeGh(root, versions = []) {
   fs.mkdirSync(binDir, { recursive: true });
   const commandPath = path.join(binDir, "gh");
   fs.writeFileSync(commandPath, `#!/usr/bin/env node
+const fs = require("node:fs");
 const args = process.argv.slice(2);
+const statePath = ${JSON.stringify(path.join(root, "fake-gh-state.json"))};
+function readState() {
+  return fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, "utf8")) : { runListCalls: 0 };
+}
+function writeState(state) {
+  fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + "\\n");
+}
 if (args[0] === "run" && args[1] === "list") {
+  const state = readState();
+  const sequence = process.env.FAKE_GH_RUN_SEQUENCE ? JSON.parse(process.env.FAKE_GH_RUN_SEQUENCE) : null;
+  const sequenceEntry = Array.isArray(sequence)
+    ? sequence[Math.min(state.runListCalls || 0, sequence.length - 1)]
+    : null;
+  state.runListCalls = (state.runListCalls || 0) + 1;
+  writeState(state);
   const workflowIndex = args.indexOf("--workflow");
   const workflowName = workflowIndex >= 0 ? args[workflowIndex + 1] : "Generator Verification";
   process.stdout.write(JSON.stringify([{
-    databaseId: 12345,
+    databaseId: sequenceEntry?.databaseId || 12345,
     workflowName,
-    status: process.env.FAKE_GH_RUN_STATUS || "completed",
-    conclusion: process.env.FAKE_GH_RUN_CONCLUSION || "success",
-    headSha: process.env.FAKE_GIT_HEAD || "abc123",
-    url: "https://github.com/attebury/fake/actions/runs/12345"
+    status: sequenceEntry?.status || process.env.FAKE_GH_RUN_STATUS || "completed",
+    conclusion: sequenceEntry?.conclusion || process.env.FAKE_GH_RUN_CONCLUSION || "success",
+    headSha: sequenceEntry?.headSha || process.env.FAKE_GH_RUN_HEAD_SHA || process.env.FAKE_GIT_HEAD || "abc123",
+    url: sequenceEntry?.url || "https://github.com/attebury/fake/actions/runs/12345"
   }]));
   process.exit(0);
 }
@@ -2295,6 +2313,55 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(human.stdout, /Strict: enabled/);
   assert.match(human.stdout, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
   assert.match(human.stdout, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
+
+  const reportPath = path.join(root, "release-baseline.md");
+  const report = runCli(["release", "status", "--strict", "--write-report", reportPath], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "abc123",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(report.status, 0, report.stderr || report.stdout);
+  const reportText = fs.readFileSync(reportPath, "utf8");
+  assert.match(reportText, new RegExp(`# Topogram CLI release ${literalPattern(cliPackageVersion).source}`));
+  assert.match(reportText, /Consumer CI: 12\/12 passing/);
+  assert.match(reportText, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
+
+  const markdown = runCli(["release", "status", "--strict", "--markdown"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "abc123",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(markdown.status, 0, markdown.stderr || markdown.stdout);
+  assert.match(markdown.stdout, /^# Topogram CLI release/m);
+});
+
+test("topogram release status strict accepts remote release tags without a local fetched tag", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-remote-tag-"));
+  writeKnownCliConsumerPins(root, cliPackageVersion);
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const fakeGhBin = createFakeGh(root);
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "abc123",
+      FAKE_GIT_LOCAL_TAG: "0",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.git.local, false);
+  assert.equal(payload.git.remote, true);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "release_local_tag_missing"), false);
 });
 
 test("topogram release status strict fails when first-party consumer pins are missing", () => {
@@ -2375,21 +2442,33 @@ test("topogram release roll-consumers updates, verifies, commits, pushes, and re
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, `topogram-v0.3.46`);
   const fakeGhBin = createFakeGh(root);
-  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json"], {
+  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json", "--watch"], {
     cwd: root,
     env: {
       FAKE_NPM_LATEST_VERSION: "0.3.46",
       FAKE_GIT_HEAD: "def456",
+      FAKE_GH_RUN_SEQUENCE: JSON.stringify([
+        { headSha: "old123", status: "completed", conclusion: "success", databaseId: 11111 },
+        { headSha: "def456", status: "in_progress", conclusion: "", databaseId: 22222 },
+        { headSha: "def456", status: "completed", conclusion: "success", databaseId: 33333, url: "https://github.com/attebury/fake/actions/runs/33333" }
+      ]),
+      TOPOGRAM_RELEASE_WATCH_INTERVAL_MS: "1",
+      TOPOGRAM_RELEASE_WATCH_TIMEOUT_MS: "1000",
       PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
   assert.equal(roll.status, 0, roll.stderr || roll.stdout);
   const payload = JSON.parse(roll.stdout);
   assert.equal(payload.ok, true);
+  assert.equal(payload.watched, true);
   assert.equal(payload.requestedVersion, "0.3.46");
   assert.equal(payload.consumers.length, knownCliConsumerRepos.length);
   assert.equal(payload.consumers.every((consumer) => consumer.updated && consumer.committed && consumer.pushed), true);
   assert.equal(payload.consumers.every((consumer) => consumer.ci?.run?.url), true);
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "release_consumer_ci_head_mismatch"),
+    false
+  );
   assert.equal(readText(path.join(root, externalTodoConsumerRepos[1], "topogram-cli.version")).trim(), "0.3.46");
   assert.equal(readJson(path.join(root, externalTodoConsumerRepos[1], "package.json")).devDependencies["@topogram/cli"], "^0.3.46");
 
@@ -2405,6 +2484,53 @@ test("topogram release roll-consumers updates, verifies, commits, pushes, and re
   assert.match(human.stdout, /Topogram consumer rollout completed/);
   assert.match(human.stdout, literalPattern(`${externalTodoConsumerRepos[1]}: pushed`));
   assert.match(human.stdout, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
+});
+
+test("topogram release roll-consumers --watch fails when current consumer workflow fails", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-roll-consumers-watch-fail-"));
+  for (const consumer of knownCliConsumerRepos) {
+    const consumerRoot = path.join(root, consumer);
+    fs.mkdirSync(consumerRoot, { recursive: true });
+    fs.writeFileSync(path.join(consumerRoot, "topogram-cli.version"), "0.3.45\n", "utf8");
+    writePackageJson(consumerRoot, {
+      name: consumer,
+      private: true,
+      scripts: {
+        "pack:check": "node -e true"
+      },
+      devDependencies: {
+        "@topogram/cli": "^0.3.45"
+      }
+    });
+    writeJson(path.join(consumerRoot, "package-lock.json"), {
+      name: consumer,
+      lockfileVersion: 3,
+      requires: true,
+      packages: {}
+    });
+  }
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, "topogram-v0.3.46");
+  const fakeGhBin = createFakeGh(root);
+  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json", "--watch"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.3.46",
+      FAKE_GIT_HEAD: "def456",
+      FAKE_GH_RUN_CONCLUSION: "failure",
+      TOPOGRAM_RELEASE_WATCH_INTERVAL_MS: "1",
+      TOPOGRAM_RELEASE_WATCH_TIMEOUT_MS: "1000",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(roll.status, 1, roll.stderr || roll.stdout);
+  const payload = JSON.parse(roll.stdout);
+  assert.equal(payload.watched, true);
+  assert.equal(payload.ok, false);
+  assert.equal(
+    payload.diagnostics.some((diagnostic) => diagnostic.code === "release_consumer_ci_not_successful"),
+    true
+  );
 });
 
 test("topogram package update-cli explains private package auth failures", () => {

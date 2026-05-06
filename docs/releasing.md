@@ -66,19 +66,21 @@ version and rerun their verification. Consumer repos that include
 `topogram-cli.version` can be rolled as a batch from the Topogram source repo:
 
 ```bash
-npm run release:roll-consumers -- 0.3.46
+npm run release:roll-consumers -- 0.3.47 --watch
 ```
 
 Use `--latest` after npmjs reports the new package version:
 
 ```bash
-npm run release:roll-consumers -- --latest
+npm run release:roll-consumers -- --latest --watch
 ```
 
 The rollout command updates every known first-party consumer repo, runs each
 consumer's available checks, commits the pin change, pushes `main`, and prints
-the latest expected workflow URL for each repo. It refuses dirty consumer
-worktrees so unrelated local edits do not get swept into release commits.
+the expected workflow URL for each repo. With `--watch`, it waits for each
+expected workflow to run on the newly pushed consumer commit and fails if any
+current workflow is red. It refuses dirty consumer worktrees so unrelated local
+edits do not get swept into release commits.
 
 For one-off consumer work, run the lower-level command inside that repo:
 
@@ -109,8 +111,16 @@ npm run release:status:strict
 
 You can also run the manual GitHub Actions workflow `Release Status`. It checks
 out `topogram` plus the first-party consumer repos and runs the same strict
-gate. Strict mode verifies npmjs latest, the local and remote release tag,
-consumer pins, and the latest expected GitHub Actions workflow for each
-consumer repo. If the default workflow token cannot read one of those
+gate. Strict mode verifies npmjs latest, the release tag, consumer pins, and
+the latest expected GitHub Actions workflow for each consumer repo. A remote
+release tag is sufficient even when that tag has not been fetched into the
+local checkout. If the default workflow token cannot read one of those
 repositories or its Actions runs, add a `TOPOGRAM_RELEASE_STATUS_TOKEN`
 repository secret with read access.
+
+To record the release evidence without hand-copying workflow URLs, write a
+markdown report after strict status is green:
+
+```bash
+npm run release:status:strict -- --write-report ./release-baseline.md
+```
