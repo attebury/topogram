@@ -1,6 +1,7 @@
 // @ts-check
 
 import { getProjection } from "../shared.js";
+import { generateServerContract } from "./server-contract.js";
 
 function renderPackageJson(profile) {
   const dependencies = profile === "express"
@@ -41,10 +42,10 @@ function routePath(path) {
   return String(path || "/").replace(/:([A-Za-z0-9_]+)/g, ":$1");
 }
 
-function renderHonoIndex(projection) {
-  const routes = (projection.http || []).map((route) => {
+function renderHonoIndex(projection, contract) {
+  const routes = (contract.routes || []).map((route) => {
     const method = String(route.method || "GET").toLowerCase();
-    return `app.${method}("${routePath(route.path)}", (c) => c.json({ ok: true, capability: "${route.capabilityId}", input: { params: c.req.param(), query: c.req.query() } }, ${route.success || 200} as any));`;
+    return `app.${method}("${routePath(route.path)}", (c) => c.json({ ok: true, capability: "${route.capabilityId}", input: { params: c.req.param(), query: c.req.query() } }, ${route.successStatus || 200} as any));`;
   }).join("\n");
   return `import { serve } from "@hono/node-server";
 import { Hono } from "hono";
@@ -65,10 +66,10 @@ function expressPath(path) {
   return routePath(path);
 }
 
-function renderExpressIndex(projection) {
-  const routes = (projection.http || []).map((route) => {
+function renderExpressIndex(projection, contract) {
+  const routes = (contract.routes || []).map((route) => {
     const method = String(route.method || "GET").toLowerCase();
-    return `app.${method}("${expressPath(route.path)}", (req, res) => res.status(${route.success || 200}).json({ ok: true, capability: "${route.capabilityId}", input: { params: req.params, query: req.query } }));`;
+    return `app.${method}("${expressPath(route.path)}", (req, res) => res.status(${route.successStatus || 200}).json({ ok: true, capability: "${route.capabilityId}", input: { params: req.params, query: req.query } }));`;
   }).join("\n");
   return `import express from "express";
 
@@ -88,10 +89,11 @@ app.listen(port, () => {
 
 export function generateStatelessServer(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
+  const contract = generateServerContract(graph, { ...options, projectionId: projection.id });
   const profile = options.profile === "express" ? "express" : "hono";
   return {
     "package.json": renderPackageJson(profile),
     "tsconfig.json": renderTsconfig(),
-    "src/index.ts": profile === "express" ? renderExpressIndex(projection) : renderHonoIndex(projection)
+    "src/index.ts": profile === "express" ? renderExpressIndex(projection, contract) : renderHonoIndex(projection, contract)
   };
 }

@@ -2521,6 +2521,11 @@ test("topogram new defaults to the catalog hello-web starter", () => {
 test("fixture starter templates generate the expected surface layout", () => {
   const cases = [
     {
+      template: "hello-web",
+      present: ["app/apps/web/app_web/index.html", "app/apps/web/app_web/workflow.html"],
+      absent: ["app/apps/services", "app/apps/db"]
+    },
+    {
       template: "hello-api",
       present: ["app/apps/services/app_api"],
       absent: ["app/apps/web", "app/apps/db", "app/apps/services/app_api/prisma"]
@@ -2555,7 +2560,35 @@ test("fixture starter templates generate the expected surface layout", () => {
     for (const relativePath of item.absent) {
       assert.equal(fs.existsSync(path.join(projectRoot, relativePath)), false, `${item.template} did not expect ${relativePath}`);
     }
+    if (item.template === "hello-web") {
+      const homePage = readText(path.join(projectRoot, "app", "apps", "web", "app_web", "index.html"));
+      const workflowPage = readText(path.join(projectRoot, "app", "apps", "web", "app_web", "workflow.html"));
+      assert.match(homePage, /Hello Web/);
+      assert.match(homePage, /href="\.\/workflow\.html"/);
+      assert.match(workflowPage, /Hello Workflow/);
+      assert.match(workflowPage, /href="\.\/index\.html"/);
+    }
+    if (item.template === "hello-api") {
+      const indexTs = readText(path.join(projectRoot, "app", "apps", "services", "app_api", "src", "index.ts"));
+      assert.match(indexTs, /new Hono\(\)/);
+      assert.match(indexTs, /app\.get\("\/hello"/);
+      assert.match(indexTs, /capability: "cap_get_hello"/);
+      assert.doesNotMatch(indexTs, /capability: "undefined"/);
+    }
+    if (item.template === "hello-db") {
+      const schema = readText(path.join(projectRoot, "app", "apps", "db", "app_sqlite", "prisma", "schema.prisma"));
+      assert.match(schema, /provider = "sqlite"/);
+      assert.match(schema, /model Greeting/);
+      assert.match(schema, /@@map\("greetings"\)/);
+      assert.equal(fs.existsSync(path.join(projectRoot, "app", "apps", "db", "app_sqlite", "scripts", "db-migrate.sh")), true);
+    }
     if (item.template === "web-api") {
+      const indexTs = readText(path.join(projectRoot, "app", "apps", "services", "app_api", "src", "index.ts"));
+      assert.match(indexTs, /import express from "express"/);
+      assert.match(indexTs, /app\.post\("\/greetings"/);
+      assert.match(indexTs, /capability: "cap_create_greeting"/);
+      assert.match(indexTs, /capability: "cap_list_greetings"/);
+      assert.doesNotMatch(indexTs, /capability: "undefined"/);
       const listPage = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "pages", "GreetingListPage.tsx"));
       assert.match(listPage, /data-topogram-component="component_ui_greeting_table"/);
       assert.match(listPage, /className="component-card component-table"/);
@@ -2566,6 +2599,20 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.equal(coverage.summary.rendered_screens, 3);
       assert.equal(coverage.summary.generator_screens, 3);
       assert.equal(coverage.summary.rendered_component_usages, 1);
+      assert.deepEqual(coverage.diagnostics, []);
+    }
+    if (item.template === "web-api-db") {
+      const serverContract = readText(path.join(projectRoot, "app", "apps", "services", "app_api", "src", "lib", "topogram", "server-contract.ts"));
+      assert.match(serverContract, /"capabilityId": "cap_create_greeting"/);
+      assert.match(serverContract, /"capabilityId": "cap_list_greetings"/);
+      const schema = readText(path.join(projectRoot, "app", "apps", "db", "app_postgres", "prisma", "schema.prisma"));
+      assert.match(schema, /provider = "postgresql"/);
+      assert.match(schema, /model Greeting/);
+      const coverage = readJson(path.join(projectRoot, "app", "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
+      assert.equal(coverage.type, "generation_coverage");
+      assert.equal(coverage.generator, "topogram/sveltekit");
+      assert.equal(coverage.summary.routed_screens, 3);
+      assert.equal(coverage.summary.rendered_screens, 3);
       assert.deepEqual(coverage.diagnostics, []);
     }
   }
@@ -2612,7 +2659,16 @@ test("package-backed app generation refuses packages blocked by generator policy
   const projectRoot = path.join(root, "starter");
   const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, "hello-web")]);
   assert.equal(create.status, 0, create.stderr || create.stdout);
-  const { packageName } = writePackageBackedGenerator(projectRoot);
+  const { packageName, packageRoot } = writePackageBackedGenerator(projectRoot);
+  const markerPath = path.join(root, "adapter-import-side-effect.txt");
+  fs.writeFileSync(
+    path.join(packageRoot, "index.cjs"),
+    `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "loaded\\n", "utf8");
+exports.manifest = require("./topogram-generator.json");
+exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagnostics: [] });
+`,
+    "utf8"
+  );
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
   projectConfig.topology.components[0].generator = {
@@ -2627,6 +2683,7 @@ test("package-backed app generation refuses packages blocked by generator policy
   assert.notEqual(generate.status, 0, generate.stdout);
   assert.match(generate.stderr, /not allowed by topogram\.generator-policy\.json/);
   assert.match(generate.stderr, /topogram generator policy pin @scope\/topogram-generator-smoke-web@1/);
+  assert.equal(fs.existsSync(markerPath), false, "denied package adapter must not be imported");
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), false);
 });
 

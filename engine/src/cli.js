@@ -595,9 +595,9 @@ function printGeneratorHelp() {
   console.log("Inspects generator manifests and checks generator pack conformance.");
   console.log("");
   console.log("Notes:");
-  console.log("  - list shows bundled generators plus installed package-backed generators declared in package.json.");
-  console.log("  - show accepts an installed package name or a bundled fallback generator id.");
-  console.log("  - check validates a local generator package path or an already installed package.");
+  console.log("  - list shows bundled generators plus installed package-backed generators declared in package.json; it reads manifests only.");
+  console.log("  - show accepts an installed package name or a bundled fallback generator id; it does not load adapter code.");
+  console.log("  - check validates a local generator package path or an already installed package by loading the adapter and running smoke generation.");
   console.log("  - Topogram does not install generator packages during show or check.");
   console.log(`  - package-backed project generators are governed by ${GENERATOR_POLICY_FILE}; bundled topogram/* generators are allowed.`);
   console.log("");
@@ -1250,6 +1250,7 @@ function printGeneratorCheck(payload) {
     console.log(`Projection platforms: ${payload.manifest.projectionPlatforms.join(", ")}`);
     console.log(`Source mode: ${payload.manifest.source}`);
   }
+  console.log("Executes package code: yes (loads adapter and runs smoke generate)");
   console.log("");
   console.log("Checks:");
   for (const check of payload.checks || []) {
@@ -1285,6 +1286,8 @@ function generatorManifestSummary(manifest, metadata = {}) {
     stack: manifest.stack || {},
     capabilities: manifest.capabilities || {},
     source: manifest.source,
+    loadsAdapter: false,
+    executesPackageCode: false,
     ...(manifest.profile ? { profile: manifest.profile } : {}),
     ...(manifest.package ? { package: manifest.package } : {}),
     ...(installCommand ? { installCommand } : {}),
@@ -1496,6 +1499,8 @@ function printGeneratorList(payload) {
     const stack = Object.values(generator.stack || {}).join(" + ") || "not declared";
     console.log(`- ${id}${generator.version ? `@${generator.version}` : ""} (${generator.surface || "unknown"}, ${status})`);
     console.log(`  Source: ${generator.source}`);
+    console.log("  Adapter loaded: no");
+    console.log("  Executes package code: no");
     if (generator.source === "package") {
       console.log(`  Installed: ${generator.installed ? "yes" : "no"}`);
     }
@@ -1529,6 +1534,8 @@ function printGeneratorShow(payload) {
   console.log(`Generator: ${generator.id}@${generator.version}`);
   console.log(`Surface: ${generator.surface}`);
   console.log(`Source: ${generator.source}${generator.planned ? " (planned)" : ""}`);
+  console.log("Adapter loaded: no");
+  console.log("Executes package code: no");
   if (generator.source === "package") {
     console.log(`Installed: ${generator.installed ? "yes" : "no"}`);
   }

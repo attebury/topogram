@@ -10,6 +10,10 @@ import {
   resolveGeneratorManifestForBinding,
   validateGeneratorManifest
 } from "./registry.js";
+import {
+  generatorPolicyDiagnosticsForBindings,
+  loadGeneratorPolicy
+} from "../generator-policy.js";
 import { generateDbContractGraph } from "./surfaces/databases/contract.js";
 import { generateDbLifecyclePlan } from "./surfaces/databases/lifecycle-shared.js";
 import {
@@ -252,6 +256,26 @@ function loadPackageGeneratorAdapter(manifest, component, options = {}) {
     throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is package-backed but does not declare a package.`);
   }
   const rootDir = options.configDir || options.rootDir || process.cwd();
+  const diagnostics = generatorPolicyDiagnosticsForBindings(
+    loadGeneratorPolicy(rootDir),
+    [{
+      componentId: String(component?.id || "unknown"),
+      componentType: String(component?.type || manifest.surface || "unknown"),
+      projection: String(component?.projection?.id || component?.projection || "unknown"),
+      generatorId: String(component?.generator?.id || manifest.id),
+      version: String(component?.generator?.version || manifest.version),
+      packageName
+    }],
+    "generator-adapter"
+  );
+  const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+  if (errors.length > 0) {
+    throw new Error(errors.map((diagnostic) =>
+      diagnostic.suggestedFix
+        ? `${diagnostic.message} Suggested fix: ${diagnostic.suggestedFix}`
+        : diagnostic.message
+    ).join("\n"));
+  }
   let moduleValue;
   try {
     moduleValue = requireFromProject(rootDir)(packageName);

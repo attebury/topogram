@@ -191,6 +191,13 @@ to that component output directory. `files` must be an object whose keys are
 relative paths and whose values are string file contents. `artifacts` and
 `diagnostics` are optional.
 
+Generator adapters should prefer `contracts` over raw projection internals for
+consumer-visible semantics. For example, API generators should render routes
+from `contracts.server.routes` so capability ids, success statuses, request
+contracts, and response contracts stay normalized across bundled and
+package-backed generators. Raw projection fields are a compatibility fallback,
+not the primary generation contract.
+
 The v1 package loader uses Node package resolution from the project root and
 calls the installed package export directly; publish a CommonJS-compatible entry
 point such as `index.cjs` or a compatible package export. Templates may include
@@ -209,9 +216,11 @@ topogram generator show @scope/topogram-generator-example-web --json
 ```
 
 `generator list` reports bundled generators plus installed generator packages
-declared in the current `package.json` dependencies. `generator show` accepts an
-already installed package name or a bundled fallback generator id and prints the
-manifest, stack, capabilities, and an example `topology.components[]` binding.
+declared in the current `package.json` dependencies. `generator list` and
+`generator show` read generator manifests only; they do not import adapter code
+or execute generator packages. `generator show` accepts an already installed
+package name or a bundled fallback generator id and prints the manifest, stack,
+capabilities, and an example `topology.components[]` binding.
 
 When `topogram check` sees a package-backed topology binding whose package is
 not installed, it reports the component id, generator id/version, package name,
@@ -300,6 +309,10 @@ The command validates:
 - the adapter exports `generate(context)`;
 - a minimal smoke `generate(context)` call returns a valid `{ files }` object.
 
+Unlike `generator list` and `generator show`, `generator check` intentionally
+loads the package adapter and executes a minimal smoke `generate(context)` call.
+Only run it after installing and reviewing the package you intend to check.
+
 Installed package-backed generators can also be checked from a consumer project:
 
 ```bash
@@ -322,8 +335,10 @@ Generator packages are executable dependencies. Topogram never downloads or
 executes arbitrary generator code by catalog lookup alone. A project or template
 must declare generator package dependencies, install them through the package
 manager, and bind them in `topogram.project.json`. `topogram check` validates the
-installed manifest and compatibility. `topogram generate` loads the installed
-adapter and executes `generate(context)`.
+installed manifest, compatibility, and `topogram.generator-policy.json` before
+generated app writes. `topogram generate` enforces generator policy before
+loading any package adapter, then executes `generate(context)` only for allowed
+bindings.
 
 Use normal package trust controls:
 

@@ -25,6 +25,7 @@ import {
  * @property {Array<{ name: string, ok: boolean, message: string }>} checks
  * @property {string[]} errors
  * @property {{ files: number, artifacts: number, diagnostics: number }|null} smoke
+ * @property {boolean} executesPackageCode
  */
 
 /**
@@ -238,7 +239,8 @@ export function checkGeneratorPack(sourceSpec, options = {}) {
     manifest: null,
     checks: [],
     errors: [],
-    smoke: null
+    smoke: null,
+    executesPackageCode: true
   };
 
   /** @type {any|null} */

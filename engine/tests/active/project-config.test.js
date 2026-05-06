@@ -13,7 +13,10 @@ import {
   validateGeneratorManifest,
   validateGeneratorRegistry
 } from "../../src/generator/registry.js";
-import { getBundledGeneratorAdapter } from "../../src/generator/adapters.js";
+import {
+  generateWithComponentGenerator,
+  getBundledGeneratorAdapter
+} from "../../src/generator/adapters.js";
 import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -156,6 +159,7 @@ test("topogram generator check validates package-backed generators by package an
   const packagePayload = JSON.parse(byPackage.stdout);
   assert.equal(packagePayload.ok, true);
   assert.equal(packagePayload.source, "package");
+  assert.equal(packagePayload.executesPackageCode, true);
   assert.equal(packagePayload.packageName, packageName);
   assert.equal(packagePayload.manifest.id, "@scope/smoke-web");
   assert.equal(packagePayload.checks.some((check) => check.name === "smoke-generate" && check.ok), true);
@@ -170,6 +174,7 @@ test("topogram generator check validates package-backed generators by package an
   const human = runCli(["generator", "check", packageRoot], { cwd: root });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Generator check passed/);
+  assert.match(human.stdout, /Executes package code: yes \(loads adapter and runs smoke generate\)/);
   assert.match(human.stdout, /Smoke output:/);
 });
 
@@ -194,6 +199,8 @@ test("topogram generator list and show describe bundled and installed package ge
   const packageGenerator = listPayload.generators.find((generator) => generator.id === "@topogram/generator-smoke-web");
   assert.equal(packageGenerator.package, packageName);
   assert.equal(packageGenerator.installed, true);
+  assert.equal(packageGenerator.loadsAdapter, false);
+  assert.equal(packageGenerator.executesPackageCode, false);
   assert.equal(packageGenerator.surface, "web");
 
   const bundledShow = runCli(["generator", "show", "topogram/react", "--json"], { cwd: root });
@@ -210,6 +217,8 @@ test("topogram generator list and show describe bundled and installed package ge
   assert.equal(packagePayload.ok, true);
   assert.equal(packagePayload.generator.id, "@topogram/generator-smoke-web");
   assert.equal(packagePayload.generator.package, packageName);
+  assert.equal(packagePayload.generator.loadsAdapter, false);
+  assert.equal(packagePayload.generator.executesPackageCode, false);
   assert.equal(packagePayload.generator.installCommand, `npm install -D ${packageName}`);
   assert.equal(packagePayload.exampleTopologyBinding.generator.package, packageName);
 
@@ -217,6 +226,8 @@ test("topogram generator list and show describe bundled and installed package ge
   assert.equal(humanList.status, 0, humanList.stderr || humanList.stdout);
   assert.match(humanList.stdout, /package-backed: 1; installed:/);
   assert.match(humanList.stdout, /Source: package/);
+  assert.match(humanList.stdout, /Adapter loaded: no/);
+  assert.match(humanList.stdout, /Executes package code: no/);
   assert.match(humanList.stdout, /Installed: yes/);
   assert.match(humanList.stdout, new RegExp(`Install: npm install -D ${packageName.replace("/", "\\/")}`));
 
@@ -229,6 +240,8 @@ test("topogram generator list and show describe bundled and installed package ge
   assert.equal(humanPackage.status, 0, humanPackage.stderr || humanPackage.stdout);
   assert.match(humanPackage.stdout, /Generator: @topogram\/generator-smoke-web@1/);
   assert.match(humanPackage.stdout, /Source: package/);
+  assert.match(humanPackage.stdout, /Adapter loaded: no/);
+  assert.match(humanPackage.stdout, /Executes package code: no/);
   assert.match(humanPackage.stdout, /Installed: yes/);
   assert.match(humanPackage.stdout, new RegExp(`Install: npm install -D ${packageName.replace("/", "\\/")}`));
   assert.match(humanPackage.stdout, /Example topology binding:/);
@@ -480,6 +493,54 @@ test("project config validation enforces package-backed generator policy", () =>
   const pinnedResult = validateProjectConfig(config, graph, { configDir: root });
   assert.equal(pinnedResult.ok, false);
   assert.match(pinnedResult.errors.map((error) => error.message).join("\n"), /pins '@scope\/topogram-generator-smoke-web' to '2'/);
+});
+
+test("package-backed adapter resolution enforces generator policy before package import", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-before-import-"));
+  const { packageName, packageRoot } = writePackageBackedGenerator(root);
+  const markerPath = path.join(root, "adapter-import-side-effect.txt");
+  fs.writeFileSync(
+    path.join(packageRoot, "index.cjs"),
+    `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "loaded\\n", "utf8");
+exports.manifest = require("./topogram-generator.json");
+exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagnostics: [] });
+`,
+    "utf8"
+  );
+  const context = {
+    graph: {},
+    projection: { id: "proj_ui_web", platform: "ui_web" },
+    component: {
+      id: "app_web",
+      type: "web",
+      projection: "proj_ui_web",
+      generator: {
+        id: "@scope/smoke-web",
+        version: "1",
+        package: packageName
+      }
+    },
+    topology: null,
+    implementation: null,
+    contracts: {
+      uiWeb: {
+        projection: { id: "proj_ui_web", platform: "ui_web" },
+        screens: []
+      }
+    },
+    options: { configDir: root }
+  };
+
+  assert.throws(
+    () => generateWithComponentGenerator(context),
+    /not allowed by topogram\.generator-policy\.json/
+  );
+  assert.equal(fs.existsSync(markerPath), false, "denied package adapter must not be imported");
+
+  writeGeneratorPolicy(root, { allowedPackages: [packageName] });
+  const result = generateWithComponentGenerator(context);
+  assert.equal(result.files["index.html"], "<h1>loaded</h1>\n");
+  assert.equal(fs.existsSync(markerPath), true, "allowed package adapter should import and run");
 });
 
 test("project config validation rejects missing and mismatched package-backed generators", () => {
