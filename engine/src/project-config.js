@@ -8,6 +8,7 @@ import {
   resolveGeneratorManifestForBinding,
   validateGeneratorManifest
 } from "./generator/registry.js";
+import { validateProjectGeneratorPolicy } from "./generator-policy.js";
 
 /**
  * @typedef {Object} GeneratorBinding
@@ -433,6 +434,10 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     const seenIds = new Set();
     for (const component of config.topology.components) {
       validateComponentShape(errors, component, seenIds);
+    }
+    const generatorPolicy = validateProjectGeneratorPolicy(config, options);
+    for (const error of generatorPolicy.errors) {
+      pushError(errors, error.message, error.loc);
     }
     if (graph) {
       const projections = projectionById(graph);

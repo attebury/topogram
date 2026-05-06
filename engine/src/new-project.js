@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 
+import { defaultGeneratorPolicy, writeGeneratorPolicy } from "./generator-policy.js";
 import { writeTemplateTrustRecord } from "./template-trust.js";
 
 const CLI_PACKAGE_NAME = "@topogram/cli";
@@ -1974,6 +1975,8 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
       "template:detach:dry-run": "topogram template detach --dry-run",
       "template:policy:check": "topogram template policy check",
       "template:policy:explain": "topogram template policy explain",
+      "generator:policy:check": "topogram generator policy check",
+      "generator:policy:explain": "topogram generator policy explain",
       "template:update:status": "topogram template update --status",
       "template:update:recommend": "topogram template update --recommend",
       "template:update:plan": "topogram template update --plan",
@@ -2049,6 +2052,8 @@ Useful inspection:
    npm run template:detach:dry-run
    npm run template:policy:check
    npm run template:policy:explain
+   npm run generator:policy:check
+   npm run generator:policy:explain
    npm run template:update:status
    npm run template:update:recommend
    npm run template:update:plan
@@ -2079,6 +2084,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
     "npm run template:explain",
     "npm run check",
     "npm run template:policy:check",
+    "npm run generator:policy:check",
     ...(template.includesExecutableImplementation ? [
       "npm run template:policy:explain",
       "npm run trust:status"
@@ -2154,6 +2160,7 @@ export function createNewProject({
   writeProjectReadme(projectRoot, projectConfig);
   writeTemplateFilesManifest(projectRoot, projectConfig);
   writeTemplatePolicy(projectRoot, defaultTemplatePolicyForTemplate(template));
+  writeGeneratorPolicy(projectRoot, defaultGeneratorPolicy());
 
   const warnings = [];
   if (template.manifest.includesExecutableImplementation) {

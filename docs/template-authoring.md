@@ -146,6 +146,13 @@ generator packages in the template package `dependencies` or `devDependencies`.
 `npm install` in the starter installs the generator adapters before
 `topogram check` or `topogram generate` runs.
 
+Generated starters also include `topogram.generator-policy.json`. That policy
+controls package-backed generator execution during `topogram check` and
+`topogram generate`. The starter policy starts with the default rule:
+`@topogram/*` generators are allowed and other package scopes are blocked. Use
+`topogram generator policy check`, `explain`, and `pin <package@version>` after
+reviewing third-party generator packages.
+
 SvelteKit and React template implementations can render supported component
 usage with stable packaged helpers:
 

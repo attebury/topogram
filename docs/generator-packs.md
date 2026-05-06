@@ -221,6 +221,43 @@ and the install command to run from the project root:
 npm install -D @scope/topogram-generator-example-web
 ```
 
+`topogram check` also enforces `topogram.generator-policy.json` for
+package-backed generator packages. Bundled `topogram/*` generators are part of
+the installed CLI package and are allowed. If no policy file exists, the default
+project policy allows `@topogram/*` generator packages and blocks other package
+scopes until they are reviewed.
+
+Generator policy commands:
+
+```bash
+topogram generator policy init
+topogram generator policy check
+topogram generator policy check --json
+topogram generator policy explain
+topogram generator policy explain --json
+topogram generator policy pin @scope/topogram-generator-example-web@1
+```
+
+The policy file shape is:
+
+```json
+{
+  "version": "0.1",
+  "allowedPackageScopes": ["@topogram"],
+  "allowedPackages": [],
+  "pinnedVersions": {
+    "@topogram/generator-react-web": "1"
+  }
+}
+```
+
+Use `allowedPackageScopes` for reviewed package families and
+`allowedPackages` for exact exceptions. `pinnedVersions` pins the generator
+manifest version used in `topogram.project.json`, not necessarily the npm
+package version. `topogram generator policy init` writes the default policy; it
+does not approve third-party package bindings. `topogram generator policy pin`
+adds the reviewed package and records its current topology binding version.
+
 Generator authors should expose `npm run check` and back it with:
 
 ```bash
@@ -266,6 +303,7 @@ Use normal package trust controls:
 
 - review package source before adopting it;
 - pin versions in templates or lockfiles where reproducibility matters;
+- keep `topogram.generator-policy.json` narrow and review policy changes;
 - keep package `files` allowlists narrow;
 - avoid install lifecycle scripts unless they are truly needed;
 - use the package host's access controls for private generators.

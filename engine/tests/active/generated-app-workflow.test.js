@@ -2584,6 +2584,12 @@ test("package-backed generators can be checked and used by app generation", () =
     package: packageName
   };
   writeJson(projectConfigPath, projectConfig);
+  writeJson(path.join(projectRoot, "topogram.generator-policy.json"), {
+    version: "0.1",
+    allowedPackageScopes: ["@scope"],
+    allowedPackages: [],
+    pinnedVersions: {}
+  });
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -2633,6 +2639,8 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");
   assert.equal(pkg.scripts["template:policy:explain"], "topogram template policy explain");
+  assert.equal(pkg.scripts["generator:policy:check"], "topogram generator policy check");
+  assert.equal(pkg.scripts["generator:policy:explain"], "topogram generator policy explain");
   assert.equal(pkg.scripts["template:update:status"], "topogram template update --status");
   assert.equal(pkg.scripts["template:update:recommend"], "topogram template update --recommend");
   assert.equal(pkg.scripts["template:update:plan"], "topogram template update --plan");
@@ -2668,6 +2676,11 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-trust.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.generator-policy.json")), true);
+  const generatorPolicy = readJson(path.join(projectRoot, "topogram.generator-policy.json"));
+  assert.deepEqual(generatorPolicy.allowedPackageScopes, ["@topogram"]);
+  assert.deepEqual(generatorPolicy.allowedPackages, []);
+  assert.deepEqual(generatorPolicy.pinnedVersions, {});
   assert.equal(fs.existsSync(path.join(projectRoot, "scripts", "explain.mjs")), true);
   const templateExplain = runCli(["template", "explain", "--json"], { cwd: projectRoot });
   assert.equal(templateExplain.status, 0, templateExplain.stderr || templateExplain.stdout);

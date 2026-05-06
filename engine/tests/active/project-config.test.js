@@ -37,6 +37,10 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
 function writePackageBackedGenerator(root, manifestOverrides = {}) {
   const packageName = manifestOverrides.package || "@scope/topogram-generator-smoke-web";
   const packageRoot = path.join(root, "node_modules", ...packageName.split("/"));
@@ -72,6 +76,16 @@ function writePackageBackedGenerator(root, manifestOverrides = {}) {
   });
   fs.writeFileSync(path.join(packageRoot, "index.cjs"), "exports.manifest = require('./topogram-generator.json'); exports.generate = () => ({ files: {} });\n", "utf8");
   return { packageName, packageRoot, manifest };
+}
+
+function writeGeneratorPolicy(root, policy) {
+  writeJson(path.join(root, "topogram.generator-policy.json"), {
+    version: "0.1",
+    allowedPackageScopes: ["@topogram"],
+    allowedPackages: [],
+    pinnedVersions: {},
+    ...policy
+  });
 }
 
 function runCli(args, options = {}) {
@@ -426,6 +440,7 @@ test("project config validation catches incompatible and planned generators", ()
 test("project config validation resolves installed package-backed generator manifests", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-generator-"));
   const { packageName } = writePackageBackedGenerator(root);
+  writeGeneratorPolicy(root, { allowedPackageScopes: ["@scope"] });
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
   const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
@@ -438,6 +453,33 @@ test("project config validation resolves installed package-backed generator mani
   const result = validateProjectConfig(config, graph, { configDir: root });
 
   assert.equal(result.ok, true, result.errors.map((error) => error.message).join("\n"));
+});
+
+test("project config validation enforces package-backed generator policy", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-"));
+  const { packageName } = writePackageBackedGenerator(root);
+  const graph = appBasicGraph();
+  const config = appBasicProjectConfig();
+  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
+  webComponent.generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+
+  const defaultResult = validateProjectConfig(config, graph, { configDir: root });
+  assert.equal(defaultResult.ok, false);
+  assert.match(defaultResult.errors.map((error) => error.message).join("\n"), /not allowed by topogram\.generator-policy\.json/);
+  assert.match(defaultResult.errors.map((error) => error.message).join("\n"), /topogram generator policy pin @scope\/topogram-generator-smoke-web@1/);
+
+  writeGeneratorPolicy(root, { allowedPackageScopes: ["@scope"] });
+  const allowedResult = validateProjectConfig(config, graph, { configDir: root });
+  assert.equal(allowedResult.ok, true, allowedResult.errors.map((error) => error.message).join("\n"));
+
+  writeGeneratorPolicy(root, { allowedPackageScopes: ["@scope"], pinnedVersions: { [packageName]: "2" } });
+  const pinnedResult = validateProjectConfig(config, graph, { configDir: root });
+  assert.equal(pinnedResult.ok, false);
+  assert.match(pinnedResult.errors.map((error) => error.message).join("\n"), /pins '@scope\/topogram-generator-smoke-web' to '2'/);
 });
 
 test("project config validation rejects missing and mismatched package-backed generators", () => {
@@ -482,6 +524,7 @@ test("topogram check reports install command for missing package-backed generato
     package: "@scope/topogram-generator-missing"
   };
   writeJson(projectConfigPath, config);
+  writeGeneratorPolicy(projectRoot, { allowedPackageScopes: ["@scope"] });
 
   const human = runCli(["check", "."], { cwd: projectRoot });
   assert.notEqual(human.status, 0);
@@ -496,6 +539,108 @@ test("topogram check reports install command for missing package-backed generato
     payload.errors.some((error) => /npm install -D @scope\/topogram-generator-missing/.test(error.message)),
     true
   );
+});
+
+test("topogram generator policy commands explain defaults, blocked packages, and pins", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-cli-"));
+  const projectRoot = path.join(root, "workspace");
+  fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
+  const { packageName } = writePackageBackedGenerator(projectRoot);
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const config = readJson(projectConfigPath);
+  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
+  webComponent.generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+  writeJson(projectConfigPath, config);
+  fs.rmSync(path.join(projectRoot, "topogram.generator-policy.json"), { force: true });
+
+  const defaultDenied = runCli(["generator", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.notEqual(defaultDenied.status, 0, defaultDenied.stdout);
+  const defaultDeniedPayload = JSON.parse(defaultDenied.stdout);
+  assert.equal(defaultDeniedPayload.exists, false);
+  assert.equal(defaultDeniedPayload.defaulted, true);
+  assert.equal(defaultDeniedPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_policy_missing" && diagnostic.severity === "warning"), true);
+  assert.equal(defaultDeniedPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_package_denied"), true);
+
+  const humanDenied = runCli(["generator", "policy", "explain"], { cwd: projectRoot });
+  assert.notEqual(humanDenied.status, 0, humanDenied.stdout);
+  assert.match(humanDenied.stdout, /Generator policy: denied/);
+  assert.match(humanDenied.stdout, /FAIL Allowed package/);
+  assert.match(humanDenied.stdout, /topogram generator policy pin @scope\/topogram-generator-smoke-web@1/);
+
+  const init = runCli(["generator", "policy", "init", "--json"], { cwd: projectRoot });
+  assert.equal(init.status, 0, init.stderr || init.stdout);
+  const initPayload = JSON.parse(init.stdout);
+  assert.deepEqual(initPayload.policy.allowedPackageScopes, ["@topogram"]);
+
+  const stillDenied = runCli(["generator", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.notEqual(stillDenied.status, 0, stillDenied.stdout);
+  assert.equal(
+    JSON.parse(stillDenied.stdout).diagnostics.some((diagnostic) => diagnostic.code === "generator_package_denied"),
+    true
+  );
+
+  const pinMismatch = runCli(["generator", "policy", "pin", `${packageName}@2`, "--json"], { cwd: projectRoot });
+  assert.equal(pinMismatch.status, 0, pinMismatch.stderr || pinMismatch.stdout);
+  const mismatchCheck = runCli(["check", ".", "--json"], { cwd: projectRoot });
+  assert.notEqual(mismatchCheck.status, 0, mismatchCheck.stdout);
+  const mismatchPayload = JSON.parse(mismatchCheck.stdout);
+  assert.equal(mismatchPayload.errors.some((error) => /pins '@scope\/topogram-generator-smoke-web' to '2'/.test(error.message)), true);
+
+  const pinCurrent = runCli(["generator", "policy", "pin", "--json"], { cwd: projectRoot });
+  assert.equal(pinCurrent.status, 0, pinCurrent.stderr || pinCurrent.stdout);
+  const currentPayload = JSON.parse(pinCurrent.stdout);
+  assert.equal(currentPayload.pinned.some((pin) => pin.packageName === packageName && pin.version === "1"), true);
+  const finalCheck = runCli(["check", "."], { cwd: projectRoot });
+  assert.equal(finalCheck.status, 0, finalCheck.stderr || finalCheck.stdout);
+});
+
+test("missing generator policy defaults allow installed @topogram package generators", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-default-"));
+  const projectRoot = path.join(root, "workspace");
+  fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
+  const { packageName } = writePackageBackedGenerator(projectRoot, {
+    id: "@topogram/generator-smoke-web",
+    package: "@topogram/generator-smoke-web"
+  });
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const config = readJson(projectConfigPath);
+  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
+  webComponent.generator = {
+    id: "@topogram/generator-smoke-web",
+    version: "1",
+    package: packageName
+  };
+  writeJson(projectConfigPath, config);
+  fs.rmSync(path.join(projectRoot, "topogram.generator-policy.json"), { force: true });
+
+  const check = runCli(["check", ".", "--json"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const policyCheck = runCli(["generator", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.equal(policyCheck.status, 0, policyCheck.stderr || policyCheck.stdout);
+  const policyPayload = JSON.parse(policyCheck.stdout);
+  assert.equal(policyPayload.defaulted, true);
+  assert.equal(policyPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_policy_missing" && diagnostic.severity === "warning"), true);
+});
+
+test("malformed generator policy blocks project checks", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-invalid-"));
+  const projectRoot = path.join(root, "workspace");
+  fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, "topogram.generator-policy.json"), "{", "utf8");
+
+  const policyCheck = runCli(["generator", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.notEqual(policyCheck.status, 0, policyCheck.stdout);
+  const policyPayload = JSON.parse(policyCheck.stdout);
+  assert.equal(policyPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_policy_invalid"), true);
+
+  const check = runCli(["check", ".", "--json"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.errors.some((error) => /topogram\.generator-policy\.json/.test(error.message)), true);
 });
 
 test("maintained app outputs are refused for generated app writes", () => {

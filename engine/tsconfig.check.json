@@ -19,6 +19,7 @@
     "./src/generator/surfaces/web/index.d.ts",
     "./src/generator/api.d.ts",
     "./src/generator/adapters.d.ts",
+    "./src/generator-policy.d.ts",
     "./src/generator/surfaces/databases/lifecycle-shared.d.ts",
     "./src/generator/surfaces/databases/shared.d.ts",
     "./src/realization/backend/index.d.ts",

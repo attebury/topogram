@@ -1,0 +1,12 @@
+export const GENERATOR_POLICY_FILE: string;
+export function defaultGeneratorPolicy(): any;
+export function validateGeneratorPolicy(value: unknown, policyPath: string): any;
+export function packageScopeFromName(packageName: string): string | null;
+export function generatorPackageAllowed(policy: any, packageName: string): boolean;
+export function packageBackedGeneratorBindings(projectConfig: any): any[];
+export function loadGeneratorPolicy(projectRoot: string): any;
+export function writeGeneratorPolicy(projectRoot: string, policy: any): any;
+export function generatorPolicyDiagnosticsForBindings(policyInfo: any, bindings: any[], step?: string): any[];
+export function generatorPolicyDiagnosticsForProject(projectConfig: any, projectRoot: string, step?: string): any[];
+export function validateProjectGeneratorPolicy(projectConfig: any, options?: { configDir?: string | null; rootDir?: string | null }): { ok: boolean; errors: Array<{ message: string; loc: null }> };
+export function parseGeneratorPolicyPin(spec: string): { packageName: string; version: string };

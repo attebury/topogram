@@ -45,6 +45,17 @@ import {
   packageGeneratorInstallCommand
 } from "./generator/registry.js";
 import {
+  defaultGeneratorPolicy,
+  GENERATOR_POLICY_FILE,
+  generatorPackageAllowed,
+  generatorPolicyDiagnosticsForBindings,
+  loadGeneratorPolicy,
+  packageBackedGeneratorBindings,
+  packageScopeFromName,
+  parseGeneratorPolicyPin,
+  writeGeneratorPolicy
+} from "./generator-policy.js";
+import {
   buildAuthHintsQueryPayload,
   buildAuthReviewPacketPayload,
   buildCanonicalWritesPayloadForChangePlan,
@@ -207,6 +218,10 @@ function printUsage(options = {}) {
   console.log("   or: topogram generator list [--json]");
   console.log("   or: topogram generator show <id-or-package> [--json]");
   console.log("   or: topogram generator check <path-or-package> [--json]");
+  console.log("   or: topogram generator policy init [path] [--json]");
+  console.log("   or: topogram generator policy check [path] [--json]");
+  console.log("   or: topogram generator policy explain [path] [--json]");
+  console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
   console.log("");
@@ -228,6 +243,7 @@ function printUsage(options = {}) {
   console.log("  topogram generator list");
   console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
+  console.log("  topogram generator policy check");
   console.log("  topogram generate");
   console.log("  topogram import ./existing-app --out ./imported-topogram");
   console.log("  topogram import diff ./imported-topogram");
@@ -569,6 +585,10 @@ function printGeneratorHelp() {
   console.log("Usage: topogram generator list [--json]");
   console.log("   or: topogram generator show <id-or-package> [--json]");
   console.log("   or: topogram generator check <path-or-package> [--json]");
+  console.log("   or: topogram generator policy init [path] [--json]");
+  console.log("   or: topogram generator policy check [path] [--json]");
+  console.log("   or: topogram generator policy explain [path] [--json]");
+  console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
   console.log("");
   console.log("Inspects generator manifests and checks generator pack conformance.");
   console.log("");
@@ -577,6 +597,7 @@ function printGeneratorHelp() {
   console.log("  - show accepts an installed package name or a bundled fallback generator id.");
   console.log("  - check validates a local generator package path or an already installed package.");
   console.log("  - Topogram does not install generator packages during show or check.");
+  console.log(`  - package-backed project generators are governed by ${GENERATOR_POLICY_FILE}; bundled topogram/* generators are allowed.`);
   console.log("");
   console.log("Examples:");
   console.log("  topogram generator list");
@@ -585,6 +606,9 @@ function printGeneratorHelp() {
   console.log("  topogram generator show @scope/topogram-generator-web --json");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator check @scope/topogram-generator-web --json");
+  console.log("  topogram generator policy init");
+  console.log("  topogram generator policy check --json");
+  console.log("  topogram generator policy pin @topogram/generator-react-web@1");
 }
 
 function printTemplateHelp() {
@@ -789,7 +813,7 @@ function printImportHelp() {
 function printCheckHelp() {
   console.log("Usage: topogram check [path] [--json]");
   console.log("");
-  console.log("Validates Topogram files, project configuration, topology, generator compatibility, output ownership, and template policy.");
+  console.log("Validates Topogram files, project configuration, topology, generator compatibility, generator policy, output ownership, and template policy.");
   console.log("");
   console.log("Defaults: path is ./topogram.");
   console.log("");
@@ -1522,6 +1546,341 @@ function printGeneratorShow(payload) {
   console.log("");
   console.log("Example topology binding:");
   console.log(stableStringify(payload.exampleTopologyBinding));
+}
+
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {string} actual
+ * @param {string} expected
+ * @param {string} message
+ * @param {string|null} fix
+ * @returns {{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }}
+ */
+function generatorPolicyRule(name, ok, actual, expected, message, fix = null) {
+  return { name, ok, actual, expected, message, fix };
+}
+
+/**
+ * @param {string} name
+ * @returns {string}
+ */
+function generatorPolicyRuleLabel(name) {
+  return ({
+    "policy-file": "Policy file",
+    "allowed-package": "Allowed package",
+    "pinned-version": "Pinned version"
+  })[name] || name;
+}
+
+/**
+ * @param {import("./generator-policy.js").GeneratorPolicyInfo} policyInfo
+ * @returns {import("./generator-policy.js").GeneratorPolicy}
+ */
+function effectiveGeneratorPolicy(policyInfo) {
+  return policyInfo.policy || {
+    version: "0.1",
+    allowedPackageScopes: ["@topogram"],
+    allowedPackages: [],
+    pinnedVersions: {}
+  };
+}
+
+/**
+ * @param {string} projectPath
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, defaulted: boolean, bindings: ReturnType<typeof packageBackedGeneratorBindings>, diagnostics: any[], errors: string[] }}
+ */
+function buildGeneratorPolicyCheckPayload(projectPath) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = {
+      code: "generator_policy_project_missing",
+      severity: "error",
+      message: "Cannot check generator policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "generator-policy"
+    };
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), GENERATOR_POLICY_FILE),
+      exists: false,
+      policy: null,
+      defaulted: false,
+      bindings: [],
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const policyInfo = loadGeneratorPolicy(projectConfigInfo.configDir);
+  const bindings = packageBackedGeneratorBindings(projectConfigInfo.config);
+  const diagnostics = [];
+  if (!policyInfo.exists) {
+    diagnostics.push({
+      code: "generator_policy_missing",
+      severity: "warning",
+      message: `No ${GENERATOR_POLICY_FILE} found. Default generator policy allows @topogram/* package-backed generators and blocks other package scopes.`,
+      path: policyInfo.path,
+      suggestedFix: "Run `topogram generator policy init` to write an explicit project generator policy after review.",
+      step: "generator-policy"
+    });
+  }
+  diagnostics.push(...generatorPolicyDiagnosticsForBindings(policyInfo, bindings, "generator-policy"));
+  const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    path: policyInfo.path,
+    exists: policyInfo.exists,
+    policy: policyInfo.policy || effectiveGeneratorPolicy(policyInfo),
+    defaulted: !policyInfo.exists,
+    bindings,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {string} projectPath
+ * @returns {ReturnType<typeof buildGeneratorPolicyCheckPayload> & { rules: Array<{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }> }}
+ */
+function buildGeneratorPolicyExplainPayload(projectPath) {
+  const check = buildGeneratorPolicyCheckPayload(projectPath);
+  const policy = check.policy || effectiveGeneratorPolicy({ path: check.path, exists: false, policy: null, diagnostics: [] });
+  const rules = [];
+  rules.push(generatorPolicyRule(
+    "policy-file",
+    check.exists,
+    check.exists ? "present" : "missing",
+    "present",
+    check.exists
+      ? "Project has a generator policy file."
+      : "Project is using the default generator policy.",
+    check.exists ? null : "Run `topogram generator policy init` after review."
+  ));
+  for (const binding of check.bindings) {
+    const scope = packageScopeFromName(binding.packageName);
+    rules.push(generatorPolicyRule(
+      "allowed-package",
+      generatorPackageAllowed(policy, binding.packageName),
+      `${binding.packageName}${scope ? ` (${scope})` : ""}`,
+      [
+        `scopes=${policy.allowedPackageScopes.join(", ") || "(none)"}`,
+        `packages=${policy.allowedPackages.join(", ") || "(none)"}`
+      ].join("; "),
+      `Component '${binding.componentId}' package-backed generator must be from an allowed package or scope.`,
+      `Run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` after reviewing the generator package.`
+    ));
+    const pinnedVersion = policy.pinnedVersions[binding.packageName] || policy.pinnedVersions[binding.generatorId] || null;
+    rules.push(generatorPolicyRule(
+      "pinned-version",
+      !pinnedVersion || pinnedVersion === binding.version,
+      binding.version,
+      pinnedVersion || "(unpinned)",
+      `Component '${binding.componentId}' generator version must match its policy pin when one exists.`,
+      `Run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` after review.`
+    ));
+  }
+  return {
+    ...check,
+    rules
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildGeneratorPolicyCheckPayload>} payload
+ * @returns {void}
+ */
+function printGeneratorPolicyCheckPayload(payload) {
+  console.log(payload.ok ? "Generator policy check passed" : "Generator policy check failed");
+  console.log(`Policy: ${payload.path}`);
+  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  console.log(`Defaulted: ${payload.defaulted ? "yes" : "no"}`);
+  console.log(`Package-backed generators: ${payload.bindings.length}`);
+  for (const binding of payload.bindings) {
+    console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {ReturnType<typeof buildGeneratorPolicyExplainPayload>} payload
+ * @returns {void}
+ */
+function printGeneratorPolicyExplainPayload(payload) {
+  console.log(payload.ok ? "Generator policy: allowed" : "Generator policy: denied");
+  console.log(payload.ok
+    ? "Decision: package-backed generators are allowed by this project's generator policy."
+    : "Decision: one or more package-backed generators are blocked by this project's generator policy.");
+  console.log(`Policy file: ${payload.path}`);
+  console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
+  console.log(`Default policy active: ${payload.defaulted ? "yes" : "no"}`);
+  if (payload.bindings.length > 0) {
+    console.log("");
+    console.log("Package-backed generators:");
+    for (const binding of payload.bindings) {
+      console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+    }
+  }
+  if (payload.rules.length > 0) {
+    console.log("");
+    console.log("Policy checks:");
+  }
+  for (const rule of payload.rules) {
+    console.log(`${rule.ok ? "PASS" : "FAIL"} ${generatorPolicyRuleLabel(rule.name)}: ${rule.message}`);
+    console.log(`  actual: ${rule.actual}`);
+    console.log(`  expected: ${rule.expected}`);
+    if (!rule.ok && rule.fix) {
+      console.log(`  fix: ${rule.fix}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {string} projectPath
+ * @param {string|null|undefined} spec
+ * @returns {{ ok: boolean, path: string, policy: any, pinned: Array<{ packageName: string, version: string }>, diagnostics: any[], errors: string[] }}
+ */
+function buildGeneratorPolicyPinPayload(projectPath, spec) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = {
+      code: "generator_policy_project_missing",
+      severity: "error",
+      message: "Cannot pin generator policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "generator-policy"
+    };
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), GENERATOR_POLICY_FILE),
+      policy: null,
+      pinned: [],
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const policyInfo = loadGeneratorPolicy(projectConfigInfo.configDir);
+  if (policyInfo.diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+    const errors = policyInfo.diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
+    return {
+      ok: false,
+      path: policyInfo.path,
+      policy: policyInfo.policy,
+      pinned: [],
+      diagnostics: policyInfo.diagnostics,
+      errors
+    };
+  }
+  let pins = [];
+  try {
+    pins = spec
+      ? [parseGeneratorPolicyPin(spec)]
+      : packageBackedGeneratorBindings(projectConfigInfo.config).map((binding) => ({
+          packageName: binding.packageName,
+          version: binding.version
+        }));
+  } catch (error) {
+    const diagnostic = {
+      code: "generator_policy_pin_invalid",
+      severity: "error",
+      message: error instanceof Error ? error.message : String(error),
+      path: policyInfo.path,
+      suggestedFix: "Pass a pin such as @topogram/generator-react-web@1.",
+      step: "generator-policy"
+    };
+    return {
+      ok: false,
+      path: policyInfo.path,
+      policy: policyInfo.policy,
+      pinned: [],
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  if (pins.length === 0) {
+    const diagnostic = {
+      code: "generator_policy_pin_no_generators",
+      severity: "error",
+      message: "No package-backed topology generator bindings are available to pin.",
+      path: projectConfigInfo.configPath,
+      suggestedFix: "Pass an explicit pin such as @topogram/generator-react-web@1, or use bundled generators.",
+      step: "generator-policy"
+    };
+    return {
+      ok: false,
+      path: policyInfo.path,
+      policy: policyInfo.policy,
+      pinned: [],
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const policy = policyInfo.policy || defaultGeneratorPolicy();
+  const allowedPackages = [...policy.allowedPackages];
+  const allowedPackageScopes = [...policy.allowedPackageScopes];
+  const pinnedVersions = { ...policy.pinnedVersions };
+  for (const pin of pins) {
+    if (!allowedPackages.includes(pin.packageName)) {
+      allowedPackages.push(pin.packageName);
+    }
+    const scope = packageScopeFromName(pin.packageName);
+    if (scope && !allowedPackageScopes.includes(scope)) {
+      allowedPackageScopes.push(scope);
+    }
+    pinnedVersions[pin.packageName] = pin.version;
+  }
+  const nextPolicy = {
+    ...policy,
+    allowedPackageScopes,
+    allowedPackages,
+    pinnedVersions
+  };
+  writeGeneratorPolicy(projectConfigInfo.configDir, nextPolicy);
+  return {
+    ok: true,
+    path: path.join(projectConfigInfo.configDir, GENERATOR_POLICY_FILE),
+    policy: nextPolicy,
+    pinned: pins,
+    diagnostics: [],
+    errors: []
+  };
+}
+
+/**
+ * @param {{ ok: boolean, path: string, pinned: Array<{ packageName: string, version: string }>, diagnostics: any[] }} payload
+ * @returns {void}
+ */
+function printGeneratorPolicyPinPayload(payload) {
+  console.log(payload.ok ? "Generator policy pin updated" : "Generator policy pin failed");
+  console.log(`Policy: ${payload.path}`);
+  for (const pin of payload.pinned) {
+    console.log(`Pinned: ${pin.packageName}@${pin.version}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
 }
 
 function combineProjectValidationResults(...results) {
@@ -3340,6 +3699,7 @@ function printNewProjectResult(result, cwd) {
   }
   console.log(`Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
   console.log("Policy: topogram.template-policy.json");
+  console.log(`Generator policy: ${GENERATOR_POLICY_FILE}`);
   console.log("Template files: .topogram-template-files.json");
   if (template.includesExecutableImplementation) {
     console.log("Trust: .topogram-template-trust.json");
@@ -3355,6 +3715,7 @@ function printNewProjectResult(result, cwd) {
   console.log("  npm run source:status");
   console.log("  npm run template:explain");
   console.log("  npm run check");
+  console.log("  npm run generator:policy:check");
   if (template.includesExecutableImplementation) {
     console.log("  npm run template:policy:explain");
     console.log("  npm run trust:status");
@@ -6856,6 +7217,14 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { generatorShow: true, inputPath: args[2] };
 } else if (args[0] === "generator" && args[1] === "check") {
   commandArgs = { generatorCheck: true, inputPath: args[2] };
+} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "init") {
+  commandArgs = { generatorPolicyInit: true, inputPath: commandPath(3) };
+} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "check") {
+  commandArgs = { generatorPolicyCheck: true, inputPath: commandPath(3) };
+} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "explain") {
+  commandArgs = { generatorPolicyExplain: true, inputPath: commandPath(3) };
+} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "pin") {
+  commandArgs = { generatorPolicyPin: true, generatorPolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null, inputPath: commandPath(4) };
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
@@ -7052,6 +7421,10 @@ const shouldComponentBehavior = Boolean(commandArgs?.componentBehavior);
 const shouldGeneratorList = Boolean(commandArgs?.generatorList);
 const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
 const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
+const shouldGeneratorPolicyInit = Boolean(commandArgs?.generatorPolicyInit);
+const shouldGeneratorPolicyCheck = Boolean(commandArgs?.generatorPolicyCheck);
+const shouldGeneratorPolicyExplain = Boolean(commandArgs?.generatorPolicyExplain);
+const shouldGeneratorPolicyPin = Boolean(commandArgs?.generatorPolicyPin);
 const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
 const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
 const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
@@ -7185,7 +7558,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -7239,7 +7612,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -7362,6 +7735,59 @@ try {
       console.log(stableStringify(payload));
     } else {
       printGeneratorShow(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorPolicyInit) {
+    const projectConfigInfo = loadProjectConfig(inputPath);
+    if (!projectConfigInfo) {
+      throw new Error("Cannot initialize generator policy without topogram.project.json.");
+    }
+    const policy = writeGeneratorPolicy(projectConfigInfo.configDir, defaultGeneratorPolicy());
+    const payload = {
+      ok: true,
+      path: path.join(projectConfigInfo.configDir, GENERATOR_POLICY_FILE),
+      policy,
+      diagnostics: [],
+      errors: []
+    };
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      console.log(`Wrote generator policy: ${payload.path}`);
+      console.log(`Allowed package scopes: ${policy.allowedPackageScopes.join(", ") || "(none)"}`);
+      console.log(`Allowed packages: ${policy.allowedPackages.join(", ") || "(none)"}`);
+    }
+    process.exit(0);
+  }
+
+  if (shouldGeneratorPolicyCheck) {
+    const payload = buildGeneratorPolicyCheckPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorPolicyCheckPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorPolicyExplain) {
+    const payload = buildGeneratorPolicyExplainPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorPolicyExplainPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldGeneratorPolicyPin) {
+    const payload = buildGeneratorPolicyPinPayload(inputPath, commandArgs?.generatorPolicyPinSpec);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorPolicyPinPayload(payload);
     }
     process.exit(payload.ok ? 0 : 1);
   }
