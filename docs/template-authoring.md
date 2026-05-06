@@ -228,6 +228,19 @@ module, and SHA-256 hashes for the copied `implementation/` files.
 human review. When run directly in a template source repo, it refuses to write
 consumer trust metadata unless `--force` is provided.
 
+Template packs must not contain symlinks under `topogram/`,
+`topogram.project.json`, or `implementation/`. Topogram records hashes for the
+real files it copies; symlinks can point outside the reviewed template or
+generated project and are rejected by `topogram new`, `topogram template check`,
+`topogram trust status`, and `topogram check`. Replace symlinks with real files
+before publishing or trusting a template.
+
+For template-attached projects, `implementation.module` must stay under
+`implementation/`. Moving executable implementation code elsewhere bypasses the
+trusted root, so `topogram check` and `topogram generate` refuse it. Move the
+module back under `implementation/`, then run `topogram trust status`,
+`topogram trust diff`, and `topogram trust template` after review.
+
 If the trust file is missing or no longer matches `topogram.project.json`,
 or if `implementation/` changed since it was trusted, `topogram check` and
 `topogram generate` refuse to import `./implementation/index.js`. Inspect drift:

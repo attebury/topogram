@@ -2944,6 +2944,9 @@ test("topogram new rejects template implementation symlinks", () => {
   const create = runCli(["new", projectRoot, "--template", templateRoot]);
   assert.notEqual(create.status, 0, create.stdout);
   assert.match(create.stderr, /unsupported symlink 'implementation\/index\.js'/);
+  assert.match(create.stderr, /Template packs must copy real files/);
+  assert.match(create.stderr, /Replace the symlink with a real file or directory/);
+  assert.match(create.stderr, /topogram template check/);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), false);
 });
 
@@ -2966,14 +2969,19 @@ test("topogram trust rejects template implementation modules outside implementat
   assert.equal(statusPayload.ok, false);
   assert.equal(statusPayload.requiresTrust, true);
   assert.match(statusPayload.issues.join("\n"), /must be under implementation\/ for template-attached projects/);
+  assert.match(statusPayload.issues.join("\n"), /Keep executable template code inside implementation\//);
+  assert.match(statusPayload.issues.join("\n"), /topogram trust diff/);
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.notEqual(check.status, 0, check.stdout);
   assert.match(check.stderr, /must be under implementation\/ for template-attached projects/);
+  assert.match(check.stderr, /move the module back under implementation\//i);
+  assert.match(check.stderr, /topogram trust status/);
 
   const trust = runCli(["trust", "template"], { cwd: projectRoot });
   assert.notEqual(trust.status, 0, trust.stdout);
   assert.match(trust.stderr, /must be under implementation\//);
+  assert.match(trust.stderr, /Move the module back under implementation\//);
 });
 
 test("topogram trust rejects implementation symlinks added after project creation", () => {
@@ -2989,11 +2997,20 @@ test("topogram trust rejects implementation symlinks added after project creatio
 
   const status = runCli(["trust", "status"], { cwd: projectRoot });
   assert.notEqual(status.status, 0, status.stdout);
-  assert.match(status.stderr, /Template implementation contains unsupported symlink 'index\.js'/);
+  assert.match(status.stdout, /Implementation trust status: review required/);
+  assert.match(status.stdout, /Template implementation contains unsupported symlink 'index\.js'/);
+  assert.match(status.stdout, /Replace symlinks with real files under implementation\//);
+
+  const diff = runCli(["trust", "diff"], { cwd: projectRoot });
+  assert.notEqual(diff.status, 0, diff.stdout);
+  assert.match(diff.stdout, /Template trust diff: no file-level diff available/);
+  assert.match(diff.stdout, /Template implementation contains unsupported symlink 'index\.js'/);
+  assert.match(diff.stdout, /topogram trust template/);
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.notEqual(check.status, 0, check.stdout);
   assert.match(check.stderr, /Template implementation contains unsupported symlink 'index\.js'/);
+  assert.match(check.stderr, /Replace symlinks with real files under implementation\//);
 });
 
 test("topogram trust status reports implementation content drift and trust refresh adopts edits", () => {

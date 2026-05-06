@@ -226,6 +226,14 @@ so. `topogram new` copies that implementation code but does not execute it.
 `topogram.template-policy.json` and `.topogram-template-trust.json` before
 loading copied implementation code.
 
+Catalog templates with executable implementation must copy real files. Symlinks
+under `topogram/`, `topogram.project.json`, or `implementation/` are rejected
+because trust records hash copied file content and symlinks can point outside
+the reviewed package or generated project. In generated, template-attached
+projects, executable implementation modules must remain under `implementation/`;
+use `topogram trust status`, `topogram trust diff`, and
+`topogram trust template` after reviewing implementation changes.
+
 Topogram entries feed `topogram catalog copy`. A pure topogram package may
 contain:
 

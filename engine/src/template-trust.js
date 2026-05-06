@@ -19,6 +19,7 @@ export const TEMPLATE_TRUST_POLICY = "topogram-template-executable-implementatio
 
 const IGNORED_IMPLEMENTATION_ENTRIES = new Set([".DS_Store", "node_modules", ".tmp"]);
 const MAX_TEXT_DIFF_BYTES = 256 * 1024;
+const TRUST_REVIEW_COMMANDS = "`topogram trust status`, `topogram trust diff`, and `topogram trust template`";
 
 /**
  * @param {string} parent
@@ -44,6 +45,45 @@ function normalizeRoot(value) {
  */
 function normalizeRelativePath(value) {
   return value.replace(/\\/g, "/");
+}
+
+/**
+ * @param {string} relativePath
+ * @returns {string}
+ */
+function unsupportedImplementationSymlinkMessage(relativePath) {
+  return `Template implementation contains unsupported symlink '${relativePath}'. Implementation trust hashes real files under implementation/; symlinks can point outside the trusted root. Replace symlinks with real files under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
+}
+
+/**
+ * @param {string} modulePath
+ * @returns {string}
+ */
+function implementationOutsideRootMessage(modulePath) {
+  return `Template implementation module '${modulePath}' must be under implementation/ for template-attached projects. Keep executable template code inside implementation/ so the trust record covers what topogram generate may load. Move the module back under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
+}
+
+/**
+ * @param {string|string[]} issueOrIssues
+ * @returns {string}
+ */
+export function templateTrustRecoveryGuidance(issueOrIssues) {
+  const issues = Array.isArray(issueOrIssues) ? issueOrIssues : [issueOrIssues];
+  const text = issues.join("\n");
+  if (issues.length > 0 && issues.every((issue) =>
+    issue.includes("topogram trust status") &&
+    issue.includes("topogram trust diff") &&
+    issue.includes("topogram trust template")
+  )) {
+    return "";
+  }
+  if (text.includes("unsupported symlink")) {
+    return `Replace symlinks with real files under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
+  }
+  if (text.includes("must be under implementation/")) {
+    return `Keep executable template code under implementation/ so it can be hashed and trusted; move the module back under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
+  }
+  return `Run \`topogram trust status\` and \`topogram trust diff\` to review implementation changes; after review, run \`topogram trust template\` to trust the current files.`;
 }
 
 /**
@@ -187,7 +227,7 @@ function collectImplementationFiles(implementationRoot, currentDir, files) {
     const entryPath = path.join(currentDir, entry.name);
     const relativePath = normalizeRelativePath(path.relative(implementationRoot, entryPath));
     if (entry.isSymbolicLink()) {
-      throw new Error(`Template implementation contains unsupported symlink '${relativePath}'.`);
+      throw new Error(unsupportedImplementationSymlinkMessage(relativePath));
     }
     if (entry.isDirectory()) {
       collectImplementationFiles(implementationRoot, entryPath, files);
@@ -343,7 +383,7 @@ export function writeTemplateTrustRecord(configDir, projectConfig) {
   };
   if (!implementationModuleIsUnderRoot(implementationInfo)) {
     const implementation = implementationTrustFingerprint(implementationConfig);
-    throw new Error(`Template implementation module '${implementation.module}' must be under implementation/.`);
+    throw new Error(implementationOutsideRootMessage(implementation.module));
   }
   const implementation = implementationTrustFingerprint(implementationConfig);
   const record = buildTrustRecord(configDir, projectConfig, implementation);
@@ -362,8 +402,9 @@ export function assertTrustedImplementation(implementationInfo, projectConfig = 
     return;
   }
   const firstIssue = status.issues[0] || "implementation trust is invalid";
+  const guidance = templateTrustRecoveryGuidance(firstIssue);
   throw new Error(
-    `${firstIssue}. Review implementation/ and run 'topogram trust template' to trust the current files.`
+    guidance ? `${firstIssue}. ${guidance}` : firstIssue
   );
 }
 
@@ -451,9 +492,7 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
   const contentStatus = { trustedDigest: null, currentDigest: null, added: [], removed: [], changed: [] };
 
   if (templateAttached && !moduleInsideImplementation) {
-    issues.push(
-      `Template implementation module '${fingerprint.module}' must be under implementation/ for template-attached projects`
-    );
+    issues.push(implementationOutsideRootMessage(fingerprint.module));
   }
 
   if (!trustRecord) {
@@ -490,17 +529,21 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
     } else if (trustRecord.content.algorithm !== "sha256") {
       issues.push(`${TEMPLATE_TRUST_FILE} uses unsupported content hash algorithm '${trustRecord.content.algorithm}'`);
     } else {
-      const currentContent = hashImplementationContent(implementationInfo.configDir);
-      contentStatus.trustedDigest = trustRecord.content.digest;
-      contentStatus.currentDigest = currentContent.digest;
-      const trustedByPath = new Map((trustRecord.content.files || []).map((file) => [file.path, file]));
-      const currentByPath = new Map(currentContent.files.map((file) => [file.path, file]));
-      const diff = diffContentFiles(trustedByPath, currentByPath);
-      contentStatus.added = diff.added;
-      contentStatus.removed = diff.removed;
-      contentStatus.changed = diff.changed;
-      if (trustRecord.content.digest !== currentContent.digest) {
-        issues.push(`${TEMPLATE_TRUST_FILE} implementation content changed since it was last trusted`);
+      try {
+        const currentContent = hashImplementationContent(implementationInfo.configDir);
+        contentStatus.trustedDigest = trustRecord.content.digest;
+        contentStatus.currentDigest = currentContent.digest;
+        const trustedByPath = new Map((trustRecord.content.files || []).map((file) => [file.path, file]));
+        const currentByPath = new Map(currentContent.files.map((file) => [file.path, file]));
+        const diff = diffContentFiles(trustedByPath, currentByPath);
+        contentStatus.added = diff.added;
+        contentStatus.removed = diff.removed;
+        contentStatus.changed = diff.changed;
+        if (trustRecord.content.digest !== currentContent.digest) {
+          issues.push(`${TEMPLATE_TRUST_FILE} implementation content changed since it was last trusted`);
+        }
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
       }
     }
   }
@@ -538,7 +581,12 @@ export function getTemplateTrustDiff(implementationInfo, projectConfig = null) {
   if (!status.requiresTrust || !status.trustRecord?.content) {
     return { ok: status.ok, requiresTrust: status.requiresTrust, status, files: [] };
   }
-  const currentContent = hashImplementationContent(implementationInfo.configDir);
+  let currentContent;
+  try {
+    currentContent = hashImplementationContent(implementationInfo.configDir);
+  } catch (_error) {
+    return { ok: false, requiresTrust: status.requiresTrust, status, files: [] };
+  }
   const trustedByPath = new Map((status.trustRecord.content.files || []).map((file) => [file.path, file]));
   const currentByPath = new Map(currentContent.files.map((file) => [file.path, file]));
   /** @type {Array<{ path: string, kind: "added"|"removed"|"changed", trusted: { path: string, sha256: string|null, size: number|null }|null, current: { path: string, sha256: string|null, size: number|null, binary: boolean, diffOmitted: boolean }|null, binary: boolean, diffOmitted: boolean, unifiedDiff: string|null }>} */

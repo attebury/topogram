@@ -33,6 +33,15 @@ const SURFACE_ORDER = new Map([
 ]);
 
 /**
+ * @param {string} templateId
+ * @param {string} relativePath
+ * @returns {string}
+ */
+function unsupportedTemplateSymlinkMessage(templateId, relativePath) {
+  return `Template '${templateId}' contains unsupported symlink '${relativePath}'. Template packs must copy real files because Topogram records hashes for copied topogram/ and implementation/ content; symlinks can point outside the trusted template root. Replace the symlink with a real file or directory before running topogram new or topogram template check.`;
+}
+
+/**
  * @typedef {Object} CreateNewProjectOptions
  * @property {string} targetPath
  * @property {string} [templateName]
@@ -342,7 +351,7 @@ function assertTemplateTreeHasNoSymlinks(root, currentDir, label, templateId) {
   const rootStat = fs.lstatSync(currentDir);
   const relativeRoot = path.relative(root, currentDir).replace(/\\/g, "/") || label;
   if (rootStat.isSymbolicLink()) {
-    throw new Error(`Template '${templateId}' contains unsupported symlink '${relativeRoot}'.`);
+    throw new Error(unsupportedTemplateSymlinkMessage(templateId, relativeRoot));
   }
   if (!rootStat.isDirectory()) {
     return;
@@ -351,7 +360,7 @@ function assertTemplateTreeHasNoSymlinks(root, currentDir, label, templateId) {
     const entryPath = path.join(currentDir, entry.name);
     const relativePath = path.relative(root, entryPath).replace(/\\/g, "/");
     if (entry.isSymbolicLink()) {
-      throw new Error(`Template '${templateId}' contains unsupported symlink '${relativePath}'.`);
+      throw new Error(unsupportedTemplateSymlinkMessage(templateId, relativePath));
     }
     if (entry.isDirectory()) {
       assertTemplateTreeHasNoSymlinks(root, entryPath, label, templateId);
@@ -368,10 +377,10 @@ function validateTemplateRoot(templateRoot) {
   const topogramRoot = path.join(templateRoot, "topogram");
   const projectConfigPath = path.join(templateRoot, "topogram.project.json");
   if (fs.existsSync(topogramRoot) && fs.lstatSync(topogramRoot).isSymbolicLink()) {
-    throw new Error(`Template '${manifest.id}' contains unsupported symlink 'topogram'.`);
+    throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, "topogram"));
   }
   if (fs.existsSync(projectConfigPath) && fs.lstatSync(projectConfigPath).isSymbolicLink()) {
-    throw new Error(`Template '${manifest.id}' contains unsupported symlink 'topogram.project.json'.`);
+    throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, "topogram.project.json"));
   }
   if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
     throw new Error(`Template '${manifest.id}' is missing topogram/.`);
@@ -383,7 +392,7 @@ function validateTemplateRoot(templateRoot) {
   if (manifest.includesExecutableImplementation) {
     const implementationRoot = path.join(templateRoot, "implementation");
     if (fs.existsSync(implementationRoot) && fs.lstatSync(implementationRoot).isSymbolicLink()) {
-      throw new Error(`Template '${manifest.id}' contains unsupported symlink 'implementation'.`);
+      throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, "implementation"));
     }
     if (!fs.existsSync(implementationRoot) || !fs.statSync(implementationRoot).isDirectory()) {
       throw new Error(
@@ -1169,7 +1178,7 @@ function collectFiles(root, currentDir, files) {
     }
     const entryPath = path.join(currentDir, entry.name);
     if (entry.isSymbolicLink()) {
-      throw new Error(`Template-owned files cannot include symlink '${path.relative(root, entryPath).replace(/\\/g, "/")}'.`);
+      throw new Error(`Template-owned files cannot include symlink '${path.relative(root, entryPath).replace(/\\/g, "/")}'. Template-owned files must be real files so Topogram can hash the exact content being trusted. Replace the symlink with a real file, then run topogram trust status, topogram trust diff, and topogram trust template after review.`);
     }
     if (entry.isDirectory()) {
       collectFiles(root, entryPath, files);

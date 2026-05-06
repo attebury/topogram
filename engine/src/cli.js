@@ -32,6 +32,7 @@ import {
   getTemplateTrustStatus,
   implementationRequiresTrust,
   TEMPLATE_TRUST_FILE,
+  templateTrustRecoveryGuidance,
   validateProjectImplementationTrust,
   writeTemplateTrustRecord
 } from "./template-trust.js";
@@ -5951,6 +5952,15 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       step
     });
   }
+  if (message.includes("unsupported symlink")) {
+    return templateCheckDiagnostic({
+      code: "template_symlink_unsupported",
+      message,
+      path: path.isAbsolute(templateSpec) ? templateSpec : null,
+      suggestedFix: "Replace template symlinks with real files or directories, then rerun `topogram new` or `topogram template check`.",
+      step
+    });
+  }
   return templateCheckDiagnostic({
     code: "template_create_failed",
     message,
@@ -5968,13 +5978,15 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
  */
 function diagnosticForStarterCheckFailure(error, step, configPath) {
   const locFile = typeof error?.loc?.file === "string" ? error.loc.file : null;
-  const isTrust = error.message.includes(TEMPLATE_TRUST_FILE);
+  const isTrust = error.message.includes(TEMPLATE_TRUST_FILE) ||
+    error.message.includes("unsupported symlink") ||
+    error.message.includes("must be under implementation/");
   return templateCheckDiagnostic({
     code: isTrust ? "template_trust_invalid" : "starter_check_failed",
     message: error.message,
     path: locFile || configPath,
     suggestedFix: isTrust
-      ? "Review implementation/ and run topogram trust template in the generated starter."
+      ? templateTrustRecoveryGuidance(error.message)
       : "Fix the generated Topogram source or topogram.project.json so topogram check passes.",
     step
   });
@@ -6176,7 +6188,7 @@ function buildTemplateCheckPayload(templateSpec) {
       code: "template_trust_invalid",
       message: issue,
       path: trustStatus.trustPath,
-      suggestedFix: "Review implementation/ and run topogram trust template in the generated starter.",
+      suggestedFix: templateTrustRecoveryGuidance(issue),
       step: "executable-implementation-trust"
     }));
     steps.push(templateCheckStep("executable-implementation-trust", trustStatus.ok, {
@@ -7853,7 +7865,10 @@ try {
         console.log(`Removed: ${filePath}`);
       }
       if (!status.ok) {
-        console.log("Run `topogram trust diff` to review implementation changes, then `topogram trust template` to trust the current files.");
+        const guidance = templateTrustRecoveryGuidance(status.issues);
+        if (guidance) {
+          console.log(guidance);
+        }
       }
     }
     process.exit(status.ok ? 0 : 1);
@@ -7882,6 +7897,12 @@ try {
       for (const issue of diff.status.issues) {
         console.log(`Issue: ${issue}`);
       }
+      if (!diff.ok) {
+        const guidance = templateTrustRecoveryGuidance(diff.status.issues);
+        if (guidance) {
+          console.log(guidance);
+        }
+      }
     } else {
       console.log(diff.ok ? "Template trust diff: no implementation changes." : "Template trust diff: review required");
       for (const file of diff.files) {
@@ -7906,7 +7927,10 @@ try {
       }
       if (!diff.ok) {
         console.log("");
-        console.log("After review, run `topogram trust template` to trust the current files.");
+        const guidance = templateTrustRecoveryGuidance(diff.status.issues);
+        if (guidance) {
+          console.log(guidance);
+        }
       }
     }
     process.exit(diff.ok ? 0 : 1);
