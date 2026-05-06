@@ -12,8 +12,9 @@ RUN_DIR="$(mktemp -d "$WORK_ROOT/run.XXXXXX")"
 PACK_DIR="$RUN_DIR/pack"
 CONSUMER_DIR="$RUN_DIR/consumer"
 TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
+GENERATOR_PACKAGE_DIR="$RUN_DIR/generator-package"
 CATALOG_FILE="$RUN_DIR/topograms.catalog.json"
-mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR"
+mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR" "$GENERATOR_PACKAGE_DIR"
 
 echo "Packing @topogram/cli..."
 PACK_NAME="$(cd "$ENGINE_DIR" && npm pack --silent --pack-destination "$PACK_DIR" | tail -n 1)"
@@ -152,6 +153,239 @@ if [[ "$DISABLED_OUTPUT" == *"For the private default catalog"* ]]; then
   exit 1
 fi
 
+echo "Packing a package-backed generator pack..."
+GENERATOR_PACKAGE_NAME="@topogram/generator-smoke-web"
+cat > "$GENERATOR_PACKAGE_DIR/package.json" <<'JSON'
+{
+  "name": "@topogram/generator-smoke-web",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.cjs",
+  "exports": {
+    ".": "./index.cjs",
+    "./topogram-generator.json": "./topogram-generator.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.cjs",
+    "topogram-generator.json"
+  ]
+}
+JSON
+cat > "$GENERATOR_PACKAGE_DIR/topogram-generator.json" <<'JSON'
+{
+  "id": "@topogram/generator-smoke-web",
+  "version": "1",
+  "surface": "web",
+  "projectionPlatforms": [
+    "ui_web"
+  ],
+  "inputs": [
+    "ui-web-contract"
+  ],
+  "outputs": [
+    "web-app"
+  ],
+  "stack": {
+    "runtime": "browser",
+    "framework": "smoke",
+    "language": "javascript"
+  },
+  "capabilities": {
+    "routes": true,
+    "coverage": true
+  },
+  "source": "package",
+  "package": "@topogram/generator-smoke-web"
+}
+JSON
+cat > "$GENERATOR_PACKAGE_DIR/index.cjs" <<'CJS'
+const manifest = require("./topogram-generator.json");
+
+exports.manifest = manifest;
+
+exports.generate = function generate(context) {
+  const screens = Array.isArray(context?.contracts?.uiWeb?.screens)
+    ? context.contracts.uiWeb.screens
+    : [];
+  const componentId = context?.component?.id || "";
+  const projectionId = context?.projection?.id || "";
+  const html = [
+    "<!doctype html>",
+    "<html>",
+    "<head><meta charset=\"utf-8\"><title>Topogram Generator Smoke</title></head>",
+    `<body data-generator="${manifest.id}" data-component="${componentId}">`,
+    "<main>",
+    "<h1>Topogram package generator smoke</h1>",
+    `<p data-projection="${projectionId}">Screens: ${screens.length}</p>`,
+    "</main>",
+    "</body>",
+    "</html>"
+  ].join("\n");
+  return {
+    files: {
+      "index.html": `${html}\n`,
+      "topogram-generator-context.json": `${JSON.stringify({
+        generator: manifest.id,
+        component: componentId,
+        projection: projectionId,
+        screens: screens.map((screen) => screen.id)
+      }, null, 2)}\n`
+    },
+    artifacts: {
+      coverage: {
+        screens: screens.length
+      }
+    },
+    diagnostics: []
+  };
+};
+CJS
+GENERATOR_PACK_NAME="$(cd "$GENERATOR_PACKAGE_DIR" && npm pack --silent --pack-destination "$PACK_DIR" | tail -n 1)"
+GENERATOR_TARBALL="$PACK_DIR/$GENERATOR_PACK_NAME"
+
+if [[ ! -f "$GENERATOR_TARBALL" ]]; then
+  echo "Expected generator tarball was not created: $GENERATOR_TARBALL" >&2
+  exit 1
+fi
+
+echo "Checking installed CLI package-backed generator commands..."
+(
+  cd "$CONSUMER_DIR"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./generator-ux --template "$ENGINE_DIR/tests/fixtures/templates/hello-web"
+)
+GENERATOR_PROJECT_DIR="$CONSUMER_DIR/generator-ux"
+npm --prefix "$GENERATOR_PROJECT_DIR" install -D "$GENERATOR_TARBALL" >/dev/null
+node --input-type=module -e '
+  import fs from "node:fs";
+  import path from "node:path";
+  const projectRoot = process.argv[1];
+  const packageName = process.argv[2];
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  const webComponent = projectConfig.topology.components.find((component) => component.type === "web");
+  if (!webComponent) {
+    throw new Error("Expected hello-web starter to include one web component.");
+  }
+  webComponent.generator = {
+    id: packageName,
+    version: "1",
+    package: packageName
+  };
+  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`);
+  fs.writeFileSync(path.join(projectRoot, "topogram.generator-policy.json"), `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: [packageName],
+    pinnedVersions: {
+      [packageName]: "1"
+    }
+  }, null, 2)}\n`);
+' "$GENERATOR_PROJECT_DIR" "$GENERATOR_PACKAGE_NAME"
+(
+  cd "$GENERATOR_PROJECT_DIR"
+  "$TOPOGRAM_BIN" generator list --json > "$RUN_DIR/generator-list.json"
+  "$TOPOGRAM_BIN" generator show "$GENERATOR_PACKAGE_NAME" --json > "$RUN_DIR/generator-show.json"
+  "$TOPOGRAM_BIN" generator check "$GENERATOR_PACKAGE_NAME" --json > "$RUN_DIR/generator-check.json"
+  "$TOPOGRAM_BIN" generator list > "$RUN_DIR/generator-list.txt"
+  "$TOPOGRAM_BIN" generator show "$GENERATOR_PACKAGE_NAME" > "$RUN_DIR/generator-show.txt"
+  "$TOPOGRAM_BIN" generator check "$GENERATOR_PACKAGE_NAME" > "$RUN_DIR/generator-check.txt"
+  "$TOPOGRAM_BIN" generator policy status --json > "$RUN_DIR/generator-policy-status.json"
+  "$TOPOGRAM_BIN" generator policy check --json > "$RUN_DIR/generator-policy-check.json"
+  "$TOPOGRAM_BIN" check > "$RUN_DIR/generator-project-check.txt"
+  "$TOPOGRAM_BIN" generate > "$RUN_DIR/generator-project-generate.txt"
+)
+npm --prefix "$GENERATOR_PROJECT_DIR" run generator:policy:status > "$RUN_DIR/generator-npm-policy-status.txt"
+npm --prefix "$GENERATOR_PROJECT_DIR" run generator:policy:check > "$RUN_DIR/generator-npm-policy-check.txt"
+node --input-type=module -e '
+  import fs from "node:fs";
+  import path from "node:path";
+  const runDir = process.argv[1];
+  const projectRoot = process.argv[2];
+  const packageName = process.argv[3];
+  const listPayload = JSON.parse(fs.readFileSync(path.join(runDir, "generator-list.json"), "utf8"));
+  if (!listPayload.ok) {
+    throw new Error("Expected generator list --json to pass.");
+  }
+  const listed = listPayload.generators.find((generator) => generator.id === packageName);
+  if (!listed) {
+    throw new Error(`Expected generator list to include ${packageName}.`);
+  }
+  if (listed.source !== "package" || listed.package !== packageName || listed.installed !== true) {
+    throw new Error("Expected installed package-backed generator metadata in generator list.");
+  }
+  if (listed.loadsAdapter !== false || listed.executesPackageCode !== false) {
+    throw new Error("generator list must not load adapters or execute package code.");
+  }
+  const showPayload = JSON.parse(fs.readFileSync(path.join(runDir, "generator-show.json"), "utf8"));
+  if (!showPayload.ok || showPayload.generator?.id !== packageName) {
+    throw new Error("Expected generator show --json to describe the package-backed generator.");
+  }
+  if (showPayload.generator.loadsAdapter !== false || showPayload.generator.executesPackageCode !== false) {
+    throw new Error("generator show must not load adapters or execute package code.");
+  }
+  if (showPayload.exampleTopologyBinding?.generator?.package !== packageName) {
+    throw new Error("Expected generator show to include a package-backed topology binding example.");
+  }
+  const checkPayload = JSON.parse(fs.readFileSync(path.join(runDir, "generator-check.json"), "utf8"));
+  if (!checkPayload.ok || checkPayload.packageName !== packageName) {
+    throw new Error("Expected generator check --json to pass for the installed package.");
+  }
+  if (checkPayload.executesPackageCode !== true) {
+    throw new Error("generator check must report that it executes package code.");
+  }
+  if (!checkPayload.checks.some((check) => check.name === "smoke-generate" && check.ok)) {
+    throw new Error("Expected generator check to run a successful smoke generate.");
+  }
+  if (!checkPayload.smoke || checkPayload.smoke.files < 1) {
+    throw new Error("Expected generator check smoke output to include generated files.");
+  }
+  const listText = fs.readFileSync(path.join(runDir, "generator-list.txt"), "utf8");
+  if (!listText.includes(packageName) || !listText.includes("Adapter loaded: no") || !listText.includes("Executes package code: no")) {
+    throw new Error("Expected human generator list to explain non-executing discovery.");
+  }
+  const showText = fs.readFileSync(path.join(runDir, "generator-show.txt"), "utf8");
+  if (!showText.includes(`Generator: ${packageName}@1`) || !showText.includes("Example topology binding:")) {
+    throw new Error("Expected human generator show to include generator and topology details.");
+  }
+  const checkText = fs.readFileSync(path.join(runDir, "generator-check.txt"), "utf8");
+  if (!checkText.includes("Generator check passed") || !checkText.includes("Executes package code: yes (loads adapter and runs smoke generate)")) {
+    throw new Error("Expected human generator check to explain package code execution.");
+  }
+  const policyStatus = JSON.parse(fs.readFileSync(path.join(runDir, "generator-policy-status.json"), "utf8"));
+  if (!policyStatus.ok || policyStatus.summary?.packageBackedGenerators !== 1 || policyStatus.summary.allowed !== 1) {
+    throw new Error("Expected generator policy status to report one allowed package-backed generator.");
+  }
+  const policyCheck = JSON.parse(fs.readFileSync(path.join(runDir, "generator-policy-check.json"), "utf8"));
+  if (!policyCheck.ok || policyCheck.bindings?.length !== 1 || policyCheck.bindings[0]?.packageName !== packageName) {
+    throw new Error("Expected generator policy check to pass for the installed package-backed generator.");
+  }
+  const npmPolicyStatus = fs.readFileSync(path.join(runDir, "generator-npm-policy-status.txt"), "utf8");
+  if (!npmPolicyStatus.includes("Generator policy status: allowed") || !npmPolicyStatus.includes(packageName)) {
+    throw new Error("Expected generated npm generator:policy:status script to report the package-backed generator.");
+  }
+  const npmPolicyCheck = fs.readFileSync(path.join(runDir, "generator-npm-policy-check.txt"), "utf8");
+  if (!npmPolicyCheck.includes("Generator policy check passed") || !npmPolicyCheck.includes(packageName)) {
+    throw new Error("Expected generated npm generator:policy:check script to pass for the package-backed generator.");
+  }
+  const generatedSentinel = path.join(projectRoot, "app", ".topogram-generated.json");
+  if (!fs.existsSync(generatedSentinel)) {
+    throw new Error("Expected package-backed generated app sentinel was not written.");
+  }
+  const generatedHtml = path.join(projectRoot, "app", "apps", "web", "app_web", "index.html");
+  if (!fs.existsSync(generatedHtml)) {
+    throw new Error(`Expected package-backed generator output at ${generatedHtml}.`);
+  }
+  const html = fs.readFileSync(generatedHtml, "utf8");
+  if (!html.includes(`data-generator="${packageName}"`) || !html.includes("Topogram package generator smoke")) {
+    throw new Error("Expected generated app to come from the package-backed generator.");
+  }
+  const generatedContext = path.join(projectRoot, "app", "apps", "web", "app_web", "topogram-generator-context.json");
+  if (!fs.existsSync(generatedContext)) {
+    throw new Error("Expected generated context artifact from the package-backed generator.");
+  }
+' "$RUN_DIR" "$GENERATOR_PROJECT_DIR" "$GENERATOR_PACKAGE_NAME"
+
 echo "Packing a template pack..."
 cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR/"
 (
@@ -213,6 +447,8 @@ npm --prefix "$STARTER_DIR" run template:detach:dry-run
 npm --prefix "$STARTER_DIR" run template:detach
 npm --prefix "$STARTER_DIR" run source:status
 npm --prefix "$STARTER_DIR" run template:explain
+npm --prefix "$STARTER_DIR" run generator:policy:status
+npm --prefix "$STARTER_DIR" run generator:policy:check
 npm --prefix "$STARTER_DIR" run check
 npm --prefix "$STARTER_DIR" run generate
 npm --prefix "$STARTER_TEMPLATE_DIR" run doctor
@@ -221,6 +457,8 @@ npm --prefix "$STARTER_TEMPLATE_DIR" run query:show -- component-behavior
 npm --prefix "$STARTER_TEMPLATE_DIR" run source:status
 npm --prefix "$STARTER_TEMPLATE_DIR" run template:explain
 npm --prefix "$STARTER_TEMPLATE_DIR" run template:detach:dry-run
+npm --prefix "$STARTER_TEMPLATE_DIR" run generator:policy:status
+npm --prefix "$STARTER_TEMPLATE_DIR" run generator:policy:check
 npm --prefix "$STARTER_TEMPLATE_DIR" run check
 npm --prefix "$STARTER_TEMPLATE_DIR" run generate
 
