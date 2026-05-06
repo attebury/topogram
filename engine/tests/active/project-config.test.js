@@ -546,6 +546,27 @@ test("topogram generator policy commands explain defaults, blocked packages, and
   const projectRoot = path.join(root, "workspace");
   fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
   const { packageName } = writePackageBackedGenerator(projectRoot);
+  writeJson(path.join(projectRoot, "package.json"), {
+    private: true,
+    devDependencies: {
+      [packageName]: "0.1.0"
+    }
+  });
+  writeJson(path.join(projectRoot, "package-lock.json"), {
+    name: "policy-smoke",
+    lockfileVersion: 3,
+    packages: {
+      "": {
+        devDependencies: {
+          [packageName]: "0.1.0"
+        }
+      },
+      [`node_modules/${packageName}`]: {
+        version: "0.1.0",
+        resolved: `https://registry.npmjs.org/${packageName}/-/${packageName.split("/").pop()}-0.1.0.tgz`
+      }
+    }
+  });
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const config = readJson(projectConfigPath);
   const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
@@ -564,6 +585,25 @@ test("topogram generator policy commands explain defaults, blocked packages, and
   assert.equal(defaultDeniedPayload.defaulted, true);
   assert.equal(defaultDeniedPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_policy_missing" && diagnostic.severity === "warning"), true);
   assert.equal(defaultDeniedPayload.diagnostics.some((diagnostic) => diagnostic.code === "generator_package_denied"), true);
+  assert.equal(defaultDeniedPayload.diagnostics.some((diagnostic) => diagnostic.packageVersion === "0.1.0"), true);
+  assert.equal(defaultDeniedPayload.bindings[0].packageInfo.installedVersion, "0.1.0");
+  assert.equal(defaultDeniedPayload.bindings[0].packageInfo.dependencyField, "devDependencies");
+  assert.equal(defaultDeniedPayload.bindings[0].packageInfo.dependencySpec, "0.1.0");
+  assert.equal(defaultDeniedPayload.bindings[0].packageInfo.lockfileVersion, "0.1.0");
+
+  const statusDenied = runCli(["generator", "policy", "status", "--json"], { cwd: projectRoot });
+  assert.notEqual(statusDenied.status, 0, statusDenied.stdout);
+  const statusDeniedPayload = JSON.parse(statusDenied.stdout);
+  assert.equal(statusDeniedPayload.summary.packageBackedGenerators, 1);
+  assert.equal(statusDeniedPayload.summary.denied, 1);
+  assert.equal(statusDeniedPayload.bindings[0].allowed, false);
+  assert.equal(statusDeniedPayload.bindings[0].packageInfo.installedVersion, "0.1.0");
+
+  const humanStatus = runCli(["generator", "policy", "status"], { cwd: projectRoot });
+  assert.notEqual(humanStatus.status, 0, humanStatus.stdout);
+  assert.match(humanStatus.stdout, /Generator policy status: denied/);
+  assert.match(humanStatus.stdout, /npm package: 0\.1\.0/);
+  assert.match(humanStatus.stdout, /dependency: devDependencies 0\.1\.0/);
 
   const humanDenied = runCli(["generator", "policy", "explain"], { cwd: projectRoot });
   assert.notEqual(humanDenied.status, 0, humanDenied.stdout);

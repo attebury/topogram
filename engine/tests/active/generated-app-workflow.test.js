@@ -1406,6 +1406,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(create.stdout, /npm run doctor/);
   assert.match(create.stdout, /npm run source:status/);
   assert.match(create.stdout, /npm run template:policy:explain/);
+  assert.match(create.stdout, /npm run generator:policy:status/);
   assert.match(create.stdout, /npm run trust:status/);
   const projectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
   assert.equal(projectConfig.template.id, "@scope/topogram-template-sample");
@@ -2606,6 +2607,29 @@ test("package-backed generators can be checked and used by app generation", () =
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
 
+test("package-backed app generation refuses packages blocked by generator policy", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-backed-generator-denied-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, "hello-web")]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const { packageName } = writePackageBackedGenerator(projectRoot);
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.topology.components[0].generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+  writeJson(projectConfigPath, projectConfig);
+
+  const generate = runCli(["generate"], { cwd: projectRoot });
+
+  assert.notEqual(generate.status, 0, generate.stdout);
+  assert.match(generate.stderr, /not allowed by topogram\.generator-policy\.json/);
+  assert.match(generate.stderr, /topogram generator policy pin @scope\/topogram-generator-smoke-web@1/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), false);
+});
+
 test("topogram new creates an executable web-api-db starter project", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-new-"));
   const projectRoot = path.join(root, "starter");
@@ -2639,6 +2663,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(pkg.scripts["template:check"], undefined);
   assert.equal(pkg.scripts["template:policy:check"], "topogram template policy check");
   assert.equal(pkg.scripts["template:policy:explain"], "topogram template policy explain");
+  assert.equal(pkg.scripts["generator:policy:status"], "topogram generator policy status");
   assert.equal(pkg.scripts["generator:policy:check"], "topogram generator policy check");
   assert.equal(pkg.scripts["generator:policy:explain"], "topogram generator policy explain");
   assert.equal(pkg.scripts["template:update:status"], "topogram template update --status");
@@ -2702,6 +2727,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(readme, /npm run doctor/);
   assert.match(readme, /npm run source:status/);
   assert.match(readme, /npm run template:explain/);
+  assert.match(readme, /npm run generator:policy:status/);
   assert.match(readme, /npm run template:policy:explain/);
   assert.match(readme, /npm run trust:status/);
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
@@ -2710,6 +2736,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(explainScript, /npm run source:status:remote/);
   assert.match(explainScript, /npm run template:explain/);
   assert.match(explainScript, /npm run template:detach:dry-run/);
+  assert.match(explainScript, /npm run generator:policy:status/);
   assert.match(explainScript, /npm run template:policy:explain/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "topogram.project.json"), "utf8"));
   assert.equal(projectConfig.template.id, "topogram/web-api-db");

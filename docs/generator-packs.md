@@ -231,6 +231,8 @@ Generator policy commands:
 
 ```bash
 topogram generator policy init
+topogram generator policy status
+topogram generator policy status --json
 topogram generator policy check
 topogram generator policy check --json
 topogram generator policy explain
@@ -257,6 +259,26 @@ manifest version used in `topogram.project.json`, not necessarily the npm
 package version. `topogram generator policy init` writes the default policy; it
 does not approve third-party package bindings. `topogram generator policy pin`
 adds the reviewed package and records its current topology binding version.
+`topogram generator policy status` shows each package-backed binding, whether it
+is allowed, its manifest-version pin state, and any npm dependency, lockfile, or
+installed package version visible from the project.
+
+Third-party generator adoption workflow:
+
+```bash
+npm install -D @scope/topogram-generator-example-web
+topogram generator check @scope/topogram-generator-example-web
+topogram generator show @scope/topogram-generator-example-web
+topogram generator policy status
+topogram generator policy explain
+topogram generator policy pin @scope/topogram-generator-example-web@1
+topogram check
+topogram generate
+```
+
+Review the package source, manifest, npm package version, and lockfile change
+before pinning. The generator policy pin records the manifest version; the
+package manager lockfile is the control that pins the npm tarball/version.
 
 Generator authors should expose `npm run check` and back it with:
 

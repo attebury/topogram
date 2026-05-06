@@ -219,6 +219,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram generator show <id-or-package> [--json]");
   console.log("   or: topogram generator check <path-or-package> [--json]");
   console.log("   or: topogram generator policy init [path] [--json]");
+  console.log("   or: topogram generator policy status [path] [--json]");
   console.log("   or: topogram generator policy check [path] [--json]");
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
@@ -586,6 +587,7 @@ function printGeneratorHelp() {
   console.log("   or: topogram generator show <id-or-package> [--json]");
   console.log("   or: topogram generator check <path-or-package> [--json]");
   console.log("   or: topogram generator policy init [path] [--json]");
+  console.log("   or: topogram generator policy status [path] [--json]");
   console.log("   or: topogram generator policy check [path] [--json]");
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
@@ -607,6 +609,7 @@ function printGeneratorHelp() {
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator check @scope/topogram-generator-web --json");
   console.log("  topogram generator policy init");
+  console.log("  topogram generator policy status --json");
   console.log("  topogram generator policy check --json");
   console.log("  topogram generator policy pin @topogram/generator-react-web@1");
 }
@@ -1587,8 +1590,148 @@ function effectiveGeneratorPolicy(policyInfo) {
 }
 
 /**
+ * @param {string} filePath
+ * @returns {any|null}
+ */
+function readJsonIfPresent(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {Record<string, any>|null} projectPackage
+ * @param {string} packageName
+ * @returns {{ field: string|null, spec: string|null }}
+ */
+function dependencySpecForPackage(projectPackage, packageName) {
+  const dependencyFields = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+  for (const field of dependencyFields) {
+    const dependencies = projectPackage?.[field];
+    if (dependencies && typeof dependencies === "object" && typeof dependencies[packageName] === "string") {
+      return {
+        field,
+        spec: dependencies[packageName]
+      };
+    }
+  }
+  return {
+    field: null,
+    spec: null
+  };
+}
+
+/**
+ * @param {Record<string, any>|null} lockfile
+ * @param {string} packageName
+ * @returns {{ version: string|null, resolved: string|null, integrity: string|null, entryPath: string|null }}
+ */
+function lockfileInfoForPackage(lockfile, packageName) {
+  const packageEntryPath = `node_modules/${packageName}`;
+  const packageEntry = lockfile?.packages?.[packageEntryPath];
+  if (packageEntry && typeof packageEntry === "object") {
+    return {
+      version: typeof packageEntry.version === "string" ? packageEntry.version : null,
+      resolved: typeof packageEntry.resolved === "string" ? packageEntry.resolved : null,
+      integrity: typeof packageEntry.integrity === "string" ? packageEntry.integrity : null,
+      entryPath: packageEntryPath
+    };
+  }
+  const dependencyEntry = lockfile?.dependencies?.[packageName];
+  if (dependencyEntry && typeof dependencyEntry === "object") {
+    return {
+      version: typeof dependencyEntry.version === "string" ? dependencyEntry.version : null,
+      resolved: typeof dependencyEntry.resolved === "string" ? dependencyEntry.resolved : null,
+      integrity: typeof dependencyEntry.integrity === "string" ? dependencyEntry.integrity : null,
+      entryPath: packageName
+    };
+  }
+  return {
+    version: null,
+    resolved: null,
+    integrity: null,
+    entryPath: null
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string} packageName
+ * @returns {{ dependencyField: string|null, dependencySpec: string|null, installedVersion: string|null, installedPackageJsonPath: string|null, lockfileVersion: string|null, lockfileResolved: string|null, lockfileIntegrity: string|null, lockfileEntryPath: string|null }}
+ */
+function packageInfoForGenerator(projectRoot, packageName) {
+  const projectPackage = readJsonIfPresent(path.join(projectRoot, "package.json"));
+  const dependency = dependencySpecForPackage(projectPackage, packageName);
+  const lockfile = readJsonIfPresent(path.join(projectRoot, "package-lock.json"));
+  const lockfileInfo = lockfileInfoForPackage(lockfile, packageName);
+  const installedPackageJsonPath = path.join(projectRoot, "node_modules", ...packageName.split("/"), "package.json");
+  const installedPackage = readJsonIfPresent(installedPackageJsonPath);
+  return {
+    dependencyField: dependency.field,
+    dependencySpec: dependency.spec,
+    installedVersion: typeof installedPackage?.version === "string" ? installedPackage.version : null,
+    installedPackageJsonPath: installedPackage ? installedPackageJsonPath : null,
+    lockfileVersion: lockfileInfo.version,
+    lockfileResolved: lockfileInfo.resolved,
+    lockfileIntegrity: lockfileInfo.integrity,
+    lockfileEntryPath: lockfileInfo.entryPath
+  };
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {import("./generator-policy.js").GeneratorPolicy} policy
+ * @param {ReturnType<typeof packageBackedGeneratorBindings>[number]} binding
+ * @returns {ReturnType<typeof packageBackedGeneratorBindings>[number] & { allowed: boolean, packageInfo: ReturnType<typeof packageInfoForGenerator>, pin: { key: string|null, version: string|null, matches: boolean|null } }}
+ */
+function generatorPolicyBindingStatus(projectRoot, policy, binding) {
+  const packagePin = policy.pinnedVersions[binding.packageName] || null;
+  const generatorPin = policy.pinnedVersions[binding.generatorId] || null;
+  const pinnedVersion = packagePin || generatorPin;
+  return {
+    ...binding,
+    allowed: generatorPackageAllowed(policy, binding.packageName),
+    packageInfo: packageInfoForGenerator(projectRoot, binding.packageName),
+    pin: {
+      key: packagePin ? binding.packageName : generatorPin ? binding.generatorId : null,
+      version: pinnedVersion,
+      matches: pinnedVersion ? pinnedVersion === binding.version : null
+    }
+  };
+}
+
+/**
+ * @param {any[]} diagnostics
+ * @param {Array<ReturnType<typeof generatorPolicyBindingStatus>>} bindings
+ * @returns {any[]}
+ */
+function annotateGeneratorPolicyDiagnostics(diagnostics, bindings) {
+  return diagnostics.map((diagnostic) => {
+    const binding = bindings.find((item) => (
+      item.packageName === diagnostic.packageName &&
+      (!diagnostic.componentId || item.componentId === diagnostic.componentId)
+    ));
+    if (!binding) {
+      return diagnostic;
+    }
+    return {
+      ...diagnostic,
+      packageVersion: binding.packageInfo.installedVersion || binding.packageInfo.lockfileVersion || null,
+      packageDependencyField: binding.packageInfo.dependencyField,
+      packageDependencySpec: binding.packageInfo.dependencySpec,
+      packageLockVersion: binding.packageInfo.lockfileVersion
+    };
+  });
+}
+
+/**
  * @param {string} projectPath
- * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, defaulted: boolean, bindings: ReturnType<typeof packageBackedGeneratorBindings>, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, defaulted: boolean, bindings: Array<ReturnType<typeof generatorPolicyBindingStatus>>, diagnostics: any[], errors: string[] }}
  */
 function buildGeneratorPolicyCheckPayload(projectPath) {
   const projectConfigInfo = loadProjectConfig(projectPath);
@@ -1613,7 +1756,9 @@ function buildGeneratorPolicyCheckPayload(projectPath) {
     };
   }
   const policyInfo = loadGeneratorPolicy(projectConfigInfo.configDir);
-  const bindings = packageBackedGeneratorBindings(projectConfigInfo.config);
+  const rawBindings = packageBackedGeneratorBindings(projectConfigInfo.config);
+  const policy = policyInfo.policy || effectiveGeneratorPolicy(policyInfo);
+  const bindings = rawBindings.map((binding) => generatorPolicyBindingStatus(projectConfigInfo.configDir, policy, binding));
   const diagnostics = [];
   if (!policyInfo.exists) {
     diagnostics.push({
@@ -1625,16 +1770,17 @@ function buildGeneratorPolicyCheckPayload(projectPath) {
       step: "generator-policy"
     });
   }
-  diagnostics.push(...generatorPolicyDiagnosticsForBindings(policyInfo, bindings, "generator-policy"));
-  const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
+  diagnostics.push(...generatorPolicyDiagnosticsForBindings(policyInfo, rawBindings, "generator-policy"));
+  const annotatedDiagnostics = annotateGeneratorPolicyDiagnostics(diagnostics, bindings);
+  const errors = annotatedDiagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
   return {
     ok: errors.length === 0,
     path: policyInfo.path,
     exists: policyInfo.exists,
-    policy: policyInfo.policy || effectiveGeneratorPolicy(policyInfo),
+    policy,
     defaulted: !policyInfo.exists,
     bindings,
-    diagnostics,
+    diagnostics: annotatedDiagnostics,
     errors
   };
 }
@@ -1687,6 +1833,25 @@ function buildGeneratorPolicyExplainPayload(projectPath) {
 }
 
 /**
+ * @param {string} projectPath
+ * @returns {ReturnType<typeof buildGeneratorPolicyExplainPayload> & { summary: { packageBackedGenerators: number, allowed: number, denied: number, pinned: number, unpinned: number, pinMismatches: number } }}
+ */
+function buildGeneratorPolicyStatusPayload(projectPath) {
+  const explain = buildGeneratorPolicyExplainPayload(projectPath);
+  return {
+    ...explain,
+    summary: {
+      packageBackedGenerators: explain.bindings.length,
+      allowed: explain.bindings.filter((binding) => binding.allowed).length,
+      denied: explain.bindings.filter((binding) => !binding.allowed).length,
+      pinned: explain.bindings.filter((binding) => Boolean(binding.pin.version)).length,
+      unpinned: explain.bindings.filter((binding) => !binding.pin.version).length,
+      pinMismatches: explain.bindings.filter((binding) => binding.pin.matches === false).length
+    }
+  };
+}
+
+/**
  * @param {ReturnType<typeof buildGeneratorPolicyCheckPayload>} payload
  * @returns {void}
  */
@@ -1698,11 +1863,60 @@ function printGeneratorPolicyCheckPayload(payload) {
   console.log(`Package-backed generators: ${payload.bindings.length}`);
   for (const binding of payload.bindings) {
     console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+    console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
+    if (binding.packageInfo.dependencySpec) {
+      console.log(`  dependency: ${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}`);
+    }
+    if (binding.packageInfo.lockfileVersion) {
+      console.log(`  lockfile: ${binding.packageInfo.lockfileVersion}`);
+    }
   }
   for (const diagnostic of payload.diagnostics) {
     console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
     if (diagnostic.path) {
       console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {ReturnType<typeof buildGeneratorPolicyStatusPayload>} payload
+ * @returns {void}
+ */
+function printGeneratorPolicyStatusPayload(payload) {
+  console.log(payload.ok ? "Generator policy status: allowed" : "Generator policy status: denied");
+  console.log(`Policy file: ${payload.path}`);
+  console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
+  console.log(`Default policy active: ${payload.defaulted ? "yes" : "no"}`);
+  console.log(`Package-backed generators: ${payload.summary.packageBackedGenerators}`);
+  console.log(`Allowed packages: ${payload.summary.allowed}`);
+  console.log(`Denied packages: ${payload.summary.denied}`);
+  console.log(`Pinned generators: ${payload.summary.pinned}`);
+  console.log(`Unpinned generators: ${payload.summary.unpinned}`);
+  console.log(`Pin mismatches: ${payload.summary.pinMismatches}`);
+  if (payload.bindings.length > 0) {
+    console.log("");
+    console.log("Generator packages:");
+  }
+  for (const binding of payload.bindings) {
+    console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+    console.log(`  allowed: ${binding.allowed ? "yes" : "no"}`);
+    console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
+    console.log(`  dependency: ${binding.packageInfo.dependencyField && binding.packageInfo.dependencySpec ? `${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}` : "(not declared)"}`);
+    console.log(`  lockfile: ${binding.packageInfo.lockfileVersion || "(not locked)"}`);
+    console.log(`  policy pin: ${binding.pin.version ? `${binding.pin.key}@${binding.pin.version}` : "(none)"}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.packageVersion) {
+      console.log(`  package version: ${diagnostic.packageVersion}`);
+    }
+    if (diagnostic.packageDependencySpec) {
+      console.log(`  dependency: ${diagnostic.packageDependencyField} ${diagnostic.packageDependencySpec}`);
     }
     if (diagnostic.suggestedFix) {
       console.log(`  fix: ${diagnostic.suggestedFix}`);
@@ -1727,6 +1941,10 @@ function printGeneratorPolicyExplainPayload(payload) {
     console.log("Package-backed generators:");
     for (const binding of payload.bindings) {
       console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+      console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
+      if (binding.packageInfo.dependencySpec) {
+        console.log(`  dependency: ${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}`);
+      }
     }
   }
   if (payload.rules.length > 0) {
@@ -3715,6 +3933,7 @@ function printNewProjectResult(result, cwd) {
   console.log("  npm run source:status");
   console.log("  npm run template:explain");
   console.log("  npm run check");
+  console.log("  npm run generator:policy:status");
   console.log("  npm run generator:policy:check");
   if (template.includesExecutableImplementation) {
     console.log("  npm run template:policy:explain");
@@ -7219,6 +7438,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { generatorCheck: true, inputPath: args[2] };
 } else if (args[0] === "generator" && args[1] === "policy" && args[2] === "init") {
   commandArgs = { generatorPolicyInit: true, inputPath: commandPath(3) };
+} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "status") {
+  commandArgs = { generatorPolicyStatus: true, inputPath: commandPath(3) };
 } else if (args[0] === "generator" && args[1] === "policy" && args[2] === "check") {
   commandArgs = { generatorPolicyCheck: true, inputPath: commandPath(3) };
 } else if (args[0] === "generator" && args[1] === "policy" && args[2] === "explain") {
@@ -7422,6 +7643,7 @@ const shouldGeneratorList = Boolean(commandArgs?.generatorList);
 const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
 const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
 const shouldGeneratorPolicyInit = Boolean(commandArgs?.generatorPolicyInit);
+const shouldGeneratorPolicyStatus = Boolean(commandArgs?.generatorPolicyStatus);
 const shouldGeneratorPolicyCheck = Boolean(commandArgs?.generatorPolicyCheck);
 const shouldGeneratorPolicyExplain = Boolean(commandArgs?.generatorPolicyExplain);
 const shouldGeneratorPolicyPin = Boolean(commandArgs?.generatorPolicyPin);
@@ -7558,7 +7780,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -7612,7 +7834,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -7760,6 +7982,16 @@ try {
       console.log(`Allowed packages: ${policy.allowedPackages.join(", ") || "(none)"}`);
     }
     process.exit(0);
+  }
+
+  if (shouldGeneratorPolicyStatus) {
+    const payload = buildGeneratorPolicyStatusPayload(inputPath);
+    if (emitJson) {
+      console.log(stableStringify(payload));
+    } else {
+      printGeneratorPolicyStatusPayload(payload);
+    }
+    process.exit(payload.ok ? 0 : 1);
   }
 
   if (shouldGeneratorPolicyCheck) {

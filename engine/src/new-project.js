@@ -1975,6 +1975,7 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
       "template:detach:dry-run": "topogram template detach --dry-run",
       "template:policy:check": "topogram template policy check",
       "template:policy:explain": "topogram template policy explain",
+      "generator:policy:status": "topogram generator policy status",
       "generator:policy:check": "topogram generator policy check",
       "generator:policy:explain": "topogram generator policy explain",
       "template:update:status": "topogram template update --status",
@@ -2052,6 +2053,7 @@ Useful inspection:
    npm run template:detach:dry-run
    npm run template:policy:check
    npm run template:policy:explain
+   npm run generator:policy:status
    npm run generator:policy:check
    npm run generator:policy:explain
    npm run template:update:status
@@ -2084,6 +2086,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
     "npm run template:explain",
     "npm run check",
     "npm run template:policy:check",
+    "npm run generator:policy:status",
     "npm run generator:policy:check",
     ...(template.includesExecutableImplementation ? [
       "npm run template:policy:explain",
