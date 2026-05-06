@@ -1631,7 +1631,7 @@ function dependencySpecForPackage(projectPackage, packageName) {
  * @param {string} packageName
  * @returns {{ version: string|null, resolved: string|null, integrity: string|null, entryPath: string|null }}
  */
-function lockfileInfoForPackage(lockfile, packageName) {
+function npmLockfileInfoForPackage(lockfile, packageName) {
   const packageEntryPath = `node_modules/${packageName}`;
   const packageEntry = lockfile?.packages?.[packageEntryPath];
   if (packageEntry && typeof packageEntry === "object") {
@@ -1661,14 +1661,60 @@ function lockfileInfoForPackage(lockfile, packageName) {
 
 /**
  * @param {string} projectRoot
+ * @returns {{ kind: "npm"|"pnpm"|"yarn"|"bun"|null, path: string|null, data: Record<string, any>|null, note: string|null }}
+ */
+function lockfileMetadataForProject(projectRoot) {
+  const npmLockfilePath = path.join(projectRoot, "package-lock.json");
+  if (fs.existsSync(npmLockfilePath)) {
+    return {
+      kind: "npm",
+      path: npmLockfilePath,
+      data: readJsonIfPresent(npmLockfilePath),
+      note: null
+    };
+  }
+  const candidates = [
+    { kind: "pnpm", file: "pnpm-lock.yaml" },
+    { kind: "yarn", file: "yarn.lock" },
+    { kind: "bun", file: "bun.lock" },
+    { kind: "bun", file: "bun.lockb" }
+  ];
+  for (const candidate of candidates) {
+    const lockfilePath = path.join(projectRoot, candidate.file);
+    if (fs.existsSync(lockfilePath)) {
+      return {
+        kind: /** @type {"pnpm"|"yarn"|"bun"} */ (candidate.kind),
+        path: lockfilePath,
+        data: null,
+        note: `${candidate.file} found; package versions are not inspected by this command.`
+      };
+    }
+  }
+  return {
+    kind: null,
+    path: null,
+    data: null,
+    note: null
+  };
+}
+
+/**
+ * @param {string} projectRoot
  * @param {string} packageName
- * @returns {{ dependencyField: string|null, dependencySpec: string|null, installedVersion: string|null, installedPackageJsonPath: string|null, lockfileVersion: string|null, lockfileResolved: string|null, lockfileIntegrity: string|null, lockfileEntryPath: string|null }}
+ * @returns {{ dependencyField: string|null, dependencySpec: string|null, installedVersion: string|null, installedPackageJsonPath: string|null, lockfileKind: "npm"|"pnpm"|"yarn"|"bun"|null, lockfilePath: string|null, lockfileVersion: string|null, lockfileResolved: string|null, lockfileIntegrity: string|null, lockfileEntryPath: string|null, lockfileNote: string|null }}
  */
 function packageInfoForGenerator(projectRoot, packageName) {
   const projectPackage = readJsonIfPresent(path.join(projectRoot, "package.json"));
   const dependency = dependencySpecForPackage(projectPackage, packageName);
-  const lockfile = readJsonIfPresent(path.join(projectRoot, "package-lock.json"));
-  const lockfileInfo = lockfileInfoForPackage(lockfile, packageName);
+  const lockfile = lockfileMetadataForProject(projectRoot);
+  const lockfileInfo = lockfile.kind === "npm"
+    ? npmLockfileInfoForPackage(lockfile.data, packageName)
+    : {
+        version: null,
+        resolved: null,
+        integrity: null,
+        entryPath: null
+      };
   const installedPackageJsonPath = path.join(projectRoot, "node_modules", ...packageName.split("/"), "package.json");
   const installedPackage = readJsonIfPresent(installedPackageJsonPath);
   return {
@@ -1676,11 +1722,29 @@ function packageInfoForGenerator(projectRoot, packageName) {
     dependencySpec: dependency.spec,
     installedVersion: typeof installedPackage?.version === "string" ? installedPackage.version : null,
     installedPackageJsonPath: installedPackage ? installedPackageJsonPath : null,
+    lockfileKind: lockfile.kind,
+    lockfilePath: lockfile.path,
     lockfileVersion: lockfileInfo.version,
     lockfileResolved: lockfileInfo.resolved,
     lockfileIntegrity: lockfileInfo.integrity,
-    lockfileEntryPath: lockfileInfo.entryPath
+    lockfileEntryPath: lockfileInfo.entryPath,
+    lockfileNote: lockfile.note
   };
+}
+
+/**
+ * @param {ReturnType<typeof packageInfoForGenerator>} packageInfo
+ * @returns {string}
+ */
+function formatGeneratorPackageLockfile(packageInfo) {
+  if (!packageInfo.lockfileKind || !packageInfo.lockfilePath) {
+    return "(not found)";
+  }
+  const label = path.basename(packageInfo.lockfilePath);
+  if (packageInfo.lockfileVersion) {
+    return `${packageInfo.lockfileKind} ${packageInfo.lockfileVersion}`;
+  }
+  return `${label} (version not inspected)`;
 }
 
 /**
@@ -1724,9 +1788,66 @@ function annotateGeneratorPolicyDiagnostics(diagnostics, bindings) {
       packageVersion: binding.packageInfo.installedVersion || binding.packageInfo.lockfileVersion || null,
       packageDependencyField: binding.packageInfo.dependencyField,
       packageDependencySpec: binding.packageInfo.dependencySpec,
+      packageLockfileKind: binding.packageInfo.lockfileKind,
+      packageLockfilePath: binding.packageInfo.lockfilePath,
       packageLockVersion: binding.packageInfo.lockfileVersion
     };
   });
+}
+
+/**
+ * @param {Array<ReturnType<typeof generatorPolicyBindingStatus>>} bindings
+ * @returns {any[]}
+ */
+function generatorPolicyPackageMetadataDiagnostics(bindings) {
+  const diagnostics = [];
+  for (const binding of bindings) {
+    if (!binding.packageInfo.dependencySpec) {
+      diagnostics.push({
+        code: "generator_package_dependency_missing",
+        severity: "warning",
+        message: `Component '${binding.componentId}' generator package '${binding.packageName}' is not declared in package.json dependencies.`,
+        path: binding.packageInfo.installedPackageJsonPath,
+        suggestedFix: `Declare '${binding.packageName}' in package.json devDependencies so generator adoption is visible in package review.`,
+        step: "generator-policy",
+        componentId: binding.componentId,
+        generatorId: binding.generatorId,
+        packageName: binding.packageName,
+        version: binding.version,
+        packageVersion: binding.packageInfo.installedVersion || binding.packageInfo.lockfileVersion || null,
+        packageDependencyField: binding.packageInfo.dependencyField,
+        packageDependencySpec: binding.packageInfo.dependencySpec,
+        packageLockfileKind: binding.packageInfo.lockfileKind,
+        packageLockfilePath: binding.packageInfo.lockfilePath,
+        packageLockVersion: binding.packageInfo.lockfileVersion
+      });
+    }
+    if (
+      binding.packageInfo.installedVersion &&
+      binding.packageInfo.lockfileVersion &&
+      binding.packageInfo.installedVersion !== binding.packageInfo.lockfileVersion
+    ) {
+      diagnostics.push({
+        code: "generator_package_version_drift",
+        severity: "warning",
+        message: `Component '${binding.componentId}' generator package '${binding.packageName}' is installed at '${binding.packageInfo.installedVersion}', but package-lock records '${binding.packageInfo.lockfileVersion}'.`,
+        path: binding.packageInfo.lockfilePath,
+        suggestedFix: "Run the package manager install command and review the resulting lockfile before pinning generator policy.",
+        step: "generator-policy",
+        componentId: binding.componentId,
+        generatorId: binding.generatorId,
+        packageName: binding.packageName,
+        version: binding.version,
+        packageVersion: binding.packageInfo.installedVersion,
+        packageDependencyField: binding.packageInfo.dependencyField,
+        packageDependencySpec: binding.packageInfo.dependencySpec,
+        packageLockfileKind: binding.packageInfo.lockfileKind,
+        packageLockfilePath: binding.packageInfo.lockfilePath,
+        packageLockVersion: binding.packageInfo.lockfileVersion
+      });
+    }
+  }
+  return diagnostics;
 }
 
 /**
@@ -1771,6 +1892,7 @@ function buildGeneratorPolicyCheckPayload(projectPath) {
     });
   }
   diagnostics.push(...generatorPolicyDiagnosticsForBindings(policyInfo, rawBindings, "generator-policy"));
+  diagnostics.push(...generatorPolicyPackageMetadataDiagnostics(bindings));
   const annotatedDiagnostics = annotateGeneratorPolicyDiagnostics(diagnostics, bindings);
   const errors = annotatedDiagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
   return {
@@ -1868,7 +1990,9 @@ function printGeneratorPolicyCheckPayload(payload) {
       console.log(`  dependency: ${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}`);
     }
     if (binding.packageInfo.lockfileVersion) {
-      console.log(`  lockfile: ${binding.packageInfo.lockfileVersion}`);
+      console.log(`  lockfile: ${formatGeneratorPackageLockfile(binding.packageInfo)}`);
+    } else if (binding.packageInfo.lockfileKind) {
+      console.log(`  lockfile: ${formatGeneratorPackageLockfile(binding.packageInfo)}`);
     }
   }
   for (const diagnostic of payload.diagnostics) {
@@ -1906,7 +2030,7 @@ function printGeneratorPolicyStatusPayload(payload) {
     console.log(`  allowed: ${binding.allowed ? "yes" : "no"}`);
     console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
     console.log(`  dependency: ${binding.packageInfo.dependencyField && binding.packageInfo.dependencySpec ? `${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}` : "(not declared)"}`);
-    console.log(`  lockfile: ${binding.packageInfo.lockfileVersion || "(not locked)"}`);
+    console.log(`  lockfile: ${formatGeneratorPackageLockfile(binding.packageInfo)}`);
     console.log(`  policy pin: ${binding.pin.version ? `${binding.pin.key}@${binding.pin.version}` : "(none)"}`);
   }
   for (const diagnostic of payload.diagnostics) {
@@ -1917,6 +2041,9 @@ function printGeneratorPolicyStatusPayload(payload) {
     }
     if (diagnostic.packageDependencySpec) {
       console.log(`  dependency: ${diagnostic.packageDependencyField} ${diagnostic.packageDependencySpec}`);
+    }
+    if (diagnostic.packageLockfilePath) {
+      console.log(`  lockfile: ${path.basename(diagnostic.packageLockfilePath)}${diagnostic.packageLockVersion ? ` ${diagnostic.packageLockVersion}` : ""}`);
     }
     if (diagnostic.suggestedFix) {
       console.log(`  fix: ${diagnostic.suggestedFix}`);
@@ -2056,10 +2183,6 @@ function buildGeneratorPolicyPinPayload(projectPath, spec) {
   for (const pin of pins) {
     if (!allowedPackages.includes(pin.packageName)) {
       allowedPackages.push(pin.packageName);
-    }
-    const scope = packageScopeFromName(pin.packageName);
-    if (scope && !allowedPackageScopes.includes(scope)) {
-      allowedPackageScopes.push(scope);
     }
     pinnedVersions[pin.packageName] = pin.version;
   }

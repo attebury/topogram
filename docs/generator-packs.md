@@ -258,10 +258,14 @@ Use `allowedPackageScopes` for reviewed package families and
 manifest version used in `topogram.project.json`, not necessarily the npm
 package version. `topogram generator policy init` writes the default policy; it
 does not approve third-party package bindings. `topogram generator policy pin`
-adds the reviewed package and records its current topology binding version.
+adds the reviewed package as an exact `allowedPackages` entry and records its
+current topology binding version. It does not broaden approval to the whole
+third-party package scope.
 `topogram generator policy status` shows each package-backed binding, whether it
 is allowed, its manifest-version pin state, and any npm dependency, lockfile, or
-installed package version visible from the project.
+installed package version visible from the project. npm `package-lock.json`
+entries are inspected for package versions; pnpm, Yarn, and Bun lockfiles are
+reported as present but their package versions are not parsed by this command.
 
 Third-party generator adoption workflow:
 

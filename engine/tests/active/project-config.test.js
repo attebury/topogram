@@ -625,6 +625,9 @@ test("topogram generator policy commands explain defaults, blocked packages, and
 
   const pinMismatch = runCli(["generator", "policy", "pin", `${packageName}@2`, "--json"], { cwd: projectRoot });
   assert.equal(pinMismatch.status, 0, pinMismatch.stderr || pinMismatch.stdout);
+  const pinMismatchPayload = JSON.parse(pinMismatch.stdout);
+  assert.deepEqual(pinMismatchPayload.policy.allowedPackageScopes, ["@topogram"]);
+  assert.equal(pinMismatchPayload.policy.allowedPackages.includes(packageName), true);
   const mismatchCheck = runCli(["check", ".", "--json"], { cwd: projectRoot });
   assert.notEqual(mismatchCheck.status, 0, mismatchCheck.stdout);
   const mismatchPayload = JSON.parse(mismatchCheck.stdout);
@@ -634,8 +637,63 @@ test("topogram generator policy commands explain defaults, blocked packages, and
   assert.equal(pinCurrent.status, 0, pinCurrent.stderr || pinCurrent.stdout);
   const currentPayload = JSON.parse(pinCurrent.stdout);
   assert.equal(currentPayload.pinned.some((pin) => pin.packageName === packageName && pin.version === "1"), true);
+  assert.deepEqual(currentPayload.policy.allowedPackageScopes, ["@topogram"]);
+  assert.equal(currentPayload.policy.allowedPackages.includes(packageName), true);
   const finalCheck = runCli(["check", "."], { cwd: projectRoot });
   assert.equal(finalCheck.status, 0, finalCheck.stderr || finalCheck.stdout);
+
+  const siblingConfig = readJson(projectConfigPath);
+  siblingConfig.topology.components.find((component) => component.id === "app_sveltekit").generator = {
+    id: "@scope/other-web",
+    version: "1",
+    package: "@scope/topogram-generator-other-web"
+  };
+  writeJson(projectConfigPath, siblingConfig);
+  const siblingPolicyCheck = runCli(["generator", "policy", "check", "--json"], { cwd: projectRoot });
+  assert.notEqual(siblingPolicyCheck.status, 0, siblingPolicyCheck.stdout);
+  const siblingPolicyPayload = JSON.parse(siblingPolicyCheck.stdout);
+  assert.equal(
+    siblingPolicyPayload.diagnostics.some((diagnostic) =>
+      diagnostic.code === "generator_package_denied" &&
+      diagnostic.packageName === "@scope/topogram-generator-other-web"
+    ),
+    true
+  );
+});
+
+test("topogram generator policy status reports non-npm lockfiles without pretending versions are inspected", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-policy-pnpm-"));
+  const projectRoot = path.join(root, "workspace");
+  fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
+  const { packageName } = writePackageBackedGenerator(projectRoot);
+  writeJson(path.join(projectRoot, "package.json"), {
+    private: true,
+    devDependencies: {
+      [packageName]: "0.1.0"
+    }
+  });
+  fs.writeFileSync(path.join(projectRoot, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n", "utf8");
+  writeGeneratorPolicy(projectRoot, { allowedPackageScopes: ["@scope"] });
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const config = readJson(projectConfigPath);
+  config.topology.components.find((component) => component.id === "app_sveltekit").generator = {
+    id: "@scope/smoke-web",
+    version: "1",
+    package: packageName
+  };
+  writeJson(projectConfigPath, config);
+
+  const status = runCli(["generator", "policy", "status", "--json"], { cwd: projectRoot });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.bindings[0].packageInfo.lockfileKind, "pnpm");
+  assert.equal(payload.bindings[0].packageInfo.lockfileVersion, null);
+  assert.match(payload.bindings[0].packageInfo.lockfilePath, /pnpm-lock\.yaml$/);
+  assert.match(payload.bindings[0].packageInfo.lockfileNote, /package versions are not inspected/);
+
+  const human = runCli(["generator", "policy", "status"], { cwd: projectRoot });
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /lockfile: pnpm-lock\.yaml \(version not inspected\)/);
 });
 
 test("missing generator policy defaults allow installed @topogram package generators", () => {

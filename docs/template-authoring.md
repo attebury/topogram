@@ -153,7 +153,8 @@ controls package-backed generator execution during `topogram check` and
 `topogram generator policy status`, `check`, `explain`, and
 `pin <package@version>` after reviewing third-party generator packages. `status`
 shows visible dependency, lockfile, and installed npm package versions; policy
-pins still record generator manifest versions.
+pins still record generator manifest versions and approve exact packages rather
+than whole third-party scopes.
 
 SvelteKit and React template implementations can render supported component
 usage with stable packaged helpers:
