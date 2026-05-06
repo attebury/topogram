@@ -23,6 +23,11 @@ if [[ ! -f "$PACKAGE_TARBALL" ]]; then
   echo "Expected package tarball was not created: $PACKAGE_TARBALL" >&2
   exit 1
 fi
+if tar -tzf "$PACKAGE_TARBALL" | awk -F/ '{ print $NF }' | grep -E '^\.env' >"$RUN_DIR/cli-env-files.txt"; then
+  echo "Packed CLI must not publish .env* files:" >&2
+  cat "$RUN_DIR/cli-env-files.txt" >&2
+  exit 1
+fi
 if tar -tf "$PACKAGE_TARBALL" | grep -q '^package/templates/'; then
   echo "Packed CLI must not include product starter template directories." >&2
   exit 1
