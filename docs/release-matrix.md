@@ -1,16 +1,16 @@
 # Known-Good Release Matrix
 
 This matrix records the npmjs and GitHub Actions state verified on
-2026-05-06 after the component realization and Todo template release train.
+2026-05-06 after the CLI release-automation and consumer-rollout release train.
 Treat it as a dated release audit, not a floating compatibility promise.
 
 ## Core
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.46` | `attebury/topogram` Fresh npmjs Smoke and Installed CLI First Use passed on `main` |
+| `@topogram/cli` | `0.3.47` | `attebury/topogram` Fresh npmjs Smoke and Installed CLI First Use passed on `main` |
 | `attebury/topograms` catalog | `6189159` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.31` |
-| `topogram-demo-todo` | `28c8bb5` | Demo Verification passed from default catalog creation through runtime |
+| `topogram-demo-todo` | `29538e2` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
