@@ -122,6 +122,7 @@ const SURFACE_ORDER = new Map([
  * @property {string} package
  * @property {string} version
  * @property {string} packageSpec
+ * @property {boolean} [includesExecutableImplementation]
  */
 
 /**
@@ -349,6 +350,13 @@ function validateTemplateRoot(templateRoot) {
     if (!fs.existsSync(implementationRoot) || !fs.statSync(implementationRoot).isDirectory()) {
       throw new Error(
         `Template '${manifest.id}' declares executable implementation code but is missing implementation/.`
+      );
+    }
+  } else {
+    const implementationRoot = path.join(templateRoot, "implementation");
+    if (fs.existsSync(implementationRoot) && fs.statSync(implementationRoot).isDirectory()) {
+      throw new Error(
+        `Template '${manifest.id}' contains implementation/ but ${TEMPLATE_MANIFEST} does not declare includesExecutableImplementation: true.`
       );
     }
   }
@@ -2076,6 +2084,16 @@ export function createNewProject({
   const projectRoot = path.resolve(targetPath);
   assertProjectOutsideEngine(projectRoot, engineRoot);
   const template = resolveTemplate(templateName, templatesRoot);
+  if (
+    templateProvenance &&
+    typeof templateProvenance.includesExecutableImplementation === "boolean" &&
+    templateProvenance.includesExecutableImplementation !== Boolean(template.manifest.includesExecutableImplementation)
+  ) {
+    throw new Error(
+      `Catalog entry '${templateProvenance.id}' declares includesExecutableImplementation: ${templateProvenance.includesExecutableImplementation}, ` +
+        `but template package '${template.packageSpec || template.requested}' declares includesExecutableImplementation: ${Boolean(template.manifest.includesExecutableImplementation)}.`
+    );
+  }
 
   ensureCreatableProjectRoot(projectRoot);
   copyTopogramWorkspace(template.root, projectRoot);

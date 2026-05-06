@@ -1417,7 +1417,8 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     source: catalogPath,
     package: "@scope/topogram-template-sample",
     version: "0.1.0",
-    packageSpec: "@scope/topogram-template-sample@0.1.0"
+    packageSpec: "@scope/topogram-template-sample@0.1.0",
+    includesExecutableImplementation: true
   });
   assert.equal(fs.existsSync(path.join(projectRoot, ".npmrc")), false);
   assert.equal(projectConfig.template.includesExecutableImplementation, true);
@@ -1445,6 +1446,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.equal(sourcePayload.exists, false);
   assert.equal(sourcePayload.project.catalog.id, "sample-template");
   assert.equal(sourcePayload.project.catalog.source, catalogPath);
+  assert.equal(sourcePayload.project.catalog.includesExecutableImplementation, true);
   assert.equal(sourcePayload.project.template.id, "@scope/topogram-template-sample");
   assert.equal(sourcePayload.project.template.requested, "sample-template");
   assert.equal(sourcePayload.project.template.sourceSpec, "@scope/topogram-template-sample@0.1.0");
@@ -1537,6 +1539,36 @@ test("topogram new resolves catalog template aliases to package specs", () => {
     unchanged: updatePayload.summary.unchanged
   });
   assert.equal(updatePayload.files.some((file) => file.path === "topogram.project.json" && file.kind === "changed"), false);
+});
+
+test("topogram new rejects catalog template executable trust mismatches", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-new-trust-mismatch-"));
+  const templateRoot = path.join(fixtureTemplatesRoot, "hello-web");
+  const catalogPath = createCatalog(root, [
+    sampleTemplateCatalogEntry({
+      id: "hello-web",
+      package: "@scope/topogram-starter-hello-web",
+      defaultVersion: "0.1.0",
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: true
+      }
+    })
+  ]);
+  const fakeNpmBin = createFakeNpm(root);
+  const projectRoot = path.join(root, "starter");
+  const env = {
+    FAKE_NPM_PACKAGES: JSON.stringify({
+      "@scope/topogram-starter-hello-web@0.1.0": templateRoot
+    }),
+    PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
+  };
+
+  const create = runCli(["new", projectRoot, "--template", "hello-web", "--catalog", catalogPath], { env });
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /Catalog entry 'hello-web' declares includesExecutableImplementation: true/);
+  assert.match(create.stderr, /template package '@scope\/topogram-starter-hello-web@0\.1\.0' declares includesExecutableImplementation: false/);
+  assert.equal(fs.existsSync(projectRoot), false);
 });
 
 test("catalog aliases resolve starter names", () => {
@@ -2247,7 +2279,10 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-copy-"));
   const packageRoot = createPureTopogramPackage(root, "hello-topogram-package");
   const unsafePackageRoot = createPureTopogramPackage(root, "unsafe-topogram-package", { implementation: true });
+  const missingTopogramPackageRoot = createPureTopogramPackage(root, "missing-topogram-package");
+  fs.rmSync(path.join(missingTopogramPackageRoot, "topogram"), { recursive: true });
   const catalogPath = createCatalog(root, [
+    sampleTemplateCatalogEntry(),
     sampleTemplateCatalogEntry({
       id: "hello",
       kind: "topogram",
@@ -2271,13 +2306,26 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
         scope: "@scope",
         includesExecutableImplementation: false
       }
+    }),
+    sampleTemplateCatalogEntry({
+      id: "missing-topogram",
+      kind: "topogram",
+      package: "@scope/topogram-missing-topogram",
+      defaultVersion: "0.1.0",
+      description: "Missing topogram package",
+      tags: ["unsafe"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
     })
   ]);
   const fakeNpmBin = createFakeNpm(root);
   const env = {
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-hello@0.1.0": packageRoot,
-      "@scope/topogram-unsafe-package@0.1.0": unsafePackageRoot
+      "@scope/topogram-unsafe-package@0.1.0": unsafePackageRoot,
+      "@scope/topogram-missing-topogram@0.1.0": missingTopogramPackageRoot
     }),
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
@@ -2375,6 +2423,14 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   const unsafe = runCli(["catalog", "copy", "unsafe-package", unsafeTarget, "--catalog", catalogPath], { env });
   assert.notEqual(unsafe.status, 0, unsafe.stdout);
   assert.match(unsafe.stderr, /contains implementation\/, which is not allowed/);
+
+  const templateCopy = runCli(["catalog", "copy", "sample-template", path.join(root, "template-copy"), "--catalog", catalogPath], { env });
+  assert.notEqual(templateCopy.status, 0, templateCopy.stdout);
+  assert.match(templateCopy.stderr, /Catalog topogram entry 'sample-template' was not found/);
+
+  const missingTopogramCopy = runCli(["catalog", "copy", "missing-topogram", path.join(root, "missing-topogram-copy"), "--catalog", catalogPath], { env });
+  assert.notEqual(missingTopogramCopy.status, 0, missingTopogramCopy.stdout);
+  assert.match(missingTopogramCopy.stderr, /is missing topogram\//);
 });
 
 test("public commands default to project topogram and app paths", () => {
@@ -3796,7 +3852,7 @@ test("topogram template check reports invalid generated project config", () => {
   assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, false);
 });
 
-test("topogram template check reports missing starter implementation trust", () => {
+test("topogram template check rejects undeclared executable implementation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-trust-"));
   const templateRoot = copyBuiltInTemplate(root, "bad-trust");
   const manifestPath = path.join(templateRoot, "topogram-template.json");
@@ -3808,11 +3864,11 @@ test("topogram template check reports missing starter implementation trust", () 
   assert.notEqual(check.status, 0, check.stdout);
   const payload = JSON.parse(check.stdout);
   assert.equal(payload.ok, false);
-  const diagnostic = payload.diagnostics.find((item) => item.code === "template_trust_invalid");
+  const diagnostic = payload.diagnostics.find((item) => item.code === "template_implementation_undeclared");
   assert.ok(diagnostic);
-  assert.match(diagnostic.message, /without \.topogram-template-trust\.json/);
-  assert.match(diagnostic.suggestedFix, /topogram trust template/);
-  assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, false);
+  assert.match(diagnostic.message, /contains implementation\//);
+  assert.match(diagnostic.suggestedFix, /includesExecutableImplementation to true/);
+  assert.equal(payload.steps.find((step) => step.name === "create-starter").ok, false);
 });
 
 test("topogram template update requires explicit plan mode", () => {

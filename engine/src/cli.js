@@ -5906,6 +5906,15 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       step
     });
   }
+  if (message.includes("contains implementation/") && message.includes("includesExecutableImplementation: true")) {
+    return templateCheckDiagnostic({
+      code: "template_implementation_undeclared",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Set includesExecutableImplementation to true after reviewing implementation/, or remove implementation/.",
+      step
+    });
+  }
   if (message.includes("is missing required string field") || message.includes("topogram-template.json")) {
     return templateCheckDiagnostic({
       code: "template_manifest_invalid",

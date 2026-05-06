@@ -255,6 +255,23 @@ test("topogram generator check rejects invalid adapter exports", () => {
   assert.match(payload.errors.join("\n"), /generate\(context\)/);
 });
 
+test("topogram generator check rejects generated paths outside the package output root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-check-path-escape-"));
+  writeJson(path.join(root, "package.json"), { private: true });
+  const { packageName, packageRoot } = writePackageBackedGenerator(root);
+  fs.writeFileSync(
+    path.join(packageRoot, "index.cjs"),
+    "exports.manifest = require('./topogram-generator.json'); exports.generate = () => ({ files: { '../escape.txt': 'unsafe\\n' } });\n",
+    "utf8"
+  );
+
+  const checked = runCli(["generator", "check", packageName, "--json"], { cwd: root });
+  assert.notEqual(checked.status, 0, checked.stdout);
+  const payload = JSON.parse(checked.stdout);
+  assert.equal(payload.ok, false);
+  assert.match(payload.errors.join("\n"), /generated file paths must be non-empty relative paths/);
+});
+
 function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-project-"));
   const topogramRoot = path.join(root, "topogram");

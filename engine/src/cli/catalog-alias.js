@@ -21,7 +21,7 @@ function messageFromError(error) {
 /**
  * @param {string} templateName
  * @param {string|null} [source]
- * @returns {{ templateName: string, provenance: { id: string, source: string, package: string, version: string, packageSpec: string }|null }}
+ * @returns {{ templateName: string, provenance: { id: string, source: string, package: string, version: string, packageSpec: string, includesExecutableImplementation: boolean }|null }}
  */
 export function resolveCatalogTemplateAlias(templateName, source = null) {
   if (!isCatalogAliasCandidate(templateName)) {
@@ -47,7 +47,8 @@ export function resolveCatalogTemplateAlias(templateName, source = null) {
         source: loaded.source,
         package: entry.package,
         version: entry.defaultVersion,
-        packageSpec
+        packageSpec,
+        includesExecutableImplementation: Boolean(entry.trust?.includesExecutableImplementation)
       }
     };
   } catch (error) {
