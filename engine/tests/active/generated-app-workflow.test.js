@@ -2932,6 +2932,70 @@ test("topogram generate rejects stale template trust metadata", () => {
   assert.match(refused.stderr, /topogram\.project\.json declares/);
 });
 
+test("topogram new rejects template implementation symlinks", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-symlink-"));
+  const templateRoot = copyBuiltInTemplate(root, "template");
+  const outsideFile = path.join(root, "outside-implementation.js");
+  fs.writeFileSync(outsideFile, "export default {};\n", "utf8");
+  fs.rmSync(path.join(templateRoot, "implementation", "index.js"));
+  fs.symlinkSync(outsideFile, path.join(templateRoot, "implementation", "index.js"));
+
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", templateRoot]);
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /unsupported symlink 'implementation\/index\.js'/);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram.project.json")), false);
+});
+
+test("topogram trust rejects template implementation modules outside implementation root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-outside-implementation-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.implementation.module = "./other/index.js";
+  writeJson(projectConfigPath, projectConfig);
+  fs.mkdirSync(path.join(projectRoot, "other"), { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, "other", "index.js"), "export default {};\n", "utf8");
+
+  const status = runCli(["trust", "status", "--json"], { cwd: projectRoot });
+  assert.notEqual(status.status, 0, status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.ok, false);
+  assert.equal(statusPayload.requiresTrust, true);
+  assert.match(statusPayload.issues.join("\n"), /must be under implementation\/ for template-attached projects/);
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  assert.match(check.stderr, /must be under implementation\/ for template-attached projects/);
+
+  const trust = runCli(["trust", "template"], { cwd: projectRoot });
+  assert.notEqual(trust.status, 0, trust.stdout);
+  assert.match(trust.stderr, /must be under implementation\//);
+});
+
+test("topogram trust rejects implementation symlinks added after project creation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-local-symlink-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", builtInTemplateRoot]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const outsideFile = path.join(root, "outside-implementation.js");
+  fs.writeFileSync(outsideFile, "export default {};\n", "utf8");
+  fs.rmSync(path.join(projectRoot, "implementation", "index.js"));
+  fs.symlinkSync(outsideFile, path.join(projectRoot, "implementation", "index.js"));
+
+  const status = runCli(["trust", "status"], { cwd: projectRoot });
+  assert.notEqual(status.status, 0, status.stdout);
+  assert.match(status.stderr, /Template implementation contains unsupported symlink 'index\.js'/);
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.notEqual(check.status, 0, check.stdout);
+  assert.match(check.stderr, /Template implementation contains unsupported symlink 'index\.js'/);
+});
+
 test("topogram trust status reports implementation content drift and trust refresh adopts edits", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-trust-content-"));
   const projectRoot = path.join(root, "starter");

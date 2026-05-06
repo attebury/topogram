@@ -23,7 +23,7 @@ if [[ ! -f "$PACKAGE_TARBALL" ]]; then
   echo "Expected package tarball was not created: $PACKAGE_TARBALL" >&2
   exit 1
 fi
-if tar -tzf "$PACKAGE_TARBALL" | awk -F/ '{ print $NF }' | grep -E '^(\.env.*|\.npmrc|\.DS_Store|.*\.(pem|key)|id_rsa|secrets\..*|credentials\..*)$' >"$RUN_DIR/cli-restricted-files.txt"; then
+if tar -tzf "$PACKAGE_TARBALL" | awk -F/ '{ print $NF }' | grep -E '^(\.env.*|\.npmrc|\.DS_Store|.*\.(pem|key|p8|p12|pfx)|id_(rsa|dsa|ecdsa|ed25519)(\.pub)?|secrets\..*|credentials\..*)$' >"$RUN_DIR/cli-restricted-files.txt"; then
   echo "Packed CLI must not publish restricted local or secret files:" >&2
   cat "$RUN_DIR/cli-restricted-files.txt" >&2
   exit 1

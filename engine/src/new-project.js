@@ -332,6 +332,34 @@ function readTemplateManifest(templateRoot) {
 }
 
 /**
+ * @param {string} root
+ * @param {string} currentDir
+ * @param {string} label
+ * @param {string} templateId
+ * @returns {void}
+ */
+function assertTemplateTreeHasNoSymlinks(root, currentDir, label, templateId) {
+  const rootStat = fs.lstatSync(currentDir);
+  const relativeRoot = path.relative(root, currentDir).replace(/\\/g, "/") || label;
+  if (rootStat.isSymbolicLink()) {
+    throw new Error(`Template '${templateId}' contains unsupported symlink '${relativeRoot}'.`);
+  }
+  if (!rootStat.isDirectory()) {
+    return;
+  }
+  for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+    const entryPath = path.join(currentDir, entry.name);
+    const relativePath = path.relative(root, entryPath).replace(/\\/g, "/");
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Template '${templateId}' contains unsupported symlink '${relativePath}'.`);
+    }
+    if (entry.isDirectory()) {
+      assertTemplateTreeHasNoSymlinks(root, entryPath, label, templateId);
+    }
+  }
+}
+
+/**
  * @param {string} templateRoot
  * @returns {TemplateManifest}
  */
@@ -339,19 +367,30 @@ function validateTemplateRoot(templateRoot) {
   const manifest = readTemplateManifest(templateRoot);
   const topogramRoot = path.join(templateRoot, "topogram");
   const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  if (fs.existsSync(topogramRoot) && fs.lstatSync(topogramRoot).isSymbolicLink()) {
+    throw new Error(`Template '${manifest.id}' contains unsupported symlink 'topogram'.`);
+  }
+  if (fs.existsSync(projectConfigPath) && fs.lstatSync(projectConfigPath).isSymbolicLink()) {
+    throw new Error(`Template '${manifest.id}' contains unsupported symlink 'topogram.project.json'.`);
+  }
   if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
     throw new Error(`Template '${manifest.id}' is missing topogram/.`);
   }
   if (!fs.existsSync(projectConfigPath) || !fs.statSync(projectConfigPath).isFile()) {
     throw new Error(`Template '${manifest.id}' is missing topogram.project.json.`);
   }
+  assertTemplateTreeHasNoSymlinks(templateRoot, topogramRoot, "topogram", manifest.id);
   if (manifest.includesExecutableImplementation) {
     const implementationRoot = path.join(templateRoot, "implementation");
+    if (fs.existsSync(implementationRoot) && fs.lstatSync(implementationRoot).isSymbolicLink()) {
+      throw new Error(`Template '${manifest.id}' contains unsupported symlink 'implementation'.`);
+    }
     if (!fs.existsSync(implementationRoot) || !fs.statSync(implementationRoot).isDirectory()) {
       throw new Error(
         `Template '${manifest.id}' declares executable implementation code but is missing implementation/.`
       );
     }
+    assertTemplateTreeHasNoSymlinks(templateRoot, implementationRoot, "implementation", manifest.id);
   } else {
     const implementationRoot = path.join(templateRoot, "implementation");
     if (fs.existsSync(implementationRoot) && fs.statSync(implementationRoot).isDirectory()) {
@@ -1129,6 +1168,9 @@ function collectFiles(root, currentDir, files) {
       continue;
     }
     const entryPath = path.join(currentDir, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Template-owned files cannot include symlink '${path.relative(root, entryPath).replace(/\\/g, "/")}'.`);
+    }
     if (entry.isDirectory()) {
       collectFiles(root, entryPath, files);
       continue;

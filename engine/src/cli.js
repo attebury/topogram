@@ -6170,7 +6170,7 @@ function buildTemplateCheckPayload(templateSpec) {
         configDir: projectConfigInfo.configDir
       }
     : null;
-  if (implementationInfo && implementationRequiresTrust(implementationInfo)) {
+  if (implementationInfo && implementationRequiresTrust(implementationInfo, projectConfigInfo.config)) {
     const trustStatus = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
     const trustDiagnostics = trustStatus.issues.map((issue) => templateCheckDiagnostic({
       code: "template_trust_invalid",
@@ -7796,7 +7796,7 @@ try {
         configPath: projectConfigInfo.configPath,
         configDir: projectConfigInfo.configDir
       };
-      if (implementationRequiresTrust(implementationInfo)) {
+      if (implementationRequiresTrust(implementationInfo, projectConfigInfo.config)) {
         const trustRecord = writeTemplateTrustRecord(projectConfigInfo.configDir, projectConfigInfo.config);
         console.log(`Wrote ${TEMPLATE_TRUST_FILE} for ${trustRecord.implementation.module}.`);
         if (trustRecord.template.id) {

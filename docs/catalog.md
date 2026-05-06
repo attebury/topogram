@@ -78,13 +78,15 @@ metadata. `topogram.project.json` records:
   "template": {
     "source": "package",
     "requested": "todo",
-    "sourceSpec": "@topogram/template-todo@0.1.6",
+    "sourceSpec": "@topogram/template-todo@0.1.30",
+    "includesExecutableImplementation": true,
     "catalog": {
       "id": "todo",
       "source": "https://raw.githubusercontent.com/attebury/topograms/main/topograms.catalog.json",
       "package": "@topogram/template-todo",
-      "version": "0.1.6",
-      "packageSpec": "@topogram/template-todo@0.1.6"
+      "version": "0.1.30",
+      "packageSpec": "@topogram/template-todo@0.1.30",
+      "includesExecutableImplementation": true
     }
   }
 }

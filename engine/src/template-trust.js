@@ -185,12 +185,16 @@ function collectImplementationFiles(implementationRoot, currentDir, files) {
       continue;
     }
     const entryPath = path.join(currentDir, entry.name);
+    const relativePath = normalizeRelativePath(path.relative(implementationRoot, entryPath));
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Template implementation contains unsupported symlink '${relativePath}'.`);
+    }
     if (entry.isDirectory()) {
       collectImplementationFiles(implementationRoot, entryPath, files);
       continue;
     }
     if (entry.isFile()) {
-      files.push(normalizeRelativePath(path.relative(implementationRoot, entryPath)));
+      files.push(relativePath);
     }
   }
 }
@@ -252,13 +256,34 @@ export function implementationTrustFingerprint(config) {
 
 /**
  * @param {{ config: Record<string, any>, configDir: string }} implementationInfo
+ * @param {Record<string, any>|null} [projectConfig]
  * @returns {boolean}
  */
-export function implementationRequiresTrust(implementationInfo) {
+export function implementationRequiresTrust(implementationInfo, projectConfig = null) {
+  const fingerprint = implementationTrustFingerprint(implementationInfo.config);
+  const modulePath = path.resolve(implementationInfo.configDir, fingerprint.module);
+  const implementationRoot = path.resolve(implementationInfo.configDir, "implementation");
+  return isSameOrInside(implementationRoot, modulePath) || projectHasTemplateAttachment(projectConfig);
+}
+
+/**
+ * @param {{ config: Record<string, any>, configDir: string }} implementationInfo
+ * @returns {boolean}
+ */
+function implementationModuleIsUnderRoot(implementationInfo) {
   const fingerprint = implementationTrustFingerprint(implementationInfo.config);
   const modulePath = path.resolve(implementationInfo.configDir, fingerprint.module);
   const implementationRoot = path.resolve(implementationInfo.configDir, "implementation");
   return isSameOrInside(implementationRoot, modulePath);
+}
+
+/**
+ * @param {Record<string, any>|null} projectConfig
+ * @returns {boolean}
+ */
+function projectHasTemplateAttachment(projectConfig) {
+  const template = projectConfig?.template || null;
+  return Boolean(template?.id || template?.sourceSpec || template?.requested);
 }
 
 /**
@@ -311,6 +336,14 @@ export function writeTemplateTrustRecord(configDir, projectConfig) {
   const implementationConfig = projectConfig.implementation;
   if (!implementationConfig) {
     throw new Error("Cannot trust template implementation because topogram.project.json has no implementation config.");
+  }
+  const implementationInfo = {
+    config: implementationConfig,
+    configDir
+  };
+  if (!implementationModuleIsUnderRoot(implementationInfo)) {
+    const implementation = implementationTrustFingerprint(implementationConfig);
+    throw new Error(`Template implementation module '${implementation.module}' must be under implementation/.`);
   }
   const implementation = implementationTrustFingerprint(implementationConfig);
   const record = buildTrustRecord(configDir, projectConfig, implementation);
@@ -393,7 +426,8 @@ function implementationReviewFile(configDir, relativePath, file) {
  * @returns {{ ok: boolean, requiresTrust: boolean, trustPath: string, trustRecord: TemplateTrustRecord|null, template: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog?: Record<string, any>|null, includesExecutableImplementation: boolean|null }, implementation: { id: string|null, module: string|null, export: string|null }, content: { trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }, issues: string[] }}
  */
 export function getTemplateTrustStatus(implementationInfo, projectConfig = null) {
-  if (!implementationRequiresTrust(implementationInfo)) {
+  const templateAttached = projectHasTemplateAttachment(projectConfig);
+  if (!implementationRequiresTrust(implementationInfo, projectConfig)) {
     return {
       ok: true,
       requiresTrust: false,
@@ -406,6 +440,7 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
     };
   }
   const fingerprint = implementationTrustFingerprint(implementationInfo.config);
+  const moduleInsideImplementation = implementationModuleIsUnderRoot(implementationInfo);
   const trustRecord = readTemplateTrustRecord(implementationInfo.configDir);
   const configLabel = implementationInfo.configPath || "topogram.project.json";
   const trustPath = path.join(implementationInfo.configDir, TEMPLATE_TRUST_FILE);
@@ -414,6 +449,12 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
   const issues = [];
   /** @type {{ trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }} */
   const contentStatus = { trustedDigest: null, currentDigest: null, added: [], removed: [], changed: [] };
+
+  if (templateAttached && !moduleInsideImplementation) {
+    issues.push(
+      `Template implementation module '${fingerprint.module}' must be under implementation/ for template-attached projects`
+    );
+  }
 
   if (!trustRecord) {
     issues.push(
@@ -441,7 +482,10 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
       issues.push(`${TEMPLATE_TRUST_FILE} trusts template version '${trustRecord.template?.version}', but topogram.project.json declares '${projectTemplate.version}'`);
     }
 
-    if (!trustRecord.content) {
+    if (!moduleInsideImplementation) {
+      // The module itself is outside the only supported trust root. Do not
+      // pretend the implementation/ content digest covers the executable code.
+    } else if (!trustRecord.content) {
       issues.push(`${TEMPLATE_TRUST_FILE} is missing implementation content hashes`);
     } else if (trustRecord.content.algorithm !== "sha256") {
       issues.push(`${TEMPLATE_TRUST_FILE} uses unsupported content hash algorithm '${trustRecord.content.algorithm}'`);
