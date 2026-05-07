@@ -180,7 +180,7 @@ export function packageBackedGeneratorBindings(projectConfig) {
     .filter((runtime) => typeof runtime?.generator?.package === "string" && runtime.generator.package.length > 0)
     .map((runtime) => ({
       componentId: String(runtime.id || "unknown"),
-      componentType: String(runtime.kind || runtime.type || "unknown"),
+      componentType: String(runtime.kind || "unknown"),
       projection: String(runtime.projection || "unknown"),
       generatorId: String(runtime.generator.id || "unknown"),
       version: String(runtime.generator.version || "unknown"),

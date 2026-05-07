@@ -1037,8 +1037,8 @@ function targetRequiresImplementationProvider(target) {
 
 function topologyComponentReferences(component) {
   return {
-    uses_api: component.uses_api || component.api || null,
-    uses_database: component.uses_database || component.database || null
+    uses_api: component.uses_api || null,
+    uses_database: component.uses_database || null
   };
 }
 
@@ -1054,10 +1054,10 @@ function summarizeProjectTopology(config) {
       ownership: output?.ownership || null
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
-  const runtimes = (config?.topology?.runtimes || config?.topology?.components || [])
+  const runtimes = (config?.topology?.runtimes || [])
     .map((component) => ({
       id: component.id,
-      kind: component.kind || component.type,
+      kind: component.kind,
       projection: component.projection,
       generator: {
         id: component.generator?.id || null,
@@ -1097,7 +1097,7 @@ function publicProjectTopology(topology) {
     return topology || null;
   }
   return {
-    ...Object.fromEntries(Object.entries(topology).filter(([key]) => !["components", "__normalizedRuntimeAliases"].includes(key))),
+    ...Object.fromEntries(Object.entries(topology).filter(([key]) => key !== "components")),
     runtimes: topology.runtimes || []
   };
 }

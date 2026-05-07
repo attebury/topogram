@@ -133,7 +133,7 @@ The generator package must expose `topogram-generator.json`. The manifest `id`,
 `version`, `source`, and `package` must match the topology binding.
 
 Web generator adapters should consume the normalized UI contract instead of
-inferring behavior from framework code. Component usages include
+inferring behavior from framework code. Widget usages include
 `behaviorRealizations`, which bridge widget behavior declarations to concrete
 projection data bindings, event bindings, navigation effects, and command
 effects.

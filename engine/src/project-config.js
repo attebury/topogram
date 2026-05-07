@@ -26,9 +26,6 @@ import { validateProjectGeneratorPolicy } from "./generator-policy.js";
  * @property {number|null} [port]
  * @property {string} [uses_api]
  * @property {string} [uses_database]
- * @property {string} [type] Migration diagnostic only.
- * @property {string} [api] Migration diagnostic only.
- * @property {string} [database] Migration diagnostic only.
  * @property {Record<string, string>} [env]
  */
 
@@ -36,7 +33,7 @@ import { validateProjectGeneratorPolicy } from "./generator-policy.js";
  * @typedef {Object} ProjectConfig
  * @property {string} version
  * @property {Record<string, { path: string, ownership: "generated"|"maintained" }>} outputs
- * @property {{ runtimes: RuntimeTopologyRuntime[], components?: any[] }} topology
+ * @property {{ runtimes: RuntimeTopologyRuntime[] }} topology
  * @property {{ id?: string, module?: string, export?: string, implementation_module?: string, implementation_export?: string }} [implementation]
  */
 
@@ -226,40 +223,6 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
 }
 
 /**
- * @param {string} kind
- * @returns {string}
- */
-function legacyRuntimeType(kind) {
-  if (kind === "api_service") return "api";
-  if (kind === "web_surface") return "web";
-  if (kind === "ios_surface" || kind === "android_surface") return "native";
-  return kind;
-}
-
-/**
- * @param {any} config
- * @returns {any}
- */
-function normalizeProjectConfigRuntimeAliases(config) {
-  if (!config?.topology || !Array.isArray(config.topology.runtimes)) {
-    return config;
-  }
-  return {
-    ...config,
-    topology: {
-      ...config.topology,
-      __normalizedRuntimeAliases: true,
-      components: config.topology.runtimes.map((/** @type {RuntimeTopologyRuntime} */ runtime) => ({
-        ...runtime,
-        type: legacyRuntimeType(runtime.kind),
-        api: runtime.uses_api,
-        database: runtime.uses_database
-      }))
-    }
-  };
-}
-
-/**
  * @param {string} root
  * @returns {ProjectConfigInfo|null}
  */
@@ -270,7 +233,7 @@ export function loadProjectConfig(root) {
   }
   return {
     ...found,
-    config: normalizeProjectConfigRuntimeAliases(found.config),
+    config: found.config,
     compatibility: false
   };
 }
@@ -290,7 +253,7 @@ export function projectConfigOrDefault(root, graph = null, implementation = null
     return null;
   }
   return {
-    config: normalizeProjectConfigRuntimeAliases(defaultProjectConfigForGraph(graph, implementation)),
+    config: defaultProjectConfigForGraph(graph, implementation),
     configPath: null,
     configDir: path.dirname(path.resolve(root)),
     compatibility: true
@@ -485,7 +448,7 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     pushError(errors, "topogram.project.json version must be a non-empty string");
   }
   validateOutputConfig(errors, config);
-  if (config.topology?.components != null && config.topology.__normalizedRuntimeAliases !== true) {
+  if (config.topology?.components != null) {
     pushError(errors, `topogram.project.json ${renameDiagnostic("'topology.components'", "'topology.runtimes'", `"topology": { "runtimes": [] }`)}`);
   }
   if (!config.topology || typeof config.topology !== "object" || !Array.isArray(config.topology.runtimes)) {
@@ -495,7 +458,7 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     for (const component of config.topology.runtimes) {
       validateComponentShape(errors, component, seenIds);
     }
-    const generatorPolicy = validateProjectGeneratorPolicy(normalizeProjectConfigRuntimeAliases(config), options);
+    const generatorPolicy = validateProjectGeneratorPolicy(config, options);
     for (const error of generatorPolicy.errors) {
       pushError(errors, error.message, error.loc);
     }

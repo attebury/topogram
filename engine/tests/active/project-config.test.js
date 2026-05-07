@@ -7,7 +7,7 @@ import test from "node:test";
 
 import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
-import { validateProjectConfig } from "../../src/project-config.js";
+import { loadProjectConfig, validateProjectConfig } from "../../src/project-config.js";
 import {
   GENERATOR_MANIFESTS,
   validateGeneratorManifest,
@@ -315,6 +315,14 @@ function copyFixtureTopogram() {
 }
 
 test("topogram check reports a valid project config in human and JSON modes", () => {
+  const loadedProjectConfig = loadProjectConfig(fixtureRoot);
+  assert.equal(loadedProjectConfig?.config.topology.components, undefined);
+  assert.equal(loadedProjectConfig?.config.topology.runtimes.some((runtime) => (
+    Object.hasOwn(runtime, "type") ||
+    Object.hasOwn(runtime, "api") ||
+    Object.hasOwn(runtime, "database")
+  )), false);
+
   const human = runCli(["check", fixtureRoot]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram check passed/);

@@ -426,13 +426,13 @@ export function dbEnvVarsForComponent(component, options = {}) {
  */
 function decorateRuntimes(graph, config) {
   const byProjectionId = new Map((graph.byKind.projection || []).map((projection) => [projection.id, projection]));
-  const rawRuntimes = config.topology?.runtimes || config.topology?.components || [];
+  const rawRuntimes = config.topology?.runtimes || [];
   /** @type {RuntimeComponent[]} */
   const runtimes = rawRuntimes.map((runtime) => ({
     ...runtime,
-    kind: runtime.kind || runtime.type || null,
-    api: runtime.uses_api ?? runtime.api ?? null,
-    database: runtime.uses_database ?? runtime.database ?? null,
+    kind: runtime.kind || null,
+    api: runtime.uses_api ?? null,
+    database: runtime.uses_database ?? null,
     projection: byProjectionId.get(runtime.projection) || {}
   }));
   const byId = new Map(runtimes.map((runtime) => [runtime.id, runtime]));

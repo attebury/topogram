@@ -118,7 +118,7 @@ function buildEnvironmentPlan(graph, options = {}) {
         projection: component.projection.id,
         port: component.port || ports.server,
         dir: topology.serviceDir(component),
-        database: component.database,
+        uses_database: component.database,
         databaseEnv: component.databaseComponent
           ? dbEnvVarsForComponent(component.databaseComponent, { primary: component.databaseComponent?.id === topology.primaryDb?.id })
           : null
@@ -128,7 +128,7 @@ function buildEnvironmentPlan(graph, options = {}) {
         projection: component.projection.id,
         port: component.port || ports.web,
         dir: topology.webDir(component),
-        api: component.api
+        uses_api: component.api
       })),
       databases: topology.dbComponents.map((component) => ({
         id: component.id,
@@ -330,7 +330,7 @@ function renderEnvironmentLoadEnvScript() {
 function renderEnvironmentBootstrapDbScript(plan) {
   const dbBootstrapLines = plan.runtimes.databases.map((component) => {
     const env = component.env;
-    const runtimeApi = plan.runtimes.apis.find((apiComponent) => apiComponent.database === component.id);
+    const runtimeApi = plan.runtimes.apis.find((apiComponent) => apiComponent.uses_database === component.id);
     const assignments = [
       `DATABASE_URL="\${${env.databaseUrl}:-}"`,
       `DATABASE_ADMIN_URL="\${${env.databaseAdminUrl}:-}"`,
@@ -356,7 +356,7 @@ function renderEnvironmentBootstrapDbScript(plan) {
     ...dbBootstrapLines,
     'if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then',
     ...apiDatabaseExportLines(primaryApi),
-    ...(primaryApi?.database
+    ...(primaryApi?.uses_database
       ? [`(cd "$ROOT_DIR/${primaryApi.dir}" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)`]
       : ['echo "No DB-backed API component is configured; skipping demo seed."']),
     "fi"
@@ -384,7 +384,7 @@ function renderEnvironmentServerDevScript(plan, component = plan.runtimes.apis[0
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
     "npm install",
-    ...(component.database ? ["npm exec -- prisma generate --schema prisma/schema.prisma"] : []),
+    ...(component.uses_database ? ["npm exec -- prisma generate --schema prisma/schema.prisma"] : []),
     "npm run dev"
   ], options.componentScript ? componentScriptOptions() : {});
 }
@@ -393,7 +393,7 @@ function renderEnvironmentWebDevScript(plan, component = plan.runtimes.webs[0], 
   if (!component) {
     return renderEnvAwareShellScript(['echo "No web runtimes are configured."']);
   }
-  const apiComponent = plan.runtimes.apis.find((entry) => entry.id === component.api) || plan.runtimes.apis[0];
+  const apiComponent = plan.runtimes.apis.find((entry) => entry.id === component.uses_api) || plan.runtimes.apis[0];
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} web`,

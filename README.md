@@ -109,7 +109,7 @@ npm run explain
 npm run doctor
 npm run check
 npm run generate
-topogram generate ./topogram --generate ui-component-contract
+topogram generate ./topogram --generate ui-widget-contract
 npm run verify
 ```
 
@@ -139,14 +139,14 @@ The JSON form is intended for agents and setup scripts:
 ```bash
 topogram new --list-templates --json
 topogram query list --json
-topogram query show component-behavior --json
+topogram query show widget-behavior --json
 ```
 
 Each template item includes `surfaces`, `generators`, `stack`,
 `includesExecutableImplementation`, and `recommendedCommand` so tools can pick a
 starter without scraping human output.
 Use `topogram query list` to discover focused agent packets such as
-`component-behavior`, `change-plan`, `review-packet`, and
+`widget-behavior`, `change-plan`, `review-packet`, and
 `resolved-workflow-context`. Use `topogram query show <name>` when an agent
 needs the purpose, arguments, selectors, output type, and example for one query.
 
@@ -385,7 +385,7 @@ npm run app:runtime
 - `engine/` - Topogram engine, CLI, tests, and fixtures
 - `engine/tests/fixtures/` - engine-owned regression workspaces and expected outputs
 - `engine/tests/fixtures/templates/` - engine-owned local template fixtures for tests
-- `docs/` - terse first-use docs, grammar reference, and component contract guide
+- `docs/` - terse first-use docs, grammar reference, and widget contract guide
 
 ## Engine
 

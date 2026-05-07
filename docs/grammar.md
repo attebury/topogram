@@ -126,7 +126,7 @@ Semantic UI ownership belongs on `ui_contract`: `screens`, `collection_views`,
 `screen_actions`, `visibility_rules`, `field_lookups`, `app_shell`, `navigation`,
 `screen_regions`, `widget_bindings`, and `design_tokens`. Concrete `web_surface`,
 `ios_surface`, and future `android_surface` projections inherit those semantics through
-`realizes`; they own `screen_routes` and platform surface hints such as `web_hints` or
+`realizes`; they own `screen_routes` and surface hints such as `web_hints` or
 `ios_hints`. Validation rejects semantic UI blocks on concrete projections and
 rejects `screen_routes` on shared UI projections.
 
