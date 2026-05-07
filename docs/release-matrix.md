@@ -8,9 +8,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.50` | `attebury/topogram` Publish CLI Package and strict release status passed on `main` |
+| `@topogram/cli` | `0.3.51` | `attebury/topogram` Publish CLI Package and strict release status passed on `main` |
 | `attebury/topograms` catalog | `1780cfe` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.33` |
-| `topogram-demo-todo` | `4df639f` | Demo Verification passed from default catalog creation through runtime |
+| `topogram-demo-todo` | `1cfc817` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
@@ -38,7 +38,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-swiftui-native` | `0.1.2` | native |
 
 All generator repos reported passing `Generator Verification` on `main` after
-rolling their `@topogram/cli` pins to `0.3.50`.
+rolling their `@topogram/cli` pins to `0.3.51`.
 
 ## Consumer Proofs
 
