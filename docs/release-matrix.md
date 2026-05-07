@@ -9,7 +9,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
 | `@topogram/cli` | `0.3.53` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
-| `attebury/topograms` catalog | pending | Local catalog check passed; `todo` resolves to `@topogram/template-todo@0.1.34` |
+| `attebury/topograms` catalog | `0e4d651` | Catalog Verification passed against pinned `@topogram/cli@0.3.53`; `todo` resolves to `@topogram/template-todo@0.1.34` |
 | `topogram-demo-todo` | `4b3e71f` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters

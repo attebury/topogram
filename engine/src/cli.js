@@ -135,7 +135,8 @@ const KNOWN_CLI_CONSUMER_REPOS = [
   "topogram-starters",
   "topogram-template-todo",
   "topogram-demo-todo",
-  "topogram-hello"
+  "topogram-hello",
+  "topograms"
 ];
 const KNOWN_CLI_CONSUMER_WORKFLOWS = {
   "topogram-generator-express-api": "Generator Verification",
@@ -149,7 +150,8 @@ const KNOWN_CLI_CONSUMER_WORKFLOWS = {
   "topogram-starters": "Starter Verification",
   "topogram-template-todo": "Template Verification",
   "topogram-demo-todo": "Demo Verification",
-  "topogram-hello": "Topogram Package Verification"
+  "topogram-hello": "Topogram Package Verification",
+  "topograms": "Catalog Verification"
 };
 const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
   "cli:surface",

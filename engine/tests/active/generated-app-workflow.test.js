@@ -32,7 +32,8 @@ const knownCliConsumerRepos = [
   ...firstPartyGeneratorRepos,
   "topogram-starters",
   ...externalTodoConsumerRepos,
-  "topogram-hello"
+  "topogram-hello",
+  "topograms"
 ];
 const packageUpdateCliCheckScripts = [
   "cli:surface",
@@ -2336,7 +2337,7 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.equal(report.status, 0, report.stderr || report.stdout);
   const reportText = fs.readFileSync(reportPath, "utf8");
   assert.match(reportText, new RegExp(`# Topogram CLI release ${literalPattern(cliPackageVersion).source}`));
-  assert.match(reportText, /Consumer CI: 12\/12 passing/);
+  assert.match(reportText, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
   assert.match(reportText, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
 
   const markdown = runCli(["release", "status", "--strict", "--markdown"], {
