@@ -74,58 +74,26 @@ export const STATUS_SETS_BY_KIND = {
   bug: BUG_STATUSES
 };
 export const VERIFICATION_METHODS = new Set(["smoke", "runtime", "contract", "journey", "manual"]);
-export const UI_SCREEN_KINDS = new Set(["list", "detail", "form", "dashboard", "job_status", "board", "calendar", "feed", "inbox", "settings", "wizard", "report", "analytics"]);
-export const UI_COLLECTION_PRESENTATIONS = new Set(["table", "data_grid", "cards", "list", "board", "calendar", "gallery"]);
-export const UI_NAVIGATION_PATTERNS = new Set([
-  "primary",
-  "tabs",
-  "stack_navigation",
-  "bottom_tabs",
-  "segmented_control",
-  "command_palette",
-  "split_view",
-  "navigation_rail"
-]);
-export const UI_REGION_KINDS = new Set([
-  "hero",
-  "toolbar",
-  "filters",
-  "search",
-  "results",
-  "summary",
-  "metadata",
-  "aside",
-  "related",
-  "activity",
-  "comments",
-  "timeline",
-  "tabs",
-  "bulk_actions",
-  "footer_actions"
-]);
-export const UI_PATTERN_KINDS = new Set([
-  "resource_table",
-  "data_grid_view",
-  "resource_cards",
-  "detail_panel",
-  "edit_form",
-  "lookup_select",
-  "action_bar",
-  "status_badge",
-  "summary_stats",
-  "activity_feed",
-  "comment_thread",
-  "timeline_view",
-  "board_view",
-  "calendar_view",
-  "settings_section",
-  "wizard_stepper",
-  "audit_log",
-  "search_results",
-  "empty_state_panel",
-  "inspector_pane",
-  "master_detail"
-]);
+
+export {
+  UI_APP_SHELL_KINDS,
+  UI_WINDOWING_MODES,
+  UI_SCREEN_KINDS,
+  UI_COLLECTION_PRESENTATIONS,
+  UI_NAVIGATION_PATTERNS,
+  UI_REGION_KINDS,
+  UI_PATTERN_KINDS,
+  UI_ACTION_PRESENTATIONS,
+  UI_STATE_KINDS,
+  UI_PLATFORM_PATTERNS,
+  UI_DESIGN_DENSITIES,
+  UI_DESIGN_TONES,
+  UI_DESIGN_RADIUS_SCALES,
+  UI_DESIGN_COLOR_ROLES,
+  UI_DESIGN_TYPOGRAPHY_ROLES,
+  UI_DESIGN_ACTION_ROLES,
+  UI_DESIGN_ACCESSIBILITY_VALUES
+} from "../ui/taxonomy.js";
 
 // Kinds that may carry an optional singular `domain dom_x` field. Keep this
 // set in sync with the `allowed[]` arrays in FIELD_SPECS below; the cross-kind
@@ -221,6 +189,7 @@ export const FIELD_SPECS = {
       "ui_navigation",
       "ui_screen_regions",
       "ui_components",
+      "ui_design",
       "db_tables",
       "db_columns",
       "db_keys",

@@ -1076,7 +1076,7 @@ projection proj_ui {
   assert.match(messages, /references unknown navigation target 'item_detail'/);
 });
 
-test("projection ui_components can be declared directly on concrete UI projections", () => {
+test("projection ui_components are rejected on concrete UI projections", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1131,20 +1131,11 @@ projection proj_ui_web {
 }
 `);
   const validation = validateWorkspace(ast);
-  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
-
-  const webContract = generateWorkspace(ast, {
-    target: "ui-web-contract",
-    projectionId: "proj_ui_web"
-  });
-  assert.equal(webContract.ok, true);
-  assert.equal(webContract.artifact.components.component_grid.id, "component_grid");
-  const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
-  assert.equal(screen.components.length, 1);
-  assert.equal(screen.components[0].component.id, "component_grid");
+  assert.equal(validation.ok, false);
+  assert.match(validation.errors.map((error) => error.message).join("\n"), /ui_components belongs on shared UI projections/);
 });
 
-test("concrete ui_components compose with inherited shared UI components", () => {
+test("concrete UI projections inherit shared component usage only", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1155,17 +1146,6 @@ capability cap_list_items {
 component component_shared_grid {
   name "Shared Grid"
   description "Shared grid"
-  props {
-    rows array required
-  }
-  patterns [resource_table]
-  regions [results]
-  status active
-}
-
-component component_web_summary {
-  name "Web Summary"
-  description "Web-only summary"
   props {
     rows array required
   }
@@ -1207,8 +1187,79 @@ projection proj_ui_web {
     screen item_list path /items
   }
 
-  ui_components {
-    screen item_list region results component component_web_summary data rows from cap_list_items
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
+
+  const webContract = generateWorkspace(ast, {
+    target: "ui-web-contract",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(webContract.ok, true);
+  assert.deepEqual(Object.keys(webContract.artifact.components).sort(), ["component_shared_grid"]);
+  const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
+  assert.deepEqual(screen.components.map((entry) => entry.component.id), ["component_shared_grid"]);
+
+  const report = generateWorkspace(ast, {
+    target: "component-conformance-report",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.artifact.summary.total_usages, 1);
+  assert.equal(report.artifact.summary.errors, 0);
+  assert.deepEqual(report.artifact.summary.affected_components, ["component_shared_grid"]);
+  assert.deepEqual(report.artifact.projection_usages.map((entry) => entry.screen.kind), ["list"]);
+});
+
+test("ui design intent is shared-owned and inherited by concrete UI contracts", () => {
+  const ast = workspaceFromSource(`
+capability cap_view_items {
+  name "View Items"
+  description "View items"
+  status active
+}
+
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
+  realizes [cap_view_items]
+  outputs [ui_contract]
+
+  ui_design {
+    density compact
+    tone operational
+    radius_scale small
+    color_role primary accent
+    color_role danger critical
+    typography_role heading prominent
+    typography_role body readable
+    action_role primary prominent
+    action_role destructive danger
+    accessibility contrast aa
+    accessibility motion reduced
+    accessibility focus visible
+    accessibility min_touch_target comfortable
+  }
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_view_items
+  }
+
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [proj_ui_shared]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen item_list path /items
   }
 
   status active
@@ -1222,19 +1273,85 @@ projection proj_ui_web {
     projectionId: "proj_ui_web"
   });
   assert.equal(webContract.ok, true);
-  assert.deepEqual(Object.keys(webContract.artifact.components).sort(), ["component_shared_grid", "component_web_summary"]);
-  const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
-  assert.deepEqual(screen.components.map((entry) => entry.component.id), ["component_shared_grid", "component_web_summary"]);
-
-  const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
-    projectionId: "proj_ui_web"
+  assert.deepEqual(webContract.artifact.design, {
+    density: "compact",
+    tone: "operational",
+    radiusScale: "small",
+    colorRoles: {
+      danger: "critical",
+      primary: "accent"
+    },
+    typographyRoles: {
+      body: "readable",
+      heading: "prominent"
+    },
+    actionRoles: {
+      destructive: "danger",
+      primary: "prominent"
+    },
+    accessibility: {
+      contrast: "aa",
+      focus: "visible",
+      min_touch_target: "comfortable",
+      motion: "reduced"
+    }
   });
-  assert.equal(report.ok, true);
-  assert.equal(report.artifact.summary.total_usages, 2);
-  assert.equal(report.artifact.summary.errors, 0);
-  assert.deepEqual(report.artifact.summary.affected_components, ["component_shared_grid", "component_web_summary"]);
-  assert.deepEqual(report.artifact.projection_usages.map((entry) => entry.screen.kind), ["list", "list"]);
+  assert.doesNotMatch(JSON.stringify(webContract.artifact.design), /css|class|tailwind|swiftui/i);
+});
+
+test("ui design intent rejects concrete ownership and unknown taxonomy values", () => {
+  const concreteAst = workspaceFromSource(`
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  outputs [ui_contract, web_app]
+
+  ui_design {
+    density compact
+  }
+
+  status active
+}
+`);
+  const concreteValidation = validateWorkspace(concreteAst);
+  assert.equal(concreteValidation.ok, false);
+  assert.match(concreteValidation.errors.map((error) => error.message).join("\n"), /ui_design belongs on shared UI projections/);
+
+  const taxonomyAst = workspaceFromSource(`
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
+  outputs [ui_contract]
+
+  ui_design {
+    density cramped
+    tone loud
+    radius_scale huge
+    color_role brand accent
+    typography_role title prominent
+    action_role danger critical
+    accessibility contrast weak
+    accessibility sparkle true
+    raw_css primary-button
+  }
+
+  status active
+}
+`);
+  const taxonomyValidation = validateWorkspace(taxonomyAst);
+  assert.equal(taxonomyValidation.ok, false);
+  const messages = taxonomyValidation.errors.map((error) => error.message).join("\n");
+  assert.match(messages, /density has invalid value 'cramped'/);
+  assert.match(messages, /tone has invalid value 'loud'/);
+  assert.match(messages, /radius_scale has invalid value 'huge'/);
+  assert.match(messages, /color_role has invalid role 'brand'/);
+  assert.match(messages, /typography_role has invalid role 'title'/);
+  assert.match(messages, /action_role has invalid role 'danger'/);
+  assert.match(messages, /accessibility 'contrast' has invalid value 'weak'/);
+  assert.match(messages, /accessibility has invalid setting 'sparkle'/);
+  assert.match(messages, /ui_design has unknown key 'raw_css'/);
 });
 
 test("component usage contracts carry resolved region patterns", () => {
@@ -1256,12 +1373,12 @@ component component_grid {
   status active
 }
 
-projection proj_ui_web {
-  name "Web"
-  description "Concrete web projection"
-  platform ui_web
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
   realizes [cap_list_items]
-  outputs [ui_contract, web_app]
+  outputs [ui_contract]
 
   ui_screens {
     screen item_list kind list title "Items" load cap_list_items
@@ -1273,14 +1390,24 @@ projection proj_ui_web {
     screen item_board region results pattern board_view placement primary
   }
 
-  ui_routes {
-    screen item_list path /items
-    screen item_board path /items/board
-  }
-
   ui_components {
     screen item_list region results component component_grid data rows from cap_list_items
     screen item_board region results component component_grid data rows from cap_list_items
+  }
+
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [proj_ui_shared]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen item_list path /items
+    screen item_board path /items/board
   }
 
   status active
@@ -1322,12 +1449,12 @@ component component_lookup {
   status active
 }
 
-projection proj_ui_web {
-  name "Web"
-  description "Concrete web projection"
-  platform ui_web
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
   realizes [cap_list_items]
-  outputs [ui_contract, web_app]
+  outputs [ui_contract]
 
   ui_screens {
     screen item_list kind list title "Items" load cap_list_items
@@ -1337,12 +1464,22 @@ projection proj_ui_web {
     screen item_list region results pattern lookup_select placement primary
   }
 
-  ui_routes {
-    screen item_list path /items
-  }
-
   ui_components {
     screen item_list region results component component_lookup data rows from cap_list_items
+  }
+
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [proj_ui_shared]
+  outputs [ui_contract, web_app]
+
+  ui_routes {
+    screen item_list path /items
   }
 
   status active
@@ -1578,6 +1715,37 @@ test("context-slice with --component focuses on the component contract closure",
   );
   assert.equal(result.artifact.review_boundary.automation_class, "review_required");
   assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
+  assert.equal(result.artifact.ui_agent_packet.type, "ui_agent_packet");
+  assert.equal(result.artifact.ui_agent_packet.ownership.componentPlacement, "ui_shared");
+  assert.equal(result.artifact.ui_agent_packet.ownership.concreteSurfacesInherit, true);
+  assert.deepEqual(result.artifact.ui_agent_packet.component.patterns, ["resource_table", "data_grid_view"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_shared"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages[0].usage, {
+    screenId: "task_list",
+    region: "results",
+    componentId: "component_ui_data_grid",
+    dataBindings: [{ prop: "rows", source: "cap_list_tasks" }],
+    eventBindings: [{ event: "row_select", action: "navigate", target: "task_detail" }]
+  });
+  assert.ok(result.artifact.ui_agent_packet.inheritedBy.includes("proj_ui_web"));
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command === "topogram check"));
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram component behavior --component component_ui_data_grid")));
+});
+
+test("context-slice with --projection exposes inherited UI agent packet", () => {
+  const ast = parsePath(fixtureRoot);
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    projectionId: "proj_ui_web"
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.artifact.focus.kind, "projection");
+  assert.equal(result.artifact.ui_agent_packet.type, "ui_agent_packet");
+  assert.equal(result.artifact.ui_agent_packet.sharedProjection.id, "proj_ui_shared");
+  assert.equal(result.artifact.ui_agent_packet.ownership.componentPlacement, "ui_shared");
+  assert.deepEqual(result.artifact.ui_agent_packet.components.map((usage) => usage.componentId), ["component_ui_data_grid"]);
+  assert.equal(result.artifact.ui_agent_packet.design.find((entry) => entry.key === "density")?.role, "compact");
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram component check --projection proj_ui_web")));
 });
 
 test("context-slice with --component preserves dependency references by kind", () => {

@@ -115,9 +115,16 @@ imported/adopted Topogram files are project-owned, and local edits remain valid.
 UI import also drafts shared projection wiring when component candidates are
 found. The files under `topogram/candidates/app/ui/drafts/**` are not canonical
 Topogram until a human or agent reviews and adopts them. Component candidates
-should be checked for props, behavior, events, regions, and patterns before
-promotion; the generated `ui_components` bindings are starting evidence, not a
-silent assertion that the imported app had a clean reusable component model.
+include evidence, confidence, inferred pattern, inferred region, props, events,
+and missing decisions. Check props, behavior, events, regions, and patterns
+before promotion; the generated `ui_components` bindings are starting evidence,
+not a silent assertion that the imported app had a clean reusable component
+model.
+
+Adoption promotes component candidates into canonical component files and
+shared UI projection bindings. It does not write concrete `ui_web`
+component placement; web/native projections inherit shared component and
+semantic design intent through `realizes`.
 
 Adoption writes refuse to run when the original brownfield source evidence has
 changed since import:

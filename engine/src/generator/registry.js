@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../ui/taxonomy.js";
 
 /**
  * @typedef {Object} GeneratorManifest
@@ -22,6 +23,8 @@ import { createRequire } from "node:module";
  * @property {string} [export]
  * @property {boolean} [planned]
  */
+
+const RENDERED_COMPONENT_PATTERNS = [...UI_GENERATOR_RENDERED_COMPONENT_PATTERNS];
 
 /** @type {GeneratorManifest[]} */
 export const GENERATOR_MANIFESTS = [
@@ -76,7 +79,7 @@ export const GENERATOR_MANIFESTS = [
     stack: { runtime: "node", framework: "sveltekit", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
     componentSupport: {
-      patterns: ["summary_stats", "board_view", "calendar_view", "resource_table", "data_grid_view"],
+      patterns: RENDERED_COMPONENT_PATTERNS,
       behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
       unsupported: "warning"
     },
@@ -94,7 +97,7 @@ export const GENERATOR_MANIFESTS = [
     stack: { runtime: "browser", framework: "react", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
     componentSupport: {
-      patterns: ["summary_stats", "board_view", "calendar_view", "resource_table", "data_grid_view"],
+      patterns: RENDERED_COMPONENT_PATTERNS,
       behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
       unsupported: "warning"
     },

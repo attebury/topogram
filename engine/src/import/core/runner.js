@@ -2,6 +2,9 @@ import { IMPORT_TRACKS } from "./contracts.js";
 import { dedupeCandidateRecords, ensureTrailingNewline, idHintify, makeCandidateRecord } from "./shared.js";
 import { createImportContext } from "./context.js";
 import { getEnrichersForTrack, getExtractorsForTrack } from "./registry.js";
+import {
+  collectionPatternFromPresentations
+} from "../../ui/taxonomy.js";
 
 function parseImportTracks(fromValue) {
   if (!fromValue) {
@@ -95,25 +98,6 @@ function selectDetectionsForTrack(track, detections) {
   return detections;
 }
 
-function collectionPatternFromPresentations(presentations) {
-  if (presentations.includes("data_grid")) return "data_grid_view";
-  if (presentations.includes("table")) return "resource_table";
-  if (presentations.includes("cards")) return "resource_cards";
-  if (presentations.includes("board")) return "board_view";
-  if (presentations.includes("calendar")) return "calendar_view";
-  if (presentations.includes("gallery")) return "resource_cards";
-  return "search_results";
-}
-
-function presentationFromPattern(pattern) {
-  if (pattern === "data_grid_view") return "data_grid";
-  if (pattern === "resource_table") return "table";
-  if (pattern === "resource_cards") return "cards";
-  if (pattern === "board_view") return "board";
-  if (pattern === "calendar_view") return "calendar";
-  return "list";
-}
-
 function importedApiCapabilityIds(allCandidates) {
   return [...(allCandidates?.api?.capabilities || [])]
     .map((capability) => capability.id_hint)
@@ -181,6 +165,17 @@ function deriveUiComponentCandidates(candidates) {
       pattern,
       data_prop: "rows",
       data_source: loadCapability,
+      inferred_props: [{ name: "rows", type: "array", required: true, source: loadCapability }],
+      inferred_events: [],
+      inferred_region: "results",
+      inferred_pattern: pattern,
+      evidence: screen.provenance || [],
+      missing_decisions: [
+        "confirm component reuse boundary",
+        "confirm prop names and data source",
+        "confirm events and behavior",
+        "confirm supported regions and patterns"
+      ],
       notes: [
         "Imported component candidates are review-only.",
         "Confirm props, behavior, events, and reuse before adoption."
@@ -294,8 +289,11 @@ function reportMarkdown(track, candidates) {
     );
   }
   if (track === "ui") {
+    const componentLines = (candidates.components || []).map((component) =>
+      `- \`${component.id_hint}\` confidence ${component.confidence || "unknown"} pattern \`${component.pattern || component.inferred_pattern || "unknown"}\` region \`${component.region || component.inferred_region || "unknown"}\` evidence ${(component.evidence || component.provenance || []).length} missing decisions ${(component.missing_decisions || []).length}`
+    );
     return ensureTrailingNewline(
-      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Components: ${candidates.components.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n`
+      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Components: ${candidates.components.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Component Candidates\n\n${componentLines.length ? componentLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/components/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram component check <path>\`, and \`topogram component behavior <path>\`.\n`
     );
   }
   if (track === "verification") {
@@ -327,7 +325,15 @@ function componentCandidateFileName(component) {
 }
 
 function renderComponentCandidate(component) {
+  const evidenceCount = (component.evidence || component.provenance || []).length;
+  const missingDecisions = component.missing_decisions || [
+    "confirm component reuse boundary",
+    "confirm prop names and data source",
+    "confirm events and behavior"
+  ];
   return `component ${component.id_hint} {
+  # Import metadata: confidence ${component.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${component.pattern || component.inferred_pattern || "search_results"}; inferred region ${component.region || component.inferred_region || "results"}.
+  # Missing decisions: ${missingDecisions.join("; ")}.
   name "${component.label || component.id_hint}"
   description "Candidate reusable component inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
   category collection
@@ -351,6 +357,26 @@ function uiComponentLinesForCandidates(componentCandidates, allCandidates) {
         : "";
       return `    screen ${component.screen_id} region ${component.region} component ${component.id_hint}${dataBinding}`;
     });
+}
+
+function enrichUiComponentDataSources(uiCandidates, allCandidates) {
+  if (!uiCandidates || !Array.isArray(uiCandidates.components)) {
+    return uiCandidates;
+  }
+  return {
+    ...uiCandidates,
+    components: uiCandidates.components.map((component) => {
+      const dataSource = inferredDataSourceForComponent(component, allCandidates);
+      const dataProp = component.data_prop || "rows";
+      return {
+        ...component,
+        data_source: component.data_source || dataSource,
+        inferred_props: (component.inferred_props || []).map((prop) =>
+          prop.name === dataProp ? { ...prop, source: prop.source || dataSource } : prop
+        )
+      };
+    })
+  };
 }
 
 function draftUiProjectionFiles(context, candidates, allCandidates = {}) {
@@ -476,6 +502,20 @@ ${capabilityHints.length > 0 ? capabilityHints.map((hint) => `    ${hint}`).join
     brand "Imported ${stem.replace(/_/g, " ")}"
     shell ${shell}
 ${presentations.includes("search") ? "    global_search true\n" : ""}${presentations.includes("multi_window") ? "    windowing multi_window\n" : ""}  }
+
+  ui_design {
+    density comfortable
+    tone operational
+    radius_scale medium
+    color_role primary accent
+    color_role danger critical
+    typography_role body readable
+    typography_role heading prominent
+    action_role primary prominent
+    action_role destructive danger
+    accessibility contrast aa
+    accessibility focus visible
+  }
 
   ui_screens {
 ${uiScreensBlock}
@@ -616,6 +656,9 @@ export function runImportApp(inputPath, options = {}) {
   }
 
   if (candidates.ui) {
+    candidates.ui = enrichUiComponentDataSources(candidates.ui, candidates);
+    files["candidates/app/ui/candidates.json"] = `${JSON.stringify(candidates.ui, null, 2)}\n`;
+    files["candidates/app/ui/report.md"] = reportMarkdown("ui", candidates.ui);
     Object.assign(files, draftUiProjectionFiles(context, candidates.ui, candidates));
   }
 

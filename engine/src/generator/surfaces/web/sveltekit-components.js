@@ -1,5 +1,7 @@
 // @ts-check
 
+import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../../ui/taxonomy.js";
+
 /**
  * @typedef {{ id?: string, name?: string }} ComponentReference
  * @typedef {{ component?: ComponentReference, region?: string, pattern?: string }} ComponentUsage
@@ -62,13 +64,7 @@ export function svelteKitComponentUsageSupport(usage, componentContracts) {
   const pattern = usagePattern(usage, componentContracts);
   return {
     pattern,
-    supported: [
-      "summary_stats",
-      "board_view",
-      "calendar_view",
-      "resource_table",
-      "data_grid_view"
-    ].includes(pattern || "")
+    supported: UI_GENERATOR_RENDERED_COMPONENT_PATTERNS.has(pattern || "")
   };
 }
 

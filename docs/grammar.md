@@ -122,4 +122,28 @@ navigation or command effects, and `declared`/`realized`/`partial` status.
 Behavior `actions` and `submit` directives may reference declared component
 events or existing capabilities.
 
+`ui_components` and semantic design tokens are shared UI ownership surfaces.
+Concrete `ui_web`, `ui_ios`, and future `ui_android` projections inherit them
+through `realizes`; validation rejects concrete projection-local
+`ui_components` and `ui_design`.
+
+```text
+projection proj_ui_shared {
+  # ...
+  ui_design {
+    density compact
+    tone operational
+    radius_scale medium
+    color_role primary accent
+    typography_role body readable
+    action_role primary prominent
+    accessibility contrast aa
+  }
+}
+```
+
+`ui_design` captures semantic intent only. CSS classes, Tailwind tokens,
+framework modifiers, and pixel-level styling stay in generators, templates, or
+maintained application code.
+
 See [Components](./components.md) for generator output and roadmap details.

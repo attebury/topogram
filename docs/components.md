@@ -67,10 +67,11 @@ concrete component event to that capability with
 `event <component_event> action <capability>`.
 
 Component behavior is declared on the component, but realized by shared
-projection usage. In v1, `ui_components` belongs on `ui_shared` projections.
-Concrete `ui_web`, iOS, and Android surfaces realize the shared projection and
-inherit that component wiring. This keeps one reusable component contract from
-splintering into stack-specific copies.
+projection usage. In v1, `ui_components` belongs only on `ui_shared`
+projections. Concrete `ui_web`, iOS, and Android surfaces may define routes and
+surface hints, but they realize the shared projection and inherit component
+wiring. This keeps one reusable component contract from splintering into
+stack-specific copies.
 
 A shared projection `ui_components` entry supplies concrete data bindings and
 event outcomes. Topogram derives a normalized behavior realization for each
@@ -90,6 +91,19 @@ usage:
 This keeps behavior spec-driven: generators and agents consume the same
 normalized contract rather than inferring behavior from SvelteKit, React, or
 template implementation files.
+
+### Semantic Design Intent
+
+Topogram models semantic UI intent, not framework trees, CSS classes, Tailwind
+tokens, or SwiftUI modifiers. Shared UI projections may declare `ui_design`
+tokens such as `density`, `tone`, `color_role`, `typography_role`,
+`radius_scale`, `action_role`, and `accessibility`. Concrete web/native
+contracts inherit those tokens through `realizes`; generators map them to
+framework styling however their stack requires.
+
+Use this only for cross-stack intent that must survive React, SvelteKit, and
+native realization. Put concrete styles in generator packs, templates, or
+maintained app code.
 
 ### Prop defaults
 
@@ -284,7 +298,16 @@ topogram query change-plan ./topogram --component component_ui_data_grid
 topogram query review-packet ./topogram --component component_ui_data_grid --from-topogram ../baseline/topogram
 ```
 
-The slice returns a `context_slice` artifact with `focus.kind === "component"`, the component's referenced shapes, the projections that use it through `ui_components` or matching `patterns`/`regions`, the verifications that target any of those, and a `review_boundary` of `{ automation_class: "review_required", reasons: ["component_surface"] }`.
+The slice returns a `context_slice` artifact with `focus.kind === "component"`,
+the component's referenced shapes, the projections that use it through
+`ui_components` or matching `patterns`/`regions`, the verifications that target
+any of those, and a `review_boundary` of
+`{ automation_class: "review_required", reasons: ["component_surface"] }`.
+Component and UI projection slices also include `ui_agent_packet`, a compact
+agent-facing packet with shared ownership rules, component usage bindings,
+semantic design intent, inherited concrete projections, and the required UI
+gates: `topogram check`, `topogram component check`, and
+`topogram component behavior`.
 
 `context-diff` now emits a `components` section and folds component changes into `affected_generated_surfaces.projections`, so `change-plan`, `review-packet`, and `verification-targets` (with `--from-topogram <path>`) automatically pick up component impacts and recommend `ui-component-contract` regeneration for the affected ids. When `component-behavior-report` is recommended, `resolved-workflow-context` and `single-agent-plan` include the matching behavior report artifact and a `topogram query component-behavior ... --json` command in `recommended_artifact_queries`.
 

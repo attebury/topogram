@@ -27,14 +27,22 @@ policy. Stack-specific realization belongs behind generator manifests.
 Before a generator runs, Topogram resolves the component, validates generator
 compatibility, and builds normalized contracts for that surface:
 
-- web: `ui-web-contract` and related API contracts;
+- web: `ui-web-contract`, including inherited shared screens, component
+  placements, behavior realizations, semantic design tokens, and related API
+  contracts;
 - api: `server-contract` and API contracts;
 - database: DB contract and lifecycle plan;
-- native: routed UI contract and API contracts.
+- native: routed UI contract with the same semantic UI sections and API
+  contracts.
 
 The generator owns framework files such as React routes, SvelteKit
 `+page.svelte` files, Express or Hono handlers, Postgres SQL, SQLite lifecycle
 scripts, Prisma schemas, or Drizzle schemas.
+
+Topogram does not normalize framework component trees or raw styling.
+Generator packs map semantic UI intent such as density, tone, color roles,
+typography roles, action roles, radius scale, and accessibility hints into their
+own CSS, classes, or framework modifiers.
 
 ## Manifest
 

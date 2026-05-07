@@ -1,8 +1,6 @@
 import { buildApiRealization } from "../api/index.js";
 import { generatorDefaultsMap, getProjection, sharedUiProjectionForWeb } from "../../generator/surfaces/shared.js";
 import {
-  buildComponentContractMap,
-  buildComponentUsageContract,
   buildUiSharedRealization
 } from "./build-ui-shared-realization.js";
 
@@ -38,6 +36,7 @@ export function buildWebRealization(graph, options = {}) {
         realizes: [],
         outputs: [],
         components: {},
+        design: null,
         screens: []
       };
   const concreteContract = buildUiSharedRealization(graph, { projectionId: projection.id });
@@ -70,30 +69,15 @@ export function buildWebRealization(graph, options = {}) {
     screenMap.set(screen.id, {
       ...existing,
       ...screen,
-      components: [...(existing.components || []), ...(screen.components || [])],
+      components: [...(existing.components || [])],
       regions: mergeByKey(existing.regions || [], screen.regions || [], (entry) => entry.region),
       patterns: [...new Set([...(existing.patterns || []), ...(screen.patterns || [])])]
     });
   }
-  for (const entry of projection.uiComponents || []) {
-    if (!screenMap.has(entry.screenId)) {
-      continue;
-    }
-    const screen = screenMap.get(entry.screenId);
-    if ((screen.components || []).some((usage) => componentUsageFingerprint(usage) === componentUsageFingerprintFromEntry(entry))) {
-      continue;
-    }
-    screen.components = [...(screen.components || []), buildComponentUsageContract(graph, entry, {
-      region: (screen.regions || []).find((region) => region.region === entry.region) || null
-    })];
-  }
 
   const appShell = projection.uiAppShell?.length || !sharedProjection ? concreteContract.appShell : sharedContract.appShell;
   const navigation = projection.uiNavigation?.length || !sharedProjection ? concreteContract.navigation : sharedContract.navigation;
-  const componentContracts = {
-    ...(sharedContract.components || {}),
-    ...buildComponentContractMap(graph, projection.uiComponents || [])
-  };
+  const design = projection.uiDesign?.length || !sharedProjection ? concreteContract.design : sharedContract.design;
 
   const contract = {
     projection: {
@@ -109,7 +93,8 @@ export function buildWebRealization(graph, options = {}) {
       : null,
     generatorDefaults: generatorDefaultsMap(projection),
     outputs: projection.outputs,
-    components: componentContracts,
+    components: sharedProjection ? (sharedContract.components || {}) : (concreteContract.components || {}),
+    design: design || null,
     appShell: appShell || null,
     navigation: {
       groups: navigation?.groups || [],
@@ -170,22 +155,4 @@ function mergeByKey(left, right, keyFn) {
   for (const entry of left) output.set(keyFn(entry), entry);
   for (const entry of right) output.set(keyFn(entry), { ...(output.get(keyFn(entry)) || {}), ...entry });
   return [...output.values()];
-}
-
-function componentUsageFingerprint(usage) {
-  return [
-    usage?.region || "",
-    usage?.component?.id || "",
-    ...(usage?.dataBindings || []).map((binding) => `data:${binding.prop}:${binding.source?.id || ""}`),
-    ...(usage?.eventBindings || []).map((binding) => `event:${binding.event}:${binding.action}:${binding.target?.id || ""}`)
-  ].join("|");
-}
-
-function componentUsageFingerprintFromEntry(entry) {
-  return [
-    entry?.region || "",
-    entry?.component?.id || "",
-    ...(entry?.dataBindings || []).map((binding) => `data:${binding.prop}:${binding.source?.id || ""}`),
-    ...(entry?.eventBindings || []).map((binding) => `event:${binding.event}:${binding.action}:${binding.target?.id || ""}`)
-  ].join("|");
 }

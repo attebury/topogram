@@ -37,6 +37,16 @@ import {
   UI_NAVIGATION_PATTERNS,
   UI_REGION_KINDS,
   UI_PATTERN_KINDS,
+  UI_APP_SHELL_KINDS,
+  UI_WINDOWING_MODES,
+  UI_STATE_KINDS,
+  UI_DESIGN_DENSITIES,
+  UI_DESIGN_TONES,
+  UI_DESIGN_RADIUS_SCALES,
+  UI_DESIGN_COLOR_ROLES,
+  UI_DESIGN_TYPOGRAPHY_ROLES,
+  UI_DESIGN_ACTION_ROLES,
+  UI_DESIGN_ACCESSIBILITY_VALUES,
   FIELD_SPECS
 } from "./kinds.js";
 import { validateComponent } from "./per-kind/component.js";
@@ -78,6 +88,16 @@ export {
   UI_NAVIGATION_PATTERNS,
   UI_REGION_KINDS,
   UI_PATTERN_KINDS,
+  UI_APP_SHELL_KINDS,
+  UI_WINDOWING_MODES,
+  UI_STATE_KINDS,
+  UI_DESIGN_DENSITIES,
+  UI_DESIGN_TONES,
+  UI_DESIGN_RADIUS_SCALES,
+  UI_DESIGN_COLOR_ROLES,
+  UI_DESIGN_TYPOGRAPHY_ROLES,
+  UI_DESIGN_ACTION_ROLES,
+  UI_DESIGN_ACCESSIBILITY_VALUES,
   FIELD_SPECS
 } from "./kinds.js";
 
@@ -279,7 +299,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "ui_design", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -2320,15 +2340,110 @@ function validateProjectionUiAppShell(errors, statement, fieldMap) {
     }
     seenKeys.add(key);
 
-    if (key === "shell" && !["topbar", "sidebar", "dual_nav", "workspace", "wizard", "bottom_tabs", "split_view", "menu_bar"].includes(value)) {
+    if (key === "shell" && !UI_APP_SHELL_KINDS.has(value)) {
       pushError(errors, `Projection ${statement.id} ui_app_shell has invalid shell '${value}'`, entry.loc);
     }
     if (["global_search", "notifications", "account_menu", "workspace_switcher"].includes(key) && !["true", "false"].includes(value)) {
       pushError(errors, `Projection ${statement.id} ui_app_shell '${key}' must be true or false`, entry.loc);
     }
-    if (key === "windowing" && !["single_window", "multi_window"].includes(value)) {
+    if (key === "windowing" && !UI_WINDOWING_MODES.has(value)) {
       pushError(errors, `Projection ${statement.id} ui_app_shell has invalid windowing '${value}'`, entry.loc);
     }
+  }
+}
+
+function validateProjectionUiDesign(errors, statement, fieldMap) {
+  if (statement.kind !== "projection") {
+    return;
+  }
+
+  const designField = fieldMap.get("ui_design")?.[0];
+  if (!designField || designField.value.type !== "block") {
+    return;
+  }
+
+  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
+    pushError(errors, `Projection ${statement.id} ui_design belongs on shared UI projections; concrete UI projections inherit semantic design intent through 'realizes'`, designField.loc);
+  }
+
+  for (const entry of designField.value.entries) {
+    const tokens = blockSymbolItems(entry).map((item) => item.value);
+    const [key, value, extra] = tokens;
+
+    if (key === "density") {
+      if (!UI_DESIGN_DENSITIES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design density has invalid value '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 2) {
+        pushError(errors, `Projection ${statement.id} ui_design density accepts exactly one value`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "tone") {
+      if (!UI_DESIGN_TONES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design tone has invalid value '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 2) {
+        pushError(errors, `Projection ${statement.id} ui_design tone accepts exactly one value`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "radius_scale") {
+      if (!UI_DESIGN_RADIUS_SCALES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design radius_scale has invalid value '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 2) {
+        pushError(errors, `Projection ${statement.id} ui_design radius_scale accepts exactly one value`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "color_role") {
+      if (!UI_DESIGN_COLOR_ROLES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design color_role has invalid role '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 3) {
+        pushError(errors, `Projection ${statement.id} ui_design color_role must use 'color_role <role> <semantic-token>'`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "typography_role") {
+      if (!UI_DESIGN_TYPOGRAPHY_ROLES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design typography_role has invalid role '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 3) {
+        pushError(errors, `Projection ${statement.id} ui_design typography_role must use 'typography_role <role> <semantic-token>'`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "action_role") {
+      if (!UI_DESIGN_ACTION_ROLES.has(value || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design action_role has invalid role '${value}'`, entry.loc);
+      }
+      if (tokens.length !== 3) {
+        pushError(errors, `Projection ${statement.id} ui_design action_role must use 'action_role <role> <semantic-token>'`, entry.loc);
+      }
+      continue;
+    }
+
+    if (key === "accessibility") {
+      const values = UI_DESIGN_ACCESSIBILITY_VALUES[value];
+      if (tokens.length !== 3) {
+        pushError(errors, `Projection ${statement.id} ui_design accessibility must use 'accessibility <setting> <value>'`, entry.loc);
+      }
+      if (!values) {
+        pushError(errors, `Projection ${statement.id} ui_design accessibility has invalid setting '${value}'`, entry.loc);
+      } else if (!values.has(extra || "")) {
+        pushError(errors, `Projection ${statement.id} ui_design accessibility '${value}' has invalid value '${extra}'`, entry.loc);
+      }
+      continue;
+    }
+
+    pushError(errors, `Projection ${statement.id} ui_design has unknown key '${key}'`, entry.loc);
   }
 }
 
@@ -2458,7 +2573,7 @@ function validateProjectionUiScreenRegions(errors, statement, fieldMap, registry
     if (directives.has("placement") && !["primary", "secondary", "supporting"].includes(directives.get("placement"))) {
       pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
     }
-    if (directives.has("state") && !["loading", "empty", "error", "unauthorized", "not_found", "success"].includes(directives.get("state"))) {
+    if (directives.has("state") && !UI_STATE_KINDS.has(directives.get("state"))) {
       pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid state '${directives.get("state")}'`, entry.loc);
     }
   }
@@ -2472,6 +2587,10 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
   const componentsField = fieldMap.get("ui_components")?.[0];
   if (!componentsField || componentsField.value.type !== "block") {
     return;
+  }
+
+  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
+    pushError(errors, `Projection ${statement.id} ui_components belongs on shared UI projections; concrete UI projections inherit component placement through 'realizes'`, componentsField.loc);
   }
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
@@ -3387,6 +3506,7 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionUiLookups(errors, statement, fieldMap, registry);
       validateProjectionUiRoutes(errors, statement, fieldMap, registry);
       validateProjectionUiAppShell(errors, statement, fieldMap);
+      validateProjectionUiDesign(errors, statement, fieldMap);
       validateProjectionUiNavigation(errors, statement, fieldMap, registry);
       validateProjectionUiScreenRegions(errors, statement, fieldMap, registry);
       validateProjectionUiComponents(errors, statement, fieldMap, registry);

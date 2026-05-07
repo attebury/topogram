@@ -33,6 +33,20 @@ projection proj_ui_shared {
     footer legal
   }
 
+  ui_design {
+    density compact
+    tone operational
+    radius_scale medium
+    color_role primary accent
+    color_role danger critical
+    typography_role body readable
+    typography_role heading prominent
+    action_role primary prominent
+    action_role destructive danger
+    accessibility contrast aa
+    accessibility focus visible
+  }
+
   ui_screens {
     screen project_list kind list title "Projects" load cap_list_projects item_shape shape_output_project_card detail_capability cap_get_project primary_action cap_create_project empty_title "No projects yet" empty_body "Create a project to organize your tasks" loading_state skeleton error_state inline
     screen project_detail kind detail title "Project Details" load cap_get_project view_shape shape_output_project_detail primary_action cap_update_project loading_state skeleton

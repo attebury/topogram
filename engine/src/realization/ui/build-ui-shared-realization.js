@@ -1,5 +1,6 @@
 import { getProjection, uiProjectionCandidates } from "../../generator/surfaces/shared.js";
 import { buildComponentBehaviorRealizations } from "../../component-behavior.js";
+import { defaultPatternForScreen } from "../../ui/taxonomy.js";
 
 function toBooleanFlag(value, fallback = false) {
   if (value === "true") return true;
@@ -47,21 +48,6 @@ function ownershipFieldByCapability(graph) {
   return output;
 }
 
-function deriveDefaultPattern(screen, collectionEntries) {
-  if (screen.kind === "detail") return "detail_panel";
-  if (screen.kind === "form") return "edit_form";
-  if (screen.kind === "board") return "board_view";
-  if (screen.kind === "calendar") return "calendar_view";
-  if (screen.kind === "dashboard" || screen.kind === "analytics" || screen.kind === "report") return "summary_stats";
-  if (screen.kind === "feed" || screen.kind === "inbox") return "activity_feed";
-  const view = collectionEntries.find((entry) => entry.operation === "view")?.value;
-  if (view === "data_grid") return "data_grid_view";
-  if (view === "table") return "resource_table";
-  if (view === "cards" || view === "gallery") return "resource_cards";
-  if (screen.kind === "list") return "resource_table";
-  return null;
-}
-
 function componentById(graph, componentId) {
   return (graph.byKind.component || []).find((component) => component.id === componentId) || null;
 }
@@ -86,6 +72,50 @@ function summarizeComponentRef(graph, componentId) {
 
 function regionContractFor(regionEntries, regionName) {
   return (regionEntries || []).find((entry) => entry.region === regionName) || null;
+}
+
+function buildDesignIntentContract(projection) {
+  const design = {
+    density: "comfortable",
+    tone: "operational",
+    radiusScale: "medium",
+    colorRoles: {},
+    typographyRoles: {},
+    actionRoles: {},
+    accessibility: {}
+  };
+
+  for (const entry of projection.uiDesign || []) {
+    if (entry.key === "density" && entry.role) {
+      design.density = entry.role;
+      continue;
+    }
+    if (entry.key === "tone" && entry.role) {
+      design.tone = entry.role;
+      continue;
+    }
+    if (entry.key === "radius_scale" && entry.role) {
+      design.radiusScale = entry.role;
+      continue;
+    }
+    if (entry.key === "color_role" && entry.role && entry.value) {
+      design.colorRoles[entry.role] = entry.value;
+      continue;
+    }
+    if (entry.key === "typography_role" && entry.role && entry.value) {
+      design.typographyRoles[entry.role] = entry.value;
+      continue;
+    }
+    if (entry.key === "action_role" && entry.role && entry.value) {
+      design.actionRoles[entry.role] = entry.value;
+      continue;
+    }
+    if (entry.key === "accessibility" && entry.role && entry.value) {
+      design.accessibility[entry.role] = entry.value;
+    }
+  }
+
+  return design;
 }
 
 export function buildComponentUsageContract(graph, entry, options = {}) {
@@ -184,7 +214,7 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
   );
   const visibilityEntries = (projection.uiVisibility || []).filter((entry) => screenActionIds.has(entry.capability?.id));
   const patterns = new Set(regionEntries.map((entry) => entry.pattern).filter(Boolean));
-  const derivedDefaultPattern = deriveDefaultPattern(screen, collectionEntries);
+  const derivedDefaultPattern = defaultPatternForScreen(screen, collectionEntries);
   if (derivedDefaultPattern) {
     patterns.add(derivedDefaultPattern);
   }
@@ -286,6 +316,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       realizes: projection.realizes,
       outputs: projection.outputs,
       components: buildComponentContractMap(graph, componentUsages),
+      design: buildDesignIntentContract(projection),
       appShell: buildAppShellContract(projection),
       navigation: buildNavigationContract(projection, screens),
       screens
@@ -305,6 +336,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       realizes: projection.realizes,
       outputs: projection.outputs,
       components: buildComponentContractMap(graph, componentUsages),
+      design: buildDesignIntentContract(projection),
       appShell: buildAppShellContract(projection),
       navigation: buildNavigationContract(projection, screens),
       screens

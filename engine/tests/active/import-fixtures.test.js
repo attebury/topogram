@@ -130,20 +130,42 @@ test("brownfield UI import writes reviewable component candidates and shared bin
   assert.equal(payload.ok, true);
   assert.equal(payload.candidateCounts.uiComponents, 1);
 
+  const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
+  const componentCandidate = uiCandidates.components[0];
+  assert.equal(componentCandidate.id_hint, "component_ui_task_list_results");
+  assert.equal(componentCandidate.inferred_region, "results");
+  assert.equal(componentCandidate.inferred_pattern, "search_results");
+  assert.deepEqual(componentCandidate.inferred_props, [
+    { name: "rows", type: "array", required: true, source: "cap_list_tasks" }
+  ]);
+  assert.deepEqual(componentCandidate.inferred_events, []);
+  assert.equal(componentCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
+  assert.equal((componentCandidate.evidence || []).length > 0, true);
+
   const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-shared.tg");
   const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "components", "ui-task-list-results.tg");
   assert.equal(fs.existsSync(sharedDraftPath), true);
   assert.equal(fs.existsSync(componentDraftPath), true);
 
   const sharedDraft = fs.readFileSync(sharedDraftPath, "utf8");
+  assert.match(sharedDraft, /platform ui_shared/);
+  assert.match(sharedDraft, /ui_design \{/);
   assert.match(sharedDraft, /ui_components \{/);
   assert.match(sharedDraft, /screen task_list region results component component_ui_task_list_results data rows from cap_list_tasks/);
   assert.doesNotMatch(sharedDraft, /\[object Object\]/);
 
   const componentDraft = fs.readFileSync(componentDraftPath, "utf8");
+  assert.match(componentDraft, /# Import metadata: confidence low; evidence \d+; inferred pattern search_results; inferred region results\./);
+  assert.match(componentDraft, /# Missing decisions: confirm component reuse boundary; confirm prop names and data source; confirm events and behavior; confirm supported regions and patterns\./);
   assert.match(componentDraft, /component component_ui_task_list_results \{/);
   assert.match(componentDraft, /patterns \[search_results\]/);
   assert.match(componentDraft, /status proposed/);
+
+  const uiReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "report.md"), "utf8");
+  assert.match(uiReport, /## Component Candidates/);
+  assert.match(uiReport, /`component_ui_task_list_results` confidence low pattern `search_results` region `results` evidence \d+ missing decisions 4/);
+  assert.match(uiReport, /topogram component check <path>/);
+  assert.match(uiReport, /topogram component behavior <path>/);
 
   const plan = runCli(["import", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);

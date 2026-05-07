@@ -503,6 +503,7 @@ function buildProjectionPlan(statement) {
     uiVisibility: statement.uiVisibility,
     uiRoutes: statement.uiRoutes,
     uiWeb: statement.uiWeb,
+    uiDesign: statement.uiDesign,
     uiComponents: statement.uiComponents,
     dbTables: statement.dbTables,
     dbColumns: statement.dbColumns,
@@ -1269,6 +1270,17 @@ function parseProjectionUiAppShellBlock(statement) {
   }));
 }
 
+function parseProjectionUiDesignBlock(statement) {
+  return blockEntries(getFieldValue(statement, "ui_design")).map((entry) => ({
+    type: "ui_design_token",
+    key: tokenValue(entry.items[0]) || null,
+    role: tokenValue(entry.items[1]) || null,
+    value: tokenValue(entry.items[2]) || null,
+    raw: normalizeSequence(entry.items),
+    loc: entry.loc
+  }));
+}
+
 function parseProjectionUiNavigationBlock(statement) {
   return blockEntries(getFieldValue(statement, "ui_navigation")).map((entry) => {
     const directives = {};
@@ -1869,6 +1881,7 @@ export function normalizeStatement(statement, registry) {
         uiWeb: parseProjectionUiWebBlock(statement, registry),
         uiIos: parseProjectionUiIosBlock(statement, registry),
         uiAppShell: parseProjectionUiAppShellBlock(statement),
+        uiDesign: parseProjectionUiDesignBlock(statement),
         uiNavigation: parseProjectionUiNavigationBlock(statement),
         uiScreenRegions: parseProjectionUiScreenRegionsBlock(statement),
         uiComponents: parseProjectionUiComponentsBlock(statement, registry),

@@ -194,6 +194,7 @@ function projectionSlice(graph, projectionId) {
     verification_targets: recommendedVerificationTargets(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...components], {
       rationale: "Projection slices affect generated contract and runtime surfaces, so verification should follow the projection closure."
     }),
+    ui_agent_packet: uiAgentPacketForProjection(graph, projection),
     write_scope: buildDefaultWriteScope(),
     review_boundary: projection.reviewBoundary || {
       automation_class: "review_required",
@@ -286,6 +287,7 @@ function componentSlice(graph, componentId) {
     verification_targets: recommendedVerificationTargets(graph, verificationScope, {
       rationale: "Component changes affect every related projection — verification should follow the component contract closure."
     }),
+    ui_agent_packet: uiAgentPacketForComponent(graph, component, projections),
     write_scope: buildDefaultWriteScope(),
     review_boundary: {
       automation_class: "review_required",
@@ -329,6 +331,135 @@ function componentDependencyKind(dependency) {
     return "capability";
   }
   return prefix || null;
+}
+
+function uiAgentPacketForProjection(graph, projection) {
+  if (!String(projection.platform || "").startsWith("ui_")) {
+    return null;
+  }
+  const sharedProjection = projection.platform === "ui_shared"
+    ? projection
+    : sharedUiProjectionFor(graph, projection);
+  const ownerProjection = sharedProjection || projection;
+  return {
+    type: "ui_agent_packet",
+    version: 1,
+    ownership: {
+      componentPlacement: "ui_shared",
+      designIntent: "ui_shared",
+      concreteSurfaceOwns: ["routes", "surface_hints"]
+    },
+    sharedProjection: sharedProjection
+      ? {
+          id: sharedProjection.id,
+          name: sharedProjection.name || sharedProjection.id
+        }
+      : null,
+    screens: (ownerProjection.uiScreens || []).map((screen) => ({
+      id: screen.id,
+      kind: screen.kind,
+      title: screen.title || screen.id
+    })),
+    routes: (projection.uiRoutes || []).map((route) => ({
+      screenId: route.screenId,
+      path: route.path
+    })),
+    components: (ownerProjection.uiComponents || []).map((usage) => componentUsagePacket(usage)),
+    design: designIntentPacket(ownerProjection),
+    requiredGates: uiRequiredGates(projection.id)
+  };
+}
+
+function uiAgentPacketForComponent(graph, component, projectionIds) {
+  const projectionSet = new Set(projectionIds);
+  const sourceUsages = [];
+  for (const projection of graph.byKind.projection || []) {
+    for (const usage of projection.uiComponents || []) {
+      if (usage.component?.id !== component.id) continue;
+      sourceUsages.push({
+        projection: {
+          id: projection.id,
+          platform: projection.platform,
+          ownership: projection.platform === "ui_shared" ? "owner" : "concrete"
+        },
+        usage: componentUsagePacket(usage),
+        design: designIntentPacket(projection)
+      });
+      projectionSet.add(projection.id);
+    }
+  }
+
+  return {
+    type: "ui_agent_packet",
+    version: 1,
+    ownership: {
+      componentContract: "component",
+      componentPlacement: "ui_shared",
+      concreteSurfacesInherit: true
+    },
+    component: {
+      id: component.id,
+      name: component.name || component.id,
+      category: component.category || null,
+      patterns: component.componentContract?.patterns || [],
+      regions: component.componentContract?.regions || [],
+      behaviors: component.componentContract?.behaviors || []
+    },
+    sourceUsages,
+    inheritedBy: [...projectionSet]
+      .filter((projectionId) => !sourceUsages.some((entry) => entry.projection.id === projectionId))
+      .sort(),
+    requiredGates: uiRequiredGates(null, component.id)
+  };
+}
+
+function sharedUiProjectionFor(graph, projection) {
+  for (const reference of projection.realizes || []) {
+    const candidate = (graph.byKind.projection || []).find((entry) => entry.id === reference.id);
+    if (candidate?.platform === "ui_shared") {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+function componentUsagePacket(usage) {
+  return {
+    screenId: usage.screenId || null,
+    region: usage.region || null,
+    componentId: usage.component?.id || null,
+    dataBindings: (usage.dataBindings || []).map((binding) => ({
+      prop: binding.prop || null,
+      source: binding.source?.id || binding.source || null
+    })),
+    eventBindings: (usage.eventBindings || []).map((binding) => ({
+      event: binding.event || null,
+      action: binding.action || null,
+      target: binding.target?.id || binding.target || null
+    }))
+  };
+}
+
+function designIntentPacket(projection) {
+  return (projection.uiDesign || []).map((entry) => ({
+    key: entry.key,
+    role: entry.role,
+    value: entry.value
+  }));
+}
+
+function uiRequiredGates(projectionId = null, componentId = null) {
+  return [
+    { command: "topogram check", reason: "Validate shared UI ownership, taxonomy, references, and topology." },
+    {
+      command: `topogram component check${projectionId ? ` --projection ${projectionId}` : ""}${componentId ? ` --component ${componentId}` : ""}`,
+      reason: "Validate component placement, props, events, regions, and patterns."
+    },
+    {
+      command: `topogram component behavior${projectionId ? ` --projection ${projectionId}` : ""}${componentId ? ` --component ${componentId}` : ""}`,
+      reason: "Inspect behavior realizations and partial bindings before code changes."
+    }
+  ];
 }
 
 function journeySlice(graph, journeyId) {
