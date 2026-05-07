@@ -2449,23 +2449,23 @@ function validateProjectionUiOwnership(errors, statement, fieldMap) {
     return;
   }
 
-  const platform = symbolValue(getFieldValue(statement, "type"));
+  const projectionType = symbolValue(getFieldValue(statement, "type"));
   for (const key of SHARED_UI_SEMANTIC_BLOCKS) {
     const field = fieldMap.get(key)?.[0];
     if (!field || field.value.type !== "block") {
       continue;
     }
-    if (platform !== "ui_contract") {
+    if (projectionType !== "ui_contract") {
       pushError(
         errors,
-        `Projection ${statement.id} ${key} belongs on shared UI projections; concrete UI projections may define screen_routes and platform surface hints only`,
+        `Projection ${statement.id} ${key} belongs on shared UI projections; concrete UI projections may define screen_routes and surface hints only`,
         field.loc
       );
     }
   }
 
   const routesField = fieldMap.get("screen_routes")?.[0];
-  if (routesField?.value.type === "block" && !["web_surface", "ios_surface"].includes(platform || "")) {
+  if (routesField?.value.type === "block" && !["web_surface", "ios_surface"].includes(projectionType || "")) {
     pushError(
       errors,
       `Projection ${statement.id} screen_routes belongs on concrete UI projections; shared UI projections own semantic screens and regions`,
@@ -2979,7 +2979,7 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const seenPaths = new Set();
-  const platform = symbolValue(getFieldValue(statement, "type"));
+  const projectionType = symbolValue(getFieldValue(statement, "type"));
 
   for (const entry of routesField.value.entries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
@@ -2999,7 +2999,7 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
       pushError(errors, `Projection ${statement.id} screen_routes for '${screenId}' must include a path`, entry.loc);
       continue;
     }
-    if ((platform === "web_surface" || platform === "ios_surface") && !routePath.startsWith("/")) {
+    if ((projectionType === "web_surface" || projectionType === "ios_surface") && !routePath.startsWith("/")) {
       pushError(errors, `Projection ${statement.id} screen_routes for '${screenId}' must use an absolute path`, entry.loc);
     }
     if (seenPaths.has(routePath)) {
@@ -3009,7 +3009,7 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
   }
 }
 
-function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, surfaceBlockKey, expectedPlatform) {
+function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, surfaceBlockKey, expectedProjectionType) {
   if (statement.kind !== "projection") {
     return;
   }
@@ -3019,9 +3019,9 @@ function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry,
     return;
   }
 
-  const platform = symbolValue(getFieldValue(statement, "type"));
-  if (platform !== expectedPlatform) {
-    pushError(errors, `Projection ${statement.id} may only use '${surfaceBlockKey}' when platform is '${expectedPlatform}'`, surfaceField.loc);
+  const projectionType = symbolValue(getFieldValue(statement, "type"));
+  if (projectionType !== expectedProjectionType) {
+    pushError(errors, `Projection ${statement.id} may only use '${surfaceBlockKey}' when projection type is '${expectedProjectionType}'`, surfaceField.loc);
     return;
   }
 

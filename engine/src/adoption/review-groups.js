@@ -10,7 +10,7 @@ export function buildProjectionReviewGroups(items) {
           id: dependency.id,
           projection_id: dependency.projection_id,
           kind: dependency.kind,
-          platform: dependency.platform,
+          projection_type: dependency.projection_type,
           reason: dependency.reason,
           items: []
         });
@@ -47,7 +47,7 @@ export function buildUiReviewGroups(items) {
           id: dependency.id,
           projection_id: dependency.projection_id,
           kind: dependency.kind,
-          platform: dependency.platform,
+          projection_type: dependency.projection_type,
           reason: dependency.reason,
           items: []
         });

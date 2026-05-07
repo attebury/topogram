@@ -40,7 +40,6 @@ test("buildJourneyDrafts creates creation lifecycle and core flow drafts with st
     projections: [
       {
         id: "proj_ui_contract",
-        platform: "ui_contract",
         type: "ui_contract",
         screens: [
           { id: "issue_list", kind: "list", title: "Issue Board" },
