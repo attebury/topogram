@@ -3680,7 +3680,8 @@ function bestContextBundleForCandidate(bundles, candidate) {
 function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const dbCandidates = appImport.candidates.db || { entities: [], enums: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
-  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], components: [] };
+  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], widgets: [] };
+  const uiWidgetCandidates = uiCandidates.widgets || uiCandidates.components || [];
   const workflowCandidates = appImport.candidates.workflows || { workflows: [], workflow_states: [], workflow_transitions: [] };
   const verificationCandidates = appImport.candidates.verification || { verifications: [], scenarios: [], frameworks: [], scripts: [] };
   const docCandidates = appImport.candidates.docs || [];
@@ -3691,7 +3692,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const canonicalRoleIds = new Set((graph?.byKind.role || []).map((entry) => entry.id));
   const canonicalEntityIds = new Set((graph?.byKind.entity || []).map((entry) => entry.id));
   const canonicalEnumIds = new Set((graph?.byKind.enum || []).map((entry) => entry.id));
-  const canonicalComponentIds = new Set((graph?.byKind.component || []).map((entry) => entry.id));
+  const canonicalComponentIds = new Set([...(graph?.byKind.widget || []), ...(graph?.byKind.component || [])].map((entry) => entry.id));
   const canonicalUi = collectCanonicalUiSurface(graph || { byKind: { projection: [] } });
   const canonicalWorkflow = collectCanonicalWorkflowSurface(graph || { byKind: { decision: [] }, docs: [] });
   const canonicalDocsByKind = new Map();
@@ -3800,7 +3801,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     return `entity_${canonicalCandidateTerm(screenStem || entry.id_hint)}`;
   }
 
-  for (const entry of uiCandidates.components || []) {
+  for (const entry of uiWidgetCandidates) {
     if (canonicalComponentIds.has(entry.id_hint)) {
       continue;
     }

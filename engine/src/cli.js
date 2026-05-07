@@ -5686,7 +5686,7 @@ function importCandidateCounts(summary) {
     apiRoutes: candidates.api?.routes?.length || 0,
     uiScreens: candidates.ui?.screens?.length || 0,
     uiRoutes: candidates.ui?.routes?.length || 0,
-    uiComponents: candidates.ui?.components?.length || 0,
+    uiWidgets: candidates.ui?.widgets?.length || candidates.ui?.components?.length || 0,
     workflows: candidates.workflows?.workflows?.length || 0,
     verifications: candidates.verification?.verifications?.length || 0
   };

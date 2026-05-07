@@ -126,12 +126,19 @@ function capabilityHintsForScreen(screen) {
   return rawHints.map(normalizeCapabilityHint).filter(Boolean);
 }
 
-function inferredDataSourceForComponent(component, allCandidates) {
-  if (component.data_source) {
-    return component.data_source;
+function uiWidgetCandidates(candidates) {
+  return [
+    ...(Array.isArray(candidates?.widgets) ? candidates.widgets : []),
+    ...(Array.isArray(candidates?.components) ? candidates.components : [])
+  ];
+}
+
+function inferredDataSourceForWidget(widget, allCandidates) {
+  if (widget.data_source) {
+    return widget.data_source;
   }
   const capabilityIds = importedApiCapabilityIds(allCandidates);
-  const screenStem = String(component.screen_id || "")
+  const screenStem = String(widget.screen_id || "")
     .replace(/_(list|index|table|grid|results)$/, "")
     .replace(/^list_/, "");
   return capabilityIds.find((id) => /^cap_(list|get)_/.test(id) && id.includes(screenStem)) ||
@@ -139,22 +146,22 @@ function inferredDataSourceForComponent(component, allCandidates) {
     null;
 }
 
-function deriveUiComponentCandidates(candidates) {
+function deriveUiWidgetCandidates(candidates) {
   const screens = candidates.screens || [];
   const actions = candidates.actions || [];
   const presentations = [...new Set(actions
     .filter((entry) => entry.kind === "ui_presentation")
     .map((entry) => entry.presentation)
     .filter(Boolean))].sort();
-  const componentScreens = screens.filter((screen) => ["list", "dashboard", "analytics", "report", "feed", "inbox"].includes(screen.screen_kind));
+  const widgetScreens = screens.filter((screen) => ["list", "dashboard", "analytics", "report", "feed", "inbox"].includes(screen.screen_kind));
 
-  return componentScreens.map((screen) => {
+  return widgetScreens.map((screen) => {
     const pattern = collectionPatternFromPresentations(presentations);
-    const componentStem = idHintify(`${screen.id_hint}_results`);
+    const widgetStem = idHintify(`${screen.id_hint}_results`);
     const loadCapability = loadCapabilityForScreen(screen);
     return makeCandidateRecord({
       kind: "widget",
-      idHint: `widget_${componentStem}`,
+      idHint: `widget_${widgetStem}`,
       label: `${screen.label || screen.id_hint} results`,
       confidence: presentations.length > 0 ? "medium" : "low",
       sourceKind: "ui_projection_inference",
@@ -204,13 +211,13 @@ function normalizeCandidatesForTrack(track, candidates) {
     };
   }
   if (track === "ui") {
-    const explicitComponents = candidates.components || [];
-    const derivedComponents = deriveUiComponentCandidates(candidates);
+    const explicitWidgets = uiWidgetCandidates(candidates);
+    const derivedWidgets = deriveUiWidgetCandidates(candidates);
     return {
       screens: dedupeCandidateRecords(candidates.screens || [], (record) => record.id_hint),
       routes: dedupeCandidateRecords(candidates.routes || [], (record) => record.id_hint),
       actions: dedupeCandidateRecords(candidates.actions || [], (record) => record.id_hint),
-      components: dedupeCandidateRecords([...explicitComponents, ...derivedComponents], (record) => record.id_hint),
+      widgets: dedupeCandidateRecords([...explicitWidgets, ...derivedWidgets], (record) => record.id_hint),
       stacks: [...new Set(candidates.stacks || [])].sort()
     };
   }
@@ -289,11 +296,12 @@ function reportMarkdown(track, candidates) {
     );
   }
   if (track === "ui") {
-    const componentLines = (candidates.components || []).map((component) =>
-      `- \`${component.id_hint}\` confidence ${component.confidence || "unknown"} pattern \`${component.pattern || component.inferred_pattern || "unknown"}\` region \`${component.region || component.inferred_region || "unknown"}\` evidence ${(component.evidence || component.provenance || []).length} missing decisions ${(component.missing_decisions || []).length}`
+    const widgets = uiWidgetCandidates(candidates);
+    const widgetLines = widgets.map((widget) =>
+      `- \`${widget.id_hint}\` confidence ${widget.confidence || "unknown"} pattern \`${widget.pattern || widget.inferred_pattern || "unknown"}\` region \`${widget.region || widget.inferred_region || "unknown"}\` evidence ${(widget.evidence || widget.provenance || []).length} missing decisions ${(widget.missing_decisions || []).length}`
     );
     return ensureTrailingNewline(
-      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Widgets: ${candidates.components.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Widget Candidates\n\n${componentLines.length ? componentLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`
+      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Widgets: ${widgets.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Widget Candidates\n\n${widgetLines.length ? widgetLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`
     );
   }
   if (track === "verification") {
@@ -318,60 +326,62 @@ function projectionIdStem(workspaceRoot) {
     .replace(/^_+|_+$/g, "") || "imported_app";
 }
 
-function componentCandidateFileName(component) {
-  return `${String(component.id_hint || "widget")
+function widgetCandidateFileName(widget) {
+  return `${String(widget.id_hint || "widget")
     .replace(/^component_/, "")
     .replace(/_/g, "-")}.tg`;
 }
 
-function renderComponentCandidate(component) {
-  const evidenceCount = (component.evidence || component.provenance || []).length;
-  const missingDecisions = component.missing_decisions || [
+function renderWidgetCandidate(widget) {
+  const evidenceCount = (widget.evidence || widget.provenance || []).length;
+  const missingDecisions = widget.missing_decisions || [
     "confirm widget reuse boundary",
     "confirm prop names and data source",
     "confirm events and behavior"
   ];
-  return `widget ${component.id_hint} {
-  # Import metadata: confidence ${component.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${component.pattern || component.inferred_pattern || "search_results"}; inferred region ${component.region || component.inferred_region || "results"}.
+  return `widget ${widget.id_hint} {
+  # Import metadata: confidence ${widget.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${widget.pattern || widget.inferred_pattern || "search_results"}; inferred region ${widget.region || widget.inferred_region || "results"}.
   # Missing decisions: ${missingDecisions.join("; ")}.
-  name "${component.label || component.id_hint}"
+  name "${widget.label || widget.id_hint}"
   description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
   category collection
   props {
-    ${component.data_prop || "rows"} array required
+    ${widget.data_prop || "rows"} array required
   }
-  patterns [${component.pattern || "search_results"}]
-  regions [${component.region || "results"}]
+  patterns [${widget.pattern || "search_results"}]
+  regions [${widget.region || "results"}]
   status proposed
 }
 `;
 }
 
-function uiComponentLinesForCandidates(componentCandidates, allCandidates) {
-  return componentCandidates
-    .filter((component) => component.screen_id && component.region && component.id_hint)
-    .map((component) => {
-      const dataSource = inferredDataSourceForComponent(component, allCandidates);
+function uiWidgetLinesForCandidates(widgetCandidates, allCandidates) {
+  return widgetCandidates
+    .filter((widget) => widget.screen_id && widget.region && widget.id_hint)
+    .map((widget) => {
+      const dataSource = inferredDataSourceForWidget(widget, allCandidates);
       const dataBinding = dataSource
-        ? ` data ${component.data_prop || "rows"} from ${dataSource}`
+        ? ` data ${widget.data_prop || "rows"} from ${dataSource}`
         : "";
-      return `    screen ${component.screen_id} region ${component.region} widget ${component.id_hint}${dataBinding}`;
+      return `    screen ${widget.screen_id} region ${widget.region} widget ${widget.id_hint}${dataBinding}`;
     });
 }
 
-function enrichUiComponentDataSources(uiCandidates, allCandidates) {
-  if (!uiCandidates || !Array.isArray(uiCandidates.components)) {
+function enrichUiWidgetDataSources(uiCandidates, allCandidates) {
+  if (!uiCandidates) {
     return uiCandidates;
   }
+  const widgets = uiWidgetCandidates(uiCandidates);
+  const { components, ...canonicalCandidates } = uiCandidates;
   return {
-    ...uiCandidates,
-    components: uiCandidates.components.map((component) => {
-      const dataSource = inferredDataSourceForComponent(component, allCandidates);
-      const dataProp = component.data_prop || "rows";
+    ...canonicalCandidates,
+    widgets: widgets.map((widget) => {
+      const dataSource = inferredDataSourceForWidget(widget, allCandidates);
+      const dataProp = widget.data_prop || "rows";
       return {
-        ...component,
-        data_source: component.data_source || dataSource,
-        inferred_props: (component.inferred_props || []).map((prop) =>
+        ...widget,
+        data_source: widget.data_source || dataSource,
+        inferred_props: (widget.inferred_props || []).map((prop) =>
           prop.name === dataProp ? { ...prop, source: prop.source || dataSource } : prop
         )
       };
@@ -384,7 +394,7 @@ function draftUiProjectionFiles(context, candidates, allCandidates = {}) {
   const screens = [...(ui.screens || [])].sort((a, b) => String(a.route_path || "").localeCompare(String(b.route_path || "")) || a.id_hint.localeCompare(b.id_hint));
   const routes = new Map((ui.routes || []).map((route) => [route.screen_id, route.path]));
   const actions = ui.actions || [];
-  const componentCandidates = [...(ui.components || [])].sort((a, b) => a.id_hint.localeCompare(b.id_hint));
+  const widgetCandidates = [...uiWidgetCandidates(ui)].sort((a, b) => a.id_hint.localeCompare(b.id_hint));
   const shell = actions.find((entry) => entry.kind === "ui_shell")?.shell_kind || "topbar";
   const navigationPatterns = uniqueSorted(actions.filter((entry) => entry.kind === "navigation").map((entry) => entry.navigation_pattern));
   const presentations = uniqueSorted(actions.filter((entry) => entry.kind === "ui_presentation").map((entry) => entry.presentation));
@@ -486,7 +496,7 @@ function draftUiProjectionFiles(context, candidates, allCandidates = {}) {
       }
     }
   }
-  const uiComponentLines = uiComponentLinesForCandidates(componentCandidates, allCandidates);
+  const uiWidgetLines = uiWidgetLinesForCandidates(widgetCandidates, allCandidates);
 
   const uiSharedDraft = `projection proj_ui_contract_imported_${stem} {
   name "Imported UI Contract Draft"
@@ -525,7 +535,7 @@ ${uiCollectionsLines.length > 0 ? `  collection_views {\n${uiCollectionsLines.jo
 ${uiNavigationLines.join("\n")}
   }
 
-${uiScreenRegionLines.length > 0 ? `  screen_regions {\n${uiScreenRegionLines.join("\n")}\n  }\n\n` : ""}${uiComponentLines.length > 0 ? `  widget_bindings {\n${uiComponentLines.join("\n")}\n  }\n\n` : ""}  status proposed
+${uiScreenRegionLines.length > 0 ? `  screen_regions {\n${uiScreenRegionLines.join("\n")}\n  }\n\n` : ""}${uiWidgetLines.length > 0 ? `  widget_bindings {\n${uiWidgetLines.join("\n")}\n  }\n\n` : ""}  status proposed
 }
 `;
 
@@ -594,7 +604,7 @@ ${uiWebLines.length > 0 ? `  web_hints {\n${uiWebLines.join("\n")}\n  }\n\n` : "
 
 - Draft UI contract projection: \`candidates/app/ui/drafts/proj-ui-contract.tg\`
 - Draft web surface projection: \`candidates/app/ui/drafts/proj-web-surface.tg\`
-- Draft widget candidates: ${componentCandidates.length}
+- Draft widget candidates: ${widgetCandidates.length}
 - Imported screens: ${screens.length}
 - Imported routes: ${(ui.routes || []).length}
 - Imported UI actions/presentations: ${actions.length}
@@ -616,8 +626,8 @@ ${uiWebLines.length > 0 ? `  web_hints {\n${uiWebLines.join("\n")}\n  }\n\n` : "
     "candidates/app/ui/drafts/proj-web-surface.tg": ensureTrailingNewline(uiWebDraft),
     "candidates/app/ui/drafts/README.md": ensureTrailingNewline(coverage)
   };
-  for (const component of componentCandidates) {
-    files[`candidates/app/ui/drafts/widgets/${componentCandidateFileName(component)}`] = ensureTrailingNewline(renderComponentCandidate(component));
+  for (const widget of widgetCandidates) {
+    files[`candidates/app/ui/drafts/widgets/${widgetCandidateFileName(widget)}`] = ensureTrailingNewline(renderWidgetCandidate(widget));
   }
   return files;
 }
@@ -656,7 +666,7 @@ export function runImportApp(inputPath, options = {}) {
   }
 
   if (candidates.ui) {
-    candidates.ui = enrichUiComponentDataSources(candidates.ui, candidates);
+    candidates.ui = enrichUiWidgetDataSources(candidates.ui, candidates);
     files["candidates/app/ui/candidates.json"] = `${JSON.stringify(candidates.ui, null, 2)}\n`;
     files["candidates/app/ui/report.md"] = reportMarkdown("ui", candidates.ui);
     Object.assign(files, draftUiProjectionFiles(context, candidates.ui, candidates));
@@ -676,7 +686,7 @@ export function runImportApp(inputPath, options = {}) {
   files["candidates/app/findings.json"] = `${JSON.stringify(findings, null, 2)}\n`;
   files["candidates/app/candidates.json"] = `${JSON.stringify(candidates, null, 2)}\n`;
   files["candidates/app/report.md"] = ensureTrailingNewline(
-    `# App Import Report\n\nTracks: ${tracks.join(", ")}\n\n## DB\n\n- Entities: ${candidates.db?.entities?.length || 0}\n- Enums: ${candidates.db?.enums?.length || 0}\n- Relations: ${candidates.db?.relations?.length || 0}\n\n## API\n\n- Capabilities: ${candidates.api?.capabilities?.length || 0}\n- Routes: ${candidates.api?.routes?.length || 0}\n- Stacks: ${candidates.api?.stacks?.length ? candidates.api.stacks.join(", ") : "none"}\n\n## UI\n\n- Screens: ${candidates.ui?.screens?.length || 0}\n- Routes: ${candidates.ui?.routes?.length || 0}\n- Actions: ${candidates.ui?.actions?.length || 0}\n- Widgets: ${candidates.ui?.components?.length || 0}\n- Stacks: ${candidates.ui?.stacks?.length ? candidates.ui.stacks.join(", ") : "none"}\n\n## Workflows\n\n- Workflows: ${candidates.workflows?.workflows?.length || 0}\n- States: ${candidates.workflows?.workflow_states?.length || 0}\n- Transitions: ${candidates.workflows?.workflow_transitions?.length || 0}\n\n## Verification\n\n- Verifications: ${candidates.verification?.verifications?.length || 0}\n- Scenarios: ${candidates.verification?.scenarios?.length || 0}\n- Frameworks: ${candidates.verification?.frameworks?.length ? candidates.verification.frameworks.join(", ") : "none"}\n- Scripts: ${candidates.verification?.scripts?.length || 0}\n`
+    `# App Import Report\n\nTracks: ${tracks.join(", ")}\n\n## DB\n\n- Entities: ${candidates.db?.entities?.length || 0}\n- Enums: ${candidates.db?.enums?.length || 0}\n- Relations: ${candidates.db?.relations?.length || 0}\n\n## API\n\n- Capabilities: ${candidates.api?.capabilities?.length || 0}\n- Routes: ${candidates.api?.routes?.length || 0}\n- Stacks: ${candidates.api?.stacks?.length ? candidates.api.stacks.join(", ") : "none"}\n\n## UI\n\n- Screens: ${candidates.ui?.screens?.length || 0}\n- Routes: ${candidates.ui?.routes?.length || 0}\n- Actions: ${candidates.ui?.actions?.length || 0}\n- Widgets: ${uiWidgetCandidates(candidates.ui).length}\n- Stacks: ${candidates.ui?.stacks?.length ? candidates.ui.stacks.join(", ") : "none"}\n\n## Workflows\n\n- Workflows: ${candidates.workflows?.workflows?.length || 0}\n- States: ${candidates.workflows?.workflow_states?.length || 0}\n- Transitions: ${candidates.workflows?.workflow_transitions?.length || 0}\n\n## Verification\n\n- Verifications: ${candidates.verification?.verifications?.length || 0}\n- Scenarios: ${candidates.verification?.scenarios?.length || 0}\n- Frameworks: ${candidates.verification?.frameworks?.length ? candidates.verification.frameworks.join(", ") : "none"}\n- Scripts: ${candidates.verification?.scripts?.length || 0}\n`
   );
 
   return {

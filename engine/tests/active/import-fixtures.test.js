@@ -67,9 +67,10 @@ test("route fallback import fixture extracts API routes and React screens", () =
     "task_edit",
     "task_list"
   ]);
-  assert.deepEqual(candidateIds(summary.candidates.ui.components), [
+  assert.deepEqual(candidateIds(summary.candidates.ui.widgets), [
     "widget_task_list_results"
   ]);
+  assert.equal(Object.hasOwn(summary.candidates.ui, "components"), false);
 });
 
 test("brownfield import creates editable Topogram workspace with source provenance", () => {
@@ -128,10 +129,12 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.ok, true);
-  assert.equal(payload.candidateCounts.uiComponents, 1);
+  assert.equal(payload.candidateCounts.uiWidgets, 1);
+  assert.equal(Object.hasOwn(payload.candidateCounts, "uiComponents"), false);
 
   const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
-  const componentCandidate = uiCandidates.components[0];
+  assert.equal(Object.hasOwn(uiCandidates, "components"), false);
+  const componentCandidate = uiCandidates.widgets[0];
   assert.equal(componentCandidate.id_hint, "widget_task_list_results");
   assert.equal(componentCandidate.inferred_region, "results");
   assert.equal(componentCandidate.inferred_pattern, "search_results");
