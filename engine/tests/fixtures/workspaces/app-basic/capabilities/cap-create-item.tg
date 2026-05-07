@@ -1,0 +1,14 @@
+capability cap_create_item {
+  name "Create Item"
+  description "Allows a member to create a new item"
+
+  actors [actor_member]
+
+  creates [entity_item]
+  reads [entity_collection, entity_member]
+
+  input [shape_input_create_item]
+  output [shape_output_item_detail]
+
+  status active
+}

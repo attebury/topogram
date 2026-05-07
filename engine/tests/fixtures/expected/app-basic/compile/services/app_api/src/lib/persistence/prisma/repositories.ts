@@ -1,40 +1,40 @@
 import { PrismaClient } from "@prisma/client";
 import type { AppBasicRepository } from "../repositories";
 import type {
-  GetProjectInput,
-  GetProjectResult,
-  ListProjectsInput,
-  ListProjectsResult,
-  CreateProjectInput,
-  CreateProjectResult,
-  UpdateProjectInput,
-  UpdateProjectResult,
-  GetUserInput,
-  GetUserResult,
-  ListUsersInput,
-  ListUsersResult,
-  CreateUserInput,
-  CreateUserResult,
-  UpdateUserInput,
-  UpdateUserResult,
-  GetTaskInput,
-  GetTaskResult,
-  ListTasksInput,
-  ListTasksResult,
-  CreateTaskInput,
-  CreateTaskResult,
-  UpdateTaskInput,
-  UpdateTaskResult,
-  CompleteTaskInput,
-  CompleteTaskResult,
-  DeleteTaskInput,
-  DeleteTaskResult,
-  ExportTasksInput,
-  ExportTasksResult,
-  GetTaskExportJobInput,
-  GetTaskExportJobResult,
-  DownloadTaskExportInput,
-  DownloadTaskExportResult,
+  GetCollectionInput,
+  GetCollectionResult,
+  ListCollectionsInput,
+  ListCollectionsResult,
+  CreateCollectionInput,
+  CreateCollectionResult,
+  UpdateCollectionInput,
+  UpdateCollectionResult,
+  GetMemberInput,
+  GetMemberResult,
+  ListMembersInput,
+  ListMembersResult,
+  CreateMemberInput,
+  CreateMemberResult,
+  UpdateMemberInput,
+  UpdateMemberResult,
+  GetItemInput,
+  GetItemResult,
+  ListItemsInput,
+  ListItemsResult,
+  CreateItemInput,
+  CreateItemResult,
+  UpdateItemInput,
+  UpdateItemResult,
+  CompleteItemInput,
+  CompleteItemResult,
+  DeleteItemInput,
+  DeleteItemResult,
+  ExportItemsInput,
+  ExportItemsResult,
+  GetItemExportJobInput,
+  GetItemExportJobResult,
+  DownloadItemExportInput,
+  DownloadItemExportResult,
   MarkExportJobCompletedInput,
   MarkExportJobCompletedResult,
   LookupOption,
@@ -42,7 +42,7 @@ import type {
 
 import { HttpError } from "../../server/helpers";
 
-type StoredExportJob = GetTaskExportJobResult & {
+type StoredExportJob = GetItemExportJobResult & {
   archive: Uint8Array;
 };
 
@@ -59,65 +59,65 @@ function isUniqueConstraintError(error: unknown): boolean {
   return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "P2002");
 }
 
-function mapProjectRecord(project: {
+function mapCollectionRecord(collection: {
   id: string;
   name: string;
   description: string | null;
   status: "active" | "archived";
   owner_id: string | null;
   created_at: Date | string;
-}): GetProjectResult {
+}): GetCollectionResult {
   return {
-    id: project.id,
-    name: project.name,
-    description: project.description ?? undefined,
-    status: project.status,
-    owner_id: project.owner_id ?? undefined,
-    created_at: iso(project.created_at)!
+    id: collection.id,
+    name: collection.name,
+    description: collection.description ?? undefined,
+    status: collection.status,
+    owner_id: collection.owner_id ?? undefined,
+    created_at: iso(collection.created_at)!
   };
 }
 
-function mapUserRecord(user: {
+function mapMemberRecord(member: {
   id: string;
   email: string;
   display_name: string;
   is_active: boolean;
   created_at: Date | string;
-}): GetUserResult {
+}): GetMemberResult {
   return {
-    id: user.id,
-    email: user.email,
-    display_name: user.display_name,
-    is_active: user.is_active,
-    created_at: iso(user.created_at)!
+    id: member.id,
+    email: member.email,
+    display_name: member.display_name,
+    is_active: member.is_active,
+    created_at: iso(member.created_at)!
   };
 }
 
-function mapTaskRecord(task: {
+function mapItemRecord(item: {
   id: string;
   title: string;
   description: string | null;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id: string | null;
-  project_id: string;
+  collection_id: string;
   created_at: Date | string;
   updated_at: Date | string;
   completed_at: Date | string | null;
   due_at: Date | string | null;
-}): GetTaskResult {
+}): GetItemResult {
   return {
-    id: task.id,
-    title: task.title,
-    description: task.description ?? undefined,
-    status: task.status,
-    priority: task.priority,
-    owner_id: task.owner_id ?? undefined,
-    project_id: task.project_id,
-    created_at: iso(task.created_at)!,
-    updated_at: iso(task.updated_at)!,
-    completed_at: iso(task.completed_at),
-    due_at: iso(task.due_at)
+    id: item.id,
+    title: item.title,
+    description: item.description ?? undefined,
+    status: item.status,
+    priority: item.priority,
+    owner_id: item.owner_id ?? undefined,
+    collection_id: item.collection_id,
+    created_at: iso(item.created_at)!,
+    updated_at: iso(item.updated_at)!,
+    completed_at: iso(item.completed_at),
+    due_at: iso(item.due_at)
   };
 }
 
@@ -126,49 +126,49 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
 
   constructor(private readonly prisma: PrismaClient) {}
 
-  async listProjectOptions(): Promise<LookupOption[]> {
-    const projects = await this.prisma.project.findMany({
+  async listCollectionOptions(): Promise<LookupOption[]> {
+    const collections = await this.prisma.collection.findMany({
       where: { status: { not: "archived" } },
       orderBy: [{ name: "asc" }]
     });
-    return projects.map((project) => ({ value: project.id, label: project.name }));
+    return collections.map((collection) => ({ value: collection.id, label: collection.name }));
   }
 
-  async listUserOptions(): Promise<LookupOption[]> {
-    const users = await this.prisma.user.findMany({
+  async listMemberOptions(): Promise<LookupOption[]> {
+    const members = await this.prisma.member.findMany({
       where: { is_active: true },
       orderBy: [{ display_name: "asc" }]
     });
-    return users.map((user) => ({ value: user.id, label: user.display_name }));
+    return members.map((member) => ({ value: member.id, label: member.display_name }));
   }
 
-  async getProject(input: GetProjectInput): Promise<GetProjectResult> {
-    const project = await this.prisma.project.findUnique({ where: { id: input.project_id } });
-    if (!project) throw new HttpError(404, "cap_get_project_not_found", "Project not found");
-    return mapProjectRecord(project);
+  async getCollection(input: GetCollectionInput): Promise<GetCollectionResult> {
+    const collection = await this.prisma.collection.findUnique({ where: { id: input.collection_id } });
+    if (!collection) throw new HttpError(404, "cap_get_collection_not_found", "Collection not found");
+    return mapCollectionRecord(collection);
   }
 
-  async listProjects(input: ListProjectsInput): Promise<ListProjectsResult> {
+  async listCollections(input: ListCollectionsInput): Promise<ListCollectionsResult> {
     const take = Math.min(input.limit ?? 25, 100);
-    const projects = await this.prisma.project.findMany({
+    const collections = await this.prisma.collection.findMany({
       where: { ...(input.after ? { created_at: { lt: new Date(input.after) } } : {}) },
       orderBy: [{ created_at: "desc" }],
       take: take + 1
     });
-    const page = projects.slice(0, take).map(mapProjectRecord);
+    const page = collections.slice(0, take).map(mapCollectionRecord);
     return {
       items: page,
-      next_cursor: nextCursor(projects.slice(0, take))
+      next_cursor: nextCursor(collections.slice(0, take))
     };
   }
 
-  async createProject(input: CreateProjectInput): Promise<CreateProjectResult> {
+  async createCollection(input: CreateCollectionInput): Promise<CreateCollectionResult> {
     const now = new Date();
     if (input.owner_id) {
-      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });
-      if (!owner || !owner.is_active) throw new HttpError(400, "cap_create_project_invalid_request", "Project owner must be active");
+      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });
+      if (!owner || !owner.is_active) throw new HttpError(400, "cap_create_collection_invalid_request", "Collection owner must be active");
     }
-    const project = await this.prisma.project.create({
+    const collection = await this.prisma.collection.create({
       data: {
         id: crypto.randomUUID(),
         name: input.name,
@@ -179,20 +179,20 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       }
     }).catch((error) => {
       if (isUniqueConstraintError(error)) {
-        throw new HttpError(409, "cap_create_project_conflict", "Project name already exists");
+        throw new HttpError(409, "cap_create_collection_conflict", "Collection name already exists");
       }
       throw error;
     });
-    return mapProjectRecord(project);
+    return mapCollectionRecord(collection);
   }
 
-  async updateProject(input: UpdateProjectInput): Promise<UpdateProjectResult> {
+  async updateCollection(input: UpdateCollectionInput): Promise<UpdateCollectionResult> {
     if (input.owner_id) {
-      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });
-      if (!owner || !owner.is_active) throw new HttpError(400, "cap_update_project_invalid_request", "Project owner must be active");
+      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });
+      if (!owner || !owner.is_active) throw new HttpError(400, "cap_update_collection_invalid_request", "Collection owner must be active");
     }
-    const project = await this.prisma.project.update({
-      where: { id: input.project_id },
+    const collection = await this.prisma.collection.update({
+      where: { id: input.collection_id },
       data: {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.description !== undefined ? { description: input.description ?? null } : {}),
@@ -201,36 +201,36 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       }
     }).catch((error) => {
       if (isUniqueConstraintError(error)) {
-        throw new HttpError(409, "cap_update_project_conflict", "Project name already exists");
+        throw new HttpError(409, "cap_update_collection_conflict", "Collection name already exists");
       }
-      throw new HttpError(404, "cap_get_project_not_found", error instanceof Error ? error.message : "Project not found");
+      throw new HttpError(404, "cap_get_collection_not_found", error instanceof Error ? error.message : "Collection not found");
     });
-    return mapProjectRecord(project);
+    return mapCollectionRecord(collection);
   }
 
-  async getUser(input: GetUserInput): Promise<GetUserResult> {
-    const user = await this.prisma.user.findUnique({ where: { id: input.user_id } });
-    if (!user) throw new HttpError(404, "cap_get_user_not_found", "User not found");
-    return mapUserRecord(user);
+  async getMember(input: GetMemberInput): Promise<GetMemberResult> {
+    const member = await this.prisma.member.findUnique({ where: { id: input.member_id } });
+    if (!member) throw new HttpError(404, "cap_get_member_not_found", "Member not found");
+    return mapMemberRecord(member);
   }
 
-  async listUsers(input: ListUsersInput): Promise<ListUsersResult> {
+  async listMembers(input: ListMembersInput): Promise<ListMembersResult> {
     const take = Math.min(input.limit ?? 25, 100);
-    const users = await this.prisma.user.findMany({
+    const members = await this.prisma.member.findMany({
       where: { ...(input.after ? { created_at: { lt: new Date(input.after) } } : {}) },
       orderBy: [{ created_at: "desc" }],
       take: take + 1
     });
-    const page = users.slice(0, take).map(mapUserRecord);
+    const page = members.slice(0, take).map(mapMemberRecord);
     return {
       items: page,
-      next_cursor: nextCursor(users.slice(0, take))
+      next_cursor: nextCursor(members.slice(0, take))
     };
   }
 
-  async createUser(input: CreateUserInput): Promise<CreateUserResult> {
+  async createMember(input: CreateMemberInput): Promise<CreateMemberResult> {
     const now = new Date();
-    const user = await this.prisma.user.create({
+    const member = await this.prisma.member.create({
       data: {
         id: crypto.randomUUID(),
         email: input.email,
@@ -240,16 +240,16 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       }
     }).catch((error) => {
       if (isUniqueConstraintError(error)) {
-        throw new HttpError(409, "cap_create_user_conflict", "User email already exists");
+        throw new HttpError(409, "cap_create_member_conflict", "Member email already exists");
       }
       throw error;
     });
-    return mapUserRecord(user);
+    return mapMemberRecord(member);
   }
 
-  async updateUser(input: UpdateUserInput): Promise<UpdateUserResult> {
-    const user = await this.prisma.user.update({
-      where: { id: input.user_id },
+  async updateMember(input: UpdateMemberInput): Promise<UpdateMemberResult> {
+    const member = await this.prisma.member.update({
+      where: { id: input.member_id },
       data: {
         ...(input.email !== undefined ? { email: input.email } : {}),
         ...(input.display_name !== undefined ? { display_name: input.display_name } : {}),
@@ -257,24 +257,24 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       }
     }).catch((error) => {
       if (isUniqueConstraintError(error)) {
-        throw new HttpError(409, "cap_update_user_conflict", "User email already exists");
+        throw new HttpError(409, "cap_update_member_conflict", "Member email already exists");
       }
-      throw new HttpError(404, "cap_get_user_not_found", error instanceof Error ? error.message : "User not found");
+      throw new HttpError(404, "cap_get_member_not_found", error instanceof Error ? error.message : "Member not found");
     });
-    return mapUserRecord(user);
+    return mapMemberRecord(member);
   }
 
-  async getTask(input: GetTaskInput): Promise<GetTaskResult> {
-    const task = await this.prisma.task.findUnique({ where: { id: input.task_id } });
-    if (!task) throw new HttpError(404, "cap_get_task_not_found", "Task not found");
-    return mapTaskRecord(task);
+  async getItem(input: GetItemInput): Promise<GetItemResult> {
+    const item = await this.prisma.item.findUnique({ where: { id: input.item_id } });
+    if (!item) throw new HttpError(404, "cap_get_item_not_found", "Item not found");
+    return mapItemRecord(item);
   }
 
-  async listTasks(input: ListTasksInput): Promise<ListTasksResult> {
+  async listItems(input: ListItemsInput): Promise<ListItemsResult> {
     const take = Math.min(input.limit ?? 25, 100);
-    const tasks = await this.prisma.task.findMany({
+    const items = await this.prisma.item.findMany({
       where: {
-        project_id: input.project_id ?? undefined,
+        collection_id: input.collection_id ?? undefined,
         owner_id: input.owner_id ?? undefined,
         status: input.status ?? undefined,
         ...(input.after ? { created_at: { lt: new Date(input.after) } } : {})
@@ -282,23 +282,23 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       orderBy: [{ created_at: "desc" }],
       take: take + 1
     });
-    const page = tasks.slice(0, take).map(mapTaskRecord);
+    const page = items.slice(0, take).map(mapItemRecord);
     return {
       items: page,
-      next_cursor: nextCursor(tasks.slice(0, take))
+      next_cursor: nextCursor(items.slice(0, take))
     };
   }
 
-  async createTask(input: CreateTaskInput): Promise<CreateTaskResult> {
-    const project = await this.prisma.project.findUnique({ where: { id: input.project_id } });
-    if (!project) throw new HttpError(400, "cap_create_task_invalid_request", "Project does not exist");
-    if (project.status === "archived") throw new HttpError(409, "rule_no_task_creation_in_archived_project", "Cannot create tasks in archived projects");
+  async createItem(input: CreateItemInput): Promise<CreateItemResult> {
+    const collection = await this.prisma.collection.findUnique({ where: { id: input.collection_id } });
+    if (!collection) throw new HttpError(400, "cap_create_item_invalid_request", "Collection does not exist");
+    if (collection.status === "archived") throw new HttpError(409, "rule_no_item_creation_in_archived_collection", "Cannot create items in archived collections");
     if (input.owner_id) {
-      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });
-      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_users_may_own_tasks", "Task owner must be active");
+      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });
+      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_members_may_own_items", "Item owner must be active");
     }
     const now = new Date();
-    const task = await this.prisma.task.create({
+    const item = await this.prisma.item.create({
       data: {
         id: crypto.randomUUID(),
         title: input.title,
@@ -306,23 +306,23 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
         status: input.owner_id ? "active" : "draft",
         priority: input.priority ?? "medium",
         owner_id: input.owner_id ?? null,
-        project_id: input.project_id,
+        collection_id: input.collection_id,
         created_at: now,
         updated_at: now,
         completed_at: null,
         due_at: input.due_at ? new Date(input.due_at) : null
       }
     });
-    return mapTaskRecord(task);
+    return mapItemRecord(item);
   }
 
-  async updateTask(input: UpdateTaskInput): Promise<UpdateTaskResult> {
+  async updateItem(input: UpdateItemInput): Promise<UpdateItemResult> {
     if (input.owner_id) {
-      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });
-      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_users_may_own_tasks", "Task owner must be active");
+      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });
+      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_members_may_own_items", "Item owner must be active");
     }
-    const task = await this.prisma.task.update({
-      where: { id: input.task_id },
+    const item = await this.prisma.item.update({
+      where: { id: input.item_id },
       data: {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.description !== undefined ? { description: input.description ?? null } : {}),
@@ -333,36 +333,36 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
         updated_at: new Date()
       }
     }).catch((error) => {
-      throw new HttpError(404, "task_not_found", error instanceof Error ? error.message : "Task not found");
+      throw new HttpError(404, "item_not_found", error instanceof Error ? error.message : "Item not found");
     });
-    return mapTaskRecord(task);
+    return mapItemRecord(item);
   }
 
-  async completeTask(input: CompleteTaskInput): Promise<CompleteTaskResult> {
+  async completeItem(input: CompleteItemInput): Promise<CompleteItemResult> {
     const completedAt = input.completed_at ? new Date(input.completed_at) : new Date();
-    const task = await this.prisma.task.update({
-      where: { id: input.task_id },
+    const item = await this.prisma.item.update({
+      where: { id: input.item_id },
       data: { status: "completed", completed_at: completedAt, updated_at: new Date() }
     }).catch((error) => {
-      throw new HttpError(404, "task_not_found", error instanceof Error ? error.message : "Task not found");
+      throw new HttpError(404, "item_not_found", error instanceof Error ? error.message : "Item not found");
     });
-    return mapTaskRecord(task);
+    return mapItemRecord(item);
   }
 
-  async deleteTask(input: DeleteTaskInput): Promise<DeleteTaskResult> {
-    const task = await this.prisma.task.update({
-      where: { id: input.task_id },
+  async deleteItem(input: DeleteItemInput): Promise<DeleteItemResult> {
+    const item = await this.prisma.item.update({
+      where: { id: input.item_id },
       data: { status: "archived", updated_at: new Date() }
     }).catch((error) => {
-      throw new HttpError(404, "cap_delete_task_not_found", error instanceof Error ? error.message : "Task not found");
+      throw new HttpError(404, "cap_delete_item_not_found", error instanceof Error ? error.message : "Item not found");
     });
-    return mapTaskRecord(task);
+    return mapItemRecord(item);
   }
 
-  async exportTasks(input: ExportTasksInput): Promise<ExportTasksResult> {
+  async exportItems(input: ExportItemsInput): Promise<ExportItemsResult> {
     const jobId = crypto.randomUUID();
     const submittedAt = new Date();
-    const statusUrl = `/task-exports/${jobId}`;
+    const statusUrl = `/item-exports/${jobId}`;
     const archive = new TextEncoder().encode(JSON.stringify({ exported_at: submittedAt.toISOString(), filters: input }, null, 2));
     this.exportJobs.set(jobId, {
       job_id: jobId,
@@ -371,7 +371,7 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
       submitted_at: submittedAt.toISOString(),
       archive
     });
-    queueMicrotask(() => {
+    queueMicroitem(() => {
       const existing = this.exportJobs.get(jobId);
       if (!existing) return;
       this.exportJobs.set(jobId, {
@@ -384,9 +384,9 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
     return { job_id: jobId, status: "accepted", status_url: statusUrl, submitted_at: submittedAt.toISOString() };
   }
 
-  async getTaskExportJob(input: GetTaskExportJobInput): Promise<GetTaskExportJobResult> {
+  async getItemExportJob(input: GetItemExportJobInput): Promise<GetItemExportJobResult> {
     const job = this.exportJobs.get(input.job_id);
-    if (!job) throw new HttpError(404, "cap_get_task_export_job_not_found", "Export job not found");
+    if (!job) throw new HttpError(404, "cap_get_item_export_job_not_found", "Export job not found");
     return {
       job_id: job.job_id,
       status: job.status,
@@ -399,16 +399,16 @@ export class PrismaAppBasicRepository implements AppBasicRepository {
     };
   }
 
-  async downloadTaskExport(input: DownloadTaskExportInput): Promise<DownloadTaskExportResult> {
+  async downloadItemExport(input: DownloadItemExportInput): Promise<DownloadItemExportResult> {
     const job = this.exportJobs.get(input.job_id);
-    if (!job) throw new HttpError(404, "cap_download_task_export_not_found", "Export job not found");
-    if (job.status !== "completed" || !job.download_url) throw new HttpError(409, "cap_download_task_export_not_ready", "Export job is not ready");
-    return { body: job.archive, contentType: "application/zip", filename: "task-export.zip" };
+    if (!job) throw new HttpError(404, "cap_download_item_export_not_found", "Export job not found");
+    if (job.status !== "completed" || !job.download_url) throw new HttpError(409, "cap_download_item_export_not_ready", "Export job is not ready");
+    return { body: job.archive, contentType: "application/zip", filename: "item-export.zip" };
   }
 
   async markExportJobCompleted(input: MarkExportJobCompletedInput): Promise<MarkExportJobCompletedResult> {
     const job = this.exportJobs.get(input.job_id);
-    if (!job) throw new HttpError(404, "cap_get_task_export_job_not_found", "Export job not found");
+    if (!job) throw new HttpError(404, "cap_get_item_export_job_not_found", "Export job not found");
     this.exportJobs.set(input.job_id, {
       ...job,
       status: input.state as "accepted" | "running" | "completed" | "failed" | "expired",

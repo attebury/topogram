@@ -13,10 +13,10 @@ export function renderAppBasicHomePage({
   webReference
 }) {
   return `<script${useTypescript ? ' lang="ts"' : ""}>
-  import { ${demoPrimaryEnvVar} as DEMO_TASK_ID } from "$env/static/public";
+  import { ${demoPrimaryEnvVar} as DEMO_ITEM_ID } from "$env/static/public";
 
   const screens = ${JSON.stringify(screens, null, 2)};
-  const demoTaskRoute = DEMO_TASK_ID ? \`/tasks/\${DEMO_TASK_ID}\` : null;
+  const demoItemRoute = DEMO_ITEM_ID ? \`/items/\${DEMO_ITEM_ID}\` : null;
 </script>
 
 <main>
@@ -29,8 +29,8 @@ export function renderAppBasicHomePage({
       <div class="button-row">
         <a class="button-link" href="${webReference.nav.browseRoute}">${webReference.nav.browseLabel}</a>
         <a class="button-link secondary" href="${webReference.nav.createRoute}">${webReference.nav.createLabel}</a>
-        {#if demoTaskRoute}
-          <a class="button-link secondary" href={demoTaskRoute}>${webReference.home.demoTaskLabel}</a>
+        {#if demoItemRoute}
+          <a class="button-link secondary" href={demoItemRoute}>${webReference.home.demoItemLabel}</a>
         {/if}
       </div>
     </section>
@@ -55,55 +55,55 @@ export function renderAppBasicHomePage({
 `;
 }
 
-export function renderAppBasicTaskRoutes({
+export function renderAppBasicItemRoutes({
   useTypescript,
   contract,
-  taskList,
-  taskDetail,
-  taskCreate,
-  taskEdit,
-  taskExports,
-  taskListLookups,
-  taskCreateLookups,
-  taskEditLookups,
-  projectEnvVar,
+  taskList: itemList,
+  taskDetail: itemDetail,
+  taskCreate: itemCreate,
+  taskEdit: itemEdit,
+  taskExports: itemExports,
+  taskListLookups: itemListLookups,
+  taskCreateLookups: itemCreateLookups,
+  taskEditLookups: itemEditLookups,
+  projectEnvVar: collectionEnvVar,
   ownerEnvVar,
   webReference,
   prettyScreenKind
 }) {
   const files = {};
-  const editTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_update_task") || null;
-  const completeTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_complete_task") || null;
-  const deleteTaskVisibility = taskDetail.visibility?.find((entry) => entry.capability?.id === "cap_delete_task") || null;
-  const taskListHeroComponents = renderSvelteKitComponentRegion(taskList, "hero", {
+  const editItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_update_item") || null;
+  const completeItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_complete_item") || null;
+  const deleteItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_delete_item") || null;
+  const itemListHeroComponents = renderSvelteKitComponentRegion(itemList, "hero", {
     componentContracts: contract.components,
     itemsExpression: "data.result.items",
     useTypescript
   });
-  const taskListResultsComponents = renderSvelteKitComponentRegion(taskList, "results", {
+  const itemListResultsComponents = renderSvelteKitComponentRegion(itemList, "results", {
     componentContracts: contract.components,
     itemsExpression: "data.result.items",
     useTypescript
   });
-  const taskListDefaultResults = `<ul class="task-list">
-          {#each data.result.items as task}
+  const itemListDefaultResults = `<ul class="item-list">
+          {#each data.result.items as item}
             <li>
-              <div class="task-meta">
-                <a href={'/tasks/' + task.id}><strong>{task.title}</strong></a>
-                {#if task.description}<span class="muted">{task.description}</span>{/if}
-                <span class="muted">Priority: {task.priority ?? "medium"}</span>
+              <div class="item-meta">
+                <a href={'/items/' + item.id}><strong>{item.title}</strong></a>
+                {#if item.description}<span class="muted">{item.description}</span>{/if}
+                <span class="muted">Priority: {item.priority ?? "medium"}</span>
               </div>
               <div class="button-row">
-                <span class="badge">{task.priority ?? "medium"}</span>
-                <span class="badge">{task.status}</span>
+                <span class="badge">{item.priority ?? "medium"}</span>
+                <span class="badge">{item.status}</span>
               </div>
             </li>
           {/each}
         </ul>`;
 
-  files["tasks/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+  files["items/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { exportTasks } from "$lib/api/client";
+import { exportItems } from "$lib/api/client";
 
 export const actions: Actions = {
 ${renderSvelteKitRedirectingAction({
@@ -111,47 +111,47 @@ ${renderSvelteKitRedirectingAction({
   signature: "{ request, fetch }",
   prelude: `const form = await request.formData();
 const payload = {
-  project_id: String(form.get("project_id") || "") || undefined,
+  collection_id: String(form.get("collection_id") || "") || undefined,
   owner_id: String(form.get("owner_id") || "") || undefined,
   status: String(form.get("status") || "") || undefined
 };
 
 let job;`,
-  tryStatement: "job = await exportTasks(fetch, payload);",
+  tryStatement: "job = await exportItems(fetch, payload);",
   catchReturn:
     'return fail(400, { exportError: error instanceof Error ? error.message : "Unable to start export", exportValues: payload });',
-  successStatement: "throw redirect(303, `/task-exports/${job.job_id}`);"
+  successStatement: "throw redirect(303, `/item-exports/${job.job_id}`);"
 })}
 };
 `;
 
-  files["tasks/+page.ts"] = `import type { PageLoad } from "./$types";
-import { listTasks } from "$lib/api/client";
+  files["items/+page.ts"] = `import type { PageLoad } from "./$types";
+import { listItems } from "$lib/api/client";
 import { listLookupOptions } from "$lib/api/lookups";
 
 export const load: PageLoad = async ({ fetch, url }) => {
   const limit = url.searchParams.get("limit");
-  const [result, projectOptions, ownerOptions] = await Promise.all([
-    listTasks(fetch, {
-      project_id: url.searchParams.get("project_id") ?? undefined,
+  const [result, collectionOptions, ownerOptions] = await Promise.all([
+    listItems(fetch, {
+      collection_id: url.searchParams.get("collection_id") ?? undefined,
       owner_id: url.searchParams.get("owner_id") ?? undefined,
       status: url.searchParams.get("status") ?? undefined,
       after: url.searchParams.get("after") ?? undefined,
       limit: limit ? Number(limit) : undefined
     }),
-    ${taskListLookups.project_id?.route ? `listLookupOptions(fetch, "${taskListLookups.project_id.route}")` : "Promise.resolve([])"},
-    ${taskListLookups.owner_id?.route ? `listLookupOptions(fetch, "${taskListLookups.owner_id.route}")` : "Promise.resolve([])"}
+    ${itemListLookups.collection_id?.route ? `listLookupOptions(fetch, "${itemListLookups.collection_id.route}")` : "Promise.resolve([])"},
+    ${itemListLookups.owner_id?.route ? `listLookupOptions(fetch, "${itemListLookups.owner_id.route}")` : "Promise.resolve([])"}
   ]);
   return {
-    screen: ${JSON.stringify({ id: taskList.id, title: taskList.title, collection: taskList.collection, web: taskList.web }, null, 2)},
+    screen: ${JSON.stringify({ id: itemList.id, title: itemList.title, collection: itemList.collection, web: itemList.web }, null, 2)},
     filters: {
-      project_id: url.searchParams.get("project_id") ?? "",
+      collection_id: url.searchParams.get("collection_id") ?? "",
       owner_id: url.searchParams.get("owner_id") ?? "",
       status: url.searchParams.get("status") ?? "",
       limit: limit ?? ""
     },
     lookups: {
-      project_id: projectOptions,
+      collection_id: collectionOptions,
       owner_id: ownerOptions
     },
     result
@@ -159,19 +159,19 @@ export const load: PageLoad = async ({ fetch, url }) => {
 };
 `;
 
-  files["tasks/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  files["items/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
   export let form;
 
   const buildNextHref = () => {
     if (!data.result.next_cursor) return null;
     const params = new URLSearchParams();
-    if (data.filters.project_id) params.set("project_id", data.filters.project_id);
+    if (data.filters.collection_id) params.set("collection_id", data.filters.collection_id);
     if (data.filters.owner_id) params.set("owner_id", data.filters.owner_id);
     if (data.filters.status) params.set("status", data.filters.status);
     if (data.filters.limit) params.set("limit", String(data.filters.limit));
     params.set("after", data.result.next_cursor);
-    return \`/tasks?\${params.toString()}\`;
+    return \`/items?\${params.toString()}\`;
   };
 
   const nextHref = buildNextHref();
@@ -182,27 +182,27 @@ export const load: PageLoad = async ({ fetch, url }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>${taskList.title || taskList.id}</h1>
-          <p>This ${prettyScreenKind(taskList.kind)} screen was generated from \`${taskList.id}\`.</p>
+          <h1>${itemList.title || itemList.id}</h1>
+          <p>This ${prettyScreenKind(itemList.kind)} screen was generated from \`${itemList.id}\`.</p>
         </div>
-        <a class="button-link" href="/tasks/new">Create Task</a>
+        <a class="button-link" href="/items/new">Create Item</a>
       </div>
-${taskListHeroComponents ? `\n      ${taskListHeroComponents}\n` : ""}
+${itemListHeroComponents ? `\n      ${itemListHeroComponents}\n` : ""}
 
       <form class="filters" method="GET">
         <label>
-          Project
-          <select name="project_id">
-            <option value="">${taskListLookups.project_id?.emptyLabel || "All projects"}</option>
-            {#each data.lookups.project_id as option}
-              <option value={option.value} selected={option.value === (data.filters.project_id ?? "")}>{option.label}</option>
+          Collection
+          <select name="collection_id">
+            <option value="">${itemListLookups.collection_id?.emptyLabel || "All collections"}</option>
+            {#each data.lookups.collection_id as option}
+              <option value={option.value} selected={option.value === (data.filters.collection_id ?? "")}>{option.label}</option>
             {/each}
           </select>
         </label>
         <label>
           Owner
           <select name="owner_id">
-            <option value="">${taskListLookups.owner_id?.emptyLabel || "All owners"}</option>
+            <option value="">${itemListLookups.owner_id?.emptyLabel || "All owners"}</option>
             {#each data.lookups.owner_id as option}
               <option value={option.value} selected={option.value === (data.filters.owner_id ?? "")}>{option.label}</option>
             {/each}
@@ -218,12 +218,12 @@ ${taskListHeroComponents ? `\n      ${taskListHeroComponents}\n` : ""}
         </label>
         <div class="button-row">
           <button type="submit">Apply Filters</button>
-          <a class="button-link secondary" href="/tasks">Reset</a>
+          <a class="button-link secondary" href="/items">Reset</a>
         </div>
       </form>
 
       <form method="POST" action="?/export">
-        <input type="hidden" name="project_id" value={data.filters.project_id ?? ""} />
+        <input type="hidden" name="collection_id" value={data.filters.collection_id ?? ""} />
         <input type="hidden" name="owner_id" value={data.filters.owner_id ?? ""} />
         <input type="hidden" name="status" value={data.filters.status ?? ""} />
         <div class="button-row">
@@ -234,12 +234,12 @@ ${taskListHeroComponents ? `\n      ${taskListHeroComponents}\n` : ""}
 
       {#if data.result.items.length === 0}
         <div class="empty-state">
-          <p><strong>${taskList.emptyState?.title || "No items"}</strong></p>
-          <p class="muted">${taskList.emptyState?.body || ""}</p>
+          <p><strong>${itemList.emptyState?.title || "No items"}</strong></p>
+          <p class="muted">${itemList.emptyState?.body || ""}</p>
         </div>
       {:else}
-        <p class="muted">Showing {data.result.items.length} task{data.result.items.length === 1 ? "" : "s"}.</p>
-        ${taskListResultsComponents || taskListDefaultResults}
+        <p class="muted">Showing {data.result.items.length} item{data.result.items.length === 1 ? "" : "s"}.</p>
+        ${itemListResultsComponents || itemListDefaultResults}
         {#if nextHref}
           <p><a class="button-link secondary" href={nextHref}>Next Page</a></p>
         {/if}
@@ -249,10 +249,10 @@ ${taskListHeroComponents ? `\n      ${taskListHeroComponents}\n` : ""}
 </main>
 `;
 
-  files["tasks/[id]/+page.server.ts"] = `import { randomUUID } from "node:crypto";
+  files["items/[id]/+page.server.ts"] = `import { randomUUID } from "node:crypto";
 import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { completeTask, deleteTask } from "$lib/api/client";
+import { completeItem, deleteItem } from "$lib/api/client";
 
 export const actions: Actions = {
 ${renderSvelteKitRedirectingAction({
@@ -262,16 +262,16 @@ ${renderSvelteKitRedirectingAction({
 const updated_at = String(form.get("updated_at") || "");
 const completed_at = String(form.get("completed_at") || "") || new Date().toISOString();
 if (!updated_at) {
-  return fail(400, { actionError: "updated_at is required to complete this task." });
+  return fail(400, { actionError: "updated_at is required to complete this item." });
 }`,
-  tryStatement: `await completeTask(fetch, params.id, { completed_at }, {
+  tryStatement: `await completeItem(fetch, params.id, { completed_at }, {
   headers: {
     "If-Match": updated_at,
     "Idempotency-Key": randomUUID()
   }
 });`,
-  catchReturn: 'return fail(400, { actionError: error instanceof Error ? error.message : "Unable to complete task" });',
-  successStatement: "throw redirect(303, `/tasks/${params.id}`);"
+  catchReturn: 'return fail(400, { actionError: error instanceof Error ? error.message : "Unable to complete item" });',
+  successStatement: "throw redirect(303, `/items/${params.id}`);"
 })},
 ${renderSvelteKitRedirectingAction({
   actionName: "delete",
@@ -279,28 +279,28 @@ ${renderSvelteKitRedirectingAction({
   prelude: `const form = await request.formData();
 const updated_at = String(form.get("updated_at") || "");
 if (!updated_at) {
-  return fail(400, { actionError: "updated_at is required to delete this task." });
+  return fail(400, { actionError: "updated_at is required to delete this item." });
 }`,
-  tryStatement: `await deleteTask(fetch, params.id, {
+  tryStatement: `await deleteItem(fetch, params.id, {
   headers: {
     "If-Match": updated_at
   }
 });`,
-  catchReturn: 'return fail(400, { actionError: error instanceof Error ? error.message : "Unable to delete task" });',
-  successStatement: 'throw redirect(303, "/tasks");'
+  catchReturn: 'return fail(400, { actionError: error instanceof Error ? error.message : "Unable to delete item" });',
+  successStatement: 'throw redirect(303, "/items");'
 })}
 };
 `;
 
-  files["tasks/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
-import { getTask } from "$lib/api/client";
+  files["items/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
+import { getItem } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, params, url }) => {
   return {
-    screen: ${JSON.stringify({ id: taskDetail.id, title: taskDetail.title, web: taskDetail.web }, null, 2)},
-    task: await getTask(fetch, params.id),
+    screen: ${JSON.stringify({ id: itemDetail.id, title: itemDetail.title, web: itemDetail.web }, null, 2)},
+    item: await getItem(fetch, params.id),
     visibilityDebug: {
-      userId: url.searchParams.get("topogram_auth_user_id") ?? "",
+      memberId: url.searchParams.get("topogram_auth_member_id") ?? "",
       permissions: url.searchParams.get("topogram_auth_permissions") ?? "",
       isAdmin: url.searchParams.get("topogram_auth_admin") ?? ""
     }
@@ -308,19 +308,19 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
 };
 `;
 
-  files["tasks/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  files["items/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   import { canShowAction } from "$lib/auth/visibility";
 
   export let data;
   export let form;
 
-  const editTaskVisibility = ${JSON.stringify(editTaskVisibility, null, 2)};
-  const completeTaskVisibility = ${JSON.stringify(completeTaskVisibility, null, 2)};
-  const deleteTaskVisibility = ${JSON.stringify(deleteTaskVisibility, null, 2)};
+  const editItemVisibility = ${JSON.stringify(editItemVisibility, null, 2)};
+  const completeItemVisibility = ${JSON.stringify(completeItemVisibility, null, 2)};
+  const deleteItemVisibility = ${JSON.stringify(deleteItemVisibility, null, 2)};
 
-  $: canEditTask = canShowAction(editTaskVisibility, data?.task, data?.visibilityDebug);
-  $: canCompleteTask = canShowAction(completeTaskVisibility, data?.task, data?.visibilityDebug);
-  $: canDeleteTask = canShowAction(deleteTaskVisibility, data?.task, data?.visibilityDebug);
+  $: canEditItem = canShowAction(editItemVisibility, data?.item, data?.visibilityDebug);
+  $: canCompleteItem = canShowAction(completeItemVisibility, data?.item, data?.visibilityDebug);
+  $: canDeleteItem = canShowAction(deleteItemVisibility, data?.item, data?.visibilityDebug);
 </script>
 
 <main>
@@ -328,16 +328,16 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>{data.task.title}</h1>
-          <p>This ${prettyScreenKind(taskDetail.kind)} screen was generated from \`${taskDetail.id}\`.</p>
+          <h1>{data.item.title}</h1>
+          <p>This ${prettyScreenKind(itemDetail.kind)} screen was generated from \`${itemDetail.id}\`.</p>
         </div>
-        <span class="badge">{data.task.status}</span>
+        <span class="badge">{data.item.status}</span>
       </div>
 
-      {#if data.task.description}
-        <p>{data.task.description}</p>
+      {#if data.item.description}
+        <p>{data.item.description}</p>
       {:else}
-        <p class="muted">No description was provided for this task.</p>
+        <p class="muted">No description was provided for this item.</p>
       {/if}
 
       {#if form?.actionError}
@@ -345,32 +345,32 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
       {/if}
 
       <dl class="definition-list">
-        <dt>Task ID</dt><dd>{data.task.id}</dd>
-        <dt>Project</dt><dd>{data.task.project_id}</dd>
-        <dt>Owner</dt><dd>{data.task.owner_id ?? "Unassigned"}</dd>
-        <dt>Priority</dt><dd>{data.task.priority ?? "medium"}</dd>
-        <dt>Created</dt><dd>{data.task.created_at}</dd>
-        <dt>Updated</dt><dd>{data.task.updated_at}</dd>
+        <dt>Item ID</dt><dd>{data.item.id}</dd>
+        <dt>Collection</dt><dd>{data.item.collection_id}</dd>
+        <dt>Owner</dt><dd>{data.item.owner_id ?? "Unassigned"}</dd>
+        <dt>Priority</dt><dd>{data.item.priority ?? "medium"}</dd>
+        <dt>Created</dt><dd>{data.item.created_at}</dd>
+        <dt>Updated</dt><dd>{data.item.updated_at}</dd>
       </dl>
 
       <div class="button-row">
-        <a class="button-link secondary" href="/tasks">Back to Tasks</a>
-        {#if canEditTask}
-          <a class="button-link" href={"/tasks/" + data.task.id + "/edit"}>Edit Task</a>
+        <a class="button-link secondary" href="/items">Back to Items</a>
+        {#if canEditItem}
+          <a class="button-link" href={"/items/" + data.item.id + "/edit"}>Edit Item</a>
         {/if}
       </div>
 
       <div class="button-row">
-        {#if canCompleteTask}
+        {#if canCompleteItem}
           <form method="POST" action="?/complete">
-            <input type="hidden" name="updated_at" value={data.task.updated_at} />
-            <button type="submit">Complete Task</button>
+            <input type="hidden" name="updated_at" value={data.item.updated_at} />
+            <button type="submit">Complete Item</button>
           </form>
         {/if}
-        {#if canDeleteTask}
+        {#if canDeleteItem}
           <form method="POST" action="?/delete">
-            <input type="hidden" name="updated_at" value={data.task.updated_at} />
-            <button type="submit">Archive Task</button>
+            <input type="hidden" name="updated_at" value={data.item.updated_at} />
+            <button type="submit">Archive Item</button>
           </form>
         {/if}
       </div>
@@ -379,28 +379,28 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
 </main>
 `;
 
-  files["tasks/new/+page.ts"] = `import type { PageLoad } from "./$types";
+  files["items/new/+page.ts"] = `import type { PageLoad } from "./$types";
 import { listLookupOptions } from "$lib/api/lookups";
 
 export const load: PageLoad = async ({ fetch }) => {
-  const [projectOptions, ownerOptions] = await Promise.all([
-    ${taskCreateLookups.project_id?.route ? `listLookupOptions(fetch, "${taskCreateLookups.project_id.route}")` : "Promise.resolve([])"},
-    ${taskCreateLookups.owner_id?.route ? `listLookupOptions(fetch, "${taskCreateLookups.owner_id.route}")` : "Promise.resolve([])"}
+  const [collectionOptions, ownerOptions] = await Promise.all([
+    ${itemCreateLookups.collection_id?.route ? `listLookupOptions(fetch, "${itemCreateLookups.collection_id.route}")` : "Promise.resolve([])"},
+    ${itemCreateLookups.owner_id?.route ? `listLookupOptions(fetch, "${itemCreateLookups.owner_id.route}")` : "Promise.resolve([])"}
   ]);
 
   return {
     lookups: {
-      project_id: projectOptions,
+      collection_id: collectionOptions,
       owner_id: ownerOptions
     }
   };
 };
 `;
 
-  files["tasks/new/+page.server.ts"] = `import { randomUUID } from "node:crypto";
+  files["items/new/+page.server.ts"] = `import { randomUUID } from "node:crypto";
 import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { createTask } from "$lib/api/client";
+import { createItem } from "$lib/api/client";
 
 export const actions: Actions = {
 ${renderSvelteKitRedirectingAction({
@@ -412,29 +412,29 @@ const payload = {
   description: String(form.get("description") || "") || undefined,
   priority: String(form.get("priority") || "") || undefined,
   owner_id: String(form.get("owner_id") || "") || undefined,
-  project_id: String(form.get("project_id") || ""),
+  collection_id: String(form.get("collection_id") || ""),
   due_at: String(form.get("due_at") || "") || undefined
 };
 
-if (!payload.title || !payload.project_id) {
-  return fail(400, { error: "Title and project are required.", values: payload });
+if (!payload.title || !payload.collection_id) {
+  return fail(400, { error: "Title and collection are required.", values: payload });
 }
 
 let created;`,
-  tryStatement: `created = await createTask(fetch, payload, {
+  tryStatement: `created = await createItem(fetch, payload, {
   headers: {
     "Idempotency-Key": randomUUID()
   }
 });`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create task", values: payload });',
-  successStatement: "throw redirect(303, `/tasks/${created.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create item", values: payload });',
+  successStatement: "throw redirect(303, `/items/${created.id}`);"
 })}
 };
 `;
 
-  files["tasks/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
-  import { ${projectEnvVar} as DEMO_PROJECT_ID, ${ownerEnvVar} as DEMO_USER_ID } from "$env/static/public";
+  files["items/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  import { ${collectionEnvVar} as DEMO_PROJECT_ID, ${ownerEnvVar} as DEMO_USER_ID } from "$env/static/public";
 
   export let data;
   export let form;
@@ -444,7 +444,7 @@ let created;`,
     description: form?.values?.description ?? "",
     priority: form?.values?.priority ?? "medium",
     owner_id: form?.values?.owner_id ?? DEMO_USER_ID ?? "",
-    project_id: form?.values?.project_id ?? DEMO_PROJECT_ID ?? "",
+    collection_id: form?.values?.collection_id ?? DEMO_PROJECT_ID ?? "",
     due_at: form?.values?.due_at ?? ""
   };
 </script>
@@ -452,8 +452,8 @@ let created;`,
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${taskCreate.title || taskCreate.id}</h1>
-      <p>This ${prettyScreenKind(taskCreate.kind)} screen was generated from \`${taskCreate.id}\`.</p>
+      <h1>${itemCreate.title || itemCreate.id}</h1>
+      <p>This ${prettyScreenKind(itemCreate.kind)} screen was generated from \`${itemCreate.id}\`.</p>
       <p class="muted">${webReference.createPrimary.helperText}</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
@@ -470,25 +470,25 @@ let created;`,
         <label>
           Owner
           <select name="owner_id">
-            <option value="">${taskCreateLookups.owner_id?.emptyLabel || "Unassigned"}</option>
+            <option value="">${itemCreateLookups.owner_id?.emptyLabel || "Unassigned"}</option>
             {#each data.lookups.owner_id as option}
               <option value={option.value} selected={option.value === values.owner_id}>{option.label}</option>
             {/each}
           </select>
         </label>
         <label>
-          Project
-          <select name="project_id" required>
-            <option value="">${webReference.createPrimary.projectPlaceholder}</option>
-            {#each data.lookups.project_id as option}
-              <option value={option.value} selected={option.value === values.project_id}>{option.label}</option>
+          Collection
+          <select name="collection_id" required>
+            <option value="">${webReference.createPrimary.collectionPlaceholder}</option>
+            {#each data.lookups.collection_id as option}
+              <option value={option.value} selected={option.value === values.collection_id}>{option.label}</option>
             {/each}
           </select>
         </label>
         <label>Due At <input name="due_at" type="datetime-local" value={values.due_at} /></label>
         <div class="button-row">
           <button type="submit">${webReference.createPrimary.submitLabel}</button>
-          <a class="button-link secondary" href="/tasks">${webReference.createPrimary.cancelLabel}</a>
+          <a class="button-link secondary" href="/items">${webReference.createPrimary.cancelLabel}</a>
         </div>
       </form>
     </section>
@@ -496,36 +496,36 @@ let created;`,
 </main>
 `;
 
-  files["tasks/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
-import { getTask } from "$lib/api/client";
+  files["items/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
+import { getItem } from "$lib/api/client";
 import { listLookupOptions } from "$lib/api/lookups";
 
 export const load: PageLoad = async ({ fetch, params }) => {
-  const [task, ownerOptions] = await Promise.all([
-    getTask(fetch, params.id),
-    ${taskEditLookups.owner_id?.route ? `listLookupOptions(fetch, "${taskEditLookups.owner_id.route}")` : "Promise.resolve([])"}
+  const [item, ownerOptions] = await Promise.all([
+    getItem(fetch, params.id),
+    ${itemEditLookups.owner_id?.route ? `listLookupOptions(fetch, "${itemEditLookups.owner_id.route}")` : "Promise.resolve([])"}
   ]);
   return {
-    screen: ${JSON.stringify({ id: taskEdit.id, title: taskEdit.title, web: taskEdit.web }, null, 2)},
-    task,
+    screen: ${JSON.stringify({ id: itemEdit.id, title: itemEdit.title, web: itemEdit.web }, null, 2)},
+    item,
     lookups: {
       owner_id: ownerOptions
     },
     values: {
-      title: task.title ?? "",
-      description: task.description ?? "",
-      priority: task.priority ?? "medium",
-      owner_id: task.owner_id ?? "",
-      due_at: task.due_at ? String(task.due_at).slice(0, 16) : "",
-      status: task.status ?? ""
+      title: item.title ?? "",
+      description: item.description ?? "",
+      priority: item.priority ?? "medium",
+      owner_id: item.owner_id ?? "",
+      due_at: item.due_at ? String(item.due_at).slice(0, 16) : "",
+      status: item.status ?? ""
     }
   };
 };
 `;
 
-  files["tasks/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+  files["items/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { updateTask } from "$lib/api/client";
+import { updateItem } from "$lib/api/client";
 
 export const actions: Actions = {
 ${renderSvelteKitRedirectingAction({
@@ -543,21 +543,21 @@ const payload = {
 };
 
 if (!updated_at) {
-  return fail(400, { error: "updated_at is required to update this task.", values: payload });
+  return fail(400, { error: "updated_at is required to update this item.", values: payload });
 }`,
-  tryStatement: `await updateTask(fetch, params.id, payload, {
+  tryStatement: `await updateItem(fetch, params.id, payload, {
   headers: {
     "If-Match": updated_at
   }
 });`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update task", values: payload });',
-  successStatement: "throw redirect(303, `/tasks/${params.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update item", values: payload });',
+  successStatement: "throw redirect(303, `/items/${params.id}`);"
 })}
 };
 `;
 
-  files["tasks/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  files["items/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
   export let form;
 
@@ -567,11 +567,11 @@ if (!updated_at) {
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${taskEdit.title || "Edit Task"}</h1>
-      <p>Update the mutable fields for <strong>{data.task.title}</strong>.</p>
+      <h1>${itemEdit.title || "Edit Item"}</h1>
+      <p>Update the mutable fields for <strong>{data.item.title}</strong>.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
-        <input type="hidden" name="updated_at" value={data.task.updated_at} />
+        <input type="hidden" name="updated_at" value={data.item.updated_at} />
         <label>Title <input name="title" value={values.title ?? ""} /></label>
         <label>Description <textarea name="description">{values.description ?? ""}</textarea></label>
         <label>
@@ -585,7 +585,7 @@ if (!updated_at) {
         <label>
           Owner
           <select name="owner_id">
-            <option value="">${taskEditLookups.owner_id?.emptyLabel || "Unassigned"}</option>
+            <option value="">${itemEditLookups.owner_id?.emptyLabel || "Unassigned"}</option>
             {#each data.lookups.owner_id as option}
               <option value={option.value} selected={option.value === (values.owner_id ?? "")}>{option.label}</option>
             {/each}
@@ -595,7 +595,7 @@ if (!updated_at) {
         <label>
           Status
           <select name="status">
-            <option value="">Keep current ({data.task.status})</option>
+            <option value="">Keep current ({data.item.status})</option>
             <option value="draft">draft</option>
             <option value="active">active</option>
             <option value="completed">completed</option>
@@ -604,7 +604,7 @@ if (!updated_at) {
         </label>
         <div class="button-row">
           <button type="submit">Save Changes</button>
-          <a class="button-link secondary" href={"/tasks/" + data.task.id}>Cancel</a>
+          <a class="button-link secondary" href={"/items/" + data.item.id}>Cancel</a>
         </div>
       </form>
     </section>
@@ -612,20 +612,20 @@ if (!updated_at) {
 </main>
 `;
 
-  files["task-exports/[job_id]/+page.ts"] = `import type { PageLoad } from "./$types";
-import { getTaskExportJob } from "$lib/api/client";
+  files["item-exports/[job_id]/+page.ts"] = `import type { PageLoad } from "./$types";
+import { getItemExportJob } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, params }) => {
   try {
     return {
-      screen: ${JSON.stringify({ id: taskExports.id, title: taskExports.title, web: taskExports.web }, null, 2)},
-      job: await getTaskExportJob(fetch, params.job_id),
+      screen: ${JSON.stringify({ id: itemExports.id, title: itemExports.title, web: itemExports.web }, null, 2)},
+      job: await getItemExportJob(fetch, params.job_id),
       notFound: false
     };
   } catch (error) {
     if ((error as { status?: number }).status === 404) {
       return {
-        screen: ${JSON.stringify({ id: taskExports.id, title: taskExports.title, web: taskExports.web }, null, 2)},
+        screen: ${JSON.stringify({ id: itemExports.id, title: itemExports.title, web: itemExports.web }, null, 2)},
         job: null,
         notFound: true
       };
@@ -635,15 +635,15 @@ export const load: PageLoad = async ({ fetch, params }) => {
 };
 `;
 
-  files["task-exports/[job_id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+  files["item-exports/[job_id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
 </script>
 
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${taskExports.title || taskExports.id}</h1>
-      <p>This ${prettyScreenKind(taskExports.kind)} screen was generated from \`${taskExports.id}\`.</p>
+      <h1>${itemExports.title || itemExports.id}</h1>
+      <p>This ${prettyScreenKind(itemExports.kind)} screen was generated from \`${itemExports.id}\`.</p>
       {#if data.notFound}
         <p>No export job was found for this id yet.</p>
         <p class="muted">Start an export from a future generated action or revisit this page with a valid job id.</p>
@@ -663,27 +663,27 @@ export const load: PageLoad = async ({ fetch, params }) => {
 </main>
 `;
 
-  const projectList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectListScreenId);
-  const projectDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectDetailScreenId);
-  const projectCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectCreateScreenId);
-  const projectEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.projectEditScreenId);
-  const userList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userListScreenId);
-  const userDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userDetailScreenId);
-  const userCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userCreateScreenId);
-  const userEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.userEditScreenId);
+  const collectionList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.collectionListScreenId);
+  const collectionDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.collectionDetailScreenId);
+  const collectionCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.collectionCreateScreenId);
+  const collectionEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.collectionEditScreenId);
+  const memberList = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.memberListScreenId);
+  const memberDetail = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.memberDetailScreenId);
+  const memberCreate = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.memberCreateScreenId);
+  const memberEdit = contract?.screens?.find((screen) => screen.id === APP_BASIC_WEB_SCREEN_REFERENCE.memberEditScreenId);
 
-  if (projectList && projectDetail && projectCreate && projectEdit) {
-    files["projects/+page.ts"] = `import type { PageLoad } from "./$types";
+  if (collectionList && collectionDetail && collectionCreate && collectionEdit) {
+    files["collections/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, url }) => {
   const limit = url.searchParams.get("limit");
   return {
-    screen: ${JSON.stringify({ id: projectList.id, title: projectList.title, collection: projectList.collection, web: projectList.web }, null, 2)},
+    screen: ${JSON.stringify({ id: collectionList.id, title: collectionList.title, collection: collectionList.collection, web: collectionList.web }, null, 2)},
     filters: {
       limit: limit ?? ""
     },
-    result: await requestCapability(fetch, "cap_list_projects", {
+    result: await requestCapability(fetch, "cap_list_collections", {
       after: url.searchParams.get("after") ?? undefined,
       limit: limit ? Number(limit) : undefined
     })
@@ -691,7 +691,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 };
 `;
 
-    files["projects/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["collections/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
 
   const buildNextHref = () => {
@@ -699,7 +699,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
     const params = new URLSearchParams();
     if (data.filters.limit) params.set("limit", String(data.filters.limit));
     params.set("after", data.result.next_cursor);
-    return \`/projects?\${params.toString()}\`;
+    return \`/collections?\${params.toString()}\`;
   };
 
   const nextHref = buildNextHref();
@@ -710,27 +710,27 @@ export const load: PageLoad = async ({ fetch, url }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>${projectList.title || projectList.id}</h1>
-          <p>This ${prettyScreenKind(projectList.kind)} screen was generated from \`${projectList.id}\`.</p>
+          <h1>${collectionList.title || collectionList.id}</h1>
+          <p>This ${prettyScreenKind(collectionList.kind)} screen was generated from \`${collectionList.id}\`.</p>
         </div>
-        <a class="button-link" href="/projects/new">Create Project</a>
+        <a class="button-link" href="/collections/new">Create Collection</a>
       </div>
 
       {#if data.result.items.length === 0}
         <div class="empty-state">
-          <p><strong>${projectList.emptyState?.title || "No projects yet"}</strong></p>
-          <p class="muted">${projectList.emptyState?.body || ""}</p>
+          <p><strong>${collectionList.emptyState?.title || "No collections yet"}</strong></p>
+          <p class="muted">${collectionList.emptyState?.body || ""}</p>
         </div>
       {:else}
-        <ul class="task-list resource-list">
-          {#each data.result.items as project}
+        <ul class="item-list resource-list">
+          {#each data.result.items as collection}
             <li>
-              <div class="task-meta resource-meta">
-                <a href={'/projects/' + project.id}><strong>{project.name}</strong></a>
-                {#if project.description}<span class="muted">{project.description}</span>{/if}
-                <span class="muted">Owner: {project.owner_id || "Unassigned"}</span>
+              <div class="item-meta resource-meta">
+                <a href={'/collections/' + collection.id}><strong>{collection.name}</strong></a>
+                {#if collection.description}<span class="muted">{collection.description}</span>{/if}
+                <span class="muted">Owner: {collection.owner_id || "Unassigned"}</span>
               </div>
-              <span class="badge">{project.status}</span>
+              <span class="badge">{collection.status}</span>
             </li>
           {/each}
         </ul>
@@ -743,18 +743,18 @@ export const load: PageLoad = async ({ fetch, url }) => {
 </main>
 `;
 
-    files["projects/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
+    files["collections/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, params }) => {
   return {
-    screen: ${JSON.stringify({ id: projectDetail.id, title: projectDetail.title, web: projectDetail.web }, null, 2)},
-    project: await requestCapability(fetch, "cap_get_project", { project_id: params.id })
+    screen: ${JSON.stringify({ id: collectionDetail.id, title: collectionDetail.title, web: collectionDetail.web }, null, 2)},
+    collection: await requestCapability(fetch, "cap_get_collection", { collection_id: params.id })
   };
 };
 `;
 
-    files["projects/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["collections/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
 </script>
 
@@ -763,47 +763,47 @@ export const load: PageLoad = async ({ fetch, params }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>{data.project.name}</h1>
-          <p>This ${prettyScreenKind(projectDetail.kind)} screen was generated from \`${projectDetail.id}\`.</p>
+          <h1>{data.collection.name}</h1>
+          <p>This ${prettyScreenKind(collectionDetail.kind)} screen was generated from \`${collectionDetail.id}\`.</p>
         </div>
-        <span class="badge">{data.project.status}</span>
+        <span class="badge">{data.collection.status}</span>
       </div>
 
-      {#if data.project.description}
-        <p>{data.project.description}</p>
+      {#if data.collection.description}
+        <p>{data.collection.description}</p>
       {:else}
-        <p class="muted">No description was provided for this project.</p>
+        <p class="muted">No description was provided for this collection.</p>
       {/if}
 
       <dl class="definition-list">
-        <dt>Project ID</dt><dd>{data.project.id}</dd>
-        <dt>Status</dt><dd>{data.project.status}</dd>
-        <dt>Owner</dt><dd>{data.project.owner_id || "Unassigned"}</dd>
-        <dt>Created</dt><dd>{data.project.created_at}</dd>
+        <dt>Collection ID</dt><dd>{data.collection.id}</dd>
+        <dt>Status</dt><dd>{data.collection.status}</dd>
+        <dt>Owner</dt><dd>{data.collection.owner_id || "Unassigned"}</dd>
+        <dt>Created</dt><dd>{data.collection.created_at}</dd>
       </dl>
 
       <div class="button-row">
-        <a class="button-link secondary" href="/projects">Back to Projects</a>
-        <a class="button-link" href={"/projects/" + data.project.id + "/edit"}>Edit Project</a>
+        <a class="button-link secondary" href="/collections">Back to Collections</a>
+        <a class="button-link" href={"/collections/" + data.collection.id + "/edit"}>Edit Collection</a>
       </div>
     </section>
   </div>
 </main>
 `;
 
-    files["projects/new/+page.ts"] = `import type { PageLoad } from "./$types";
+    files["collections/new/+page.ts"] = `import type { PageLoad } from "./$types";
 import { listLookupOptions } from "$lib/api/lookups";
 
 export const load: PageLoad = async ({ fetch }) => {
   return {
     lookups: {
-      owner_id: await listLookupOptions(fetch, "/lookups/users")
+      owner_id: await listLookupOptions(fetch, "/lookups/members")
     }
   };
 };
 `;
 
-    files["projects/new/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+    files["collections/new/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
@@ -824,15 +824,15 @@ if (!payload.name) {
 }
 
 let created;`,
-  tryStatement: `created = await requestCapability(fetch, "cap_create_project", payload);`,
+  tryStatement: `created = await requestCapability(fetch, "cap_create_collection", payload);`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create project", values: payload });',
-  successStatement: "throw redirect(303, `/projects/${created.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create collection", values: payload });',
+  successStatement: "throw redirect(303, `/collections/${created.id}`);"
 })}
 };
 `;
 
-    files["projects/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["collections/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
   export let form;
 
@@ -847,8 +847,8 @@ let created;`,
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${projectCreate.title || projectCreate.id}</h1>
-      <p>This ${prettyScreenKind(projectCreate.kind)} screen was generated from \`${projectCreate.id}\`.</p>
+      <h1>${collectionCreate.title || collectionCreate.id}</h1>
+      <p>This ${prettyScreenKind(collectionCreate.kind)} screen was generated from \`${collectionCreate.id}\`.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
         <label>Name <input name="name" required value={values.name} /></label>
@@ -870,8 +870,8 @@ let created;`,
           </select>
         </label>
         <div class="button-row">
-          <button type="submit">Create Project</button>
-          <a class="button-link secondary" href="/projects">Cancel</a>
+          <button type="submit">Create Collection</button>
+          <a class="button-link secondary" href="/collections">Cancel</a>
         </div>
       </form>
     </section>
@@ -879,32 +879,32 @@ let created;`,
 </main>
 `;
 
-    files["projects/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
+    files["collections/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 import { listLookupOptions } from "$lib/api/lookups";
 
 export const load: PageLoad = async ({ fetch, params }) => {
-  const [project, ownerOptions] = await Promise.all([
-    requestCapability(fetch, "cap_get_project", { project_id: params.id }),
-    listLookupOptions(fetch, "/lookups/users")
+  const [collection, ownerOptions] = await Promise.all([
+    requestCapability(fetch, "cap_get_collection", { collection_id: params.id }),
+    listLookupOptions(fetch, "/lookups/members")
   ]);
   return {
-    screen: ${JSON.stringify({ id: projectEdit.id, title: projectEdit.title, web: projectEdit.web }, null, 2)},
-    project,
+    screen: ${JSON.stringify({ id: collectionEdit.id, title: collectionEdit.title, web: collectionEdit.web }, null, 2)},
+    collection,
     lookups: {
       owner_id: ownerOptions
     },
     values: {
-      name: project.name ?? "",
-      description: project.description ?? "",
-      status: project.status ?? "active",
-      owner_id: project.owner_id ?? ""
+      name: collection.name ?? "",
+      description: collection.description ?? "",
+      status: collection.status ?? "active",
+      owner_id: collection.owner_id ?? ""
     }
   };
 };
 `;
 
-    files["projects/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+    files["collections/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
@@ -919,15 +919,15 @@ const payload = {
   status: String(form.get("status") || "") || undefined,
   owner_id: String(form.get("owner_id") || "") || undefined
 };`,
-  tryStatement: `await requestCapability(fetch, "cap_update_project", { project_id: params.id, ...payload });`,
+  tryStatement: `await requestCapability(fetch, "cap_update_collection", { collection_id: params.id, ...payload });`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update project", values: payload });',
-  successStatement: "throw redirect(303, `/projects/${params.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update collection", values: payload });',
+  successStatement: "throw redirect(303, `/collections/${params.id}`);"
 })}
 };
 `;
 
-    files["projects/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["collections/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
   export let form;
 
@@ -937,8 +937,8 @@ const payload = {
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${projectEdit.title || "Edit Project"}</h1>
-      <p>Update the mutable fields for <strong>{data.project.name}</strong>.</p>
+      <h1>${collectionEdit.title || "Edit Collection"}</h1>
+      <p>Update the mutable fields for <strong>{data.collection.name}</strong>.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
         <label>Name <input name="name" value={values.name ?? ""} /></label>
@@ -946,8 +946,8 @@ const payload = {
         <label>
           Status
           <select name="status">
-            <option value="active" selected={(values.status ?? data.project.status) === "active"}>active</option>
-            <option value="archived" selected={(values.status ?? data.project.status) === "archived"}>archived</option>
+            <option value="active" selected={(values.status ?? data.collection.status) === "active"}>active</option>
+            <option value="archived" selected={(values.status ?? data.collection.status) === "archived"}>archived</option>
           </select>
         </label>
         <label>
@@ -961,7 +961,7 @@ const payload = {
         </label>
         <div class="button-row">
           <button type="submit">Save Changes</button>
-          <a class="button-link secondary" href={"/projects/" + data.project.id}>Cancel</a>
+          <a class="button-link secondary" href={"/collections/" + data.collection.id}>Cancel</a>
         </div>
       </form>
     </section>
@@ -970,18 +970,18 @@ const payload = {
 `;
   }
 
-  if (userList && userDetail && userCreate && userEdit) {
-    files["users/+page.ts"] = `import type { PageLoad } from "./$types";
+  if (memberList && memberDetail && memberCreate && memberEdit) {
+    files["members/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, url }) => {
   const limit = url.searchParams.get("limit");
   return {
-    screen: ${JSON.stringify({ id: userList.id, title: userList.title, collection: userList.collection, web: userList.web }, null, 2)},
+    screen: ${JSON.stringify({ id: memberList.id, title: memberList.title, collection: memberList.collection, web: memberList.web }, null, 2)},
     filters: {
       limit: limit ?? ""
     },
-    result: await requestCapability(fetch, "cap_list_users", {
+    result: await requestCapability(fetch, "cap_list_members", {
       after: url.searchParams.get("after") ?? undefined,
       limit: limit ? Number(limit) : undefined
     })
@@ -989,7 +989,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 };
 `;
 
-    files["users/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["members/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
 
   const buildNextHref = () => {
@@ -997,7 +997,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
     const params = new URLSearchParams();
     if (data.filters.limit) params.set("limit", String(data.filters.limit));
     params.set("after", data.result.next_cursor);
-    return \`/users?\${params.toString()}\`;
+    return \`/members?\${params.toString()}\`;
   };
 
   const nextHref = buildNextHref();
@@ -1008,26 +1008,26 @@ export const load: PageLoad = async ({ fetch, url }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>${userList.title || userList.id}</h1>
-          <p>This ${prettyScreenKind(userList.kind)} screen was generated from \`${userList.id}\`.</p>
+          <h1>${memberList.title || memberList.id}</h1>
+          <p>This ${prettyScreenKind(memberList.kind)} screen was generated from \`${memberList.id}\`.</p>
         </div>
-        <a class="button-link" href="/users/new">Create User</a>
+        <a class="button-link" href="/members/new">Create Member</a>
       </div>
 
       {#if data.result.items.length === 0}
         <div class="empty-state">
-          <p><strong>${userList.emptyState?.title || "No users yet"}</strong></p>
-          <p class="muted">${userList.emptyState?.body || ""}</p>
+          <p><strong>${memberList.emptyState?.title || "No members yet"}</strong></p>
+          <p class="muted">${memberList.emptyState?.body || ""}</p>
         </div>
       {:else}
-        <ul class="task-list resource-list">
-          {#each data.result.items as user}
+        <ul class="item-list resource-list">
+          {#each data.result.items as member}
             <li>
-              <div class="task-meta resource-meta">
-                <a href={'/users/' + user.id}><strong>{user.display_name}</strong></a>
-                <span class="muted">{user.email}</span>
+              <div class="item-meta resource-meta">
+                <a href={'/members/' + member.id}><strong>{member.display_name}</strong></a>
+                <span class="muted">{member.email}</span>
               </div>
-              <span class="badge">{user.is_active ? "active" : "inactive"}</span>
+              <span class="badge">{member.is_active ? "active" : "inactive"}</span>
             </li>
           {/each}
         </ul>
@@ -1040,18 +1040,18 @@ export const load: PageLoad = async ({ fetch, url }) => {
 </main>
 `;
 
-    files["users/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
+    files["members/[id]/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, params }) => {
   return {
-    screen: ${JSON.stringify({ id: userDetail.id, title: userDetail.title, web: userDetail.web }, null, 2)},
-    user: await requestCapability(fetch, "cap_get_user", { user_id: params.id })
+    screen: ${JSON.stringify({ id: memberDetail.id, title: memberDetail.title, web: memberDetail.web }, null, 2)},
+    member: await requestCapability(fetch, "cap_get_member", { member_id: params.id })
   };
 };
 `;
 
-    files["users/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["members/[id]/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
 </script>
 
@@ -1060,29 +1060,29 @@ export const load: PageLoad = async ({ fetch, params }) => {
     <section class="card">
       <div class="button-row" style="justify-content: space-between;">
         <div>
-          <h1>{data.user.display_name}</h1>
-          <p>This ${prettyScreenKind(userDetail.kind)} screen was generated from \`${userDetail.id}\`.</p>
+          <h1>{data.member.display_name}</h1>
+          <p>This ${prettyScreenKind(memberDetail.kind)} screen was generated from \`${memberDetail.id}\`.</p>
         </div>
-        <span class="badge">{data.user.is_active ? "active" : "inactive"}</span>
+        <span class="badge">{data.member.is_active ? "active" : "inactive"}</span>
       </div>
 
       <dl class="definition-list">
-        <dt>User ID</dt><dd>{data.user.id}</dd>
-        <dt>Email</dt><dd>{data.user.email}</dd>
-        <dt>Display Name</dt><dd>{data.user.display_name}</dd>
-        <dt>Created</dt><dd>{data.user.created_at}</dd>
+        <dt>Member ID</dt><dd>{data.member.id}</dd>
+        <dt>Email</dt><dd>{data.member.email}</dd>
+        <dt>Display Name</dt><dd>{data.member.display_name}</dd>
+        <dt>Created</dt><dd>{data.member.created_at}</dd>
       </dl>
 
       <div class="button-row">
-        <a class="button-link secondary" href="/users">Back to Users</a>
-        <a class="button-link" href={"/users/" + data.user.id + "/edit"}>Edit User</a>
+        <a class="button-link secondary" href="/members">Back to Members</a>
+        <a class="button-link" href={"/members/" + data.member.id + "/edit"}>Edit Member</a>
       </div>
     </section>
   </div>
 </main>
 `;
 
-    files["users/new/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+    files["members/new/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
@@ -1102,15 +1102,15 @@ if (!payload.email || !payload.display_name) {
 }
 
 let created;`,
-  tryStatement: `created = await requestCapability(fetch, "cap_create_user", payload);`,
+  tryStatement: `created = await requestCapability(fetch, "cap_create_member", payload);`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create user", values: payload });',
-  successStatement: "throw redirect(303, `/users/${created.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to create member", values: payload });',
+  successStatement: "throw redirect(303, `/members/${created.id}`);"
 })}
 };
 `;
 
-    files["users/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["members/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let form;
 
   const values = {
@@ -1123,8 +1123,8 @@ let created;`,
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${userCreate.title || userCreate.id}</h1>
-      <p>This ${prettyScreenKind(userCreate.kind)} screen was generated from \`${userCreate.id}\`.</p>
+      <h1>${memberCreate.title || memberCreate.id}</h1>
+      <p>This ${prettyScreenKind(memberCreate.kind)} screen was generated from \`${memberCreate.id}\`.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
         <label>Email <input name="email" type="email" required value={values.email} /></label>
@@ -1137,8 +1137,8 @@ let created;`,
           </select>
         </label>
         <div class="button-row">
-          <button type="submit">Create User</button>
-          <a class="button-link secondary" href="/users">Cancel</a>
+          <button type="submit">Create Member</button>
+          <a class="button-link secondary" href="/members">Cancel</a>
         </div>
       </form>
     </section>
@@ -1146,24 +1146,24 @@ let created;`,
 </main>
 `;
 
-    files["users/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
+    files["members/[id]/edit/+page.ts"] = `import type { PageLoad } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
 export const load: PageLoad = async ({ fetch, params }) => {
-  const user = await requestCapability(fetch, "cap_get_user", { user_id: params.id });
+  const member = await requestCapability(fetch, "cap_get_member", { member_id: params.id });
   return {
-    screen: ${JSON.stringify({ id: userEdit.id, title: userEdit.title, web: userEdit.web }, null, 2)},
-    user,
+    screen: ${JSON.stringify({ id: memberEdit.id, title: memberEdit.title, web: memberEdit.web }, null, 2)},
+    member,
     values: {
-      email: user.email ?? "",
-      display_name: user.display_name ?? "",
-      is_active: user.is_active ?? true
+      email: member.email ?? "",
+      display_name: member.display_name ?? "",
+      is_active: member.is_active ?? true
     }
   };
 };
 `;
 
-    files["users/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
+    files["members/[id]/edit/+page.server.ts"] = `import { redirect, fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { requestCapability } from "$lib/api/client";
 
@@ -1177,15 +1177,15 @@ const payload = {
   display_name: String(form.get("display_name") || "") || undefined,
   is_active: form.get("is_active") === "true"
 };`,
-  tryStatement: `await requestCapability(fetch, "cap_update_user", { user_id: params.id, ...payload });`,
+  tryStatement: `await requestCapability(fetch, "cap_update_member", { member_id: params.id, ...payload });`,
   catchReturn:
-    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update user", values: payload });',
-  successStatement: "throw redirect(303, `/users/${params.id}`);"
+    'return fail(400, { error: error instanceof Error ? error.message : "Unable to update member", values: payload });',
+  successStatement: "throw redirect(303, `/members/${params.id}`);"
 })}
 };
 `;
 
-    files["users/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
+    files["members/[id]/edit/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
   export let data;
   export let form;
 
@@ -1195,8 +1195,8 @@ const payload = {
 <main>
   <div class="stack">
     <section class="card">
-      <h1>${userEdit.title || "Edit User"}</h1>
-      <p>Update the mutable fields for <strong>{data.user.display_name}</strong>.</p>
+      <h1>${memberEdit.title || "Edit Member"}</h1>
+      <p>Update the mutable fields for <strong>{data.member.display_name}</strong>.</p>
       {#if form?.error}<p><strong>{form.error}</strong></p>{/if}
       <form class="stack" method="POST">
         <label>Email <input name="email" type="email" value={values.email ?? ""} /></label>
@@ -1204,13 +1204,13 @@ const payload = {
         <label>
           Active
           <select name="is_active">
-            <option value="true" selected={(values.is_active ?? data.user.is_active) === true}>active</option>
-            <option value="false" selected={(values.is_active ?? data.user.is_active) === false}>inactive</option>
+            <option value="true" selected={(values.is_active ?? data.member.is_active) === true}>active</option>
+            <option value="false" selected={(values.is_active ?? data.member.is_active) === false}>inactive</option>
           </select>
         </label>
         <div class="button-row">
           <button type="submit">Save Changes</button>
-          <a class="button-link secondary" href={"/users/" + data.user.id}>Cancel</a>
+          <a class="button-link secondary" href={"/members/" + data.member.id}>Cancel</a>
         </div>
       </form>
     </section>

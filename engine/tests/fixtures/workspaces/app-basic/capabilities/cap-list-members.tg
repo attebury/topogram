@@ -1,0 +1,11 @@
+capability cap_list_members {
+  name "List Members"
+  description "Allows a member to list members"
+
+  actors [actor_member]
+  reads [entity_member]
+  input [shape_input_list_members]
+  output [shape_output_member_detail]
+
+  status active
+}

@@ -1,0 +1,10 @@
+operation op_item_creation_monitoring {
+  name "Item creation monitoring"
+  description "Runtime monitoring for item creation"
+
+  observes [cap_create_item]
+  metrics [item_creation_latency, item_creation_failure_rate]
+  alerts [high_item_creation_failure_rate]
+
+  status active
+}

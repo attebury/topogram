@@ -1,6 +1,6 @@
 {
   "type": "runtime_smoke_plan",
-  "name": "Work Tracker Runtime Smoke Plan",
+  "name": "Sample Workspace Runtime Smoke Plan",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web"
@@ -43,31 +43,31 @@
     "sources": [
       {
         "id": "ver_runtime_smoke",
-        "name": "Work Tracker runtime smoke",
+        "name": "Sample Workspace runtime smoke",
         "method": "smoke",
         "validates": [
-          "cap_create_task",
-          "cap_get_task",
-          "cap_list_tasks"
+          "cap_create_item",
+          "cap_get_item",
+          "cap_list_items"
         ]
       }
     ],
     "scenarios": [
       {
-        "id": "tasks_page_responds",
-        "label": "tasks page responds"
+        "id": "items_page_responds",
+        "label": "items page responds"
       },
       {
-        "id": "create_task_smoke",
-        "label": "create task smoke"
+        "id": "create_item_smoke",
+        "label": "create item smoke"
       },
       {
-        "id": "get_created_task_smoke",
-        "label": "get created task smoke"
+        "id": "get_created_item_smoke",
+        "label": "get created item smoke"
       },
       {
-        "id": "list_tasks_smoke",
-        "label": "list tasks smoke"
+        "id": "list_items_smoke",
+        "label": "list items smoke"
       }
     ]
   },
@@ -77,32 +77,32 @@
   },
   "checks": [
     {
-      "id": "web_tasks_page",
+      "id": "web_items_page",
       "type": "web_get",
-      "path": "/tasks",
+      "path": "/items",
       "expectStatus": 200,
-      "expectText": "Tasks"
+      "expectText": "Items"
     },
     {
-      "id": "create_task",
+      "id": "create_item",
       "type": "api_post",
-      "path": "/tasks",
+      "path": "/items",
       "expectStatus": 201,
-      "capabilityId": "cap_create_task"
+      "capabilityId": "cap_create_item"
     },
     {
-      "id": "get_task",
+      "id": "get_item",
       "type": "api_get",
-      "path": "/tasks/:id",
+      "path": "/items/:id",
       "expectStatus": 200,
-      "capabilityId": "cap_get_task"
+      "capabilityId": "cap_get_item"
     },
     {
-      "id": "list_tasks",
+      "id": "list_items",
       "type": "api_get",
-      "path": "/tasks",
+      "path": "/items",
       "expectStatus": 200,
-      "capabilityId": "cap_list_tasks"
+      "capabilityId": "cap_list_items"
     }
   ]
 }

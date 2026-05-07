@@ -1,12 +1,12 @@
 {
   "projection": {
     "id": "proj_ui_web",
-    "name": "Work Tracker Web UI",
+    "name": "Sample Workspace Web UI",
     "platform": "ui_web"
   },
   "sharedProjection": {
     "id": "proj_ui_shared",
-    "name": "Work Tracker Shared UI"
+    "name": "Sample Workspace Shared UI"
   },
   "generatorDefaults": {
     "profile": "sveltekit",
@@ -17,8 +17,120 @@
     "ui_contract",
     "web_app"
   ],
+  "components": {
+    "component_ui_data_grid": {
+      "type": "component_contract",
+      "id": "component_ui_data_grid",
+      "name": "Data Grid",
+      "description": "Reusable tabular display for item rows",
+      "category": "collection",
+      "version": "1.0",
+      "status": "active",
+      "props": [
+        {
+          "name": "rows",
+          "type": "array",
+          "requiredness": "required",
+          "defaultValue": null
+        },
+        {
+          "name": "selected_ids",
+          "type": "array",
+          "requiredness": "optional",
+          "defaultValue": []
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "requiredness": "optional",
+          "defaultValue": false
+        }
+      ],
+      "events": [
+        {
+          "id": "row_select",
+          "shape": {
+            "id": "shape_output_item_card",
+            "kind": "shape"
+          }
+        }
+      ],
+      "slots": [
+        {
+          "id": "toolbar",
+          "description": "Toolbar actions"
+        },
+        {
+          "id": "empty_state",
+          "description": "Empty-state content"
+        }
+      ],
+      "behavior": [
+        "selection",
+        "sorting"
+      ],
+      "behaviors": [
+        {
+          "kind": "selection",
+          "directives": {
+            "mode": "multi",
+            "state": "selected_ids",
+            "emits": "row_select"
+          },
+          "source": "structured"
+        },
+        {
+          "kind": "sorting",
+          "directives": {
+            "fields": [
+              "title",
+              "status",
+              "created_at"
+            ],
+            "default": [
+              "created_at",
+              "desc"
+            ]
+          },
+          "source": "structured"
+        }
+      ],
+      "patterns": [
+        "resource_table",
+        "data_grid_view"
+      ],
+      "regions": [
+        "results",
+        "toolbar"
+      ],
+      "approvals": [],
+      "lookups": [],
+      "dependencies": []
+    }
+  },
+  "design": {
+    "density": "compact",
+    "tone": "operational",
+    "radiusScale": "medium",
+    "colorRoles": {
+      "primary": "accent",
+      "danger": "critical"
+    },
+    "typographyRoles": {
+      "body": "readable",
+      "heading": "prominent"
+    },
+    "actionRoles": {
+      "primary": "prominent",
+      "destructive": "danger"
+    },
+    "accessibility": {
+      "contrast": "aa",
+      "focus": "visible"
+    }
+  },
   "appShell": {
-    "brand": "Topogram Work Tracker",
+    "brand": "Topogram Sample Workspace",
     "shell": "bottom_tabs",
     "primaryNav": "primary",
     "secondaryNav": "secondary",
@@ -53,12 +165,12 @@
       "bottom_tabs",
       "stack_navigation"
     ],
-    "defaultScreenId": "task_list",
+    "defaultScreenId": "item_list",
     "items": [
       {
-        "screenId": "project_list",
-        "route": "/projects",
-        "label": "Projects",
+        "screenId": "collection_list",
+        "route": "/collections",
+        "label": "Collections",
         "groupId": "workspace",
         "placement": "primary",
         "pattern": "bottom_tabs",
@@ -69,9 +181,9 @@
         "order": "40"
       },
       {
-        "screenId": "project_detail",
-        "route": "/projects/:id",
-        "label": "Project Details",
+        "screenId": "collection_detail",
+        "route": "/collections/:id",
+        "label": "Collection Details",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -82,9 +194,9 @@
         "order": null
       },
       {
-        "screenId": "project_create",
-        "route": "/projects/new",
-        "label": "Create Project",
+        "screenId": "collection_create",
+        "route": "/collections/new",
+        "label": "Create Collection",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -95,9 +207,9 @@
         "order": null
       },
       {
-        "screenId": "project_edit",
-        "route": "/projects/:id/edit",
-        "label": "Edit Project",
+        "screenId": "collection_edit",
+        "route": "/collections/:id/edit",
+        "label": "Edit Collection",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -108,9 +220,9 @@
         "order": null
       },
       {
-        "screenId": "user_list",
-        "route": "/users",
-        "label": "Users",
+        "screenId": "member_list",
+        "route": "/members",
+        "label": "Members",
         "groupId": "admin",
         "placement": "primary",
         "pattern": "bottom_tabs",
@@ -121,9 +233,9 @@
         "order": "50"
       },
       {
-        "screenId": "user_detail",
-        "route": "/users/:id",
-        "label": "User Details",
+        "screenId": "member_detail",
+        "route": "/members/:id",
+        "label": "Member Details",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -134,9 +246,9 @@
         "order": null
       },
       {
-        "screenId": "user_create",
-        "route": "/users/new",
-        "label": "Create User",
+        "screenId": "member_create",
+        "route": "/members/new",
+        "label": "Create Member",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -147,9 +259,9 @@
         "order": null
       },
       {
-        "screenId": "user_edit",
-        "route": "/users/:id/edit",
-        "label": "Edit User",
+        "screenId": "member_edit",
+        "route": "/members/:id/edit",
+        "label": "Edit Member",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -160,9 +272,9 @@
         "order": null
       },
       {
-        "screenId": "task_list",
-        "route": "/tasks",
-        "label": "Tasks",
+        "screenId": "item_list",
+        "route": "/items",
+        "label": "Items",
         "groupId": "workspace",
         "placement": "primary",
         "pattern": "bottom_tabs",
@@ -173,8 +285,8 @@
         "order": "10"
       },
       {
-        "screenId": "task_board",
-        "route": "/tasks/board",
+        "screenId": "item_board",
+        "route": "/items/board",
         "label": "Board",
         "groupId": "workspace",
         "placement": "primary",
@@ -186,8 +298,8 @@
         "order": "20"
       },
       {
-        "screenId": "task_calendar",
-        "route": "/tasks/calendar",
+        "screenId": "item_calendar",
+        "route": "/items/calendar",
         "label": "Calendar",
         "groupId": "workspace",
         "placement": "primary",
@@ -199,35 +311,35 @@
         "order": "30"
       },
       {
-        "screenId": "task_detail",
-        "route": "/tasks/:id",
-        "label": "Task Details",
+        "screenId": "item_detail",
+        "route": "/items/:id",
+        "label": "Item Details",
         "groupId": "workspace",
         "placement": "primary",
         "pattern": "stack_navigation",
         "visible": false,
         "default": false,
-        "breadcrumb": "task_list",
+        "breadcrumb": "item_list",
         "sitemap": "exclude",
         "order": null
       },
       {
-        "screenId": "task_create",
-        "route": "/tasks/new",
-        "label": "Create Task",
+        "screenId": "item_create",
+        "route": "/items/new",
+        "label": "Create Item",
         "groupId": "workspace",
         "placement": "primary",
         "pattern": null,
         "visible": false,
         "default": false,
-        "breadcrumb": "task_list",
+        "breadcrumb": "item_list",
         "sitemap": "exclude",
         "order": null
       },
       {
-        "screenId": "task_edit",
-        "route": "/tasks/:id/edit",
-        "label": "Edit Task",
+        "screenId": "item_edit",
+        "route": "/items/:id/edit",
+        "label": "Edit Item",
         "groupId": null,
         "placement": "primary",
         "pattern": null,
@@ -238,8 +350,8 @@
         "order": null
       },
       {
-        "screenId": "task_exports",
-        "route": "/task-exports/:job_id",
+        "screenId": "item_exports",
+        "route": "/item-exports/:job_id",
         "label": "Export Status",
         "groupId": null,
         "placement": "primary",
@@ -255,27 +367,27 @@
   "screens": [
     {
       "type": "ui_screen_contract",
-      "id": "project_list",
+      "id": "collection_list",
       "kind": "list",
-      "title": "Projects",
+      "title": "Collections",
       "loadCapability": {
-        "id": "cap_list_projects",
+        "id": "cap_list_collections",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": {
-        "id": "cap_get_project",
+        "id": "cap_get_collection",
         "kind": "capability"
       },
       "inputShape": null,
       "viewShape": null,
       "itemShape": {
-        "id": "shape_output_project_card",
+        "id": "shape_output_collection_card",
         "kind": "shape"
       },
       "emptyState": {
-        "title": "No projects yet",
-        "body": "Create a project to organize your tasks"
+        "title": "No collections yet",
+        "body": "Create a collection to organize your items"
       },
       "navigation": {
         "successNavigate": null,
@@ -291,7 +403,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_create_project",
+          "id": "cap_create_collection",
           "kind": "capability"
         },
         "secondary": null,
@@ -300,7 +412,7 @@
         "screen": [
           {
             "capability": {
-              "id": "cap_create_project",
+              "id": "cap_create_collection",
               "kind": "capability"
             },
             "prominence": "primary",
@@ -327,11 +439,11 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_create_project",
+            "id": "cap_create_collection",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "projects.create",
+          "value": "collections.create",
           "claimValue": null,
           "ownershipField": null
         }
@@ -347,10 +459,11 @@
           "variant": null
         }
       ],
+      "components": [],
       "patterns": [
         "resource_table"
       ],
-      "route": "/projects",
+      "route": "/collections",
       "web": {
         "layout": "responsive_collection",
         "desktop_variant": "table",
@@ -358,23 +471,23 @@
         "collection": "table"
       },
       "actionWeb": {
-        "cap_create_project": {}
+        "cap_create_collection": {}
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "project_detail",
+      "id": "collection_detail",
       "kind": "detail",
-      "title": "Project Details",
+      "title": "Collection Details",
       "loadCapability": {
-        "id": "cap_get_project",
+        "id": "cap_get_collection",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": null,
       "inputShape": null,
       "viewShape": {
-        "id": "shape_output_project_detail",
+        "id": "shape_output_collection_detail",
         "kind": "shape"
       },
       "itemShape": null,
@@ -393,7 +506,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_update_project",
+          "id": "cap_update_collection",
           "kind": "capability"
         },
         "secondary": null,
@@ -413,48 +526,49 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_update_project",
+            "id": "cap_update_collection",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "projects.update",
+          "value": "collections.update",
           "claimValue": null,
           "ownershipField": null
         }
       ],
       "lookups": [],
       "regions": [],
+      "components": [],
       "patterns": [
         "detail_panel"
       ],
-      "route": "/projects/:id",
+      "route": "/collections/:id",
       "web": {
         "layout": "detail_page"
       },
       "actionWeb": {
-        "cap_update_project": {}
+        "cap_update_collection": {}
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "project_create",
+      "id": "collection_create",
       "kind": "form",
-      "title": "Create Project",
+      "title": "Create Collection",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_create_project",
+        "id": "cap_create_collection",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_create_project",
+        "id": "shape_input_create_collection",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "project_detail",
+        "successNavigate": "collection_detail",
         "successRefresh": null
       },
       "states": {
@@ -486,7 +600,7 @@
         {
           "field": "owner_id",
           "entity": {
-            "id": "entity_user",
+            "id": "entity_member",
             "kind": "entity"
           },
           "labelField": "display_name",
@@ -494,10 +608,11 @@
         }
       ],
       "regions": [],
+      "components": [],
       "patterns": [
         "edit_form"
       ],
-      "route": "/projects/new",
+      "route": "/collections/new",
       "web": {
         "present": "page"
       },
@@ -505,24 +620,24 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "project_edit",
+      "id": "collection_edit",
       "kind": "form",
-      "title": "Edit Project",
+      "title": "Edit Collection",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_update_project",
+        "id": "cap_update_collection",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_update_project",
+        "id": "shape_input_update_collection",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "project_detail",
+        "successNavigate": "collection_detail",
         "successRefresh": null
       },
       "states": {
@@ -554,7 +669,7 @@
         {
           "field": "owner_id",
           "entity": {
-            "id": "entity_user",
+            "id": "entity_member",
             "kind": "entity"
           },
           "labelField": "display_name",
@@ -562,10 +677,11 @@
         }
       ],
       "regions": [],
+      "components": [],
       "patterns": [
         "edit_form"
       ],
-      "route": "/projects/:id/edit",
+      "route": "/collections/:id/edit",
       "web": {
         "present": "page"
       },
@@ -573,27 +689,27 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "user_list",
+      "id": "member_list",
       "kind": "list",
-      "title": "Users",
+      "title": "Members",
       "loadCapability": {
-        "id": "cap_list_users",
+        "id": "cap_list_members",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": {
-        "id": "cap_get_user",
+        "id": "cap_get_member",
         "kind": "capability"
       },
       "inputShape": null,
       "viewShape": null,
       "itemShape": {
-        "id": "shape_output_user_card",
+        "id": "shape_output_member_card",
         "kind": "shape"
       },
       "emptyState": {
-        "title": "No users yet",
-        "body": "Create a user to start assigning work"
+        "title": "No members yet",
+        "body": "Create a member to start assigning work"
       },
       "navigation": {
         "successNavigate": null,
@@ -609,7 +725,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_create_user",
+          "id": "cap_create_member",
           "kind": "capability"
         },
         "secondary": null,
@@ -618,7 +734,7 @@
         "screen": [
           {
             "capability": {
-              "id": "cap_create_user",
+              "id": "cap_create_member",
               "kind": "capability"
             },
             "prominence": "primary",
@@ -645,11 +761,11 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_create_user",
+            "id": "cap_create_member",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "users.create",
+          "value": "members.create",
           "claimValue": null,
           "ownershipField": null
         }
@@ -665,10 +781,11 @@
           "variant": null
         }
       ],
+      "components": [],
       "patterns": [
         "resource_table"
       ],
-      "route": "/users",
+      "route": "/members",
       "web": {
         "layout": "responsive_collection",
         "desktop_variant": "table",
@@ -676,23 +793,23 @@
         "collection": "table"
       },
       "actionWeb": {
-        "cap_create_user": {}
+        "cap_create_member": {}
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "user_detail",
+      "id": "member_detail",
       "kind": "detail",
-      "title": "User Details",
+      "title": "Member Details",
       "loadCapability": {
-        "id": "cap_get_user",
+        "id": "cap_get_member",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": null,
       "inputShape": null,
       "viewShape": {
-        "id": "shape_output_user_detail",
+        "id": "shape_output_member_detail",
         "kind": "shape"
       },
       "itemShape": null,
@@ -711,7 +828,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_update_user",
+          "id": "cap_update_member",
           "kind": "capability"
         },
         "secondary": null,
@@ -731,48 +848,49 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_update_user",
+            "id": "cap_update_member",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "users.update",
+          "value": "members.update",
           "claimValue": null,
           "ownershipField": null
         }
       ],
       "lookups": [],
       "regions": [],
+      "components": [],
       "patterns": [
         "detail_panel"
       ],
-      "route": "/users/:id",
+      "route": "/members/:id",
       "web": {
         "layout": "detail_page"
       },
       "actionWeb": {
-        "cap_update_user": {}
+        "cap_update_member": {}
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "user_create",
+      "id": "member_create",
       "kind": "form",
-      "title": "Create User",
+      "title": "Create Member",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_create_user",
+        "id": "cap_create_member",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_create_user",
+        "id": "shape_input_create_member",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "user_detail",
+        "successNavigate": "member_detail",
         "successRefresh": null
       },
       "states": {
@@ -802,10 +920,11 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
+      "components": [],
       "patterns": [
         "edit_form"
       ],
-      "route": "/users/new",
+      "route": "/members/new",
       "web": {
         "present": "page"
       },
@@ -813,24 +932,24 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "user_edit",
+      "id": "member_edit",
       "kind": "form",
-      "title": "Edit User",
+      "title": "Edit Member",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_update_user",
+        "id": "cap_update_member",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_update_user",
+        "id": "shape_input_update_member",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "user_detail",
+        "successNavigate": "member_detail",
         "successRefresh": null
       },
       "states": {
@@ -860,10 +979,11 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
+      "components": [],
       "patterns": [
         "edit_form"
       ],
-      "route": "/users/:id/edit",
+      "route": "/members/:id/edit",
       "web": {
         "present": "page"
       },
@@ -871,27 +991,27 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_list",
+      "id": "item_list",
       "kind": "list",
-      "title": "Tasks",
+      "title": "Items",
       "loadCapability": {
-        "id": "cap_list_tasks",
+        "id": "cap_list_items",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": {
-        "id": "cap_get_task",
+        "id": "cap_get_item",
         "kind": "capability"
       },
       "inputShape": null,
       "viewShape": null,
       "itemShape": {
-        "id": "shape_output_task_card",
+        "id": "shape_output_item_card",
         "kind": "shape"
       },
       "emptyState": {
-        "title": "No tasks yet",
-        "body": "Create a task to get started"
+        "title": "No items yet",
+        "body": "Create a item to get started"
       },
       "navigation": {
         "successNavigate": null,
@@ -907,7 +1027,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_create_task",
+          "id": "cap_create_item",
           "kind": "capability"
         },
         "secondary": null,
@@ -916,7 +1036,7 @@
         "screen": [
           {
             "capability": {
-              "id": "cap_export_tasks",
+              "id": "cap_export_items",
               "kind": "capability"
             },
             "prominence": "secondary",
@@ -926,7 +1046,7 @@
       },
       "collection": {
         "filters": [
-          "project_id",
+          "collection_id",
           "owner_id",
           "status"
         ],
@@ -949,29 +1069,29 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_export_tasks",
+            "id": "cap_export_items",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "tasks.export",
+          "value": "items.export",
           "claimValue": null,
           "ownershipField": null
         }
       ],
       "lookups": [
         {
-          "field": "project_id",
+          "field": "collection_id",
           "entity": {
-            "id": "entity_project",
+            "id": "entity_collection",
             "kind": "entity"
           },
           "labelField": "name",
-          "emptyLabel": "All projects"
+          "emptyLabel": "All collections"
         },
         {
           "field": "owner_id",
           "entity": {
-            "id": "entity_user",
+            "id": "entity_member",
             "kind": "entity"
           },
           "labelField": "display_name",
@@ -1004,12 +1124,139 @@
           "variant": null
         }
       ],
+      "components": [
+        {
+          "type": "ui_component_usage",
+          "region": "results",
+          "pattern": "resource_table",
+          "placement": "primary",
+          "component": {
+            "id": "component_ui_data_grid",
+            "name": "Data Grid",
+            "category": "collection",
+            "version": "1.0"
+          },
+          "dataBindings": [
+            {
+              "prop": "rows",
+              "source": {
+                "id": "cap_list_items",
+                "kind": "capability"
+              }
+            }
+          ],
+          "eventBindings": [
+            {
+              "event": "row_select",
+              "action": "navigate",
+              "target": {
+                "id": "item_detail",
+                "kind": "screen"
+              }
+            }
+          ],
+          "behaviorRealizations": [
+            {
+              "kind": "selection",
+              "source": "structured",
+              "directives": {
+                "mode": "multi",
+                "state": "selected_ids",
+                "emits": "row_select"
+              },
+              "state": {
+                "prop": "selected_ids",
+                "requiredness": "optional",
+                "bound": false,
+                "source": null,
+                "defaultValue": []
+              },
+              "emits": [
+                {
+                  "event": "row_select",
+                  "bound": true,
+                  "bindings": [
+                    {
+                      "event": "row_select",
+                      "action": "navigate",
+                      "target": {
+                        "id": "item_detail",
+                        "kind": "screen"
+                      }
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "type": "navigation",
+                      "event": "row_select",
+                      "target": {
+                        "id": "item_detail",
+                        "kind": "screen"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "actions": [],
+              "dataDependencies": [
+                {
+                  "prop": "rows",
+                  "source": {
+                    "id": "cap_list_items",
+                    "kind": "capability"
+                  }
+                }
+              ],
+              "effects": [
+                {
+                  "type": "navigation",
+                  "event": "row_select",
+                  "target": {
+                    "id": "item_detail",
+                    "kind": "screen"
+                  }
+                }
+              ],
+              "status": "realized"
+            },
+            {
+              "kind": "sorting",
+              "source": "structured",
+              "directives": {
+                "fields": [
+                  "title",
+                  "status",
+                  "created_at"
+                ],
+                "default": [
+                  "created_at",
+                  "desc"
+                ]
+              },
+              "state": null,
+              "emits": [],
+              "actions": [],
+              "dataDependencies": [
+                {
+                  "prop": "rows",
+                  "source": {
+                    "id": "cap_list_items",
+                    "kind": "capability"
+                  }
+                }
+              ],
+              "effects": [],
+              "status": "realized"
+            }
+          ]
+        }
+      ],
       "patterns": [
         "summary_stats",
         "action_bar",
         "resource_table"
       ],
-      "route": "/tasks",
+      "route": "/items",
       "web": {
         "shell": "bottom_tabs",
         "layout": "responsive_collection",
@@ -1018,35 +1265,35 @@
         "collection": "table"
       },
       "actionWeb": {
-        "cap_export_tasks": {},
-        "cap_create_task": {
+        "cap_export_items": {},
+        "cap_create_item": {
           "present": "fab"
         }
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_board",
+      "id": "item_board",
       "kind": "board",
-      "title": "Task Board",
+      "title": "Item Board",
       "loadCapability": {
-        "id": "cap_list_tasks",
+        "id": "cap_list_items",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": {
-        "id": "cap_get_task",
+        "id": "cap_get_item",
         "kind": "capability"
       },
       "inputShape": null,
       "viewShape": null,
       "itemShape": {
-        "id": "shape_output_task_card",
+        "id": "shape_output_item_card",
         "kind": "shape"
       },
       "emptyState": {
-        "title": "No tasks on this board",
-        "body": "Create a task to start planning work"
+        "title": "No items on this board",
+        "body": "Create a item to start planning work"
       },
       "navigation": {
         "successNavigate": null,
@@ -1062,7 +1309,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_create_task",
+          "id": "cap_create_item",
           "kind": "capability"
         },
         "secondary": null,
@@ -1099,11 +1346,12 @@
           "variant": null
         }
       ],
+      "components": [],
       "patterns": [
         "action_bar",
         "board_view"
       ],
-      "route": "/tasks/board",
+      "route": "/items/board",
       "web": {
         "layout": "responsive_collection",
         "desktop_variant": "board",
@@ -1111,34 +1359,34 @@
         "collection": "board"
       },
       "actionWeb": {
-        "cap_create_task": {
+        "cap_create_item": {
           "present": "fab"
         }
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_calendar",
+      "id": "item_calendar",
       "kind": "calendar",
-      "title": "Task Calendar",
+      "title": "Item Calendar",
       "loadCapability": {
-        "id": "cap_list_tasks",
+        "id": "cap_list_items",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": {
-        "id": "cap_get_task",
+        "id": "cap_get_item",
         "kind": "capability"
       },
       "inputShape": null,
       "viewShape": null,
       "itemShape": {
-        "id": "shape_output_task_card",
+        "id": "shape_output_item_card",
         "kind": "shape"
       },
       "emptyState": {
-        "title": "No scheduled tasks",
-        "body": "Create a task with dates to populate the calendar"
+        "title": "No scheduled items",
+        "body": "Create a item with dates to populate the calendar"
       },
       "navigation": {
         "successNavigate": null,
@@ -1154,7 +1402,7 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_create_task",
+          "id": "cap_create_item",
           "kind": "capability"
         },
         "secondary": null,
@@ -1191,11 +1439,12 @@
           "variant": null
         }
       ],
+      "components": [],
       "patterns": [
         "action_bar",
         "calendar_view"
       ],
-      "route": "/tasks/calendar",
+      "route": "/items/calendar",
       "web": {
         "layout": "responsive_collection",
         "desktop_variant": "calendar",
@@ -1203,25 +1452,25 @@
         "collection": "calendar"
       },
       "actionWeb": {
-        "cap_create_task": {
+        "cap_create_item": {
           "present": "fab"
         }
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_detail",
+      "id": "item_detail",
       "kind": "detail",
-      "title": "Task Details",
+      "title": "Item Details",
       "loadCapability": {
-        "id": "cap_get_task",
+        "id": "cap_get_item",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": null,
       "inputShape": null,
       "viewShape": {
-        "id": "shape_output_task_detail",
+        "id": "shape_output_item_detail",
         "kind": "shape"
       },
       "itemShape": null,
@@ -1240,22 +1489,22 @@
       },
       "actions": {
         "primary": {
-          "id": "cap_update_task",
+          "id": "cap_update_item",
           "kind": "capability"
         },
         "secondary": {
-          "id": "cap_complete_task",
+          "id": "cap_complete_item",
           "kind": "capability"
         },
         "destructive": {
-          "id": "cap_delete_task",
+          "id": "cap_delete_item",
           "kind": "capability"
         },
         "terminal": null,
         "screen": [
           {
             "capability": {
-              "id": "cap_complete_task",
+              "id": "cap_complete_item",
               "kind": "capability"
             },
             "prominence": "primary",
@@ -1263,7 +1512,7 @@
           },
           {
             "capability": {
-              "id": "cap_delete_task",
+              "id": "cap_delete_item",
               "kind": "capability"
             },
             "prominence": "destructive",
@@ -1283,17 +1532,17 @@
       "visibility": [
         {
           "capability": {
-            "id": "cap_delete_task",
+            "id": "cap_delete_item",
             "kind": "capability"
           },
           "predicate": "permission",
-          "value": "tasks.delete",
+          "value": "items.delete",
           "claimValue": null,
           "ownershipField": null
         },
         {
           "capability": {
-            "id": "cap_update_task",
+            "id": "cap_update_item",
             "kind": "capability"
           },
           "predicate": "ownership",
@@ -1303,7 +1552,7 @@
         },
         {
           "capability": {
-            "id": "cap_complete_task",
+            "id": "cap_complete_item",
             "kind": "capability"
           },
           "predicate": "ownership",
@@ -1331,45 +1580,46 @@
           "variant": null
         }
       ],
+      "components": [],
       "patterns": [
         "detail_panel",
         "activity_feed"
       ],
-      "route": "/tasks/:id",
+      "route": "/items/:id",
       "web": {
         "breadcrumbs": "visible",
         "layout": "detail_page"
       },
       "actionWeb": {
-        "cap_complete_task": {},
-        "cap_delete_task": {
+        "cap_complete_item": {},
+        "cap_delete_item": {
           "confirm": "modal",
           "present": "button",
           "placement": "footer"
         },
-        "cap_update_task": {}
+        "cap_update_item": {}
       }
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_create",
+      "id": "item_create",
       "kind": "wizard",
-      "title": "Create Task",
+      "title": "Create Item",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_create_task",
+        "id": "cap_create_item",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_create_task",
+        "id": "shape_input_create_item",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "task_detail",
+        "successNavigate": "item_detail",
         "successRefresh": null
       },
       "states": {
@@ -1399,9 +1649,9 @@
       "visibility": [],
       "lookups": [
         {
-          "field": "project_id",
+          "field": "collection_id",
           "entity": {
-            "id": "entity_project",
+            "id": "entity_collection",
             "kind": "entity"
           },
           "labelField": "name",
@@ -1410,7 +1660,7 @@
         {
           "field": "owner_id",
           "entity": {
-            "id": "entity_user",
+            "id": "entity_member",
             "kind": "entity"
           },
           "labelField": "display_name",
@@ -1418,8 +1668,9 @@
         }
       ],
       "regions": [],
+      "components": [],
       "patterns": [],
-      "route": "/tasks/new",
+      "route": "/items/new",
       "web": {
         "present": "bottom_sheet"
       },
@@ -1427,24 +1678,24 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_edit",
+      "id": "item_edit",
       "kind": "form",
-      "title": "Edit Task",
+      "title": "Edit Item",
       "loadCapability": null,
       "submitCapability": {
-        "id": "cap_update_task",
+        "id": "cap_update_item",
         "kind": "capability"
       },
       "detailCapability": null,
       "inputShape": {
-        "id": "shape_input_update_task",
+        "id": "shape_input_update_item",
         "kind": "shape"
       },
       "viewShape": null,
       "itemShape": null,
       "emptyState": null,
       "navigation": {
-        "successNavigate": "task_detail",
+        "successNavigate": "item_detail",
         "successRefresh": null
       },
       "states": {
@@ -1476,7 +1727,7 @@
         {
           "field": "owner_id",
           "entity": {
-            "id": "entity_user",
+            "id": "entity_member",
             "kind": "entity"
           },
           "labelField": "display_name",
@@ -1484,10 +1735,11 @@
         }
       ],
       "regions": [],
+      "components": [],
       "patterns": [
         "edit_form"
       ],
-      "route": "/tasks/:id/edit",
+      "route": "/items/:id/edit",
       "web": {
         "present": "page"
       },
@@ -1495,18 +1747,18 @@
     },
     {
       "type": "ui_screen_contract",
-      "id": "task_exports",
+      "id": "item_exports",
       "kind": "job_status",
       "title": "Export Status",
       "loadCapability": {
-        "id": "cap_get_task_export_job",
+        "id": "cap_get_item_export_job",
         "kind": "capability"
       },
       "submitCapability": null,
       "detailCapability": null,
       "inputShape": null,
       "viewShape": {
-        "id": "shape_output_task_export_status",
+        "id": "shape_output_item_export_status",
         "kind": "shape"
       },
       "itemShape": null,
@@ -1528,7 +1780,7 @@
         "secondary": null,
         "destructive": null,
         "terminal": {
-          "id": "cap_download_task_export",
+          "id": "cap_download_item_export",
           "kind": "capability"
         },
         "screen": []
@@ -1545,105 +1797,106 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
+      "components": [],
       "patterns": [],
-      "route": "/task-exports/:job_id",
+      "route": "/item-exports/:job_id",
       "web": {
         "present": "page"
       },
       "actionWeb": {
-        "cap_download_task_export": {}
+        "cap_download_item_export": {}
       }
     }
   ],
   "sitemap": [
     {
-      "screenId": "project_list",
-      "label": "Projects",
-      "route": "/projects",
+      "screenId": "collection_list",
+      "label": "Collections",
+      "route": "/collections",
       "include": true
     },
     {
-      "screenId": "project_detail",
-      "label": "Project Details",
-      "route": "/projects/:id",
+      "screenId": "collection_detail",
+      "label": "Collection Details",
+      "route": "/collections/:id",
       "include": true
     },
     {
-      "screenId": "project_create",
-      "label": "Create Project",
-      "route": "/projects/new",
+      "screenId": "collection_create",
+      "label": "Create Collection",
+      "route": "/collections/new",
       "include": true
     },
     {
-      "screenId": "project_edit",
-      "label": "Edit Project",
-      "route": "/projects/:id/edit",
+      "screenId": "collection_edit",
+      "label": "Edit Collection",
+      "route": "/collections/:id/edit",
       "include": true
     },
     {
-      "screenId": "user_list",
-      "label": "Users",
-      "route": "/users",
+      "screenId": "member_list",
+      "label": "Members",
+      "route": "/members",
       "include": true
     },
     {
-      "screenId": "user_detail",
-      "label": "User Details",
-      "route": "/users/:id",
+      "screenId": "member_detail",
+      "label": "Member Details",
+      "route": "/members/:id",
       "include": true
     },
     {
-      "screenId": "user_create",
-      "label": "Create User",
-      "route": "/users/new",
+      "screenId": "member_create",
+      "label": "Create Member",
+      "route": "/members/new",
       "include": true
     },
     {
-      "screenId": "user_edit",
-      "label": "Edit User",
-      "route": "/users/:id/edit",
+      "screenId": "member_edit",
+      "label": "Edit Member",
+      "route": "/members/:id/edit",
       "include": true
     },
     {
-      "screenId": "task_list",
-      "label": "Tasks",
-      "route": "/tasks",
+      "screenId": "item_list",
+      "label": "Items",
+      "route": "/items",
       "include": true
     },
     {
-      "screenId": "task_board",
+      "screenId": "item_board",
       "label": "Board",
-      "route": "/tasks/board",
+      "route": "/items/board",
       "include": true
     },
     {
-      "screenId": "task_calendar",
+      "screenId": "item_calendar",
       "label": "Calendar",
-      "route": "/tasks/calendar",
+      "route": "/items/calendar",
       "include": true
     },
     {
-      "screenId": "task_detail",
-      "label": "Task Details",
-      "route": "/tasks/:id",
+      "screenId": "item_detail",
+      "label": "Item Details",
+      "route": "/items/:id",
       "include": false
     },
     {
-      "screenId": "task_create",
-      "label": "Create Task",
-      "route": "/tasks/new",
+      "screenId": "item_create",
+      "label": "Create Item",
+      "route": "/items/new",
       "include": false
     },
     {
-      "screenId": "task_edit",
-      "label": "Edit Task",
-      "route": "/tasks/:id/edit",
+      "screenId": "item_edit",
+      "label": "Edit Item",
+      "route": "/items/:id/edit",
       "include": true
     },
     {
-      "screenId": "task_exports",
+      "screenId": "item_exports",
       "label": "Export Status",
-      "route": "/task-exports/:job_id",
+      "route": "/item-exports/:job_id",
       "include": true
     }
   ]

@@ -71,48 +71,48 @@ export async function requestCapability(fetcher: Fetcher, capabilityId: keyof ty
 }
 
 export async function listPrimaryResources(fetcher: Fetcher, input: Record<string, unknown> = {}) {
-  return requestCapability(fetcher, "cap_list_tasks", input);
+  return requestCapability(fetcher, "cap_list_items", input);
 }
-export async function listTasks(fetcher: Fetcher, input: Record<string, unknown> = {}) {
+export async function listItems(fetcher: Fetcher, input: Record<string, unknown> = {}) {
   return listPrimaryResources(fetcher, input);
 }
 
 export async function getPrimaryResource(fetcher: Fetcher, primary_id: string) {
-  return requestCapability(fetcher, "cap_get_task", { task_id: primary_id });
+  return requestCapability(fetcher, "cap_get_item", { item_id: primary_id });
 }
-export async function getTask(fetcher: Fetcher, primary_id: string) {
+export async function getItem(fetcher: Fetcher, primary_id: string) {
   return getPrimaryResource(fetcher, primary_id);
 }
 
 export async function createPrimaryResource(fetcher: Fetcher, input: Record<string, unknown>, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_create_task", input, options);
+  return requestCapability(fetcher, "cap_create_item", input, options);
 }
-export async function createTask(fetcher: Fetcher, input: Record<string, unknown>, options: RequestOptions = {}) {
+export async function createItem(fetcher: Fetcher, input: Record<string, unknown>, options: RequestOptions = {}) {
   return createPrimaryResource(fetcher, input, options);
 }
 
 export async function updatePrimaryResource(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_update_task", { task_id: primary_id, ...input }, options);
+  return requestCapability(fetcher, "cap_update_item", { item_id: primary_id, ...input }, options);
 }
-export async function updateTask(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+export async function updateItem(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   return updatePrimaryResource(fetcher, primary_id, input, options);
 }
 
 export async function terminalPrimaryAction(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_complete_task", { task_id: primary_id, ...input }, options);
+  return requestCapability(fetcher, "cap_complete_item", { item_id: primary_id, ...input }, options);
 }
-export async function completeTask(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+export async function completeItem(fetcher: Fetcher, primary_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
   return terminalPrimaryAction(fetcher, primary_id, input, options);
 }
 
-export async function deleteTask(fetcher: Fetcher, task_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_delete_task", { task_id, ...input }, options);
+export async function deleteItem(fetcher: Fetcher, item_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_delete_item", { item_id, ...input }, options);
 }
 
-export async function exportTasks(fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_export_tasks", input, options);
+export async function exportItems(fetcher: Fetcher, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_export_items", input, options);
 }
 
-export async function getTaskExportJob(fetcher: Fetcher, job_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
-  return requestCapability(fetcher, "cap_get_task_export_job", { job_id, ...input }, options);
+export async function getItemExportJob(fetcher: Fetcher, job_id: string, input: Record<string, unknown> = {}, options: RequestOptions = {}) {
+  return requestCapability(fetcher, "cap_get_item_export_job", { job_id, ...input }, options);
 }

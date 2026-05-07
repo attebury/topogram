@@ -1,0 +1,6 @@
+shape shape_output_member_card from entity_member {
+  name "Member Card Output"
+  description "Compact member payload for cards and lists"
+  include [id, display_name, email, is_active]
+  status active
+}

@@ -1,8 +1,8 @@
-export interface GetProjectInput {
-  project_id: string;
+export interface GetCollectionInput {
+  collection_id: string;
 }
 
-export interface GetProjectResult {
+export interface GetCollectionResult {
   id: string;
   name: string;
   description?: string;
@@ -11,12 +11,12 @@ export interface GetProjectResult {
   created_at: string;
 }
 
-export interface ListProjectsInput {
+export interface ListCollectionsInput {
   after?: string;
   limit?: number;
 }
 
-export interface ListProjectsResultItem {
+export interface ListCollectionsResultItem {
   id: string;
   name: string;
   description?: string;
@@ -25,19 +25,19 @@ export interface ListProjectsResultItem {
   created_at: string;
 }
 
-export interface ListProjectsResult {
-  items: ListProjectsResultItem[];
+export interface ListCollectionsResult {
+  items: ListCollectionsResultItem[];
   next_cursor: string;
 }
 
-export interface CreateProjectInput {
+export interface CreateCollectionInput {
   name: string;
   description?: string;
   status: "active" | "archived";
   owner_id?: string;
 }
 
-export interface CreateProjectResult {
+export interface CreateCollectionResult {
   id: string;
   name: string;
   description?: string;
@@ -46,15 +46,15 @@ export interface CreateProjectResult {
   created_at: string;
 }
 
-export interface UpdateProjectInput {
-  project_id: string;
+export interface UpdateCollectionInput {
+  collection_id: string;
   name?: string;
   description?: string;
   status?: "active" | "archived";
   owner_id?: string;
 }
 
-export interface UpdateProjectResult {
+export interface UpdateCollectionResult {
   id: string;
   name: string;
   description?: string;
@@ -63,11 +63,11 @@ export interface UpdateProjectResult {
   created_at: string;
 }
 
-export interface GetUserInput {
-  user_id: string;
+export interface GetMemberInput {
+  member_id: string;
 }
 
-export interface GetUserResult {
+export interface GetMemberResult {
   id: string;
   email: string;
   display_name: string;
@@ -75,12 +75,12 @@ export interface GetUserResult {
   created_at: string;
 }
 
-export interface ListUsersInput {
+export interface ListMembersInput {
   after?: string;
   limit?: number;
 }
 
-export interface ListUsersResultItem {
+export interface ListMembersResultItem {
   id: string;
   email: string;
   display_name: string;
@@ -88,18 +88,18 @@ export interface ListUsersResultItem {
   created_at: string;
 }
 
-export interface ListUsersResult {
-  items: ListUsersResultItem[];
+export interface ListMembersResult {
+  items: ListMembersResultItem[];
   next_cursor: string;
 }
 
-export interface CreateUserInput {
+export interface CreateMemberInput {
   email: string;
   display_name: string;
   is_active: boolean;
 }
 
-export interface CreateUserResult {
+export interface CreateMemberResult {
   id: string;
   email: string;
   display_name: string;
@@ -107,14 +107,14 @@ export interface CreateUserResult {
   created_at: string;
 }
 
-export interface UpdateUserInput {
-  user_id: string;
+export interface UpdateMemberInput {
+  member_id: string;
   email?: string;
   display_name?: string;
   is_active?: boolean;
 }
 
-export interface UpdateUserResult {
+export interface UpdateMemberResult {
   id: string;
   email: string;
   display_name: string;
@@ -122,76 +122,76 @@ export interface UpdateUserResult {
   created_at: string;
 }
 
-export interface GetTaskInput {
-  task_id: string;
+export interface GetItemInput {
+  item_id: string;
 }
 
-export interface GetTaskResult {
+export interface GetItemResult {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface ListTasksInput {
-  project_id?: string;
+export interface ListItemsInput {
+  collection_id?: string;
   owner_id?: string;
   status?: "draft" | "active" | "completed" | "archived";
   after?: string;
   limit?: number;
 }
 
-export interface ListTasksResultItem {
+export interface ListItemsResultItem {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface ListTasksResult {
-  items: ListTasksResultItem[];
+export interface ListItemsResult {
+  items: ListItemsResultItem[];
   next_cursor: string;
 }
 
-export interface CreateTaskInput {
+export interface CreateItemInput {
   title: string;
   description?: string;
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   due_at?: string;
 }
 
-export interface CreateTaskResult {
+export interface CreateItemResult {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface UpdateTaskInput {
-  task_id: string;
+export interface UpdateItemInput {
+  item_id: string;
   title?: string;
   description?: string;
   priority?: "low" | "medium" | "high";
@@ -200,76 +200,76 @@ export interface UpdateTaskInput {
   status?: "draft" | "active" | "completed" | "archived";
 }
 
-export interface UpdateTaskResult {
+export interface UpdateItemResult {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface CompleteTaskInput {
-  task_id: string;
+export interface CompleteItemInput {
+  item_id: string;
   completed_at?: string;
 }
 
-export interface CompleteTaskResult {
+export interface CompleteItemResult {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface DeleteTaskInput {
-  task_id: string;
+export interface DeleteItemInput {
+  item_id: string;
 }
 
-export interface DeleteTaskResult {
+export interface DeleteItemResult {
   id: string;
   title: string;
   description?: string;
   status: "draft" | "active" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   owner_id?: string;
-  project_id: string;
+  collection_id: string;
   created_at: string;
   updated_at: string;
   completed_at?: string;
   due_at?: string;
 }
 
-export interface ExportTasksInput {
-  project_id?: string;
+export interface ExportItemsInput {
+  collection_id?: string;
   owner_id?: string;
   status?: "draft" | "active" | "completed" | "archived";
   callback_url?: string;
 }
 
-export interface ExportTasksResult {
+export interface ExportItemsResult {
   job_id: string;
   status: string;
   status_url: string;
   submitted_at: string;
 }
 
-export interface GetTaskExportJobInput {
+export interface GetItemExportJobInput {
   job_id: string;
 }
 
-export interface GetTaskExportJobResult {
+export interface GetItemExportJobResult {
   job_id: string;
   status: "accepted" | "running" | "completed" | "failed" | "expired";
   status_url: string;
@@ -280,11 +280,11 @@ export interface GetTaskExportJobResult {
   error_message?: string;
 }
 
-export interface DownloadTaskExportInput {
+export interface DownloadItemExportInput {
   job_id: string;
 }
 
-export interface DownloadTaskExportResult {
+export interface DownloadItemExportResult {
   body: Uint8Array;
   contentType: string;
   filename: string;

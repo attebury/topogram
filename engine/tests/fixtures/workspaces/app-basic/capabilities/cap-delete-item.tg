@@ -1,0 +1,12 @@
+capability cap_delete_item {
+  name "Delete Item"
+  description "Allows a member to archive a item through the delete endpoint"
+
+  actors [actor_member]
+  reads [entity_item]
+  deletes [entity_item]
+  input [shape_input_delete_item]
+  output [shape_output_item_detail]
+
+  status active
+}

@@ -7,17 +7,17 @@ export const serverContract = {
   },
   "routes": [
     {
-      "capabilityId": "cap_create_task",
-      "handlerName": "handleCreateTask",
-      "repositoryMethod": "createTask",
+      "capabilityId": "cap_create_item",
+      "handlerName": "handleCreateItem",
+      "repositoryMethod": "createItem",
       "method": "POST",
-      "path": "/tasks",
+      "path": "/items",
       "successStatus": 201,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_create_task",
-          "name": "Create Task Input"
+          "id": "shape_input_create_item",
+          "name": "Create Item Input"
         },
         "fields": [
           {
@@ -76,8 +76,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -85,7 +85,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -105,13 +105,13 @@ export const serverContract = {
         "required": [
           "title",
           "priority",
-          "project_id"
+          "collection_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_create_task",
-          "title": "Create Task Input",
-          "description": "Fields accepted when creating a task",
+          "$id": "topogram:shape:shape_input_create_item",
+          "title": "Create Item Input",
+          "description": "Fields accepted when creating a item",
           "type": "object",
           "properties": {
             "title": {
@@ -133,7 +133,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -146,7 +146,7 @@ export const serverContract = {
           "required": [
             "title",
             "priority",
-            "project_id"
+            "collection_id"
           ]
         },
         "transport": {
@@ -210,8 +210,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -219,7 +219,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -241,8 +241,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -333,8 +333,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -342,7 +342,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -403,15 +403,15 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -447,7 +447,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -474,7 +474,7 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
@@ -576,8 +576,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -585,7 +585,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -646,25 +646,25 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "rule_no_task_creation_in_archived_project",
+          "code": "rule_no_item_creation_in_archived_collection",
           "status": 409,
           "source": "policy"
         },
         {
           "type": "api_error_case",
-          "code": "rule_only_active_users_may_own_tasks",
+          "code": "rule_only_active_members_may_own_items",
           "status": 400,
           "source": "policy"
         },
         {
           "type": "api_error_case",
-          "code": "cap_create_task_invalid_request",
+          "code": "cap_create_item_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_create_task_idempotency_conflict",
+          "code": "cap_create_item_idempotency_conflict",
           "status": 409,
           "source": "idempotency"
         }
@@ -674,7 +674,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.create",
+            "permission": "items.create",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -687,7 +687,7 @@ export const serverContract = {
             "header": "Idempotency-Key",
             "required": true,
             "error": 409,
-            "code": "cap_create_task_idempotency_conflict"
+            "code": "cap_create_item_idempotency_conflict"
           }
         ],
         "cache": [],
@@ -697,22 +697,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_get_task",
-      "handlerName": "handleGetTask",
-      "repositoryMethod": "getTask",
+      "capabilityId": "cap_get_item",
+      "handlerName": "handleGetItem",
+      "repositoryMethod": "getItem",
       "method": "GET",
-      "path": "/tasks/:id",
+      "path": "/items/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_get_task",
-          "name": "Get Task Input"
+          "id": "shape_input_get_item",
+          "name": "Get Item Input"
         },
         "fields": [
           {
-            "name": "task_id",
-            "sourceName": "task_id",
+            "name": "item_id",
+            "sourceName": "item_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -725,30 +725,30 @@ export const serverContract = {
           }
         ],
         "required": [
-          "task_id"
+          "item_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_get_task",
-          "title": "Get Task Input",
-          "description": "Input for fetching a single task",
+          "$id": "topogram:shape:shape_input_get_item",
+          "title": "Get Item Input",
+          "description": "Input for fetching a single item",
           "type": "object",
           "properties": {
-            "task_id": {
+            "item_id": {
               "type": "string",
               "format": "uuid"
             }
           },
           "additionalProperties": false,
           "required": [
-            "task_id"
+            "item_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "task_id",
-              "sourceName": "task_id",
+              "name": "item_id",
+              "sourceName": "item_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -768,8 +768,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -860,8 +860,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -869,7 +869,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -930,15 +930,15 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -974,7 +974,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -1001,7 +1001,7 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
@@ -1103,8 +1103,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -1112,7 +1112,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -1173,13 +1173,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_get_task_invalid_request",
+          "code": "cap_get_item_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_task_not_found",
+          "code": "cap_get_item_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -1205,7 +1205,7 @@ export const serverContract = {
             "required": false,
             "notModified": 304,
             "source": "updated_at",
-            "code": "cap_get_task_not_modified"
+            "code": "cap_get_item_not_modified"
           }
         ],
         "async": [],
@@ -1214,22 +1214,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_update_task",
-      "handlerName": "handleUpdateTask",
-      "repositoryMethod": "updateTask",
+      "capabilityId": "cap_update_item",
+      "handlerName": "handleUpdateItem",
+      "repositoryMethod": "updateItem",
       "method": "PATCH",
-      "path": "/tasks/:id",
+      "path": "/items/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_update_task",
-          "name": "Update Task Input"
+          "id": "shape_input_update_item",
+          "name": "Update Item Input"
         },
         "fields": [
           {
-            "name": "task_id",
-            "sourceName": "task_id",
+            "name": "item_id",
+            "sourceName": "item_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -1327,16 +1327,16 @@ export const serverContract = {
           }
         ],
         "required": [
-          "task_id"
+          "item_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_update_task",
-          "title": "Update Task Input",
-          "description": "Input for updating a task",
+          "$id": "topogram:shape:shape_input_update_item",
+          "title": "Update Item Input",
+          "description": "Input for updating a item",
           "type": "object",
           "properties": {
-            "task_id": {
+            "item_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -1374,14 +1374,14 @@ export const serverContract = {
           },
           "additionalProperties": false,
           "required": [
-            "task_id"
+            "item_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "task_id",
-              "sourceName": "task_id",
+              "name": "item_id",
+              "sourceName": "item_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -1487,8 +1487,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -1579,8 +1579,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -1588,7 +1588,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -1649,15 +1649,15 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -1693,7 +1693,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -1720,7 +1720,7 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
@@ -1822,8 +1822,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -1831,7 +1831,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -1892,19 +1892,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "rule_only_active_users_may_own_tasks",
+          "code": "rule_only_active_members_may_own_items",
           "status": 400,
           "source": "policy"
         },
         {
           "type": "api_error_case",
-          "code": "cap_update_task_invalid_request",
+          "code": "cap_update_item_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_update_task_precondition_failed",
+          "code": "cap_update_item_precondition_failed",
           "status": 412,
           "source": "precondition"
         }
@@ -1914,7 +1914,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.update",
+            "permission": "items.update",
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
@@ -1927,7 +1927,7 @@ export const serverContract = {
             "required": true,
             "error": 412,
             "source": "updated_at",
-            "code": "cap_update_task_precondition_failed"
+            "code": "cap_update_item_precondition_failed"
           }
         ],
         "idempotency": [],
@@ -1938,22 +1938,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_complete_task",
-      "handlerName": "handleCompleteTask",
-      "repositoryMethod": "completeTask",
+      "capabilityId": "cap_complete_item",
+      "handlerName": "handleCompleteItem",
+      "repositoryMethod": "completeItem",
       "method": "POST",
-      "path": "/tasks/:id/complete",
+      "path": "/items/:id/complete",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_complete_task",
-          "name": "Complete Task Input"
+          "id": "shape_input_complete_item",
+          "name": "Complete Item Input"
         },
         "fields": [
           {
-            "name": "task_id",
-            "sourceName": "task_id",
+            "name": "item_id",
+            "sourceName": "item_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -1979,16 +1979,16 @@ export const serverContract = {
           }
         ],
         "required": [
-          "task_id"
+          "item_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_complete_task",
-          "title": "Complete Task Input",
-          "description": "Input for marking a task complete",
+          "$id": "topogram:shape:shape_input_complete_item",
+          "title": "Complete Item Input",
+          "description": "Input for marking a item complete",
           "type": "object",
           "properties": {
-            "task_id": {
+            "item_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -1999,14 +1999,14 @@ export const serverContract = {
           },
           "additionalProperties": false,
           "required": [
-            "task_id"
+            "item_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "task_id",
-              "sourceName": "task_id",
+              "name": "item_id",
+              "sourceName": "item_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -2040,8 +2040,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -2132,8 +2132,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -2141,7 +2141,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -2202,15 +2202,15 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -2246,7 +2246,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -2273,7 +2273,7 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
@@ -2375,8 +2375,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -2384,7 +2384,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -2445,19 +2445,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_complete_task_invalid_request",
+          "code": "cap_complete_item_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_complete_task_precondition_failed",
+          "code": "cap_complete_item_precondition_failed",
           "status": 412,
           "source": "precondition"
         },
         {
           "type": "api_error_case",
-          "code": "cap_complete_task_idempotency_conflict",
+          "code": "cap_complete_item_idempotency_conflict",
           "status": 409,
           "source": "idempotency"
         }
@@ -2467,7 +2467,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.complete",
+            "permission": "items.complete",
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
@@ -2480,7 +2480,7 @@ export const serverContract = {
             "required": true,
             "error": 412,
             "source": "updated_at",
-            "code": "cap_complete_task_precondition_failed"
+            "code": "cap_complete_item_precondition_failed"
           }
         ],
         "idempotency": [
@@ -2488,7 +2488,7 @@ export const serverContract = {
             "header": "Idempotency-Key",
             "required": true,
             "error": 409,
-            "code": "cap_complete_task_idempotency_conflict"
+            "code": "cap_complete_item_idempotency_conflict"
           }
         ],
         "cache": [],
@@ -2498,22 +2498,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_list_tasks",
-      "handlerName": "handleListTasks",
-      "repositoryMethod": "listTasks",
+      "capabilityId": "cap_list_items",
+      "handlerName": "handleListItems",
+      "repositoryMethod": "listItems",
       "method": "GET",
-      "path": "/tasks",
+      "path": "/items",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_list_tasks",
-          "name": "List Tasks Input"
+          "id": "shape_input_list_items",
+          "name": "List Items Input"
         },
         "fields": [
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": false,
             "schema": {
               "type": "string",
@@ -2521,7 +2521,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "query",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -2584,12 +2584,12 @@ export const serverContract = {
         "required": [],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_list_tasks",
-          "title": "List Tasks Input",
-          "description": "Input for listing tasks",
+          "$id": "topogram:shape:shape_input_list_items",
+          "title": "List Items Input",
+          "description": "Input for listing items",
           "type": "object",
           "properties": {
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -2620,8 +2620,8 @@ export const serverContract = {
           "path": [],
           "query": [
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": false,
               "schema": {
                 "type": "string",
@@ -2629,7 +2629,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "query",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -2696,8 +2696,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -2788,8 +2788,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -2797,7 +2797,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -2858,7 +2858,7 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
@@ -2874,9 +2874,9 @@ export const serverContract = {
               "type": "array",
               "items": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "$id": "topogram:shape:shape_output_task_detail",
-                "title": "Task Detail Output",
-                "description": "Detailed task payload",
+                "$id": "topogram:shape:shape_output_item_detail",
+                "title": "Item Detail Output",
+                "description": "Detailed item payload",
                 "type": "object",
                 "properties": {
                   "id": {
@@ -2912,7 +2912,7 @@ export const serverContract = {
                     "type": "string",
                     "format": "uuid"
                   },
-                  "project_id": {
+                  "collection_id": {
                     "type": "string",
                     "format": "uuid"
                   },
@@ -2939,7 +2939,7 @@ export const serverContract = {
                   "title",
                   "status",
                   "priority",
-                  "project_id",
+                  "collection_id",
                   "created_at",
                   "updated_at"
                 ]
@@ -2954,9 +2954,9 @@ export const serverContract = {
         "collection": true,
         "itemJsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -2992,7 +2992,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -3019,15 +3019,15 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
         },
         "pagination": null,
         "itemShape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "ordering": {
           "field": "created_at",
@@ -3139,8 +3139,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -3148,7 +3148,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -3209,19 +3209,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_list_tasks_invalid_request",
+          "code": "cap_list_items_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_tasks_invalid_cursor",
+          "code": "cap_list_items_invalid_cursor",
           "status": 400,
           "source": "cursor_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_tasks_invalid_limit",
+          "code": "cap_list_items_invalid_limit",
           "status": 400,
           "source": "cursor_contract"
         }
@@ -3231,7 +3231,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.read",
+            "permission": "items.read",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -3247,22 +3247,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_delete_task",
-      "handlerName": "handleDeleteTask",
-      "repositoryMethod": "deleteTask",
+      "capabilityId": "cap_delete_item",
+      "handlerName": "handleDeleteItem",
+      "repositoryMethod": "deleteItem",
       "method": "DELETE",
-      "path": "/tasks/:id",
+      "path": "/items/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_delete_task",
-          "name": "Delete Task Input"
+          "id": "shape_input_delete_item",
+          "name": "Delete Item Input"
         },
         "fields": [
           {
-            "name": "task_id",
-            "sourceName": "task_id",
+            "name": "item_id",
+            "sourceName": "item_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -3275,30 +3275,30 @@ export const serverContract = {
           }
         ],
         "required": [
-          "task_id"
+          "item_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_delete_task",
-          "title": "Delete Task Input",
-          "description": "Input for deleting a task",
+          "$id": "topogram:shape:shape_input_delete_item",
+          "title": "Delete Item Input",
+          "description": "Input for deleting a item",
           "type": "object",
           "properties": {
-            "task_id": {
+            "item_id": {
               "type": "string",
               "format": "uuid"
             }
           },
           "additionalProperties": false,
           "required": [
-            "task_id"
+            "item_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "task_id",
-              "sourceName": "task_id",
+              "name": "item_id",
+              "sourceName": "item_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -3318,8 +3318,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_detail",
-          "name": "Task Detail Output"
+          "id": "shape_output_item_detail",
+          "name": "Item Detail Output"
         },
         "fields": [
           {
@@ -3410,8 +3410,8 @@ export const serverContract = {
             }
           },
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -3419,7 +3419,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -3480,15 +3480,15 @@ export const serverContract = {
           "title",
           "status",
           "priority",
-          "project_id",
+          "collection_id",
           "created_at",
           "updated_at"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_detail",
-          "title": "Task Detail Output",
-          "description": "Detailed task payload",
+          "$id": "topogram:shape:shape_output_item_detail",
+          "title": "Item Detail Output",
+          "description": "Detailed item payload",
           "type": "object",
           "properties": {
             "id": {
@@ -3524,7 +3524,7 @@ export const serverContract = {
               "type": "string",
               "format": "uuid"
             },
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -3551,7 +3551,7 @@ export const serverContract = {
             "title",
             "status",
             "priority",
-            "project_id",
+            "collection_id",
             "created_at",
             "updated_at"
           ]
@@ -3653,8 +3653,8 @@ export const serverContract = {
               }
             },
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -3662,7 +3662,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -3723,19 +3723,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_delete_task_invalid_request",
+          "code": "cap_delete_item_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_delete_task_precondition_failed",
+          "code": "cap_delete_item_precondition_failed",
           "status": 412,
           "source": "precondition"
         },
         {
           "type": "api_error_case",
-          "code": "cap_delete_task_not_found",
+          "code": "cap_delete_item_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -3745,7 +3745,7 @@ export const serverContract = {
         "authz": [
           {
             "role": "manager",
-            "permission": "tasks.delete",
+            "permission": "items.delete",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -3758,7 +3758,7 @@ export const serverContract = {
             "required": true,
             "error": 412,
             "source": "updated_at",
-            "code": "cap_delete_task_precondition_failed"
+            "code": "cap_delete_item_precondition_failed"
           }
         ],
         "idempotency": [],
@@ -3769,22 +3769,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_export_tasks",
-      "handlerName": "handleExportTasks",
-      "repositoryMethod": "exportTasks",
+      "capabilityId": "cap_export_items",
+      "handlerName": "handleExportItems",
+      "repositoryMethod": "exportItems",
       "method": "POST",
-      "path": "/tasks/export",
+      "path": "/items/export",
       "successStatus": 202,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_export_tasks",
-          "name": "Export Tasks Input"
+          "id": "shape_input_export_items",
+          "name": "Export Items Input"
         },
         "fields": [
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": false,
             "schema": {
               "type": "string",
@@ -3792,7 +3792,7 @@ export const serverContract = {
             },
             "transport": {
               "location": "body",
-              "wireName": "project_id"
+              "wireName": "collection_id"
             }
           },
           {
@@ -3842,12 +3842,12 @@ export const serverContract = {
         "required": [],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_export_tasks",
-          "title": "Export Tasks Input",
-          "description": "Filters accepted when requesting a task export",
+          "$id": "topogram:shape:shape_input_export_items",
+          "title": "Export Items Input",
+          "description": "Filters accepted when requesting a item export",
           "type": "object",
           "properties": {
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -3876,8 +3876,8 @@ export const serverContract = {
           "header": [],
           "body": [
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": false,
               "schema": {
                 "type": "string",
@@ -3885,7 +3885,7 @@ export const serverContract = {
               },
               "transport": {
                 "location": "body",
-                "wireName": "project_id"
+                "wireName": "collection_id"
               }
             },
             {
@@ -3937,8 +3937,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_export_job",
-          "name": "Task Export Job"
+          "id": "shape_output_item_export_job",
+          "name": "Item Export Job"
         },
         "fields": [
           {
@@ -4001,9 +4001,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_export_job",
-          "title": "Task Export Job",
-          "description": "Accepted job payload for long-running task exports",
+          "$id": "topogram:shape:shape_output_item_export_job",
+          "title": "Item Export Job",
+          "description": "Accepted job payload for long-running item exports",
           "type": "object",
           "properties": {
             "job_id": {
@@ -4096,7 +4096,7 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_export_tasks_invalid_request",
+          "code": "cap_export_items_invalid_request",
           "status": 400,
           "source": "request_contract"
         }
@@ -4106,7 +4106,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.export",
+            "permission": "items.export",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -4122,13 +4122,13 @@ export const serverContract = {
             "accepted": 202,
             "locationHeader": "Location",
             "retryAfterHeader": "Retry-After",
-            "statusPath": "/task-exports/:job_id",
+            "statusPath": "/item-exports/:job_id",
             "statusCapability": {
-              "id": "cap_get_task_export_job",
+              "id": "cap_get_item_export_job",
               "kind": "capability"
             },
             "job": {
-              "id": "shape_output_task_export_job",
+              "id": "shape_output_item_export_job",
               "kind": "shape"
             }
           }
@@ -4138,17 +4138,17 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_get_task_export_job",
-      "handlerName": "handleGetTaskExportJob",
-      "repositoryMethod": "getTaskExportJob",
+      "capabilityId": "cap_get_item_export_job",
+      "handlerName": "handleGetItemExportJob",
+      "repositoryMethod": "getItemExportJob",
       "method": "GET",
-      "path": "/task-exports/:job_id",
+      "path": "/item-exports/:job_id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_get_task_export_job",
-          "name": "Get Task Export Job Input"
+          "id": "shape_input_get_item_export_job",
+          "name": "Get Item Export Job Input"
         },
         "fields": [
           {
@@ -4170,9 +4170,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_get_task_export_job",
-          "title": "Get Task Export Job Input",
-          "description": "Input for fetching task export job status",
+          "$id": "topogram:shape:shape_input_get_item_export_job",
+          "title": "Get Item Export Job Input",
+          "description": "Input for fetching item export job status",
           "type": "object",
           "properties": {
             "job_id": {
@@ -4209,8 +4209,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_task_export_status",
-          "name": "Task Export Status"
+          "id": "shape_output_item_export_status",
+          "name": "Item Export Status"
         },
         "fields": [
           {
@@ -4330,9 +4330,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_task_export_status",
-          "title": "Task Export Status",
-          "description": "Status payload for long-running task export jobs",
+          "$id": "topogram:shape:shape_output_item_export_status",
+          "title": "Item Export Status",
+          "description": "Status payload for long-running item export jobs",
           "type": "object",
           "properties": {
             "job_id": {
@@ -4503,13 +4503,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_get_task_export_job_invalid_request",
+          "code": "cap_get_item_export_job_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_task_export_job_not_found",
+          "code": "cap_get_item_export_job_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -4519,7 +4519,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.export.read",
+            "permission": "items.export.read",
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
@@ -4533,7 +4533,7 @@ export const serverContract = {
         "status": [
           {
             "asyncFor": {
-              "id": "cap_export_tasks",
+              "id": "cap_export_items",
               "kind": "capability"
             },
             "stateField": "status",
@@ -4541,7 +4541,7 @@ export const serverContract = {
             "failed": "failed",
             "expired": "expired",
             "downloadCapability": {
-              "id": "cap_download_task_export",
+              "id": "cap_download_item_export",
               "kind": "capability"
             },
             "downloadField": "download_url",
@@ -4552,17 +4552,17 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_download_task_export",
-      "handlerName": "handleDownloadTaskExport",
-      "repositoryMethod": "downloadTaskExport",
+      "capabilityId": "cap_download_item_export",
+      "handlerName": "handleDownloadItemExport",
+      "repositoryMethod": "downloadItemExport",
       "method": "GET",
-      "path": "/task-exports/:job_id/download",
+      "path": "/item-exports/:job_id/download",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_get_task_export_job",
-          "name": "Get Task Export Job Input"
+          "id": "shape_input_get_item_export_job",
+          "name": "Get Item Export Job Input"
         },
         "fields": [
           {
@@ -4584,9 +4584,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_get_task_export_job",
-          "title": "Get Task Export Job Input",
-          "description": "Input for fetching task export job status",
+          "$id": "topogram:shape:shape_input_get_item_export_job",
+          "title": "Get Item Export Job Input",
+          "description": "Input for fetching item export job status",
           "type": "object",
           "properties": {
             "job_id": {
@@ -4624,19 +4624,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_download_task_export_invalid_request",
+          "code": "cap_download_item_export_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_download_task_export_not_found",
+          "code": "cap_download_item_export_not_found",
           "status": 404,
           "source": "projection_mapping"
         },
         {
           "type": "api_error_case",
-          "code": "cap_download_task_export_not_ready",
+          "code": "cap_download_item_export_not_ready",
           "status": 409,
           "source": "projection_mapping"
         }
@@ -4646,7 +4646,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "tasks.export.download",
+            "permission": "items.export.download",
             "claim": null,
             "claimValue": null,
             "ownership": "owner_or_admin",
@@ -4661,28 +4661,28 @@ export const serverContract = {
         "download": [
           {
             "asyncFor": {
-              "id": "cap_export_tasks",
+              "id": "cap_export_items",
               "kind": "capability"
             },
             "media": "application/zip",
-            "filename": "task-export.zip",
+            "filename": "item-export.zip",
             "disposition": "attachment"
           }
         ]
       }
     },
     {
-      "capabilityId": "cap_list_projects",
-      "handlerName": "handleListProjects",
-      "repositoryMethod": "listProjects",
+      "capabilityId": "cap_list_collections",
+      "handlerName": "handleListCollections",
+      "repositoryMethod": "listCollections",
       "method": "GET",
-      "path": "/projects",
+      "path": "/collections",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_list_projects",
-          "name": "List Projects Input"
+          "id": "shape_input_list_collections",
+          "name": "List Collections Input"
         },
         "fields": [
           {
@@ -4714,9 +4714,9 @@ export const serverContract = {
         "required": [],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_list_projects",
-          "title": "List Projects Input",
-          "description": "Input for listing projects",
+          "$id": "topogram:shape:shape_input_list_collections",
+          "title": "List Collections Input",
+          "description": "Input for listing collections",
           "type": "object",
           "properties": {
             "after": {
@@ -4765,8 +4765,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_project_detail",
-          "name": "Project Detail Output"
+          "id": "shape_output_collection_detail",
+          "name": "Collection Detail Output"
         },
         "fields": [
           {
@@ -4868,9 +4868,9 @@ export const serverContract = {
               "type": "array",
               "items": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "$id": "topogram:shape:shape_output_project_detail",
-                "title": "Project Detail Output",
-                "description": "Detailed project payload",
+                "$id": "topogram:shape:shape_output_collection_detail",
+                "title": "Collection Detail Output",
+                "description": "Detailed collection payload",
                 "type": "object",
                 "properties": {
                   "id": {
@@ -4918,9 +4918,9 @@ export const serverContract = {
         "collection": true,
         "itemJsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_project_detail",
-          "title": "Project Detail Output",
-          "description": "Detailed project payload",
+          "$id": "topogram:shape:shape_output_collection_detail",
+          "title": "Collection Detail Output",
+          "description": "Detailed collection payload",
           "type": "object",
           "properties": {
             "id": {
@@ -4960,8 +4960,8 @@ export const serverContract = {
         },
         "pagination": null,
         "itemShape": {
-          "id": "shape_output_project_detail",
-          "name": "Project Detail Output"
+          "id": "shape_output_collection_detail",
+          "name": "Collection Detail Output"
         },
         "ordering": {
           "field": "created_at",
@@ -5071,19 +5071,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_list_projects_invalid_request",
+          "code": "cap_list_collections_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_projects_invalid_cursor",
+          "code": "cap_list_collections_invalid_cursor",
           "status": 400,
           "source": "cursor_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_projects_invalid_limit",
+          "code": "cap_list_collections_invalid_limit",
           "status": 400,
           "source": "cursor_contract"
         }
@@ -5093,7 +5093,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "projects.read",
+            "permission": "collections.read",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -5109,22 +5109,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_get_project",
-      "handlerName": "handleGetProject",
-      "repositoryMethod": "getProject",
+      "capabilityId": "cap_get_collection",
+      "handlerName": "handleGetCollection",
+      "repositoryMethod": "getCollection",
       "method": "GET",
-      "path": "/projects/:id",
+      "path": "/collections/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_get_project",
-          "name": "Get Project Input"
+          "id": "shape_input_get_collection",
+          "name": "Get Collection Input"
         },
         "fields": [
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -5137,30 +5137,30 @@ export const serverContract = {
           }
         ],
         "required": [
-          "project_id"
+          "collection_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_get_project",
-          "title": "Get Project Input",
-          "description": "Input for fetching a single project",
+          "$id": "topogram:shape:shape_input_get_collection",
+          "title": "Get Collection Input",
+          "description": "Input for fetching a single collection",
           "type": "object",
           "properties": {
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             }
           },
           "additionalProperties": false,
           "required": [
-            "project_id"
+            "collection_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -5180,8 +5180,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_project_detail",
-          "name": "Project Detail Output"
+          "id": "shape_output_collection_detail",
+          "name": "Collection Detail Output"
         },
         "fields": [
           {
@@ -5273,9 +5273,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_project_detail",
-          "title": "Project Detail Output",
-          "description": "Detailed project payload",
+          "$id": "topogram:shape:shape_output_collection_detail",
+          "title": "Collection Detail Output",
+          "description": "Detailed collection payload",
           "type": "object",
           "properties": {
             "id": {
@@ -5408,13 +5408,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_get_project_invalid_request",
+          "code": "cap_get_collection_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_project_not_found",
+          "code": "cap_get_collection_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -5424,7 +5424,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "projects.read",
+            "permission": "collections.read",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -5440,17 +5440,17 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_create_project",
-      "handlerName": "handleCreateProject",
-      "repositoryMethod": "createProject",
+      "capabilityId": "cap_create_collection",
+      "handlerName": "handleCreateCollection",
+      "repositoryMethod": "createCollection",
       "method": "POST",
-      "path": "/projects",
+      "path": "/collections",
       "successStatus": 201,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_create_project",
-          "name": "Create Project Input"
+          "id": "shape_input_create_collection",
+          "name": "Create Collection Input"
         },
         "fields": [
           {
@@ -5514,9 +5514,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_create_project",
-          "title": "Create Project Input",
-          "description": "Fields accepted when creating a project",
+          "$id": "topogram:shape:shape_input_create_collection",
+          "title": "Create Collection Input",
+          "description": "Fields accepted when creating a collection",
           "type": "object",
           "properties": {
             "name": {
@@ -5609,8 +5609,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_project_detail",
-          "name": "Project Detail Output"
+          "id": "shape_output_collection_detail",
+          "name": "Collection Detail Output"
         },
         "fields": [
           {
@@ -5702,9 +5702,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_project_detail",
-          "title": "Project Detail Output",
-          "description": "Detailed project payload",
+          "$id": "topogram:shape:shape_output_collection_detail",
+          "title": "Collection Detail Output",
+          "description": "Detailed collection payload",
           "type": "object",
           "properties": {
             "id": {
@@ -5837,7 +5837,7 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_create_project_invalid_request",
+          "code": "cap_create_collection_invalid_request",
           "status": 400,
           "source": "request_contract"
         }
@@ -5847,7 +5847,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "projects.create",
+            "permission": "collections.create",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -5863,22 +5863,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_update_project",
-      "handlerName": "handleUpdateProject",
-      "repositoryMethod": "updateProject",
+      "capabilityId": "cap_update_collection",
+      "handlerName": "handleUpdateCollection",
+      "repositoryMethod": "updateCollection",
       "method": "PATCH",
-      "path": "/projects/:id",
+      "path": "/collections/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_update_project",
-          "name": "Update Project Input"
+          "id": "shape_input_update_collection",
+          "name": "Update Collection Input"
         },
         "fields": [
           {
-            "name": "project_id",
-            "sourceName": "project_id",
+            "name": "collection_id",
+            "sourceName": "collection_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -5944,16 +5944,16 @@ export const serverContract = {
           }
         ],
         "required": [
-          "project_id"
+          "collection_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_update_project",
-          "title": "Update Project Input",
-          "description": "Input for updating a project",
+          "$id": "topogram:shape:shape_input_update_collection",
+          "title": "Update Collection Input",
+          "description": "Input for updating a collection",
           "type": "object",
           "properties": {
-            "project_id": {
+            "collection_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -5977,14 +5977,14 @@ export const serverContract = {
           },
           "additionalProperties": false,
           "required": [
-            "project_id"
+            "collection_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "project_id",
-              "sourceName": "project_id",
+              "name": "collection_id",
+              "sourceName": "collection_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -6058,8 +6058,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_project_detail",
-          "name": "Project Detail Output"
+          "id": "shape_output_collection_detail",
+          "name": "Collection Detail Output"
         },
         "fields": [
           {
@@ -6151,9 +6151,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_project_detail",
-          "title": "Project Detail Output",
-          "description": "Detailed project payload",
+          "$id": "topogram:shape:shape_output_collection_detail",
+          "title": "Collection Detail Output",
+          "description": "Detailed collection payload",
           "type": "object",
           "properties": {
             "id": {
@@ -6286,13 +6286,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_update_project_invalid_request",
+          "code": "cap_update_collection_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_project_not_found",
+          "code": "cap_get_collection_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -6302,7 +6302,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "projects.update",
+            "permission": "collections.update",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -6318,17 +6318,17 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_list_users",
-      "handlerName": "handleListUsers",
-      "repositoryMethod": "listUsers",
+      "capabilityId": "cap_list_members",
+      "handlerName": "handleListMembers",
+      "repositoryMethod": "listMembers",
       "method": "GET",
-      "path": "/users",
+      "path": "/members",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_list_users",
-          "name": "List Users Input"
+          "id": "shape_input_list_members",
+          "name": "List Members Input"
         },
         "fields": [
           {
@@ -6360,9 +6360,9 @@ export const serverContract = {
         "required": [],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_list_users",
-          "title": "List Users Input",
-          "description": "Input for listing users",
+          "$id": "topogram:shape:shape_input_list_members",
+          "title": "List Members Input",
+          "description": "Input for listing members",
           "type": "object",
           "properties": {
             "after": {
@@ -6411,8 +6411,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_user_detail",
-          "name": "User Detail Output"
+          "id": "shape_output_member_detail",
+          "name": "Member Detail Output"
         },
         "fields": [
           {
@@ -6498,9 +6498,9 @@ export const serverContract = {
               "type": "array",
               "items": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "$id": "topogram:shape:shape_output_user_detail",
-                "title": "User Detail Output",
-                "description": "Detailed user payload",
+                "$id": "topogram:shape:shape_output_member_detail",
+                "title": "Member Detail Output",
+                "description": "Detailed member payload",
                 "type": "object",
                 "properties": {
                   "id": {
@@ -6541,9 +6541,9 @@ export const serverContract = {
         "collection": true,
         "itemJsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_user_detail",
-          "title": "User Detail Output",
-          "description": "Detailed user payload",
+          "$id": "topogram:shape:shape_output_member_detail",
+          "title": "Member Detail Output",
+          "description": "Detailed member payload",
           "type": "object",
           "properties": {
             "id": {
@@ -6576,8 +6576,8 @@ export const serverContract = {
         },
         "pagination": null,
         "itemShape": {
-          "id": "shape_output_user_detail",
-          "name": "User Detail Output"
+          "id": "shape_output_member_detail",
+          "name": "Member Detail Output"
         },
         "ordering": {
           "field": "created_at",
@@ -6670,19 +6670,19 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_list_users_invalid_request",
+          "code": "cap_list_members_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_users_invalid_cursor",
+          "code": "cap_list_members_invalid_cursor",
           "status": 400,
           "source": "cursor_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_list_users_invalid_limit",
+          "code": "cap_list_members_invalid_limit",
           "status": 400,
           "source": "cursor_contract"
         }
@@ -6692,7 +6692,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "users.read",
+            "permission": "members.read",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -6708,22 +6708,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_get_user",
-      "handlerName": "handleGetUser",
-      "repositoryMethod": "getUser",
+      "capabilityId": "cap_get_member",
+      "handlerName": "handleGetMember",
+      "repositoryMethod": "getMember",
       "method": "GET",
-      "path": "/users/:id",
+      "path": "/members/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_get_user",
-          "name": "Get User Input"
+          "id": "shape_input_get_member",
+          "name": "Get Member Input"
         },
         "fields": [
           {
-            "name": "user_id",
-            "sourceName": "user_id",
+            "name": "member_id",
+            "sourceName": "member_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -6736,30 +6736,30 @@ export const serverContract = {
           }
         ],
         "required": [
-          "user_id"
+          "member_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_get_user",
-          "title": "Get User Input",
-          "description": "Input for fetching a single user",
+          "$id": "topogram:shape:shape_input_get_member",
+          "title": "Get Member Input",
+          "description": "Input for fetching a single member",
           "type": "object",
           "properties": {
-            "user_id": {
+            "member_id": {
               "type": "string",
               "format": "uuid"
             }
           },
           "additionalProperties": false,
           "required": [
-            "user_id"
+            "member_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "user_id",
-              "sourceName": "user_id",
+              "name": "member_id",
+              "sourceName": "member_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -6779,8 +6779,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_user_detail",
-          "name": "User Detail Output"
+          "id": "shape_output_member_detail",
+          "name": "Member Detail Output"
         },
         "fields": [
           {
@@ -6856,9 +6856,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_user_detail",
-          "title": "User Detail Output",
-          "description": "Detailed user payload",
+          "$id": "topogram:shape:shape_output_member_detail",
+          "title": "Member Detail Output",
+          "description": "Detailed member payload",
           "type": "object",
           "properties": {
             "id": {
@@ -6967,13 +6967,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_get_user_invalid_request",
+          "code": "cap_get_member_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_user_not_found",
+          "code": "cap_get_member_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -6983,7 +6983,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "users.read",
+            "permission": "members.read",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -6999,17 +6999,17 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_create_user",
-      "handlerName": "handleCreateUser",
-      "repositoryMethod": "createUser",
+      "capabilityId": "cap_create_member",
+      "handlerName": "handleCreateMember",
+      "repositoryMethod": "createMember",
       "method": "POST",
-      "path": "/users",
+      "path": "/members",
       "successStatus": 201,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_create_user",
-          "name": "Create User Input"
+          "id": "shape_input_create_member",
+          "name": "Create Member Input"
         },
         "fields": [
           {
@@ -7057,9 +7057,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_create_user",
-          "title": "Create User Input",
-          "description": "Fields accepted when creating a user",
+          "$id": "topogram:shape:shape_input_create_member",
+          "title": "Create Member Input",
+          "description": "Fields accepted when creating a member",
           "type": "object",
           "properties": {
             "email": {
@@ -7128,8 +7128,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_user_detail",
-          "name": "User Detail Output"
+          "id": "shape_output_member_detail",
+          "name": "Member Detail Output"
         },
         "fields": [
           {
@@ -7205,9 +7205,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_user_detail",
-          "title": "User Detail Output",
-          "description": "Detailed user payload",
+          "$id": "topogram:shape:shape_output_member_detail",
+          "title": "Member Detail Output",
+          "description": "Detailed member payload",
           "type": "object",
           "properties": {
             "id": {
@@ -7316,7 +7316,7 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_create_user_invalid_request",
+          "code": "cap_create_member_invalid_request",
           "status": 400,
           "source": "request_contract"
         }
@@ -7326,7 +7326,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "users.create",
+            "permission": "members.create",
             "claim": null,
             "claimValue": null,
             "ownership": null,
@@ -7342,22 +7342,22 @@ export const serverContract = {
       }
     },
     {
-      "capabilityId": "cap_update_user",
-      "handlerName": "handleUpdateUser",
-      "repositoryMethod": "updateUser",
+      "capabilityId": "cap_update_member",
+      "handlerName": "handleUpdateMember",
+      "repositoryMethod": "updateMember",
       "method": "PATCH",
-      "path": "/users/:id",
+      "path": "/members/:id",
       "successStatus": 200,
       "requestContract": {
         "type": "api_request_contract",
         "shape": {
-          "id": "shape_input_update_user",
-          "name": "Update User Input"
+          "id": "shape_input_update_member",
+          "name": "Update Member Input"
         },
         "fields": [
           {
-            "name": "user_id",
-            "sourceName": "user_id",
+            "name": "member_id",
+            "sourceName": "member_id",
             "required": true,
             "schema": {
               "type": "string",
@@ -7406,16 +7406,16 @@ export const serverContract = {
           }
         ],
         "required": [
-          "user_id"
+          "member_id"
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_input_update_user",
-          "title": "Update User Input",
-          "description": "Input for updating a user",
+          "$id": "topogram:shape:shape_input_update_member",
+          "title": "Update Member Input",
+          "description": "Input for updating a member",
           "type": "object",
           "properties": {
-            "user_id": {
+            "member_id": {
               "type": "string",
               "format": "uuid"
             },
@@ -7431,14 +7431,14 @@ export const serverContract = {
           },
           "additionalProperties": false,
           "required": [
-            "user_id"
+            "member_id"
           ]
         },
         "transport": {
           "path": [
             {
-              "name": "user_id",
-              "sourceName": "user_id",
+              "name": "member_id",
+              "sourceName": "member_id",
               "required": true,
               "schema": {
                 "type": "string",
@@ -7495,8 +7495,8 @@ export const serverContract = {
       "responseContract": {
         "type": "api_response_contract",
         "shape": {
-          "id": "shape_output_user_detail",
-          "name": "User Detail Output"
+          "id": "shape_output_member_detail",
+          "name": "Member Detail Output"
         },
         "fields": [
           {
@@ -7572,9 +7572,9 @@ export const serverContract = {
         ],
         "jsonSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "topogram:shape:shape_output_user_detail",
-          "title": "User Detail Output",
-          "description": "Detailed user payload",
+          "$id": "topogram:shape:shape_output_member_detail",
+          "title": "Member Detail Output",
+          "description": "Detailed member payload",
           "type": "object",
           "properties": {
             "id": {
@@ -7683,13 +7683,13 @@ export const serverContract = {
       "errors": [
         {
           "type": "api_error_case",
-          "code": "cap_update_user_invalid_request",
+          "code": "cap_update_member_invalid_request",
           "status": 400,
           "source": "request_contract"
         },
         {
           "type": "api_error_case",
-          "code": "cap_get_user_not_found",
+          "code": "cap_get_member_not_found",
           "status": 404,
           "source": "projection_mapping"
         }
@@ -7699,7 +7699,7 @@ export const serverContract = {
         "authz": [
           {
             "role": null,
-            "permission": "users.update",
+            "permission": "members.update",
             "claim": null,
             "claimValue": null,
             "ownership": null,

@@ -4,17 +4,17 @@
 
 <div class="app-shell" data-shell="bottom_tabs" data-windowing="single_window" data-navigation-patterns="bottom_tabs stack_navigation">
   <header class="app-nav">
-  <a class="brand" href="/">Topogram Work Tracker</a>
+  <a class="brand" href="/">Topogram Sample Workspace</a>
 </header>
 
 <slot />
 
 <nav class="app-tabbar">
-      <a href="/tasks">Tasks</a>
-      <a href="/tasks/board">Board</a>
-      <a href="/tasks/calendar">Calendar</a>
-      <a href="/projects">Projects</a>
-      <a href="/users">Users</a>
+      <a href="/items">Items</a>
+      <a href="/items/board">Board</a>
+      <a href="/items/calendar">Calendar</a>
+      <a href="/collections">Collections</a>
+      <a href="/members">Members</a>
 </nav>
 
   <footer class="app-footer">

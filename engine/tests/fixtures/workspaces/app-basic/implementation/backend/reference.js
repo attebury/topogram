@@ -1,89 +1,89 @@
 export const APP_BASIC_BACKEND_REFERENCE = {
-  serviceName: "topogram-work-tracker-server",
+  serviceName: "topogram-sample-workspace-server",
   renderSeedScript() {
     const reference = APP_BASIC_BACKEND_REFERENCE;
-    const serializedTasks = JSON.stringify(reference.demo.tasks, null, 2).replace(/"NOW"/g, "now");
+    const serializedItems = JSON.stringify(reference.demo.items, null, 2).replace(/"NOW"/g, "now");
     return `import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "${reference.demo.userId}";
-const demoProjectId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "${reference.demo.projectId}";
-const demoTaskId = process.env.TOPOGRAM_DEMO_PRIMARY_ID || "${reference.demo.taskId}";
+const demoMemberId = process.env.TOPOGRAM_DEMO_USER_ID || "${reference.demo.memberId}";
+const demoCollectionId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "${reference.demo.collectionId}";
+const demoItemId = process.env.TOPOGRAM_DEMO_PRIMARY_ID || "${reference.demo.itemId}";
 
 async function main() {
   const now = new Date();
 
-  await prisma.user.upsert({
-    where: { email: "${reference.demo.user.email}" },
+  await prisma.member.upsert({
+    where: { email: "${reference.demo.member.email}" },
     update: {
-      display_name: "${reference.demo.user.displayName}",
+      display_name: "${reference.demo.member.displayName}",
       is_active: true
     },
     create: {
-      id: demoUserId,
-      email: "${reference.demo.user.email}",
-      display_name: "${reference.demo.user.displayName}",
+      id: demoMemberId,
+      email: "${reference.demo.member.email}",
+      display_name: "${reference.demo.member.displayName}",
       is_active: true,
       created_at: now
     }
   });
 
-  await prisma.project.upsert({
-    where: { name: "${reference.demo.project.name}" },
+  await prisma.collection.upsert({
+    where: { name: "${reference.demo.collection.name}" },
     update: {
-      status: "${reference.demo.project.status}",
-      description: "${reference.demo.project.description}",
-      owner_id: demoUserId
+      status: "${reference.demo.collection.status}",
+      description: "${reference.demo.collection.description}",
+      owner_id: demoMemberId
     },
     create: {
-      id: demoProjectId,
-      name: "${reference.demo.project.name}",
-      description: "${reference.demo.project.description}",
-      status: "${reference.demo.project.status}",
-      owner_id: demoUserId,
+      id: demoCollectionId,
+      name: "${reference.demo.collection.name}",
+      description: "${reference.demo.collection.description}",
+      status: "${reference.demo.collection.status}",
+      owner_id: demoMemberId,
       created_at: now
     }
   });
 
-  const tasks = ${serializedTasks};
+  const items = ${serializedItems};
 
-  for (const task of tasks) {
-    await prisma.task.upsert({
-      where: { id: task.id },
+  for (const item of items) {
+    await prisma.item.upsert({
+      where: { id: item.id },
       update: {
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        owner_id: demoUserId,
-        project_id: demoProjectId,
-        completed_at: task.completed_at,
-        due_at: task.due_at,
+        title: item.title,
+        description: item.description,
+        status: item.status,
+        priority: item.priority,
+        owner_id: demoMemberId,
+        collection_id: demoCollectionId,
+        completed_at: item.completed_at,
+        due_at: item.due_at,
         updated_at: now
       },
       create: {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        owner_id: demoUserId,
-        project_id: demoProjectId,
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        status: item.status,
+        priority: item.priority,
+        owner_id: demoMemberId,
+        collection_id: demoCollectionId,
         created_at: now,
         updated_at: now,
-        completed_at: task.completed_at,
-        due_at: task.due_at
+        completed_at: item.completed_at,
+        due_at: item.due_at
       }
     });
   }
 
   console.log(JSON.stringify({
     ok: true,
-    demoUserId,
-    demoProjectId,
-    demoTaskId,
-    seededTaskCount: tasks.length
+    demoMemberId,
+    demoCollectionId,
+    demoItemId,
+    seededItemCount: items.length
   }, null, 2));
 }
 
@@ -98,23 +98,23 @@ main()
 `;
   },
   demo: {
-    userId: "11111111-1111-4111-8111-111111111111",
-    projectId: "22222222-2222-4222-8222-222222222222",
-    taskId: "33333333-3333-4333-8333-333333333333",
-    user: {
-      email: "demo.user@topogram.local",
-      displayName: "Demo User"
+    memberId: "11111111-1111-4111-8111-111111111111",
+    collectionId: "22222222-2222-4222-8222-222222222222",
+    itemId: "33333333-3333-4333-8333-333333333333",
+    member: {
+      email: "demo.member@topogram.local",
+      displayName: "Demo Member"
     },
-    project: {
-      name: "Demo Project",
-      description: "Seeded demo project for the generated work-tracker runtime",
+    collection: {
+      name: "Demo Collection",
+      description: "Seeded demo collection for the generated sample-workspace runtime",
       status: "active"
     },
-    tasks: [
+    items: [
       {
         id: "33333333-3333-4333-8333-333333333333",
-        title: "Seeded Demo Task",
-        description: "This task was created by the generated demo seed script.",
+        title: "Seeded Demo Item",
+        description: "This item was created by the generated demo seed script.",
         priority: "high",
         status: "active",
         completed_at: null,
@@ -177,7 +177,7 @@ main()
       {
         id: "33333333-3333-4333-8333-333333333340",
         title: "Audit runtime smoke checks",
-        description: "Expand smoke coverage for core task actions.",
+        description: "Expand smoke coverage for core item actions.",
         priority: "high",
         status: "active",
         completed_at: null,
@@ -194,7 +194,7 @@ main()
       },
       {
         id: "33333333-3333-4333-8333-333333333342",
-        title: "Capture user feedback",
+        title: "Capture member feedback",
         description: "Collect notes from the first walkthrough of the generated UX.",
         priority: "high",
         status: "active",

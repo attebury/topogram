@@ -1,0 +1,10 @@
+shape shape_input_delete_item {
+  name "Delete Item Input"
+  description "Input for deleting a item"
+
+  fields {
+    item_id uuid required
+  }
+
+  status active
+}

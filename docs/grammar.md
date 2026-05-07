@@ -82,7 +82,7 @@ component component_ui_data_grid {
   }
 
   events {
-    row_select shape_output_task_card
+    row_select shape_output_item_card
   }
 
   slots {
@@ -93,7 +93,7 @@ component component_ui_data_grid {
   behaviors {
     selection mode multi state selected_ids emits row_select
     sorting fields [title, status, created_at] default [created_at, desc]
-    bulk_action actions [cap_export_tasks] state selected_ids emits export_request
+    bulk_action actions [cap_export_items] state selected_ids emits export_request
   }
   regions [results, toolbar]
   version "1.0"
@@ -109,7 +109,7 @@ Projection statements bind components to concrete screens and regions:
 projection proj_ui_shared {
   # ...
   ui_components {
-    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail
+    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail
   }
 }
 ```

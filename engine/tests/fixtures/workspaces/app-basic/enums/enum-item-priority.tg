@@ -1,0 +1,3 @@
+enum item_priority {
+  values [low, medium, high]
+}

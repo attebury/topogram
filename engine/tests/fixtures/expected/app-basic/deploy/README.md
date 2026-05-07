@@ -1,4 +1,4 @@
-# Topogram Work Tracker Deployment Stack
+# Topogram Sample Workspace Deployment Stack
 
 This bundle packages deployment helpers for the generated runtime.
 

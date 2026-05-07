@@ -1,0 +1,6 @@
+shape shape_output_item_detail from entity_item {
+  name "Item Detail Output"
+  description "Detailed item payload"
+  include [id, title, description, status, priority, owner_id, collection_id, created_at, updated_at, completed_at, due_at]
+  status active
+}

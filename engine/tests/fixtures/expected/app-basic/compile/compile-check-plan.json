@@ -1,6 +1,6 @@
 {
   "type": "compile_check_plan",
-  "name": "Work Tracker Generated Compile Checks",
+  "name": "Sample Workspace Generated Compile Checks",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web",

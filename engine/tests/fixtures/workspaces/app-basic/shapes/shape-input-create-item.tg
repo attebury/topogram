@@ -1,0 +1,6 @@
+shape shape_input_create_item from entity_item {
+  name "Create Item Input"
+  description "Fields accepted when creating a item"
+  include [title, description, priority, owner_id, collection_id, due_at]
+  status active
+}

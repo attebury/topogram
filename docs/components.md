@@ -19,7 +19,7 @@ component component_ui_data_grid {
   }
 
   events {
-    row_select shape_output_task_card
+    row_select shape_output_item_card
   }
 
   slots {
@@ -52,7 +52,7 @@ behaviors {
   selection mode multi state selected_ids emits row_select
   sorting fields [title, status, created_at] default [created_at, desc]
   pagination mode cursor page_size 25
-  bulk_action actions [cap_export_tasks] state selected_ids emits export_request
+  bulk_action actions [cap_export_items] state selected_ids emits export_request
 }
 ```
 
@@ -104,6 +104,24 @@ framework styling however their stack requires.
 Use this only for cross-stack intent that must survive React, SvelteKit, and
 native realization. Put concrete styles in generator packs, templates, or
 maintained app code.
+
+### Component-First Workflow
+
+For UI work, treat the shared component contract as the source of truth:
+
+1. Define or edit the `component` statement.
+2. Bind it to shared screens and regions with `ui_components` on `ui_shared`.
+3. Keep route declarations and stack hints on concrete web/native projections.
+4. Run `topogram check`.
+5. Run `topogram component check --projection <concrete-projection>`.
+6. Run `topogram component behavior --projection <concrete-projection>`.
+7. Generate the app or the focused `ui-web-contract`/component artifacts.
+
+This is the parity rule for UI: screens, regions, component placements,
+behavior realizations, and semantic design intent must survive validation,
+normalized contracts, agent packets, generator coverage, and app compile. If a
+generator cannot realize a supported component pattern, it should emit a clear
+diagnostic or fail rather than silently dropping the component.
 
 ### Prop defaults
 
@@ -227,11 +245,11 @@ projection proj_ui_shared {
   # ...
 
   ui_screen_regions {
-    screen task_list region results pattern resource_table placement primary
+    screen item_list region results pattern resource_table placement primary
   }
 
   ui_components {
-    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail
+    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail
   }
 }
 ```
@@ -254,9 +272,9 @@ between component behavior declarations and concrete data/event/effect wiring.
 If a behavior declares `emits row_select` but the projection does not bind
 `event row_select navigate <screen>` or `event row_select action <capability>`,
 the realization is `partial` and `component-conformance-report` emits a warning.
-If a behavior declares `actions [cap_export_tasks]`, the realization includes a
+If a behavior declares `actions [cap_export_items]`, the realization includes a
 command effect for that capability and remains `partial` until a projection
-usage binds a component event to `cap_export_tasks`.
+usage binds a component event to `cap_export_items`.
 
 SvelteKit and React generation can consume supported `ui_components` bindings.
 Every web generator should be contract-complete by default: the Topogram

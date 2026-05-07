@@ -2,7 +2,7 @@
   "type": "db_schema_snapshot",
   "projection": {
     "id": "proj_db_postgres",
-    "name": "Work Tracker Postgres DB",
+    "name": "Sample Workspace Postgres DB",
     "platform": "db_postgres"
   },
   "profile": "postgres_sql",

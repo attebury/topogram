@@ -1,0 +1,6 @@
+actor actor_member {
+  name "Member"
+  description "Workspace member interacting with the item system"
+
+  status active
+}

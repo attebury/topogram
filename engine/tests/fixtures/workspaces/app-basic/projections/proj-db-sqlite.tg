@@ -1,40 +1,40 @@
 projection proj_db_sqlite {
-  name "Work Tracker SQLite DB"
+  name "Sample Workspace SQLite DB"
   description "SQLite persistence realization for the work tracking domain"
 
   platform db_sqlite
-  realizes [entity_task, entity_project, entity_user]
+  realizes [entity_item, entity_collection, entity_member]
   outputs [db_contract, sql_schema]
 
   db_tables {
-    entity_task table tasks
-    entity_project table projects
-    entity_user table users
+    entity_item table items
+    entity_collection table collections
+    entity_member table members
   }
 
   db_keys {
-    entity_task primary [id]
-    entity_project primary [id]
-    entity_user primary [id]
+    entity_item primary [id]
+    entity_collection primary [id]
+    entity_member primary [id]
   }
 
   db_indexes {
-    entity_task index [project_id, status]
-    entity_task index [owner_id, status]
-    entity_project unique [name]
-    entity_project index [owner_id, status]
-    entity_user unique [email]
+    entity_item index [collection_id, status]
+    entity_item index [owner_id, status]
+    entity_collection unique [name]
+    entity_collection index [owner_id, status]
+    entity_member unique [email]
   }
 
   db_relations {
-    entity_task foreign_key owner_id references entity_user.id on_delete set_null
-    entity_task foreign_key project_id references entity_project.id on_delete cascade
-    entity_project foreign_key owner_id references entity_user.id on_delete set_null
+    entity_item foreign_key owner_id references entity_member.id on_delete set_null
+    entity_item foreign_key collection_id references entity_collection.id on_delete cascade
+    entity_collection foreign_key owner_id references entity_member.id on_delete set_null
   }
 
   db_lifecycle {
-    entity_task soft_delete field status value archived
-    entity_task timestamps created_at created_at updated_at updated_at
+    entity_item soft_delete field status value archived
+    entity_item timestamps created_at created_at updated_at updated_at
   }
 
   generator_defaults {

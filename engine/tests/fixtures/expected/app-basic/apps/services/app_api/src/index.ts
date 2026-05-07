@@ -26,4 +26,4 @@ serve({
   port
 });
 
-console.log(`topogram-work-tracker-server listening on http://localhost:${port}`);
+console.log(`topogram-sample-workspace-server listening on http://localhost:${port}`);

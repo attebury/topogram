@@ -1,6 +1,6 @@
 {
   "type": "runtime_check_plan",
-  "name": "Work Tracker Runtime Check Plan",
+  "name": "Sample Workspace Runtime Check Plan",
   "projections": {
     "api": "proj_api",
     "ui": "proj_ui_web",
@@ -43,80 +43,80 @@
     ],
     "sources": [
       {
-        "id": "ver_create_task_policy",
-        "name": "Create task policy",
+        "id": "ver_create_item_policy",
+        "name": "Create item policy",
         "method": "runtime",
         "validates": [
-          "cap_create_task",
-          "rule_no_task_creation_in_archived_project",
-          "rule_only_active_users_may_own_tasks"
+          "cap_create_item",
+          "rule_no_item_creation_in_archived_collection",
+          "rule_only_active_members_may_own_items"
         ]
       },
       {
-        "id": "ver_task_runtime_flow",
-        "name": "Task runtime flow",
+        "id": "ver_item_runtime_flow",
+        "name": "Item runtime flow",
         "method": "runtime",
         "validates": [
-          "cap_create_task",
-          "cap_get_task",
-          "cap_list_tasks",
-          "cap_update_task",
-          "cap_complete_task",
-          "cap_delete_task",
-          "cap_export_tasks",
-          "cap_get_task_export_job",
-          "cap_download_task_export"
+          "cap_create_item",
+          "cap_get_item",
+          "cap_list_items",
+          "cap_update_item",
+          "cap_complete_item",
+          "cap_delete_item",
+          "cap_export_items",
+          "cap_get_item_export_job",
+          "cap_download_item_export"
         ]
       }
     ],
     "scenarios": [
       {
-        "id": "create_task_in_active_project",
-        "label": "create task in active project"
+        "id": "create_item_in_active_collection",
+        "label": "create item in active collection"
       },
       {
-        "id": "reject_task_in_archived_project",
-        "label": "reject task in archived project"
+        "id": "reject_item_in_archived_collection",
+        "label": "reject item in archived collection"
       },
       {
-        "id": "reject_assignment_to_inactive_user",
-        "label": "reject assignment to inactive user"
+        "id": "reject_assignment_to_inactive_member",
+        "label": "reject assignment to inactive member"
       },
       {
-        "id": "create_task_runtime",
-        "label": "create task runtime"
+        "id": "create_item_runtime",
+        "label": "create item runtime"
       },
       {
-        "id": "get_created_task_runtime",
-        "label": "get created task runtime"
+        "id": "get_created_item_runtime",
+        "label": "get created item runtime"
       },
       {
-        "id": "list_tasks_runtime",
-        "label": "list tasks runtime"
+        "id": "list_items_runtime",
+        "label": "list items runtime"
       },
       {
-        "id": "update_task_runtime",
-        "label": "update task runtime"
+        "id": "update_item_runtime",
+        "label": "update item runtime"
       },
       {
-        "id": "complete_task_runtime",
-        "label": "complete task runtime"
+        "id": "complete_item_runtime",
+        "label": "complete item runtime"
       },
       {
-        "id": "delete_task_runtime",
-        "label": "delete task runtime"
+        "id": "delete_item_runtime",
+        "label": "delete item runtime"
       },
       {
-        "id": "export_tasks_runtime",
-        "label": "export tasks runtime"
+        "id": "export_items_runtime",
+        "label": "export items runtime"
       },
       {
-        "id": "get_task_export_job_runtime",
-        "label": "get task export job runtime"
+        "id": "get_item_export_job_runtime",
+        "label": "get item export job runtime"
       },
       {
-        "id": "download_task_export_runtime",
-        "label": "download task export runtime"
+        "id": "download_item_export_runtime",
+        "label": "download item export runtime"
       }
     ]
   },
@@ -149,29 +149,29 @@
           "mutating": false
         },
         {
-          "id": "web_tasks_page_ready",
+          "id": "web_items_page_ready",
           "kind": "web_contract",
-          "path": "/tasks",
+          "path": "/items",
           "expectStatus": 200,
-          "expectText": "Tasks",
+          "expectText": "Items",
           "mandatory": true,
           "mutating": false
         },
         {
-          "id": "web_projects_page_ready",
+          "id": "web_collections_page_ready",
           "kind": "web_contract",
-          "path": "/projects",
+          "path": "/collections",
           "expectStatus": 200,
-          "expectText": "Projects",
+          "expectText": "Collections",
           "mandatory": true,
           "mutating": false
         },
         {
-          "id": "web_users_page_ready",
+          "id": "web_members_page_ready",
           "kind": "web_contract",
-          "path": "/users",
+          "path": "/members",
           "expectStatus": 200,
-          "expectText": "Users",
+          "expectText": "Members",
           "mandatory": true,
           "mutating": false
         },
@@ -194,32 +194,32 @@
           "mutating": false
         },
         {
-          "id": "api_seed_task_ready",
+          "id": "api_seed_item_ready",
           "kind": "api_contract",
-          "capabilityId": "cap_get_task",
+          "capabilityId": "cap_get_item",
           "pathParams": {
-            "task_id": "$env:TOPOGRAM_DEMO_TASK_ID"
+            "item_id": "$env:TOPOGRAM_DEMO_PRIMARY_ID"
           },
-          "expectShape": "task_detail",
+          "expectShape": "item_detail",
           "mandatory": true,
           "mutating": false
         },
         {
-          "id": "web_task_detail_owner_edit_visible",
+          "id": "web_item_detail_owner_edit_visible",
           "kind": "web_contract",
-          "path": "/tasks/$env:TOPOGRAM_DEMO_PRIMARY_ID",
+          "path": "/items/$env:TOPOGRAM_DEMO_PRIMARY_ID",
           "expectStatus": 200,
-          "expectText": "Edit Task",
+          "expectText": "Edit Item",
           "mandatory": true,
           "mutating": false
         },
         {
-          "id": "web_task_detail_non_owner_edit_hidden",
+          "id": "web_item_detail_non_owner_edit_hidden",
           "kind": "web_contract",
-          "path": "/tasks/$env:TOPOGRAM_DEMO_PRIMARY_ID?topogram_auth_user_id=99999999-9999-4999-8999-999999999999",
+          "path": "/items/$env:TOPOGRAM_DEMO_PRIMARY_ID?topogram_auth_member_id=99999999-9999-4999-8999-999999999999",
           "expectStatus": 200,
-          "expectText": "Back to Tasks",
-          "expectNotText": "Edit Task",
+          "expectText": "Back to Items",
+          "expectNotText": "Edit Item",
           "mandatory": true,
           "mutating": false
         }
@@ -231,65 +231,65 @@
       "failFast": false,
       "checks": [
         {
-          "id": "create_task",
+          "id": "create_item",
           "kind": "api_contract",
-          "capabilityId": "cap_create_task",
+          "capabilityId": "cap_create_item",
           "mutating": true,
           "mandatory": true
         },
         {
-          "id": "get_created_task",
+          "id": "get_created_item",
           "kind": "api_contract",
-          "capabilityId": "cap_get_task",
+          "capabilityId": "cap_get_item",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "list_tasks",
+          "id": "list_items",
           "kind": "api_contract",
-          "capabilityId": "cap_list_tasks",
+          "capabilityId": "cap_list_items",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "export_tasks",
+          "id": "export_items",
           "kind": "api_contract",
-          "capabilityId": "cap_export_tasks",
+          "capabilityId": "cap_export_items",
           "mutating": true,
           "mandatory": true
         },
         {
-          "id": "get_task_export_job",
+          "id": "get_item_export_job",
           "kind": "api_contract",
-          "capabilityId": "cap_get_task_export_job",
+          "capabilityId": "cap_get_item_export_job",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "download_task_export",
+          "id": "download_item_export",
           "kind": "api_contract",
-          "capabilityId": "cap_download_task_export",
+          "capabilityId": "cap_download_item_export",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "project_lookup_ready",
+          "id": "collection_lookup_ready",
           "kind": "lookup_contract",
           "mandatory": true,
           "mutating": false,
-          "path": "/lookups/projects"
+          "path": "/lookups/collections"
         },
         {
-          "id": "user_lookup_ready",
+          "id": "member_lookup_ready",
           "kind": "lookup_contract",
           "mandatory": true,
           "mutating": false,
-          "path": "/lookups/users"
+          "path": "/lookups/members"
         },
         {
           "id": "update_without_precondition",
           "kind": "api_negative",
-          "capabilityId": "cap_update_task",
+          "capabilityId": "cap_update_item",
           "expectStatusFrom": "precondition",
           "expectErrorCodeFrom": "precondition",
           "mutating": false,
@@ -298,7 +298,7 @@
         {
           "id": "update_with_stale_precondition",
           "kind": "api_negative",
-          "capabilityId": "cap_update_task",
+          "capabilityId": "cap_update_item",
           "expectStatus": 412,
           "expectErrorCode": "stale_precondition",
           "stalePrecondition": true,
@@ -306,59 +306,59 @@
           "mandatory": true
         },
         {
-          "id": "update_task",
+          "id": "update_item",
           "kind": "api_contract",
-          "capabilityId": "cap_update_task",
+          "capabilityId": "cap_update_item",
           "mutating": true,
           "mandatory": true
         },
         {
           "id": "complete_without_precondition",
           "kind": "api_negative",
-          "capabilityId": "cap_complete_task",
+          "capabilityId": "cap_complete_item",
           "expectStatusFrom": "precondition",
           "expectErrorCodeFrom": "precondition",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "complete_task",
+          "id": "complete_item",
           "kind": "api_contract",
-          "capabilityId": "cap_complete_task",
+          "capabilityId": "cap_complete_item",
           "mutating": true,
           "mandatory": true
         },
         {
           "id": "delete_without_precondition",
           "kind": "api_negative",
-          "capabilityId": "cap_delete_task",
+          "capabilityId": "cap_delete_item",
           "expectStatusFrom": "precondition",
           "expectErrorCodeFrom": "precondition",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "delete_task",
+          "id": "delete_item",
           "kind": "api_contract",
-          "capabilityId": "cap_delete_task",
+          "capabilityId": "cap_delete_item",
           "mutating": true,
           "mandatory": true
         },
         {
           "id": "invalid_create_returns_4xx",
           "kind": "api_negative",
-          "capabilityId": "cap_create_task",
+          "capabilityId": "cap_create_item",
           "expectStatusClass": 4,
-          "expectErrorCode": "cap_create_task_invalid_request",
+          "expectErrorCode": "cap_create_item_invalid_request",
           "mutating": false,
           "mandatory": true
         },
         {
-          "id": "get_unknown_task_not_found",
+          "id": "get_unknown_item_not_found",
           "kind": "api_negative",
-          "capabilityId": "cap_get_task",
+          "capabilityId": "cap_get_item",
           "expectStatus": 404,
-          "expectErrorCode": "cap_get_task_not_found",
+          "expectErrorCode": "cap_get_item_not_found",
           "mutating": false,
           "mandatory": true
         }

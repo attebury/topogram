@@ -1,0 +1,6 @@
+shape shape_output_member_detail from entity_member {
+  name "Member Detail Output"
+  description "Detailed member payload"
+  include [id, email, display_name, is_active, created_at]
+  status active
+}

@@ -11,7 +11,7 @@ const endpoints = [
   },
   {
     "label": "web app",
-    "url": "http://localhost:5173/tasks"
+    "url": "http://localhost:5173/items"
   }
 ];
 const timeoutMs = Number(process.env.TOPOGRAM_RUNTIME_WAIT_MS || "60000");

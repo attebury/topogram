@@ -1,0 +1,11 @@
+capability cap_create_member {
+  name "Create Member"
+  description "Allows a member to create a new member"
+
+  actors [actor_member]
+  creates [entity_member]
+  input [shape_input_create_member]
+  output [shape_output_member_detail]
+
+  status active
+}

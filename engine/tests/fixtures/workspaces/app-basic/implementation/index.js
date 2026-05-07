@@ -16,7 +16,7 @@ import { APP_BASIC_WEB_REFERENCE } from "./web/reference.js";
 import { APP_BASIC_WEB_SCREEN_REFERENCE } from "./web/screens-reference.js";
 import {
   renderAppBasicHomePage,
-  renderAppBasicTaskRoutes
+  renderAppBasicItemRoutes
 } from "./web/renderers.js";
 
 export const APP_BASIC_IMPLEMENTATION = {
@@ -45,7 +45,7 @@ export const APP_BASIC_IMPLEMENTATION = {
     screenReference: APP_BASIC_WEB_SCREEN_REFERENCE,
     renderers: {
       renderHomePage: renderAppBasicHomePage,
-      renderRoutes: renderAppBasicTaskRoutes
+      renderRoutes: renderAppBasicItemRoutes
     }
   }
 };

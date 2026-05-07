@@ -2,50 +2,50 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "11111111-1111-4111-8111-111111111111";
-const demoProjectId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "22222222-2222-4222-8222-222222222222";
-const demoTaskId = process.env.TOPOGRAM_DEMO_PRIMARY_ID || "33333333-3333-4333-8333-333333333333";
+const demoMemberId = process.env.TOPOGRAM_DEMO_USER_ID || "11111111-1111-4111-8111-111111111111";
+const demoCollectionId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "22222222-2222-4222-8222-222222222222";
+const demoItemId = process.env.TOPOGRAM_DEMO_PRIMARY_ID || "33333333-3333-4333-8333-333333333333";
 
 async function main() {
   const now = new Date();
 
-  await prisma.user.upsert({
-    where: { email: "demo.user@topogram.local" },
+  await prisma.member.upsert({
+    where: { email: "demo.member@topogram.local" },
     update: {
-      display_name: "Demo User",
+      display_name: "Demo Member",
       is_active: true
     },
     create: {
-      id: demoUserId,
-      email: "demo.user@topogram.local",
-      display_name: "Demo User",
+      id: demoMemberId,
+      email: "demo.member@topogram.local",
+      display_name: "Demo Member",
       is_active: true,
       created_at: now
     }
   });
 
-  await prisma.project.upsert({
-    where: { name: "Demo Project" },
+  await prisma.collection.upsert({
+    where: { name: "Demo Collection" },
     update: {
       status: "active",
-      description: "Seeded demo project for the generated work-tracker runtime",
-      owner_id: demoUserId
+      description: "Seeded demo collection for the generated sample-workspace runtime",
+      owner_id: demoMemberId
     },
     create: {
-      id: demoProjectId,
-      name: "Demo Project",
-      description: "Seeded demo project for the generated work-tracker runtime",
+      id: demoCollectionId,
+      name: "Demo Collection",
+      description: "Seeded demo collection for the generated sample-workspace runtime",
       status: "active",
-      owner_id: demoUserId,
+      owner_id: demoMemberId,
       created_at: now
     }
   });
 
-  const tasks = [
+  const items = [
   {
     "id": "33333333-3333-4333-8333-333333333333",
-    "title": "Seeded Demo Task",
-    "description": "This task was created by the generated demo seed script.",
+    "title": "Seeded Demo Item",
+    "description": "This item was created by the generated demo seed script.",
     "priority": "high",
     "status": "active",
     "completed_at": null,
@@ -108,7 +108,7 @@ async function main() {
   {
     "id": "33333333-3333-4333-8333-333333333340",
     "title": "Audit runtime smoke checks",
-    "description": "Expand smoke coverage for core task actions.",
+    "description": "Expand smoke coverage for core item actions.",
     "priority": "high",
     "status": "active",
     "completed_at": null,
@@ -125,7 +125,7 @@ async function main() {
   },
   {
     "id": "33333333-3333-4333-8333-333333333342",
-    "title": "Capture user feedback",
+    "title": "Capture member feedback",
     "description": "Collect notes from the first walkthrough of the generated UX.",
     "priority": "high",
     "status": "active",
@@ -134,42 +134,42 @@ async function main() {
   }
 ];
 
-  for (const task of tasks) {
-    await prisma.task.upsert({
-      where: { id: task.id },
+  for (const item of items) {
+    await prisma.item.upsert({
+      where: { id: item.id },
       update: {
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        owner_id: demoUserId,
-        project_id: demoProjectId,
-        completed_at: task.completed_at,
-        due_at: task.due_at,
+        title: item.title,
+        description: item.description,
+        status: item.status,
+        priority: item.priority,
+        owner_id: demoMemberId,
+        collection_id: demoCollectionId,
+        completed_at: item.completed_at,
+        due_at: item.due_at,
         updated_at: now
       },
       create: {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        owner_id: demoUserId,
-        project_id: demoProjectId,
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        status: item.status,
+        priority: item.priority,
+        owner_id: demoMemberId,
+        collection_id: demoCollectionId,
         created_at: now,
         updated_at: now,
-        completed_at: task.completed_at,
-        due_at: task.due_at
+        completed_at: item.completed_at,
+        due_at: item.due_at
       }
     });
   }
 
   console.log(JSON.stringify({
     ok: true,
-    demoUserId,
-    demoProjectId,
-    demoTaskId,
-    seededTaskCount: tasks.length
+    demoMemberId,
+    demoCollectionId,
+    demoItemId,
+    seededItemCount: items.length
   }, null, 2));
 }
 

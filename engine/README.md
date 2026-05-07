@@ -6,7 +6,7 @@ The active product workflow is authoring-to-generated-app. Engine development sh
 
 ## Package Shape
 
-The engine is the publishable private CLI package:
+The engine is the publishable CLI package:
 
 ```json
 {
@@ -17,7 +17,7 @@ The engine is the publishable private CLI package:
 }
 ```
 
-This lets source checkouts and private-package consumers call:
+This lets source checkouts and package consumers call:
 
 ```bash
 topogram new ../my-app
@@ -111,7 +111,7 @@ topogram new ../todo-demo --template @topogram/template-todo
 topogram new ../todo-demo --template todo
 ```
 
-Catalog aliases resolve through the private catalog index at
+Catalog aliases resolve through the public catalog index at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is package
 backed; executable starter content still lives in template packages. Use
 `topogram catalog show <id>` to inspect an entry and get the correct `new` or
@@ -131,7 +131,7 @@ template update metadata while keeping normal check/generate behavior.
 Do not create generated projects under `engine/`. The CLI refuses paths inside the engine directory.
 
 Template pack authoring and trust policy are documented in `../docs/template-authoring.md`.
-Catalog layout and private access are documented in `../docs/catalog.md`.
+Catalog layout and optional private-source access are documented in `../docs/catalog.md`.
 Projects created from executable templates include `.topogram-template-trust.json`;
 regenerate it with `topogram trust template` after reviewing copied
 `implementation/` code. Use `topogram template status` for the lifecycle

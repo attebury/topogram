@@ -1,6 +1,6 @@
 # Catalog
 
-The Topogram catalog is a private index of reusable template and topogram
+The Topogram catalog is a public index of reusable template and topogram
 packages. The default v1 source is:
 
 ```text
@@ -30,7 +30,7 @@ topogram catalog show hello --json
 Template entries recommend `topogram new`. Pure topogram entries recommend
 `topogram catalog copy` plus `topogram source status`.
 
-Check private catalog and package access:
+Check catalog and package access:
 
 ```bash
 topogram catalog doctor

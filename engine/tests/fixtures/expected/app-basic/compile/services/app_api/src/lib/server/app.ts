@@ -4,7 +4,7 @@ import type { Context } from "hono";
 import { serverContract } from "../topogram/server-contract";
 import { HttpError, coerceValue, contentDisposition, jsonError, requireHeaders, requireRequestFields } from "./helpers";
 import type { ServerDependencies } from "./context";
-import type { CompleteTaskInput, CompleteTaskResult, CreateProjectInput, CreateProjectResult, CreateTaskInput, CreateTaskResult, CreateUserInput, CreateUserResult, DeleteTaskInput, DeleteTaskResult, DownloadTaskExportInput, DownloadTaskExportResult, ExportTasksInput, ExportTasksResult, GetProjectInput, GetProjectResult, GetTaskExportJobInput, GetTaskExportJobResult, GetTaskInput, GetTaskResult, GetUserInput, GetUserResult, ListProjectsInput, ListProjectsResult, ListProjectsResultItem, ListTasksInput, ListTasksResult, ListTasksResultItem, ListUsersInput, ListUsersResult, ListUsersResultItem, UpdateProjectInput, UpdateProjectResult, UpdateTaskInput, UpdateTaskResult, UpdateUserInput, UpdateUserResult } from "../persistence/types";
+import type { CompleteItemInput, CompleteItemResult, CreateCollectionInput, CreateCollectionResult, CreateItemInput, CreateItemResult, CreateMemberInput, CreateMemberResult, DeleteItemInput, DeleteItemResult, DownloadItemExportInput, DownloadItemExportResult, ExportItemsInput, ExportItemsResult, GetCollectionInput, GetCollectionResult, GetItemExportJobInput, GetItemExportJobResult, GetItemInput, GetItemResult, GetMemberInput, GetMemberResult, ListCollectionsInput, ListCollectionsResult, ListCollectionsResultItem, ListItemsInput, ListItemsResult, ListItemsResultItem, ListMembersInput, ListMembersResult, ListMembersResultItem, UpdateCollectionInput, UpdateCollectionResult, UpdateItemInput, UpdateItemResult, UpdateMemberInput, UpdateMemberResult } from "../persistence/types";
 
 function buildInput(c: Context, route: any, body: Record<string, unknown>) {
   const input: Record<string, unknown> = {};
@@ -39,21 +39,21 @@ export function createApp(deps: ServerDependencies) {
     exposeHeaders: ["ETag", "Location", "Retry-After", "Content-Disposition"]
   }));
 
-  app.get("/health", (c) => c.json({ ok: true, service: "topogram-work-tracker-server" }, 200 as any));
+  app.get("/health", (c) => c.json({ ok: true, service: "topogram-sample-workspace-server" }, 200 as any));
 
   app.get("/ready", async (c) => {
     try {
       await deps.ready?.();
-      return c.json({ ok: true, ready: true, service: "topogram-work-tracker-server" }, 200 as any);
+      return c.json({ ok: true, ready: true, service: "topogram-sample-workspace-server" }, 200 as any);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Readiness check failed";
-      return c.json({ ok: false, ready: false, service: "topogram-work-tracker-server", message }, 503 as any);
+      return c.json({ ok: false, ready: false, service: "topogram-sample-workspace-server", message }, 503 as any);
     }
   });
 
-  app.get("/lookups/users", async (c) => {
+  app.get("/lookups/members", async (c) => {
     try {
-      const result = await deps.appBasicRepository.listUserOptions();
+      const result = await deps.appBasicRepository.listMemberOptions();
       return c.json(result, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
@@ -61,9 +61,9 @@ export function createApp(deps: ServerDependencies) {
     }
   });
 
-  app.get("/lookups/projects", async (c) => {
+  app.get("/lookups/collections", async (c) => {
     try {
-      const result = await deps.appBasicRepository.listProjectOptions();
+      const result = await deps.appBasicRepository.listCollectionOptions();
       return c.json(result, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
@@ -80,8 +80,8 @@ export function createApp(deps: ServerDependencies) {
       await deps.authorize(c, route0.endpoint.authz, { capabilityId: route0.capabilityId, input, loadResource: undefined });
       requireHeaders(c, [...route0.endpoint.preconditions, ...route0.endpoint.idempotency]);
       requireRequestFields(route0, input);
-      const result = await deps.appBasicRepository.createTask(input as unknown as CreateTaskInput);
-      return c.json(result as CreateTaskResult, 201 as any);
+      const result = await deps.appBasicRepository.createItem(input as unknown as CreateItemInput);
+      return c.json(result as CreateItemResult, 201 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -93,17 +93,17 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = {};
       const input = buildInput(c, route1, body);
-      const loadAuthorizationResource1 = async () => await deps.appBasicRepository.getTask(input as unknown as GetTaskInput) as unknown as Record<string, unknown>;
+      const loadAuthorizationResource1 = async () => await deps.appBasicRepository.getItem(input as unknown as GetItemInput) as unknown as Record<string, unknown>;
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route1.endpoint.authz, { capabilityId: route1.capabilityId, input, loadResource: typeof loadAuthorizationResource1 === "function" ? loadAuthorizationResource1 : undefined });
       requireRequestFields(route1, input);
-      const result = await deps.appBasicRepository.getTask(input as unknown as GetTaskInput);
+      const result = await deps.appBasicRepository.getItem(input as unknown as GetItemInput);
       const etag = (result as unknown as Record<string, unknown>)["updated_at"];
       if (etag && c.req.header("If-None-Match") === String(etag)) {
         return c.body(null, 304 as any);
       }
       if (etag) c.header("ETag", String(etag));
-      return c.json(result as GetTaskResult, 200 as any);
+      return c.json(result as GetItemResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -115,20 +115,20 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = await c.req.json().catch(() => ({}));
       const input = buildInput(c, route2, body);
-      const loadAuthorizationResource2 = async () => await deps.appBasicRepository.getTask({ task_id: String(input.task_id || "") } as unknown as GetTaskInput) as unknown as Record<string, unknown>;
+      const loadAuthorizationResource2 = async () => await deps.appBasicRepository.getItem({ item_id: String(input.item_id || "") } as unknown as GetItemInput) as unknown as Record<string, unknown>;
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route2.endpoint.authz, { capabilityId: route2.capabilityId, input, loadResource: typeof loadAuthorizationResource2 === "function" ? loadAuthorizationResource2 : undefined });
       requireHeaders(c, [...route2.endpoint.preconditions, ...route2.endpoint.idempotency]);
       requireRequestFields(route2, input);
       const ifMatch = c.req.header("If-Match");
       if (ifMatch) {
-        const currentTask = await deps.appBasicRepository.getTask({ task_id: String(input.task_id || "") } as unknown as GetTaskInput);
-        if (currentTask.updated_at !== ifMatch) {
+        const currentItem = await deps.appBasicRepository.getItem({ item_id: String(input.item_id || "") } as unknown as GetItemInput);
+        if (currentItem.updated_at !== ifMatch) {
           throw new HttpError(412, "stale_precondition", "If-Match does not match the current resource version");
         }
       }
-      const result = await deps.appBasicRepository.updateTask(input as unknown as UpdateTaskInput);
-      return c.json(result as UpdateTaskResult, 200 as any);
+      const result = await deps.appBasicRepository.updateItem(input as unknown as UpdateItemInput);
+      return c.json(result as UpdateItemResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -140,20 +140,20 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = await c.req.json().catch(() => ({}));
       const input = buildInput(c, route3, body);
-      const loadAuthorizationResource3 = async () => await deps.appBasicRepository.getTask({ task_id: String(input.task_id || "") } as unknown as GetTaskInput) as unknown as Record<string, unknown>;
+      const loadAuthorizationResource3 = async () => await deps.appBasicRepository.getItem({ item_id: String(input.item_id || "") } as unknown as GetItemInput) as unknown as Record<string, unknown>;
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route3.endpoint.authz, { capabilityId: route3.capabilityId, input, loadResource: typeof loadAuthorizationResource3 === "function" ? loadAuthorizationResource3 : undefined });
       requireHeaders(c, [...route3.endpoint.preconditions, ...route3.endpoint.idempotency]);
       requireRequestFields(route3, input);
       const ifMatch = c.req.header("If-Match");
       if (ifMatch) {
-        const currentTask = await deps.appBasicRepository.getTask({ task_id: String(input.task_id || "") } as unknown as GetTaskInput);
-        if (currentTask.updated_at !== ifMatch) {
+        const currentItem = await deps.appBasicRepository.getItem({ item_id: String(input.item_id || "") } as unknown as GetItemInput);
+        if (currentItem.updated_at !== ifMatch) {
           throw new HttpError(412, "stale_precondition", "If-Match does not match the current resource version");
         }
       }
-      const result = await deps.appBasicRepository.completeTask(input as unknown as CompleteTaskInput);
-      return c.json(result as CompleteTaskResult, 200 as any);
+      const result = await deps.appBasicRepository.completeItem(input as unknown as CompleteItemInput);
+      return c.json(result as CompleteItemResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -168,8 +168,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route4.endpoint.authz, { capabilityId: route4.capabilityId, input, loadResource: undefined });
       requireRequestFields(route4, input);
-      const result = await deps.appBasicRepository.listTasks(input as unknown as ListTasksInput);
-      return c.json(result as ListTasksResult, 200 as any);
+      const result = await deps.appBasicRepository.listItems(input as unknown as ListItemsInput);
+      return c.json(result as ListItemsResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -187,13 +187,13 @@ export function createApp(deps: ServerDependencies) {
       requireRequestFields(route5, input);
       const ifMatch = c.req.header("If-Match");
       if (ifMatch) {
-        const currentTask = await deps.appBasicRepository.getTask({ task_id: String(input.task_id || "") } as unknown as GetTaskInput);
-        if (currentTask.updated_at !== ifMatch) {
+        const currentItem = await deps.appBasicRepository.getItem({ item_id: String(input.item_id || "") } as unknown as GetItemInput);
+        if (currentItem.updated_at !== ifMatch) {
           throw new HttpError(412, "stale_precondition", "If-Match does not match the current resource version");
         }
       }
-      const result = await deps.appBasicRepository.deleteTask(input as unknown as DeleteTaskInput);
-      return c.json(result as DeleteTaskResult, 200 as any);
+      const result = await deps.appBasicRepository.deleteItem(input as unknown as DeleteItemInput);
+      return c.json(result as DeleteItemResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -208,10 +208,10 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route6.endpoint.authz, { capabilityId: route6.capabilityId, input, loadResource: undefined });
       requireRequestFields(route6, input);
-      const result = await deps.appBasicRepository.exportTasks(input as unknown as ExportTasksInput);
-      c.header("Location", (result as unknown as Record<string, unknown>).status_url ? String((result as unknown as Record<string, unknown>).status_url) : "/task-exports/:job_id".replace(":job_id", String((result as unknown as Record<string, unknown>).job_id ?? "")));
+      const result = await deps.appBasicRepository.exportItems(input as unknown as ExportItemsInput);
+      c.header("Location", (result as unknown as Record<string, unknown>).status_url ? String((result as unknown as Record<string, unknown>).status_url) : "/item-exports/:job_id".replace(":job_id", String((result as unknown as Record<string, unknown>).job_id ?? "")));
       c.header("Retry-After", "5");
-      return c.json(result as ExportTasksResult, 202 as any);
+      return c.json(result as ExportItemsResult, 202 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -223,12 +223,12 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = {};
       const input = buildInput(c, route7, body);
-      const loadAuthorizationResource7 = async () => await deps.appBasicRepository.getTaskExportJob(input as unknown as GetTaskExportJobInput) as unknown as Record<string, unknown>;
+      const loadAuthorizationResource7 = async () => await deps.appBasicRepository.getItemExportJob(input as unknown as GetItemExportJobInput) as unknown as Record<string, unknown>;
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route7.endpoint.authz, { capabilityId: route7.capabilityId, input, loadResource: typeof loadAuthorizationResource7 === "function" ? loadAuthorizationResource7 : undefined });
       requireRequestFields(route7, input);
-      const result = await deps.appBasicRepository.getTaskExportJob(input as unknown as GetTaskExportJobInput);
-      return c.json(result as GetTaskExportJobResult, 200 as any);
+      const result = await deps.appBasicRepository.getItemExportJob(input as unknown as GetItemExportJobInput);
+      return c.json(result as GetItemExportJobResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -240,14 +240,14 @@ export function createApp(deps: ServerDependencies) {
     try {
       const body = {};
       const input = buildInput(c, route8, body);
-      const loadAuthorizationResource8 = async () => await deps.appBasicRepository.downloadTaskExport(input as unknown as DownloadTaskExportInput) as unknown as Record<string, unknown>;
+      const loadAuthorizationResource8 = async () => await deps.appBasicRepository.downloadItemExport(input as unknown as DownloadItemExportInput) as unknown as Record<string, unknown>;
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route8.endpoint.authz, { capabilityId: route8.capabilityId, input, loadResource: typeof loadAuthorizationResource8 === "function" ? loadAuthorizationResource8 : undefined });
       requireRequestFields(route8, input);
-      const artifact = await deps.appBasicRepository.downloadTaskExport(input as unknown as DownloadTaskExportInput);
+      const artifact = await deps.appBasicRepository.downloadItemExport(input as unknown as DownloadItemExportInput);
       const responseHeaders = new Headers();
       responseHeaders.set("Content-Type", artifact.contentType || "application/zip");
-      responseHeaders.set("Content-Disposition", contentDisposition("attachment", artifact.filename || "task-export.zip"));
+      responseHeaders.set("Content-Disposition", contentDisposition("attachment", artifact.filename || "item-export.zip"));
       return new Response(artifact.body as BodyInit | null, { status: 200, headers: responseHeaders });
     } catch (error) {
       const failure = jsonError(error);
@@ -263,8 +263,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route9.endpoint.authz, { capabilityId: route9.capabilityId, input, loadResource: undefined });
       requireRequestFields(route9, input);
-      const result = await deps.appBasicRepository.listProjects(input as unknown as ListProjectsInput);
-      return c.json(result as ListProjectsResult, 200 as any);
+      const result = await deps.appBasicRepository.listCollections(input as unknown as ListCollectionsInput);
+      return c.json(result as ListCollectionsResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -279,8 +279,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route10.endpoint.authz, { capabilityId: route10.capabilityId, input, loadResource: undefined });
       requireRequestFields(route10, input);
-      const result = await deps.appBasicRepository.getProject(input as unknown as GetProjectInput);
-      return c.json(result as GetProjectResult, 200 as any);
+      const result = await deps.appBasicRepository.getCollection(input as unknown as GetCollectionInput);
+      return c.json(result as GetCollectionResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -295,8 +295,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route11.endpoint.authz, { capabilityId: route11.capabilityId, input, loadResource: undefined });
       requireRequestFields(route11, input);
-      const result = await deps.appBasicRepository.createProject(input as unknown as CreateProjectInput);
-      return c.json(result as CreateProjectResult, 201 as any);
+      const result = await deps.appBasicRepository.createCollection(input as unknown as CreateCollectionInput);
+      return c.json(result as CreateCollectionResult, 201 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -311,8 +311,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route12.endpoint.authz, { capabilityId: route12.capabilityId, input, loadResource: undefined });
       requireRequestFields(route12, input);
-      const result = await deps.appBasicRepository.updateProject(input as unknown as UpdateProjectInput);
-      return c.json(result as UpdateProjectResult, 200 as any);
+      const result = await deps.appBasicRepository.updateCollection(input as unknown as UpdateCollectionInput);
+      return c.json(result as UpdateCollectionResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -327,8 +327,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route13.endpoint.authz, { capabilityId: route13.capabilityId, input, loadResource: undefined });
       requireRequestFields(route13, input);
-      const result = await deps.appBasicRepository.listUsers(input as unknown as ListUsersInput);
-      return c.json(result as ListUsersResult, 200 as any);
+      const result = await deps.appBasicRepository.listMembers(input as unknown as ListMembersInput);
+      return c.json(result as ListMembersResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -343,8 +343,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route14.endpoint.authz, { capabilityId: route14.capabilityId, input, loadResource: undefined });
       requireRequestFields(route14, input);
-      const result = await deps.appBasicRepository.getUser(input as unknown as GetUserInput);
-      return c.json(result as GetUserResult, 200 as any);
+      const result = await deps.appBasicRepository.getMember(input as unknown as GetMemberInput);
+      return c.json(result as GetMemberResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -359,8 +359,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route15.endpoint.authz, { capabilityId: route15.capabilityId, input, loadResource: undefined });
       requireRequestFields(route15, input);
-      const result = await deps.appBasicRepository.createUser(input as unknown as CreateUserInput);
-      return c.json(result as CreateUserResult, 201 as any);
+      const result = await deps.appBasicRepository.createMember(input as unknown as CreateMemberInput);
+      return c.json(result as CreateMemberResult, 201 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);
@@ -375,8 +375,8 @@ export function createApp(deps: ServerDependencies) {
       if (!deps.authorize) throw new HttpError(500, "authorization_handler_missing", "Missing authorization handler for protected route");
       await deps.authorize(c, route16.endpoint.authz, { capabilityId: route16.capabilityId, input, loadResource: undefined });
       requireRequestFields(route16, input);
-      const result = await deps.appBasicRepository.updateUser(input as unknown as UpdateUserInput);
-      return c.json(result as UpdateUserResult, 200 as any);
+      const result = await deps.appBasicRepository.updateMember(input as unknown as UpdateMemberInput);
+      return c.json(result as UpdateMemberResult, 200 as any);
     } catch (error) {
       const failure = jsonError(error);
       return c.json(failure.body, failure.status as any);

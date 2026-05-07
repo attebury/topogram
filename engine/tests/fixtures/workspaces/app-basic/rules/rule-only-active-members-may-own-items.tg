@@ -1,0 +1,10 @@
+rule rule_only_active_members_may_own_items {
+  name "Only active members may own items"
+  description "A item owner must be an active member"
+
+  applies_to [cap_create_item, cap_update_item]
+  requirement "owner.is_active == true"
+  severity error
+
+  status active
+}

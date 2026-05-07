@@ -166,8 +166,8 @@ function envValue(name) {
   const fallbackMap = {
     TOPOGRAM_API_BASE_URL: process.env.PUBLIC_TOPOGRAM_API_BASE_URL || "http://localhost:${ports.server}",
     TOPOGRAM_WEB_BASE_URL: process.env.PUBLIC_TOPOGRAM_WEB_BASE_URL || \`http://localhost:\${process.env.WEB_PORT || "${ports.web}"}\`,
-    ${runtimeReference.runtimeCheck.demoContainerEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID || process.env.PUBLIC_TOPOGRAM_DEMO_PROJECT_ID || "",
-    ${runtimeReference.runtimeCheck.demoPrimaryEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID || process.env.PUBLIC_TOPOGRAM_DEMO_TASK_ID || process.env.PUBLIC_TOPOGRAM_DEMO_ISSUE_ID || "",
+    ${runtimeReference.runtimeCheck.demoContainerEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID || "",
+    ${runtimeReference.runtimeCheck.demoPrimaryEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID || "",
     TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
     TOPOGRAM_AUTH_USER_ID: process.env.TOPOGRAM_DEMO_USER_ID || ""
   };

@@ -273,7 +273,7 @@ topogram new ./todo-demo --template todo
 topogram new ./hello-web --template hello-web
 ```
 
-The catalog alias forms resolve through the private catalog at
+The catalog alias forms resolve through the public catalog at
 `github:attebury/topograms/topograms.catalog.json`. The catalog is an index:
 templates and reusable topograms are still installed from versioned packages.
 Use `topogram catalog show <id>` to see what an entry is and which command to
@@ -409,8 +409,8 @@ fixtures. Starter product behavior lives outside the engine: shared starter
 packages live in `topogram-starters`, the generated Todo demo lives in
 `topogram-demo-todo`, and the Todo starter source lives in
 `topogram-template-todo`.
-See [Template Authoring](./docs/template-authoring.md) for pack layout, private package setup, and trust policy.
-See [Catalog](./docs/catalog.md) for private catalog layout and commands.
+See [Template Authoring](./docs/template-authoring.md) for pack layout, package setup, and trust policy.
+See [Catalog](./docs/catalog.md) for public catalog layout, commands, and optional private-source auth.
 See [Consumer Script Contract](./docs/consumer-scripts.md) for update-cli check script semantics.
 
 ## License

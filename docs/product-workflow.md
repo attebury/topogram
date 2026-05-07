@@ -41,7 +41,7 @@ npm run verify
 Run `npm run app:smoke` and `npm run app:runtime-check` from another terminal while `npm run dev` is running.
 Run `npm run app:runtime` when you want a self-contained local runtime pass that starts and stops the generated stack.
 
-The private `topogram-demo-todo` repo is the canonical generated Todo consumer
+The `topogram-demo-todo` repo is the canonical generated Todo consumer
 proof. Its normal demo CI runs compile and runtime verification against the
 published CLI/template packages.
 

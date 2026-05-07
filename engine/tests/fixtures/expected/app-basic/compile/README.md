@@ -1,4 +1,4 @@
-# Work Tracker Generated Compile Checks
+# Sample Workspace Generated Compile Checks
 
 This bundle verifies that the generated server and web projects typecheck and build.
 

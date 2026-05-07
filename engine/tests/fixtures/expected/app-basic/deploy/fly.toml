@@ -1,4 +1,4 @@
-app = "topogram-work-tracker-deployment-stack"
+app = "topogram-sample-workspace-deployment-stack"
 primary_region = "ord"
 
 [build]

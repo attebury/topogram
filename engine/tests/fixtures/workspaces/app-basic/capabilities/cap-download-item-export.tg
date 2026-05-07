@@ -1,0 +1,10 @@
+capability cap_download_item_export {
+  name "Download Item Export"
+  description "Downloads the completed item export artifact"
+
+  actors [actor_member]
+  reads [entity_item]
+  input [shape_input_get_item_export_job]
+
+  status active
+}

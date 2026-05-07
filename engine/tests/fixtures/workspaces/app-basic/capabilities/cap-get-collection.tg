@@ -1,0 +1,11 @@
+capability cap_get_collection {
+  name "Get Collection"
+  description "Allows a member to fetch a single collection by id"
+
+  actors [actor_member]
+  reads [entity_collection]
+  input [shape_input_get_collection]
+  output [shape_output_collection_detail]
+
+  status active
+}

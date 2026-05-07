@@ -18,7 +18,7 @@ const ports = [
     "port": 5173
   }
 ];
-const expectedService = "topogram-work-tracker-server";
+const expectedService = "topogram-sample-workspace-server";
 
 function effectivePort(entry) {
   return Number(process.env[entry.env] || process.env[entry.fallbackEnv] || entry.port);

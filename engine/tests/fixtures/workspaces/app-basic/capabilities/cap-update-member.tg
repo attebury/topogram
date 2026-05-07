@@ -1,0 +1,12 @@
+capability cap_update_member {
+  name "Update Member"
+  description "Allows a member to update mutable member fields"
+
+  actors [actor_member]
+  reads [entity_member]
+  updates [entity_member]
+  input [shape_input_update_member]
+  output [shape_output_member_detail]
+
+  status active
+}

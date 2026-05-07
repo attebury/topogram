@@ -1,13 +1,44 @@
+/* Topogram semantic design intent. Generators map normalized UI tokens to stack CSS here. */
+:root {
+  --topogram-design-density: compact;
+  --topogram-design-tone: operational;
+  --topogram-design-radius-scale: medium;
+  --topogram-design-color-danger: critical;
+  --topogram-design-color-primary: accent;
+  --topogram-design-typography-body: readable;
+  --topogram-design-typography-heading: prominent;
+  --topogram-design-action-destructive: danger;
+  --topogram-design-action-primary: prominent;
+  --topogram-design-accessibility-contrast: aa;
+  --topogram-design-accessibility-focus: visible;
+  --topogram-space-unit: 0.75rem;
+  --topogram-page-padding: 1.5rem 1rem 3rem;
+  --topogram-control-padding: 0.55rem 0.75rem;
+  --topogram-radius-card: 14px;
+  --topogram-radius-control: 12px;
+  --topogram-radius-pill: 999px;
+  --topogram-text-color: #182026;
+  --topogram-muted-color: #607284;
+  --topogram-surface-background: linear-gradient(180deg, #f5f7fb 0%, #edf2f7 100%);
+  --topogram-surface-card: #ffffff;
+  --topogram-surface-subtle: #fbfcfe;
+  --topogram-border-color: #d7e1ec;
+  --topogram-action-primary-background: #0f5cc0;
+  --topogram-action-primary-color: #ffffff;
+  --topogram-action-danger-background: #b42318;
+  --topogram-focus-outline: 3px solid #0f5cc0;
+}
+
 :root {
   font-family: system-ui, sans-serif;
-  color: #182026;
-  background: linear-gradient(180deg, #f5f7fb 0%, #edf2f7 100%);
+  color: var(--topogram-text-color);
+  background: var(--topogram-surface-background);
 }
 body {
   margin: 0;
 }
 a {
-  color: #0f5cc0;
+  color: var(--topogram-action-primary-background);
   text-decoration: none;
 }
 a:hover {
@@ -16,7 +47,7 @@ a:hover {
 main {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: var(--topogram-page-padding);
 }
 .app-shell {
   min-height: 100vh;
@@ -36,7 +67,7 @@ main {
   min-height: 100vh;
   display: grid;
   align-content: start;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
   padding: 1.25rem 1rem;
   border-right: 1px solid rgba(24, 32, 38, 0.08);
   background: rgba(255, 255, 255, 0.86);
@@ -49,7 +80,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(24, 32, 38, 0.08);
   background: rgba(255, 255, 255, 0.9);
@@ -84,14 +115,14 @@ main {
 }
 .brand-mark {
   font-weight: 700;
-  color: #607284;
+  color: var(--topogram-muted-color);
 }
 .command-palette-button {
-  background: #182026;
+  background: var(--topogram-text-color);
   color: white;
   border: none;
-  border-radius: 999px;
-  padding: 0.6rem 0.9rem;
+  border-radius: var(--topogram-radius-pill);
+  padding: var(--topogram-control-padding);
   font: inherit;
   cursor: pointer;
 }
@@ -99,21 +130,21 @@ main {
   max-width: 72rem;
   margin: 0 auto;
   padding: 0 1.25rem 2rem;
-  color: #607284;
+  color: var(--topogram-muted-color);
 }
 .card {
-  background: white;
-  border-radius: 16px;
+  background: var(--topogram-surface-card);
+  border-radius: var(--topogram-radius-card);
   padding: 1.25rem;
   box-shadow: 0 12px 30px rgba(24, 32, 38, 0.08);
 }
 .hero {
   display: grid;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
 }
 .grid {
   display: grid;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
 }
 .grid.two {
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
@@ -141,8 +172,8 @@ select {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #c9d4e2;
-  border-radius: 12px;
-  padding: 0.7rem 0.85rem;
+  border-radius: var(--topogram-radius-control);
+  padding: var(--topogram-control-padding);
   background: white;
 }
 textarea {
@@ -156,16 +187,25 @@ button,
   justify-content: center;
   gap: 0.35rem;
   border: none;
-  border-radius: 999px;
-  padding: 0.7rem 1rem;
-  background: #0f5cc0;
-  color: white;
+  border-radius: var(--topogram-radius-pill);
+  padding: var(--topogram-control-padding);
+  background: var(--topogram-action-primary-background);
+  color: var(--topogram-action-primary-color);
   font-weight: 600;
   cursor: pointer;
 }
+button:focus-visible,
+.button-link:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: var(--topogram-focus-outline);
+  outline-offset: 2px;
+}
 .button-link.secondary {
   background: #e9eef6;
-  color: #182026;
+  color: var(--topogram-text-color);
 }
 .button-row {
   display: flex;
@@ -175,30 +215,32 @@ button,
 }
 .stack {
   display: grid;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
 }
-.task-list {
+.task-list,
+.resource-list {
   list-style: none;
   padding: 0;
   margin: 1rem 0 0;
   display: grid;
   gap: 0.75rem;
 }
-.task-list li {
+.task-list li,
+.resource-list li {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
   padding: 1rem;
   border: 1px solid #e0e8f1;
-  border-radius: 14px;
-  background: #fbfcfe;
+  border-radius: var(--topogram-radius-card);
+  background: var(--topogram-surface-subtle);
 }
 .table-wrap {
   margin-top: 1rem;
   overflow-x: auto;
-  border: 1px solid #d7e1ec;
-  border-radius: 14px;
+  border: 1px solid var(--topogram-border-color);
+  border-radius: var(--topogram-radius-card);
   background: white;
 }
 .resource-table {
@@ -243,7 +285,7 @@ button,
   gap: 0.5rem;
 }
 .cell-secondary {
-  color: #607284;
+  color: var(--topogram-muted-color);
   font-size: 0.92rem;
 }
 .definition-list {
@@ -261,21 +303,91 @@ button,
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--topogram-radius-pill);
   background: #eef4ff;
-  color: #0f5cc0;
+  color: var(--topogram-action-primary-background);
   font-size: 0.85rem;
   font-weight: 600;
 }
 .muted {
-  color: #607284;
+  color: var(--topogram-muted-color);
 }
 .empty-state {
   padding: 1rem 0;
 }
+.component-card {
+  border: 1px solid var(--topogram-border-color);
+  border-radius: var(--topogram-radius-card);
+  background: var(--topogram-surface-subtle);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.component-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--topogram-space-unit);
+  flex-wrap: wrap;
+}
+.component-eyebrow {
+  margin: 0 0 0.25rem;
+  color: var(--topogram-muted-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.component-card h2,
+.component-card h3 {
+  margin: 0;
+}
+.component-table-wrap {
+  margin-top: 1rem;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.75rem;
+}
+.summary-grid div,
+.board-column {
+  border: 1px solid #e0e8f1;
+  border-radius: var(--topogram-radius-control);
+  background: white;
+  padding: 0.85rem;
+}
+.summary-grid strong {
+  display: block;
+  font-size: 1.5rem;
+}
+.summary-grid span,
+.calendar-list span {
+  color: var(--topogram-muted-color);
+  font-size: 0.9rem;
+}
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.board-card,
+.calendar-card {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid #e0e8f1;
+  border-radius: var(--topogram-radius-control);
+  background: #f8fbff;
+  padding: 0.75rem;
+}
+.calendar-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
 small.route-hint {
   display: block;
-  color: #607284;
+  color: var(--topogram-muted-color);
   margin-top: 0.25rem;
 }
 @media (max-width: 900px) {
@@ -293,7 +405,8 @@ small.route-hint {
   .definition-list {
     grid-template-columns: 1fr;
   }
-  .task-list li {
+  .task-list li,
+  .resource-list li {
     flex-direction: column;
   }
   .resource-table {

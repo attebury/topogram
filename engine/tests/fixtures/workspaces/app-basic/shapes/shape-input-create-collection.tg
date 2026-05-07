@@ -1,0 +1,6 @@
+shape shape_input_create_collection from entity_collection {
+  name "Create Collection Input"
+  description "Fields accepted when creating a collection"
+  include [name, description, status, owner_id]
+  status active
+}

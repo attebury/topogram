@@ -41,7 +41,7 @@ a dedicated corpus repo, not in the active engine fixture tree.
 
 ## CLI Package
 
-Run the private CLI package smoke test from the repo root:
+Run the CLI package smoke test from the repo root:
 
 ```bash
 npm run cli:check

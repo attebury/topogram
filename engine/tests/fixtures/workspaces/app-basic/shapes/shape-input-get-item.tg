@@ -1,0 +1,10 @@
+shape shape_input_get_item {
+  name "Get Item Input"
+  description "Input for fetching a single item"
+
+  fields {
+    item_id uuid required
+  }
+
+  status active
+}

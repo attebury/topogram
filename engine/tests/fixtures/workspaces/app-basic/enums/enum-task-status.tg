@@ -1,3 +1,0 @@
-enum task_status {
-  values [draft, active, completed, archived]
-}

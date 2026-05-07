@@ -1,113 +1,113 @@
 <script lang="ts">
-  import { PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID as DEMO_TASK_ID } from "$env/static/public";
+  import { PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID as DEMO_ITEM_ID } from "$env/static/public";
 
   const screens = [
   {
-    "id": "project_list",
-    "title": "Projects",
-    "route": "/projects",
+    "id": "collection_list",
+    "title": "Collections",
+    "route": "/collections",
     "navigable": true
   },
   {
-    "id": "project_detail",
-    "title": "Project Details",
-    "route": "/projects/:id",
+    "id": "collection_detail",
+    "title": "Collection Details",
+    "route": "/collections/:id",
     "navigable": false
   },
   {
-    "id": "project_create",
-    "title": "Create Project",
-    "route": "/projects/new",
+    "id": "collection_create",
+    "title": "Create Collection",
+    "route": "/collections/new",
     "navigable": true
   },
   {
-    "id": "project_edit",
-    "title": "Edit Project",
-    "route": "/projects/:id/edit",
+    "id": "collection_edit",
+    "title": "Edit Collection",
+    "route": "/collections/:id/edit",
     "navigable": false
   },
   {
-    "id": "user_list",
-    "title": "Users",
-    "route": "/users",
+    "id": "member_list",
+    "title": "Members",
+    "route": "/members",
     "navigable": true
   },
   {
-    "id": "user_detail",
-    "title": "User Details",
-    "route": "/users/:id",
+    "id": "member_detail",
+    "title": "Member Details",
+    "route": "/members/:id",
     "navigable": false
   },
   {
-    "id": "user_create",
-    "title": "Create User",
-    "route": "/users/new",
+    "id": "member_create",
+    "title": "Create Member",
+    "route": "/members/new",
     "navigable": true
   },
   {
-    "id": "user_edit",
-    "title": "Edit User",
-    "route": "/users/:id/edit",
+    "id": "member_edit",
+    "title": "Edit Member",
+    "route": "/members/:id/edit",
     "navigable": false
   },
   {
-    "id": "task_list",
-    "title": "Tasks",
-    "route": "/tasks",
+    "id": "item_list",
+    "title": "Items",
+    "route": "/items",
     "navigable": true
   },
   {
-    "id": "task_board",
-    "title": "Task Board",
-    "route": "/tasks/board",
+    "id": "item_board",
+    "title": "Item Board",
+    "route": "/items/board",
     "navigable": true
   },
   {
-    "id": "task_calendar",
-    "title": "Task Calendar",
-    "route": "/tasks/calendar",
+    "id": "item_calendar",
+    "title": "Item Calendar",
+    "route": "/items/calendar",
     "navigable": true
   },
   {
-    "id": "task_detail",
-    "title": "Task Details",
-    "route": "/tasks/:id",
+    "id": "item_detail",
+    "title": "Item Details",
+    "route": "/items/:id",
     "navigable": false
   },
   {
-    "id": "task_create",
-    "title": "Create Task",
-    "route": "/tasks/new",
+    "id": "item_create",
+    "title": "Create Item",
+    "route": "/items/new",
     "navigable": true
   },
   {
-    "id": "task_edit",
-    "title": "Edit Task",
-    "route": "/tasks/:id/edit",
+    "id": "item_edit",
+    "title": "Edit Item",
+    "route": "/items/:id/edit",
     "navigable": false
   },
   {
-    "id": "task_exports",
+    "id": "item_exports",
     "title": "Export Status",
-    "route": "/task-exports/:job_id",
+    "route": "/item-exports/:job_id",
     "navigable": false
   }
 ];
-  const demoTaskRoute = DEMO_TASK_ID ? `/tasks/${DEMO_TASK_ID}` : null;
+  const demoItemRoute = DEMO_ITEM_ID ? `/items/${DEMO_ITEM_ID}` : null;
 </script>
 
 <main>
   <div class="stack">
     <section class="card hero">
       <div>
-        <h1>Work Tracker Web UI</h1>
-        <p>Generated from Topogram via the `sveltekit` profile and wired to a multi-resource workspace for tasks, projects, and users.</p>
+        <h1>Sample Workspace Web UI</h1>
+        <p>Generated from Topogram via the `sveltekit` profile and wired to a multi-resource workspace for items, collections, and members.</p>
       </div>
       <div class="button-row">
-        <a class="button-link" href="/tasks">Tasks</a>
-        <a class="button-link secondary" href="/tasks/new">Create Task</a>
-        {#if demoTaskRoute}
-          <a class="button-link secondary" href={demoTaskRoute}>Open Demo Task</a>
+        <a class="button-link" href="/items">Items</a>
+        <a class="button-link secondary" href="/items/new">Create Item</a>
+        {#if demoItemRoute}
+          <a class="button-link secondary" href={demoItemRoute}>Open Demo Item</a>
         {/if}
       </div>
     </section>

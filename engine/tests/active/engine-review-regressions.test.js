@@ -86,7 +86,7 @@ test("configured fixture provider loads without importing demos", async () => {
   const provider = await loadImplementationProvider(fixtureRoot);
 
   assert.equal(provider.exampleId, "app-basic-fixture");
-  assert.equal(provider.runtime.reference.appBundle.name, "Topogram Work Tracker App Bundle");
+  assert.equal(provider.runtime.reference.appBundle.name, "Topogram Sample Workspace App Bundle");
 });
 
 test("generateWorkspace does not use an app-basic provider implicitly", () => {

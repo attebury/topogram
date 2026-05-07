@@ -1,0 +1,11 @@
+capability cap_export_items {
+  name "Export Items"
+  description "Starts an asynchronous export job for items"
+
+  actors [actor_member]
+  reads [entity_item, entity_collection, entity_member]
+  input [shape_input_export_items]
+  output [shape_output_item_export_job]
+
+  status active
+}

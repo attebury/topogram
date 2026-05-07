@@ -1,6 +1,6 @@
 component component_ui_data_grid {
   name "Data Grid"
-  description "Reusable tabular display for task rows"
+  description "Reusable tabular display for item rows"
   category collection
 
   props {
@@ -10,7 +10,7 @@ component component_ui_data_grid {
   }
 
   events {
-    row_select shape_output_task_card
+    row_select shape_output_item_card
   }
 
   slots {

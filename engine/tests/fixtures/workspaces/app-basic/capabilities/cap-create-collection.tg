@@ -1,0 +1,11 @@
+capability cap_create_collection {
+  name "Create Collection"
+  description "Allows a member to create a new collection"
+
+  actors [actor_member]
+  creates [entity_collection]
+  input [shape_input_create_collection]
+  output [shape_output_collection_detail]
+
+  status active
+}

@@ -1,4 +1,4 @@
-# Work Tracker Runtime Smoke Bundle
+# Sample Workspace Runtime Smoke Bundle
 
 This bundle gives you lightweight runtime verification for the generated stack.
 
@@ -11,7 +11,7 @@ Use it when you want a fast, minimal confidence check that the generated stack i
 3. Run `bash ./scripts/smoke.sh`
 
 The smoke test will:
-- confirm the web UI responds on `/tasks`
+- confirm the web UI responds on `/items`
 - assume the generated demo seed data has been applied
 - create a primary resource through the API
 - fetch the created primary resource
@@ -22,4 +22,4 @@ If you want staged readiness checks, richer API verification, and a machine-read
 ## Canonical Verification
 
 - Sources: `ver_runtime_smoke`
-- Scenarios: tasks page responds, create task smoke, get created task smoke, list tasks smoke
+- Scenarios: items page responds, create item smoke, get created item smoke, list items smoke

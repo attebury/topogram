@@ -1,0 +1,11 @@
+capability cap_list_items {
+  name "List Items"
+  description "Allows a member to list items"
+
+  actors [actor_member]
+  reads [entity_item, entity_collection, entity_member]
+  input [shape_input_list_items]
+  output [shape_output_item_detail]
+
+  status active
+}

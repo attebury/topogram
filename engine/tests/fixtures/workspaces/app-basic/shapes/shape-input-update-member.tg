@@ -1,0 +1,13 @@
+shape shape_input_update_member {
+  name "Update Member Input"
+  description "Input for updating a member"
+
+  fields {
+    member_id uuid required
+    email string optional
+    display_name string optional
+    is_active boolean optional
+  }
+
+  status active
+}

@@ -1,0 +1,14 @@
+shape shape_input_list_items {
+  name "List Items Input"
+  description "Input for listing items"
+
+  fields {
+    collection_id uuid optional
+    owner_id uuid optional
+    status item_status optional
+    after text optional
+    limit integer optional default 25
+  }
+
+  status active
+}

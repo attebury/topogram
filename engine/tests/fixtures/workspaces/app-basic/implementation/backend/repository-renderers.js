@@ -9,7 +9,7 @@ function buildPrismaRepositoryBody({
   const markOutputType = "MarkExportJobCompletedResult";
   const lines = [];
   lines.push("");
-  lines.push("type StoredExportJob = GetTaskExportJobResult & {");
+  lines.push("type StoredExportJob = GetItemExportJobResult & {");
   lines.push("  archive: Uint8Array;");
   lines.push("};");
   lines.push("");
@@ -26,65 +26,65 @@ function buildPrismaRepositoryBody({
   lines.push("  return Boolean(error && typeof error === \"object\" && \"code\" in error && (error as { code?: string }).code === \"P2002\");");
   lines.push("}");
   lines.push("");
-  lines.push("function mapProjectRecord(project: {");
+  lines.push("function mapCollectionRecord(collection: {");
   lines.push("  id: string;");
   lines.push("  name: string;");
   lines.push("  description: string | null;");
   lines.push("  status: \"active\" | \"archived\";");
   lines.push("  owner_id: string | null;");
   lines.push("  created_at: Date | string;");
-  lines.push("}): GetProjectResult {");
+  lines.push("}): GetCollectionResult {");
   lines.push("  return {");
-  lines.push("    id: project.id,");
-  lines.push("    name: project.name,");
-  lines.push("    description: project.description ?? undefined,");
-  lines.push("    status: project.status,");
-  lines.push("    owner_id: project.owner_id ?? undefined,");
-  lines.push("    created_at: iso(project.created_at)!");
+  lines.push("    id: collection.id,");
+  lines.push("    name: collection.name,");
+  lines.push("    description: collection.description ?? undefined,");
+  lines.push("    status: collection.status,");
+  lines.push("    owner_id: collection.owner_id ?? undefined,");
+  lines.push("    created_at: iso(collection.created_at)!");
   lines.push("  };");
   lines.push("}");
   lines.push("");
-  lines.push("function mapUserRecord(user: {");
+  lines.push("function mapMemberRecord(member: {");
   lines.push("  id: string;");
   lines.push("  email: string;");
   lines.push("  display_name: string;");
   lines.push("  is_active: boolean;");
   lines.push("  created_at: Date | string;");
-  lines.push("}): GetUserResult {");
+  lines.push("}): GetMemberResult {");
   lines.push("  return {");
-  lines.push("    id: user.id,");
-  lines.push("    email: user.email,");
-  lines.push("    display_name: user.display_name,");
-  lines.push("    is_active: user.is_active,");
-  lines.push("    created_at: iso(user.created_at)!");
+  lines.push("    id: member.id,");
+  lines.push("    email: member.email,");
+  lines.push("    display_name: member.display_name,");
+  lines.push("    is_active: member.is_active,");
+  lines.push("    created_at: iso(member.created_at)!");
   lines.push("  };");
   lines.push("}");
   lines.push("");
-  lines.push("function mapTaskRecord(task: {");
+  lines.push("function mapItemRecord(item: {");
   lines.push("  id: string;");
   lines.push("  title: string;");
   lines.push("  description: string | null;");
   lines.push('  status: "draft" | "active" | "completed" | "archived";');
   lines.push('  priority: "low" | "medium" | "high";');
   lines.push("  owner_id: string | null;");
-  lines.push("  project_id: string;");
+  lines.push("  collection_id: string;");
   lines.push("  created_at: Date | string;");
   lines.push("  updated_at: Date | string;");
   lines.push("  completed_at: Date | string | null;");
   lines.push("  due_at: Date | string | null;");
-  lines.push("}): GetTaskResult {");
+  lines.push("}): GetItemResult {");
   lines.push("  return {");
-  lines.push("    id: task.id,");
-  lines.push("    title: task.title,");
-  lines.push("    description: task.description ?? undefined,");
-  lines.push("    status: task.status,");
-  lines.push("    priority: task.priority,");
-  lines.push("    owner_id: task.owner_id ?? undefined,");
-  lines.push("    project_id: task.project_id,");
-  lines.push("    created_at: iso(task.created_at)!,");
-  lines.push("    updated_at: iso(task.updated_at)!,");
-  lines.push("    completed_at: iso(task.completed_at),");
-  lines.push("    due_at: iso(task.due_at)");
+  lines.push("    id: item.id,");
+  lines.push("    title: item.title,");
+  lines.push("    description: item.description ?? undefined,");
+  lines.push("    status: item.status,");
+  lines.push("    priority: item.priority,");
+  lines.push("    owner_id: item.owner_id ?? undefined,");
+  lines.push("    collection_id: item.collection_id,");
+  lines.push("    created_at: iso(item.created_at)!,");
+  lines.push("    updated_at: iso(item.updated_at)!,");
+  lines.push("    completed_at: iso(item.completed_at),");
+  lines.push("    due_at: iso(item.due_at)");
   lines.push("  };");
   lines.push("}");
   lines.push("");
@@ -93,49 +93,49 @@ function buildPrismaRepositoryBody({
   lines.push("");
   lines.push("  constructor(private readonly prisma: PrismaClient) {}");
   lines.push("");
-  lines.push("  async listProjectOptions(): Promise<LookupOption[]> {");
-  lines.push("    const projects = await this.prisma.project.findMany({");
+  lines.push("  async listCollectionOptions(): Promise<LookupOption[]> {");
+  lines.push("    const collections = await this.prisma.collection.findMany({");
   lines.push('      where: { status: { not: "archived" } },');
   lines.push('      orderBy: [{ name: "asc" }]');
   lines.push("    });");
-  lines.push("    return projects.map((project) => ({ value: project.id, label: project.name }));");
+  lines.push("    return collections.map((collection) => ({ value: collection.id, label: collection.name }));");
   lines.push("  }");
   lines.push("");
-  lines.push("  async listUserOptions(): Promise<LookupOption[]> {");
-  lines.push("    const users = await this.prisma.user.findMany({");
+  lines.push("  async listMemberOptions(): Promise<LookupOption[]> {");
+  lines.push("    const members = await this.prisma.member.findMany({");
   lines.push("      where: { is_active: true },");
   lines.push('      orderBy: [{ display_name: "asc" }]');
   lines.push("    });");
-  lines.push("    return users.map((user) => ({ value: user.id, label: user.display_name }));");
+  lines.push("    return members.map((member) => ({ value: member.id, label: member.display_name }));");
   lines.push("  }");
   lines.push("");
-  lines.push("  async getProject(input: GetProjectInput): Promise<GetProjectResult> {");
-  lines.push("    const project = await this.prisma.project.findUnique({ where: { id: input.project_id } });");
-  lines.push('    if (!project) throw new HttpError(404, "cap_get_project_not_found", "Project not found");');
-  lines.push("    return mapProjectRecord(project);");
+  lines.push("  async getCollection(input: GetCollectionInput): Promise<GetCollectionResult> {");
+  lines.push("    const collection = await this.prisma.collection.findUnique({ where: { id: input.collection_id } });");
+  lines.push('    if (!collection) throw new HttpError(404, "cap_get_collection_not_found", "Collection not found");');
+  lines.push("    return mapCollectionRecord(collection);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async listProjects(input: ListProjectsInput): Promise<ListProjectsResult> {");
+  lines.push("  async listCollections(input: ListCollectionsInput): Promise<ListCollectionsResult> {");
   lines.push("    const take = Math.min(input.limit ?? 25, 100);");
-  lines.push("    const projects = await this.prisma.project.findMany({");
+  lines.push("    const collections = await this.prisma.collection.findMany({");
   lines.push("      where: { ...(input.after ? { created_at: { lt: new Date(input.after) } } : {}) },");
   lines.push('      orderBy: [{ created_at: "desc" }],');
   lines.push("      take: take + 1");
   lines.push("    });");
-  lines.push("    const page = projects.slice(0, take).map(mapProjectRecord);");
+  lines.push("    const page = collections.slice(0, take).map(mapCollectionRecord);");
   lines.push("    return {");
   lines.push("      items: page,");
-  lines.push("      next_cursor: nextCursor(projects.slice(0, take))");
+  lines.push("      next_cursor: nextCursor(collections.slice(0, take))");
   lines.push("    };");
   lines.push("  }");
   lines.push("");
-  lines.push("  async createProject(input: CreateProjectInput): Promise<CreateProjectResult> {");
+  lines.push("  async createCollection(input: CreateCollectionInput): Promise<CreateCollectionResult> {");
   lines.push("    const now = new Date();");
   lines.push("    if (input.owner_id) {");
-  lines.push("      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });");
-  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "cap_create_project_invalid_request", "Project owner must be active");');
+  lines.push("      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });");
+  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "cap_create_collection_invalid_request", "Collection owner must be active");');
   lines.push("    }");
-  lines.push("    const project = await this.prisma.project.create({");
+  lines.push("    const collection = await this.prisma.collection.create({");
   lines.push("      data: {");
   lines.push("        id: crypto.randomUUID(),");
   lines.push("        name: input.name,");
@@ -146,20 +146,20 @@ function buildPrismaRepositoryBody({
   lines.push("      }");
   lines.push("    }).catch((error) => {");
   lines.push("      if (isUniqueConstraintError(error)) {");
-  lines.push('        throw new HttpError(409, "cap_create_project_conflict", "Project name already exists");');
+  lines.push('        throw new HttpError(409, "cap_create_collection_conflict", "Collection name already exists");');
   lines.push("      }");
   lines.push("      throw error;");
   lines.push("    });");
-  lines.push("    return mapProjectRecord(project);");
+  lines.push("    return mapCollectionRecord(collection);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async updateProject(input: UpdateProjectInput): Promise<UpdateProjectResult> {");
+  lines.push("  async updateCollection(input: UpdateCollectionInput): Promise<UpdateCollectionResult> {");
   lines.push("    if (input.owner_id) {");
-  lines.push("      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });");
-  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "cap_update_project_invalid_request", "Project owner must be active");');
+  lines.push("      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });");
+  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "cap_update_collection_invalid_request", "Collection owner must be active");');
   lines.push("    }");
-  lines.push("    const project = await this.prisma.project.update({");
-  lines.push("      where: { id: input.project_id },");
+  lines.push("    const collection = await this.prisma.collection.update({");
+  lines.push("      where: { id: input.collection_id },");
   lines.push("      data: {");
   lines.push("        ...(input.name !== undefined ? { name: input.name } : {}),");
   lines.push("        ...(input.description !== undefined ? { description: input.description ?? null } : {}),");
@@ -168,36 +168,36 @@ function buildPrismaRepositoryBody({
   lines.push("      }");
   lines.push("    }).catch((error) => {");
   lines.push("      if (isUniqueConstraintError(error)) {");
-  lines.push('        throw new HttpError(409, "cap_update_project_conflict", "Project name already exists");');
+  lines.push('        throw new HttpError(409, "cap_update_collection_conflict", "Collection name already exists");');
   lines.push("      }");
-  lines.push('      throw new HttpError(404, "cap_get_project_not_found", error instanceof Error ? error.message : "Project not found");');
+  lines.push('      throw new HttpError(404, "cap_get_collection_not_found", error instanceof Error ? error.message : "Collection not found");');
   lines.push("    });");
-  lines.push("    return mapProjectRecord(project);");
+  lines.push("    return mapCollectionRecord(collection);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async getUser(input: GetUserInput): Promise<GetUserResult> {");
-  lines.push("    const user = await this.prisma.user.findUnique({ where: { id: input.user_id } });");
-  lines.push('    if (!user) throw new HttpError(404, "cap_get_user_not_found", "User not found");');
-  lines.push("    return mapUserRecord(user);");
+  lines.push("  async getMember(input: GetMemberInput): Promise<GetMemberResult> {");
+  lines.push("    const member = await this.prisma.member.findUnique({ where: { id: input.member_id } });");
+  lines.push('    if (!member) throw new HttpError(404, "cap_get_member_not_found", "Member not found");');
+  lines.push("    return mapMemberRecord(member);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async listUsers(input: ListUsersInput): Promise<ListUsersResult> {");
+  lines.push("  async listMembers(input: ListMembersInput): Promise<ListMembersResult> {");
   lines.push("    const take = Math.min(input.limit ?? 25, 100);");
-  lines.push("    const users = await this.prisma.user.findMany({");
+  lines.push("    const members = await this.prisma.member.findMany({");
   lines.push("      where: { ...(input.after ? { created_at: { lt: new Date(input.after) } } : {}) },");
   lines.push('      orderBy: [{ created_at: "desc" }],');
   lines.push("      take: take + 1");
   lines.push("    });");
-  lines.push("    const page = users.slice(0, take).map(mapUserRecord);");
+  lines.push("    const page = members.slice(0, take).map(mapMemberRecord);");
   lines.push("    return {");
   lines.push("      items: page,");
-  lines.push("      next_cursor: nextCursor(users.slice(0, take))");
+  lines.push("      next_cursor: nextCursor(members.slice(0, take))");
   lines.push("    };");
   lines.push("  }");
   lines.push("");
-  lines.push("  async createUser(input: CreateUserInput): Promise<CreateUserResult> {");
+  lines.push("  async createMember(input: CreateMemberInput): Promise<CreateMemberResult> {");
   lines.push("    const now = new Date();");
-  lines.push("    const user = await this.prisma.user.create({");
+  lines.push("    const member = await this.prisma.member.create({");
   lines.push("      data: {");
   lines.push("        id: crypto.randomUUID(),");
   lines.push("        email: input.email,");
@@ -207,16 +207,16 @@ function buildPrismaRepositoryBody({
   lines.push("      }");
   lines.push("    }).catch((error) => {");
   lines.push("      if (isUniqueConstraintError(error)) {");
-  lines.push('        throw new HttpError(409, "cap_create_user_conflict", "User email already exists");');
+  lines.push('        throw new HttpError(409, "cap_create_member_conflict", "Member email already exists");');
   lines.push("      }");
   lines.push("      throw error;");
   lines.push("    });");
-  lines.push("    return mapUserRecord(user);");
+  lines.push("    return mapMemberRecord(member);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async updateUser(input: UpdateUserInput): Promise<UpdateUserResult> {");
-  lines.push("    const user = await this.prisma.user.update({");
-  lines.push("      where: { id: input.user_id },");
+  lines.push("  async updateMember(input: UpdateMemberInput): Promise<UpdateMemberResult> {");
+  lines.push("    const member = await this.prisma.member.update({");
+  lines.push("      where: { id: input.member_id },");
   lines.push("      data: {");
   lines.push("        ...(input.email !== undefined ? { email: input.email } : {}),");
   lines.push("        ...(input.display_name !== undefined ? { display_name: input.display_name } : {}),");
@@ -224,24 +224,24 @@ function buildPrismaRepositoryBody({
   lines.push("      }");
   lines.push("    }).catch((error) => {");
   lines.push("      if (isUniqueConstraintError(error)) {");
-  lines.push('        throw new HttpError(409, "cap_update_user_conflict", "User email already exists");');
+  lines.push('        throw new HttpError(409, "cap_update_member_conflict", "Member email already exists");');
   lines.push("      }");
-  lines.push('      throw new HttpError(404, "cap_get_user_not_found", error instanceof Error ? error.message : "User not found");');
+  lines.push('      throw new HttpError(404, "cap_get_member_not_found", error instanceof Error ? error.message : "Member not found");');
   lines.push("    });");
-  lines.push("    return mapUserRecord(user);");
+  lines.push("    return mapMemberRecord(member);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async getTask(input: GetTaskInput): Promise<GetTaskResult> {");
-  lines.push("    const task = await this.prisma.task.findUnique({ where: { id: input.task_id } });");
-  lines.push('    if (!task) throw new HttpError(404, "cap_get_task_not_found", "Task not found");');
-  lines.push("    return mapTaskRecord(task);");
+  lines.push("  async getItem(input: GetItemInput): Promise<GetItemResult> {");
+  lines.push("    const item = await this.prisma.item.findUnique({ where: { id: input.item_id } });");
+  lines.push('    if (!item) throw new HttpError(404, "cap_get_item_not_found", "Item not found");');
+  lines.push("    return mapItemRecord(item);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async listTasks(input: ListTasksInput): Promise<ListTasksResult> {");
+  lines.push("  async listItems(input: ListItemsInput): Promise<ListItemsResult> {");
   lines.push("    const take = Math.min(input.limit ?? 25, 100);");
-  lines.push("    const tasks = await this.prisma.task.findMany({");
+  lines.push("    const items = await this.prisma.item.findMany({");
   lines.push("      where: {");
-  lines.push("        project_id: input.project_id ?? undefined,");
+  lines.push("        collection_id: input.collection_id ?? undefined,");
   lines.push("        owner_id: input.owner_id ?? undefined,");
   lines.push("        status: input.status ?? undefined,");
   lines.push("        ...(input.after ? { created_at: { lt: new Date(input.after) } } : {})");
@@ -249,23 +249,23 @@ function buildPrismaRepositoryBody({
   lines.push('      orderBy: [{ created_at: "desc" }],');
   lines.push("      take: take + 1");
   lines.push("    });");
-  lines.push("    const page = tasks.slice(0, take).map(mapTaskRecord);");
+  lines.push("    const page = items.slice(0, take).map(mapItemRecord);");
   lines.push("    return {");
   lines.push("      items: page,");
-  lines.push("      next_cursor: nextCursor(tasks.slice(0, take))");
+  lines.push("      next_cursor: nextCursor(items.slice(0, take))");
   lines.push("    };");
   lines.push("  }");
   lines.push("");
-  lines.push("  async createTask(input: CreateTaskInput): Promise<CreateTaskResult> {");
-  lines.push("    const project = await this.prisma.project.findUnique({ where: { id: input.project_id } });");
-  lines.push('    if (!project) throw new HttpError(400, "cap_create_task_invalid_request", "Project does not exist");');
-  lines.push('    if (project.status === "archived") throw new HttpError(409, "rule_no_task_creation_in_archived_project", "Cannot create tasks in archived projects");');
+  lines.push("  async createItem(input: CreateItemInput): Promise<CreateItemResult> {");
+  lines.push("    const collection = await this.prisma.collection.findUnique({ where: { id: input.collection_id } });");
+  lines.push('    if (!collection) throw new HttpError(400, "cap_create_item_invalid_request", "Collection does not exist");');
+  lines.push('    if (collection.status === "archived") throw new HttpError(409, "rule_no_item_creation_in_archived_collection", "Cannot create items in archived collections");');
   lines.push("    if (input.owner_id) {");
-  lines.push("      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });");
-  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_users_may_own_tasks", "Task owner must be active");');
+  lines.push("      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });");
+  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_members_may_own_items", "Item owner must be active");');
   lines.push("    }");
   lines.push("    const now = new Date();");
-  lines.push("    const task = await this.prisma.task.create({");
+  lines.push("    const item = await this.prisma.item.create({");
   lines.push("      data: {");
   lines.push("        id: crypto.randomUUID(),");
   lines.push("        title: input.title,");
@@ -273,23 +273,23 @@ function buildPrismaRepositoryBody({
   lines.push('        status: input.owner_id ? "active" : "draft",');
   lines.push('        priority: input.priority ?? "medium",');
   lines.push("        owner_id: input.owner_id ?? null,");
-  lines.push("        project_id: input.project_id,");
+  lines.push("        collection_id: input.collection_id,");
   lines.push("        created_at: now,");
   lines.push("        updated_at: now,");
   lines.push("        completed_at: null,");
   lines.push("        due_at: input.due_at ? new Date(input.due_at) : null");
   lines.push("      }");
   lines.push("    });");
-  lines.push("    return mapTaskRecord(task);");
+  lines.push("    return mapItemRecord(item);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async updateTask(input: UpdateTaskInput): Promise<UpdateTaskResult> {");
+  lines.push("  async updateItem(input: UpdateItemInput): Promise<UpdateItemResult> {");
   lines.push("    if (input.owner_id) {");
-  lines.push("      const owner = await this.prisma.user.findUnique({ where: { id: input.owner_id } });");
-  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_users_may_own_tasks", "Task owner must be active");');
+  lines.push("      const owner = await this.prisma.member.findUnique({ where: { id: input.owner_id } });");
+  lines.push('      if (!owner || !owner.is_active) throw new HttpError(400, "rule_only_active_members_may_own_items", "Item owner must be active");');
   lines.push("    }");
-  lines.push("    const task = await this.prisma.task.update({");
-  lines.push("      where: { id: input.task_id },");
+  lines.push("    const item = await this.prisma.item.update({");
+  lines.push("      where: { id: input.item_id },");
   lines.push("      data: {");
   lines.push("        ...(input.title !== undefined ? { title: input.title } : {}),");
   lines.push("        ...(input.description !== undefined ? { description: input.description ?? null } : {}),");
@@ -300,36 +300,36 @@ function buildPrismaRepositoryBody({
   lines.push("        updated_at: new Date()");
   lines.push("      }");
   lines.push("    }).catch((error) => {");
-  lines.push('      throw new HttpError(404, "task_not_found", error instanceof Error ? error.message : "Task not found");');
+  lines.push('      throw new HttpError(404, "item_not_found", error instanceof Error ? error.message : "Item not found");');
   lines.push("    });");
-  lines.push("    return mapTaskRecord(task);");
+  lines.push("    return mapItemRecord(item);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async completeTask(input: CompleteTaskInput): Promise<CompleteTaskResult> {");
+  lines.push("  async completeItem(input: CompleteItemInput): Promise<CompleteItemResult> {");
   lines.push("    const completedAt = input.completed_at ? new Date(input.completed_at) : new Date();");
-  lines.push("    const task = await this.prisma.task.update({");
-  lines.push("      where: { id: input.task_id },");
+  lines.push("    const item = await this.prisma.item.update({");
+  lines.push("      where: { id: input.item_id },");
   lines.push('      data: { status: "completed", completed_at: completedAt, updated_at: new Date() }');
   lines.push("    }).catch((error) => {");
-  lines.push('      throw new HttpError(404, "task_not_found", error instanceof Error ? error.message : "Task not found");');
+  lines.push('      throw new HttpError(404, "item_not_found", error instanceof Error ? error.message : "Item not found");');
   lines.push("    });");
-  lines.push("    return mapTaskRecord(task);");
+  lines.push("    return mapItemRecord(item);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async deleteTask(input: DeleteTaskInput): Promise<DeleteTaskResult> {");
-  lines.push("    const task = await this.prisma.task.update({");
-  lines.push("      where: { id: input.task_id },");
+  lines.push("  async deleteItem(input: DeleteItemInput): Promise<DeleteItemResult> {");
+  lines.push("    const item = await this.prisma.item.update({");
+  lines.push("      where: { id: input.item_id },");
   lines.push('      data: { status: "archived", updated_at: new Date() }');
   lines.push("    }).catch((error) => {");
-  lines.push('      throw new HttpError(404, "cap_delete_task_not_found", error instanceof Error ? error.message : "Task not found");');
+  lines.push('      throw new HttpError(404, "cap_delete_item_not_found", error instanceof Error ? error.message : "Item not found");');
   lines.push("    });");
-  lines.push("    return mapTaskRecord(task);");
+  lines.push("    return mapItemRecord(item);");
   lines.push("  }");
   lines.push("");
-  lines.push("  async exportTasks(input: ExportTasksInput): Promise<ExportTasksResult> {");
+  lines.push("  async exportItems(input: ExportItemsInput): Promise<ExportItemsResult> {");
   lines.push("    const jobId = crypto.randomUUID();");
   lines.push("    const submittedAt = new Date();");
-  lines.push("    const statusUrl = `/task-exports/${jobId}`;");
+  lines.push("    const statusUrl = `/item-exports/${jobId}`;");
   lines.push('    const archive = new TextEncoder().encode(JSON.stringify({ exported_at: submittedAt.toISOString(), filters: input }, null, 2));');
   lines.push("    this.exportJobs.set(jobId, {");
   lines.push("      job_id: jobId,");
@@ -338,7 +338,7 @@ function buildPrismaRepositoryBody({
   lines.push("      submitted_at: submittedAt.toISOString(),");
   lines.push("      archive");
   lines.push("    });");
-  lines.push("    queueMicrotask(() => {");
+  lines.push("    queueMicroitem(() => {");
   lines.push("      const existing = this.exportJobs.get(jobId);");
   lines.push("      if (!existing) return;");
   lines.push("      this.exportJobs.set(jobId, {");
@@ -351,9 +351,9 @@ function buildPrismaRepositoryBody({
   lines.push('    return { job_id: jobId, status: "accepted", status_url: statusUrl, submitted_at: submittedAt.toISOString() };');
   lines.push("  }");
   lines.push("");
-  lines.push("  async getTaskExportJob(input: GetTaskExportJobInput): Promise<GetTaskExportJobResult> {");
+  lines.push("  async getItemExportJob(input: GetItemExportJobInput): Promise<GetItemExportJobResult> {");
   lines.push("    const job = this.exportJobs.get(input.job_id);");
-  lines.push('    if (!job) throw new HttpError(404, "cap_get_task_export_job_not_found", "Export job not found");');
+  lines.push('    if (!job) throw new HttpError(404, "cap_get_item_export_job_not_found", "Export job not found");');
   lines.push("    return {");
   lines.push("      job_id: job.job_id,");
   lines.push("      status: job.status,");
@@ -366,16 +366,16 @@ function buildPrismaRepositoryBody({
   lines.push("    };");
   lines.push("  }");
   lines.push("");
-  lines.push("  async downloadTaskExport(input: DownloadTaskExportInput): Promise<DownloadTaskExportResult> {");
+  lines.push("  async downloadItemExport(input: DownloadItemExportInput): Promise<DownloadItemExportResult> {");
   lines.push("    const job = this.exportJobs.get(input.job_id);");
-  lines.push('    if (!job) throw new HttpError(404, "cap_download_task_export_not_found", "Export job not found");');
-  lines.push('    if (job.status !== "completed" || !job.download_url) throw new HttpError(409, "cap_download_task_export_not_ready", "Export job is not ready");');
+  lines.push('    if (!job) throw new HttpError(404, "cap_download_item_export_not_found", "Export job not found");');
+  lines.push('    if (job.status !== "completed" || !job.download_url) throw new HttpError(409, "cap_download_item_export_not_ready", "Export job is not ready");');
   lines.push(`    return { body: job.archive, contentType: "${exportContentType}", filename: "${exportFilename}" };`);
   lines.push("  }");
   lines.push("");
   lines.push(`  async markExportJobCompleted(input: ${markInputType}): Promise<${markOutputType}> {`);
   lines.push("    const job = this.exportJobs.get(input.job_id);");
-  lines.push('    if (!job) throw new HttpError(404, "cap_get_task_export_job_not_found", "Export job not found");');
+  lines.push('    if (!job) throw new HttpError(404, "cap_get_item_export_job_not_found", "Export job not found");');
   lines.push("    this.exportJobs.set(input.job_id, {");
   lines.push("      ...job,");
   lines.push('      status: input.state as "accepted" | "running" | "completed" | "failed" | "expired",');
@@ -401,25 +401,25 @@ function buildDrizzleRepositoryBody({
   lines.push("  constructor(private readonly db: NodePgDatabase<Record<string, never>>) {}");
   lines.push("");
   for (const method of [
-    "listProjectOptions(): Promise<LookupOption[]>",
-    "listUserOptions(): Promise<LookupOption[]>",
-    "getProject(input: GetProjectInput): Promise<GetProjectResult>",
-    "listProjects(input: ListProjectsInput): Promise<ListProjectsResult>",
-    "createProject(input: CreateProjectInput): Promise<CreateProjectResult>",
-    "updateProject(input: UpdateProjectInput): Promise<UpdateProjectResult>",
-    "getUser(input: GetUserInput): Promise<GetUserResult>",
-    "listUsers(input: ListUsersInput): Promise<ListUsersResult>",
-    "createUser(input: CreateUserInput): Promise<CreateUserResult>",
-    "updateUser(input: UpdateUserInput): Promise<UpdateUserResult>",
-    "getTask(input: GetTaskInput): Promise<GetTaskResult>",
-    "listTasks(input: ListTasksInput): Promise<ListTasksResult>",
-    "createTask(input: CreateTaskInput): Promise<CreateTaskResult>",
-    "updateTask(input: UpdateTaskInput): Promise<UpdateTaskResult>",
-    "completeTask(input: CompleteTaskInput): Promise<CompleteTaskResult>",
-    "deleteTask(input: DeleteTaskInput): Promise<DeleteTaskResult>",
-    "exportTasks(input: ExportTasksInput): Promise<ExportTasksResult>",
-    "getTaskExportJob(input: GetTaskExportJobInput): Promise<GetTaskExportJobResult>",
-    "downloadTaskExport(input: DownloadTaskExportInput): Promise<DownloadTaskExportResult>",
+    "listCollectionOptions(): Promise<LookupOption[]>",
+    "listMemberOptions(): Promise<LookupOption[]>",
+    "getCollection(input: GetCollectionInput): Promise<GetCollectionResult>",
+    "listCollections(input: ListCollectionsInput): Promise<ListCollectionsResult>",
+    "createCollection(input: CreateCollectionInput): Promise<CreateCollectionResult>",
+    "updateCollection(input: UpdateCollectionInput): Promise<UpdateCollectionResult>",
+    "getMember(input: GetMemberInput): Promise<GetMemberResult>",
+    "listMembers(input: ListMembersInput): Promise<ListMembersResult>",
+    "createMember(input: CreateMemberInput): Promise<CreateMemberResult>",
+    "updateMember(input: UpdateMemberInput): Promise<UpdateMemberResult>",
+    "getItem(input: GetItemInput): Promise<GetItemResult>",
+    "listItems(input: ListItemsInput): Promise<ListItemsResult>",
+    "createItem(input: CreateItemInput): Promise<CreateItemResult>",
+    "updateItem(input: UpdateItemInput): Promise<UpdateItemResult>",
+    "completeItem(input: CompleteItemInput): Promise<CompleteItemResult>",
+    "deleteItem(input: DeleteItemInput): Promise<DeleteItemResult>",
+    "exportItems(input: ExportItemsInput): Promise<ExportItemsResult>",
+    "getItemExportJob(input: GetItemExportJobInput): Promise<GetItemExportJobResult>",
+    "downloadItemExport(input: DownloadItemExportInput): Promise<DownloadItemExportResult>",
     `markExportJobCompleted(input: ${markInputType}): Promise<${markOutputType}>`
   ]) {
     const methodName = method.slice(0, method.indexOf("("));

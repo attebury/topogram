@@ -1,0 +1,31 @@
+verification ver_item_runtime_flow {
+  name "Item runtime flow"
+  description "Verifies core item CRUD and export runtime behavior."
+
+  validates [
+    cap_create_item,
+    cap_get_item,
+    cap_list_items,
+    cap_update_item,
+    cap_complete_item,
+    cap_delete_item,
+    cap_export_items,
+    cap_get_item_export_job,
+    cap_download_item_export
+  ]
+  method runtime
+
+  scenarios [
+    create_item_runtime,
+    get_created_item_runtime,
+    list_items_runtime,
+    update_item_runtime,
+    complete_item_runtime,
+    delete_item_runtime,
+    export_items_runtime,
+    get_item_export_job_runtime,
+    download_item_export_runtime
+  ]
+
+  status active
+}

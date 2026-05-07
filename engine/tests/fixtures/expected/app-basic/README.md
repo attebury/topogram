@@ -1,4 +1,4 @@
-# Topogram Work Tracker App Bundle
+# Topogram Sample Workspace App Bundle
 
 This is the polished generated app bundle for Topogram v0.1.
 
@@ -37,8 +37,8 @@ For the default generated bundle:
 1. Use the `local_process` environment profile
 2. Run `bash scripts/bootstrap.sh`
 3. Run `bash scripts/dev.sh`
-4. Open the web app at `http://localhost:5173/tasks`
-5. Confirm the seeded "Demo Project" and "Seeded Demo Task" flow through the stack
+4. Open the web app at `http://localhost:5173/items`
+5. Confirm the seeded "Demo Collection" and "Seeded Demo Item" flow through the stack
 6. Run `bash scripts/compile-check.sh`
 7. Run `bash scripts/runtime.sh`
 

@@ -1,0 +1,6 @@
+shape shape_output_collection_detail from entity_collection {
+  name "Collection Detail Output"
+  description "Detailed collection payload"
+  include [id, name, description, status, owner_id, created_at]
+  status active
+}

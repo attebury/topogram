@@ -1,0 +1,38 @@
+entity entity_item {
+  name "Item"
+  description "A unit of work tracked in the work tracking domain"
+
+  fields {
+    id uuid required
+    title string required
+    description text optional
+    status item_status required default draft
+    priority item_priority required default medium
+    owner_id uuid optional
+    collection_id uuid required
+    created_at datetime required
+    updated_at datetime required
+    completed_at datetime optional
+    due_at datetime optional
+  }
+
+  keys {
+    primary [id]
+    index [collection_id, status]
+    index [owner_id, status]
+  }
+
+  relations {
+    owner_id references entity_member.id
+    collection_id references entity_collection.id
+  }
+
+  invariants {
+    completed_at requires status == completed
+    status == active implies owner_id is required
+    status == draft implies completed_at is null
+    title length <= 200
+  }
+
+  status active
+}

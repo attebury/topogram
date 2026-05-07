@@ -1,15 +1,15 @@
 export const APP_BASIC_WEB_SCREEN_REFERENCE = {
-  projectListScreenId: "project_list",
-  projectDetailScreenId: "project_detail",
-  projectCreateScreenId: "project_create",
-  projectEditScreenId: "project_edit",
-  userListScreenId: "user_list",
-  userDetailScreenId: "user_detail",
-  userCreateScreenId: "user_create",
-  userEditScreenId: "user_edit",
-  listScreenId: "task_list",
-  detailScreenId: "task_detail",
-  createScreenId: "task_create",
-  editScreenId: "task_edit",
-  exportsScreenId: "task_exports"
+  collectionListScreenId: "collection_list",
+  collectionDetailScreenId: "collection_detail",
+  collectionCreateScreenId: "collection_create",
+  collectionEditScreenId: "collection_edit",
+  memberListScreenId: "member_list",
+  memberDetailScreenId: "member_detail",
+  memberCreateScreenId: "member_create",
+  memberEditScreenId: "member_edit",
+  listScreenId: "item_list",
+  detailScreenId: "item_detail",
+  createScreenId: "item_create",
+  editScreenId: "item_edit",
+  exportsScreenId: "item_exports"
 };

@@ -50,7 +50,7 @@ function removeDataGridComponentUsage(workspaceRoot) {
   fs.writeFileSync(
     projectionPath,
     source.replace(
-      /\n  ui_components \{\n    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n  \}\n/,
+      /\n  ui_components \{\n    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n  \}\n/,
       "\n"
     )
   );
@@ -203,7 +203,7 @@ test("ui-component-contract generator emits selected and workspace contracts", (
   });
   assert.equal(selected.ok, true);
   assert.equal(selected.artifact.id, "component_ui_data_grid");
-  assert.equal(selected.artifact.events[0].shape.id, "shape_output_task_card");
+  assert.equal(selected.artifact.events[0].shape.id, "shape_output_item_card");
 
   const all = generateWorkspace(ast, { target: "ui-component-contract" });
   assert.equal(all.ok, true);
@@ -222,7 +222,7 @@ test("projection ui_components resolve component placement and bindings", () => 
   assert.deepEqual(projection.uiComponents, [
     {
       type: "ui_component_binding",
-      screenId: "task_list",
+      screenId: "item_list",
       region: "results",
       component: {
         id: "component_ui_data_grid",
@@ -232,7 +232,7 @@ test("projection ui_components resolve component placement and bindings", () => 
         {
           prop: "rows",
           source: {
-            id: "cap_list_tasks",
+            id: "cap_list_items",
             kind: "capability"
           }
         }
@@ -242,14 +242,14 @@ test("projection ui_components resolve component placement and bindings", () => 
           event: "row_select",
           action: "navigate",
           target: {
-            id: "task_detail",
+            id: "item_detail",
             kind: "screen"
           }
         }
       ],
       raw: [
         "screen",
-        "task_list",
+        "item_list",
         "region",
         "results",
         "component",
@@ -257,11 +257,11 @@ test("projection ui_components resolve component placement and bindings", () => 
         "data",
         "rows",
         "from",
-        "cap_list_tasks",
+        "cap_list_items",
         "event",
         "row_select",
         "navigate",
-        "task_detail"
+        "item_detail"
       ],
       loc: projection.uiComponents[0].loc
     }
@@ -288,7 +288,7 @@ test("projection ui_components resolve component placement and bindings", () => 
   });
   assert.equal(webContract.ok, true);
   assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
-  const taskList = webContract.artifact.screens.find((screen) => screen.id === "task_list");
+  const taskList = webContract.artifact.screens.find((screen) => screen.id === "item_list");
   assert.deepEqual(taskList.components, [
       {
         type: "ui_component_usage",
@@ -305,7 +305,7 @@ test("projection ui_components resolve component placement and bindings", () => 
         {
           prop: "rows",
           source: {
-            id: "cap_list_tasks",
+            id: "cap_list_items",
             kind: "capability"
           }
         }
@@ -315,7 +315,7 @@ test("projection ui_components resolve component placement and bindings", () => 
           event: "row_select",
           action: "navigate",
           target: {
-            id: "task_detail",
+            id: "item_detail",
             kind: "screen"
           }
         }
@@ -345,7 +345,7 @@ test("projection ui_components resolve component placement and bindings", () => 
                   event: "row_select",
                   action: "navigate",
                   target: {
-                    id: "task_detail",
+                    id: "item_detail",
                     kind: "screen"
                   }
                 }
@@ -355,7 +355,7 @@ test("projection ui_components resolve component placement and bindings", () => 
                   type: "navigation",
                   event: "row_select",
                   target: {
-                    id: "task_detail",
+                    id: "item_detail",
                     kind: "screen"
                   }
                 }
@@ -367,7 +367,7 @@ test("projection ui_components resolve component placement and bindings", () => 
             {
               prop: "rows",
               source: {
-                id: "cap_list_tasks",
+                id: "cap_list_items",
                 kind: "capability"
               }
             }
@@ -377,7 +377,7 @@ test("projection ui_components resolve component placement and bindings", () => 
               type: "navigation",
               event: "row_select",
               target: {
-                id: "task_detail",
+                id: "item_detail",
                 kind: "screen"
               }
             }
@@ -398,7 +398,7 @@ test("projection ui_components resolve component placement and bindings", () => 
             {
               prop: "rows",
               source: {
-                id: "cap_list_tasks",
+                id: "cap_list_items",
                 kind: "capability"
               }
             }
@@ -1710,8 +1710,8 @@ test("context-slice with --component focuses on the component contract closure",
     `expected proj_ui_shared in depends_on.projections, got ${JSON.stringify(result.artifact.depends_on.projections)}`
   );
   assert.ok(
-    result.artifact.depends_on.shapes.includes("shape_output_task_card"),
-    `expected shape_output_task_card in depends_on.shapes, got ${JSON.stringify(result.artifact.depends_on.shapes)}`
+    result.artifact.depends_on.shapes.includes("shape_output_item_card"),
+    `expected shape_output_item_card in depends_on.shapes, got ${JSON.stringify(result.artifact.depends_on.shapes)}`
   );
   assert.equal(result.artifact.review_boundary.automation_class, "review_required");
   assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
@@ -1721,11 +1721,11 @@ test("context-slice with --component focuses on the component contract closure",
   assert.deepEqual(result.artifact.ui_agent_packet.component.patterns, ["resource_table", "data_grid_view"]);
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_shared"]);
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages[0].usage, {
-    screenId: "task_list",
+    screenId: "item_list",
     region: "results",
     componentId: "component_ui_data_grid",
-    dataBindings: [{ prop: "rows", source: "cap_list_tasks" }],
-    eventBindings: [{ event: "row_select", action: "navigate", target: "task_detail" }]
+    dataBindings: [{ prop: "rows", source: "cap_list_items" }],
+    eventBindings: [{ event: "row_select", action: "navigate", target: "item_detail" }]
   });
   assert.ok(result.artifact.ui_agent_packet.inheritedBy.includes("proj_ui_web"));
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command === "topogram check"));

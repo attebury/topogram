@@ -1,0 +1,9 @@
+decision dec_item_ownership {
+  name "Active item ownership is singular"
+  description "Active items use one accountable owner"
+
+  context [accountability, simplified_workflows, cleaner_ui]
+  consequences [easier_reporting, less_flexible_collaboration]
+
+  status accepted
+}

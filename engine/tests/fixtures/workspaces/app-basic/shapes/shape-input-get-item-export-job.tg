@@ -1,0 +1,10 @@
+shape shape_input_get_item_export_job {
+  name "Get Item Export Job Input"
+  description "Input for fetching item export job status"
+
+  fields {
+    job_id uuid required
+  }
+
+  status active
+}

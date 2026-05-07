@@ -1,85 +1,85 @@
 projection proj_ui_web_react {
-  name "Work Tracker Web UI (React)"
-  description "Web realization for the shared work-tracker UI using a React profile"
+  name "Sample Workspace Web UI (React)"
+  description "Web realization for the shared sample-workspace UI using a React profile"
 
   platform ui_web
   realizes [
-    cap_list_projects,
-    cap_get_project,
-    cap_create_project,
-    cap_update_project,
-    cap_list_users,
-    cap_get_user,
-    cap_create_user,
-    cap_update_user,
+    cap_list_collections,
+    cap_get_collection,
+    cap_create_collection,
+    cap_update_collection,
+    cap_list_members,
+    cap_get_member,
+    cap_create_member,
+    cap_update_member,
     proj_ui_shared,
-    cap_list_tasks,
-    cap_get_task,
-    cap_create_task,
-    cap_update_task,
-    cap_complete_task,
-    cap_delete_task,
-    cap_export_tasks,
-    cap_get_task_export_job,
-    cap_download_task_export
+    cap_list_items,
+    cap_get_item,
+    cap_create_item,
+    cap_update_item,
+    cap_complete_item,
+    cap_delete_item,
+    cap_export_items,
+    cap_get_item_export_job,
+    cap_download_item_export
   ]
   outputs [ui_contract, web_app]
 
   ui_routes {
-    screen project_list path /projects
-    screen project_detail path /projects/:id
-    screen project_create path /projects/new
-    screen project_edit path /projects/:id/edit
-    screen user_list path /users
-    screen user_detail path /users/:id
-    screen user_create path /users/new
-    screen user_edit path /users/:id/edit
-    screen task_list path /tasks
-    screen task_board path /tasks/board
-    screen task_calendar path /tasks/calendar
-    screen task_detail path /tasks/:id
-    screen task_create path /tasks/new
-    screen task_edit path /tasks/:id/edit
-    screen task_exports path /task-exports/:job_id
+    screen collection_list path /collections
+    screen collection_detail path /collections/:id
+    screen collection_create path /collections/new
+    screen collection_edit path /collections/:id/edit
+    screen member_list path /members
+    screen member_detail path /members/:id
+    screen member_create path /members/new
+    screen member_edit path /members/:id/edit
+    screen item_list path /items
+    screen item_board path /items/board
+    screen item_calendar path /items/calendar
+    screen item_detail path /items/:id
+    screen item_create path /items/new
+    screen item_edit path /items/:id/edit
+    screen item_exports path /item-exports/:job_id
   }
 
   ui_web {
-    screen task_list shell bottom_tabs
-    screen project_list layout responsive_collection
-    screen project_list desktop_variant table
-    screen project_list mobile_variant cards
-    screen project_list collection table
-    screen project_detail layout detail_page
-    screen project_create present page
-    screen project_edit present page
-    screen user_list layout responsive_collection
-    screen user_list desktop_variant table
-    screen user_list mobile_variant cards
-    screen user_list collection table
-    screen user_detail layout detail_page
-    screen user_create present page
-    screen user_edit present page
-    screen task_list layout responsive_collection
-    screen task_list desktop_variant table
-    screen task_list mobile_variant cards
-    screen task_list collection table
-    screen task_board layout responsive_collection
-    screen task_board desktop_variant board
-    screen task_board mobile_variant cards
-    screen task_board collection board
-    screen task_calendar layout responsive_collection
-    screen task_calendar desktop_variant calendar
-    screen task_calendar mobile_variant list
-    screen task_calendar collection calendar
-    screen task_detail breadcrumbs visible
-    screen task_detail layout detail_page
-    screen task_create present bottom_sheet
-    screen task_edit present page
-    screen task_exports present page
-    action cap_create_task present fab
-    action cap_delete_task confirm modal
-    action cap_delete_task present button
-    action cap_delete_task placement footer
+    screen item_list shell bottom_tabs
+    screen collection_list layout responsive_collection
+    screen collection_list desktop_variant table
+    screen collection_list mobile_variant cards
+    screen collection_list collection table
+    screen collection_detail layout detail_page
+    screen collection_create present page
+    screen collection_edit present page
+    screen member_list layout responsive_collection
+    screen member_list desktop_variant table
+    screen member_list mobile_variant cards
+    screen member_list collection table
+    screen member_detail layout detail_page
+    screen member_create present page
+    screen member_edit present page
+    screen item_list layout responsive_collection
+    screen item_list desktop_variant table
+    screen item_list mobile_variant cards
+    screen item_list collection table
+    screen item_board layout responsive_collection
+    screen item_board desktop_variant board
+    screen item_board mobile_variant cards
+    screen item_board collection board
+    screen item_calendar layout responsive_collection
+    screen item_calendar desktop_variant calendar
+    screen item_calendar mobile_variant list
+    screen item_calendar collection calendar
+    screen item_detail breadcrumbs visible
+    screen item_detail layout detail_page
+    screen item_create present bottom_sheet
+    screen item_edit present page
+    screen item_exports present page
+    action cap_create_item present fab
+    action cap_delete_item confirm modal
+    action cap_delete_item present button
+    action cap_delete_item placement footer
   }
 
   generator_defaults {

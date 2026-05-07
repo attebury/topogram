@@ -109,7 +109,7 @@ Use a package-backed template:
 topogram new ./todo-demo --template @topogram/template-todo
 ```
 
-Use a private catalog alias:
+Use a catalog alias:
 
 ```bash
 topogram template list

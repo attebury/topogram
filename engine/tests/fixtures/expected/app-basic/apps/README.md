@@ -1,4 +1,4 @@
-# Work Tracker Local Runtime Stack
+# Sample Workspace Local Runtime Stack
 
 This bundle packages the generated runtime into one local environment:
 

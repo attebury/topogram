@@ -686,11 +686,11 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-app-basic-"));
   const generate = runCli(["generate", fixtureRoot, "--out", outputRoot]);
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
-  const generatedTaskListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "+page.svelte"));
-  assert.match(generatedTaskListPage, /data-topogram-component="component_ui_data_grid"/);
-  assert.match(generatedTaskListPage, /class="component-card component-table"/);
-  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte")), true);
-  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "calendar", "+page.svelte")), true);
+  const generatedItemListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "+page.svelte"));
+  assert.match(generatedItemListPage, /data-topogram-component="component_ui_data_grid"/);
+  assert.match(generatedItemListPage, /class="component-card component-table"/);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte")), true);
+  assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "calendar", "+page.svelte")), true);
   const generatedSvelteCss = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "app.css"));
   assert.match(generatedSvelteCss, /--topogram-design-density: compact;/);
   assert.match(generatedSvelteCss, /--topogram-design-tone: operational;/);
@@ -704,7 +704,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(coverage.design_intent.status, "mapped");
   assert.equal(coverage.design_intent.tokens.density, "compact");
   assert.equal(coverage.design_intent.tokens.color_roles.primary, "accent");
-  assert.deepEqual(coverage.screens.filter((screen) => screen.renderer === "generator").map((screen) => screen.id), ["task_board", "task_calendar"]);
+  assert.deepEqual(coverage.screens.filter((screen) => screen.renderer === "generator").map((screen) => screen.id), ["item_board", "item_calendar"]);
   assert.equal(coverage.summary.implementation_screens, 13);
   assert.equal(coverage.summary.generator_screens, 2);
   assert.equal(coverage.summary.rendered_component_usages, 1);
@@ -763,9 +763,9 @@ test("sveltekit generator routes render projection ui_components for provider-un
   fs.writeFileSync(
     projectionPath,
     source.replace(
-      "    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n",
-      "    screen task_list region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n" +
-        "    screen task_board region results component component_ui_data_grid data rows from cap_list_tasks event row_select navigate task_detail\n"
+      "    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n",
+      "    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n" +
+        "    screen item_board region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n"
     ),
     "utf8"
   );
@@ -776,12 +776,12 @@ test("sveltekit generator routes render projection ui_components for provider-un
   const generate = runCli(["generate", workspaceRoot, "--out", outputRoot]);
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
 
-  const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte"));
+  const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte"));
   assert.match(boardPage, /data-topogram-component="component_ui_data_grid"/);
   assert.match(boardPage, /class="component-card component-board"/);
   assert.doesNotMatch(boardPage, /Sample rows/);
   const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
-  const boardCoverage = coverage.screens.find((screen) => screen.id === "task_board");
+  const boardCoverage = coverage.screens.find((screen) => screen.id === "item_board");
   assert.equal(boardCoverage.renderer, "generator");
   assert.equal(boardCoverage.component_usages[0].component, "component_ui_data_grid");
   assert.equal(boardCoverage.component_usages[0].rendered, true);
@@ -917,7 +917,7 @@ test("topogram component behavior reports behavior groups without writing app ou
   assert.match(human.stdout, /Behaviors: 2 total, 2 realized, 0 partial, 0 declared/);
   assert.match(human.stdout, /Affected projections: proj_ui_shared, proj_ui_web/);
   assert.match(human.stdout, /Affected components: component_ui_data_grid/);
-  assert.match(human.stdout, /Affected capabilities: cap_list_tasks/);
+  assert.match(human.stdout, /Affected capabilities: cap_list_items/);
   assert.match(human.stdout, /Groups: 1 component\(s\), 1 screen\(s\), 1 capability group\(s\), 2 effect group\(s\)/);
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior must not write the app shortcut output");
 
@@ -934,9 +934,9 @@ test("topogram component behavior reports behavior groups without writing app ou
   assert.equal(report.type, "component_behavior_report");
   assert.equal(report.filters.projection, "proj_ui_web");
   assert.equal(report.summary.total_behaviors, 2);
-  assert.deepEqual(report.summary.affected_capabilities, ["cap_list_tasks"]);
+  assert.deepEqual(report.summary.affected_capabilities, ["cap_list_items"]);
   assert.deepEqual(report.groups.components.map((group) => group.id), ["component_ui_data_grid"]);
-  assert.deepEqual(report.groups.screens.map((group) => group.id), ["task_list"]);
+  assert.deepEqual(report.groups.screens.map((group) => group.id), ["item_list"]);
   assert.deepEqual(report.groups.effects.map((group) => group.id), ["navigation", "none"]);
 
   const query = runCli([

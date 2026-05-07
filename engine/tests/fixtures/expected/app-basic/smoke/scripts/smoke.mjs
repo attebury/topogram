@@ -9,7 +9,7 @@ process.on("unhandledRejection", reportFatal);
 const apiBase = process.env.TOPOGRAM_API_BASE_URL || "";
 const webBase = process.env.TOPOGRAM_WEB_BASE_URL || "";
 const demoContainerId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "22222222-2222-4222-8222-222222222222";
-const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "11111111-1111-4111-8111-111111111111";
+const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "undefined";
 const authToken = process.env.TOPOGRAM_AUTH_TOKEN || "";
 
 if (!apiBase || !webBase) {
@@ -45,14 +45,14 @@ async function expectStatus(response, expected, label) {
   }
 }
 
-const webResponse = await fetchWithStackHint(new URL("/tasks", webBase), undefined, "web app");
+const webResponse = await fetchWithStackHint(new URL("/items", webBase), undefined, "web app");
 await expectStatus(webResponse, 200, "web page");
 const webText = await webResponse.text();
-if (!webText.includes("Tasks")) {
+if (!webText.includes("Items")) {
   throw new Error("web page did not include expected page text");
 }
 
-const createResponse = await fetchWithStackHint(new URL("/tasks", apiBase), {
+const createResponse = await fetchWithStackHint(new URL("/items", apiBase), {
   method: "POST",
   headers: {
     "content-type": "application/json",
@@ -60,8 +60,8 @@ const createResponse = await fetchWithStackHint(new URL("/tasks", apiBase), {
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
   },
   body: JSON.stringify({
-    title: "Smoke Test Task",
-    project_id: demoContainerId
+    title: "Smoke Test Item",
+    collection_id: demoContainerId
   })
 }, "api service");
 await expectStatus(createResponse, 201, "create resource");
@@ -70,12 +70,12 @@ if (!created.id) {
   throw new Error("create resource response did not include id");
 }
 
-const getResponse = await fetchWithStackHint(new URL(`/tasks/${created.id}`, apiBase), {
+const getResponse = await fetchWithStackHint(new URL(`/items/${created.id}`, apiBase), {
   headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
 }, "api service");
 await expectStatus(getResponse, 200, "get resource");
 
-const listResponse = await fetchWithStackHint(new URL("/tasks", apiBase), {
+const listResponse = await fetchWithStackHint(new URL("/items", apiBase), {
   headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
 }, "api service");
 await expectStatus(listResponse, 200, "list resources");

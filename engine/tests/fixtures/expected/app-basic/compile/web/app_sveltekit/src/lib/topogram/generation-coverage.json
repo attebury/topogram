@@ -1,0 +1,247 @@
+{
+  "type": "generation_coverage",
+  "surface": "web",
+  "generator": "topogram/sveltekit",
+  "projection": {
+    "id": "proj_ui_web",
+    "name": "Sample Workspace Web UI",
+    "platform": "ui_web"
+  },
+  "summary": {
+    "routed_screens": 15,
+    "rendered_screens": 15,
+    "implementation_screens": 13,
+    "generator_screens": 2,
+    "component_usages": 1,
+    "rendered_component_usages": 1,
+    "diagnostics": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "design_intent": {
+    "status": "mapped",
+    "css_path": "src/app.css",
+    "tokens": {
+      "density": "compact",
+      "tone": "operational",
+      "radius_scale": "medium",
+      "color_roles": {
+        "primary": "accent",
+        "danger": "critical"
+      },
+      "typography_roles": {
+        "body": "readable",
+        "heading": "prominent"
+      },
+      "action_roles": {
+        "primary": "prominent",
+        "destructive": "danger"
+      },
+      "accessibility": {
+        "contrast": "aa",
+        "focus": "visible"
+      }
+    },
+    "mapped": [
+      {
+        "category": "density",
+        "role": null,
+        "value": "compact",
+        "marker": "--topogram-design-density"
+      },
+      {
+        "category": "tone",
+        "role": null,
+        "value": "operational",
+        "marker": "--topogram-design-tone"
+      },
+      {
+        "category": "radius_scale",
+        "role": null,
+        "value": "medium",
+        "marker": "--topogram-design-radius-scale"
+      },
+      {
+        "category": "color_roles",
+        "role": "primary",
+        "value": "accent",
+        "marker": "--topogram-design-color-primary"
+      },
+      {
+        "category": "color_roles",
+        "role": "danger",
+        "value": "critical",
+        "marker": "--topogram-design-color-danger"
+      },
+      {
+        "category": "typography_roles",
+        "role": "body",
+        "value": "readable",
+        "marker": "--topogram-design-typography-body"
+      },
+      {
+        "category": "typography_roles",
+        "role": "heading",
+        "value": "prominent",
+        "marker": "--topogram-design-typography-heading"
+      },
+      {
+        "category": "action_roles",
+        "role": "primary",
+        "value": "prominent",
+        "marker": "--topogram-design-action-primary"
+      },
+      {
+        "category": "action_roles",
+        "role": "destructive",
+        "value": "danger",
+        "marker": "--topogram-design-action-destructive"
+      },
+      {
+        "category": "accessibility",
+        "role": "contrast",
+        "value": "aa",
+        "marker": "--topogram-design-accessibility-contrast"
+      },
+      {
+        "category": "accessibility",
+        "role": "focus",
+        "value": "visible",
+        "marker": "--topogram-design-accessibility-focus"
+      }
+    ],
+    "missing": []
+  },
+  "screens": [
+    {
+      "id": "collection_list",
+      "route": "/collections",
+      "page": "src/routes/collections/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "collection_detail",
+      "route": "/collections/:id",
+      "page": "src/routes/collections/[id]/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "collection_create",
+      "route": "/collections/new",
+      "page": "src/routes/collections/new/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "collection_edit",
+      "route": "/collections/:id/edit",
+      "page": "src/routes/collections/[id]/edit/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "member_list",
+      "route": "/members",
+      "page": "src/routes/members/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "member_detail",
+      "route": "/members/:id",
+      "page": "src/routes/members/[id]/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "member_create",
+      "route": "/members/new",
+      "page": "src/routes/members/new/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "member_edit",
+      "route": "/members/:id/edit",
+      "page": "src/routes/members/[id]/edit/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "item_list",
+      "route": "/items",
+      "page": "src/routes/items/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": [
+        {
+          "component": "component_ui_data_grid",
+          "region": "results",
+          "pattern": "resource_table",
+          "supported": true,
+          "rendered": true,
+          "marker": "data-topogram-component=\"component_ui_data_grid\""
+        }
+      ]
+    },
+    {
+      "id": "item_board",
+      "route": "/items/board",
+      "page": "src/routes/items/board/+page.svelte",
+      "rendered": true,
+      "renderer": "generator",
+      "component_usages": []
+    },
+    {
+      "id": "item_calendar",
+      "route": "/items/calendar",
+      "page": "src/routes/items/calendar/+page.svelte",
+      "rendered": true,
+      "renderer": "generator",
+      "component_usages": []
+    },
+    {
+      "id": "item_detail",
+      "route": "/items/:id",
+      "page": "src/routes/items/[id]/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "item_create",
+      "route": "/items/new",
+      "page": "src/routes/items/new/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "item_edit",
+      "route": "/items/:id/edit",
+      "page": "src/routes/items/[id]/edit/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    },
+    {
+      "id": "item_exports",
+      "route": "/item-exports/:job_id",
+      "page": "src/routes/item-exports/[job_id]/+page.svelte",
+      "rendered": true,
+      "renderer": "implementation",
+      "component_usages": []
+    }
+  ],
+  "diagnostics": []
+}

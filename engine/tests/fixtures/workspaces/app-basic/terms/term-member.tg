@@ -1,0 +1,5 @@
+actor member {
+  name "Member"
+  description "A person interacting with the sample-workspace application"
+  status active
+}

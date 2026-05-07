@@ -1,0 +1,10 @@
+shape shape_input_get_member {
+  name "Get Member Input"
+  description "Input for fetching a single member"
+
+  fields {
+    member_id uuid required
+  }
+
+  status active
+}

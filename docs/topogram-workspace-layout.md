@@ -68,7 +68,7 @@ apps/db/<db-id>/
 apps/native/<native-id>/
 ```
 
-The private `topogram-demo-todo` repo mirrors this layout and owns generated demo verification as a package consumer.
+The `topogram-demo-todo` repo mirrors this layout and owns generated demo verification as a package consumer.
 
 ## Domain organization
 

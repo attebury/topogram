@@ -1,0 +1,28 @@
+ entity entity_collection {
+  name "Collection"
+  description "A grouping container for items"
+
+  fields {
+    id uuid required
+    name string required
+    description text optional
+    status collection_status required default active
+    owner_id uuid optional
+    created_at datetime required
+  }
+
+  keys {
+    primary [id]
+    unique [name]
+  }
+
+  relations {
+    owner_id references entity_member.id
+  }
+
+  invariants {
+    name length <= 120
+  }
+
+  status active
+}

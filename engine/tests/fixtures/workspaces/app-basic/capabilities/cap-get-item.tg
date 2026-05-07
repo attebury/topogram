@@ -1,0 +1,11 @@
+capability cap_get_item {
+  name "Get Item"
+  description "Allows a member to fetch a single item by id"
+
+  actors [actor_member]
+  reads [entity_item]
+  input [shape_input_get_item]
+  output [shape_output_item_detail]
+
+  status active
+}

@@ -1,0 +1,15 @@
+verification ver_create_item_policy {
+  name "Create item policy"
+  description "Verifies create-item behavior and policy"
+
+  validates [cap_create_item, rule_no_item_creation_in_archived_collection, rule_only_active_members_may_own_items]
+  method runtime
+
+  scenarios [
+    create_item_in_active_collection,
+    reject_item_in_archived_collection,
+    reject_assignment_to_inactive_member
+  ]
+
+  status active
+}

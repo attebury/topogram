@@ -1,0 +1,10 @@
+shape shape_input_get_collection {
+  name "Get Collection Input"
+  description "Input for fetching a single collection"
+
+  fields {
+    collection_id uuid required
+  }
+
+  status active
+}

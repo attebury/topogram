@@ -1,0 +1,10 @@
+rule rule_no_item_creation_in_archived_collection {
+  name "Cannot create items in archived collections"
+  description "New items may not be created in archived collections"
+
+  applies_to [cap_create_item]
+  requirement "collection.status != archived"
+  severity error
+
+  status active
+}

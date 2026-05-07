@@ -1,0 +1,6 @@
+shape shape_input_create_member from entity_member {
+  name "Create Member Input"
+  description "Fields accepted when creating a member"
+  include [email, display_name, is_active]
+  status active
+}

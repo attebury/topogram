@@ -1,0 +1,11 @@
+capability cap_get_item_export_job {
+  name "Get Item Export Job"
+  description "Fetches the current status of a item export job"
+
+  actors [actor_member]
+  reads [entity_item]
+  input [shape_input_get_item_export_job]
+  output [shape_output_item_export_status]
+
+  status active
+}

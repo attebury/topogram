@@ -40,7 +40,7 @@ test("runtime smoke and compile plans keep required check contracts stable", () 
   assert.equal(smokePlan.env.webBase, "TOPOGRAM_WEB_BASE_URL");
   assert.deepEqual(
     smokePlan.checks.map((check) => check.id),
-    ["web_tasks_page", "create_task", "get_task", "list_tasks"]
+    ["web_items_page", "create_item", "get_item", "list_items"]
   );
 
   assert.deepEqual(
@@ -69,7 +69,7 @@ test("runtime web_contract checks visible text rather than raw HTML source", () 
 
   const [functionSource] = script.match(/function visibleTextFromHtml\(html\) \{[\s\S]*?\n\}/);
   const visibleTextFromHtml = Function(`${functionSource}; return visibleTextFromHtml;`)();
-  const html = '<main>Back to Tasks</main><script>const label = "Edit Task";</script>';
-  assert.equal(html.includes("Edit Task"), true);
-  assert.equal(visibleTextFromHtml(html), "Back to Tasks");
+  const html = '<main>Back to Items</main><script>const label = "Edit Item";</script>';
+  assert.equal(html.includes("Edit Item"), true);
+  assert.equal(visibleTextFromHtml(html), "Back to Items");
 });

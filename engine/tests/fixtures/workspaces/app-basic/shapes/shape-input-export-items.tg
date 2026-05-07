@@ -1,0 +1,13 @@
+shape shape_input_export_items {
+  name "Export Items Input"
+  description "Filters accepted when requesting a item export"
+
+  fields {
+    collection_id uuid optional
+    owner_id uuid optional
+    status item_status optional
+    callback_url text optional
+  }
+
+  status active
+}
