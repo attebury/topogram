@@ -1135,6 +1135,127 @@ projection proj_ui_web {
   assert.match(validation.errors.map((error) => error.message).join("\n"), /ui_components belongs on shared UI projections/);
 });
 
+test("concrete UI projections reject shared semantic UI ownership blocks", () => {
+  const ast = workspaceFromSource(`
+entity entity_item {
+  name "Item"
+  description "Item entity"
+  fields {
+    id uuid required
+    title string required
+  }
+  status active
+}
+
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+projection proj_ui_web {
+  name "Web"
+  description "Concrete web projection"
+  platform ui_web
+  realizes [cap_list_items]
+  outputs [ui_contract, web_app]
+
+  ui_app_shell {
+    brand "Items"
+    shell top_nav
+  }
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_collections {
+    screen item_list pagination cursor
+  }
+
+  ui_actions {
+    screen item_list action cap_list_items prominence primary placement toolbar
+  }
+
+  ui_visibility {
+    action cap_list_items visible_if permission items.view
+  }
+
+  ui_lookups {
+    screen item_list field item_id entity entity_item label_field title
+  }
+
+  ui_navigation {
+    group main label "Main" placement primary pattern top_nav
+    screen item_list group main label "Items" order 10 visible true default true
+  }
+
+  ui_screen_regions {
+    screen item_list region results pattern resource_table placement primary
+  }
+
+  ui_routes {
+    screen item_list path /items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  const messages = validation.errors.map((error) => error.message).join("\n");
+  for (const key of [
+    "ui_screens",
+    "ui_collections",
+    "ui_actions",
+    "ui_visibility",
+    "ui_lookups",
+    "ui_app_shell",
+    "ui_navigation",
+    "ui_screen_regions"
+  ]) {
+    assert.match(
+      messages,
+      new RegExp(`${key} belongs on shared UI projections`),
+      `expected concrete ownership rejection for ${key}`
+    );
+  }
+});
+
+test("shared UI projections reject concrete route ownership", () => {
+  const ast = workspaceFromSource(`
+capability cap_list_items {
+  name "List Items"
+  description "List items"
+  status active
+}
+
+projection proj_ui_shared {
+  name "Shared"
+  description "Shared UI projection"
+  platform ui_shared
+  realizes [cap_list_items]
+  outputs [ui_contract]
+
+  ui_screens {
+    screen item_list kind list title "Items" load cap_list_items
+  }
+
+  ui_routes {
+    screen item_list path /items
+  }
+
+  status active
+}
+`);
+  const validation = validateWorkspace(ast);
+  assert.equal(validation.ok, false);
+  assert.match(
+    validation.errors.map((error) => error.message).join("\n"),
+    /ui_routes belongs on concrete UI projections/
+  );
+});
+
 test("concrete UI projections inherit shared component usage only", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
