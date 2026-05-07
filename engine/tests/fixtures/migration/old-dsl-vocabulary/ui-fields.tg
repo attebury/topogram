@@ -1,0 +1,19 @@
+projection proj_legacy_ui_fields {
+  name "Legacy UI Fields"
+  description "Uses old UI block names"
+  type ui_contract
+  realizes []
+  outputs []
+  ui_screens {}
+  ui_screen_regions {}
+  ui_navigation {}
+  ui_app_shell {}
+  ui_collections {}
+  ui_actions {}
+  ui_visibility {}
+  ui_lookups {}
+  ui_components {}
+  ui_routes {}
+  ui_design {}
+  status active
+}

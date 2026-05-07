@@ -191,6 +191,16 @@ function isStringArray(value, nonEmpty = false) {
 }
 
 /**
+ * @param {string} oldName
+ * @param {string} newName
+ * @param {string} example
+ * @returns {string}
+ */
+function renameDiagnostic(oldName, newName, example) {
+  return `${oldName} was renamed to ${newName}. Example fix: ${example}`;
+}
+
+/**
  * @param {string} generatorId
  * @returns {GeneratorManifest|null}
  */
@@ -393,13 +403,13 @@ export function validateGeneratorManifest(manifest) {
     errors.push(`${label} surface must be api, web, database, or native`);
   }
   if (manifest.targetKind != null) {
-    errors.push(`${label} targetKind was renamed to runtimeKinds`);
+    errors.push(`${label} ${renameDiagnostic("'targetKind'", "'runtimeKinds'", `"runtimeKinds": ["web_surface"]`)}`);
   }
   if (!isStringArray(manifest.runtimeKinds, true)) {
     errors.push(`${label} runtimeKinds must be a non-empty string array`);
   }
   if (manifest["projectionPlatforms"] != null) {
-    errors.push(`${label} projectionPlatforms was renamed to projectionTypes`);
+    errors.push(`${label} ${renameDiagnostic("'projectionPlatforms'", "'projectionTypes'", `"projectionTypes": ["web_surface"]`)}`);
   }
   if (!isStringArray(manifest.projectionTypes, true)) {
     errors.push(`${label} projectionTypes must be a non-empty string array`);
@@ -417,7 +427,7 @@ export function validateGeneratorManifest(manifest) {
     errors.push(`${label} capabilities must be an object`);
   }
   if (manifest["componentSupport"] != null) {
-    errors.push(`${label} componentSupport was renamed to widgetSupport`);
+    errors.push(`${label} ${renameDiagnostic("'componentSupport'", "'widgetSupport'", `"widgetSupport": { "patterns": ["resource_table"] }`)}`);
   }
   if (manifest.widgetSupport != null) {
     if (typeof manifest.widgetSupport !== "object" || Array.isArray(manifest.widgetSupport)) {

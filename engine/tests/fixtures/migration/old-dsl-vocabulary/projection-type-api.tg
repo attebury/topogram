@@ -1,0 +1,8 @@
+projection proj_legacy_api {
+  name "Legacy API Type"
+  description "Uses the old api projection type"
+  type api
+  realizes []
+  outputs []
+  status active
+}

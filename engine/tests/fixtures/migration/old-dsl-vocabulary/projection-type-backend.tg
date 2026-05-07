@@ -1,0 +1,8 @@
+projection proj_legacy_backend {
+  name "Legacy Backend Type"
+  description "Uses the old backend projection type"
+  type backend
+  realizes []
+  outputs []
+  status active
+}

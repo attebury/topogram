@@ -1,0 +1,8 @@
+projection proj_legacy_dotnet {
+  name "Legacy Dotnet API Type"
+  description "Uses the old dotnet projection type"
+  type dotnet
+  realizes []
+  outputs []
+  status active
+}

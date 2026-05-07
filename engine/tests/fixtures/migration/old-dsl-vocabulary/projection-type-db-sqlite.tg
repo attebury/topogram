@@ -1,0 +1,8 @@
+projection proj_legacy_db_sqlite {
+  name "Legacy SQLite DB Type"
+  description "Uses the old db_sqlite projection type"
+  type db_sqlite
+  realizes []
+  outputs []
+  status active
+}

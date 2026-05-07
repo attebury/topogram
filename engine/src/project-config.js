@@ -107,6 +107,16 @@ function readJson(filePath) {
 }
 
 /**
+ * @param {string} oldName
+ * @param {string} newName
+ * @param {string} example
+ * @returns {string}
+ */
+function renameDiagnostic(oldName, newName, example) {
+  return `${oldName} was renamed to ${newName}. Example fix: ${example}`;
+}
+
+/**
  * @param {string} root
  * @param {string} fileName
  * @returns {{ config: any, configPath: string, configDir: string }|null}
@@ -347,18 +357,24 @@ function componentLabel(component) {
  */
 function validateComponentShape(errors, component, seenIds) {
   if (!component || typeof component !== "object" || Array.isArray(component)) {
-    pushError(errors, "Topology component must be an object");
+    pushError(errors, "Topology runtime must be an object");
     return false;
   }
   if (typeof component.id !== "string" || !IDENTIFIER_PATTERN.test(component.id)) {
     pushError(errors, `${componentLabel(component)} id must match ${IDENTIFIER_PATTERN}`);
   } else if (seenIds.has(component.id)) {
-    pushError(errors, `Duplicate topology component id '${component.id}'`);
+    pushError(errors, `Duplicate topology runtime id '${component.id}'`);
   } else {
     seenIds.add(component.id);
   }
   if (component.type != null) {
-    pushError(errors, `${componentLabel(component)} type was renamed to kind`);
+    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'type'", "'kind'", `"kind": "api_service"`)}`);
+  }
+  if (component.database != null) {
+    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'database'", "'uses_database'", `"uses_database": "app_db"`)}`);
+  }
+  if (component.api != null) {
+    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'api'", "'uses_api'", `"uses_api": "app_api"`)}`);
   }
   if (!["api_service", "web_surface", "ios_surface", "android_surface", "database"].includes(component.kind)) {
     pushError(errors, `${componentLabel(component)} kind must be api_service, web_surface, ios_surface, android_surface, or database`);
@@ -440,12 +456,6 @@ function validateTopologyReferences(errors, components) {
         usedPorts.set(component.port, component.id);
       }
     }
-    if (component.database != null) {
-      pushError(errors, `${componentLabel(component)} database was renamed to uses_database`);
-    }
-    if (component.api != null) {
-      pushError(errors, `${componentLabel(component)} api was renamed to uses_api`);
-    }
     if (component.kind === "api_service") {
       if (component.uses_database && byId.get(component.uses_database)?.kind !== "database") {
         pushError(errors, `${componentLabel(component)} references missing database runtime '${component.uses_database}'`);
@@ -476,7 +486,7 @@ export function validateProjectConfig(config, graph = null, options = {}) {
   }
   validateOutputConfig(errors, config);
   if (config.topology?.components != null && config.topology.__normalizedRuntimeAliases !== true) {
-    pushError(errors, "topogram.project.json topology.components was renamed to topology.runtimes");
+    pushError(errors, `topogram.project.json ${renameDiagnostic("'topology.components'", "'topology.runtimes'", `"topology": { "runtimes": [] }`)}`);
   }
   if (!config.topology || typeof config.topology !== "object" || !Array.isArray(config.topology.runtimes)) {
     pushError(errors, "topogram.project.json topology.runtimes must be an array");

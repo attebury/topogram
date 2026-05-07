@@ -1,0 +1,8 @@
+component component_legacy_grid {
+  name "Legacy Grid"
+  description "Uses the old component statement kind"
+  props {
+    rows array required
+  }
+  status active
+}

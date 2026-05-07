@@ -1,0 +1,14 @@
+projection proj_legacy_db_fields {
+  name "Legacy DB Fields"
+  description "Uses old DB block names"
+  type db_contract
+  realizes []
+  outputs []
+  db_tables {}
+  db_columns {}
+  db_keys {}
+  db_indexes {}
+  db_relations {}
+  db_lifecycle {}
+  status active
+}

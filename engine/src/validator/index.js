@@ -108,6 +108,10 @@ export function pushError(errors, message, loc) {
   });
 }
 
+function renameDiagnostic(oldName, newName, example) {
+  return `${oldName} was renamed to ${newName}. Example fix: ${example}`;
+}
+
 export function formatLoc(loc) {
   const line = loc?.start?.line ?? 1;
   const column = loc?.start?.column ?? 1;
@@ -226,44 +230,45 @@ function validateFieldPresence(errors, statement, fieldMap) {
   }
 
   const renamedFields = new Map([
-    ["platform", "type"],
-    ["ui_components", "widget_bindings"],
-    ["ui_design", "design_tokens"],
-    ["ui_routes", "screen_routes"],
-    ["ui_screens", "screens"],
-    ["ui_screen_regions", "screen_regions"],
-    ["ui_navigation", "navigation"],
-    ["ui_app_shell", "app_shell"],
-    ["ui_collections", "collection_views"],
-    ["ui_actions", "screen_actions"],
-    ["ui_visibility", "visibility_rules"],
-    ["ui_lookups", "field_lookups"],
-    ["web_surface", "web_hints"],
-    ["ios_surface", "ios_hints"],
-    ["http", "endpoints"],
-    ["http_errors", "error_responses"],
-    ["http_fields", "wire_fields"],
-    ["http_responses", "responses"],
-    ["http_preconditions", "preconditions"],
-    ["http_idempotency", "idempotency"],
-    ["http_cache", "cache"],
-    ["http_delete", "delete_semantics"],
-    ["http_async", "async_jobs"],
-    ["http_status", "async_status"],
-    ["http_download", "downloads"],
-    ["http_authz", "authorization"],
-    ["http_callbacks", "callbacks"],
-    ["db_tables", "tables"],
-    ["db_columns", "columns"],
-    ["db_keys", "keys"],
-    ["db_indexes", "indexes"],
-    ["db_relations", "relations"],
-    ["db_lifecycle", "lifecycle"]
+    ["platform", ["type", "type web_surface"]],
+    ["ui_components", ["widget_bindings", "widget_bindings { screen item_list region results widget widget_data_grid }"]],
+    ["ui_design", ["design_tokens", "design_tokens { density comfortable tone operational }"]],
+    ["ui_routes", ["screen_routes", "screen_routes { screen item_list path /items }"]],
+    ["ui_screens", ["screens", "screens { item_list list title \"Items\" }"]],
+    ["ui_screen_regions", ["screen_regions", "screen_regions { screen item_list region results pattern resource_table }"]],
+    ["ui_navigation", ["navigation", "navigation { primary item_list label \"Items\" }"]],
+    ["ui_app_shell", ["app_shell", "app_shell { shell sidebar }"]],
+    ["ui_collections", ["collection_views", "collection_views { item_list presentation table }"]],
+    ["ui_actions", ["screen_actions", "screen_actions { screen item_list action create target cap_create_item }"]],
+    ["ui_visibility", ["visibility_rules", "visibility_rules { screen item_list when cap_list_items }"]],
+    ["ui_lookups", ["field_lookups", "field_lookups { field owner_id source cap_list_users }"]],
+    ["web_surface", ["web_hints", "web_hints { router file_based }"]],
+    ["ios_surface", ["ios_hints", "ios_hints { navigation stack }"]],
+    ["http", ["endpoints", "endpoints { cap_list_items method GET path /items success 200 }"]],
+    ["http_errors", ["error_responses", "error_responses { cap_list_items 404 shape_error }"]],
+    ["http_fields", ["wire_fields", "wire_fields { shape_item title title }"]],
+    ["http_responses", ["responses", "responses { cap_list_items 200 shape_item_list }"]],
+    ["http_preconditions", ["preconditions", "preconditions { cap_update_item rule_item_exists }"]],
+    ["http_idempotency", ["idempotency", "idempotency { cap_create_item key request_id }"]],
+    ["http_cache", ["cache", "cache { cap_list_items max_age 60 }"]],
+    ["http_delete", ["delete_semantics", "delete_semantics { cap_delete_item mode soft_delete }"]],
+    ["http_async", ["async_jobs", "async_jobs { cap_export_items job task_export }"]],
+    ["http_status", ["async_status", "async_status { cap_export_items path /exports/{job_id} }"]],
+    ["http_download", ["downloads", "downloads { cap_download_export content_type text/csv }"]],
+    ["http_authz", ["authorization", "authorization { cap_update_item role editor }"]],
+    ["http_callbacks", ["callbacks", "callbacks { cap_export_items event completed }"]],
+    ["db_tables", ["tables", "tables { entity_item table items }"]],
+    ["db_columns", ["columns", "columns { entity_item field title column title }"]],
+    ["db_keys", ["keys", "keys { entity_item primary [id] }"]],
+    ["db_indexes", ["indexes", "indexes { entity_item index [title] }"]],
+    ["db_relations", ["relations", "relations { entity_item foreign_key owner_id references entity_user.id }"]],
+    ["db_lifecycle", ["lifecycle", "lifecycle { entity_item timestamps created_at created_at updated_at updated_at }"]]
   ]);
 
   for (const key of fieldMap.keys()) {
     if (renamedFields.has(key)) {
-      pushError(errors, `Field '${key}' was renamed to '${renamedFields.get(key)}' on ${statement.kind} ${statement.id}`, fieldMap.get(key)[0].loc);
+      const [newName, example] = renamedFields.get(key);
+      pushError(errors, `Field '${key}' on ${statement.kind} ${statement.id} ${renameDiagnostic(`'${key}'`, `'${newName}'`, example)}`, fieldMap.get(key)[0].loc);
       continue;
     }
     if (!spec.allowed.includes(key)) {
@@ -276,6 +281,36 @@ function validateFieldPresence(errors, statement, fieldMap) {
       pushError(errors, `Missing required field '${key}' on ${statement.kind} ${statement.id}`, statement.loc);
     }
   }
+}
+
+function validateProjectionTypeRenames(errors, statement, fieldMap) {
+  if (statement.kind !== "projection") {
+    return;
+  }
+
+  const typeField = fieldMap.get("type")?.[0];
+  const typeValue = symbolValue(typeField?.value);
+  const renamedTypes = new Map([
+    ["ui_shared", "ui_contract"],
+    ["ui_web", "web_surface"],
+    ["ui_ios", "ios_surface"],
+    ["ui_android", "android_surface"],
+    ["dotnet", "api_contract"],
+    ["api", "api_contract"],
+    ["backend", "api_contract"],
+    ["db_postgres", "db_contract"],
+    ["db_sqlite", "db_contract"]
+  ]);
+  if (!typeField || !renamedTypes.has(typeValue)) {
+    return;
+  }
+
+  const nextType = renamedTypes.get(typeValue);
+  pushError(
+    errors,
+    `Projection ${statement.id} ${renameDiagnostic(`type value '${typeValue}'`, `'${nextType}'`, `type ${nextType}`)}`,
+    typeField.value.loc
+  );
 }
 
 function validateBlockEntryLengths(errors, statement, fieldMap, key, minimumWidth) {
@@ -3388,7 +3423,7 @@ export function buildRegistry(workspaceAst, errors) {
     for (const statement of file.statements) {
       if (!STATEMENT_KINDS.has(statement.kind)) {
         if (statement.kind === "component") {
-          pushError(errors, `Statement kind 'component' was renamed to 'widget'`, statement.loc);
+          pushError(errors, `Statement kind ${renameDiagnostic("'component'", "'widget'", "widget widget_data_grid { ... }")}`, statement.loc);
         } else {
           pushError(errors, `Unknown statement kind '${statement.kind}'`, statement.loc);
         }
@@ -3569,6 +3604,7 @@ export function validateWorkspace(workspaceAst) {
     for (const statement of file.statements) {
       const fieldMap = collectFieldMap(statement);
       validateFieldPresence(errors, statement, fieldMap);
+      validateProjectionTypeRenames(errors, statement, fieldMap);
       validateFieldShapes(errors, statement, fieldMap);
       validateStatus(errors, statement, fieldMap);
       validateRuleSeverity(errors, statement, fieldMap);

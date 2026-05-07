@@ -1,0 +1,33 @@
+{
+  "version": "0.1",
+  "outputs": {
+    "app": {
+      "path": "./app",
+      "ownership": "generated"
+    }
+  },
+  "topology": {
+    "components": [
+      {
+        "id": "app_web",
+        "type": "web",
+        "projection": "proj_web_surface",
+        "api": "app_api",
+        "generator": {
+          "id": "topogram/react",
+          "version": "1"
+        }
+      },
+      {
+        "id": "app_api",
+        "type": "api",
+        "projection": "proj_api",
+        "database": "app_db",
+        "generator": {
+          "id": "topogram/hono",
+          "version": "1"
+        }
+      }
+    ]
+  }
+}

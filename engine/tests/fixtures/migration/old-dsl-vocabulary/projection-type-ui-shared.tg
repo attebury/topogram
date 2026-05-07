@@ -1,0 +1,8 @@
+projection proj_legacy_ui_shared {
+  name "Legacy Shared UI Type"
+  description "Uses the old ui_shared projection type"
+  type ui_shared
+  realizes []
+  outputs []
+  status active
+}

@@ -6,9 +6,9 @@ the same reason a 600-statement workspace eventually gets unreadable as
 one flat namespace: humans and agents need a smaller scope to reason
 about.
 
-`domain` is orthogonal to `projection.platform`. A capability lives in a
+`domain` is orthogonal to `projection.type`. A capability lives in a
 domain (`dom_order_fulfillment`) and is realized by projections
-targeting one or more platforms (`web_surface`, `api`, `database`). The two
+targeting one or more projection types (`web_surface`, `api_contract`, `db_contract`). The two
 axes never collide; the combination falls out as a coverage matrix from
 the existing graph.
 

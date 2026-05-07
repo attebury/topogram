@@ -1,0 +1,8 @@
+projection proj_legacy_ui_android {
+  name "Legacy Android UI Type"
+  description "Uses the old ui_android projection type"
+  type ui_android
+  realizes []
+  outputs []
+  status active
+}

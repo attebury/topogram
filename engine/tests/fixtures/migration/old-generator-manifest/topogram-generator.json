@@ -1,0 +1,22 @@
+{
+  "id": "@topogram/generator-legacy-web",
+  "version": "1",
+  "surface": "web",
+  "targetKind": ["web_surface"],
+  "projectionPlatforms": ["web_surface"],
+  "inputs": ["ui-surface-contract"],
+  "outputs": ["web-app"],
+  "stack": {
+    "runtime": "browser",
+    "framework": "legacy",
+    "language": "javascript"
+  },
+  "capabilities": {
+    "routes": true
+  },
+  "componentSupport": {
+    "patterns": ["resource_table"]
+  },
+  "source": "package",
+  "package": "@topogram/generator-legacy-web"
+}

@@ -1,0 +1,8 @@
+projection proj_legacy_ui_ios {
+  name "Legacy iOS UI Type"
+  description "Uses the old ui_ios projection type"
+  type ui_ios
+  realizes []
+  outputs []
+  status active
+}

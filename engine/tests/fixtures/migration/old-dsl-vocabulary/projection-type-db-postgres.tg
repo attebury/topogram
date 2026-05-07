@@ -1,0 +1,8 @@
+projection proj_legacy_db_postgres {
+  name "Legacy Postgres DB Type"
+  description "Uses the old db_postgres projection type"
+  type db_postgres
+  realizes []
+  outputs []
+  status active
+}

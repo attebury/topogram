@@ -1,0 +1,8 @@
+projection proj_legacy_platform {
+  name "Legacy Platform Field"
+  description "Uses the old projection.platform field"
+  platform ui_web
+  realizes []
+  outputs []
+  status active
+}

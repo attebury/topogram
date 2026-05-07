@@ -1,0 +1,21 @@
+projection proj_legacy_api_fields {
+  name "Legacy API Fields"
+  description "Uses old API block names"
+  type api_contract
+  realizes []
+  outputs []
+  http {}
+  http_errors {}
+  http_fields {}
+  http_responses {}
+  http_preconditions {}
+  http_idempotency {}
+  http_cache {}
+  http_delete {}
+  http_async {}
+  http_status {}
+  http_download {}
+  http_authz {}
+  http_callbacks {}
+  status active
+}

@@ -27,7 +27,7 @@ The parser accepts any `kind identifier { ... }` shape. The validator defines th
 | `capability` | `name`, `description`, `status` | User-visible operation over entities and shapes. |
 | `widget` | `name`, `description`, `props`, `status` | Reusable UI or service contract addressable in the semantic graph. |
 | `decision` | `name`, `description`, `status` | Architectural or product decision record. |
-| `projection` | `name`, `description`, `platform`, `realizes`, `outputs`, `status` | Platform-specific realization surface. |
+| `projection` | `name`, `description`, `type`, `realizes`, `outputs`, `status` | Contract or concrete runtime surface realization. |
 | `orchestration` | `name`, `description`, `inputs`, `steps`, `outputs`, `status` | Multi-step process model. |
 | `verification` | `name`, `description`, `validates`, `method`, `scenarios`, `status` | Proof target for generated or maintained behavior. |
 | `operation` | `name`, `description`, `observes`, `metrics`, `alerts`, `status` | Operational monitoring contract. |

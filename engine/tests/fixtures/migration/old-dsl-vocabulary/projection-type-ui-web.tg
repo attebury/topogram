@@ -1,0 +1,8 @@
+projection proj_legacy_ui_web {
+  name "Legacy Web UI Type"
+  description "Uses the old ui_web projection type"
+  type ui_web
+  realizes []
+  outputs []
+  status active
+}
