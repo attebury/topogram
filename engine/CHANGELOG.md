@@ -53,11 +53,12 @@
 ## 0.3.11 - 2026-05-01
 
 - Add `domain` statement kind for grouping the spec by business slice
-  (FIS, RNF, DrugTrac, etc.). Identifier prefix `dom_`. Required fields:
-  `name`, `description`, `status`. Optional: `in_scope`, `out_of_scope`,
-  `owners`, `parent_domain`, `aliases`. Validator enforces identifier
-  prefix, scope-list shapes, owner refs (`actor`|`role`), parent_domain
-  refs, and parent-domain cycle detection.
+  (order fulfillment, billing, support, reporting, etc.). Identifier
+  prefix `dom_`. Required fields: `name`, `description`, `status`.
+  Optional: `in_scope`, `out_of_scope`, `owners`, `parent_domain`,
+  `aliases`. Validator enforces identifier prefix, scope-list shapes,
+  owner refs (`actor`|`role`), parent_domain refs, and parent-domain
+  cycle detection.
 - Add optional singular `domain` field on `capability`, `entity`, `rule`,
   `verification`, `orchestration`, `operation`, and `decision`. Cross-kind
   validator hard-errors on unknown ids and wrong-kind references.
@@ -83,9 +84,9 @@
   with the `domain` row and the optional-field paragraph;
   `docs/topogram-workspace-layout.md` appends a "Domain organization"
   subsection.
-- New fixture `engine/tests/fixtures/domains/feedlot/` (3 domains,
-  10 capabilities, 12 entities, 4 cross-platform projections) and
-  golden tests at `engine/tests/active/domain-kind.test.js`.
+- New multi-domain fixture (3 domains, 10 capabilities, 12 entities, 4
+  cross-platform projections) and golden tests at
+  `engine/tests/active/domain-kind.test.js`.
 
 ### SDLC layer (Phase 2)
 

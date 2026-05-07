@@ -9,7 +9,7 @@ import { validateWorkspace } from "../../src/validator.js";
 import { generateWorkspace } from "../../src/generator/index.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "domains", "feedlot");
+const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "domains", "commerce");
 
 function workspaceFromSource(source) {
   return {
@@ -35,37 +35,37 @@ test("resolver builds members back-links per domain", () => {
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
 
-  const rnf = resolved.graph.byKind.domain.find((d) => d.id === "dom_rnf");
-  assert.ok(rnf);
+  const fulfillment = resolved.graph.byKind.domain.find((d) => d.id === "dom_order_fulfillment");
+  assert.ok(fulfillment);
   assert.deepEqual(
-    rnf.members.capabilities.sort(),
-    ["cap_call_feed", "cap_monitor_loads"]
+    fulfillment.members.capabilities.sort(),
+    ["cap_fulfill_order", "cap_monitor_shipments"]
   );
   assert.deepEqual(
-    rnf.members.entities.sort(),
-    ["entity_feed_call", "entity_route"]
+    fulfillment.members.entities.sort(),
+    ["entity_fulfillment_batch", "entity_pick_route"]
   );
-  assert.deepEqual(rnf.members.rules, ["rule_draft_persistence"]);
-  assert.deepEqual(rnf.members.verifications, ["verification_call_feed_save"]);
+  assert.deepEqual(fulfillment.members.rules, ["rule_draft_persistence"]);
+  assert.deepEqual(fulfillment.members.verifications, ["verification_fulfill_order_save"]);
 
-  const feedInventory = resolved.graph.byKind.domain.find((d) => d.id === "dom_feed_inventory");
-  assert.ok(feedInventory);
-  assert.equal(feedInventory.members.entities.length, 3);
-  assert.equal(feedInventory.members.capabilities.length, 2);
+  const inventory = resolved.graph.byKind.domain.find((d) => d.id === "dom_inventory");
+  assert.ok(inventory);
+  assert.equal(inventory.members.entities.length, 3);
+  assert.equal(inventory.members.capabilities.length, 2);
 
-  const drugtrac = resolved.graph.byKind.domain.find((d) => d.id === "dom_drugtrac");
-  assert.ok(drugtrac);
-  assert.deepEqual(drugtrac.members.verifications, ["verification_safe_to_ship"]);
+  const support = resolved.graph.byKind.domain.find((d) => d.id === "dom_support");
+  assert.ok(support);
+  assert.deepEqual(support.members.verifications, ["verification_sla_status"]);
 });
 
 test("resolvedDomain pointer is populated on tagged statements", () => {
   const ast = parsePath(fixtureRoot);
   const resolved = resolveWorkspace(ast);
 
-  const callFeed = resolved.graph.byKind.capability.find((c) => c.id === "cap_call_feed");
-  assert.ok(callFeed.resolvedDomain);
-  assert.equal(callFeed.resolvedDomain.id, "dom_rnf");
-  assert.equal(callFeed.resolvedDomain.target.kind, "domain");
+  const fulfillOrder = resolved.graph.byKind.capability.find((c) => c.id === "cap_fulfill_order");
+  assert.ok(fulfillOrder.resolvedDomain);
+  assert.equal(fulfillOrder.resolvedDomain.id, "dom_order_fulfillment");
+  assert.equal(fulfillOrder.resolvedDomain.target.kind, "domain");
 
   const party = resolved.graph.byKind.entity.find((e) => e.id === "entity_party");
   assert.equal(party.resolvedDomain, null);
@@ -75,18 +75,18 @@ test("query slice --domain returns the focused subgraph", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "context-slice",
-    domainId: "dom_rnf"
+    domainId: "dom_order_fulfillment"
   });
   assert.equal(result.ok, true);
   assert.equal(result.artifact.focus.kind, "domain");
-  assert.equal(result.artifact.focus.id, "dom_rnf");
+  assert.equal(result.artifact.focus.id, "dom_order_fulfillment");
   assert.deepEqual(
     result.artifact.depends_on.capabilities,
-    ["cap_call_feed", "cap_monitor_loads"]
+    ["cap_fulfill_order", "cap_monitor_shipments"]
   );
   assert.deepEqual(
     result.artifact.depends_on.projections,
-    ["proj_rnf_desktop", "proj_rnf_mobile"]
+    ["proj_fulfillment_mobile", "proj_fulfillment_web"]
   );
   assert.deepEqual(
     result.artifact.review_boundary.reasons,
@@ -98,14 +98,14 @@ test("domain-coverage produces a per-platform realization matrix", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "domain-coverage",
-    domainId: "dom_rnf"
+    domainId: "dom_order_fulfillment"
   });
   assert.equal(result.ok, true);
   assert.deepEqual(result.artifact.platforms, ["desktop", "maui"]);
-  assert.equal(result.artifact.coverage_matrix.cap_call_feed.desktop, true);
-  assert.equal(result.artifact.coverage_matrix.cap_call_feed.maui, true);
-  assert.equal(result.artifact.coverage_matrix.cap_monitor_loads.desktop, true);
-  assert.equal(result.artifact.coverage_matrix.cap_monitor_loads.maui, false);
+  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.desktop, true);
+  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.maui, true);
+  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.desktop, true);
+  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.maui, false);
 });
 
 test("domain-list returns a sorted navigation summary", () => {
@@ -114,7 +114,7 @@ test("domain-list returns a sorted navigation summary", () => {
   assert.equal(result.ok, true);
   assert.equal(result.artifact.domains.length, 3);
   const ids = result.artifact.domains.map((d) => d.id);
-  assert.deepEqual(ids, ["dom_drugtrac", "dom_feed_inventory", "dom_rnf"]);
+  assert.deepEqual(ids, ["dom_inventory", "dom_order_fulfillment", "dom_support"]);
   for (const domain of result.artifact.domains) {
     assert.ok(domain.members_count > 0);
   }
@@ -124,11 +124,11 @@ test("domain-page emits a markdown artifact at the canonical path", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "domain-page",
-    domainId: "dom_rnf"
+    domainId: "dom_order_fulfillment"
   });
   assert.equal(result.ok, true);
-  assert.equal(result.artifact.output.path, "topogram/docs-generated/domains/dom_rnf.md");
-  assert.match(result.artifact.output.contents, /# Read-N-Feed/);
+  assert.equal(result.artifact.output.path, "topogram/docs-generated/domains/dom_order_fulfillment.md");
+  assert.match(result.artifact.output.contents, /# Order Fulfillment/);
   assert.match(result.artifact.output.contents, /## In scope/);
   assert.match(result.artifact.output.contents, /## Per-platform coverage/);
   assert.match(result.artifact.output.contents, /\| desktop \| maui \|/);
@@ -267,7 +267,7 @@ test("workspace inventory reports domains alongside other kinds", () => {
   const ast = parsePath(fixtureRoot);
   const resolved = resolveWorkspace(ast);
   const domainIds = resolved.graph.byKind.domain.map((d) => d.id).sort();
-  assert.deepEqual(domainIds, ["dom_drugtrac", "dom_feed_inventory", "dom_rnf"]);
+  assert.deepEqual(domainIds, ["dom_inventory", "dom_order_fulfillment", "dom_support"]);
 });
 
 test("query slice --domain throws on unknown domain id", () => {

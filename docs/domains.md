@@ -1,26 +1,28 @@
 # Domains
 
 The `domain` statement kind groups a workspace's spec by business slice
-(FIS, RNF, DrugTrac, etc.). It exists for the same reason a 600-statement
-workspace eventually gets unreadable as one flat namespace: humans and
-agents need a smaller scope to reason about.
+(order fulfillment, billing, support, reporting, etc.). It exists for
+the same reason a 600-statement workspace eventually gets unreadable as
+one flat namespace: humans and agents need a smaller scope to reason
+about.
 
 `domain` is orthogonal to `projection.platform`. A capability lives in a
-domain (`dom_rnf`) and is realized by projections targeting one or more
-platforms (`desktop`, `maui`, `mcp`). The two axes never collide; the
-combination falls out as a coverage matrix from the existing graph.
+domain (`dom_order_fulfillment`) and is realized by projections
+targeting one or more platforms (`ui_web`, `api`, `database`). The two
+axes never collide; the combination falls out as a coverage matrix from
+the existing graph.
 
 ## When to author a domain
 
 Add a `domain` statement when:
 
 - The spec has crossed roughly 100 statements and a clear business
-  vocabulary is emerging (feed inventory, cattle management, etc.).
+  vocabulary is emerging (orders, billing, support, reporting, etc.).
 - A new contributor needs to know which subset of the spec to read first.
-- You want per-domain coverage (which platforms realize FIS today?).
-- You want to slice context for an agent (`--domain dom_rnf` returns
-  only the relevant capabilities, entities, rules, projections, and
-  verifications).
+- You want per-domain coverage (which platforms realize billing today?).
+- You want to slice context for an agent (`--domain dom_order_fulfillment`
+  returns only the relevant capabilities, entities, rules, projections,
+  and verifications).
 
 Skip it when:
 
@@ -31,24 +33,23 @@ Skip it when:
 ## Canonical shape
 
 ```text
-domain dom_feed_inventory {
-  name "Feed Inventory System"
-  description "Commodity master, storage bins, milling, contracts, levies"
+domain dom_order_fulfillment {
+  name "Order Fulfillment"
+  description "Order intake, picking, packing, shipment, and delivery exceptions"
   in_scope [
-    "Commodity master data and nutrient profiles"
-    "Storage bin definition and tracking"
-    "Physical inventory counts and adjustments"
-    "Milled ingredient formulation and yield tracking"
-    "Commodity contracts and forward pricing"
-    "Grain levies and UOM conversions"
+    "Order intake and validation"
+    "Inventory reservation"
+    "Pick and pack workflows"
+    "Shipment handoff"
+    "Delivery exception handling"
   ]
   out_of_scope [
-    "Feed ration formulation (see dom_rnf)"
-    "Mobile inventory audits"
-    "Commodity futures trading integration"
+    "Payment capture (see dom_billing)"
+    "Customer support case management"
+    "Warehouse workforce scheduling"
   ]
-  owners [actor_feed_mill_supervisor, actor_commodity_buyer]
-  aliases ["FIS", "Feed Inventory"]
+  owners [actor_operations_manager, role_fulfillment_owner]
+  aliases ["Fulfillment", "Orders"]
   status active
 }
 ```
@@ -64,13 +65,13 @@ global vocabulary (`draft`, `proposed`, `active`, `deprecated`).
 Add an optional singular `domain` field to a workhorse kind:
 
 ```text
-capability cap_call_feed {
-  name "Call Feed"
-  description "Daily feed-calling workflow"
-  domain dom_rnf
-  actors [actor_feed_caller]
-  reads [entity_pen, entity_route]
-  creates [entity_feed_call]
+capability cap_fulfill_order {
+  name "Fulfill Order"
+  description "Reserve inventory, pack items, and prepare an order for shipment"
+  domain dom_order_fulfillment
+  actors [actor_operations_user]
+  reads [entity_order, entity_inventory_item]
+  updates [entity_order]
   status active
 }
 ```
@@ -90,10 +91,10 @@ legitimately spans two business slices, split it or move it to a
 The resolver builds reverse indexes so a domain knows its members:
 
 ```text
-domain.members.capabilities       [cap_call_feed, cap_pen_inventory, ...]
-domain.members.entities           [entity_pen, entity_feed_call, ...]
-domain.members.rules              [rule_draft_persistence, ...]
-domain.members.verifications      [verification_call_feed_save, ...]
+domain.members.capabilities       [cap_fulfill_order, cap_ship_order, ...]
+domain.members.entities           [entity_order, entity_shipment, ...]
+domain.members.rules              [rule_inventory_reservation_required, ...]
+domain.members.verifications      [verification_order_fulfillment_flow, ...]
 domain.members.orchestrations     [...]
 domain.members.operations         [...]
 domain.members.decisions          [...]
@@ -107,13 +108,13 @@ to `resolvedReferences`.
 ```text
 topogram/
   domains/
-    dom-feed-inventory.tg
-    dom-cattle-management.tg
-  feed-inventory/
+    dom-order-fulfillment.tg
+    dom-billing.tg
+  order-fulfillment/
     capabilities/
     entities/
     rules/
-  cattle-management/
+  billing/
     ...
   shared/                      # cross-cutting (party, address, audit)
 ```
@@ -127,19 +128,19 @@ targets, and `CODEOWNERS` entries only.
 # Slice the graph to one domain (capabilities, entities, rules,
 # verifications, orchestrations, operations, decisions, plus the
 # projections that realize any of its capabilities).
-topogram query slice ./topogram --domain dom_feed_inventory
+topogram query slice ./topogram --domain dom_order_fulfillment
 
 # Per-platform coverage matrix for a single domain.
-topogram query domain-coverage ./topogram --domain dom_feed_inventory
+topogram query domain-coverage ./topogram --domain dom_order_fulfillment
 
 # Navigation summary of all domains.
 topogram query domain-list ./topogram
 
 # --domain also slices the existing review-packet, change-plan, and
 # verification-targets queries.
-topogram query review-packet ./topogram --domain dom_feed_inventory
-topogram query verification-targets ./topogram --domain dom_feed_inventory
-topogram query change-plan ./topogram --domain dom_feed_inventory
+topogram query review-packet ./topogram --domain dom_order_fulfillment
+topogram query verification-targets ./topogram --domain dom_order_fulfillment
+topogram query change-plan ./topogram --domain dom_order_fulfillment
 ```
 
 Unknown domain ids hard-error (mirroring `--component` behavior).
@@ -164,9 +165,9 @@ their frontmatter:
 ---
 id: doc_call_feed_user_guide
 kind: workflow
-title: "Call Feed user guide"
+title: "Order fulfillment user guide"
 status: draft
-domain: dom_rnf
+domain: dom_order_fulfillment
 ---
 ```
 
@@ -180,5 +181,3 @@ The validator checks that the value resolves to a `domain` statement.
   none).
 - No domain-aware realization providers (domain is metadata for queries
   and navigation, not generator input).
-- No replication of Forge's `accu-trac-forge/domain/` folder hub. The
-  graph supersedes it.

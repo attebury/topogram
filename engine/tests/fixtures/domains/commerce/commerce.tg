@@ -1,0 +1,305 @@
+# Neutral commerce domain fixture for Phase 1 domain-support golden tests.
+# 3 domains (order_fulfillment, inventory, support), ~10 capabilities, ~15 entities,
+# mix of tagged and cross-cutting (untagged) statements, plus projections
+# across two platforms so domain-coverage has data to compute.
+
+actor actor_operations_user {
+  name "Operations User"
+  description "Runs fulfillment workflows"
+  status active
+}
+
+actor actor_inventory_manager {
+  name "Inventory Manager"
+  description "Owns item master data"
+  status active
+}
+
+actor actor_support_agent {
+  name "Support Agent"
+  description "Handles customer support cases"
+  status active
+}
+
+role role_operations_manager {
+  name "Operations Manager"
+  description "Approves fulfillment plans"
+  status active
+}
+
+domain dom_order_fulfillment {
+  name "Order Fulfillment"
+  description "Order intake, picking, packing, and shipment handoff"
+  in_scope [
+    "Order intake and validation"
+    "Pick-route assignment and shipment monitoring"
+    "Draft fulfillment batches and resume"
+  ]
+  out_of_scope [
+    "Item master data (see dom_inventory)"
+    "Support case handling (see dom_support)"
+  ]
+  owners [actor_operations_user, role_operations_manager]
+  aliases ["Fulfillment"]
+  status active
+}
+
+domain dom_inventory {
+  name "Inventory Management"
+  description "Item master, inventory locations, counts, and adjustments"
+  in_scope [
+    "Item master data and product attributes"
+    "Inventory location definition and tracking"
+    "Inventory counts and adjustments"
+  ]
+  owners [actor_inventory_manager]
+  aliases ["Inventory"]
+  status active
+}
+
+domain dom_support {
+  name "Support Operations"
+  description "Customer support cases, service levels, and escalations"
+  in_scope [
+    "Support case intake and routing"
+    "Service-level tracking per case"
+  ]
+  owners [actor_support_agent]
+  status active
+}
+
+# --- Cross-cutting (untagged) ---
+entity entity_party {
+  name "Party"
+  description "Person or organization"
+  fields {
+    id string required
+    name string required
+  }
+  status active
+}
+
+entity entity_location {
+  name "Location"
+  description "Physical or virtual fulfillment location"
+  fields {
+    code string required
+    capacity number required
+  }
+  status active
+}
+
+# --- dom_order_fulfillment members ---
+entity entity_pick_route {
+  name "Pick Route"
+  description "Ordered list of fulfillment locations"
+  domain dom_order_fulfillment
+  fields {
+    code string required
+    locations array required
+  }
+  status active
+}
+
+entity entity_fulfillment_batch {
+  name "Fulfillment Batch"
+  description "Single fulfillment batch for an order"
+  domain dom_order_fulfillment
+  fields {
+    location string required
+    sku string required
+    quantity number required
+  }
+  status active
+}
+
+capability cap_fulfill_order {
+  name "Fulfill Order"
+  description "Reserve inventory, pack items, and prepare an order for shipment"
+  domain dom_order_fulfillment
+  actors [actor_operations_user]
+  reads [entity_location, entity_pick_route]
+  creates [entity_fulfillment_batch]
+  status active
+}
+
+capability cap_monitor_shipments {
+  name "Monitor Shipments"
+  description "Watch shipments as they leave fulfillment"
+  domain dom_order_fulfillment
+  actors [actor_operations_user]
+  reads [entity_fulfillment_batch]
+  status active
+}
+
+rule rule_draft_persistence {
+  name "Draft persistence"
+  description "Draft fulfillment batches must persist across app restart"
+  applies_to [cap_fulfill_order]
+  domain dom_order_fulfillment
+  severity warning
+  status active
+}
+
+verification verification_fulfill_order_save {
+  name "Fulfill Order save"
+  description "Save round-trip preserves a fulfillment draft"
+  validates [cap_fulfill_order]
+  domain dom_order_fulfillment
+  method runtime
+  scenarios [save_then_resume, partial_load_offline]
+  status active
+}
+
+# --- dom_inventory members ---
+entity entity_sku {
+  name "SKU"
+  description "Master record for a sellable item"
+  domain dom_inventory
+  fields {
+    code string required
+    description string required
+  }
+  status active
+}
+
+entity entity_inventory_location {
+  name "Inventory Location"
+  description "Location holding inventory"
+  domain dom_inventory
+  fields {
+    code string required
+    capacity number required
+  }
+  status active
+}
+
+entity entity_inventory_count {
+  name "Inventory Count"
+  description "Physical count event"
+  domain dom_inventory
+  fields {
+    location string required
+    quantity number required
+  }
+  status active
+}
+
+capability cap_record_inventory_count {
+  name "Record Inventory Count"
+  description "Capture an inventory count"
+  domain dom_inventory
+  actors [actor_inventory_manager]
+  reads [entity_inventory_location, entity_sku]
+  creates [entity_inventory_count]
+  status active
+}
+
+capability cap_manage_skus {
+  name "Manage SKUs"
+  description "CRUD on item master"
+  domain dom_inventory
+  actors [actor_inventory_manager]
+  reads [entity_sku]
+  creates [entity_sku]
+  status active
+}
+
+rule rule_adjustment_reason_required {
+  name "Adjustment reason required"
+  description "Inventory adjustments require a reason"
+  applies_to [cap_record_inventory_count]
+  domain dom_inventory
+  severity error
+  status active
+}
+
+# --- dom_support members ---
+entity entity_support_case {
+  name "Support Case"
+  description "Single support case for a customer"
+  domain dom_support
+  fields {
+    customer string required
+    topic string required
+    priority number required
+  }
+  status active
+}
+
+entity entity_service_level {
+  name "Service Level"
+  description "Response target for a support case"
+  domain dom_support
+  fields {
+    topic string required
+    hours number required
+  }
+  status active
+}
+
+capability cap_record_support_case {
+  name "Record Support Case"
+  description "Support agent records a customer case"
+  domain dom_support
+  actors [actor_support_agent]
+  reads [entity_service_level]
+  creates [entity_support_case]
+  status active
+}
+
+capability cap_check_sla_status {
+  name "Check SLA Status"
+  description "Verify service-level targets are met"
+  domain dom_support
+  actors [actor_support_agent]
+  reads [entity_support_case, entity_service_level]
+  status active
+}
+
+verification verification_sla_status {
+  name "SLA status"
+  description "Support case handling gate"
+  validates [cap_check_sla_status]
+  domain dom_support
+  method contract
+  scenarios [no_breached_slas, flagged_when_breached]
+  status active
+}
+
+# --- Projections (cross-platform realization) ---
+projection proj_fulfillment_web {
+  name "Fulfillment Web"
+  description "Web operations projection"
+  platform desktop
+  realizes [cap_fulfill_order, cap_monitor_shipments]
+  outputs [web_app]
+  status active
+}
+
+projection proj_fulfillment_mobile {
+  name "Fulfillment Mobile"
+  description "Mobile operations projection"
+  platform maui
+  realizes [cap_fulfill_order]
+  outputs [mobile_app]
+  status active
+}
+
+projection proj_support_web {
+  name "Support Web"
+  description "Web support projection"
+  platform desktop
+  realizes [cap_record_support_case, cap_check_sla_status]
+  outputs [web_app]
+  status active
+}
+
+projection proj_inventory_desktop {
+  name "Inventory Desktop"
+  description "Web inventory projection"
+  platform desktop
+  realizes [cap_record_inventory_count, cap_manage_skus]
+  outputs [web_app]
+  status active
+}

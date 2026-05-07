@@ -73,24 +73,25 @@ The private `topogram-demo-todo` repo mirrors this layout and owns generated dem
 ## Domain organization
 
 Larger workspaces benefit from organizing `.tg` files by business domain
-(FIS, RNF, DrugTrac, etc.). The engine treats folders as a human
-convention only — `parsePath()` flattens everything into one graph — but
-the recommended layout helps new contributors find the slice they care
-about and feeds tools like `git blame` and `CODEOWNERS`:
+(order fulfillment, billing, support, reporting, etc.). The engine treats
+folders as a human convention only — `parsePath()` flattens everything
+into one graph — but the recommended layout helps new contributors find
+the slice they care about and feeds tools like `git blame` and
+`CODEOWNERS`:
 
 ```text
 topogram/
   domains/
-    dom-feed-inventory.tg
-    dom-cattle-management.tg
-    dom-drugtrac.tg
-  feed-inventory/
+    dom-order-fulfillment.tg
+    dom-billing.tg
+    dom-support.tg
+  order-fulfillment/
     capabilities/
     entities/
     rules/
     verifications/
     projections/
-  cattle-management/
+  billing/
     ...
   shared/                      # cross-cutting (party, address, audit)
     entities/
@@ -106,8 +107,8 @@ the slicing explicit. See [Domains](./domains.md) for the full guide.
 
 ```text
 topogram/docs-generated/domains/
-  dom-feed-inventory.md
-  dom-cattle-management.md
+  dom-order-fulfillment.md
+  dom-billing.md
   ...
 ```
 
