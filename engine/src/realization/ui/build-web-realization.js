@@ -26,7 +26,7 @@ export function buildWebRealization(graph, options = {}) {
   }
 
   const projection = getProjection(graph, options.projectionId);
-  const projectionType = projection.type || projection.platform;
+  const projectionType = projection.type || projection.type;
   const surfaceHints =
     projectionType === "ios_surface" ? projection.uiIos || [] : projection.uiWeb || [];
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
@@ -85,13 +85,13 @@ export function buildWebRealization(graph, options = {}) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      type: projection.type || projection.platform
+      type: projection.type || projection.type
     },
     uiContract: sharedProjection
       ? {
           id: sharedProjection.id,
           name: sharedProjection.name || sharedProjection.id,
-          type: sharedProjection.type || sharedProjection.platform
+          type: sharedProjection.type || sharedProjection.type
         }
       : null,
     generatorDefaults: generatorDefaultsMap(projection),

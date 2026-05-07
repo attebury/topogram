@@ -43,10 +43,11 @@ function buildEnvironmentPlan(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
-  const profile = options.profileId || (dbProjection?.platform === "db_contract" || !dbProjection ? "local_process" : "local_docker");
+  const dbEngine = dbLifecycle?.engine || null;
+  const profile = options.profileId || (dbEngine === "sqlite" || !dbProjection ? "local_process" : "local_docker");
   const usesDocker = profile === "local_docker";
   const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
-  const isSqlite = dbProjection?.platform === "db_contract";
+  const isSqlite = dbEngine === "sqlite";
   const ports = runtimePorts(runtimeReference, topology);
 
   return {
@@ -71,15 +72,16 @@ function buildEnvironmentPlan(graph, options = {}) {
     projections: {
       api: {
         id: apiProjection?.id || null,
-        platform: apiProjection?.platform || null
+        type: apiProjection?.type || null
       },
       ui: {
         id: uiProjection?.id || null,
-        platform: uiProjection?.platform || null
+        type: uiProjection?.type || null
       },
       db: {
         id: dbProjection?.id || null,
-        platform: dbProjection?.platform || null,
+        type: dbProjection?.type || null,
+        engine: dbEngine,
         profile: dbProjection?.generatorDefaults?.profile || dbProjection?.profile || null
       }
     },
@@ -131,7 +133,8 @@ function buildEnvironmentPlan(graph, options = {}) {
       databases: topology.dbComponents.map((component) => ({
         id: component.id,
         projection: component.projection.id,
-        platform: component.projection.platform,
+        type: component.projection.type,
+        engine: component.id === topology.primaryDb?.id ? dbEngine : null,
         port: component.port,
         dir: topology.dbDir(component),
         env: dbEnvVarsForComponent(component, { primary: component.id === topology.primaryDb?.id })
@@ -169,7 +172,7 @@ function renderEnvironmentEnvExample(plan) {
     .filter((component) => component.id !== plan.runtimes.databases[0]?.id)
     .map((component) => {
       const fallbackName = `${databaseName}_${component.id}`;
-      if (component.platform === "db_contract") {
+      if (component.engine === "sqlite") {
         return `${component.env.databaseUrl}=file:./var/${component.id}.sqlite`;
       }
       return [
@@ -190,10 +193,10 @@ TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 `;
-  if (!plan.projections.db.platform) {
+  if (!plan.projections.db.type) {
     return commonLines;
   }
-  if (plan.projections.db.platform === "db_contract") {
+  if (plan.projections.db.engine === "sqlite") {
     return `# Environment profile
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
 
@@ -272,7 +275,7 @@ function renderEnvironmentReadme(plan) {
   const hasWeb = plan.runtimes.webs.length > 0;
   const localProcessNotes = !hasDb
     ? "- This bundle has no generated database surface."
-    : plan.projections.db.platform === "db_contract"
+    : plan.projections.db.engine === "sqlite"
     ? "- SQLite is file-backed for this bundle; no separate DB server is required."
     : `- Make sure the Postgres server is already running before \`${plan.commands.bootstrapDb}\`.\n- \`DATABASE_URL\` and \`DATABASE_ADMIN_URL\` should point at your local or managed Postgres instance.`;
   const dockerSection = plan.orchestration.usesDocker
@@ -291,13 +294,13 @@ ${localProcessNotes}
 
 This bundle packages the generated runtime into one local environment:
 
-${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.platform === "db_contract" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
+${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.engine === "sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
 
 ## Quick Start
 
 1. Copy \`.env.example\` to \`.env\` if you want to customize defaults
 2. Start the database:
-   - ${!hasDb ? "not applicable" : plan.projections.db.platform === "db_contract" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
+   - ${!hasDb ? "not applicable" : plan.projections.db.engine === "sqlite" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
 3. Bootstrap or migrate the database:
    - \`${plan.commands.bootstrapDb}\`
 4. Start the stack:
@@ -313,7 +316,7 @@ ${dockerSection}
 
 ## Notes
 
-- ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.platform === "db_contract" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
+- ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.engine === "sqlite" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
 - ${hasWeb && hasApi ? "The generated web app talks to `PUBLIC_TOPOGRAM_API_BASE_URL`." : hasWeb ? "The generated web app is standalone." : "No web surface is generated."}
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`.
 - The DB lifecycle scripts remain the source of truth for greenfield bootstrap and brownfield migration.

@@ -28,8 +28,8 @@ export function getDefaultBackendDbProjection(graph, options = {}) {
   return (
     explicit ||
     preferred ||
-    candidates.find((projection) => projection.platform === "db_contract") ||
-    candidates.find((projection) => projection.platform === "db_contract") ||
+    candidates.find((projection) => projection.type === "db_contract") ||
+    candidates.find((projection) => projection.type === "db_contract") ||
     candidates[0] ||
     null
   );
@@ -76,7 +76,7 @@ export function buildBackendRuntimeRealization(graph, options = {}) {
     repositoryReference,
     dbProjection: {
       id: dbProjection.id,
-      platform: dbProjection.platform
+      type: dbProjection.type
     }
   };
 }

@@ -3,7 +3,7 @@ export const serverContract = {
   "projection": {
     "id": "proj_api",
     "name": "API",
-    "platform": "dotnet"
+    "type": "api_contract"
   },
   "routes": [
     {
@@ -691,8 +691,8 @@ export const serverContract = {
           }
         ],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -1208,8 +1208,8 @@ export const serverContract = {
             "code": "cap_get_item_not_modified"
           }
         ],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -1932,8 +1932,8 @@ export const serverContract = {
         ],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -2492,8 +2492,8 @@ export const serverContract = {
           }
         ],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -3241,8 +3241,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -3763,8 +3763,8 @@ export const serverContract = {
         ],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -4116,7 +4116,7 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [
+        "asyncJobs": [
           {
             "mode": "job",
             "accepted": 202,
@@ -4133,7 +4133,7 @@ export const serverContract = {
             }
           }
         ],
-        "status": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -4529,8 +4529,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [
+        "asyncJobs": [],
+        "asyncStatus": [
           {
             "asyncFor": {
               "id": "cap_export_items",
@@ -4656,8 +4656,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": [
           {
             "asyncFor": {
@@ -5103,8 +5103,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -5434,8 +5434,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -5857,8 +5857,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -6312,8 +6312,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -6702,8 +6702,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -6993,8 +6993,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -7336,8 +7336,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     },
@@ -7709,8 +7709,8 @@ export const serverContract = {
         "preconditions": [],
         "idempotency": [],
         "cache": [],
-        "async": [],
-        "status": [],
+        "asyncJobs": [],
+        "asyncStatus": [],
         "download": []
       }
     }

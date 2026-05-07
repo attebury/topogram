@@ -10,10 +10,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
   return {
     screen: {
   "id": "collection_edit",
-  "title": "Edit Collection",
-  "web": {
-    "present": "page"
-  }
+  "title": "Edit Collection"
 },
     collection,
     lookups: {

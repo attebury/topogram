@@ -12,7 +12,7 @@ import {
 function projectionTypesFromProjections(projections) {
   const projectionTypes = new Set();
   for (const projection of projections) {
-    const projectionType = projection?.type || projection?.platform;
+    const projectionType = projection?.type || projection?.type;
     if (projectionType) {
       projectionTypes.add(projectionType);
     }
@@ -53,7 +53,7 @@ export function generateDomainCoverage(graph, options = {}) {
     for (const projectionType of projectionTypes) {
       const realized = projectionStatements.some(
         (projection) =>
-          (projection.type || projection.platform) === projectionType &&
+          (projection.type || projection.type) === projectionType &&
           (projection.realizes || []).some((entry) => entry.id === capabilityId)
       );
       matrix[capabilityId][projectionType] = realized;

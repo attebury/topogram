@@ -490,7 +490,7 @@ export function projectionCompatibilityKey(projection) {
   if (isApiProjection(projection)) {
     return "api_contract";
   }
-  return projection?.type || projection?.platform || "";
+  return projection?.type || projection?.type || "";
 }
 
 /**

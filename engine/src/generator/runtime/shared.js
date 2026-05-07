@@ -229,7 +229,7 @@ function apiProjectionCandidates(graph) {
  */
 function uiWebProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
-    (projection) => projection.platform === "web_surface" && (projection.uiRoutes || []).length > 0
+    (projection) => projection.type === "web_surface" && (projection.uiRoutes || []).length > 0
   );
 }
 
@@ -247,7 +247,7 @@ const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ios_surface__swiftui"];
  */
 function uiIosProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
-    (projection) => projection.platform === "ios_surface" && (projection.uiRoutes || []).length > 0
+    (projection) => projection.type === "ios_surface" && (projection.uiRoutes || []).length > 0
   );
 }
 
@@ -300,7 +300,7 @@ export function pickDefaultUiWebProjection(graph) {
  */
 export function getDefaultEnvironmentProjections(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const dbCandidates = graph.byKind.projection?.filter((projection) => ["db_contract", "db_contract"].includes(projection.platform)) || [];
+  const dbCandidates = graph.byKind.projection?.filter((projection) => ["db_contract", "db_contract"].includes(projection.type)) || [];
   const apiProjection = /** @type {RuntimeStatement|null} */ (topology.primaryApi?.projection ||
     (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
     apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||

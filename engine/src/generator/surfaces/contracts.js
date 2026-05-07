@@ -17,7 +17,7 @@ export function generateUiContractDebug(graph, options = {}) {
   for (const contract of contracts) {
     lines.push(`## \`${contract.projection.id}\` - ${contract.projection.name}`);
     lines.push("");
-    lines.push(`Platform: \`${contract.projection.platform}\``);
+    lines.push(`Projection type: \`${contract.projection.type}\``);
     lines.push(`Realizes: ${refList(contract.realizes)}`);
     lines.push(`Outputs: ${symbolList(contract.outputs)}`);
     if (contract.appShell) {

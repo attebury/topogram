@@ -22,12 +22,6 @@ export const load: PageLoad = async ({ fetch, url }) => {
         "direction": "desc"
       }
     ]
-  },
-  "web": {
-    "layout": "responsive_collection",
-    "desktop_variant": "table",
-    "mobile_variant": "cards",
-    "collection": "table"
   }
 },
     filters: {

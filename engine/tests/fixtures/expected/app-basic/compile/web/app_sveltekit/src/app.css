@@ -315,21 +315,21 @@ select:focus-visible {
 .empty-state {
   padding: 1rem 0;
 }
-.component-card {
+.widget-card {
   border: 1px solid var(--topogram-border-color);
   border-radius: var(--topogram-radius-card);
   background: var(--topogram-surface-subtle);
   padding: 1rem;
   margin-top: 1rem;
 }
-.component-header {
+.widget-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--topogram-space-unit);
   flex-wrap: wrap;
 }
-.component-eyebrow {
+.widget-eyebrow {
   margin: 0 0 0.25rem;
   color: var(--topogram-muted-color);
   font-size: 0.75rem;
@@ -337,11 +337,11 @@ select:focus-visible {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.component-card h2,
-.component-card h3 {
+.widget-card h2,
+.widget-card h3 {
   margin: 0;
 }
-.component-table-wrap {
+.widget-table-wrap {
   margin-top: 1rem;
 }
 .summary-grid {

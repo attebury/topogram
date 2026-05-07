@@ -229,7 +229,7 @@ export function generateDocs(graph) {
       lines.push(projection.description);
       lines.push("");
     }
-    lines.push(`Platform: \`${projection.platform}\``);
+    lines.push(`Projection type: \`${projection.type}\``);
     lines.push(`Realizes: ${refList(projection.realizes)}`);
     lines.push(`Outputs: ${symbolList(projection.outputs)}`);
     lines.push("");

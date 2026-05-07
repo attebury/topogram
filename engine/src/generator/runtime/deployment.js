@@ -8,6 +8,7 @@ import {
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderRootEnvFileShellScript, renderRootShellScript } from "./bundle-shared.js";
 import { generatorProfile as manifestGeneratorProfile } from "../registry.js";
+import { generateDbLifecyclePlan } from "../surfaces/databases/lifecycle-shared.js";
 
 function projectionHintProfile(projection, fallback) {
   for (const entry of projection.generatorDefaults || []) {
@@ -33,7 +34,8 @@ function buildDeploymentPlan(graph, options = {}) {
   const profile = options.profileId || "fly_io";
   const supportedProfiles = ["fly_io", "railway"];
   const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
-  const databaseTarget = dbProjection.platform === "db_contract"
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
+  const databaseTarget = dbLifecycle?.engine === "sqlite"
     ? "sqlite_file"
     : profile === "fly_io"
       ? "managed_postgres"

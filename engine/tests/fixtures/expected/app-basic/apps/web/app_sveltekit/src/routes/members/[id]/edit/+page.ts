@@ -6,10 +6,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
   return {
     screen: {
   "id": "member_edit",
-  "title": "Edit Member",
-  "web": {
-    "present": "page"
-  }
+  "title": "Edit Member"
 },
     member,
     values: {

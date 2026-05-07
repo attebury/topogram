@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ fetch }) => {
     "groupBy": [],
     "sort": []
   },
-  "web": {
+  "surfaceHints": {
     "layout": "responsive_collection",
     "desktop_variant": "board",
     "mobile_variant": "cards",

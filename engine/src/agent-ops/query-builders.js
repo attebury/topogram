@@ -1337,7 +1337,7 @@ function buildMaintainedOutputGroups(outputs = [], seams = [], {
 
 function projectionKindForImpact(projection) {
   if (!projection) return "unknown";
-  if ((projection.http || []).length > 0 || projection.platform === "api" || projection.platform === "backend") {
+  if ((projection.http || []).length > 0 || projection.type === "api" || projection.type === "backend") {
     return "api";
   }
   if (
@@ -1345,9 +1345,9 @@ function projectionKindForImpact(projection) {
     (projection.uiWeb || []).length > 0 ||
     (projection.uiIos || []).length > 0 ||
     (projection.uiScreens || []).length > 0 ||
-    projection.platform === "web_surface" ||
-    projection.platform === "ios_surface" ||
-    projection.platform === "ui_contract"
+    projection.type === "web_surface" ||
+    projection.type === "ios_surface" ||
+    projection.type === "ui_contract"
   ) {
     return "ui";
   }
@@ -1355,7 +1355,7 @@ function projectionKindForImpact(projection) {
     (projection.dbTables || []).length > 0 ||
     (projection.dbColumns || []).length > 0 ||
     (projection.dbRelations || []).length > 0 ||
-    String(projection.platform || "").startsWith("db_")
+    String(projection.type || "").startsWith("db_")
   ) {
     return "db";
   }
@@ -1367,7 +1367,7 @@ function projectionSummaryForImpact(projection) {
   return {
     projection_id: projection.id,
     kind: projectionKindForImpact(projection),
-    platform: projection.platform || null,
+    type: projection.type || null,
     outputs: stableSortedStrings(projection.outputs || [])
   };
 }
@@ -1717,7 +1717,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    if (projection.platform === "ui_contract") {
+    if (projection.type === "ui_contract") {
       addTarget({
         target: "ui-contract-graph",
         projection_id: impact.projection_id,
@@ -1754,7 +1754,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    if (projection.platform === "web_surface") {
+    if (projection.type === "web_surface") {
       addTarget({
         target: "ui-surface-contract",
         projection_id: impact.projection_id,
@@ -1777,7 +1777,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       }
     }
 
-    if (projection.platform === "ios_surface") {
+    if (projection.type === "ios_surface") {
       addTarget({
         target: "swiftui-app",
         projection_id: impact.projection_id,
@@ -1786,7 +1786,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    if (String(projection.platform || "").startsWith("db_")) {
+    if (String(projection.type || "").startsWith("db_")) {
       addTarget({
         target: "db-contract-graph",
         projection_id: impact.projection_id,

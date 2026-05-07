@@ -155,7 +155,7 @@ export function generatePersistenceScaffold(graph, options = {}) {
   const drizzleRepositoryClassName = repositoryReference.drizzleRepositoryClassName;
   const drizzleHint = repositoryReference.drizzleHint;
   const projection = getProjection(graph, options.projectionId);
-  const projectionType = projection.type || projection.platform;
+  const projectionType = projection.type || projection.type;
   if (projectionType !== "db_contract") {
     throw new Error(`Persistence scaffold generation currently supports db_contract projections only, found '${projectionType}'`);
   }

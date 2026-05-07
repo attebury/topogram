@@ -40,7 +40,7 @@ function collectJourneyGenerationContext(graph) {
   const rules = graph.byKind.rule || [];
   const projections = graph.byKind.projection || [];
   const uiSharedScreens = projections
-    .filter((projection) => projection.platform === "ui_contract")
+    .filter((projection) => projection.type === "ui_contract")
     .flatMap((projection) => (projection.uiScreens || []).map((screen) => ({ ...screen, projectionId: projection.id })));
   const canonicalJourneys = (graph.docs || []).filter((doc) => doc.kind === "journey");
   const coveredEntityIds = new Set(canonicalJourneys.flatMap((doc) => doc.relatedEntities || []));

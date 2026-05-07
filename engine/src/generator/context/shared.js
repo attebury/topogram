@@ -58,7 +58,7 @@ function summarizeProjection(projection) {
     kind: projection.kind,
     name: projection.name || projection.id,
     description: projection.description || null,
-    platform: projection.platform || null,
+    type: projection.type || null,
     realizes: refIds(projection.realizes),
     outputs: stableSortedStrings(projection.outputs || []),
     uiScreens: stableSortedStrings((projection.uiScreens || []).map((screen) => screen.id)),

@@ -117,7 +117,7 @@ function normalizeServerContract(contract) {
   return {
     projection: {
       id: contract.projection?.id ?? null,
-      platform: contract.projection?.platform ?? null
+      type: contract.projection?.type ?? null
     },
     routes: (contract.routes ?? []).map(normalizeRoute).sort((a, b) => {
       const leftKey = `${a.method}:${a.path}:${a.capabilityId}`;

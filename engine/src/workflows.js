@@ -1491,7 +1491,7 @@ function renderProjectionPatchDoc(patch) {
     "",
     `Projection: \`${patch.projection_id}\``,
     `Kind: \`${patch.kind}\``,
-    patch.platform ? `Platform: \`${patch.platform}\`` : null,
+    patch.projection_type ? `Projection type: \`${patch.projection_type}\`` : null,
     "",
     patch.reason || "Candidate additive projection patch inferred during reconcile.",
     ""
@@ -3013,15 +3013,15 @@ function capabilityEntityTargets(capability) {
 }
 
 function projectionKindForImpact(projection) {
-  if ((projection.http || []).length > 0 || projection.platform === "api_contract") {
+  if ((projection.http || []).length > 0 || projection.type === "api_contract") {
     return "api";
   }
   if (
     (projection.uiRoutes || []).length > 0 ||
     (projection.uiWeb || []).length > 0 ||
     (projection.uiIos || []).length > 0 ||
-    projection.platform === "web_surface" ||
-    projection.platform === "ios_surface"
+    projection.type === "web_surface" ||
+    projection.type === "ios_surface"
   ) {
     return "ui";
   }
@@ -3068,7 +3068,7 @@ function buildProjectionEntityIndex(graph) {
 
   return projections.map((projection) => ({
     id: projection.id,
-    platform: projection.platform || null,
+    projection_type: projection.type || null,
     kind: projectionKindForImpact(projection),
     realizes: (projection.realizes || []).map((entry) => entry.id),
     entityIds: [...collectEntities(projection.id)].sort()
@@ -3281,7 +3281,7 @@ function buildProjectionImpacts(bundle, projectionIndex) {
       }
       return {
         projection_id: projection.id,
-        platform: projection.platform,
+        projection_type: projection.type,
         kind: projection.kind,
         missing_capabilities: missingCapabilities,
         reason: `Projection ${projection.id} already covers the same entity surface but does not realize these imported capabilities.`
@@ -3295,7 +3295,7 @@ function buildUiImpacts(bundle, graph) {
   if ((bundle.screens || []).length === 0) {
     return [];
   }
-  const uiProjections = (graph?.byKind.projection || []).filter((projection) => ["ui_contract", "web_surface"].includes(projection.platform));
+  const uiProjections = (graph?.byKind.projection || []).filter((projection) => ["ui_contract", "web_surface"].includes(projection.type));
   const bundleScreenIds = bundle.screens.map((screen) => screen.id_hint);
   return uiProjections
     .map((projection) => {
@@ -3307,7 +3307,7 @@ function buildUiImpacts(bundle, graph) {
       return {
         projection_id: projection.id,
         kind: "ui",
-        platform: projection.platform,
+        projection_type: projection.type,
         missing_screens: missingScreens,
         reason: `UI projection ${projection.id} does not currently represent these imported screens.`
       };
@@ -3372,7 +3372,7 @@ function buildProjectionPatchCandidates(bundle) {
     patches.push({
       projection_id: impact.projection_id,
       kind: impact.kind,
-      platform: impact.platform,
+      projection_type: impact.projection_type,
       reason: impact.reason,
       missing_realizes: missingRealizes,
       missing_http: missingHttp,
@@ -3402,7 +3402,7 @@ function buildProjectionPatchCandidates(bundle) {
     patches.push({
       projection_id: impact.projection_id,
       kind: impact.kind,
-      platform: impact.platform,
+      projection_type: impact.projection_type,
       reason: impact.reason,
       missing_realizes: [],
       missing_http: [],
@@ -3448,7 +3448,7 @@ function buildProjectionPatchCandidates(bundle) {
       patches.push({
         projection_id: impact.projection_id,
         kind: impact.kind,
-        platform: impact.platform,
+        projection_type: impact.projection_type,
         reason: `Projection ${impact.projection_id} likely needs claim-based auth rules for the imported ${bundle.label.toLowerCase()} surface.`,
         missing_realizes: relatedCapabilities,
         missing_http: [],
@@ -3494,7 +3494,7 @@ function buildProjectionPatchCandidates(bundle) {
       patches.push({
         projection_id: impact.projection_id,
         kind: impact.kind,
-        platform: impact.platform,
+        projection_type: impact.projection_type,
         reason: `Projection ${impact.projection_id} likely needs permission-based auth rules for the imported ${bundle.label.toLowerCase()} surface.`,
         missing_realizes: relatedCapabilities,
         missing_http: [],
@@ -3543,7 +3543,7 @@ function buildProjectionPatchCandidates(bundle) {
       patches.push({
         projection_id: impact.projection_id,
         kind: impact.kind,
-        platform: impact.platform,
+        projection_type: impact.projection_type,
         reason: `Projection ${impact.projection_id} likely needs ownership-based auth rules for the imported ${bundle.label.toLowerCase()} surface.`,
         missing_realizes: relatedCapabilities,
         missing_http: [],
@@ -4257,7 +4257,7 @@ function projectionImpactsForAdoptionItem(bundle, step) {
     .map((impact) => ({
       projection_id: impact.projection_id,
       kind: impact.kind,
-      platform: impact.platform,
+      projection_type: impact.projection_type,
       reason: impact.reason
     }));
 }
@@ -4268,7 +4268,7 @@ function blockingDependenciesForProjectionImpacts(projectionImpacts) {
     id: `projection_review:${impact.projection_id}`,
     projection_id: impact.projection_id,
     kind: impact.kind,
-    platform: impact.platform,
+    projection_type: impact.projection_type,
     reason: impact.reason
   }));
 }
@@ -4279,7 +4279,7 @@ function blockingDependenciesForUiImpacts(uiImpacts) {
     id: `ui_review:${impact.projection_id}`,
     projection_id: impact.projection_id,
     kind: impact.kind,
-    platform: impact.platform,
+    projection_type: impact.projection_type,
     reason: impact.reason
   }));
 }
@@ -4324,7 +4324,7 @@ function buildAdoptionPlan(bundles) {
               {
                 projection_id: step.target,
                 kind: step.projection_kind || "api",
-                platform: null,
+                projection_type: null,
                 reason: `Projection ${step.target} auth rules need explicit review before promotion.`
               }
             ])
@@ -4394,7 +4394,7 @@ function buildAdoptionPlan(bundles) {
           {
             projection_id: patch.projection_id,
             kind: patch.kind,
-            platform: patch.platform,
+            projection_type: patch.projection_type,
             missing_capabilities: patch.missing_realizes || []
           }
         ],
@@ -4402,7 +4402,7 @@ function buildAdoptionPlan(bundles) {
           {
             projection_id: patch.projection_id,
             kind: patch.kind,
-            platform: patch.platform,
+            projection_type: patch.projection_type,
             missing_screens: patch.missing_screens || []
           }
         ] : [],
@@ -4411,7 +4411,7 @@ function buildAdoptionPlan(bundles) {
           {
             projection_id: patch.projection_id,
             kind: patch.kind,
-            platform: patch.platform,
+            projection_type: patch.projection_type,
             reason: patch.reason || `Projection ${patch.projection_id} needs additive review.`
           }
         ])
@@ -6975,7 +6975,7 @@ function collectCanonicalUiSurface(graph) {
   const screens = new Set();
   const routes = new Set();
   for (const projection of graph.byKind.projection || []) {
-    if (!["ui_contract", "web_surface"].includes(projection.platform)) {
+    if (!["ui_contract", "web_surface"].includes(projection.type)) {
       continue;
     }
     for (const screen of projection.uiScreens || []) {

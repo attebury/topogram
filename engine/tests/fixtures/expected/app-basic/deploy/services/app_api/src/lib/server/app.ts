@@ -209,8 +209,6 @@ export function createApp(deps: ServerDependencies) {
       await deps.authorize(c, route6.endpoint.authz, { capabilityId: route6.capabilityId, input, loadResource: undefined });
       requireRequestFields(route6, input);
       const result = await deps.appBasicRepository.exportItems(input as unknown as ExportItemsInput);
-      c.header("Location", (result as unknown as Record<string, unknown>).status_url ? String((result as unknown as Record<string, unknown>).status_url) : "/item-exports/:job_id".replace(":job_id", String((result as unknown as Record<string, unknown>).job_id ?? "")));
-      c.header("Retry-After", "5");
       return c.json(result as ExportItemsResult, 202 as any);
     } catch (error) {
       const failure = jsonError(error);

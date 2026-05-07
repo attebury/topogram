@@ -5,7 +5,8 @@
     "api": "proj_api",
     "ui": "proj_web_surface",
     "db": "proj_db_postgres",
-    "dbPlatform": "db_contract"
+    "dbType": "db_contract",
+    "dbEngine": "postgres"
   },
   "topology": {
     "runtimes": [

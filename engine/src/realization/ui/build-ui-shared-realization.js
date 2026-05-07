@@ -311,7 +311,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       projection: {
         id: projection.id,
         name: projection.name || projection.id,
-        type: projection.type || projection.platform
+        type: projection.type || projection.type
       },
       realizes: projection.realizes,
       outputs: projection.outputs,
@@ -331,7 +331,7 @@ export function buildUiSharedRealization(graph, options = {}) {
       projection: {
         id: projection.id,
         name: projection.name || projection.id,
-        type: projection.type || projection.platform
+        type: projection.type || projection.type
       },
       realizes: projection.realizes,
       outputs: projection.outputs,

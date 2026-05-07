@@ -42,8 +42,8 @@ export function indexGraphStatements(graph) {
 export function dbProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
     (projection) =>
-      (projection.type || projection.platform) === "db_contract" ||
-      projection.platform?.startsWith("db_") ||
+      (projection.type || projection.type) === "db_contract" ||
+      projection.type?.startsWith("db_") ||
       (projection.dbTables || []).length > 0 ||
       (projection.dbColumns || []).length > 0 ||
       (projection.dbRelations || []).length > 0
@@ -278,7 +278,7 @@ export function buildDbProjectionContract(graph, projection) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      type: projection.type || projection.platform
+      type: projection.type || projection.type
     },
     profile: dbProfileForProjection(projection),
     generatorDefaults: generatorDefaultsMap(projection),

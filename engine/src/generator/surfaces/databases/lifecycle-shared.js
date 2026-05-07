@@ -87,7 +87,7 @@ function renderEmptySnapshotForProjection(projection) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      type: projection.type || projection.platform
+      type: projection.type || projection.type
     },
     profile,
     generatorDefaults: generatorDefaultsMap(projection),

@@ -8,6 +8,7 @@ import {
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeBundleFiles } from "./bundle-shared.js";
+import { generateDbLifecyclePlan } from "../surfaces/databases/lifecycle-shared.js";
 
 function compileCheckName(graph, options = {}) {
   try {
@@ -72,8 +73,9 @@ function renderCompileCheckEnvExample(graph, options = {}) {
   const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
   const urls = runtimeUrls(runtimeReference, topology);
-  if (dbProjection?.platform === "db_contract") {
+  if (dbLifecycle?.engine === "sqlite") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
 PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeDemoUserId(runtimeReference)}

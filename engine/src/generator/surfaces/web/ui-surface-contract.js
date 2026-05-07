@@ -3,7 +3,7 @@ import { buildWebRealization } from "../../../realization/ui/index.js";
 export function generateUiSurfaceContract(graph, options = {}) {
   if (!options.projectionId) {
     const output = {};
-    for (const projection of (graph.byKind.projection || []).filter((entry) => (entry.type || entry.platform) === "web_surface")) {
+    for (const projection of (graph.byKind.projection || []).filter((entry) => (entry.type || entry.type) === "web_surface")) {
       output[projection.id] = buildWebRealization(graph, { ...options, projectionId: projection.id }).contract;
     }
     return output;

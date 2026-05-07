@@ -22,7 +22,7 @@ function summarizeProjection(projection) {
     ? {
         id: projection.id,
         name: projection.name || projection.id,
-        type: projection.type || projection.platform || null,
+        type: projection.type || projection.type || null,
         status: projection.status || null,
         source_path: sourcePath(projection)
       }

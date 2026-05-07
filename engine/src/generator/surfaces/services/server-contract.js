@@ -30,7 +30,7 @@ function buildServerContract(graph, projection) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      type: projection.type || projection.platform
+      type: projection.type || projection.type
     },
     routes: realizedCapabilities.map((capability) => {
       const apiContract = generateApiContractGraph(graph, { capabilityId: capability.id });

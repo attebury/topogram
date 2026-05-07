@@ -5,10 +5,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
   return {
     screen: {
   "id": "member_detail",
-  "title": "Member Details",
-  "web": {
-    "layout": "detail_page"
-  }
+  "title": "Member Details"
 },
     member: await requestCapability(fetch, "cap_get_member", { member_id: params.id })
   };

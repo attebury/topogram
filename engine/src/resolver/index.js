@@ -1897,9 +1897,6 @@ export function normalizeStatement(statement, registry) {
       return {
         ...base,
         type: symbolValue(getFieldValue(statement, "type")),
-        // Internal compatibility for existing generator adapters during the
-        // coordinated public DSL rename. Public contracts should expose type.
-        platform: symbolValue(getFieldValue(statement, "type")),
         realizes: resolveReferenceList(registry, getFieldValue(statement, "realizes")),
         outputs: symbolValues(getFieldValue(statement, "outputs")),
         endpoints: parseProjectionHttpBlock(statement, registry),

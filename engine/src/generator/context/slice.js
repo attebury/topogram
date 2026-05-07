@@ -337,7 +337,7 @@ function widgetDependencyKind(dependency) {
 }
 
 function uiAgentPacketForProjection(graph, projection) {
-  const projectionType = projection.type || projection.platform || null;
+  const projectionType = projection.type || projection.type || null;
   if (projectionType !== "ui_contract" && !String(projectionType || "").endsWith("_surface")) {
     return null;
   }
@@ -380,7 +380,7 @@ function uiAgentPacketForWidget(graph, widget, projectionIds) {
   for (const projection of graph.byKind.projection || []) {
     for (const usage of projection.uiComponents || []) {
       if (usage.component?.id !== widget.id) continue;
-      const projectionType = projection.type || projection.platform || null;
+      const projectionType = projection.type || projection.type || null;
       sourceUsages.push({
         projection: {
           id: projection.id,
@@ -421,7 +421,7 @@ function uiAgentPacketForWidget(graph, widget, projectionIds) {
 function sharedUiProjectionFor(graph, projection) {
   for (const reference of projection.realizes || []) {
     const candidate = (graph.byKind.projection || []).find((entry) => entry.id === reference.id);
-    if ((candidate?.type || candidate?.platform) === "ui_contract") {
+    if ((candidate?.type || candidate?.type) === "ui_contract") {
       return candidate;
     }
   }

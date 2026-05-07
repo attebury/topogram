@@ -5,11 +5,7 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
   return {
     screen: {
   "id": "item_detail",
-  "title": "Item Details",
-  "web": {
-    "breadcrumbs": "visible",
-    "layout": "detail_page"
-  }
+  "title": "Item Details"
 },
     item: await getItem(fetch, params.id),
     visibilityDebug: {

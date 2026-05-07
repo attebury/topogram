@@ -6,10 +6,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
     return {
       screen: {
   "id": "item_exports",
-  "title": "Export Status",
-  "web": {
-    "present": "page"
-  }
+  "title": "Export Status"
 },
       job: await getItemExportJob(fetch, params.job_id),
       notFound: false
@@ -19,10 +16,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
       return {
         screen: {
   "id": "item_exports",
-  "title": "Export Status",
-  "web": {
-    "present": "page"
-  }
+  "title": "Export Status"
 },
         job: null,
         notFound: true

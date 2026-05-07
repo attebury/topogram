@@ -23,6 +23,7 @@ import {
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
 import { mergeNamedBundles, renderLoadEnvScript, renderNestedBundleShellScript } from "./bundle-shared.js";
+import { generateDbLifecyclePlan } from "../surfaces/databases/lifecycle-shared.js";
 
 function runtimeReferenceFor(graph, options = {}) {
   try {
@@ -47,6 +48,7 @@ function buildAppBundlePlan(graph, options = {}) {
   const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
   const environmentProfile = options.profileId || "local_process";
   const deployProfile = options.deployProfileId || "fly_io";
   const smokeVerification = buildVerificationSummary(graph, ["smoke", "journey"]);
@@ -63,7 +65,9 @@ function buildAppBundlePlan(graph, options = {}) {
     projections: {
       api: apiProjection?.id || null,
       ui: uiProjection?.id || null,
-      db: dbProjection?.id || null
+      db: dbProjection?.id || null,
+      dbType: dbProjection?.type || null,
+      dbEngine: dbLifecycle?.engine || null
     },
     topology: {
       runtimes: topology.runtimes.map((runtime) => ({
@@ -113,7 +117,7 @@ function renderAppBundleEnvExample(plan) {
   };
   const ports = runtimePorts(plan.runtimeReference, topology);
   const urls = runtimeUrls(plan.runtimeReference, topology);
-  if (!plan.projections.dbPlatform) {
+  if (!plan.projections.dbType) {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
 TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
@@ -126,7 +130,7 @@ ${plan.runtimeReference.environment.envExample || ""}
 # Smoke-test defaults
 ${plan.projections.api ? `TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.projections.ui ? `TOPOGRAM_WEB_BASE_URL=${urls.web}\n` : ""}`;
   }
-  if (plan.projections.dbPlatform === "db_contract") {
+  if (plan.projections.dbEngine === "sqlite") {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
 TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
@@ -409,8 +413,6 @@ function noopBundle(name, message) {
 export function generateAppBundle(graph, options = {}) {
   const plan = buildAppBundlePlan(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
-  const projections = getDefaultEnvironmentProjections(graph, options);
-  plan.projections.dbPlatform = projections.dbProjection?.platform || null;
   const fullStack = topology.apiComponents.length > 0 && topology.webComponents.length > 0 && topology.dbComponents.length > 0;
   const envBundle = generateEnvironmentBundle(graph, { ...options, profileId: plan.profiles.environment });
   const deployBundle = fullStack
