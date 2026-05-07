@@ -103,7 +103,7 @@ component component_ui_data_grid {
 
 Validation enforces supported categories, prop entry shape, event shape references, slot entries, UI pattern and region symbols, and dependency references.
 
-Projection statements bind components to concrete screens and regions:
+Shared UI projection statements bind components to shared screens and regions:
 
 ```text
 projection proj_ui_shared {
@@ -122,10 +122,13 @@ navigation or command effects, and `declared`/`realized`/`partial` status.
 Behavior `actions` and `submit` directives may reference declared component
 events or existing capabilities.
 
-`ui_components` and semantic design tokens are shared UI ownership surfaces.
-Concrete `ui_web`, `ui_ios`, and future `ui_android` projections inherit them
-through `realizes`; validation rejects concrete projection-local
-`ui_components` and `ui_design`.
+Semantic UI ownership belongs on `ui_shared`: `ui_screens`, `ui_collections`,
+`ui_actions`, `ui_visibility`, `ui_lookups`, `ui_app_shell`, `ui_navigation`,
+`ui_screen_regions`, `ui_components`, and `ui_design`. Concrete `ui_web`,
+`ui_ios`, and future `ui_android` projections inherit those semantics through
+`realizes`; they own `ui_routes` and platform surface hints such as `ui_web` or
+`ui_ios`. Validation rejects semantic UI blocks on concrete projections and
+rejects `ui_routes` on shared UI projections.
 
 ```text
 projection proj_ui_shared {

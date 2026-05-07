@@ -67,11 +67,12 @@ concrete component event to that capability with
 `event <component_event> action <capability>`.
 
 Component behavior is declared on the component, but realized by shared
-projection usage. In v1, `ui_components` belongs only on `ui_shared`
-projections. Concrete `ui_web`, iOS, and Android surfaces may define routes and
-surface hints, but they realize the shared projection and inherit component
-wiring. This keeps one reusable component contract from splintering into
-stack-specific copies.
+projection usage. In v1, semantic UI ownership belongs only on `ui_shared`
+projections: screens, regions, app shell, navigation, collection behavior,
+actions, visibility, lookups, component placement, and design intent. Concrete
+`ui_web`, iOS, and Android surfaces may define routes and surface hints, but
+they realize the shared projection and inherit component wiring. This keeps one
+reusable component contract from splintering into stack-specific copies.
 
 A shared projection `ui_components` entry supplies concrete data bindings and
 event outcomes. Topogram derives a normalized behavior realization for each
@@ -258,8 +259,9 @@ projection proj_ui_shared {
 exists, the component supports the region and region pattern when it declares
 constraints, `data` bindings reference known component props and Topogram
 sources, and `event` bindings reference known component events. Concrete
-surface projections that declare `ui_components` directly fail validation in
-v1; they should realize the shared UI projection instead.
+surface projections that declare semantic UI blocks directly fail validation in
+v1; they should realize the shared UI projection instead. Concrete projections
+own `ui_routes` and stack surface hints only.
 
 Generated UI contracts include the same usage metadata. Each screen gets a
 `components` array with placement, data bindings, and event bindings, and the

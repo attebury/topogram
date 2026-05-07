@@ -2352,6 +2352,47 @@ function validateProjectionUiAppShell(errors, statement, fieldMap) {
   }
 }
 
+const SHARED_UI_SEMANTIC_BLOCKS = [
+  "ui_screens",
+  "ui_collections",
+  "ui_actions",
+  "ui_visibility",
+  "ui_lookups",
+  "ui_app_shell",
+  "ui_navigation",
+  "ui_screen_regions"
+];
+
+function validateProjectionUiOwnership(errors, statement, fieldMap) {
+  if (statement.kind !== "projection") {
+    return;
+  }
+
+  const platform = symbolValue(getFieldValue(statement, "platform"));
+  for (const key of SHARED_UI_SEMANTIC_BLOCKS) {
+    const field = fieldMap.get(key)?.[0];
+    if (!field || field.value.type !== "block") {
+      continue;
+    }
+    if (platform !== "ui_shared") {
+      pushError(
+        errors,
+        `Projection ${statement.id} ${key} belongs on shared UI projections; concrete UI projections may define ui_routes and platform surface hints only`,
+        field.loc
+      );
+    }
+  }
+
+  const routesField = fieldMap.get("ui_routes")?.[0];
+  if (routesField?.value.type === "block" && !["ui_web", "ui_ios"].includes(platform || "")) {
+    pushError(
+      errors,
+      `Projection ${statement.id} ui_routes belongs on concrete UI projections; shared UI projections own semantic screens and regions`,
+      routesField.loc
+    );
+  }
+}
+
 function validateProjectionUiDesign(errors, statement, fieldMap) {
   if (statement.kind !== "projection") {
     return;
@@ -3499,6 +3540,7 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionHttpDownload(errors, statement, fieldMap, registry);
       validateProjectionHttpAuthz(errors, statement, fieldMap, registry);
       validateProjectionHttpCallbacks(errors, statement, fieldMap, registry);
+      validateProjectionUiOwnership(errors, statement, fieldMap);
       validateProjectionUiScreens(errors, statement, fieldMap, registry);
       validateProjectionUiCollections(errors, statement, fieldMap, registry);
       validateProjectionUiActions(errors, statement, fieldMap, registry);
