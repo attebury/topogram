@@ -1,16 +1,16 @@
 # Known-Good Release Matrix
 
 This matrix records the npmjs and GitHub Actions state verified on
-2026-05-06 after the watched consumer-rollout release train.
+2026-05-07 after the watched consumer-rollout release train.
 Treat it as a dated release audit, not a floating compatibility promise.
 
 ## Core
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.48` | `attebury/topogram` Fresh npmjs Smoke and Installed CLI First Use passed on `main` |
+| `@topogram/cli` | `0.3.49` | `attebury/topogram` Fresh npmjs Smoke, Installed CLI First Use, and strict release status passed on `main` |
 | `attebury/topograms` catalog | `6189159` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.31` |
-| `topogram-demo-todo` | `002b842` | Demo Verification passed from default catalog creation through runtime |
+| `topogram-demo-todo` | `378f6a1` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
@@ -37,8 +37,8 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-postgres-db` | `0.1.6` | database |
 | `@topogram/generator-swiftui-native` | `0.1.2` | native |
 
-All generator repos reported passing `Generator Verification` on `main` for the
-versions above before this matrix was recorded.
+All generator repos reported passing `Generator Verification` on `main` after
+rolling their `@topogram/cli` pins to `0.3.49`.
 
 ## Consumer Proofs
 
