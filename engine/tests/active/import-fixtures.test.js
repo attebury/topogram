@@ -134,16 +134,16 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
 
   const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
   assert.equal(Object.hasOwn(uiCandidates, "components"), false);
-  const componentCandidate = uiCandidates.widgets[0];
-  assert.equal(componentCandidate.id_hint, "widget_task_list_results");
-  assert.equal(componentCandidate.inferred_region, "results");
-  assert.equal(componentCandidate.inferred_pattern, "search_results");
-  assert.deepEqual(componentCandidate.inferred_props, [
+  const widgetCandidate = uiCandidates.widgets[0];
+  assert.equal(widgetCandidate.id_hint, "widget_task_list_results");
+  assert.equal(widgetCandidate.inferred_region, "results");
+  assert.equal(widgetCandidate.inferred_pattern, "search_results");
+  assert.deepEqual(widgetCandidate.inferred_props, [
     { name: "rows", type: "array", required: true, source: "cap_list_tasks" }
   ]);
-  assert.deepEqual(componentCandidate.inferred_events, []);
-  assert.equal(componentCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
-  assert.equal((componentCandidate.evidence || []).length > 0, true);
+  assert.deepEqual(widgetCandidate.inferred_events, []);
+  assert.equal(widgetCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
+  assert.equal((widgetCandidate.evidence || []).length > 0, true);
 
   const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-contract.tg");
   const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "widgets", "widget-task-list-results.tg");
@@ -181,10 +181,16 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
     ui: 4
   });
   const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
-  const componentItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
-  assert.deepEqual(componentItems.map((item) => item.item), ["widget_task_list_results"]);
-  assert.equal(componentItems[0].source_path, "candidates/reconcile/model/bundles/task/widgets/widget_task_list_results.tg");
-  assert.equal(componentItems[0].canonical_rel_path, "widgets/widget-task-list-results.tg");
+  const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
+  assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
+  assert.equal(widgetItems[0].source_path, "candidates/reconcile/model/bundles/task/widgets/widget_task_list_results.tg");
+  assert.equal(widgetItems[0].canonical_rel_path, "widgets/widget-task-list-results.tg");
+  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.json"), "utf8"));
+  const taskBundle = reconcileReportJson.candidate_model_bundles.find((bundle) => bundle.slug === "task");
+  assert.deepEqual(taskBundle.widgets, ["widget_task_list_results"]);
+  assert.equal(Object.hasOwn(taskBundle, "components"), false);
+  assert.deepEqual(taskBundle.operator_summary.widgetIds, ["widget_task_list_results"]);
+  assert.equal(Object.hasOwn(taskBundle.operator_summary, "componentIds"), false);
   const reconcileReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.md"), "utf8");
   assert.match(reconcileReport, /1 widgets/);
   assert.match(reconcileReport, /main widgets `widget_task_list_results`/);
@@ -195,10 +201,10 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
   const selectorPayload = JSON.parse(selectorList.stdout);
-  const componentSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "widgets");
-  assert.equal(componentSelector.itemCount, 1);
-  assert.match(componentSelector.previewCommand, /topogram import adopt widgets .* --dry-run/);
-  assert.match(componentSelector.writeCommand, /topogram import adopt widgets .* --write/);
+  const widgetSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "widgets");
+  assert.equal(widgetSelector.itemCount, 1);
+  assert.match(widgetSelector.previewCommand, /topogram import adopt widgets .* --dry-run/);
+  assert.match(widgetSelector.writeCommand, /topogram import adopt widgets .* --write/);
 
   const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
   assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
@@ -217,6 +223,42 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const status = runCli(["import", "status", targetRoot, "--json"]);
   assert.equal(status.status, 0, status.stderr || status.stdout);
   assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 1);
+});
+
+test("legacy imported UI component candidates are read as widgets without rewriting public reports", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-legacy-components."));
+  const targetRoot = path.join(runRoot, "imported");
+  const result = runCli([
+    "import",
+    path.join(importFixtureRoot, "route-fallback"),
+    "--out",
+    targetRoot,
+    "--from",
+    "api,ui",
+    "--json"
+  ]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+
+  const uiCandidatesPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json");
+  const uiCandidates = JSON.parse(fs.readFileSync(uiCandidatesPath, "utf8"));
+  const legacyUiCandidates = {
+    ...uiCandidates,
+    components: uiCandidates.widgets
+  };
+  delete legacyUiCandidates.widgets;
+  fs.writeFileSync(uiCandidatesPath, `${JSON.stringify(legacyUiCandidates, null, 2)}\n`);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
+  assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
+
+  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.json"), "utf8"));
+  const taskBundle = reconcileReportJson.candidate_model_bundles.find((bundle) => bundle.slug === "task");
+  assert.deepEqual(taskBundle.widgets, ["widget_task_list_results"]);
+  assert.equal(Object.hasOwn(taskBundle, "components"), false);
 });
 
 test("brownfield import refresh updates candidates and provenance without overwriting adopted Topogram", () => {

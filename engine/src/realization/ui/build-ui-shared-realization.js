@@ -49,12 +49,12 @@ function ownershipFieldByCapability(graph) {
 }
 
 function widgetById(graph, widgetId) {
-  return (graph.byKind.widget || graph.byKind.component || []).find((widget) => widget.id === widgetId) || null;
+  return (graph.byKind.widget || []).find((widget) => widget.id === widgetId) || null;
 }
 
 function widgetContractFor(graph, widgetId) {
   const widget = widgetById(graph, widgetId);
-  return widget?.widgetContract || widget?.componentContract || null;
+  return widget?.widgetContract || null;
 }
 
 function summarizeWidgetRef(graph, widgetId) {
@@ -119,7 +119,7 @@ function buildDesignIntentContract(projection) {
 }
 
 export function buildWidgetUsageContract(graph, entry, options = {}) {
-  const widgetId = entry.widget?.id || entry.component?.id || null;
+  const widgetId = entry.widget?.id || null;
   const contract = widgetId ? widgetContractFor(graph, widgetId) : null;
   const region = options.region || null;
   return {
@@ -143,7 +143,7 @@ export function buildWidgetUsageContract(graph, entry, options = {}) {
 
 export function buildWidgetContractMap(graph, widgetUsages) {
   return Object.fromEntries(
-    [...new Set(widgetUsages.map((entry) => entry.widget?.id || entry.component?.id).filter(Boolean))]
+    [...new Set(widgetUsages.map((entry) => entry.widget?.id).filter(Boolean))]
       .sort()
       .map((widgetId) => [widgetId, widgetContractFor(graph, widgetId)])
       .filter(([, contract]) => contract)
@@ -202,7 +202,7 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
   const actionEntries = (projection.uiActions || []).filter((entry) => entry.screenId === screen.id);
   const lookupEntries = (projection.uiLookups || []).filter((entry) => entry.screenId === screen.id);
   const regionEntries = (projection.uiScreenRegions || []).filter((entry) => entry.screenId === screen.id);
-  const widgetEntries = (projection.uiComponents || []).filter((entry) => entry.screenId === screen.id);
+  const widgetEntries = (projection.widgetBindings || []).filter((entry) => entry.screenId === screen.id);
   const screenActionIds = new Set(
     [
       screen.primaryAction?.id,
@@ -305,7 +305,7 @@ export function buildUiSharedRealization(graph, options = {}) {
 
   if (options.projectionId) {
     const projection = projections[0];
-    const widgetUsages = projection.uiComponents || [];
+    const widgetUsages = projection.widgetBindings || [];
     const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(graph, projection, screen, ownershipFields));
     return {
       projection: {
@@ -325,7 +325,7 @@ export function buildUiSharedRealization(graph, options = {}) {
 
   const output = {};
   for (const projection of projections) {
-    const widgetUsages = projection.uiComponents || [];
+    const widgetUsages = projection.widgetBindings || [];
     const screens = (projection.uiScreens || []).map((screen) => buildUiScreenContract(graph, projection, screen, ownershipFields));
     output[projection.id] = {
       projection: {

@@ -368,7 +368,7 @@ function uiAgentPacketForProjection(graph, projection) {
       screenId: route.screenId,
       path: route.path
     })),
-    widgets: (ownerProjection.uiComponents || []).map((usage) => widgetUsagePacket(usage)),
+    widgets: (ownerProjection.widgetBindings || []).map((usage) => widgetUsagePacket(usage)),
     designTokens: designIntentPacket(ownerProjection),
     requiredGates: uiRequiredGates(projection.id)
   };
@@ -378,8 +378,8 @@ function uiAgentPacketForWidget(graph, widget, projectionIds) {
   const projectionSet = new Set(projectionIds);
   const sourceUsages = [];
   for (const projection of graph.byKind.projection || []) {
-    for (const usage of projection.uiComponents || []) {
-      if (usage.component?.id !== widget.id) continue;
+    for (const usage of projection.widgetBindings || []) {
+      if (usage.widget?.id !== widget.id) continue;
       const projectionType = projection.type || projection.type || null;
       sourceUsages.push({
         projection: {
@@ -406,9 +406,9 @@ function uiAgentPacketForWidget(graph, widget, projectionIds) {
       id: widget.id,
       name: widget.name || widget.id,
       category: widget.category || null,
-      patterns: widget.widgetContract?.patterns || widget.componentContract?.patterns || [],
-      regions: widget.widgetContract?.regions || widget.componentContract?.regions || [],
-      behaviors: widget.widgetContract?.behaviors || widget.componentContract?.behaviors || []
+      patterns: widget.widgetContract?.patterns || [],
+      regions: widget.widgetContract?.regions || [],
+      behaviors: widget.widgetContract?.behaviors || []
     },
     sourceUsages,
     inheritedBy: [...projectionSet]
@@ -432,7 +432,7 @@ function widgetUsagePacket(usage) {
   return {
     screenId: usage.screenId || null,
     region: usage.region || null,
-    widgetId: usage.component?.id || null,
+    widgetId: usage.widget?.id || null,
     dataBindings: (usage.dataBindings || []).map((binding) => ({
       prop: binding.prop || null,
       source: binding.source?.id || binding.source || null

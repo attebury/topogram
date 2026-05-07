@@ -479,14 +479,14 @@ function projectionUsageEntries(graph, projection) {
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
   const entries = [];
   if (sharedProjection) {
-    entries.push(...(sharedProjection.uiComponents || []).map((usage, index) => ({
+    entries.push(...(sharedProjection.widgetBindings || []).map((usage, index) => ({
       projection,
       sourceProjection: sharedProjection,
       usage,
       index
     })));
   }
-  entries.push(...(projection.uiComponents || []).map((usage, index) => ({
+  entries.push(...(projection.widgetBindings || []).map((usage, index) => ({
     projection,
     sourceProjection: projection,
     usage,
@@ -499,10 +499,10 @@ function candidateProjections(graph, projectionId) {
   if (projectionId) {
     return [getProjection(graph, projectionId)];
   }
-  const direct = uiProjectionCandidates(graph).filter((projection) => (projection.uiComponents || []).length > 0);
+  const direct = uiProjectionCandidates(graph).filter((projection) => (projection.widgetBindings || []).length > 0);
   const inherited = (graph.byKind.projection || []).filter((projection) => {
-    if ((projection.uiComponents || []).length > 0) return false;
-    return Boolean(sharedUiProjectionForWeb(graph, projection)?.uiComponents?.length);
+    if ((projection.widgetBindings || []).length > 0) return false;
+    return Boolean(sharedUiProjectionForWeb(graph, projection)?.widgetBindings?.length);
   });
   return [...direct, ...inherited].sort((a, b) => a.id.localeCompare(b.id));
 }

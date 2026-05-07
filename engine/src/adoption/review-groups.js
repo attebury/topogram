@@ -172,7 +172,7 @@ export function buildBundleAdoptionPriorities(report, confidenceRank) {
         enums: bundle.enums.length,
         capabilities: bundle.capabilities.length,
         shapes: bundle.shapes.length,
-        components: bundle.components?.length || 0,
+        widgets: bundle.widgets?.length || 0,
         screens: bundle.screens.length,
         workflows: bundle.workflows.length,
         docs: bundle.docs.length

@@ -53,7 +53,7 @@ function serializeFields(statement) {
     "plan",
     "monitoring",
     "vocabulary",
-    "componentContract",
+    "widgetContract",
     "record",
     "flow",
     "affectedByPitches",

@@ -27,7 +27,7 @@ function widgetContract(widget) {
 export function generateUiWidgetContract(graph, options = {}) {
   const widgetId = options.widgetId || options.componentId;
   if (widgetId) {
-    const widget = (graph?.byKind?.widget || graph?.byKind?.component || []).find((entry) => entry.id === widgetId);
+    const widget = (graph?.byKind?.widget || []).find((entry) => entry.id === widgetId);
     if (!widget) {
       throw new Error(`No widget found with id '${widgetId}'`);
     }

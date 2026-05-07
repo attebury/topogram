@@ -1818,7 +1818,7 @@ function annotateGeneratorPolicyDiagnostics(diagnostics, bindings) {
   return diagnostics.map((diagnostic) => {
     const binding = bindings.find((item) => (
       item.packageName === diagnostic.packageName &&
-      (!diagnostic.componentId || item.componentId === diagnostic.componentId)
+      (!diagnostic.runtimeId || item.runtimeId === diagnostic.runtimeId)
     ));
     if (!binding) {
       return diagnostic;
@@ -1846,11 +1846,11 @@ function generatorPolicyPackageMetadataDiagnostics(bindings) {
       diagnostics.push({
         code: "generator_package_dependency_missing",
         severity: "warning",
-        message: `Component '${binding.componentId}' generator package '${binding.packageName}' is not declared in package.json dependencies.`,
+        message: `Runtime '${binding.runtimeId}' generator package '${binding.packageName}' is not declared in package.json dependencies.`,
         path: binding.packageInfo.installedPackageJsonPath,
         suggestedFix: `Declare '${binding.packageName}' in package.json devDependencies so generator adoption is visible in package review.`,
         step: "generator-policy",
-        componentId: binding.componentId,
+        runtimeId: binding.runtimeId,
         generatorId: binding.generatorId,
         packageName: binding.packageName,
         version: binding.version,
@@ -1870,11 +1870,11 @@ function generatorPolicyPackageMetadataDiagnostics(bindings) {
       diagnostics.push({
         code: "generator_package_version_drift",
         severity: "warning",
-        message: `Component '${binding.componentId}' generator package '${binding.packageName}' is installed at '${binding.packageInfo.installedVersion}', but package-lock records '${binding.packageInfo.lockfileVersion}'.`,
+        message: `Runtime '${binding.runtimeId}' generator package '${binding.packageName}' is installed at '${binding.packageInfo.installedVersion}', but package-lock records '${binding.packageInfo.lockfileVersion}'.`,
         path: binding.packageInfo.lockfilePath,
         suggestedFix: "Run the package manager install command and review the resulting lockfile before pinning generator policy.",
         step: "generator-policy",
-        componentId: binding.componentId,
+        runtimeId: binding.runtimeId,
         generatorId: binding.generatorId,
         packageName: binding.packageName,
         version: binding.version,
@@ -1975,7 +1975,7 @@ function buildGeneratorPolicyExplainPayload(projectPath) {
         `scopes=${policy.allowedPackageScopes.join(", ") || "(none)"}`,
         `packages=${policy.allowedPackages.join(", ") || "(none)"}`
       ].join("; "),
-      `Component '${binding.componentId}' package-backed generator must be from an allowed package or scope.`,
+      `Runtime '${binding.runtimeId}' package-backed generator must be from an allowed package or scope.`,
       `Run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` after reviewing the generator package.`
     ));
     const pinnedVersion = policy.pinnedVersions[binding.packageName] || policy.pinnedVersions[binding.generatorId] || null;
@@ -1984,7 +1984,7 @@ function buildGeneratorPolicyExplainPayload(projectPath) {
       !pinnedVersion || pinnedVersion === binding.version,
       binding.version,
       pinnedVersion || "(unpinned)",
-      `Component '${binding.componentId}' generator version must match its policy pin when one exists.`,
+      `Runtime '${binding.runtimeId}' generator version must match its policy pin when one exists.`,
       `Run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` after review.`
     ));
   }
@@ -2024,7 +2024,7 @@ function printGeneratorPolicyCheckPayload(payload) {
   console.log(`Defaulted: ${payload.defaulted ? "yes" : "no"}`);
   console.log(`Package-backed generators: ${payload.bindings.length}`);
   for (const binding of payload.bindings) {
-    console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+    console.log(`- ${binding.runtimeId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
     console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
     if (binding.packageInfo.dependencySpec) {
       console.log(`  dependency: ${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}`);
@@ -2066,7 +2066,7 @@ function printGeneratorPolicyStatusPayload(payload) {
     console.log("Generator packages:");
   }
   for (const binding of payload.bindings) {
-    console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+    console.log(`- ${binding.runtimeId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
     console.log(`  allowed: ${binding.allowed ? "yes" : "no"}`);
     console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
     console.log(`  dependency: ${binding.packageInfo.dependencyField && binding.packageInfo.dependencySpec ? `${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}` : "(not declared)"}`);
@@ -2107,7 +2107,7 @@ function printGeneratorPolicyExplainPayload(payload) {
     console.log("");
     console.log("Package-backed generators:");
     for (const binding of payload.bindings) {
-      console.log(`- ${binding.componentId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
+      console.log(`- ${binding.runtimeId}: ${binding.generatorId}@${binding.version} via ${binding.packageName}`);
       console.log(`  npm package: ${binding.packageInfo.installedVersion || "(not installed)"}`);
       if (binding.packageInfo.dependencySpec) {
         console.log(`  dependency: ${binding.packageInfo.dependencyField} ${binding.packageInfo.dependencySpec}`);

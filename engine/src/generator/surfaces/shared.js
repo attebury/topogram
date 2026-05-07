@@ -38,7 +38,7 @@ export function uiProjectionCandidates(graph) {
       (projection.uiAppShell || []).length > 0 ||
       (projection.uiNavigation || []).length > 0 ||
       (projection.uiScreenRegions || []).length > 0 ||
-      (projection.uiComponents || []).length > 0 ||
+      (projection.widgetBindings || []).length > 0 ||
       (projection.uiDesign || []).length > 0
   );
 }

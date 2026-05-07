@@ -62,7 +62,7 @@ function summarizeProjection(projection) {
     realizes: refIds(projection.realizes),
     outputs: stableSortedStrings(projection.outputs || []),
     uiScreens: stableSortedStrings((projection.uiScreens || []).map((screen) => screen.id)),
-    uiComponents: stableSortedStrings((projection.uiComponents || []).map((entry) => entry.component?.id).filter(Boolean)),
+    widgetBindings: stableSortedStrings((projection.widgetBindings || []).map((entry) => entry.widget?.id).filter(Boolean)),
     dbTables: stableSortedStrings((projection.dbTables || []).map((table) => table.table || table.entity?.id)),
     httpCapabilities: stableSortedStrings((projection.http || []).map((entry) => entry.capability?.id)),
     reviewBoundary: reviewBoundaryForProjectionPolicy(projection),
@@ -397,11 +397,7 @@ export function relatedProjectionsForShape(graph, shapeId) {
 }
 
 export function widgetById(graph, widgetId) {
-  return (graph?.byKind?.widget || graph?.byKind?.component || []).find((widget) => widget.id === widgetId) || null;
-}
-
-export function componentById(graph, componentId) {
-  return widgetById(graph, componentId);
+  return (graph?.byKind?.widget || []).find((widget) => widget.id === widgetId) || null;
 }
 
 function projectionById(graph, projectionId) {
@@ -435,16 +431,12 @@ function downstreamProjectionIds(graph, projectionIds) {
 }
 
 export function relatedWidgetsForProjection(graph, projection) {
-  const directIds = (projection?.uiComponents || []).map((entry) => entry.component?.id).filter(Boolean);
+  const directIds = (projection?.widgetBindings || []).map((entry) => entry.widget?.id).filter(Boolean);
   const inheritedIds = realizedProjectionIds(projection)
     .map((projectionId) => projectionById(graph, projectionId))
     .filter(Boolean)
     .flatMap((realizedProjection) => relatedWidgetsForProjection(graph, realizedProjection));
   return stableSortedStrings([...directIds, ...inheritedIds]);
-}
-
-export function relatedComponentsForProjection(graph, projection) {
-  return relatedWidgetsForProjection(graph, projection);
 }
 
 export function relatedShapesForWidget(widget) {
@@ -461,15 +453,11 @@ export function relatedShapesForWidget(widget) {
   return stableSortedStrings(ids);
 }
 
-export function relatedShapesForComponent(component) {
-  return relatedShapesForWidget(component);
-}
-
 export function relatedProjectionsForWidget(graph, widgetId) {
   const widget = widgetById(graph, widgetId);
   if (!widget) return [];
   const explicitProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
-    .filter((projection) => (projection.uiComponents || []).some((entry) => entry.component?.id === widgetId))
+    .filter((projection) => (projection.widgetBindings || []).some((entry) => entry.widget?.id === widgetId))
     .map((projection) => projection.id));
   const dependencyProjectionIds = stableSortedStrings((widget.dependencies || []).flatMap((dependency) => {
     const kind = referenceKind(dependency);
@@ -497,10 +485,6 @@ export function relatedProjectionsForWidget(graph, widgetId) {
     .map((projection) => projection.id));
 
   return downstreamProjectionIds(graph, stableSortedStrings([...explicitProjectionIds, ...dependencyProjectionIds, ...viaUiRegions]));
-}
-
-export function relatedProjectionsForComponent(graph, componentId) {
-  return relatedProjectionsForWidget(graph, componentId);
 }
 
 function referenceKind(reference) {
@@ -555,7 +539,7 @@ export function workspaceInventory(graph) {
     journeys: stableSortedStrings((graph.docs || []).filter((doc) => doc.kind === "journey").map((doc) => doc.id)),
     entities: stableSortedStrings((graph.byKind.entity || []).map((item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map((item) => item.id)),
-    widgets: stableSortedStrings((graph.byKind.widget || graph.byKind.component || []).map((item) => item.id)),
+    widgets: stableSortedStrings((graph.byKind.widget || []).map((item) => item.id)),
     verifications: stableSortedStrings((graph.byKind.verification || []).map((item) => item.id)),
     domains: stableSortedStrings((graph.byKind.domain || []).map((item) => item.id)),
     pitches: stableSortedStrings((graph.byKind.pitch || []).map((item) => item.id)),

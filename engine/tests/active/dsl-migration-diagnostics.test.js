@@ -253,3 +253,34 @@ test("documented widget command examples execute against the canonical fixture",
     assert.equal(result.status, 0, result.stderr || result.stdout);
   }
 });
+
+test("old component CLI names fail with rename guidance", () => {
+  const cases = [
+    {
+      args: ["component", "check", fixtureRoot],
+      expected: "Command 'topogram component' was renamed to 'topogram widget'."
+    },
+    {
+      args: ["generate", fixtureRoot, "--generate", "ui-widget-contract", "--component", "widget_data_grid", "--json"],
+      expected: "CLI flag '--component' was renamed to '--widget'."
+    },
+    {
+      args: ["generate", fixtureRoot, "--generate", "ui-component-contract", "--widget", "widget_data_grid", "--json"],
+      expected: "Generator target 'ui-component-contract' was renamed to 'ui-widget-contract'."
+    },
+    {
+      args: ["generate", fixtureRoot, "--generate", "component-conformance-report", "--projection", "proj_web_surface", "--json"],
+      expected: "Generator target 'component-conformance-report' was renamed to 'widget-conformance-report'."
+    },
+    {
+      args: ["generate", fixtureRoot, "--generate", "component-behavior-report", "--widget", "widget_data_grid", "--json"],
+      expected: "Generator target 'component-behavior-report' was renamed to 'widget-behavior-report'."
+    }
+  ];
+
+  for (const testCase of cases) {
+    const result = runCli(testCase.args);
+    assert.notEqual(result.status, 0, `${testCase.args.join(" ")} should fail`);
+    assert.match(result.stderr, new RegExp(escapeRegExp(testCase.expected)));
+  }
+});

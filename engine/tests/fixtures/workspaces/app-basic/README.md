@@ -2,7 +2,7 @@
 
 `app-basic` is the engine's complex generated-app regression fixture. It uses
 Item, Collection, and Member as neutral sample domain concepts so engine tests can
-exercise API, web, database, verification, component, and implementation-provider
+exercise API, web, database, verification, widget, and implementation-provider
 behavior without depending on a product demo.
 
 Keep this fixture engine-owned and purpose-built:

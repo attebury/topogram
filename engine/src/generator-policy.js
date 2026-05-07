@@ -31,7 +31,7 @@ export const GENERATOR_POLICY_FILE = "topogram.generator-policy.json";
  * @property {string|null} path
  * @property {string|null} suggestedFix
  * @property {string|null} step
- * @property {string|null} [componentId]
+ * @property {string|null} [runtimeId]
  * @property {string|null} [generatorId]
  * @property {string|null} [packageName]
  * @property {string|null} [version]
@@ -39,8 +39,8 @@ export const GENERATOR_POLICY_FILE = "topogram.generator-policy.json";
 
 /**
  * @typedef {Object} PackageGeneratorBinding
- * @property {string} componentId
- * @property {string} componentType
+ * @property {string} runtimeId
+ * @property {string} runtimeKind
  * @property {string} projection
  * @property {string} generatorId
  * @property {string} version
@@ -59,7 +59,7 @@ function generatorPolicyDiagnostic(input) {
     path: typeof input.path === "string" ? input.path : null,
     suggestedFix: typeof input.suggestedFix === "string" ? input.suggestedFix : null,
     step: typeof input.step === "string" ? input.step : null,
-    componentId: typeof input.componentId === "string" ? input.componentId : null,
+    runtimeId: typeof input.runtimeId === "string" ? input.runtimeId : null,
     generatorId: typeof input.generatorId === "string" ? input.generatorId : null,
     packageName: typeof input.packageName === "string" ? input.packageName : null,
     version: typeof input.version === "string" ? input.version : null
@@ -179,8 +179,8 @@ export function packageBackedGeneratorBindings(projectConfig) {
   return runtimes
     .filter((runtime) => typeof runtime?.generator?.package === "string" && runtime.generator.package.length > 0)
     .map((runtime) => ({
-      componentId: String(runtime.id || "unknown"),
-      componentType: String(runtime.kind || "unknown"),
+      runtimeId: String(runtime.id || "unknown"),
+      runtimeKind: String(runtime.kind || "unknown"),
       projection: String(runtime.projection || "unknown"),
       generatorId: String(runtime.generator.id || "unknown"),
       version: String(runtime.generator.version || "unknown"),
@@ -263,11 +263,11 @@ export function generatorPolicyDiagnosticsForBindings(policyInfo, bindings, step
       const allowedPackages = policy.allowedPackages.join(", ") || "(none)";
       diagnostics.push(generatorPolicyDiagnostic({
         code: "generator_package_denied",
-        message: `Component '${binding.componentId}' generator package '${binding.packageName}' is not allowed by ${GENERATOR_POLICY_FILE}.`,
+        message: `Runtime '${binding.runtimeId}' generator package '${binding.packageName}' is not allowed by ${GENERATOR_POLICY_FILE}.`,
         path: policyInfo.path,
         suggestedFix: `Review '${binding.packageName}', then run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` or add '${scope || binding.packageName}' to ${GENERATOR_POLICY_FILE}.`,
         step,
-        componentId: binding.componentId,
+        runtimeId: binding.runtimeId,
         generatorId: binding.generatorId,
         packageName: binding.packageName,
         version: binding.version
@@ -278,11 +278,11 @@ export function generatorPolicyDiagnosticsForBindings(policyInfo, bindings, step
     if (pinnedVersion && pinnedVersion !== binding.version) {
       diagnostics.push(generatorPolicyDiagnostic({
         code: "generator_version_mismatch",
-        message: `Component '${binding.componentId}' generator '${binding.generatorId}' uses version '${binding.version}', but ${GENERATOR_POLICY_FILE} pins '${binding.packageName}' to '${pinnedVersion}'.`,
+        message: `Runtime '${binding.runtimeId}' generator '${binding.generatorId}' uses version '${binding.version}', but ${GENERATOR_POLICY_FILE} pins '${binding.packageName}' to '${pinnedVersion}'.`,
         path: policyInfo.path,
         suggestedFix: `Use generator version '${pinnedVersion}', or run \`topogram generator policy pin ${binding.packageName}@${binding.version}\` after review.`,
         step,
-        componentId: binding.componentId,
+        runtimeId: binding.runtimeId,
         generatorId: binding.generatorId,
         packageName: binding.packageName,
         version: binding.version

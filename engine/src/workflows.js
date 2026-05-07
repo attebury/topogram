@@ -1464,14 +1464,14 @@ function renderCandidateUiReportDoc(screen, routes, actions) {
   return renderMarkdownDoc(metadata, body);
 }
 
-function renderCandidateComponent(component) {
-  const propName = component.data_prop || "rows";
-  const pattern = component.pattern || "search_results";
-  const region = component.region || "results";
+function renderCandidateWidget(widget) {
+  const propName = widget.data_prop || "rows";
+  const pattern = widget.pattern || "search_results";
+  const region = widget.region || "results";
   return ensureTrailingNewline(
     [
-      `widget ${component.id_hint} {`,
-      `  name "${component.label || component.id_hint}"`,
+      `widget ${widget.id_hint} {`,
+      `  name "${widget.label || widget.id_hint}"`,
       '  description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
       "  category collection",
       "  props {",
@@ -1694,7 +1694,7 @@ function buildBundleOperatorSummary(bundle) {
     bundle.id;
   const participants = summarizeBundleParticipants(bundle);
   const capabilityIds = [...new Set((bundle.capabilities || []).map((entry) => entry.id_hint))].slice(0, 4);
-  const componentIds = [...new Set((bundle.components || []).map((entry) => entry.id_hint))].slice(0, 4);
+  const widgetIds = [...new Set((bundle.widgets || []).map((entry) => entry.id_hint))].slice(0, 4);
   const screenIds = [...new Set((bundle.screens || []).map((entry) => entry.id_hint))].slice(0, 4);
   const routePaths = [...new Set((bundle.uiRoutes || []).map((entry) => entry.path).filter(Boolean))].slice(0, 4);
   const workflowIds = [...new Set((bundle.workflows || []).map((entry) => entry.id_hint))].slice(0, 4);
@@ -1710,7 +1710,7 @@ function buildBundleOperatorSummary(bundle) {
   const evidenceKinds = [
     (bundle.entities || []).length > 0 ? "entity evidence" : null,
     (bundle.capabilities || []).length > 0 ? "API capability evidence" : null,
-    (bundle.components || []).length > 0 ? "UI widget evidence" : null,
+    (bundle.widgets || []).length > 0 ? "UI widget evidence" : null,
     (bundle.screens || []).length > 0 || (bundle.uiRoutes || []).length > 0 ? "UI screen/route evidence" : null,
     (bundle.workflows || []).length > 0 ? "workflow evidence" : null,
     (bundle.docs || []).length > 0 ? "doc evidence" : null,
@@ -1726,7 +1726,7 @@ function buildBundleOperatorSummary(bundle) {
     primaryEntityId,
     participants,
     capabilityIds,
-    componentIds,
+    widgetIds,
     screenIds,
     routePaths,
     workflowIds,
@@ -2418,7 +2418,7 @@ function getOrCreateCandidateBundle(bundles, conceptId, label) {
       enums: [],
       capabilities: [],
       shapes: [],
-      components: [],
+      widgets: [],
       screens: [],
       uiRoutes: [],
       uiActions: [],
@@ -2715,7 +2715,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `Enums: ${bundle.enums.length}`,
     `Capabilities: ${bundle.capabilities.length}`,
     `Shapes: ${bundle.shapes.length}`,
-    `Widgets: ${bundle.components.length}`,
+    `Widgets: ${bundle.widgets.length}`,
     `Screens: ${bundle.screens.length}`,
     `UI routes: ${bundle.uiRoutes.length}`,
     `UI actions: ${bundle.uiActions.length}`,
@@ -2733,7 +2733,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `- Primary entity: ${summary.primaryEntityId ? `\`${summary.primaryEntityId}\`` : "_none_"}`,
     `- Participants: ${summary.participants.label}`,
     `- Main capabilities: ${summarizeBundleSurface(bundle, summary.capabilityIds)}`,
-    `- Main widgets: ${summarizeBundleSurface(bundle, summary.componentIds)}`,
+    `- Main widgets: ${summarizeBundleSurface(bundle, summary.widgetIds)}`,
     `- Main screens: ${summarizeBundleSurface(bundle, summary.screenIds)}`,
     `- Main routes: ${summarizeBundleSurface(bundle, summary.routePaths)}`,
     `- Main workflows: ${summarizeBundleSurface(bundle, summary.workflowIds)}`,
@@ -3188,7 +3188,7 @@ function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
       canonical_rel_path: `verifications/${dashedTopogramId(entry.id_hint)}.tg`
     });
   }
-  for (const entry of bundle.components || []) {
+  for (const entry of bundle.widgets || []) {
     steps.push({
       action: "promote_widget",
       item: entry.id_hint,
@@ -3692,7 +3692,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const canonicalRoleIds = new Set((graph?.byKind.role || []).map((entry) => entry.id));
   const canonicalEntityIds = new Set((graph?.byKind.entity || []).map((entry) => entry.id));
   const canonicalEnumIds = new Set((graph?.byKind.enum || []).map((entry) => entry.id));
-  const canonicalComponentIds = new Set([...(graph?.byKind.widget || []), ...(graph?.byKind.component || [])].map((entry) => entry.id));
+  const canonicalWidgetIds = new Set((graph?.byKind.widget || []).map((entry) => entry.id));
   const canonicalUi = collectCanonicalUiSurface(graph || { byKind: { projection: [] } });
   const canonicalWorkflow = collectCanonicalWorkflowSurface(graph || { byKind: { decision: [] }, docs: [] });
   const canonicalDocsByKind = new Map();
@@ -3791,7 +3791,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
     bundle.uiActions.push(entry);
   }
-  function componentConceptId(entry) {
+  function widgetConceptId(entry) {
     if (entry.entity_id || entry.concept_id) {
       return entry.entity_id || entry.concept_id;
     }
@@ -3802,12 +3802,12 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   }
 
   for (const entry of uiWidgetCandidates) {
-    if (canonicalComponentIds.has(entry.id_hint)) {
+    if (canonicalWidgetIds.has(entry.id_hint)) {
       continue;
     }
-    const conceptId = componentConceptId(entry);
+    const conceptId = widgetConceptId(entry);
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
-    bundle.components.push(entry);
+    bundle.widgets.push(entry);
   }
   for (const entry of workflowCandidates.workflows || []) {
     if (canonicalWorkflow.workflow_docs.includes(entry.id_hint)) {
@@ -3894,7 +3894,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.enums.length > 0 ||
       bundle.capabilities.length > 0 ||
       bundle.shapes.length > 0 ||
-      bundle.components.length > 0 ||
+      bundle.widgets.length > 0 ||
       bundle.screens.length > 0 ||
       bundle.uiRoutes.length > 0 ||
       bundle.uiActions.length > 0 ||
@@ -3912,7 +3912,7 @@ function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         enums: bundle.enums.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         capabilities: bundle.capabilities.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         shapes: bundle.shapes.sort((a, b) => a.id.localeCompare(b.id)),
-        components: bundle.components.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
+        widgets: bundle.widgets.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         screens: bundle.screens.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         uiRoutes: bundle.uiRoutes.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
         uiActions: bundle.uiActions.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
@@ -4014,8 +4014,8 @@ function buildCandidateModelFiles(graph, appImport, topogramRoot) {
     for (const entry of bundle.verifications || []) {
       files[`${bundleRoot}/verifications/${entry.id_hint}.tg`] = renderCandidateVerification(entry, entry.scenarios || []);
     }
-    for (const entry of bundle.components || []) {
-      files[`${bundleRoot}/widgets/${entry.id_hint}.tg`] = renderCandidateComponent(entry);
+    for (const entry of bundle.widgets || []) {
+      files[`${bundleRoot}/widgets/${entry.id_hint}.tg`] = renderCandidateWidget(entry);
     }
     for (const entry of bundle.docs) {
       if (entry.existing_canonical) {
@@ -7588,8 +7588,7 @@ function reconcileWorkflow(inputPath, options = {}) {
       enums: bundle.enums.map((entry) => entry.id_hint),
       capabilities: bundle.capabilities.map((entry) => entry.id_hint),
       shapes: bundle.shapes.map((entry) => entry.id),
-      components: bundle.components.map((entry) => entry.id_hint),
-      widgets: bundle.components.map((entry) => entry.id_hint),
+      widgets: bundle.widgets.map((entry) => entry.id_hint),
       screens: bundle.screens.map((entry) => entry.id_hint),
       workflows: bundle.workflows.map((entry) => entry.id_hint),
       docs: bundle.docs.map((entry) => entry.id),
@@ -7613,11 +7612,11 @@ function reconcileWorkflow(inputPath, options = {}) {
     : "## Promoted Canonical Items";
   files["candidates/reconcile/report.json"] = `${stableStringify(report)}\n`;
   const candidateModelBundlesMarkdown = report.candidate_model_bundles.length
-    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.components.length} widgets, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
+    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.widgets.length} widgets, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
   - primary concept \`${bundle.operator_summary.primaryConcept}\`${bundle.operator_summary.primaryEntityId ? `, primary entity \`${bundle.operator_summary.primaryEntityId}\`` : ""}
   - participants ${bundle.operator_summary.participants.label}
   - main capabilities ${summarizeBundleSurface(bundle, bundle.operator_summary.capabilityIds)}
-  - main widgets ${summarizeBundleSurface(bundle, bundle.operator_summary.componentIds)}
+  - main widgets ${summarizeBundleSurface(bundle, bundle.operator_summary.widgetIds)}
   - main routes ${summarizeBundleSurface(bundle, bundle.operator_summary.routePaths)}
   - candidate maintained seam mappings ${renderMaintainedSeamCandidatesInline(bundle)}
   - permission hints ${bundle.auth_permission_hints?.length ? bundle.auth_permission_hints.map((entry) => formatAuthPermissionHintInline(entry)).join(", ") : "_none_"}

@@ -277,8 +277,8 @@ function loadPackageGeneratorAdapter(manifest, runtime, options = {}) {
   const diagnostics = generatorPolicyDiagnosticsForBindings(
     loadGeneratorPolicy(rootDir),
     [{
-      componentId: String(runtime?.id || "unknown"),
-      componentType: String(runtime?.kind || runtime?.type || manifest.surface || "unknown"),
+      runtimeId: String(runtime?.id || "unknown"),
+      runtimeKind: String(runtime?.kind || runtime?.type || manifest.surface || "unknown"),
       projection: String(runtime?.projection?.id || runtime?.projection || "unknown"),
       generatorId: String(runtime?.generator?.id || manifest.id),
       version: String(runtime?.generator?.version || manifest.version),

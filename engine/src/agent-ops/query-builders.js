@@ -2,16 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
-  componentById,
   getJourneyDoc,
   getStatement,
   summarizeById,
   getWorkflowDoc,
-  relatedComponentsForProjection,
   relatedProjectionsForCapability,
-  relatedProjectionsForComponent,
   relatedProjectionsForEntity,
-  relatedShapesForProjection
+  relatedProjectionsForWidget,
+  relatedShapesForProjection,
+  relatedWidgetsForProjection,
+  widgetById
 } from "../generator/context/shared.js";
 import { generatorDefaultsMap } from "../generator/surfaces/shared.js";
 
@@ -1408,7 +1408,7 @@ function addImpact(map, impact) {
     "changed_capability",
     "changed_entity",
     "changed_shape",
-    "changed_component",
+    "changed_widget",
     "changed_rule",
     "changed_workflow",
     "changed_journey",
@@ -1551,20 +1551,20 @@ function projectionImpactsFromShape(graph, shapeId) {
   ];
 }
 
-function projectionImpactsFromComponent(graph, componentId) {
-  const component = componentById(graph, componentId);
-  if (!component) {
+function projectionImpactsFromWidget(graph, widgetId) {
+  const widget = widgetById(graph, widgetId);
+  if (!widget) {
     return [];
   }
 
   return impactsFromProjectionIds(
     graph,
-    relatedProjectionsForComponent(graph, componentId),
-    "changed_component",
-    (projection) => `Projection ${projection.id} is affected because component ${componentId} is used by that UI surface.`
+    relatedProjectionsForWidget(graph, widgetId),
+    "changed_widget",
+    (projection) => `Projection ${projection.id} is affected because widget ${widgetId} is used by that UI surface.`
   ).map((impact) => ({
     ...impact,
-    component_ids: stableSortedStrings([componentId])
+    widget_ids: stableSortedStrings([widgetId])
   }));
 }
 
@@ -1602,8 +1602,8 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
       for (const impact of projectionImpactsFromShape(graph, entry.id)) addImpact(impactMap, impact);
     }
 
-    for (const entry of diffArtifact.components || []) {
-      for (const impact of projectionImpactsFromComponent(graph, entry.id)) addImpact(impactMap, impact);
+    for (const entry of diffArtifact.widgets || diffArtifact.components || []) {
+      for (const impact of projectionImpactsFromWidget(graph, entry.id)) addImpact(impactMap, impact);
     }
 
     for (const entry of diffArtifact.rules || []) {
@@ -1640,7 +1640,7 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
         (projection) => `Projection ${projection.id} is in scope because selected entity ${id} participates in that projection.`
       )) addImpact(impactMap, impact);
     } else if (kind === "widget") {
-      for (const impact of projectionImpactsFromComponent(graph, id)) addImpact(impactMap, impact);
+      for (const impact of projectionImpactsFromWidget(graph, id)) addImpact(impactMap, impact);
     } else if (kind === "workflow") {
       for (const impact of projectionImpactsFromWorkflow(graph, id, true)) addImpact(impactMap, impact);
     } else if (kind === "journey") {
@@ -1675,7 +1675,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
     }
   };
 
-  for (const entry of diffArtifact?.components || []) {
+  for (const entry of diffArtifact?.widgets || diffArtifact?.components || []) {
     addTarget({
       target: "ui-widget-contract",
       widget_id: entry.id,
@@ -1732,25 +1732,25 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    const componentIds = stableSortedStrings([
-      ...(impact.component_ids || []),
-      ...(impact.kind === "ui" ? relatedComponentsForProjection(graph, projection) : [])
+    const widgetIds = stableSortedStrings([
+      ...(impact.widget_ids || []),
+      ...(impact.kind === "ui" ? relatedWidgetsForProjection(graph, projection) : [])
     ]);
 
-    for (const componentId of componentIds) {
+    for (const widgetId of widgetIds) {
       addTarget({
         target: "ui-widget-contract",
-        widget_id: componentId,
+        widget_id: widgetId,
         projection_id: impact.projection_id,
         required: true,
-        reason: `Projection ${impact.projection_id} is affected by widget ${componentId}, so the widget contract should be refreshed.`
+        reason: `Projection ${impact.projection_id} is affected by widget ${widgetId}, so the widget contract should be refreshed.`
       });
       addTarget({
         target: "widget-behavior-report",
-        widget_id: componentId,
+        widget_id: widgetId,
         projection_id: impact.projection_id,
         required: true,
-        reason: `Projection ${impact.projection_id} is affected by widget ${componentId}, so behavior data/event/action wiring should be reviewed.`
+        reason: `Projection ${impact.projection_id} is affected by widget ${widgetId}, so behavior data/event/action wiring should be reviewed.`
       });
     }
 

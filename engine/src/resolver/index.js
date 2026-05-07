@@ -509,7 +509,7 @@ function buildProjectionPlan(statement) {
     designTokens: statement.uiDesign,
     navigation: statement.uiNavigation,
     screenRegions: statement.uiScreenRegions,
-    widgetBindings: statement.uiComponents,
+    widgetBindings: statement.widgetBindings,
     tables: statement.dbTables,
     columns: statement.dbColumns,
     keys: statement.dbKeys,
@@ -536,7 +536,6 @@ function buildProjectionPlan(statement) {
     uiRoutes: statement.uiRoutes,
     uiWeb: statement.uiWeb,
     uiDesign: statement.uiDesign,
-    uiComponents: statement.uiComponents,
     dbTables: statement.dbTables,
     dbColumns: statement.dbColumns,
     dbKeys: statement.dbKeys,
@@ -1361,8 +1360,7 @@ function parseProjectionUiScreenRegionsBlock(statement) {
   });
 }
 
-function parseProjectionUiComponentsBlock(statement, registry, options = {}) {
-  const includeComponentAlias = options.includeComponentAlias !== false;
+function parseProjectionUiComponentsBlock(statement, registry) {
   return blockEntries(getFieldValue(statement, "widget_bindings")).map((entry) => {
     const dataBindings = [];
     const eventBindings = [];
@@ -1421,11 +1419,6 @@ function parseProjectionUiComponentsBlock(statement, registry, options = {}) {
       raw: normalizeSequence(entry.items),
       loc: entry.loc
     };
-    if (includeComponentAlias) {
-      // Internal compatibility for existing generator adapters during the
-      // coordinated public DSL rename. Public contracts should expose widget.
-      binding.component = widgetRef;
-    }
     return binding;
   });
 }
@@ -1949,8 +1942,7 @@ export function normalizeStatement(statement, registry) {
         navigation: parseProjectionUiNavigationBlock(statement),
         uiScreenRegions: parseProjectionUiScreenRegionsBlock(statement),
         screenRegions: parseProjectionUiScreenRegionsBlock(statement),
-        uiComponents: parseProjectionUiComponentsBlock(statement, registry),
-        widgetBindings: parseProjectionUiComponentsBlock(statement, registry, { includeComponentAlias: false }),
+        widgetBindings: parseProjectionUiComponentsBlock(statement, registry),
         dbTables: parseProjectionDbTablesBlock(statement, registry),
         tables: parseProjectionDbTablesBlock(statement, registry),
         dbColumns: parseProjectionDbColumnsBlock(statement, registry),
@@ -2345,10 +2337,7 @@ export function resolveWorkspace(workspaceAst) {
     case "widget":
       return {
         ...statement,
-          widgetContract: buildComponentContract(statement),
-          // Internal compatibility for existing generator adapters during the
-          // coordinated public DSL rename. Public contracts should expose widgetContract.
-          componentContract: buildComponentContract(statement)
+          widgetContract: buildComponentContract(statement)
         };
       case "rule":
         return {
@@ -2494,11 +2483,6 @@ export function resolveWorkspace(workspaceAst) {
     };
   });
   const finalByKind = groupBy(finalStatements, (statement) => statement.kind);
-  if (finalByKind.widget && !finalByKind.component) {
-    // Internal compatibility for existing generator/context modules while the
-    // public DSL moves from component to widget in one coordinated release.
-    finalByKind.component = finalByKind.widget;
-  }
 
   const graph = mergeArchivedIntoGraph({
     root: workspaceAst.root,
