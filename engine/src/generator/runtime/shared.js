@@ -19,24 +19,26 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
 /**
  * @typedef {Object} RuntimeComponent
  * @property {string} id
- * @property {"api"|"web"|"database"|"native"} type
+ * @property {"api_service"|"web_surface"|"ios_surface"|"android_surface"|"database"} kind
+ * @property {string} [type]
  * @property {RuntimeStatement} projection
  * @property {import("../../project-config.js").GeneratorBinding} generator
  * @property {number|null} [port]
- * @property {string} [api]
- * @property {string} [database]
+ * @property {string|null} [api]
+ * @property {string|null} [database]
  * @property {Record<string, string>} [env]
  * @property {RuntimeComponent|null} [apiComponent]
  * @property {RuntimeComponent|null} [databaseComponent]
  */
 
 /**
- * @typedef {import("../../project-config.js").RuntimeTopologyComponent} RuntimeTopologyComponent
+ * @typedef {import("../../project-config.js").RuntimeTopologyRuntime} RuntimeTopologyComponent
  */
 
 /**
  * @typedef {Object} RuntimeTopology
  * @property {import("../../project-config.js").ProjectConfig} config
+ * @property {RuntimeComponent[]} runtimes
  * @property {RuntimeComponent[]} components
  * @property {RuntimeComponent[]} apiComponents
  * @property {RuntimeComponent[]} webComponents
@@ -227,17 +229,17 @@ function apiProjectionCandidates(graph) {
  */
 function uiWebProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
-    (projection) => projection.platform === "ui_web" && (projection.uiRoutes || []).length > 0
+    (projection) => projection.platform === "web_surface" && (projection.uiRoutes || []).length > 0
   );
 }
 
-const WEB_UI_FAMILY_PREFIX = "proj_ui_web__";
-const NATIVE_UI_FAMILY_PREFIX = "proj_ui_native__";
+const WEB_UI_FAMILY_PREFIX = "proj_web_surface__";
+const NATIVE_UI_FAMILY_PREFIX = "proj_ios_surface__";
 
 /** Prefer canonical ids when multiple shipped web stacks exist (deterministic, not lexicographic). */
-const DEFAULT_WEB_UI_STACK_ORDER = ["proj_ui_web__sveltekit", "proj_ui_web__react"];
+const DEFAULT_WEB_UI_STACK_ORDER = ["proj_web_surface__sveltekit", "proj_web_surface__react"];
 
-const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ui_native__ios"];
+const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ios_surface__swiftui"];
 
 /**
  * @param {ResolvedGraph} graph
@@ -245,12 +247,12 @@ const DEFAULT_NATIVE_UI_PLATFORM_ORDER = ["proj_ui_native__ios"];
  */
 function uiIosProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
-    (projection) => projection.platform === "ui_ios" && (projection.uiRoutes || []).length > 0
+    (projection) => projection.platform === "ios_surface" && (projection.uiRoutes || []).length > 0
   );
 }
 
 /**
- * Prefer canonical native projections (`proj_ui_native__{platform}`); otherwise first routed ui_ios projection.
+ * Prefer canonical native projections (`proj_ios_surface__{stack}`); otherwise first routed iOS surface projection.
  *
  * @param {ResolvedGraph} graph
  * @returns {RuntimeStatement|undefined}
@@ -271,7 +273,7 @@ export function pickDefaultIosUiProjection(graph) {
 }
 
 /**
- * Prefer canonical shipped web projections (`proj_ui_web__{stack}`); otherwise first routed ui_web projection.
+ * Prefer canonical shipped web projections (`proj_web_surface__{stack}`); otherwise first routed web surface projection.
  *
  * @param {ResolvedGraph} graph
  * @returns {RuntimeStatement|undefined}
@@ -288,10 +290,6 @@ export function pickDefaultUiWebProjection(graph) {
     }
     return hierarchical.sort((a, b) => a.id.localeCompare(b.id))[0];
   }
-  const legacySvelteKitProjection = candidates.find((projection) => projection.id === "proj_ui_web");
-  if (legacySvelteKitProjection) {
-    return legacySvelteKitProjection;
-  }
   return candidates[0];
 }
 
@@ -302,7 +300,7 @@ export function pickDefaultUiWebProjection(graph) {
  */
 export function getDefaultEnvironmentProjections(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const dbCandidates = graph.byKind.projection?.filter((projection) => ["db_postgres", "db_sqlite"].includes(projection.platform)) || [];
+  const dbCandidates = graph.byKind.projection?.filter((projection) => ["db_contract", "db_contract"].includes(projection.platform)) || [];
   const apiProjection = /** @type {RuntimeStatement|null} */ (topology.primaryApi?.projection ||
     (options.projectionId ? getProjection(graph, options.projectionId) : null) ||
     apiProjectionCandidates(graph).find((projection) => projection.id === "proj_api") ||
@@ -396,14 +394,14 @@ export function generateRuntimeApiContracts(graph) {
 }
 
 /**
- * @param {string} componentId
+ * @param {string} runtimeId
  * @param {EnvVarOptions} [options]
  * @returns {string}
  */
-function envVarPrefix(componentId, options = {}) {
-  return options.primary || componentId === "db"
+function envVarPrefix(runtimeId, options = {}) {
+  return options.primary || runtimeId === "db"
     ? ""
-    : `${componentId.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_`;
+    : `${runtimeId.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_`;
 }
 
 /**
@@ -426,24 +424,27 @@ export function dbEnvVarsForComponent(component, options = {}) {
  * @param {import("../../project-config.js").ProjectConfig} config
  * @returns {RuntimeComponent[]}
  */
-function decorateComponents(graph, config) {
+function decorateRuntimes(graph, config) {
   const byProjectionId = new Map((graph.byKind.projection || []).map((projection) => [projection.id, projection]));
-  const rawComponents = config.topology?.components || [];
+  const rawRuntimes = config.topology?.runtimes || config.topology?.components || [];
   /** @type {RuntimeComponent[]} */
-  const components = rawComponents.map((component) => ({
-    ...component,
-    projection: byProjectionId.get(component.projection) || {}
+  const runtimes = rawRuntimes.map((runtime) => ({
+    ...runtime,
+    kind: runtime.kind || runtime.type || null,
+    api: runtime.uses_api ?? runtime.api ?? null,
+    database: runtime.uses_database ?? runtime.database ?? null,
+    projection: byProjectionId.get(runtime.projection) || {}
   }));
-  const byId = new Map(components.map((component) => [component.id, component]));
-  for (const component of components) {
-    if (component.type === "api" && component.database) {
-      component.databaseComponent = byId.get(component.database) || null;
+  const byId = new Map(runtimes.map((runtime) => [runtime.id, runtime]));
+  for (const runtime of runtimes) {
+    if (runtime.kind === "api_service" && runtime.database) {
+      runtime.databaseComponent = byId.get(runtime.database) || null;
     }
-    if (component.type === "web" && component.api) {
-      component.apiComponent = byId.get(component.api) || null;
+    if (runtime.kind === "web_surface" && runtime.api) {
+      runtime.apiComponent = byId.get(runtime.api) || null;
     }
   }
-  return components;
+  return runtimes;
 }
 
 /**
@@ -460,17 +461,18 @@ export function resolveRuntimeTopology(graph, options = {}) {
   if (!validation.ok) {
     throw new Error(validation.errors.map((error) => error.message).join("\n"));
   }
-  const components = decorateComponents(graph, config);
-  const apiComponents = components.filter((component) => component.type === "api");
-  const webComponents = components.filter((component) => component.type === "web");
-  const dbComponents = components.filter((component) => component.type === "database");
+  const runtimes = decorateRuntimes(graph, config);
+  const apiComponents = runtimes.filter((runtime) => runtime.kind === "api_service");
+  const webComponents = runtimes.filter((runtime) => runtime.kind === "web_surface");
+  const dbComponents = runtimes.filter((runtime) => runtime.kind === "database");
   const primaryApi = apiComponents[0] || null;
   const primaryWeb = webComponents[0] || null;
   const primaryDb = primaryApi?.databaseComponent || dbComponents[0] || null;
 
   return {
     config,
-    components,
+    runtimes,
+    components: runtimes,
     apiComponents,
     webComponents,
     dbComponents,

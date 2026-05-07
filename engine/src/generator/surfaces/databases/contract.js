@@ -16,7 +16,7 @@ export function generateDbContractDebug(graph, options = {}) {
   for (const contract of contracts) {
     lines.push(`## \`${contract.projection.id}\` - ${contract.projection.name}`);
     lines.push("");
-    lines.push(`Platform: \`${contract.projection.platform}\``);
+    lines.push(`Type: \`${contract.projection.type}\``);
     lines.push(`Profile: \`${contract.profile}\``);
     lines.push("");
 

@@ -36,17 +36,17 @@
 
 ## 0.3.13 - 2026-05-01
 
-- Add `topogram component check` as a user-facing alias for component
+- Add `topogram widget check` as a user-facing alias for component
   conformance reports. The command prints a human summary by default, supports
-  `--projection`, `--component`, and `--json`, and exits non-zero when
+  `--projection`, `--widget`, and `--json`, and exits non-zero when
   conformance errors are present.
 
 ## 0.3.12 - 2026-05-01
 
-- Add `component-conformance-report` generator target. The report compares
-  `projection.ui_components` usage against component contracts, includes
+- Add `widget-conformance-report` generator target. The report compares
+  `projection.widget_bindings` usage against component contracts, includes
   inherited shared-UI usages for concrete web projections, supports
-  `--projection` and `--component` filters, and reports repair-oriented checks
+  `--projection` and `--widget` filters, and reports repair-oriented checks
   for missing required props, event action context, component status, approvals,
   write scope, and projection/component impact.
 
@@ -159,7 +159,7 @@
   generators (board/release-notes/traceability), state-machine
   transitions, DoD rules, archive load/save, transition round-trips
   (rewrite + history sidecar), and release dry-run output.
-- Add `projection.ui_components` so projections explicitly own component
+- Add `projection.widget_bindings` so projections explicitly own component
   placement and wiring. Component usage validates screen, region, component,
   prop, event, data-source, and event-target references.
 - Remove `component.consumers` from the component grammar before external
@@ -168,7 +168,7 @@
 - Add structured component `behaviors { ... }` alongside the shorthand
   `behavior [...]`, with validation for supported stack-agnostic behavior
   kinds and behavior references to component props/events.
-- Emit `approvals` and normalized `behaviors` in `ui-component-contract`
+- Emit `approvals` and normalized `behaviors` in `ui-widget-contract`
   artifacts.
 - Include component usage metadata in generated UI contracts. Concrete web
   projections that realize a shared UI projection now inherit the shared
@@ -180,18 +180,18 @@
 
 - Add `component` statement kind for reusable UI/service component contracts
   (props, events, slots, patterns, regions, dependencies, consumers).
-- Add `ui-component-contract` generator target that emits stable JSON per
-  component or for the whole workspace; selectable via `--component <id>`.
+- Add `ui-widget-contract` generator target that emits stable JSON per
+  component or for the whole workspace; selectable via `--widget <id>`.
 - `context-diff` now emits a `components` section, and changed components
   fan out into `affected_generated_surfaces.projections` so consumer
   projections show up in diff payloads.
-- `context-slice --component <id>` returns a first-class component slice with
+- `context-slice --widget <id>` returns a first-class component slice with
   `focus.kind === "component"`, dependent shapes/projections/verifications,
   and a `component_surface` review boundary; the same selector flows through
   `verification-targets`, `change-plan`, `risk-summary`, `review-packet`,
   `proceed-decision`, `next-action`, `single-agent-plan`, and
   `resolved-workflow-context`.
-- `topogram generate ... --generate ui-component-contract --component <id>`
+- `topogram generate ... --generate ui-widget-contract --widget <id>`
   now errors loudly when the id does not match any component (previously it
   wrote a `null` artifact).
 - Component prop defaults preserve real values: `default true`, `default false`,

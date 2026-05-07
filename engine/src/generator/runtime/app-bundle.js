@@ -66,14 +66,14 @@ function buildAppBundlePlan(graph, options = {}) {
       db: dbProjection?.id || null
     },
     topology: {
-      components: topology.components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        projection: component.projection.id,
-        generator: component.generator,
-        port: component.port ?? null,
-        api: component.api || null,
-        database: component.database || null
+      runtimes: topology.runtimes.map((runtime) => ({
+        id: runtime.id,
+        kind: runtime.kind,
+        projection: runtime.projection.id,
+        generator: runtime.generator,
+        port: runtime.port ?? null,
+        uses_api: runtime.api || null,
+        uses_database: runtime.database || null
       }))
     },
     runtimeReference,
@@ -108,8 +108,8 @@ function renderAppBundleEnvExample(plan) {
   const demoUserId = runtimeDemoUserId(plan.runtimeReference);
   const databaseName = plan.runtimeReference.environment.databaseName || "topogram_app";
   const topology = {
-    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
-    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+    primaryApi: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "api_service")?.port },
+    primaryWeb: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "web_surface")?.port }
   };
   const ports = runtimePorts(plan.runtimeReference, topology);
   const urls = runtimeUrls(plan.runtimeReference, topology);
@@ -126,7 +126,7 @@ ${plan.runtimeReference.environment.envExample || ""}
 # Smoke-test defaults
 ${plan.projections.api ? `TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.projections.ui ? `TOPOGRAM_WEB_BASE_URL=${urls.web}\n` : ""}`;
   }
-  if (plan.projections.dbPlatform === "db_sqlite") {
+  if (plan.projections.dbPlatform === "db_contract") {
     return `# App bundle defaults
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
 TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
@@ -173,8 +173,8 @@ TOPOGRAM_WEB_BASE_URL=${urls.web}
 
 function renderAppBundleReadme(plan) {
   const urls = runtimeUrls(plan.runtimeReference, {
-    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
-    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+    primaryApi: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "api_service")?.port },
+    primaryWeb: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "web_surface")?.port }
   });
   return `# ${plan.name}
 
@@ -311,8 +311,8 @@ bash "$SCRIPT_DIR/runtime-check.sh"
 
 function renderAppBundleWaitForStackScript(plan) {
   const topology = {
-    primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
-    primaryWeb: { port: plan.topology.components.find((component) => component.type === "web")?.port }
+    primaryApi: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "api_service")?.port },
+    primaryWeb: { port: plan.topology.runtimes.find((runtime) => runtime.kind === "web_surface")?.port }
   };
   const ports = runtimePorts(plan.runtimeReference, topology);
   const urls = runtimeUrls(plan.runtimeReference, topology);

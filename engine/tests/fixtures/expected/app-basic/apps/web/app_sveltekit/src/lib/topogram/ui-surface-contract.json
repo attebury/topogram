@@ -1,12 +1,14 @@
 {
+  "type": "ui_surface_contract",
   "projection": {
-    "id": "proj_ui_web",
+    "id": "proj_web_surface",
     "name": "Sample Workspace Web UI",
-    "platform": "ui_web"
+    "type": "web_surface"
   },
-  "sharedProjection": {
-    "id": "proj_ui_shared",
-    "name": "Sample Workspace Shared UI"
+  "uiContract": {
+    "id": "proj_ui_contract",
+    "name": "Sample Workspace Shared UI",
+    "type": "ui_contract"
   },
   "generatorDefaults": {
     "profile": "sveltekit",
@@ -17,10 +19,10 @@
     "ui_contract",
     "web_app"
   ],
-  "components": {
-    "component_ui_data_grid": {
-      "type": "component_contract",
-      "id": "component_ui_data_grid",
+  "widgets": {
+    "widget_data_grid": {
+      "type": "ui_widget_contract",
+      "id": "widget_data_grid",
       "name": "Data Grid",
       "description": "Reusable tabular display for item rows",
       "category": "collection",
@@ -108,7 +110,7 @@
       "dependencies": []
     }
   },
-  "design": {
+  "designTokens": {
     "density": "compact",
     "tone": "operational",
     "radiusScale": "medium",
@@ -459,18 +461,18 @@
           "variant": null
         }
       ],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "resource_table"
       ],
       "route": "/collections",
-      "web": {
+      "surfaceHints": {
         "layout": "responsive_collection",
         "desktop_variant": "table",
         "mobile_variant": "cards",
         "collection": "table"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_create_collection": {}
       }
     },
@@ -537,15 +539,15 @@
       ],
       "lookups": [],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "detail_panel"
       ],
       "route": "/collections/:id",
-      "web": {
+      "surfaceHints": {
         "layout": "detail_page"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_update_collection": {}
       }
     },
@@ -608,15 +610,15 @@
         }
       ],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "edit_form"
       ],
       "route": "/collections/new",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -677,15 +679,15 @@
         }
       ],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "edit_form"
       ],
       "route": "/collections/:id/edit",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -781,18 +783,18 @@
           "variant": null
         }
       ],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "resource_table"
       ],
       "route": "/members",
-      "web": {
+      "surfaceHints": {
         "layout": "responsive_collection",
         "desktop_variant": "table",
         "mobile_variant": "cards",
         "collection": "table"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_create_member": {}
       }
     },
@@ -859,15 +861,15 @@
       ],
       "lookups": [],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "detail_panel"
       ],
       "route": "/members/:id",
-      "web": {
+      "surfaceHints": {
         "layout": "detail_page"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_update_member": {}
       }
     },
@@ -920,15 +922,15 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "edit_form"
       ],
       "route": "/members/new",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -979,15 +981,15 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "edit_form"
       ],
       "route": "/members/:id/edit",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -1124,14 +1126,14 @@
           "variant": null
         }
       ],
-      "components": [
+      "widgets": [
         {
-          "type": "ui_component_usage",
+          "type": "ui_widget_usage",
           "region": "results",
           "pattern": "resource_table",
           "placement": "primary",
-          "component": {
-            "id": "component_ui_data_grid",
+          "widget": {
+            "id": "widget_data_grid",
             "name": "Data Grid",
             "category": "collection",
             "version": "1.0"
@@ -1257,14 +1259,14 @@
         "resource_table"
       ],
       "route": "/items",
-      "web": {
+      "surfaceHints": {
         "shell": "bottom_tabs",
         "layout": "responsive_collection",
         "desktop_variant": "table",
         "mobile_variant": "cards",
         "collection": "table"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_export_items": {},
         "cap_create_item": {
           "present": "fab"
@@ -1346,19 +1348,19 @@
           "variant": null
         }
       ],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "action_bar",
         "board_view"
       ],
       "route": "/items/board",
-      "web": {
+      "surfaceHints": {
         "layout": "responsive_collection",
         "desktop_variant": "board",
         "mobile_variant": "cards",
         "collection": "board"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_create_item": {
           "present": "fab"
         }
@@ -1439,19 +1441,19 @@
           "variant": null
         }
       ],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "action_bar",
         "calendar_view"
       ],
       "route": "/items/calendar",
-      "web": {
+      "surfaceHints": {
         "layout": "responsive_collection",
         "desktop_variant": "calendar",
         "mobile_variant": "list",
         "collection": "calendar"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_create_item": {
           "present": "fab"
         }
@@ -1580,17 +1582,17 @@
           "variant": null
         }
       ],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "detail_panel",
         "activity_feed"
       ],
       "route": "/items/:id",
-      "web": {
+      "surfaceHints": {
         "breadcrumbs": "visible",
         "layout": "detail_page"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_complete_item": {},
         "cap_delete_item": {
           "confirm": "modal",
@@ -1668,13 +1670,13 @@
         }
       ],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [],
       "route": "/items/new",
-      "web": {
+      "surfaceHints": {
         "present": "bottom_sheet"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -1735,15 +1737,15 @@
         }
       ],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [
         "edit_form"
       ],
       "route": "/items/:id/edit",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {}
+      "actionSurfaceHints": {}
     },
     {
       "type": "ui_screen_contract",
@@ -1797,13 +1799,13 @@
       "visibility": [],
       "lookups": [],
       "regions": [],
-      "components": [],
+      "widgets": [],
       "patterns": [],
       "route": "/item-exports/:job_id",
-      "web": {
+      "surfaceHints": {
         "present": "page"
       },
-      "actionWeb": {
+      "actionSurfaceHints": {
         "cap_download_item_export": {}
       }
     }

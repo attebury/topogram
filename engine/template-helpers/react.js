@@ -1,5 +1,5 @@
 export {
-  hasReactComponentRegion,
-  reactComponentUsagesForRegion,
-  renderReactComponentRegion
-} from "../src/generator/surfaces/web/react-components.js";
+  hasReactWidgetRegion,
+  reactWidgetUsagesForRegion,
+  renderReactWidgetRegion
+} from "../src/generator/surfaces/web/react-widgets.js";

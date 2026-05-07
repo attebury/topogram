@@ -187,7 +187,7 @@ export function auditUiContractPair(leftContract, rightContract) {
   const appShellParity = stableStringify(left.appShell) === stableStringify(right.appShell);
 
   return {
-    seam: "ui_web_contract",
+    seam: "ui_surface_contract",
     semanticParity: screenDiffs.length === 0 && navigationParity && appShellParity,
     summary: {
       screenCount: left.screens.length,

@@ -23,7 +23,7 @@ topogram check
 Topogram workspace containing:
 
 - `topogram/candidates/app/**` raw extractor findings and candidates
-- `topogram/candidates/app/ui/drafts/components/**` review-only UI component
+- `topogram/candidates/app/ui/drafts/widgets/**` review-only UI widget
   candidates when reusable screen regions can be inferred
 - `topogram/candidates/reconcile/**` reviewable proposal bundles
 - `topogram.project.json` with maintained output ownership and no generated
@@ -77,8 +77,8 @@ topogram import plan ./imported-topogram --json
 topogram import adopt --list ./imported-topogram
 topogram import adopt bundle:task ./imported-topogram --dry-run
 topogram import adopt bundle:task ./imported-topogram --write
-topogram import adopt components ./imported-topogram --dry-run
-topogram import adopt components ./imported-topogram --write
+topogram import adopt widgets ./imported-topogram --dry-run
+topogram import adopt widgets ./imported-topogram --write
 topogram import status ./imported-topogram
 topogram import status ./imported-topogram --json
 topogram import history ./imported-topogram
@@ -91,12 +91,12 @@ topogram import history ./imported-topogram --verify --json
 the next adoption command. `topogram import adopt` is preview-only by default;
 it does not write canonical `topogram/**` files unless `--write` is passed.
 Use `topogram import adopt --list` to discover valid bundle selectors. The
-`components` selector promotes reviewed component candidates into
-`topogram/components/**`; broad bundle selectors also include component
+`widgets` selector promotes reviewed widget candidates into
+`topogram/widgets/**`; broad bundle selectors also include widget
 candidate files when the bundle contains them.
 The list output now includes both bundle selectors, such as `bundle:task`, and
-broad selectors, such as `components`, `ui`, `capabilities`, and `from-plan`.
-Use the broad `components` selector when you want to promote reusable UI
+broad selectors, such as `widgets`, `ui`, `capabilities`, and `from-plan`.
+Use the broad `widgets` selector when you want to promote reusable UI
 contracts separately from screen reports or API/model candidates.
 `topogram import status` combines source provenance, normal Topogram validity,
 and current adoption progress.
@@ -112,18 +112,18 @@ adoption receipt, changed after adoption, were removed after adoption, or came
 from an older unverifiable receipt. This verification is audit-only:
 imported/adopted Topogram files are project-owned, and local edits remain valid.
 
-UI import also drafts shared projection wiring when component candidates are
+UI import also drafts shared projection wiring when widget candidates are
 found. The files under `topogram/candidates/app/ui/drafts/**` are not canonical
-Topogram until a human or agent reviews and adopts them. Component candidates
+Topogram until a human or agent reviews and adopts them. Widget candidates
 include evidence, confidence, inferred pattern, inferred region, props, events,
 and missing decisions. Check props, behavior, events, regions, and patterns
-before promotion; the generated `ui_components` bindings are starting evidence,
-not a silent assertion that the imported app had a clean reusable component
+before promotion; the generated `widget_bindings` bindings are starting evidence,
+not a silent assertion that the imported app had a clean reusable widget
 model.
 
-Adoption promotes component candidates into canonical component files and
-shared UI projection bindings. It does not write concrete `ui_web`
-component placement; web/native projections inherit shared component and
+Adoption promotes widget candidates into canonical widget files and
+shared UI projection bindings. It does not write concrete `web_surface`
+widget placement; web/native projections inherit shared widget and
 semantic design intent through `realizes`.
 
 Adoption writes refuse to run when the original brownfield source evidence has

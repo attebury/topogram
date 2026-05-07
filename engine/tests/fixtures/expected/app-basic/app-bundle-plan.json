@@ -3,47 +3,47 @@
   "name": "Topogram Sample Workspace App Bundle",
   "projections": {
     "api": "proj_api",
-    "ui": "proj_ui_web",
+    "ui": "proj_web_surface",
     "db": "proj_db_postgres",
-    "dbPlatform": "db_postgres"
+    "dbPlatform": "db_contract"
   },
   "topology": {
-    "components": [
+    "runtimes": [
       {
         "id": "app_api",
-        "type": "api",
+        "kind": "api_service",
         "projection": "proj_api",
         "generator": {
           "id": "topogram/hono",
           "version": "1"
         },
         "port": 3000,
-        "api": null,
-        "database": "app_postgres"
+        "uses_api": null,
+        "uses_database": "app_postgres"
       },
       {
         "id": "app_sveltekit",
-        "type": "web",
-        "projection": "proj_ui_web",
+        "kind": "web_surface",
+        "projection": "proj_web_surface",
         "generator": {
           "id": "topogram/sveltekit",
           "version": "1"
         },
         "port": 5173,
-        "api": "app_api",
-        "database": null
+        "uses_api": "app_api",
+        "uses_database": null
       },
       {
         "id": "app_postgres",
-        "type": "database",
+        "kind": "database",
         "projection": "proj_db_postgres",
         "generator": {
           "id": "topogram/postgres",
           "version": "1"
         },
         "port": 5432,
-        "api": null,
-        "database": null
+        "uses_api": null,
+        "uses_database": null
       }
     ]
   },

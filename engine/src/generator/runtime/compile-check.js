@@ -57,11 +57,11 @@ function buildCompileCheckPlan(graph, options = {}) {
       db: dbProjection?.id || null
     },
     topology: {
-      components: topology.components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        projection: component.projection.id,
-        generator: component.generator
+      runtimes: topology.runtimes.map((runtime) => ({
+        id: runtime.id,
+        kind: runtime.kind,
+        projection: runtime.projection.id,
+        generator: runtime.generator
       }))
     },
     checks: [...apiChecks, ...webChecks]
@@ -73,7 +73,7 @@ function renderCompileCheckEnvExample(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const { dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const urls = runtimeUrls(runtimeReference, topology);
-  if (dbProjection?.platform === "db_sqlite") {
+  if (dbProjection?.platform === "db_contract") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
 PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeDemoUserId(runtimeReference)}
@@ -122,7 +122,7 @@ function renderCompileCheckScript(plan) {
     ""
   ];
   if (plan.checks.length === 0) {
-    lines.push('echo "No API or web components are configured; compile check is a no-op."');
+    lines.push('echo "No API or web runtimes are configured; compile check is a no-op."');
   }
   for (const check of plan.checks) {
     const label = check.id.includes("web")

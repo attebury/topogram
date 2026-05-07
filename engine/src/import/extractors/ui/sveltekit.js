@@ -41,9 +41,9 @@ export const svelteKitUiExtractor = {
       const features = detectUiPresentationFeatures(rootDir);
       const shellKind = shellKindFromNavigation(navigation);
       const navigationPatterns = navigationPatternsFromStructure(navigation);
-      findings.push({ kind: "sveltekit_ui_routes", file: provenance, routes });
-      findings.push({ kind: "sveltekit_ui_navigation", file: provenance, navigation });
-      findings.push({ kind: "sveltekit_ui_features", file: provenance, features });
+      findings.push({ kind: "sveltekit_screen_routes", file: provenance, routes });
+      findings.push({ kind: "sveltekit_navigation", file: provenance, navigation });
+      findings.push({ kind: "sveltekit_surface_features", file: provenance, features });
       candidates.stacks.push("sveltekit_web");
       if (shellKind) {
         candidates.actions.push(makeCandidateRecord({
@@ -61,7 +61,7 @@ export const svelteKitUiExtractor = {
       }
       for (const pattern of navigationPatterns) {
         candidates.actions.push(makeCandidateRecord({
-          kind: "ui_navigation",
+          kind: "navigation",
           idHint: `${path.basename(rootDir)}_${pattern}`,
           label: pattern,
           confidence: "medium",

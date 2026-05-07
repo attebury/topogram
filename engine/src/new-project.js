@@ -27,10 +27,11 @@ const GENERATOR_LABELS = new Map([
 ]);
 
 const SURFACE_ORDER = new Map([
-  ["web", 10],
-  ["api", 20],
+  ["web_surface", 10],
+  ["api_service", 20],
   ["database", 30],
-  ["native", 40]
+  ["ios_surface", 40],
+  ["android_surface", 50]
 ]);
 
 /**
@@ -427,26 +428,26 @@ function generatorLabel(generatorId) {
 function summarizeTemplateTopology(templateRoot) {
   const projectConfigPath = path.join(templateRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  const rawComponents = /** @type {any[]} */ (
-    Array.isArray(projectConfig.topology?.components) ? projectConfig.topology.components : []
+  const rawRuntimes = /** @type {any[]} */ (
+    Array.isArray(projectConfig.topology?.runtimes) ? projectConfig.topology.runtimes : []
   );
   /** @type {Array<Record<string, any>>} */
-  const components = [];
-  for (const component of rawComponents) {
-    if (component && typeof component === "object" && typeof component.type === "string") {
-      components.push(/** @type {Record<string, any>} */ (component));
+  const runtimes = [];
+  for (const runtime of rawRuntimes) {
+    if (runtime && typeof runtime === "object" && typeof runtime.kind === "string") {
+      runtimes.push(/** @type {Record<string, any>} */ (runtime));
     }
   }
-  const sortedComponents = [...components].sort((a, b) => {
-    const aOrder = SURFACE_ORDER.get(a.type) ?? 100;
-    const bOrder = SURFACE_ORDER.get(b.type) ?? 100;
+  const sortedRuntimes = [...runtimes].sort((a, b) => {
+    const aOrder = SURFACE_ORDER.get(a.kind) ?? 100;
+    const bOrder = SURFACE_ORDER.get(b.kind) ?? 100;
     return aOrder - bOrder;
   });
-  const surfaces = [...new Set(sortedComponents.map((component) => String(component.type)))];
+  const surfaces = [...new Set(sortedRuntimes.map((runtime) => String(runtime.kind)))];
   const generators = [
     ...new Set(
-      sortedComponents
-        .map((component) => component.generator?.id)
+      sortedRuntimes
+        .map((runtime) => runtime.generator?.id)
         .filter((generatorId) => typeof generatorId === "string")
         .map((generatorId) => String(generatorId))
     )
@@ -704,7 +705,7 @@ function writeProjectTemplateMetadata(projectRoot, template, templateProvenance 
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
   projectConfig.template = projectTemplateMetadata(template, templateProvenance);
-  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+  fs.writeFileSync(projectConfigPath, `${stableJsonStringify(projectConfig)}\n`, "utf8");
   return projectConfig;
 }
 
@@ -1323,8 +1324,8 @@ function currentTemplateOwnedFiles(projectRoot, includeImplementation, projectCo
   if (fs.existsSync(projectConfigPath)) {
     files.set("topogram.project.json", {
       path: "topogram.project.json",
-      absolutePath: null,
-      content: `${stableJsonStringify(projectConfig)}\n`
+      absolutePath: projectConfigPath,
+      content: null
     });
   }
   return files;

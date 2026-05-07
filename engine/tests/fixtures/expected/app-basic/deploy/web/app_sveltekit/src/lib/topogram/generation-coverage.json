@@ -3,17 +3,17 @@
   "surface": "web",
   "generator": "topogram/sveltekit",
   "projection": {
-    "id": "proj_ui_web",
+    "id": "proj_web_surface",
     "name": "Sample Workspace Web UI",
-    "platform": "ui_web"
+    "type": "web_surface"
   },
   "summary": {
     "routed_screens": 15,
     "rendered_screens": 15,
     "implementation_screens": 13,
     "generator_screens": 2,
-    "component_usages": 1,
-    "rendered_component_usages": 1,
+    "widget_usages": 1,
+    "rendered_widget_usages": 1,
     "diagnostics": 0,
     "errors": 0,
     "warnings": 0
@@ -119,7 +119,7 @@
       "page": "src/routes/collections/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "collection_detail",
@@ -127,7 +127,7 @@
       "page": "src/routes/collections/[id]/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "collection_create",
@@ -135,7 +135,7 @@
       "page": "src/routes/collections/new/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "collection_edit",
@@ -143,7 +143,7 @@
       "page": "src/routes/collections/[id]/edit/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "member_list",
@@ -151,7 +151,7 @@
       "page": "src/routes/members/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "member_detail",
@@ -159,7 +159,7 @@
       "page": "src/routes/members/[id]/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "member_create",
@@ -167,7 +167,7 @@
       "page": "src/routes/members/new/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "member_edit",
@@ -175,7 +175,7 @@
       "page": "src/routes/members/[id]/edit/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_list",
@@ -183,14 +183,14 @@
       "page": "src/routes/items/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": [
+      "widget_usages": [
         {
-          "component": "component_ui_data_grid",
+          "widget": "widget_data_grid",
           "region": "results",
           "pattern": "resource_table",
           "supported": true,
           "rendered": true,
-          "marker": "data-topogram-component=\"component_ui_data_grid\""
+          "marker": "data-topogram-widget=\"widget_data_grid\""
         }
       ]
     },
@@ -200,7 +200,7 @@
       "page": "src/routes/items/board/+page.svelte",
       "rendered": true,
       "renderer": "generator",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_calendar",
@@ -208,7 +208,7 @@
       "page": "src/routes/items/calendar/+page.svelte",
       "rendered": true,
       "renderer": "generator",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_detail",
@@ -216,7 +216,7 @@
       "page": "src/routes/items/[id]/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_create",
@@ -224,7 +224,7 @@
       "page": "src/routes/items/new/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_edit",
@@ -232,7 +232,7 @@
       "page": "src/routes/items/[id]/edit/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     },
     {
       "id": "item_exports",
@@ -240,7 +240,7 @@
       "page": "src/routes/item-exports/[job_id]/+page.svelte",
       "rendered": true,
       "renderer": "implementation",
-      "component_usages": []
+      "widget_usages": []
     }
   ],
   "diagnostics": []

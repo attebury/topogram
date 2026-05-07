@@ -1,7 +1,7 @@
 import { renderSvelteKitRedirectingAction } from "../../../../../../src/generator/surfaces/web/sveltekit-actions.js";
 import {
-  renderSvelteKitComponentRegion
-} from "../../../../../../src/generator/surfaces/web/sveltekit-components.js";
+  renderSvelteKitWidgetRegion
+} from "../../../../../../src/generator/surfaces/web/sveltekit-widgets.js";
 import { APP_BASIC_WEB_SCREEN_REFERENCE } from "./screens-reference.js";
 
 export function renderAppBasicHomePage({
@@ -75,13 +75,13 @@ export function renderAppBasicItemRoutes({
   const editItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_update_item") || null;
   const completeItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_complete_item") || null;
   const deleteItemVisibility = itemDetail.visibility?.find((entry) => entry.capability?.id === "cap_delete_item") || null;
-  const itemListHeroComponents = renderSvelteKitComponentRegion(itemList, "hero", {
-    componentContracts: contract.components,
+  const itemListHeroWidgets = renderSvelteKitWidgetRegion(itemList, "hero", {
+    widgetContracts: contract.widgets,
     itemsExpression: "data.result.items",
     useTypescript
   });
-  const itemListResultsComponents = renderSvelteKitComponentRegion(itemList, "results", {
-    componentContracts: contract.components,
+  const itemListResultsWidgets = renderSvelteKitWidgetRegion(itemList, "results", {
+    widgetContracts: contract.widgets,
     itemsExpression: "data.result.items",
     useTypescript
   });
@@ -187,7 +187,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
         </div>
         <a class="button-link" href="/items/new">Create Item</a>
       </div>
-${itemListHeroComponents ? `\n      ${itemListHeroComponents}\n` : ""}
+${itemListHeroWidgets ? `\n      ${itemListHeroWidgets}\n` : ""}
 
       <form class="filters" method="GET">
         <label>
@@ -239,7 +239,7 @@ ${itemListHeroComponents ? `\n      ${itemListHeroComponents}\n` : ""}
         </div>
       {:else}
         <p class="muted">Showing {data.result.items.length} item{data.result.items.length === 1 ? "" : "s"}.</p>
-        ${itemListResultsComponents || itemListDefaultResults}
+        ${itemListResultsWidgets || itemListDefaultResults}
         {#if nextHref}
           <p><a class="button-link secondary" href={nextHref}>Next Page</a></p>
         {/if}

@@ -153,8 +153,8 @@ function deriveUiComponentCandidates(candidates) {
     const componentStem = idHintify(`${screen.id_hint}_results`);
     const loadCapability = loadCapabilityForScreen(screen);
     return makeCandidateRecord({
-      kind: "component",
-      idHint: `component_ui_${componentStem}`,
+      kind: "widget",
+      idHint: `widget_${componentStem}`,
       label: `${screen.label || screen.id_hint} results`,
       confidence: presentations.length > 0 ? "medium" : "low",
       sourceKind: "ui_projection_inference",
@@ -171,13 +171,13 @@ function deriveUiComponentCandidates(candidates) {
       inferred_pattern: pattern,
       evidence: screen.provenance || [],
       missing_decisions: [
-        "confirm component reuse boundary",
+        "confirm widget reuse boundary",
         "confirm prop names and data source",
         "confirm events and behavior",
         "confirm supported regions and patterns"
       ],
       notes: [
-        "Imported component candidates are review-only.",
+        "Imported widget candidates are review-only.",
         "Confirm props, behavior, events, and reuse before adoption."
       ]
     });
@@ -293,7 +293,7 @@ function reportMarkdown(track, candidates) {
       `- \`${component.id_hint}\` confidence ${component.confidence || "unknown"} pattern \`${component.pattern || component.inferred_pattern || "unknown"}\` region \`${component.region || component.inferred_region || "unknown"}\` evidence ${(component.evidence || component.provenance || []).length} missing decisions ${(component.missing_decisions || []).length}`
     );
     return ensureTrailingNewline(
-      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Components: ${candidates.components.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Component Candidates\n\n${componentLines.length ? componentLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/components/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram component check <path>\`, and \`topogram component behavior <path>\`.\n`
+      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Widgets: ${candidates.components.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Widget Candidates\n\n${componentLines.length ? componentLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`
     );
   }
   if (track === "verification") {
@@ -319,7 +319,7 @@ function projectionIdStem(workspaceRoot) {
 }
 
 function componentCandidateFileName(component) {
-  return `${String(component.id_hint || "component")
+  return `${String(component.id_hint || "widget")
     .replace(/^component_/, "")
     .replace(/_/g, "-")}.tg`;
 }
@@ -327,15 +327,15 @@ function componentCandidateFileName(component) {
 function renderComponentCandidate(component) {
   const evidenceCount = (component.evidence || component.provenance || []).length;
   const missingDecisions = component.missing_decisions || [
-    "confirm component reuse boundary",
+    "confirm widget reuse boundary",
     "confirm prop names and data source",
     "confirm events and behavior"
   ];
-  return `component ${component.id_hint} {
+  return `widget ${component.id_hint} {
   # Import metadata: confidence ${component.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${component.pattern || component.inferred_pattern || "search_results"}; inferred region ${component.region || component.inferred_region || "results"}.
   # Missing decisions: ${missingDecisions.join("; ")}.
   name "${component.label || component.id_hint}"
-  description "Candidate reusable component inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
+  description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
   category collection
   props {
     ${component.data_prop || "rows"} array required
@@ -355,7 +355,7 @@ function uiComponentLinesForCandidates(componentCandidates, allCandidates) {
       const dataBinding = dataSource
         ? ` data ${component.data_prop || "rows"} from ${dataSource}`
         : "";
-      return `    screen ${component.screen_id} region ${component.region} component ${component.id_hint}${dataBinding}`;
+      return `    screen ${component.screen_id} region ${component.region} widget ${component.id_hint}${dataBinding}`;
     });
 }
 
@@ -386,7 +386,7 @@ function draftUiProjectionFiles(context, candidates, allCandidates = {}) {
   const actions = ui.actions || [];
   const componentCandidates = [...(ui.components || [])].sort((a, b) => a.id_hint.localeCompare(b.id_hint));
   const shell = actions.find((entry) => entry.kind === "ui_shell")?.shell_kind || "topbar";
-  const navigationPatterns = uniqueSorted(actions.filter((entry) => entry.kind === "ui_navigation").map((entry) => entry.navigation_pattern));
+  const navigationPatterns = uniqueSorted(actions.filter((entry) => entry.kind === "navigation").map((entry) => entry.navigation_pattern));
   const presentations = uniqueSorted(actions.filter((entry) => entry.kind === "ui_presentation").map((entry) => entry.presentation));
   const capabilityHints = uniqueSorted([
     ...screens.flatMap((screen) => capabilityHintsForScreen(screen)),
@@ -488,22 +488,22 @@ function draftUiProjectionFiles(context, candidates, allCandidates = {}) {
   }
   const uiComponentLines = uiComponentLinesForCandidates(componentCandidates, allCandidates);
 
-  const uiSharedDraft = `projection proj_ui_shared_imported_${stem} {
-  name "Imported Shared UI Draft"
+  const uiSharedDraft = `projection proj_ui_contract_imported_${stem} {
+  name "Imported UI Contract Draft"
   description "Drafted from imported UI candidates. Review and adapt before adoption."
 
-  platform ui_shared
+  type ui_contract
   realizes [
 ${capabilityHints.length > 0 ? capabilityHints.map((hint) => `    ${hint}`).join(",\n") : "    // add capability ids"}
   ]
   outputs [ui_contract]
 
-  ui_app_shell {
+  app_shell {
     brand "Imported ${stem.replace(/_/g, " ")}"
     shell ${shell}
 ${presentations.includes("search") ? "    global_search true\n" : ""}${presentations.includes("multi_window") ? "    windowing multi_window\n" : ""}  }
 
-  ui_design {
+  design_tokens {
     density comfortable
     tone operational
     radius_scale medium
@@ -517,15 +517,15 @@ ${presentations.includes("search") ? "    global_search true\n" : ""}${presentat
     accessibility focus visible
   }
 
-  ui_screens {
+  screens {
 ${uiScreensBlock}
   }
 
-${uiCollectionsLines.length > 0 ? `  ui_collections {\n${uiCollectionsLines.join("\n")}\n  }\n\n` : ""}${uiActionsLines.length > 0 ? `  ui_actions {\n${uiActionsLines.join("\n")}\n  }\n\n` : ""}  ui_navigation {
+${uiCollectionsLines.length > 0 ? `  collection_views {\n${uiCollectionsLines.join("\n")}\n  }\n\n` : ""}${uiActionsLines.length > 0 ? `  screen_actions {\n${uiActionsLines.join("\n")}\n  }\n\n` : ""}  navigation {
 ${uiNavigationLines.join("\n")}
   }
 
-${uiScreenRegionLines.length > 0 ? `  ui_screen_regions {\n${uiScreenRegionLines.join("\n")}\n  }\n\n` : ""}${uiComponentLines.length > 0 ? `  ui_components {\n${uiComponentLines.join("\n")}\n  }\n\n` : ""}  status proposed
+${uiScreenRegionLines.length > 0 ? `  screen_regions {\n${uiScreenRegionLines.join("\n")}\n  }\n\n` : ""}${uiComponentLines.length > 0 ? `  widget_bindings {\n${uiComponentLines.join("\n")}\n  }\n\n` : ""}  status proposed
 }
 `;
 
@@ -565,22 +565,22 @@ ${uiScreenRegionLines.length > 0 ? `  ui_screen_regions {\n${uiScreenRegionLines
     uiWebLines.push(`    action ${entry.capability_hint} present ${actionPresent}`);
   }
 
-  const uiWebDraft = `projection proj_ui_web_imported_${stem} {
-  name "Imported Web UI Draft"
+  const uiWebDraft = `projection proj_web_surface_imported_${stem} {
+  name "Imported Web Surface Draft"
   description "Drafted from imported UI candidates. Review and adapt before adoption."
 
-  platform ui_web
+  type web_surface
   realizes [
-    proj_ui_shared_imported_${stem},
+    proj_ui_contract_imported_${stem},
     ${webCapHints}
   ]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
 ${uiRouteLines.length > 0 ? uiRouteLines.join("\n") : "    // add routes"}
   }
 
-${uiWebLines.length > 0 ? `  ui_web {\n${uiWebLines.join("\n")}\n  }\n\n` : ""}  generator_defaults {
+${uiWebLines.length > 0 ? `  web_hints {\n${uiWebLines.join("\n")}\n  }\n\n` : ""}  generator_defaults {
     profile react
     language typescript
     styling css
@@ -592,9 +592,9 @@ ${uiWebLines.length > 0 ? `  ui_web {\n${uiWebLines.join("\n")}\n  }\n\n` : ""} 
 
   const coverage = `# Imported UI Projection Drafts
 
-- Draft shared projection: \`candidates/app/ui/drafts/proj-ui-shared.tg\`
-- Draft web projection: \`candidates/app/ui/drafts/proj-ui-web.tg\`
-- Draft component candidates: ${componentCandidates.length}
+- Draft UI contract projection: \`candidates/app/ui/drafts/proj-ui-contract.tg\`
+- Draft web surface projection: \`candidates/app/ui/drafts/proj-web-surface.tg\`
+- Draft widget candidates: ${componentCandidates.length}
 - Imported screens: ${screens.length}
 - Imported routes: ${(ui.routes || []).length}
 - Imported UI actions/presentations: ${actions.length}
@@ -605,19 +605,19 @@ ${uiWebLines.length > 0 ? `  ui_web {\n${uiWebLines.join("\n")}\n  }\n\n` : ""} 
 
 - These files are drafts, not adopted canonical projections.
 - Capability ids come from imported hints and may need renaming or pruning.
-- Component candidates are suggested reusable contracts, not canonical ownership.
-- Review component props, events, behavior, regions, and patterns before adopting.
+- Widget candidates are suggested reusable contracts, not canonical ownership.
+- Review widget props, events, behavior, regions, and patterns before adopting.
 - Search and refresh directives are inferred heuristically.
 - Navigation groups currently default to a single \`workspace\` group unless stronger grouping evidence exists.
 `;
 
   const files = {
-    "candidates/app/ui/drafts/proj-ui-shared.tg": ensureTrailingNewline(uiSharedDraft),
-    "candidates/app/ui/drafts/proj-ui-web.tg": ensureTrailingNewline(uiWebDraft),
+    "candidates/app/ui/drafts/proj-ui-contract.tg": ensureTrailingNewline(uiSharedDraft),
+    "candidates/app/ui/drafts/proj-web-surface.tg": ensureTrailingNewline(uiWebDraft),
     "candidates/app/ui/drafts/README.md": ensureTrailingNewline(coverage)
   };
   for (const component of componentCandidates) {
-    files[`candidates/app/ui/drafts/components/${componentCandidateFileName(component)}`] = ensureTrailingNewline(renderComponentCandidate(component));
+    files[`candidates/app/ui/drafts/widgets/${componentCandidateFileName(component)}`] = ensureTrailingNewline(renderComponentCandidate(component));
   }
   return files;
 }
@@ -676,7 +676,7 @@ export function runImportApp(inputPath, options = {}) {
   files["candidates/app/findings.json"] = `${JSON.stringify(findings, null, 2)}\n`;
   files["candidates/app/candidates.json"] = `${JSON.stringify(candidates, null, 2)}\n`;
   files["candidates/app/report.md"] = ensureTrailingNewline(
-    `# App Import Report\n\nTracks: ${tracks.join(", ")}\n\n## DB\n\n- Entities: ${candidates.db?.entities.length || 0}\n- Enums: ${candidates.db?.enums.length || 0}\n- Relations: ${candidates.db?.relations.length || 0}\n\n## API\n\n- Capabilities: ${candidates.api?.capabilities.length || 0}\n- Routes: ${candidates.api?.routes.length || 0}\n- Stacks: ${candidates.api?.stacks?.length ? candidates.api.stacks.join(", ") : "none"}\n\n## UI\n\n- Screens: ${candidates.ui?.screens.length || 0}\n- Routes: ${candidates.ui?.routes.length || 0}\n- Actions: ${candidates.ui?.actions.length || 0}\n- Components: ${candidates.ui?.components.length || 0}\n- Stacks: ${candidates.ui?.stacks?.length ? candidates.ui.stacks.join(", ") : "none"}\n\n## Workflows\n\n- Workflows: ${candidates.workflows?.workflows.length || 0}\n- States: ${candidates.workflows?.workflow_states.length || 0}\n- Transitions: ${candidates.workflows?.workflow_transitions.length || 0}\n\n## Verification\n\n- Verifications: ${candidates.verification?.verifications.length || 0}\n- Scenarios: ${candidates.verification?.scenarios.length || 0}\n- Frameworks: ${candidates.verification?.frameworks?.length ? candidates.verification.frameworks.join(", ") : "none"}\n- Scripts: ${candidates.verification?.scripts.length || 0}\n`
+    `# App Import Report\n\nTracks: ${tracks.join(", ")}\n\n## DB\n\n- Entities: ${candidates.db?.entities?.length || 0}\n- Enums: ${candidates.db?.enums?.length || 0}\n- Relations: ${candidates.db?.relations?.length || 0}\n\n## API\n\n- Capabilities: ${candidates.api?.capabilities?.length || 0}\n- Routes: ${candidates.api?.routes?.length || 0}\n- Stacks: ${candidates.api?.stacks?.length ? candidates.api.stacks.join(", ") : "none"}\n\n## UI\n\n- Screens: ${candidates.ui?.screens?.length || 0}\n- Routes: ${candidates.ui?.routes?.length || 0}\n- Actions: ${candidates.ui?.actions?.length || 0}\n- Widgets: ${candidates.ui?.components?.length || 0}\n- Stacks: ${candidates.ui?.stacks?.length ? candidates.ui.stacks.join(", ") : "none"}\n\n## Workflows\n\n- Workflows: ${candidates.workflows?.workflows?.length || 0}\n- States: ${candidates.workflows?.workflow_states?.length || 0}\n- Transitions: ${candidates.workflows?.workflow_transitions?.length || 0}\n\n## Verification\n\n- Verifications: ${candidates.verification?.verifications?.length || 0}\n- Scenarios: ${candidates.verification?.scenarios?.length || 0}\n- Frameworks: ${candidates.verification?.frameworks?.length ? candidates.verification.frameworks.join(", ") : "none"}\n- Scripts: ${candidates.verification?.scripts?.length || 0}\n`
   );
 
   return {

@@ -11,11 +11,11 @@ import {
   generateOpenApi
 } from "./api.js";
 import { generateVerificationChecklist, generateVerificationPlan } from "./verification.js";
-import { generateUiComponentContract } from "./components.js";
+import { generateUiWidgetContract } from "./widgets.js";
 import {
-  generateComponentBehaviorReport,
-  generateComponentConformanceReport
-} from "./component-conformance.js";
+  generateWidgetBehaviorReport,
+  generateWidgetConformanceReport
+} from "./widget-conformance.js";
 import { generateDbTarget } from "./surfaces/databases/index.js";
 import { generateAppTarget } from "./surfaces/index.js";
 import { generateRuntimeTarget } from "./runtime/index.js";
@@ -73,14 +73,14 @@ export function generateWorkspace(workspaceAst, options = {}) {
   if (target === "verification-checklist") {
     return okResult(target, generateVerificationChecklist(graph, options));
   }
-  if (target === "ui-component-contract") {
-    return okResult(target, generateUiComponentContract(graph, options));
+  if (target === "ui-widget-contract") {
+    return okResult(target, generateUiWidgetContract(graph, options));
   }
-  if (target === "component-conformance-report") {
-    return okResult(target, generateComponentConformanceReport(graph, options));
+  if (target === "widget-conformance-report") {
+    return okResult(target, generateWidgetConformanceReport(graph, options));
   }
-  if (target === "component-behavior-report") {
-    return okResult(target, generateComponentBehaviorReport(graph, options));
+  if (target === "widget-behavior-report") {
+    return okResult(target, generateWidgetBehaviorReport(graph, options));
   }
 
   if (
@@ -101,8 +101,8 @@ export function generateWorkspace(workspaceAst, options = {}) {
   if (
     target === "ui-contract-graph" ||
     target === "ui-contract-debug" ||
-    target === "ui-web-contract" ||
-    target === "ui-web-debug" ||
+    target === "ui-surface-contract" ||
+    target === "ui-surface-debug" ||
     target === "sveltekit-app" ||
     target === "server-contract" ||
     target === "persistence-scaffold" ||

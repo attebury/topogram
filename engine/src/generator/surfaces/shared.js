@@ -1,8 +1,8 @@
 export const APP_TARGETS = new Set([
   "ui-contract-graph",
   "ui-contract-debug",
-  "ui-web-contract",
-  "ui-web-debug",
+  "ui-surface-contract",
+  "ui-surface-debug",
   "sveltekit-app",
   "server-contract",
   "persistence-scaffold",

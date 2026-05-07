@@ -79,21 +79,21 @@ echo "Installing, checking, and generating the starter..."
 npm --prefix "$STARTER_DIR" install >/dev/null
 npm --prefix "$STARTER_DIR" run check
 
-echo "Checking explicit component contract generation..."
-ARTIFACT_CWD="$RUN_DIR/component-contract-check"
+echo "Checking explicit widget contract generation..."
+ARTIFACT_CWD="$RUN_DIR/widget-contract-check"
 mkdir -p "$ARTIFACT_CWD"
 (
   cd "$ARTIFACT_CWD"
-  "$TOPOGRAM_BIN" generate "$ROOT_DIR/engine/tests/fixtures/workspaces/app-basic" --generate ui-component-contract --component component_ui_data_grid --json > component-contract.json
+  "$TOPOGRAM_BIN" generate "$ROOT_DIR/engine/tests/fixtures/workspaces/app-basic" --generate ui-widget-contract --widget widget_data_grid --json > widget-contract.json
   if [[ -e app ]]; then
     echo "Explicit artifact generation unexpectedly wrote ./app." >&2
     exit 1
   fi
-  node --input-type=module - component-contract.json <<'NODE'
+  node --input-type=module - widget-contract.json <<'NODE'
 import fs from "node:fs";
 const payload = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-if (payload.id !== "component_ui_data_grid" || payload.type !== "component_contract") {
-  throw new Error(`Expected selected component contract, got ${JSON.stringify(payload)}`);
+if (payload.id !== "widget_data_grid" || payload.type !== "ui_widget_contract") {
+  throw new Error(`Expected selected widget contract, got ${JSON.stringify(payload)}`);
 }
 NODE
 )

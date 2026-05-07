@@ -150,7 +150,7 @@ export const razorPagesUiExtractor = {
 
       for (const pattern of shellPatterns(text)) {
         candidates.actions.push(makeCandidateRecord({
-          kind: "ui_navigation",
+          kind: "navigation",
           idHint: `razor_${idHintify(pattern)}`,
           label: pattern,
           confidence: "low",

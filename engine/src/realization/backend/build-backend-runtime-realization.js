@@ -28,8 +28,8 @@ export function getDefaultBackendDbProjection(graph, options = {}) {
   return (
     explicit ||
     preferred ||
-    candidates.find((projection) => projection.platform === "db_postgres") ||
-    candidates.find((projection) => projection.platform === "db_sqlite") ||
+    candidates.find((projection) => projection.platform === "db_contract") ||
+    candidates.find((projection) => projection.platform === "db_contract") ||
     candidates[0] ||
     null
   );

@@ -1,33 +1,33 @@
 # Generator Packs
 
 Topogram normalizes generation around contracts, generator manifests, and
-topology components. The core engine owns parsing, validation, resolved graph
+topology runtimes. The core engine owns parsing, validation, resolved graph
 contracts, topology, output ownership, template/catalog lifecycle, and trust
 policy. Stack-specific realization belongs behind generator manifests.
 
 ## Model
 
-`topogram.project.json` binds each topology component to a generator:
+`topogram.project.json` binds each topology runtime to a generator:
 
 ```json
 {
   "id": "app_web",
-  "type": "web",
-  "projection": "proj_ui_web",
+  "kind": "web_surface",
+  "projection": "proj_web_surface",
   "generator": {
     "id": "@topogram/generator-react-web",
     "version": "1",
     "package": "@topogram/generator-react-web"
   },
-  "api": "app_api",
+  "uses_api": "app_api",
   "port": 5173
 }
 ```
 
-Before a generator runs, Topogram resolves the component, validates generator
+Before a generator runs, Topogram resolves the runtime, validates generator
 compatibility, and builds normalized contracts for that surface:
 
-- web: `ui-web-contract`, including inherited shared screens, component
+- web: `ui-surface-contract`, including inherited shared screens, widget
   placements, behavior realizations, semantic design tokens, and related API
   contracts;
 - api: `server-contract` and API contracts;
@@ -39,7 +39,7 @@ The generator owns framework files such as React routes, SvelteKit
 `+page.svelte` files, Express or Hono handlers, Postgres SQL, SQLite lifecycle
 scripts, Prisma schemas, or Drizzle schemas.
 
-Topogram does not normalize framework component trees or raw styling.
+Topogram does not normalize framework widget trees or raw styling.
 Generator packs map semantic UI intent such as density, tone, color roles,
 typography roles, action roles, radius scale, and accessibility hints into their
 own CSS, classes, or framework modifiers.
@@ -53,8 +53,8 @@ Package-backed and bundled fallback generators use the same manifest shape:
   "id": "@topogram/generator-react-web",
   "version": "1",
   "surface": "web",
-  "projectionPlatforms": ["ui_web"],
-  "inputs": ["ui-web-contract", "api-contracts"],
+  "projectionTypes": ["web_surface"],
+  "inputs": ["ui-surface-contract", "api-contracts"],
   "outputs": ["web-app", "generation-coverage"],
   "stack": {
     "runtime": "browser",
@@ -63,10 +63,10 @@ Package-backed and bundled fallback generators use the same manifest shape:
   },
   "capabilities": {
     "routes": true,
-    "components": true,
+    "widgets": true,
     "coverage": true
   },
-  "componentSupport": {
+  "widgetSupport": {
     "patterns": ["resource_table", "data_grid_view"],
     "behaviors": ["selection", "sorting", "filtering"],
     "unsupported": "warning"
@@ -89,13 +89,13 @@ Manifest fields:
 | --- | --- | --- |
 | `id` | yes | Stable generator id used by `topogram.project.json` topology bindings. Package-backed generators commonly use the package name. |
 | `version` | yes | Generator interface version, not necessarily the npm package version. Topology bindings must match it. |
-| `surface` | yes | One of `web`, `api`, `database`, or `native`; must match the topology component `type`. |
-| `projectionPlatforms` | yes | Projection platform keys this generator can realize, such as `ui_web`, `api`, `db_postgres`, `db_sqlite`, or `ui_ios`. |
-| `inputs` | yes | Normalized contract names the generator expects, such as `ui-web-contract`, `server-contract`, `api-contracts`, `db-contract`, or `db-lifecycle-plan`. |
+| `surface` | yes | One of `web`, `api`, `database`, or `native`; must match the topology runtime `kind`. |
+| `projectionTypes` | yes | Projection types this generator can realize, such as `web_surface`, `api_contract`, `db_contract`, or `ios_surface`. |
+| `inputs` | yes | Normalized contract names the generator expects, such as `ui-surface-contract`, `server-contract`, `api-contracts`, `db-contract`, or `db-lifecycle-plan`. |
 | `outputs` | yes | Artifact families produced by the generator, such as `web-app`, `api-service`, `db-lifecycle-bundle`, or `generation-coverage`. |
 | `stack` | yes | Human-readable stack metadata for docs, catalogs, and compatibility review. |
-| `capabilities` | yes | Boolean feature flags such as `routes`, `components`, `coverage`, `http`, `persistence`, or `migrations`. |
-| `componentSupport` | optional | Declares supported component `patterns`, supported behavior kinds, and how unsupported component usage is handled: `error`, `warning`, or `contract-only`. |
+| `capabilities` | yes | Boolean feature flags such as `routes`, `widgets`, `coverage`, `http`, `persistence`, or `migrations`. |
+| `widgetSupport` | optional | Declares supported widget `patterns`, supported behavior kinds, and how unsupported widget usage is handled: `error`, `warning`, or `contract-only`. |
 | `source` | yes | `bundled` for CLI-owned adapters or `package` for external package-backed generators. |
 | `package` | package-backed | Package name used for Node resolution. Required when `source` is `package`. |
 | `export` | optional | Named export to load when the adapter is not the package default export. |
@@ -105,14 +105,14 @@ Package-backed topology bindings include the package name explicitly:
 ```json
 {
   "id": "app_web",
-  "type": "web",
-  "projection": "proj_ui_web",
+  "kind": "web_surface",
+  "projection": "proj_web_surface",
   "generator": {
     "id": "@topogram/generator-react-web",
     "version": "1",
     "package": "@topogram/generator-react-web"
   },
-  "api": "app_api",
+  "uses_api": "app_api",
   "port": 5173
 }
 ```
@@ -134,7 +134,7 @@ The generator package must expose `topogram-generator.json`. The manifest `id`,
 
 Web generator adapters should consume the normalized UI contract instead of
 inferring behavior from framework code. Component usages include
-`behaviorRealizations`, which bridge component behavior declarations to concrete
+`behaviorRealizations`, which bridge widget behavior declarations to concrete
 projection data bindings, event bindings, navigation effects, and command
 effects.
 
@@ -180,7 +180,7 @@ exports.manifest = require("./topogram-generator.json");
 exports.generate = function generate({
   graph,
   projection,
-  component,
+  widget,
   topology,
   contracts,
   implementation,
@@ -195,7 +195,7 @@ exports.generate = function generate({
 ```
 
 The adapter receives normalized contracts and returns generated files relative
-to that component output directory. `files` must be an object whose keys are
+to that widget output directory. `files` must be an object whose keys are
 relative paths and whose values are string file contents. `artifacts` and
 `diagnostics` are optional.
 
@@ -228,10 +228,10 @@ declared in the current `package.json` dependencies. `generator list` and
 `generator show` read generator manifests only; they do not import adapter code
 or execute generator packages. `generator show` accepts an already installed
 package name or a bundled fallback generator id and prints the manifest, stack,
-capabilities, and an example `topology.components[]` binding.
+capabilities, and an example `topology.runtimes[]` binding.
 
 When `topogram check` sees a package-backed topology binding whose package is
-not installed, it reports the component id, generator id/version, package name,
+not installed, it reports the widget id, generator id/version, package name,
 and the install command to run from the project root:
 
 ```bash
@@ -370,19 +370,19 @@ topology bindings. A generated starter carries those dependencies into the
 consumer project, so `topogram check` and `topogram generate` can resolve the
 same package-backed generator manifests.
 
-Example topology component in a template:
+Example topology runtime in a template:
 
 ```json
 {
   "id": "app_web",
-  "type": "web",
-  "projection": "proj_ui_web",
+  "kind": "web_surface",
+  "projection": "proj_web_surface",
   "generator": {
     "id": "@scope/topogram-generator-example-web",
     "version": "1",
     "package": "@scope/topogram-generator-example-web"
   },
-  "api": "app_api",
+  "uses_api": "app_api",
   "port": 5173
 }
 ```

@@ -18,14 +18,17 @@ import { validateProjectGeneratorPolicy } from "./generator-policy.js";
  */
 
 /**
- * @typedef {Object} RuntimeTopologyComponent
+ * @typedef {Object} RuntimeTopologyRuntime
  * @property {string} id
- * @property {"api"|"web"|"database"|"native"} type
+ * @property {"api_service"|"web_surface"|"ios_surface"|"android_surface"|"database"} kind
  * @property {string} projection
  * @property {GeneratorBinding} generator
  * @property {number|null} [port]
- * @property {string} [api]
- * @property {string} [database]
+ * @property {string} [uses_api]
+ * @property {string} [uses_database]
+ * @property {string} [type] Migration diagnostic only.
+ * @property {string} [api] Migration diagnostic only.
+ * @property {string} [database] Migration diagnostic only.
  * @property {Record<string, string>} [env]
  */
 
@@ -33,7 +36,7 @@ import { validateProjectGeneratorPolicy } from "./generator-policy.js";
  * @typedef {Object} ProjectConfig
  * @property {string} version
  * @property {Record<string, { path: string, ownership: "generated"|"maintained" }>} outputs
- * @property {{ components: RuntimeTopologyComponent[] }} topology
+ * @property {{ runtimes: RuntimeTopologyRuntime[], components?: any[] }} topology
  * @property {{ id?: string, module?: string, export?: string, implementation_module?: string, implementation_export?: string }} [implementation]
  */
 
@@ -149,46 +152,46 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
   const runtimeReference = implementation?.runtime?.reference || {};
   /** @type {Array<Record<string, any>>} */
   const projections = graph.byKind.projection || [];
-  const apiProjection = projections.find((projection) => (projection.http || []).length > 0);
+  const apiProjection = projections.find((projection) => (projection.http || []).length > 0 || projection.type === "api_contract");
   const webProjection =
-    projections.find((projection) => projection.id === "proj_ui_web") ||
-    projections.find((projection) => projection.platform === "ui_web");
+    projections.find((projection) => projection.id === "proj_web") ||
+    projections.find((projection) => projection.type === "web_surface");
   const dbProjection =
     projections.find((projection) => projection.id === runtimeReference.localDbProjectionId) ||
-    projections.find((projection) => projection.platform === "db_postgres") ||
-    projections.find((projection) => projection.platform === "db_sqlite");
+    projections.find((projection) => projection.type === "db_contract");
   const ports = runtimeReference.ports || {};
-  const dbGenerator = dbProjection?.platform === "db_sqlite" ? "topogram/sqlite" : "topogram/postgres";
-  const dbComponentId = dbProjection?.platform === "db_sqlite" ? "app_sqlite" : "app_postgres";
-  /** @type {RuntimeTopologyComponent[]} */
-  const components = [
+  const dbProfile = (dbProjection?.generatorDefaults || []).find((/** @type {Record<string, any>} */ entry) => entry.key === "profile")?.value;
+  const dbGenerator = dbProfile === "sqlite_sql" ? "topogram/sqlite" : "topogram/postgres";
+  const dbRuntimeId = dbProfile === "sqlite_sql" ? "app_sqlite" : "app_postgres";
+  /** @type {RuntimeTopologyRuntime[]} */
+  const runtimes = [
     ...(apiProjection
       ? [{
           id: "app_api",
-          type: /** @type {"api"} */ ("api"),
+          kind: /** @type {"api_service"} */ ("api_service"),
           projection: apiProjection.id,
           generator: { id: "topogram/hono", version: "1" },
           port: ports.server || 3000,
-          ...(dbProjection ? { database: dbComponentId } : {})
+          ...(dbProjection ? { uses_database: dbRuntimeId } : {})
         }]
       : []),
     ...(webProjection
       ? [{
           id: "app_sveltekit",
-          type: /** @type {"web"} */ ("web"),
+          kind: /** @type {"web_surface"} */ ("web_surface"),
           projection: webProjection.id,
           generator: { id: "topogram/sveltekit", version: "1" },
           port: ports.web || 5173,
-          ...(apiProjection ? { api: "app_api" } : {})
+          ...(apiProjection ? { uses_api: "app_api" } : {})
         }]
       : []),
     ...(dbProjection
       ? [{
-          id: dbComponentId,
-          type: /** @type {"database"} */ ("database"),
+          id: dbRuntimeId,
+          kind: /** @type {"database"} */ ("database"),
           projection: dbProjection.id,
           generator: { id: dbGenerator, version: "1" },
-          port: dbProjection.platform === "db_sqlite" ? null : 5432
+          port: dbProfile === "sqlite_sql" ? null : 5432
         }]
       : [])
   ];
@@ -207,7 +210,41 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
       }
     },
     topology: {
-      components
+      runtimes
+    }
+  };
+}
+
+/**
+ * @param {string} kind
+ * @returns {string}
+ */
+function legacyRuntimeType(kind) {
+  if (kind === "api_service") return "api";
+  if (kind === "web_surface") return "web";
+  if (kind === "ios_surface" || kind === "android_surface") return "native";
+  return kind;
+}
+
+/**
+ * @param {any} config
+ * @returns {any}
+ */
+function normalizeProjectConfigRuntimeAliases(config) {
+  if (!config?.topology || !Array.isArray(config.topology.runtimes)) {
+    return config;
+  }
+  return {
+    ...config,
+    topology: {
+      ...config.topology,
+      __normalizedRuntimeAliases: true,
+      components: config.topology.runtimes.map((/** @type {RuntimeTopologyRuntime} */ runtime) => ({
+        ...runtime,
+        type: legacyRuntimeType(runtime.kind),
+        api: runtime.uses_api,
+        database: runtime.uses_database
+      }))
     }
   };
 }
@@ -223,6 +260,7 @@ export function loadProjectConfig(root) {
   }
   return {
     ...found,
+    config: normalizeProjectConfigRuntimeAliases(found.config),
     compatibility: false
   };
 }
@@ -242,7 +280,7 @@ export function projectConfigOrDefault(root, graph = null, implementation = null
     return null;
   }
   return {
-    config: defaultProjectConfigForGraph(graph, implementation),
+    config: normalizeProjectConfigRuntimeAliases(defaultProjectConfigForGraph(graph, implementation)),
     configPath: null,
     configDir: path.dirname(path.resolve(root)),
     compatibility: true
@@ -298,7 +336,7 @@ function validateOutputConfig(errors, config) {
  * @returns {string}
  */
 function componentLabel(component) {
-  return component?.id ? `Component '${component.id}'` : "Topology component";
+  return component?.id ? `Runtime '${component.id}'` : "Topology runtime";
 }
 
 /**
@@ -319,8 +357,11 @@ function validateComponentShape(errors, component, seenIds) {
   } else {
     seenIds.add(component.id);
   }
-  if (!["api", "web", "database", "native"].includes(component.type)) {
-    pushError(errors, `${componentLabel(component)} type must be api, web, database, or native`);
+  if (component.type != null) {
+    pushError(errors, `${componentLabel(component)} type was renamed to kind`);
+  }
+  if (!["api_service", "web_surface", "ios_surface", "android_surface", "database"].includes(component.kind)) {
+    pushError(errors, `${componentLabel(component)} kind must be api_service, web_surface, ios_surface, android_surface, or database`);
   }
   if (typeof component.projection !== "string" || component.projection.length === 0) {
     pushError(errors, `${componentLabel(component)} projection must be a non-empty string`);
@@ -346,7 +387,7 @@ function validateComponentShape(errors, component, seenIds) {
 
 /**
  * @param {ValidationError[]} errors
- * @param {RuntimeTopologyComponent} component
+ * @param {RuntimeTopologyRuntime} component
  * @param {Map<string, Record<string, any>>} projections
  * @param {{ configDir?: string|null, rootDir?: string|null }} [options]
  * @returns {void}
@@ -377,14 +418,14 @@ function validateComponentCompatibility(errors, component, projections, options 
   if (manifest.version !== component.generator.version) {
     pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}' version '${component.generator.version}' is unsupported; expected '${manifest.version}'`);
   }
-  if (!isGeneratorCompatible(manifest, component.type, projection)) {
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}@${manifest.version}' is incompatible with component surface '${component.type}' and projection platform '${projection.platform || "api"}'`);
+  if (!isGeneratorCompatible(manifest, component.kind, projection)) {
+    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}@${manifest.version}' is incompatible with runtime kind '${component.kind}' and projection type '${projection.type || "api_contract"}'`);
   }
 }
 
 /**
  * @param {ValidationError[]} errors
- * @param {RuntimeTopologyComponent[]} components
+ * @param {RuntimeTopologyRuntime[]} components
  * @returns {void}
  */
 function validateTopologyReferences(errors, components) {
@@ -399,14 +440,20 @@ function validateTopologyReferences(errors, components) {
         usedPorts.set(component.port, component.id);
       }
     }
-    if (component.type === "api") {
-      if (component.database && byId.get(component.database)?.type !== "database") {
-        pushError(errors, `${componentLabel(component)} references missing database component '${component.database}'`);
+    if (component.database != null) {
+      pushError(errors, `${componentLabel(component)} database was renamed to uses_database`);
+    }
+    if (component.api != null) {
+      pushError(errors, `${componentLabel(component)} api was renamed to uses_api`);
+    }
+    if (component.kind === "api_service") {
+      if (component.uses_database && byId.get(component.uses_database)?.kind !== "database") {
+        pushError(errors, `${componentLabel(component)} references missing database runtime '${component.uses_database}'`);
       }
     }
-    if (component.type === "web") {
-      if (component.api && byId.get(component.api)?.type !== "api") {
-        pushError(errors, `${componentLabel(component)} references missing api component '${component.api}'`);
+    if (["web_surface", "ios_surface", "android_surface"].includes(component.kind)) {
+      if (component.uses_api && byId.get(component.uses_api)?.kind !== "api_service") {
+        pushError(errors, `${componentLabel(component)} references missing api runtime '${component.uses_api}'`);
       }
     }
   }
@@ -428,23 +475,26 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     pushError(errors, "topogram.project.json version must be a non-empty string");
   }
   validateOutputConfig(errors, config);
-  if (!config.topology || typeof config.topology !== "object" || !Array.isArray(config.topology.components)) {
-    pushError(errors, "topogram.project.json topology.components must be an array");
+  if (config.topology?.components != null && config.topology.__normalizedRuntimeAliases !== true) {
+    pushError(errors, "topogram.project.json topology.components was renamed to topology.runtimes");
+  }
+  if (!config.topology || typeof config.topology !== "object" || !Array.isArray(config.topology.runtimes)) {
+    pushError(errors, "topogram.project.json topology.runtimes must be an array");
   } else {
     const seenIds = new Set();
-    for (const component of config.topology.components) {
+    for (const component of config.topology.runtimes) {
       validateComponentShape(errors, component, seenIds);
     }
-    const generatorPolicy = validateProjectGeneratorPolicy(config, options);
+    const generatorPolicy = validateProjectGeneratorPolicy(normalizeProjectConfigRuntimeAliases(config), options);
     for (const error of generatorPolicy.errors) {
       pushError(errors, error.message, error.loc);
     }
     if (graph) {
       const projections = projectionById(graph);
-      for (const component of config.topology.components) {
+      for (const component of config.topology.runtimes) {
         validateComponentCompatibility(errors, component, projections, options);
       }
-      validateTopologyReferences(errors, config.topology.components);
+      validateTopologyReferences(errors, config.topology.runtimes);
     }
   }
   return {

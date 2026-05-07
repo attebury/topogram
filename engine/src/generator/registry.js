@@ -10,13 +10,13 @@ import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../ui/taxonomy.js";
  * @property {string} id
  * @property {string} version
  * @property {"api"|"web"|"database"|"native"} surface
- * @property {"api"|"web"|"database"|"native"} [targetKind]
- * @property {string[]} projectionPlatforms
+ * @property {string[]} runtimeKinds
+ * @property {string[]} projectionTypes
  * @property {string[]} inputs
  * @property {string[]} outputs
  * @property {Record<string, string>} stack
  * @property {Record<string, boolean>} capabilities
- * @property {{ patterns?: string[], behaviors?: string[], unsupported?: "error"|"warning"|"contract-only" }} [componentSupport]
+ * @property {{ patterns?: string[], behaviors?: string[], unsupported?: "error"|"warning"|"contract-only" }} [widgetSupport]
  * @property {"bundled"|"package"} source
  * @property {string} [profile]
  * @property {string} [package]
@@ -32,8 +32,8 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/hono",
     version: "1",
     surface: "api",
-    targetKind: "api",
-    projectionPlatforms: ["api"],
+    runtimeKinds: ["api_service"],
+    projectionTypes: ["api_contract"],
     inputs: ["server-contract", "api-contracts"],
     outputs: ["api-service"],
     stack: { runtime: "node", framework: "hono", language: "typescript" },
@@ -45,8 +45,8 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/express",
     version: "1",
     surface: "api",
-    targetKind: "api",
-    projectionPlatforms: ["api"],
+    runtimeKinds: ["api_service"],
+    projectionTypes: ["api_contract"],
     inputs: ["server-contract", "api-contracts"],
     outputs: ["api-service"],
     stack: { runtime: "node", framework: "express", language: "typescript" },
@@ -58,13 +58,13 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/vanilla-web",
     version: "1",
     surface: "web",
-    targetKind: "web",
-    projectionPlatforms: ["ui_web"],
-    inputs: ["ui-web-contract"],
+    runtimeKinds: ["web_surface"],
+    projectionTypes: ["web_surface"],
+    inputs: ["ui-surface-contract"],
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "browser", framework: "vanilla", language: "javascript" },
     capabilities: { routes: true, components: false, coverage: true },
-    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
+    widgetSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "vanilla"
   },
@@ -72,13 +72,13 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/sveltekit",
     version: "1",
     surface: "web",
-    targetKind: "web",
-    projectionPlatforms: ["ui_web"],
-    inputs: ["ui-web-contract", "api-contracts"],
+    runtimeKinds: ["web_surface"],
+    projectionTypes: ["web_surface"],
+    inputs: ["ui-surface-contract", "api-contracts"],
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "node", framework: "sveltekit", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
-    componentSupport: {
+    widgetSupport: {
       patterns: RENDERED_COMPONENT_PATTERNS,
       behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
       unsupported: "warning"
@@ -90,13 +90,13 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/react",
     version: "1",
     surface: "web",
-    targetKind: "web",
-    projectionPlatforms: ["ui_web"],
-    inputs: ["ui-web-contract", "api-contracts"],
+    runtimeKinds: ["web_surface"],
+    projectionTypes: ["web_surface"],
+    inputs: ["ui-surface-contract", "api-contracts"],
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "browser", framework: "react", language: "typescript" },
     capabilities: { routes: true, components: true, coverage: true },
-    componentSupport: {
+    widgetSupport: {
       patterns: RENDERED_COMPONENT_PATTERNS,
       behaviors: ["selection", "sorting", "filtering", "search", "pagination", "bulk_action", "optimistic_update"],
       unsupported: "warning"
@@ -108,13 +108,13 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/swiftui",
     version: "1",
     surface: "native",
-    targetKind: "native",
-    projectionPlatforms: ["ui_ios"],
-    inputs: ["ui-web-contract", "api-contracts"],
+    runtimeKinds: ["ios_surface"],
+    projectionTypes: ["ios_surface"],
+    inputs: ["ui-surface-contract", "api-contracts"],
     outputs: ["native-app"],
     stack: { platform: "ios", framework: "swiftui", language: "swift" },
     capabilities: { routes: true, components: false, coverage: false },
-    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
+    widgetSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "swiftui"
   },
@@ -122,8 +122,8 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/postgres",
     version: "1",
     surface: "database",
-    targetKind: "database",
-    projectionPlatforms: ["db_postgres"],
+    runtimeKinds: ["database"],
+    projectionTypes: ["db_contract"],
     inputs: ["db-contract", "db-lifecycle-plan"],
     outputs: ["db-lifecycle-bundle", "sql-schema", "sql-migration", "prisma-schema", "drizzle-schema"],
     stack: { database: "postgres", language: "sql" },
@@ -135,8 +135,8 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/sqlite",
     version: "1",
     surface: "database",
-    targetKind: "database",
-    projectionPlatforms: ["db_sqlite"],
+    runtimeKinds: ["database"],
+    projectionTypes: ["db_contract"],
     inputs: ["db-contract", "db-lifecycle-plan"],
     outputs: ["db-lifecycle-bundle", "sql-schema", "sql-migration", "prisma-schema"],
     stack: { database: "sqlite", language: "sql" },
@@ -148,13 +148,13 @@ export const GENERATOR_MANIFESTS = [
     id: "topogram/android-compose",
     version: "1",
     surface: "native",
-    targetKind: "native",
-    projectionPlatforms: ["ui_android"],
-    inputs: ["ui-web-contract", "api-contracts"],
+    runtimeKinds: ["android_surface"],
+    projectionTypes: ["android_surface"],
+    inputs: ["ui-surface-contract", "api-contracts"],
     outputs: ["native-app"],
     stack: { platform: "android", framework: "compose", language: "kotlin" },
     capabilities: { routes: true, components: false, coverage: false },
-    componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
+    widgetSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "compose",
     planned: true
@@ -392,8 +392,17 @@ export function validateGeneratorManifest(manifest) {
   if (!["api", "web", "database", "native"].includes(manifest.surface)) {
     errors.push(`${label} surface must be api, web, database, or native`);
   }
-  if (!isStringArray(manifest.projectionPlatforms, true)) {
-    errors.push(`${label} projectionPlatforms must be a non-empty string array`);
+  if (manifest.targetKind != null) {
+    errors.push(`${label} targetKind was renamed to runtimeKinds`);
+  }
+  if (!isStringArray(manifest.runtimeKinds, true)) {
+    errors.push(`${label} runtimeKinds must be a non-empty string array`);
+  }
+  if (manifest["projectionPlatforms"] != null) {
+    errors.push(`${label} projectionPlatforms was renamed to projectionTypes`);
+  }
+  if (!isStringArray(manifest.projectionTypes, true)) {
+    errors.push(`${label} projectionTypes must be a non-empty string array`);
   }
   if (!isStringArray(manifest.inputs)) {
     errors.push(`${label} inputs must be a string array`);
@@ -407,21 +416,24 @@ export function validateGeneratorManifest(manifest) {
   if (!manifest.capabilities || typeof manifest.capabilities !== "object" || Array.isArray(manifest.capabilities)) {
     errors.push(`${label} capabilities must be an object`);
   }
-  if (manifest.componentSupport != null) {
-    if (typeof manifest.componentSupport !== "object" || Array.isArray(manifest.componentSupport)) {
-      errors.push(`${label} componentSupport must be an object when present`);
+  if (manifest["componentSupport"] != null) {
+    errors.push(`${label} componentSupport was renamed to widgetSupport`);
+  }
+  if (manifest.widgetSupport != null) {
+    if (typeof manifest.widgetSupport !== "object" || Array.isArray(manifest.widgetSupport)) {
+      errors.push(`${label} widgetSupport must be an object when present`);
     } else {
-      if (manifest.componentSupport.patterns != null && !isStringArray(manifest.componentSupport.patterns)) {
-        errors.push(`${label} componentSupport.patterns must be a string array`);
+      if (manifest.widgetSupport.patterns != null && !isStringArray(manifest.widgetSupport.patterns)) {
+        errors.push(`${label} widgetSupport.patterns must be a string array`);
       }
-      if (manifest.componentSupport.behaviors != null && !isStringArray(manifest.componentSupport.behaviors)) {
-        errors.push(`${label} componentSupport.behaviors must be a string array`);
+      if (manifest.widgetSupport.behaviors != null && !isStringArray(manifest.widgetSupport.behaviors)) {
+        errors.push(`${label} widgetSupport.behaviors must be a string array`);
       }
       if (
-        manifest.componentSupport.unsupported != null &&
-        !["error", "warning", "contract-only"].includes(manifest.componentSupport.unsupported)
+        manifest.widgetSupport.unsupported != null &&
+        !["error", "warning", "contract-only"].includes(manifest.widgetSupport.unsupported)
       ) {
-        errors.push(`${label} componentSupport.unsupported must be error, warning, or contract-only`);
+        errors.push(`${label} widgetSupport.unsupported must be error, warning, or contract-only`);
       }
     }
   }
@@ -466,20 +478,20 @@ export function isApiProjection(projection) {
  */
 export function projectionCompatibilityKey(projection) {
   if (isApiProjection(projection)) {
-    return "api";
+    return "api_contract";
   }
-  return projection?.platform || "";
+  return projection?.type || projection?.platform || "";
 }
 
 /**
  * @param {GeneratorManifest|null|undefined} manifest
- * @param {string} componentType
+ * @param {string} runtimeKind
  * @param {Record<string, any>|null|undefined} projection
  * @returns {boolean}
  */
-export function isGeneratorCompatible(manifest, componentType, projection) {
-  if (!manifest || manifest.planned || manifest.surface !== componentType) {
+export function isGeneratorCompatible(manifest, runtimeKind, projection) {
+  if (!manifest || manifest.planned || !manifest.runtimeKinds.includes(runtimeKind)) {
     return false;
   }
-  return manifest.projectionPlatforms.includes(projectionCompatibilityKey(projection));
+  return manifest.projectionTypes.includes(projectionCompatibilityKey(projection));
 }

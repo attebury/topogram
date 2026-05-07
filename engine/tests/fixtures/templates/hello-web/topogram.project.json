@@ -7,16 +7,16 @@
     }
   },
   "topology": {
-    "components": [
+    "runtimes": [
       {
         "id": "app_web",
-        "type": "web",
-        "projection": "proj_ui_web",
+        "projection": "proj_web_surface",
         "generator": {
           "id": "topogram/vanilla-web",
           "version": "1"
         },
-        "port": 5173
+        "port": 5173,
+        "kind": "web_surface"
       }
     ]
   }

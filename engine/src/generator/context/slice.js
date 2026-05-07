@@ -2,7 +2,6 @@ import {
   acceptanceCriterionById,
   bugById,
   buildDefaultWriteScope,
-  componentById,
   documentById,
   domainById,
   ensureContextSelection,
@@ -13,17 +12,17 @@ import {
   relatedCapabilitiesForEntity,
   relatedCapabilitiesForProjection,
   relatedEntitiesForDomain,
-  relatedComponentsForProjection,
   relatedJourneysForCapability,
   relatedProjectionsForCapability,
-  relatedProjectionsForComponent,
+  relatedProjectionsForWidget,
   relatedProjectionsForDomain,
   relatedProjectionsForEntity,
   relatedRulesForDomain,
   relatedRulesForTarget,
-  relatedShapesForComponent,
+  relatedShapesForWidget,
   relatedShapesForEntity,
   relatedShapesForProjection,
+  relatedWidgetsForProjection,
   relatedVerificationsForDomain,
   relatedWorkflowDocsForCapability,
   relatedEntitiesForProjection,
@@ -41,7 +40,8 @@ import {
   summarizeStatementsByIds,
   summarizeTask,
   taskById,
-  verificationIdsForTarget
+  verificationIdsForTarget,
+  widgetById
 } from "./shared.js";
 import {
   defaultOwnershipBoundary,
@@ -163,9 +163,9 @@ function projectionSlice(graph, projectionId) {
   const capabilities = relatedCapabilitiesForProjection(projection);
   const entities = relatedEntitiesForProjection(projection);
   const shapes = relatedShapesForProjection(projection);
-  const components = relatedComponentsForProjection(graph, projection);
+  const widgets = relatedWidgetsForProjection(graph, projection);
   const rules = [...new Set(capabilities.flatMap((capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
-  const verifications = verificationIdsForTarget(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...components]);
+  const verifications = verificationIdsForTarget(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...widgets]);
 
   return {
     type: "context_slice",
@@ -179,7 +179,7 @@ function projectionSlice(graph, projectionId) {
       entities,
       shapes,
       capabilities,
-      components,
+      widgets,
       rules,
       verifications
     },
@@ -187,11 +187,11 @@ function projectionSlice(graph, projectionId) {
       entities: summarizeStatementsByIds(graph, entities),
       shapes: summarizeStatementsByIds(graph, shapes),
       capabilities: summarizeStatementsByIds(graph, capabilities),
-      components: summarizeStatementsByIds(graph, components),
+      widgets: summarizeStatementsByIds(graph, widgets),
       rules: summarizeStatementsByIds(graph, rules)
     },
     verification: summarizeStatementsByIds(graph, verifications),
-    verification_targets: recommendedVerificationTargets(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...components], {
+    verification_targets: recommendedVerificationTargets(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...widgets], {
       rationale: "Projection slices affect generated contract and runtime surfaces, so verification should follow the projection closure."
     }),
     ui_agent_packet: uiAgentPacketForProjection(graph, projection),
@@ -246,33 +246,33 @@ function entitySlice(graph, entityId) {
   };
 }
 
-function componentSlice(graph, componentId) {
-  const component = componentById(graph, componentId);
-  if (!component) {
-    throw new Error(`No component found with id '${componentId}'`);
+function widgetSlice(graph, widgetId) {
+  const widget = widgetById(graph, widgetId);
+  if (!widget) {
+    throw new Error(`No widget found with id '${widgetId}'`);
   }
-  const dependencyIds = componentDependencyIdsByKind(component);
-  const shapes = relatedShapesForComponent(component);
+  const dependencyIds = widgetDependencyIdsByKind(widget);
+  const shapes = relatedShapesForWidget(widget);
   const entities = dependencyIds.entity;
   const capabilities = dependencyIds.capability;
-  const projections = relatedProjectionsForComponent(graph, componentId);
-  const componentDependencies = dependencyIds.component;
-  const verificationScope = [componentId, ...shapes, ...entities, ...capabilities, ...projections, ...componentDependencies];
+  const projections = relatedProjectionsForWidget(graph, widgetId);
+  const widgetDependencies = dependencyIds.widget;
+  const verificationScope = [widgetId, ...shapes, ...entities, ...capabilities, ...projections, ...widgetDependencies];
   const verifications = verificationIdsForTarget(graph, verificationScope);
 
   return {
     type: "context_slice",
     version: 1,
     focus: {
-      kind: "component",
-      id: componentId
+      kind: "widget",
+      id: widgetId
     },
-    summary: summarizeById(graph, componentId),
+    summary: summarizeById(graph, widgetId),
     depends_on: {
       shapes,
       entities,
       capabilities,
-      components: componentDependencies,
+      widgets: widgetDependencies,
       projections,
       verifications
     },
@@ -280,34 +280,34 @@ function componentSlice(graph, componentId) {
       shapes: summarizeStatementsByIds(graph, shapes),
       entities: summarizeStatementsByIds(graph, entities),
       capabilities: summarizeStatementsByIds(graph, capabilities),
-      components: summarizeStatementsByIds(graph, componentDependencies),
+      widgets: summarizeStatementsByIds(graph, widgetDependencies),
       projections: summarizeStatementsByIds(graph, projections)
     },
     verification: summarizeStatementsByIds(graph, verifications),
     verification_targets: recommendedVerificationTargets(graph, verificationScope, {
-      rationale: "Component changes affect every related projection — verification should follow the component contract closure."
+      rationale: "Widget changes affect every related projection, so verification should follow the widget contract closure."
     }),
-    ui_agent_packet: uiAgentPacketForComponent(graph, component, projections),
+    ui_agent_packet: uiAgentPacketForWidget(graph, widget, projections),
     write_scope: buildDefaultWriteScope(),
     review_boundary: {
       automation_class: "review_required",
-      reasons: ["component_surface"]
+      reasons: ["widget_surface"]
     },
     ownership_boundary: defaultOwnershipBoundary()
   };
 }
 
-function componentDependencyIdsByKind(component) {
+function widgetDependencyIdsByKind(widget) {
   const ids = {
     shape: [],
     entity: [],
     capability: [],
     projection: [],
-    component: []
+    widget: []
   };
 
-  for (const dependency of component.dependencies || []) {
-    const kind = componentDependencyKind(dependency);
+  for (const dependency of widget.dependencies || []) {
+    const kind = widgetDependencyKind(dependency);
     if (kind && Object.hasOwn(ids, kind)) {
       ids[kind].push(dependency.id);
     }
@@ -318,9 +318,9 @@ function componentDependencyIdsByKind(component) {
   );
 }
 
-function componentDependencyKind(dependency) {
+function widgetDependencyKind(dependency) {
   if (dependency?.target?.kind) {
-    return dependency.target.kind;
+    return dependency.target.kind === "component" ? "widget" : dependency.target.kind;
   }
   const id = String(dependency?.id || "");
   const prefix = id.split("_")[0];
@@ -330,14 +330,18 @@ function componentDependencyKind(dependency) {
   if (prefix === "cap") {
     return "capability";
   }
+  if (prefix === "component") {
+    return "widget";
+  }
   return prefix || null;
 }
 
 function uiAgentPacketForProjection(graph, projection) {
-  if (!String(projection.platform || "").startsWith("ui_")) {
+  const projectionType = projection.type || projection.platform || null;
+  if (projectionType !== "ui_contract" && !String(projectionType || "").endsWith("_surface")) {
     return null;
   }
-  const sharedProjection = projection.platform === "ui_shared"
+  const sharedProjection = projectionType === "ui_contract"
     ? projection
     : sharedUiProjectionFor(graph, projection);
   const ownerProjection = sharedProjection || projection;
@@ -345,8 +349,8 @@ function uiAgentPacketForProjection(graph, projection) {
     type: "ui_agent_packet",
     version: 1,
     ownership: {
-      componentPlacement: "ui_shared",
-      designIntent: "ui_shared",
+      widgetPlacement: "ui_contract",
+      designIntent: "ui_contract",
       concreteSurfaceOwns: ["routes", "surface_hints"]
     },
     sharedProjection: sharedProjection
@@ -364,26 +368,27 @@ function uiAgentPacketForProjection(graph, projection) {
       screenId: route.screenId,
       path: route.path
     })),
-    components: (ownerProjection.uiComponents || []).map((usage) => componentUsagePacket(usage)),
-    design: designIntentPacket(ownerProjection),
+    widgets: (ownerProjection.uiComponents || []).map((usage) => widgetUsagePacket(usage)),
+    designTokens: designIntentPacket(ownerProjection),
     requiredGates: uiRequiredGates(projection.id)
   };
 }
 
-function uiAgentPacketForComponent(graph, component, projectionIds) {
+function uiAgentPacketForWidget(graph, widget, projectionIds) {
   const projectionSet = new Set(projectionIds);
   const sourceUsages = [];
   for (const projection of graph.byKind.projection || []) {
     for (const usage of projection.uiComponents || []) {
-      if (usage.component?.id !== component.id) continue;
+      if (usage.component?.id !== widget.id) continue;
+      const projectionType = projection.type || projection.platform || null;
       sourceUsages.push({
         projection: {
           id: projection.id,
-          platform: projection.platform,
-          ownership: projection.platform === "ui_shared" ? "owner" : "concrete"
+          type: projectionType,
+          ownership: projectionType === "ui_contract" ? "owner" : "concrete"
         },
-        usage: componentUsagePacket(usage),
-        design: designIntentPacket(projection)
+        usage: widgetUsagePacket(usage),
+        designTokens: designIntentPacket(projection)
       });
       projectionSet.add(projection.id);
     }
@@ -393,41 +398,41 @@ function uiAgentPacketForComponent(graph, component, projectionIds) {
     type: "ui_agent_packet",
     version: 1,
     ownership: {
-      componentContract: "component",
-      componentPlacement: "ui_shared",
+      widgetContract: "widget",
+      widgetPlacement: "ui_contract",
       concreteSurfacesInherit: true
     },
-    component: {
-      id: component.id,
-      name: component.name || component.id,
-      category: component.category || null,
-      patterns: component.componentContract?.patterns || [],
-      regions: component.componentContract?.regions || [],
-      behaviors: component.componentContract?.behaviors || []
+    widget: {
+      id: widget.id,
+      name: widget.name || widget.id,
+      category: widget.category || null,
+      patterns: widget.widgetContract?.patterns || widget.componentContract?.patterns || [],
+      regions: widget.widgetContract?.regions || widget.componentContract?.regions || [],
+      behaviors: widget.widgetContract?.behaviors || widget.componentContract?.behaviors || []
     },
     sourceUsages,
     inheritedBy: [...projectionSet]
       .filter((projectionId) => !sourceUsages.some((entry) => entry.projection.id === projectionId))
       .sort(),
-    requiredGates: uiRequiredGates(null, component.id)
+    requiredGates: uiRequiredGates(null, widget.id)
   };
 }
 
 function sharedUiProjectionFor(graph, projection) {
   for (const reference of projection.realizes || []) {
     const candidate = (graph.byKind.projection || []).find((entry) => entry.id === reference.id);
-    if (candidate?.platform === "ui_shared") {
+    if ((candidate?.type || candidate?.platform) === "ui_contract") {
       return candidate;
     }
   }
   return null;
 }
 
-function componentUsagePacket(usage) {
+function widgetUsagePacket(usage) {
   return {
     screenId: usage.screenId || null,
     region: usage.region || null,
-    componentId: usage.component?.id || null,
+    widgetId: usage.component?.id || null,
     dataBindings: (usage.dataBindings || []).map((binding) => ({
       prop: binding.prop || null,
       source: binding.source?.id || binding.source || null
@@ -448,15 +453,15 @@ function designIntentPacket(projection) {
   }));
 }
 
-function uiRequiredGates(projectionId = null, componentId = null) {
+function uiRequiredGates(projectionId = null, widgetId = null) {
   return [
     { command: "topogram check", reason: "Validate shared UI ownership, taxonomy, references, and topology." },
     {
-      command: `topogram component check${projectionId ? ` --projection ${projectionId}` : ""}${componentId ? ` --component ${componentId}` : ""}`,
-      reason: "Validate component placement, props, events, regions, and patterns."
+      command: `topogram widget check${projectionId ? ` --projection ${projectionId}` : ""}${widgetId ? ` --widget ${widgetId}` : ""}`,
+      reason: "Validate widget placement, props, events, regions, and patterns."
     },
     {
-      command: `topogram component behavior${projectionId ? ` --projection ${projectionId}` : ""}${componentId ? ` --component ${componentId}` : ""}`,
+      command: `topogram widget behavior${projectionId ? ` --projection ${projectionId}` : ""}${widgetId ? ` --widget ${widgetId}` : ""}`,
       reason: "Inspect behavior realizations and partial bindings before code changes."
     }
   ];
@@ -520,7 +525,7 @@ function domainSlice(graph, domainId) {
     [domainId, ...capabilities, ...entities, ...projections],
     {
       rationale:
-        "Domain slices should re-run verification covering the domain's capabilities, entities, and platform projections."
+        "Domain slices should re-run verification covering the domain's capabilities, entities, and projection types."
     }
   );
 
@@ -803,7 +808,7 @@ export function generateContextSlice(graph, options = {}) {
     capabilityId: options.capabilityId,
     workflowId: options.workflowId,
     projectionId: options.projectionId,
-    componentId: options.componentId,
+    componentId: options.widgetId || options.componentId,
     entityId: options.entityId,
     journeyId: options.journeyId,
     surfaceId: options.surfaceId,
@@ -819,7 +824,7 @@ export function generateContextSlice(graph, options = {}) {
   if (selection.kind === "capability") return capabilitySlice(graph, selection.id);
   if (selection.kind === "workflow") return workflowSlice(graph, selection.id);
   if (selection.kind === "projection") return projectionSlice(graph, selection.id);
-  if (selection.kind === "component") return componentSlice(graph, selection.id);
+  if (selection.kind === "widget") return widgetSlice(graph, selection.id);
   if (selection.kind === "entity") return entitySlice(graph, selection.id);
   if (selection.kind === "journey") return journeySlice(graph, selection.id);
   if (selection.kind === "domain") return domainSlice(graph, selection.id);

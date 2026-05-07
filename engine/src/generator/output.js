@@ -81,54 +81,55 @@ export function buildOutputFiles(result, options = {}) {
     }));
   }
 
-  if (result.target === "ui-component-contract") {
+  if (result.target === "ui-widget-contract") {
     if (result.artifact == null) {
-      throw new Error("ui-component-contract generator returned no artifact");
+      throw new Error("ui-widget-contract generator returned no artifact");
     }
-    if (options.componentId) {
-      return [{ path: `${options.componentId}.ui-component-contract.json`, contents: result.artifact }];
+    const widgetId = options.widgetId || options.componentId;
+    if (widgetId) {
+      return [{ path: `${widgetId}.ui-widget-contract.json`, contents: result.artifact }];
     }
-    return Object.keys(result.artifact).sort().map((componentId) => ({
-      path: `${componentId}.ui-component-contract.json`,
-      contents: result.artifact[componentId]
+    return Object.keys(result.artifact).sort().map((id) => ({
+      path: `${id}.ui-widget-contract.json`,
+      contents: result.artifact[id]
     }));
   }
 
-  if (result.target === "component-conformance-report") {
-    const suffix = [options.projectionId, options.componentId].filter(Boolean).join(".");
+  if (result.target === "widget-conformance-report") {
+    const suffix = [options.projectionId, options.widgetId || options.componentId].filter(Boolean).join(".");
     return [{
       path: suffix
-        ? `${suffix}.component-conformance-report.json`
-        : "component-conformance-report.json",
+        ? `${suffix}.widget-conformance-report.json`
+        : "widget-conformance-report.json",
       contents: result.artifact
     }];
   }
 
-  if (result.target === "component-behavior-report") {
-    const suffix = [options.projectionId, options.componentId].filter(Boolean).join(".");
+  if (result.target === "widget-behavior-report") {
+    const suffix = [options.projectionId, options.widgetId || options.componentId].filter(Boolean).join(".");
     return [{
       path: suffix
-        ? `${suffix}.component-behavior-report.json`
-        : "component-behavior-report.json",
+        ? `${suffix}.widget-behavior-report.json`
+        : "widget-behavior-report.json",
       contents: result.artifact
     }];
   }
 
-  if (result.target === "ui-web-debug") {
+  if (result.target === "ui-surface-debug") {
     return [
       {
-        path: options.projectionId ? `${options.projectionId}.ui-web-debug.md` : "ui-web-debug.md",
+        path: options.projectionId ? `${options.projectionId}.ui-surface-debug.md` : "ui-surface-debug.md",
         contents: result.artifact
       }
     ];
   }
 
-  if (result.target === "ui-web-contract") {
+  if (result.target === "ui-surface-contract") {
     if (options.projectionId) {
-      return [{ path: `${options.projectionId}.ui-web-contract.json`, contents: result.artifact }];
+      return [{ path: `${options.projectionId}.ui-surface-contract.json`, contents: result.artifact }];
     }
     return Object.keys(result.artifact).sort().map((projectionId) => ({
-      path: `${projectionId}.ui-web-contract.json`,
+      path: `${projectionId}.ui-surface-contract.json`,
       contents: result.artifact[projectionId]
     }));
   }

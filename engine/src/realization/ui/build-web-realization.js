@@ -26,19 +26,20 @@ export function buildWebRealization(graph, options = {}) {
   }
 
   const projection = getProjection(graph, options.projectionId);
+  const projectionType = projection.type || projection.platform;
   const surfaceHints =
-    projection.platform === "ui_ios" ? projection.uiIos || [] : projection.uiWeb || [];
+    projectionType === "ios_surface" ? projection.uiIos || [] : projection.uiWeb || [];
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
   const sharedContract = sharedProjection
     ? buildUiSharedRealization(graph, { projectionId: sharedProjection.id })
     : {
-        projection: null,
-        realizes: [],
-        outputs: [],
-        components: {},
-        design: null,
-        screens: []
-      };
+      projection: null,
+      realizes: [],
+      outputs: [],
+      widgets: {},
+      designTokens: null,
+      screens: []
+    };
   const concreteContract = buildUiSharedRealization(graph, { projectionId: projection.id });
 
   const routeMap = new Map((projection.uiRoutes || []).map((entry) => [entry.screenId, entry]));
@@ -59,17 +60,17 @@ export function buildWebRealization(graph, options = {}) {
     }
   }
 
-  const screenMap = new Map((sharedContract.screens || []).map((screen) => [screen.id, { ...screen, components: [...(screen.components || [])] }]));
+  const screenMap = new Map((sharedContract.screens || []).map((screen) => [screen.id, { ...screen, widgets: [...(screen.widgets || [])] }]));
   for (const screen of concreteContract.screens || []) {
     if (!screenMap.has(screen.id)) {
-      screenMap.set(screen.id, { ...screen, components: [...(screen.components || [])] });
+      screenMap.set(screen.id, { ...screen, widgets: [...(screen.widgets || [])] });
       continue;
     }
     const existing = screenMap.get(screen.id);
     screenMap.set(screen.id, {
       ...existing,
       ...screen,
-      components: [...(existing.components || [])],
+      widgets: [...(existing.widgets || [])],
       regions: mergeByKey(existing.regions || [], screen.regions || [], (entry) => entry.region),
       patterns: [...new Set([...(existing.patterns || []), ...(screen.patterns || [])])]
     });
@@ -77,24 +78,26 @@ export function buildWebRealization(graph, options = {}) {
 
   const appShell = projection.uiAppShell?.length || !sharedProjection ? concreteContract.appShell : sharedContract.appShell;
   const navigation = projection.uiNavigation?.length || !sharedProjection ? concreteContract.navigation : sharedContract.navigation;
-  const design = projection.uiDesign?.length || !sharedProjection ? concreteContract.design : sharedContract.design;
+  const designTokens = projection.uiDesign?.length || !sharedProjection ? concreteContract.designTokens : sharedContract.designTokens;
 
   const contract = {
+    type: "ui_surface_contract",
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      platform: projection.platform
+      type: projection.type || projection.platform
     },
-    sharedProjection: sharedProjection
+    uiContract: sharedProjection
       ? {
           id: sharedProjection.id,
-          name: sharedProjection.name || sharedProjection.id
+          name: sharedProjection.name || sharedProjection.id,
+          type: sharedProjection.type || sharedProjection.platform
         }
       : null,
     generatorDefaults: generatorDefaultsMap(projection),
     outputs: projection.outputs,
-    components: sharedProjection ? (sharedContract.components || {}) : (concreteContract.components || {}),
-    design: design || null,
+    widgets: sharedProjection ? (sharedContract.widgets || {}) : (concreteContract.widgets || {}),
+    designTokens: designTokens || null,
     appShell: appShell || null,
     navigation: {
       groups: navigation?.groups || [],
@@ -108,8 +111,8 @@ export function buildWebRealization(graph, options = {}) {
     screens: [...screenMap.values()].map((screen) => ({
       ...screen,
       route: routeMap.get(screen.id)?.path || null,
-      web: Object.fromEntries((uiWebByScreen.get(screen.id) || []).map((entry) => [entry.directive, entry.value])),
-      actionWeb: Object.fromEntries(
+      surfaceHints: Object.fromEntries((uiWebByScreen.get(screen.id) || []).map((entry) => [entry.directive, entry.value])),
+      actionSurfaceHints: Object.fromEntries(
         [...screen.actions.screen, screen.actions.primary, screen.actions.secondary, screen.actions.destructive, screen.actions.terminal]
           .filter(Boolean)
           .map((action) => {
@@ -134,7 +137,7 @@ export function buildWebRealization(graph, options = {}) {
     apiContracts[capabilityId] = buildApiRealization(graph, { capabilityId });
   }
 
-  const isNativeUi = projection.platform === "ui_ios";
+  const isNativeUi = projectionType === "ios_surface";
 
   return {
     type: isNativeUi ? "native_ui_realization" : "web_app_realization",

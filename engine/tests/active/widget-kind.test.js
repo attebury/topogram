@@ -17,13 +17,13 @@ const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "ap
 function workspaceFromSource(source) {
   return {
     root: "<memory>",
-    files: [parseSource(source, "component-test.tg")],
+    files: [parseSource(source, "widget-test.tg")],
     docs: []
   };
 }
 
 function makeBaselineCopy() {
-  return makeWorkspaceCopy("topogram-component-baseline-");
+  return makeWorkspaceCopy("topogram-widget-baseline-");
 }
 
 function makeWorkspaceCopy(prefix) {
@@ -44,31 +44,31 @@ function makeWorkspaceCopy(prefix) {
   return tempRoot;
 }
 
-function removeDataGridComponentUsage(workspaceRoot) {
-  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-shared.tg");
+function removeDataGridWidgetUsage(workspaceRoot) {
+  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-contract.tg");
   const source = fs.readFileSync(projectionPath, "utf8");
   fs.writeFileSync(
     projectionPath,
     source.replace(
-      /\n  ui_components \{\n    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n  \}\n/,
+      /\n  widget_bindings \{\n    screen item_list region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail\n  \}\n/,
       "\n"
     )
   );
 }
 
-test("component kind validates and resolves from the app fixture", () => {
+test("widget kind validates and resolves from the app fixture", () => {
   const ast = parsePath(fixtureRoot);
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
-  const component = resolved.graph.byKind.component.find((entry) => entry.id === "component_ui_data_grid");
-  assert.ok(component);
-  assert.equal(component.componentContract.id, "component_ui_data_grid");
-  assert.equal(component.componentContract.props[0].name, "rows");
-  assert.deepEqual(component.componentContract.patterns, ["resource_table", "data_grid_view"]);
-  assert.deepEqual(component.componentContract.behaviors, [
+  const widget = resolved.graph.byKind.widget.find((entry) => entry.id === "widget_data_grid");
+  assert.ok(widget);
+  assert.equal(widget.widgetContract.id, "widget_data_grid");
+  assert.equal(widget.widgetContract.props[0].name, "rows");
+  assert.deepEqual(widget.widgetContract.patterns, ["resource_table", "data_grid_view"]);
+  assert.deepEqual(widget.widgetContract.behaviors, [
     {
       kind: "selection",
       directives: {
@@ -89,11 +89,11 @@ test("component kind validates and resolves from the app fixture", () => {
   ]);
 });
 
-test("component validator rejects missing props and status", () => {
+test("widget validator rejects missing props and status", () => {
   const ast = workspaceFromSource(`
-component component_missing_required {
+widget widget_missing_required {
   name "Missing Required"
-  description "Invalid component"
+  description "Invalid widget"
 }
 `);
   const validation = validateWorkspace(ast);
@@ -102,7 +102,7 @@ component component_missing_required {
   assert.match(validation.errors.map((error) => error.message).join("\n"), /Missing required field 'status'/);
 });
 
-test("component validator rejects invalid patterns, regions, and event shapes", () => {
+test("widget validator rejects invalid patterns, regions, and event shapes", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Payload"
@@ -110,7 +110,7 @@ shape shape_event_payload {
   status active
 }
 
-component component_invalid_refs {
+widget widget_invalid_refs {
   name "Invalid Refs"
   description "Invalid references"
   props {
@@ -132,7 +132,7 @@ component component_invalid_refs {
   assert.match(messages, /region 'not_a_region' is not supported/);
 });
 
-test("component validator rejects invalid behavior shorthand and structured bindings", () => {
+test("widget validator rejects invalid behavior shorthand and structured bindings", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Payload"
@@ -140,7 +140,7 @@ shape shape_event_payload {
   status active
 }
 
-component component_invalid_behaviors {
+widget widget_invalid_behaviors {
   name "Invalid Behaviors"
   description "Invalid behavior contracts"
   props {
@@ -169,24 +169,24 @@ component component_invalid_behaviors {
   assert.match(messages, /behavior 'bulk_action' references unknown event or capability 'missing_action'/);
 });
 
-test("component validator rejects removed consumers field", () => {
+test("widget validator rejects removed consumers field", () => {
   const ast = workspaceFromSource(`
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared UI"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes []
   outputs [ui_contract]
   status active
 }
 
-component component_removed_consumers {
+widget widget_removed_consumers {
   name "Removed Consumers"
   description "Consumers used to point projection usage in the wrong direction"
   props {
     rows array required
   }
-  consumers [proj_ui_shared]
+  consumers [proj_ui_contract]
   status active
 }
 `);
@@ -195,38 +195,38 @@ component component_removed_consumers {
   assert.match(validation.errors.map((error) => error.message).join("\n"), /Field 'consumers' is not allowed/);
 });
 
-test("ui-component-contract generator emits selected and workspace contracts", () => {
+test("ui-widget-contract generator emits selected and workspace contracts", () => {
   const ast = parsePath(fixtureRoot);
   const selected = generateWorkspace(ast, {
-    target: "ui-component-contract",
-    componentId: "component_ui_data_grid"
+    target: "ui-widget-contract",
+    widgetId: "widget_data_grid"
   });
   assert.equal(selected.ok, true);
-  assert.equal(selected.artifact.id, "component_ui_data_grid");
+  assert.equal(selected.artifact.id, "widget_data_grid");
   assert.equal(selected.artifact.events[0].shape.id, "shape_output_item_card");
 
-  const all = generateWorkspace(ast, { target: "ui-component-contract" });
+  const all = generateWorkspace(ast, { target: "ui-widget-contract" });
   assert.equal(all.ok, true);
-  assert.equal(all.artifact.component_ui_data_grid.id, "component_ui_data_grid");
+  assert.equal(all.artifact.widget_data_grid.id, "widget_data_grid");
 });
 
-test("projection ui_components resolve component placement and bindings", () => {
+test("projection widget_bindings resolve widget placement and bindings", () => {
   const ast = parsePath(fixtureRoot);
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
-  const projection = resolved.graph.byKind.projection.find((entry) => entry.id === "proj_ui_shared");
+  const projection = resolved.graph.byKind.projection.find((entry) => entry.id === "proj_ui_contract");
   assert.ok(projection);
-  assert.deepEqual(projection.uiComponents, [
+  assert.deepEqual(projection.widgetBindings, [
     {
-      type: "ui_component_binding",
+      type: "widget_binding",
       screenId: "item_list",
       region: "results",
-      component: {
-        id: "component_ui_data_grid",
-        kind: "component"
+      widget: {
+        id: "widget_data_grid",
+        kind: "widget"
       },
       dataBindings: [
         {
@@ -252,8 +252,8 @@ test("projection ui_components resolve component placement and bindings", () => 
         "item_list",
         "region",
         "results",
-        "component",
-        "component_ui_data_grid",
+        "widget",
+        "widget_data_grid",
         "data",
         "rows",
         "from",
@@ -263,40 +263,40 @@ test("projection ui_components resolve component placement and bindings", () => 
         "navigate",
         "item_detail"
       ],
-      loc: projection.uiComponents[0].loc
+      loc: projection.widgetBindings[0].loc
     }
   ]);
 
   const slice = generateWorkspace(ast, {
     target: "context-slice",
-    projectionId: "proj_ui_shared"
+    projectionId: "proj_ui_contract"
   });
   assert.equal(slice.ok, true);
-  assert.deepEqual(slice.artifact.depends_on.components, ["component_ui_data_grid"]);
-  assert.equal(slice.artifact.related.components[0].id, "component_ui_data_grid");
+  assert.deepEqual(slice.artifact.depends_on.widgets, ["widget_data_grid"]);
+  assert.equal(slice.artifact.related.widgets[0].id, "widget_data_grid");
 
   const concreteSlice = generateWorkspace(ast, {
     target: "context-slice",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_web_surface"
   });
   assert.equal(concreteSlice.ok, true);
-  assert.deepEqual(concreteSlice.artifact.depends_on.components, ["component_ui_data_grid"]);
+  assert.deepEqual(concreteSlice.artifact.depends_on.widgets, ["widget_data_grid"]);
 
   const webContract = generateWorkspace(ast, {
-    target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    target: "ui-surface-contract",
+    projectionId: "proj_web_surface"
   });
   assert.equal(webContract.ok, true);
-  assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
+  assert.equal(webContract.artifact.widgets.widget_data_grid.id, "widget_data_grid");
   const itemList = webContract.artifact.screens.find((screen) => screen.id === "item_list");
-  assert.deepEqual(itemList.components, [
+  assert.deepEqual(itemList.widgets, [
       {
-        type: "ui_component_usage",
+        type: "ui_widget_usage",
         region: "results",
         pattern: "resource_table",
         placement: "primary",
-        component: {
-        id: "component_ui_data_grid",
+        widget: {
+        id: "widget_data_grid",
         name: "Data Grid",
         category: "collection",
         version: "1.0"
@@ -411,35 +411,35 @@ test("projection ui_components resolve component placement and bindings", () => 
   ]);
 });
 
-test("component-conformance-report passes valid inherited projection usage", () => {
+test("widget-conformance-report passes valid inherited projection usage", () => {
   const ast = parsePath(fixtureRoot);
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
-    projectionId: "proj_ui_web"
+    target: "widget-conformance-report",
+    projectionId: "proj_web_surface"
   });
   assert.equal(report.ok, true);
-  assert.equal(report.artifact.type, "component_conformance_report");
+  assert.equal(report.artifact.type, "widget_conformance_report");
   assert.deepEqual(report.artifact.filters, {
-    projection: "proj_ui_web",
-    component: null
+    projection: "proj_web_surface",
+    widget: null
   });
   assert.equal(report.artifact.summary.total_usages, 1);
   assert.equal(report.artifact.summary.passed_usages, 1);
   assert.equal(report.artifact.summary.errors, 0);
   assert.equal(report.artifact.summary.warnings, 0);
-  assert.deepEqual(report.artifact.summary.affected_components, ["component_ui_data_grid"]);
-  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_shared", "proj_ui_web"]);
-  assert.equal(report.artifact.projection_usages[0].projection.id, "proj_ui_web");
-  assert.equal(report.artifact.projection_usages[0].source_projection.id, "proj_ui_shared");
+  assert.deepEqual(report.artifact.summary.affected_widgets, ["widget_data_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_contract", "proj_web_surface"]);
+  assert.equal(report.artifact.projection_usages[0].projection.id, "proj_web_surface");
+  assert.equal(report.artifact.projection_usages[0].source_projection.id, "proj_ui_contract");
   assert.equal(report.artifact.projection_usages[0].outcome, "pass");
-  assert.equal(report.artifact.component_contracts[0].id, "component_ui_data_grid");
-  assert.deepEqual(report.artifact.component_contracts[0].approvals, []);
-  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("component-ui-data-grid.tg")), true);
-  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-ui-web.tg")), true);
-  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-ui-shared.tg")), true);
+  assert.equal(report.artifact.widget_contracts[0].id, "widget_data_grid");
+  assert.deepEqual(report.artifact.widget_contracts[0].approvals, []);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("widget-data-grid.tg")), true);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-web-surface.tg")), true);
+  assert.equal(report.artifact.write_scope.paths.some((filePath) => filePath.endsWith("proj-ui-contract.tg")), true);
 });
 
-test("component-conformance-report reports required props, action context, status, and approvals", () => {
+test("widget-conformance-report reports required props, action context, status, and approvals", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -459,7 +459,7 @@ capability cap_update_item {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   category collection
@@ -483,20 +483,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid event row_select action cap_update_item
+  widget_bindings {
+    screen item_list region results widget widget_grid event row_select action cap_update_item
   }
 
   status active
@@ -505,29 +505,29 @@ projection proj_ui {
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
+    target: "widget-conformance-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.total_usages, 1);
   assert.equal(report.artifact.summary.error_usages, 1);
   assert.equal(report.artifact.summary.errors, 2);
   assert.equal(report.artifact.summary.warnings, 1);
-  assert.deepEqual(report.artifact.summary.affected_components, ["component_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_widgets, ["widget_grid"]);
   assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui"]);
   assert.deepEqual(
     report.artifact.checks.map((check) => check.code).sort(),
     [
-      "component_event_action_not_in_projection",
-      "component_required_prop_missing",
-      "component_status_not_active"
+      "widget_event_action_not_in_projection",
+      "widget_required_prop_missing",
+      "widget_status_not_active"
     ]
   );
-  assert.equal(report.artifact.checks.find((check) => check.code === "component_required_prop_missing").prop, "rows");
-  assert.equal(report.artifact.component_contracts[0].id, "component_grid");
-  assert.deepEqual(report.artifact.component_contracts[0].approvals, ["design", "security"]);
-  assert.deepEqual(report.artifact.component_contracts[0].behaviors, [
+  assert.equal(report.artifact.checks.find((check) => check.code === "widget_required_prop_missing").prop, "rows");
+  assert.equal(report.artifact.widget_contracts[0].id, "widget_grid");
+  assert.deepEqual(report.artifact.widget_contracts[0].approvals, ["design", "security"]);
+  assert.deepEqual(report.artifact.widget_contracts[0].behaviors, [
     {
       kind: "selection",
       directives: {
@@ -540,7 +540,7 @@ projection proj_ui {
   ]);
 });
 
-test("component-conformance-report surfaces behavior realizations and unbound emitted events", () => {
+test("widget-conformance-report surfaces behavior realizations and unbound emitted events", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -554,7 +554,7 @@ capability cap_list_items {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   category collection
@@ -576,20 +576,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items
   }
 
   status active
@@ -599,15 +599,15 @@ projection proj_ui {
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
+    target: "widget-conformance-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.total_usages, 1);
   assert.equal(report.artifact.summary.warning_usages, 1);
   assert.equal(report.artifact.summary.warnings, 1);
-  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["component_behavior_event_unbound"]);
+  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["widget_behavior_event_unbound"]);
   assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations, [
     {
       kind: "selection",
@@ -648,7 +648,7 @@ projection proj_ui {
   ]);
 });
 
-test("component behavior action directives surface command effects", () => {
+test("widget behavior action directives surface command effects", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -668,7 +668,7 @@ capability cap_update_item {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   category collection
@@ -689,20 +689,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items, cap_update_item]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items event row_update action cap_update_item
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items event row_update action cap_update_item
   }
 
   status active
@@ -712,9 +712,9 @@ projection proj_ui {
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
+    target: "widget-conformance-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.warnings, 0);
@@ -756,7 +756,7 @@ projection proj_ui {
   ]);
 });
 
-test("component behavior capability action directives surface command effects", () => {
+test("widget behavior capability action directives surface command effects", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -776,7 +776,7 @@ capability cap_update_item {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   category collection
@@ -797,20 +797,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items, cap_update_item]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items event row_update action cap_update_item
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items event row_update action cap_update_item
   }
 
   status active
@@ -820,9 +820,9 @@ projection proj_ui {
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
+    target: "widget-conformance-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.warnings, 0);
@@ -868,7 +868,7 @@ projection proj_ui {
   ]);
 });
 
-test("component behavior capability action directives warn when unbound", () => {
+test("widget behavior capability action directives warn when unbound", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -888,7 +888,7 @@ capability cap_update_item {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   category collection
@@ -909,20 +909,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items, cap_update_item]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items
   }
 
   status active
@@ -932,12 +932,12 @@ projection proj_ui {
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
 
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
+    target: "widget-conformance-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(report.ok, true);
-  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["component_behavior_action_unbound"]);
+  assert.deepEqual(report.artifact.checks.map((check) => check.code), ["widget_behavior_action_unbound"]);
   assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].actions, [
     {
       event: null,
@@ -963,19 +963,19 @@ projection proj_ui {
   assert.deepEqual(report.artifact.projection_usages[0].behavior_realizations[0].status, "partial");
 
   const behaviorReport = generateWorkspace(ast, {
-    target: "component-behavior-report",
+    target: "widget-behavior-report",
     projectionId: "proj_ui",
-    componentId: "component_grid"
+    widgetId: "widget_grid"
   });
   assert.equal(behaviorReport.ok, true);
-  assert.equal(behaviorReport.artifact.type, "component_behavior_report");
+  assert.equal(behaviorReport.artifact.type, "widget_behavior_report");
   assert.equal(behaviorReport.artifact.summary.total_usages, 1);
   assert.equal(behaviorReport.artifact.summary.total_behaviors, 1);
   assert.equal(behaviorReport.artifact.summary.partial, 1);
-  assert.deepEqual(behaviorReport.artifact.summary.affected_components, ["component_grid"]);
+  assert.deepEqual(behaviorReport.artifact.summary.affected_widgets, ["widget_grid"]);
   assert.deepEqual(behaviorReport.artifact.summary.affected_projections, ["proj_ui"]);
   assert.deepEqual(behaviorReport.artifact.summary.affected_capabilities, ["cap_list_items", "cap_update_item"]);
-  assert.deepEqual(behaviorReport.artifact.groups.components.map((group) => group.id), ["component_grid"]);
+  assert.deepEqual(behaviorReport.artifact.groups.widgets.map((group) => group.id), ["widget_grid"]);
   assert.deepEqual(behaviorReport.artifact.groups.screens.map((group) => group.id), ["item_list"]);
   assert.deepEqual(behaviorReport.artifact.groups.capabilities.map((group) => group.id), ["cap_list_items", "cap_update_item"]);
   assert.deepEqual(behaviorReport.artifact.groups.effects.map((group) => group.id), ["command"]);
@@ -984,41 +984,41 @@ projection proj_ui {
   assert.deepEqual(behaviorReport.artifact.behaviors[0].capabilities, ["cap_list_items", "cap_update_item"]);
   assert.equal(
     behaviorReport.artifact.highlights.some((highlight) =>
-      highlight.code === "component_behavior_action_unbound" &&
+      highlight.code === "widget_behavior_action_unbound" &&
       highlight.capability === "cap_update_item"
     ),
     true
   );
 });
 
-test("component-conformance-report filters by component and rejects unknown selectors", () => {
+test("widget-conformance-report filters by widget and rejects unknown selectors", () => {
   const ast = parsePath(fixtureRoot);
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
-    componentId: "component_ui_data_grid"
+    target: "widget-conformance-report",
+    widgetId: "widget_data_grid"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.total_usages, 3);
-  assert.deepEqual(report.artifact.summary.affected_components, ["component_ui_data_grid"]);
-  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_shared", "proj_ui_web", "proj_ui_web_react"]);
+  assert.deepEqual(report.artifact.summary.affected_widgets, ["widget_data_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_projections, ["proj_ui_contract", "proj_web_surface", "proj_web_surface_react"]);
 
   assert.throws(
     () => generateWorkspace(ast, {
-      target: "component-conformance-report",
-      componentId: "component_does_not_exist"
+      target: "widget-conformance-report",
+      widgetId: "widget_does_not_exist"
     }),
-    /No component found with id 'component_does_not_exist'/
+    /No widget found with id 'widget_does_not_exist'/
   );
   assert.throws(
     () => generateWorkspace(ast, {
-      target: "component-conformance-report",
+      target: "widget-conformance-report",
       projectionId: "proj_does_not_exist"
     }),
     /No projection found with id 'proj_does_not_exist'/
   );
 });
 
-test("projection ui_components validate component props, events, and navigation targets", () => {
+test("projection widget_bindings validate widget props, events, and navigation targets", () => {
   const ast = workspaceFromSource(`
 shape shape_event_payload {
   name "Event Payload"
@@ -1032,7 +1032,7 @@ capability cap_list_items {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   props {
@@ -1049,20 +1049,20 @@ component component_grid {
 projection proj_ui {
   name "UI"
   description "UI"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data missing_rows from cap_list_items event missing_select navigate item_detail
+  widget_bindings {
+    screen item_list region results widget widget_grid data missing_rows from cap_list_items event missing_select navigate item_detail
   }
 
   status active
@@ -1076,7 +1076,7 @@ projection proj_ui {
   assert.match(messages, /references unknown navigation target 'item_detail'/);
 });
 
-test("projection ui_components are rejected on concrete UI projections", () => {
+test("projection widget_bindings are rejected on concrete UI projections", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1090,7 +1090,7 @@ shape shape_event_payload {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   props {
@@ -1104,27 +1104,27 @@ component component_grid {
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
+  type web_surface
   realizes [cap_list_items]
   outputs [ui_contract, web_app]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items event row_select navigate item_list
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items event row_select navigate item_list
   }
 
   status active
@@ -1132,7 +1132,7 @@ projection proj_ui_web {
 `);
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, false);
-  assert.match(validation.errors.map((error) => error.message).join("\n"), /ui_components belongs on shared UI projections/);
+  assert.match(validation.errors.map((error) => error.message).join("\n"), /widget_bindings belongs on shared UI projections/);
 });
 
 test("concrete UI projections reject shared semantic UI ownership blocks", () => {
@@ -1153,48 +1153,48 @@ capability cap_list_items {
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
+  type web_surface
   realizes [cap_list_items]
   outputs [ui_contract, web_app]
 
-  ui_app_shell {
+  app_shell {
     brand "Items"
     shell top_nav
   }
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_collections {
+  collection_views {
     screen item_list pagination cursor
   }
 
-  ui_actions {
+  screen_actions {
     screen item_list action cap_list_items prominence primary placement toolbar
   }
 
-  ui_visibility {
+  visibility_rules {
     action cap_list_items visible_if permission items.view
   }
 
-  ui_lookups {
+  field_lookups {
     screen item_list field item_id entity entity_item label_field title
   }
 
-  ui_navigation {
+  navigation {
     group main label "Main" placement primary pattern top_nav
     screen item_list group main label "Items" order 10 visible true default true
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
@@ -1205,14 +1205,14 @@ projection proj_ui_web {
   assert.equal(validation.ok, false);
   const messages = validation.errors.map((error) => error.message).join("\n");
   for (const key of [
-    "ui_screens",
-    "ui_collections",
-    "ui_actions",
-    "ui_visibility",
-    "ui_lookups",
-    "ui_app_shell",
-    "ui_navigation",
-    "ui_screen_regions"
+    "screens",
+    "collection_views",
+    "screen_actions",
+    "visibility_rules",
+    "field_lookups",
+    "app_shell",
+    "navigation",
+    "screen_regions"
   ]) {
     assert.match(
       messages,
@@ -1230,18 +1230,18 @@ capability cap_list_items {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
@@ -1252,11 +1252,11 @@ projection proj_ui_shared {
   assert.equal(validation.ok, false);
   assert.match(
     validation.errors.map((error) => error.message).join("\n"),
-    /ui_routes belongs on concrete UI projections/
+    /screen_routes belongs on concrete UI projections/
   );
 });
 
-test("concrete UI projections inherit shared component usage only", () => {
+test("concrete UI projections inherit shared widget usage only", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1264,7 +1264,7 @@ capability cap_list_items {
   status active
 }
 
-component component_shared_grid {
+widget widget_shared_grid {
   name "Shared Grid"
   description "Shared grid"
   props {
@@ -1275,36 +1275,36 @@ component component_shared_grid {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_shared_grid data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_shared_grid data rows from cap_list_items
   }
 
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
-  realizes [proj_ui_shared]
+  type web_surface
+  realizes [proj_ui_contract]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
@@ -1315,22 +1315,22 @@ projection proj_ui_web {
   assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
 
   const webContract = generateWorkspace(ast, {
-    target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    target: "ui-surface-contract",
+    projectionId: "proj_web_surface"
   });
   assert.equal(webContract.ok, true);
-  assert.deepEqual(Object.keys(webContract.artifact.components).sort(), ["component_shared_grid"]);
+  assert.deepEqual(Object.keys(webContract.artifact.widgets).sort(), ["widget_shared_grid"]);
   const screen = webContract.artifact.screens.find((entry) => entry.id === "item_list");
-  assert.deepEqual(screen.components.map((entry) => entry.component.id), ["component_shared_grid"]);
+  assert.deepEqual(screen.widgets.map((entry) => entry.widget.id), ["widget_shared_grid"]);
 
   const report = generateWorkspace(ast, {
-    target: "component-conformance-report",
-    projectionId: "proj_ui_web"
+    target: "widget-conformance-report",
+    projectionId: "proj_web_surface"
   });
   assert.equal(report.ok, true);
   assert.equal(report.artifact.summary.total_usages, 1);
   assert.equal(report.artifact.summary.errors, 0);
-  assert.deepEqual(report.artifact.summary.affected_components, ["component_shared_grid"]);
+  assert.deepEqual(report.artifact.summary.affected_widgets, ["widget_shared_grid"]);
   assert.deepEqual(report.artifact.projection_usages.map((entry) => entry.screen.kind), ["list"]);
 });
 
@@ -1342,14 +1342,14 @@ capability cap_view_items {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_view_items]
   outputs [ui_contract]
 
-  ui_design {
+  design_tokens {
     density compact
     tone operational
     radius_scale small
@@ -1365,21 +1365,21 @@ projection proj_ui_shared {
     accessibility min_touch_target comfortable
   }
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_view_items
   }
 
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
-  realizes [proj_ui_shared]
+  type web_surface
+  realizes [proj_ui_contract]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
@@ -1390,11 +1390,11 @@ projection proj_ui_web {
   assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
 
   const webContract = generateWorkspace(ast, {
-    target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    target: "ui-surface-contract",
+    projectionId: "proj_web_surface"
   });
   assert.equal(webContract.ok, true);
-  assert.deepEqual(webContract.artifact.design, {
+  assert.deepEqual(webContract.artifact.designTokens, {
     density: "compact",
     tone: "operational",
     radiusScale: "small",
@@ -1417,18 +1417,18 @@ projection proj_ui_web {
       motion: "reduced"
     }
   });
-  assert.doesNotMatch(JSON.stringify(webContract.artifact.design), /css|class|tailwind|swiftui/i);
+  assert.doesNotMatch(JSON.stringify(webContract.artifact.designTokens), /css|class|tailwind|swiftui/i);
 });
 
 test("ui design intent rejects concrete ownership and unknown taxonomy values", () => {
   const concreteAst = workspaceFromSource(`
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
+  type web_surface
   outputs [ui_contract, web_app]
 
-  ui_design {
+  design_tokens {
     density compact
   }
 
@@ -1437,16 +1437,16 @@ projection proj_ui_web {
 `);
   const concreteValidation = validateWorkspace(concreteAst);
   assert.equal(concreteValidation.ok, false);
-  assert.match(concreteValidation.errors.map((error) => error.message).join("\n"), /ui_design belongs on shared UI projections/);
+  assert.match(concreteValidation.errors.map((error) => error.message).join("\n"), /design_tokens belongs on shared UI projections/);
 
   const taxonomyAst = workspaceFromSource(`
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   outputs [ui_contract]
 
-  ui_design {
+  design_tokens {
     density cramped
     tone loud
     radius_scale huge
@@ -1472,10 +1472,10 @@ projection proj_ui_shared {
   assert.match(messages, /action_role has invalid role 'danger'/);
   assert.match(messages, /accessibility 'contrast' has invalid value 'weak'/);
   assert.match(messages, /accessibility has invalid setting 'sparkle'/);
-  assert.match(messages, /ui_design has unknown key 'raw_css'/);
+  assert.match(messages, /design_tokens has unknown key 'raw_css'/);
 });
 
-test("component usage contracts carry resolved region patterns", () => {
+test("widget usage contracts carry resolved region patterns", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1483,7 +1483,7 @@ capability cap_list_items {
   status active
 }
 
-component component_grid {
+widget widget_grid {
   name "Grid"
   description "Grid"
   props {
@@ -1494,39 +1494,39 @@ component component_grid {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
     screen item_board kind board title "Board" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
     screen item_board region results pattern board_view placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_grid data rows from cap_list_items
-    screen item_board region results component component_grid data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_grid data rows from cap_list_items
+    screen item_board region results widget widget_grid data rows from cap_list_items
   }
 
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
-  realizes [proj_ui_shared]
+  type web_surface
+  realizes [proj_ui_contract]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
     screen item_board path /items/board
   }
@@ -1538,12 +1538,12 @@ projection proj_ui_web {
   assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
 
   const webContract = generateWorkspace(ast, {
-    target: "ui-web-contract",
-    projectionId: "proj_ui_web"
+    target: "ui-surface-contract",
+    projectionId: "proj_web_surface"
   });
   assert.equal(webContract.ok, true);
   const patterns = Object.fromEntries(
-    webContract.artifact.screens.map((screen) => [screen.id, screen.components[0]?.pattern])
+    webContract.artifact.screens.map((screen) => [screen.id, screen.widgets[0]?.pattern])
   );
   assert.deepEqual(patterns, {
     item_board: "board_view",
@@ -1551,7 +1551,7 @@ projection proj_ui_web {
   });
 });
 
-test("web generation fails instead of silently omitting unsupported component patterns", () => {
+test("web generation fails instead of silently omitting unsupported widget patterns", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1559,9 +1559,9 @@ capability cap_list_items {
   status active
 }
 
-component component_lookup {
+widget widget_lookup {
   name "Lookup"
-  description "Lookup component"
+  description "Lookup widget"
   props {
     rows array required
   }
@@ -1570,36 +1570,36 @@ component component_lookup {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern lookup_select placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_lookup data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_lookup data rows from cap_list_items
   }
 
   status active
 }
 
-projection proj_ui_web {
+projection proj_web_surface {
   name "Web"
   description "Concrete web projection"
-  platform ui_web
-  realizes [proj_ui_shared]
+  type web_surface
+  realizes [proj_ui_contract]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen item_list path /items
   }
 
@@ -1612,14 +1612,14 @@ projection proj_ui_web {
   assert.throws(
     () => generateWorkspace(ast, {
       target: "sveltekit-app",
-      projectionId: "proj_ui_web",
+      projectionId: "proj_web_surface",
       implementation: APP_BASIC_IMPLEMENTATION
     }),
-    /unsupported SvelteKit component pattern 'lookup_select'/
+    /unsupported SvelteKit widget pattern 'lookup_select'/
   );
 });
 
-test("projection ui_components validate component region and pattern compatibility", () => {
+test("projection widget_bindings validate widget region and pattern compatibility", () => {
   const ast = workspaceFromSource(`
 capability cap_list_items {
   name "List Items"
@@ -1627,9 +1627,9 @@ capability cap_list_items {
   status active
 }
 
-component component_summary {
+widget widget_summary {
   name "Summary"
-  description "Summary component"
+  description "Summary widget"
   props {
     rows array required
   }
@@ -1638,23 +1638,23 @@ component component_summary {
   status active
 }
 
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Shared UI"
   description "Shared UI projection"
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_items]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen item_list kind list title "Items" load cap_list_items
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_summary data rows from cap_list_items
+  widget_bindings {
+    screen item_list region results widget widget_summary data rows from cap_list_items
   }
 
   status active
@@ -1667,11 +1667,11 @@ projection proj_ui_shared {
   assert.match(messages, /with pattern 'resource_table'.*supports patterns \[summary_stats\]/);
 });
 
-test("component prop defaults preserve real values", () => {
+test("widget prop defaults preserve real values", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
-    target: "ui-component-contract",
-    componentId: "component_ui_data_grid"
+    target: "ui-widget-contract",
+    widgetId: "widget_data_grid"
   });
   assert.equal(result.ok, true);
   const props = Object.fromEntries(result.artifact.props.map((prop) => [prop.name, prop]));
@@ -1680,10 +1680,10 @@ test("component prop defaults preserve real values", () => {
   assert.equal(typeof props.loading.defaultValue, "boolean");
 });
 
-test("component approvals are resolved and emitted in contracts", () => {
+test("widget approvals are resolved and emitted in contracts", () => {
   const ast = workspaceFromSource(`
-component component_requires_approval {
-  name "Approval Component"
+widget widget_requires_approval {
+  name "Approval Widget"
   description "Needs design and security review"
   props {
     label string required
@@ -1697,21 +1697,21 @@ component component_requires_approval {
 
   const resolved = resolveWorkspace(ast);
   assert.equal(resolved.ok, true);
-  const component = resolved.graph.byKind.component.find((entry) => entry.id === "component_requires_approval");
-  assert.deepEqual(component.approvals, ["design", "security"]);
-  assert.deepEqual(component.componentContract.approvals, ["design", "security"]);
+  const widget = resolved.graph.byKind.widget.find((entry) => entry.id === "widget_requires_approval");
+  assert.deepEqual(widget.approvals, ["design", "security"]);
+  assert.deepEqual(widget.widgetContract.approvals, ["design", "security"]);
 
   const result = generateWorkspace(ast, {
-    target: "ui-component-contract",
-    componentId: "component_requires_approval"
+    target: "ui-widget-contract",
+    widgetId: "widget_requires_approval"
   });
   assert.equal(result.ok, true);
   assert.deepEqual(result.artifact.approvals, ["design", "security"]);
 });
 
-test("component prop defaults coerce booleans, numbers, lists, and null", () => {
+test("widget prop defaults coerce booleans, numbers, lists, and null", () => {
   const ast = workspaceFromSource(`
-component component_default_literals {
+widget widget_default_literals {
   name "Default Literals"
   description "Exercises every supported default literal form"
   props {
@@ -1729,8 +1729,8 @@ component component_default_literals {
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
   const result = generateWorkspace(ast, {
-    target: "ui-component-contract",
-    componentId: "component_default_literals"
+    target: "ui-widget-contract",
+    widgetId: "widget_default_literals"
   });
   assert.equal(result.ok, true);
   const props = Object.fromEntries(result.artifact.props.map((prop) => [prop.name, prop]));
@@ -1743,23 +1743,23 @@ component component_default_literals {
   assert.equal(props.note.defaultValue, null);
 });
 
-test("ui-component-contract throws on unknown component id", () => {
+test("ui-widget-contract throws on unknown widget id", () => {
   const ast = parsePath(fixtureRoot);
   assert.throws(
     () => generateWorkspace(ast, {
-      target: "ui-component-contract",
-      componentId: "component_does_not_exist"
+      target: "ui-widget-contract",
+      widgetId: "widget_does_not_exist"
     }),
-    /No component found with id 'component_does_not_exist'/
+    /No widget found with id 'widget_does_not_exist'/
   );
 });
 
-test("context-diff reports component additions and modifications", () => {
+test("context-diff reports widget additions and modifications", () => {
     const baselineRoot = makeBaselineCopy();
   try {
-    const baselineComponentPath = path.join(baselineRoot, "components", "component-ui-data-grid.tg");
-    fs.unlinkSync(baselineComponentPath);
-    removeDataGridComponentUsage(baselineRoot);
+    const baselineWidgetPath = path.join(baselineRoot, "widgets", "widget-data-grid.tg");
+    fs.unlinkSync(baselineWidgetPath);
+    removeDataGridWidgetUsage(baselineRoot);
 
     const additiveAst = parsePath(fixtureRoot);
     const additive = generateWorkspace(additiveAst, {
@@ -1767,15 +1767,15 @@ test("context-diff reports component additions and modifications", () => {
       fromTopogramPath: baselineRoot
     });
     assert.equal(additive.ok, true);
-    const dataGridAdd = (additive.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
-    assert.ok(dataGridAdd, "expected additive component entry");
+    const dataGridAdd = (additive.artifact.widgets || []).find((entry) => entry.id === "widget_data_grid");
+    assert.ok(dataGridAdd, "expected additive widget entry");
     assert.equal(dataGridAdd.classification, "additive");
 
     const modifiedSource = fs
-      .readFileSync(path.join(fixtureRoot, "components", "component-ui-data-grid.tg"), "utf8")
+      .readFileSync(path.join(fixtureRoot, "widgets", "widget-data-grid.tg"), "utf8")
       .replace('version "1.0"', 'version "1.1"');
-    fs.mkdirSync(path.dirname(baselineComponentPath), { recursive: true });
-    fs.writeFileSync(baselineComponentPath, modifiedSource);
+    fs.mkdirSync(path.dirname(baselineWidgetPath), { recursive: true });
+    fs.writeFileSync(baselineWidgetPath, modifiedSource);
 
     const modifiedAst = parsePath(fixtureRoot);
     const modified = generateWorkspace(modifiedAst, {
@@ -1783,8 +1783,8 @@ test("context-diff reports component additions and modifications", () => {
       fromTopogramPath: baselineRoot
     });
     assert.equal(modified.ok, true);
-    const dataGridModified = (modified.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
-    assert.ok(dataGridModified, "expected modified component entry");
+    const dataGridModified = (modified.artifact.widgets || []).find((entry) => entry.id === "widget_data_grid");
+    assert.ok(dataGridModified, "expected modified widget entry");
     assert.equal(dataGridModified.classification, "modified");
     assert.equal(dataGridModified.current.version, "1.0");
     assert.equal(dataGridModified.baseline.version, "1.1");
@@ -1793,11 +1793,11 @@ test("context-diff reports component additions and modifications", () => {
   }
 });
 
-test("context-diff reports projection impact for removed components from baseline", () => {
-  const currentRoot = makeWorkspaceCopy("topogram-component-current-");
+test("context-diff reports projection impact for removed widgets from baseline", () => {
+  const currentRoot = makeWorkspaceCopy("topogram-widget-current-");
   try {
-    fs.unlinkSync(path.join(currentRoot, "components", "component-ui-data-grid.tg"));
-    removeDataGridComponentUsage(currentRoot);
+    fs.unlinkSync(path.join(currentRoot, "widgets", "widget-data-grid.tg"));
+    removeDataGridWidgetUsage(currentRoot);
 
     const currentAst = parsePath(currentRoot);
     const result = generateWorkspace(currentAst, {
@@ -1805,71 +1805,71 @@ test("context-diff reports projection impact for removed components from baselin
       fromTopogramPath: fixtureRoot
     });
     assert.equal(result.ok, true);
-    const dataGridRemoved = (result.artifact.components || []).find((entry) => entry.id === "component_ui_data_grid");
-    assert.ok(dataGridRemoved, "expected removed component entry");
+    const dataGridRemoved = (result.artifact.widgets || []).find((entry) => entry.id === "widget_data_grid");
+    assert.ok(dataGridRemoved, "expected removed widget entry");
     assert.equal(dataGridRemoved.classification, "removed");
     assert.deepEqual(
       result.artifact.affected_generated_surfaces.projections.map((projection) => projection.id),
-      ["proj_ui_shared", "proj_ui_web", "proj_ui_web_react"]
+      ["proj_ui_contract", "proj_web_surface", "proj_web_surface_react"]
     );
   } finally {
     fs.rmSync(currentRoot, { recursive: true, force: true });
   }
 });
 
-test("context-slice with --component focuses on the component contract closure", () => {
+test("context-slice with --widget focuses on the widget contract closure", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "context-slice",
-    componentId: "component_ui_data_grid"
+    widgetId: "widget_data_grid"
   });
   assert.equal(result.ok, true);
-  assert.equal(result.artifact.focus.kind, "component");
-  assert.equal(result.artifact.focus.id, "component_ui_data_grid");
+  assert.equal(result.artifact.focus.kind, "widget");
+  assert.equal(result.artifact.focus.id, "widget_data_grid");
   assert.ok(
-    result.artifact.depends_on.projections.includes("proj_ui_shared"),
-    `expected proj_ui_shared in depends_on.projections, got ${JSON.stringify(result.artifact.depends_on.projections)}`
+    result.artifact.depends_on.projections.includes("proj_ui_contract"),
+    `expected proj_ui_contract in depends_on.projections, got ${JSON.stringify(result.artifact.depends_on.projections)}`
   );
   assert.ok(
     result.artifact.depends_on.shapes.includes("shape_output_item_card"),
     `expected shape_output_item_card in depends_on.shapes, got ${JSON.stringify(result.artifact.depends_on.shapes)}`
   );
   assert.equal(result.artifact.review_boundary.automation_class, "review_required");
-  assert.deepEqual(result.artifact.review_boundary.reasons, ["component_surface"]);
+  assert.deepEqual(result.artifact.review_boundary.reasons, ["widget_surface"]);
   assert.equal(result.artifact.ui_agent_packet.type, "ui_agent_packet");
-  assert.equal(result.artifact.ui_agent_packet.ownership.componentPlacement, "ui_shared");
+  assert.equal(result.artifact.ui_agent_packet.ownership.widgetPlacement, "ui_contract");
   assert.equal(result.artifact.ui_agent_packet.ownership.concreteSurfacesInherit, true);
-  assert.deepEqual(result.artifact.ui_agent_packet.component.patterns, ["resource_table", "data_grid_view"]);
-  assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_shared"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.widget.patterns, ["resource_table", "data_grid_view"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_contract"]);
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages[0].usage, {
     screenId: "item_list",
     region: "results",
-    componentId: "component_ui_data_grid",
+    widgetId: "widget_data_grid",
     dataBindings: [{ prop: "rows", source: "cap_list_items" }],
     eventBindings: [{ event: "row_select", action: "navigate", target: "item_detail" }]
   });
-  assert.ok(result.artifact.ui_agent_packet.inheritedBy.includes("proj_ui_web"));
+  assert.ok(result.artifact.ui_agent_packet.inheritedBy.includes("proj_web_surface"));
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command === "topogram check"));
-  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram component behavior --component component_ui_data_grid")));
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram widget behavior --widget widget_data_grid")));
 });
 
 test("context-slice with --projection exposes inherited UI agent packet", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "context-slice",
-    projectionId: "proj_ui_web"
+    projectionId: "proj_web_surface"
   });
   assert.equal(result.ok, true);
   assert.equal(result.artifact.focus.kind, "projection");
   assert.equal(result.artifact.ui_agent_packet.type, "ui_agent_packet");
-  assert.equal(result.artifact.ui_agent_packet.sharedProjection.id, "proj_ui_shared");
-  assert.equal(result.artifact.ui_agent_packet.ownership.componentPlacement, "ui_shared");
-  assert.deepEqual(result.artifact.ui_agent_packet.components.map((usage) => usage.componentId), ["component_ui_data_grid"]);
-  assert.equal(result.artifact.ui_agent_packet.design.find((entry) => entry.key === "density")?.role, "compact");
-  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram component check --projection proj_ui_web")));
+  assert.equal(result.artifact.ui_agent_packet.sharedProjection.id, "proj_ui_contract");
+  assert.equal(result.artifact.ui_agent_packet.ownership.widgetPlacement, "ui_contract");
+  assert.deepEqual(result.artifact.ui_agent_packet.widgets.map((usage) => usage.widgetId), ["widget_data_grid"]);
+  assert.equal(result.artifact.ui_agent_packet.designTokens.find((entry) => entry.key === "density")?.role, "compact");
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram widget check --projection proj_web_surface")));
 });
 
-test("context-slice with --component preserves dependency references by kind", () => {
+test("context-slice with --widget preserves dependency references by kind", () => {
   const ast = workspaceFromSource(`
 entity entity_dep {
   name "Dependency Entity"
@@ -1902,7 +1902,7 @@ capability cap_shape {
 projection proj_direct {
   name "Direct Projection"
   description "Direct projection dependency"
-  platform ui_shared
+  type ui_contract
   realizes [cap_dep]
   outputs [ui_contract]
   status active
@@ -1911,7 +1911,7 @@ projection proj_direct {
 projection proj_from_cap {
   name "Capability Projection"
   description "Projection expanded from capability dependency"
-  platform ui_shared
+  type ui_contract
   realizes [cap_dep]
   outputs [ui_contract]
   status active
@@ -1920,10 +1920,10 @@ projection proj_from_cap {
 projection proj_from_entity {
   name "Entity Projection"
   description "Projection expanded from entity dependency"
-  platform db_sqlite
+  type db_contract
   realizes [entity_dep]
   outputs [db_contract]
-  db_tables {
+  tables {
     entity_dep table deps
   }
   status active
@@ -1932,37 +1932,37 @@ projection proj_from_entity {
 projection proj_from_shape {
   name "Shape Projection"
   description "Projection expanded from shape dependency"
-  platform ui_shared
+  type ui_contract
   realizes [cap_shape]
   outputs [ui_contract]
   status active
 }
 
-component component_other {
-  name "Other Component"
-  description "Other component"
+widget widget_other {
+  name "Other Widget"
+  description "Other widget"
   props {
     label string required
   }
   status active
 }
 
-component component_dep_test {
-  name "Dependency Component"
-  description "Component with dependencies across statement kinds"
+widget widget_dep_test {
+  name "Dependency Widget"
+  description "Widget with dependencies across statement kinds"
   props {
     rows array required
   }
-  dependencies [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+  dependencies [shape_dep, entity_dep, cap_dep, proj_direct, widget_other]
   status active
 }
 
-verification ver_component_dependencies {
-  name "Component dependency verification"
-  description "Covers dependency-driven component context"
-  validates [shape_dep, entity_dep, cap_dep, proj_direct, component_other]
+verification ver_widget_dependencies {
+  name "Widget dependency verification"
+  description "Covers dependency-driven widget context"
+  validates [shape_dep, entity_dep, cap_dep, proj_direct, widget_other]
   method smoke
-  scenarios [component_dependency_context]
+  scenarios [widget_dependency_context]
   status active
 }
 `);
@@ -1971,40 +1971,40 @@ verification ver_component_dependencies {
 
   const result = generateWorkspace(ast, {
     target: "context-slice",
-    componentId: "component_dep_test"
+    widgetId: "widget_dep_test"
   });
   assert.equal(result.ok, true);
   assert.deepEqual(result.artifact.depends_on.shapes, ["shape_dep"]);
   assert.deepEqual(result.artifact.depends_on.entities, ["entity_dep"]);
   assert.deepEqual(result.artifact.depends_on.capabilities, ["cap_dep"]);
-  assert.deepEqual(result.artifact.depends_on.components, ["component_other"]);
+  assert.deepEqual(result.artifact.depends_on.widgets, ["widget_other"]);
   assert.deepEqual(result.artifact.depends_on.projections, [
     "proj_direct",
     "proj_from_cap",
     "proj_from_entity",
     "proj_from_shape"
   ]);
-  assert.deepEqual(result.artifact.depends_on.verifications, ["ver_component_dependencies"]);
+  assert.deepEqual(result.artifact.depends_on.verifications, ["ver_widget_dependencies"]);
   assert.equal(result.artifact.related.shapes[0].id, "shape_dep");
   assert.equal(result.artifact.related.entities[0].id, "entity_dep");
   assert.equal(result.artifact.related.capabilities[0].id, "cap_dep");
-  assert.equal(result.artifact.related.components[0].id, "component_other");
+  assert.equal(result.artifact.related.widgets[0].id, "widget_other");
   assert.deepEqual(result.artifact.related.projections.map((projection) => projection.id), [
     "proj_direct",
     "proj_from_cap",
     "proj_from_entity",
     "proj_from_shape"
   ]);
-  assert.deepEqual(result.artifact.verification_targets.verification_ids, ["ver_component_dependencies"]);
+  assert.deepEqual(result.artifact.verification_targets.verification_ids, ["ver_widget_dependencies"]);
 });
 
-test("context-slice rejects unknown component id", () => {
+test("context-slice rejects unknown widget id", () => {
   const ast = parsePath(fixtureRoot);
   assert.throws(
     () => generateWorkspace(ast, {
       target: "context-slice",
-      componentId: "component_does_not_exist"
+      widgetId: "widget_does_not_exist"
     }),
-    /No component found with id 'component_does_not_exist'/
+    /No widget found with id 'widget_does_not_exist'/
   );
 });

@@ -49,7 +49,7 @@ import {
   UI_DESIGN_ACCESSIBILITY_VALUES,
   FIELD_SPECS
 } from "./kinds.js";
-import { validateComponent } from "./per-kind/component.js";
+import { validateWidget } from "./per-kind/widget.js";
 import { validateDomain, validateDomainTag } from "./per-kind/domain.js";
 import { validatePitch } from "./per-kind/pitch.js";
 import { validateRequirement } from "./per-kind/requirement.js";
@@ -225,7 +225,47 @@ function validateFieldPresence(errors, statement, fieldMap) {
     return;
   }
 
+  const renamedFields = new Map([
+    ["platform", "type"],
+    ["ui_components", "widget_bindings"],
+    ["ui_design", "design_tokens"],
+    ["ui_routes", "screen_routes"],
+    ["ui_screens", "screens"],
+    ["ui_screen_regions", "screen_regions"],
+    ["ui_navigation", "navigation"],
+    ["ui_app_shell", "app_shell"],
+    ["ui_collections", "collection_views"],
+    ["ui_actions", "screen_actions"],
+    ["ui_visibility", "visibility_rules"],
+    ["ui_lookups", "field_lookups"],
+    ["web_surface", "web_hints"],
+    ["ios_surface", "ios_hints"],
+    ["http", "endpoints"],
+    ["http_errors", "error_responses"],
+    ["http_fields", "wire_fields"],
+    ["http_responses", "responses"],
+    ["http_preconditions", "preconditions"],
+    ["http_idempotency", "idempotency"],
+    ["http_cache", "cache"],
+    ["http_delete", "delete_semantics"],
+    ["http_async", "async_jobs"],
+    ["http_status", "async_status"],
+    ["http_download", "downloads"],
+    ["http_authz", "authorization"],
+    ["http_callbacks", "callbacks"],
+    ["db_tables", "tables"],
+    ["db_columns", "columns"],
+    ["db_keys", "keys"],
+    ["db_indexes", "indexes"],
+    ["db_relations", "relations"],
+    ["db_lifecycle", "lifecycle"]
+  ]);
+
   for (const key of fieldMap.keys()) {
+    if (renamedFields.has(key)) {
+      pushError(errors, `Field '${key}' was renamed to '${renamedFields.get(key)}' on ${statement.kind} ${statement.id}`, fieldMap.get(key)[0].loc);
+      continue;
+    }
     if (!spec.allowed.includes(key)) {
       pushError(errors, `Field '${key}' is not allowed on ${statement.kind} ${statement.id}`, fieldMap.get(key)[0].loc);
     }
@@ -255,7 +295,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
   ensureSingleValueField(errors, statement, fieldMap, "name", ["string"]);
   ensureSingleValueField(errors, statement, fieldMap, "description", ["string"]);
   ensureSingleValueField(errors, statement, fieldMap, "status", ["symbol"]);
-  ensureSingleValueField(errors, statement, fieldMap, "platform", ["symbol"]);
+  ensureSingleValueField(errors, statement, fieldMap, "type", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "method", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "severity", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "category", ["symbol"]);
@@ -299,7 +339,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "http", "http_errors", "http_fields", "http_responses", "http_preconditions", "http_idempotency", "http_cache", "http_delete", "http_async", "http_status", "http_download", "http_authz", "http_callbacks", "ui_screens", "ui_collections", "ui_actions", "ui_visibility", "ui_lookups", "ui_routes", "ui_web", "ui_ios", "ui_app_shell", "ui_navigation", "ui_screen_regions", "ui_components", "ui_design", "db_tables", "db_columns", "db_keys", "db_indexes", "db_relations", "db_lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -307,40 +347,46 @@ function validateFieldShapes(errors, statement, fieldMap) {
   validateBlockEntryLengths(errors, statement, fieldMap, "props", 3);
   validateBlockEntryLengths(errors, statement, fieldMap, "events", 2);
   validateBlockEntryLengths(errors, statement, fieldMap, "slots", 2);
-  validateBlockEntryLengths(errors, statement, fieldMap, "keys", 2);
-  validateBlockEntryLengths(errors, statement, fieldMap, "relations", 3);
   validateBlockEntryLengths(errors, statement, fieldMap, "invariants", 2);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http", 7);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_errors", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_fields", 5);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_responses", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_preconditions", 9);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_idempotency", 7);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_cache", 11);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_delete", 7);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_async", 11);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_status", 11);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_download", 7);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_authz", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "http_callbacks", 11);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_screens", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_collections", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_actions", 6);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_visibility", 5);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_lookups", 8);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_routes", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_web", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_ios", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_app_shell", 2);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_navigation", 2);
-  validateBlockEntryLengths(errors, statement, fieldMap, "ui_screen_regions", 4);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_tables", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_columns", 5);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_keys", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_indexes", 3);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_relations", 6);
-  validateBlockEntryLengths(errors, statement, fieldMap, "db_lifecycle", 3);
   validateBlockEntryLengths(errors, statement, fieldMap, "generator_defaults", 2);
+
+  if (statement.kind === "entity") {
+    validateBlockEntryLengths(errors, statement, fieldMap, "keys", 2);
+    validateBlockEntryLengths(errors, statement, fieldMap, "relations", 3);
+  }
+
+  if (statement.kind === "projection") {
+    validateBlockEntryLengths(errors, statement, fieldMap, "endpoints", 7);
+    validateBlockEntryLengths(errors, statement, fieldMap, "error_responses", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "wire_fields", 5);
+    validateBlockEntryLengths(errors, statement, fieldMap, "responses", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "preconditions", 9);
+    validateBlockEntryLengths(errors, statement, fieldMap, "idempotency", 7);
+    validateBlockEntryLengths(errors, statement, fieldMap, "cache", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "delete_semantics", 7);
+    validateBlockEntryLengths(errors, statement, fieldMap, "async_jobs", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "async_status", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "downloads", 7);
+    validateBlockEntryLengths(errors, statement, fieldMap, "authorization", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "callbacks", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "screens", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "collection_views", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "screen_actions", 6);
+    validateBlockEntryLengths(errors, statement, fieldMap, "visibility_rules", 5);
+    validateBlockEntryLengths(errors, statement, fieldMap, "field_lookups", 8);
+    validateBlockEntryLengths(errors, statement, fieldMap, "screen_routes", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "web_hints", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "ios_hints", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "app_shell", 2);
+    validateBlockEntryLengths(errors, statement, fieldMap, "navigation", 2);
+    validateBlockEntryLengths(errors, statement, fieldMap, "screen_regions", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "tables", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "columns", 5);
+    validateBlockEntryLengths(errors, statement, fieldMap, "keys", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "indexes", 3);
+    validateBlockEntryLengths(errors, statement, fieldMap, "relations", 6);
+    validateBlockEntryLengths(errors, statement, fieldMap, "lifecycle", 3);
+  }
 }
 
 function validateStatus(errors, statement, fieldMap) {
@@ -456,7 +502,7 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
     pitch: ["pitch"],
     requirement: null,
     from_requirement: ["requirement"],
-    affects: ["capability", "entity", "rule", "projection", "component", "orchestration", "operation"],
+    affects: ["capability", "entity", "rule", "projection", "widget", "orchestration", "operation"],
     introduces_rules: ["rule"],
     respects_rules: ["rule"],
     decisions: ["decision"],
@@ -798,7 +844,7 @@ function validateProjectionHttp(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpField = fieldMap.get("http")?.[0];
+  const httpField = fieldMap.get("endpoints")?.[0];
   if (!httpField || httpField.value.type !== "block") {
     return;
   }
@@ -879,7 +925,7 @@ function validateProjectionHttpErrors(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpErrorsField = fieldMap.get("http_errors")?.[0];
+  const httpErrorsField = fieldMap.get("error_responses")?.[0];
   if (!httpErrorsField || httpErrorsField.value.type !== "block") {
     return;
   }
@@ -891,20 +937,20 @@ function validateProjectionHttpErrors(errors, statement, fieldMap, registry) {
 
     const target = registry.get(capabilityId);
     if (!target) {
-      pushError(errors, `Projection ${statement.id} http_errors references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} error_responses references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (target.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_errors must target a capability, found ${target.kind} '${target.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} error_responses must target a capability, found ${target.kind} '${target.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_errors for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} error_responses for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (!/^\d{3}$/.test(status || "")) {
-      pushError(errors, `Projection ${statement.id} http_errors for '${capabilityId}' must use a 3-digit status`, entry.loc);
+      pushError(errors, `Projection ${statement.id} error_responses for '${capabilityId}' must use a 3-digit status`, entry.loc);
     }
     if (!errorCode) {
-      pushError(errors, `Projection ${statement.id} http_errors for '${capabilityId}' must include an error code`, entry.loc);
+      pushError(errors, `Projection ${statement.id} error_responses for '${capabilityId}' must include an error code`, entry.loc);
     }
   }
 }
@@ -939,7 +985,7 @@ function validateProjectionHttpFields(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpFieldsField = fieldMap.get("http_fields")?.[0];
+  const httpFieldsField = fieldMap.get("wire_fields")?.[0];
   if (!httpFieldsField || httpFieldsField.value.type !== "block") {
     return;
   }
@@ -951,34 +997,34 @@ function validateProjectionHttpFields(errors, statement, fieldMap, registry) {
 
     const capability = registry.get(capabilityId);
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_fields references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_fields must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (!["input", "output"].includes(direction)) {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' has invalid direction '${direction}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' has invalid direction '${direction}'`, entry.loc);
     }
     if (keywordIn !== "in") {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' must use 'in' before the location`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' must use 'in' before the location`, entry.loc);
     }
     if (!["path", "query", "header", "body"].includes(location)) {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' has invalid location '${location}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' has invalid location '${location}'`, entry.loc);
     }
     if (maybeAs && maybeAs !== "as") {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' has unexpected token '${maybeAs}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' has unexpected token '${maybeAs}'`, entry.loc);
     }
     if (maybeAs === "as" && !maybeWireName) {
-      pushError(errors, `Projection ${statement.id} http_fields for '${capabilityId}' must provide a wire name after 'as'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields for '${capabilityId}' must provide a wire name after 'as'`, entry.loc);
     }
 
     const availableFields = resolveCapabilityContractFields(registry, capabilityId, direction);
     if (fieldName && availableFields.size > 0 && !availableFields.has(fieldName)) {
-      pushError(errors, `Projection ${statement.id} http_fields references unknown ${direction} field '${fieldName}' on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} wire_fields references unknown ${direction} field '${fieldName}' on ${capabilityId}`, entry.loc);
     }
   }
 }
@@ -988,7 +1034,7 @@ function validateProjectionHttpResponses(errors, statement, fieldMap, registry) 
     return;
   }
 
-  const httpResponsesField = fieldMap.get("http_responses")?.[0];
+  const httpResponsesField = fieldMap.get("responses")?.[0];
   if (!httpResponsesField || httpResponsesField.value.type !== "block") {
     return;
   }
@@ -1000,86 +1046,86 @@ function validateProjectionHttpResponses(errors, statement, fieldMap, registry) 
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_responses references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_responses must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = parseProjectionHttpResponsesDirectives(tokens.slice(1));
     for (const message of directives.errors) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' ${message}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' ${message}`, entry.loc);
     }
 
     if (!directives.mode) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'mode'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'mode'`, entry.loc);
     }
 
     const mode = directives.mode;
     if (mode && !["item", "collection", "paged", "cursor"].includes(mode)) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
     }
 
     const itemShapeId = directives.item;
     if (mode && mode !== "item" && !itemShapeId) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'item' for mode '${mode}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'item' for mode '${mode}'`, entry.loc);
     }
     if (itemShapeId) {
       const itemShape = registry.get(itemShapeId);
       if (!itemShape) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' references missing shape '${itemShapeId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' references missing shape '${itemShapeId}'`, entry.loc);
       } else if (itemShape.kind !== "shape") {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must reference a shape for 'item', found ${itemShape.kind} '${itemShape.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must reference a shape for 'item', found ${itemShape.kind} '${itemShape.id}'`, entry.loc);
       }
     }
 
     if (mode === "cursor") {
       if (!directives.cursor?.requestAfter) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'cursor request_after <field>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'cursor request_after <field>'`, entry.loc);
       }
       if (!directives.cursor?.responseNext) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'cursor response_next <wire_name>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'cursor response_next <wire_name>'`, entry.loc);
       }
       if (!directives.limit) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'limit field <field> default <n> max <n>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'limit field <field> default <n> max <n>'`, entry.loc);
       }
       if (!directives.sort) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must include 'sort by <field> direction <asc|desc>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must include 'sort by <field> direction <asc|desc>'`, entry.loc);
       }
     }
 
     if (directives.sort && !["asc", "desc"].includes(directives.sort.direction || "")) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' has invalid sort direction '${directives.sort.direction}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' has invalid sort direction '${directives.sort.direction}'`, entry.loc);
     }
 
     if (directives.total && !["true", "false"].includes(directives.total.included || "")) {
-      pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' has invalid total included value '${directives.total.included}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' has invalid total included value '${directives.total.included}'`, entry.loc);
     }
 
     if (directives.limit) {
       const defaultValue = Number.parseInt(directives.limit.defaultValue || "", 10);
       const maxValue = Number.parseInt(directives.limit.maxValue || "", 10);
       if (!Number.isInteger(defaultValue) || !Number.isInteger(maxValue)) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must use integer default/max values for 'limit'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must use integer default/max values for 'limit'`, entry.loc);
       } else if (defaultValue > maxValue) {
-        pushError(errors, `Projection ${statement.id} http_responses for '${capabilityId}' must use default <= max for 'limit'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} responses for '${capabilityId}' must use default <= max for 'limit'`, entry.loc);
       }
     }
 
     const inputFields = resolveCapabilityContractFields(registry, capabilityId, "input");
     const outputFields = resolveCapabilityContractFields(registry, capabilityId, "output");
     if (directives.cursor?.requestAfter && inputFields.size > 0 && !inputFields.has(directives.cursor.requestAfter)) {
-      pushError(errors, `Projection ${statement.id} http_responses references unknown input field '${directives.cursor.requestAfter}' for cursor request_after on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses references unknown input field '${directives.cursor.requestAfter}' for cursor request_after on ${capabilityId}`, entry.loc);
     }
     if (directives.limit?.field && inputFields.size > 0 && !inputFields.has(directives.limit.field)) {
-      pushError(errors, `Projection ${statement.id} http_responses references unknown input field '${directives.limit.field}' for limit on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses references unknown input field '${directives.limit.field}' for limit on ${capabilityId}`, entry.loc);
     }
     if (directives.sort?.field && outputFields.size > 0 && !outputFields.has(directives.sort.field)) {
-      pushError(errors, `Projection ${statement.id} http_responses references unknown output field '${directives.sort.field}' for sort on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} responses references unknown output field '${directives.sort.field}' for sort on ${capabilityId}`, entry.loc);
     }
   }
 }
@@ -1089,7 +1135,7 @@ function validateProjectionHttpPreconditions(errors, statement, fieldMap, regist
     return;
   }
 
-  const httpPreconditionsField = fieldMap.get("http_preconditions")?.[0];
+  const httpPreconditionsField = fieldMap.get("preconditions")?.[0];
   if (!httpPreconditionsField || httpPreconditionsField.value.type !== "block") {
     return;
   }
@@ -1101,14 +1147,14 @@ function validateProjectionHttpPreconditions(errors, statement, fieldMap, regist
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_preconditions references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_preconditions must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1116,7 +1162,7 @@ function validateProjectionHttpPreconditions(errors, statement, fieldMap, regist
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1124,30 +1170,30 @@ function validateProjectionHttpPreconditions(errors, statement, fieldMap, regist
 
     for (const requiredKey of ["header", "required", "error", "source", "code"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["header", "required", "error", "source", "code"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const required = directives.get("required");
     if (required && !["true", "false"].includes(required)) {
-      pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
     }
 
     const errorStatus = directives.get("error");
     if (errorStatus && !/^\d{3}$/.test(errorStatus)) {
-      pushError(errors, `Projection ${statement.id} http_preconditions for '${capabilityId}' must use a 3-digit error status`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions for '${capabilityId}' must use a 3-digit error status`, entry.loc);
     }
 
     const sourceField = directives.get("source");
     const outputFields = resolveCapabilityContractFields(registry, capabilityId, "output");
     if (sourceField && outputFields.size > 0 && !outputFields.has(sourceField)) {
-      pushError(errors, `Projection ${statement.id} http_preconditions references unknown output field '${sourceField}' on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} preconditions references unknown output field '${sourceField}' on ${capabilityId}`, entry.loc);
     }
   }
 }
@@ -1157,7 +1203,7 @@ function validateProjectionHttpIdempotency(errors, statement, fieldMap, registry
     return;
   }
 
-  const httpIdempotencyField = fieldMap.get("http_idempotency")?.[0];
+  const httpIdempotencyField = fieldMap.get("idempotency")?.[0];
   if (!httpIdempotencyField || httpIdempotencyField.value.type !== "block") {
     return;
   }
@@ -1169,14 +1215,14 @@ function validateProjectionHttpIdempotency(errors, statement, fieldMap, registry
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_idempotency references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} idempotency references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_idempotency must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} idempotency must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1184,7 +1230,7 @@ function validateProjectionHttpIdempotency(errors, statement, fieldMap, registry
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1192,24 +1238,24 @@ function validateProjectionHttpIdempotency(errors, statement, fieldMap, registry
 
     for (const requiredKey of ["header", "required", "error", "code"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["header", "required", "error", "code"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const required = directives.get("required");
     if (required && !["true", "false"].includes(required)) {
-      pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
     }
 
     const errorStatus = directives.get("error");
     if (errorStatus && !/^\d{3}$/.test(errorStatus)) {
-      pushError(errors, `Projection ${statement.id} http_idempotency for '${capabilityId}' must use a 3-digit error status`, entry.loc);
+      pushError(errors, `Projection ${statement.id} idempotency for '${capabilityId}' must use a 3-digit error status`, entry.loc);
     }
   }
 }
@@ -1219,13 +1265,13 @@ function validateProjectionHttpCache(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpCacheField = fieldMap.get("http_cache")?.[0];
+  const httpCacheField = fieldMap.get("cache")?.[0];
   if (!httpCacheField || httpCacheField.value.type !== "block") {
     return;
   }
 
   const realized = new Set(symbolValues(getFieldValue(statement, "realizes")));
-  const httpEntries = blockEntries(getFieldValue(statement, "http"));
+  const httpEntries = blockEntries(getFieldValue(statement, "endpoints"));
   const httpMethodsByCapability = new Map();
 
   for (const entry of httpEntries) {
@@ -1245,14 +1291,14 @@ function validateProjectionHttpCache(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_cache references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_cache must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1260,7 +1306,7 @@ function validateProjectionHttpCache(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1268,35 +1314,35 @@ function validateProjectionHttpCache(errors, statement, fieldMap, registry) {
 
     for (const requiredKey of ["response_header", "request_header", "required", "not_modified", "source", "code"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["response_header", "request_header", "required", "not_modified", "source", "code"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const required = directives.get("required");
     if (required && !["true", "false"].includes(required)) {
-      pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' has invalid required value '${required}'`, entry.loc);
     }
 
     const notModifiedStatus = directives.get("not_modified");
     if (notModifiedStatus && notModifiedStatus !== "304") {
-      pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' must use 304 for 'not_modified'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' must use 304 for 'not_modified'`, entry.loc);
     }
 
     const sourceField = directives.get("source");
     const outputFields = resolveCapabilityContractFields(registry, capabilityId, "output");
     if (sourceField && outputFields.size > 0 && !outputFields.has(sourceField)) {
-      pushError(errors, `Projection ${statement.id} http_cache references unknown output field '${sourceField}' on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache references unknown output field '${sourceField}' on ${capabilityId}`, entry.loc);
     }
 
     const method = httpMethodsByCapability.get(capabilityId);
     if (method && method !== "GET") {
-      pushError(errors, `Projection ${statement.id} http_cache for '${capabilityId}' requires an HTTP GET realization, found '${method}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} cache for '${capabilityId}' requires an HTTP GET realization, found '${method}'`, entry.loc);
     }
   }
 }
@@ -1306,7 +1352,7 @@ function validateProjectionHttpDelete(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpDeleteField = fieldMap.get("http_delete")?.[0];
+  const httpDeleteField = fieldMap.get("delete_semantics")?.[0];
   if (!httpDeleteField || httpDeleteField.value.type !== "block") {
     return;
   }
@@ -1318,14 +1364,14 @@ function validateProjectionHttpDelete(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_delete references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} delete_semantics references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_delete must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} delete_semantics must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1333,7 +1379,7 @@ function validateProjectionHttpDelete(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1341,34 +1387,34 @@ function validateProjectionHttpDelete(errors, statement, fieldMap, registry) {
 
     for (const requiredKey of ["mode", "response"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["mode", "field", "value", "response"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const mode = directives.get("mode");
     if (mode && !["soft", "hard"].includes(mode)) {
-      pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
     }
 
     const response = directives.get("response");
     if (response && !["none", "body"].includes(response)) {
-      pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' has invalid response '${response}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' has invalid response '${response}'`, entry.loc);
     }
 
     if (mode === "soft") {
       if (!directives.has("field") || !directives.has("value")) {
-        pushError(errors, `Projection ${statement.id} http_delete for '${capabilityId}' must include 'field' and 'value' for soft deletes`, entry.loc);
+        pushError(errors, `Projection ${statement.id} delete_semantics for '${capabilityId}' must include 'field' and 'value' for soft deletes`, entry.loc);
       }
       const outputFields = resolveCapabilityContractFields(registry, capabilityId, "output");
       const fieldName = directives.get("field");
       if (fieldName && outputFields.size > 0 && !outputFields.has(fieldName)) {
-        pushError(errors, `Projection ${statement.id} http_delete references unknown output field '${fieldName}' on ${capabilityId}`, entry.loc);
+        pushError(errors, `Projection ${statement.id} delete_semantics references unknown output field '${fieldName}' on ${capabilityId}`, entry.loc);
       }
     }
   }
@@ -1379,13 +1425,13 @@ function validateProjectionHttpAsync(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpAsyncField = fieldMap.get("http_async")?.[0];
+  const httpAsyncField = fieldMap.get("async_jobs")?.[0];
   if (!httpAsyncField || httpAsyncField.value.type !== "block") {
     return;
   }
 
   const realized = new Set(symbolValues(getFieldValue(statement, "realizes")));
-  const httpEntries = blockEntries(getFieldValue(statement, "http"));
+  const httpEntries = blockEntries(getFieldValue(statement, "endpoints"));
   const httpDirectivesByCapability = new Map();
   for (const entry of httpEntries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
@@ -1402,14 +1448,14 @@ function validateProjectionHttpAsync(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_async references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_async must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1417,7 +1463,7 @@ function validateProjectionHttpAsync(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1425,33 +1471,33 @@ function validateProjectionHttpAsync(errors, statement, fieldMap, registry) {
 
     for (const requiredKey of ["mode", "accepted", "location_header", "retry_after_header", "status_path", "status_capability", "job"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["mode", "accepted", "location_header", "retry_after_header", "status_path", "status_capability", "job"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const mode = directives.get("mode");
     if (mode && mode !== "job") {
-      pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' has invalid mode '${mode}'`, entry.loc);
     }
 
     const accepted = directives.get("accepted");
     if (accepted && accepted !== "202") {
-      pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must use 202 for 'accepted'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must use 202 for 'accepted'`, entry.loc);
     }
 
     const jobShapeId = directives.get("job");
     if (jobShapeId) {
       const jobShape = registry.get(jobShapeId);
       if (!jobShape) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' references missing shape '${jobShapeId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' references missing shape '${jobShapeId}'`, entry.loc);
       } else if (jobShape.kind !== "shape") {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must reference a shape for 'job', found ${jobShape.kind} '${jobShape.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must reference a shape for 'job', found ${jobShape.kind} '${jobShape.id}'`, entry.loc);
       }
     }
 
@@ -1459,25 +1505,25 @@ function validateProjectionHttpAsync(errors, statement, fieldMap, registry) {
     if (statusCapabilityId) {
       const statusCapability = registry.get(statusCapabilityId);
       if (!statusCapability) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' references missing status capability '${statusCapabilityId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' references missing status capability '${statusCapabilityId}'`, entry.loc);
       } else if (statusCapability.kind !== "capability") {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must reference a capability for 'status_capability', found ${statusCapability.kind} '${statusCapability.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must reference a capability for 'status_capability', found ${statusCapability.kind} '${statusCapability.id}'`, entry.loc);
       } else if (!realized.has(statusCapabilityId)) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' status capability '${statusCapabilityId}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' status capability '${statusCapabilityId}' must also appear in 'realizes'`, entry.loc);
       }
 
       const statusHttp = httpDirectivesByCapability.get(statusCapabilityId);
       if (statusHttp?.get("method") && statusHttp.get("method") !== "GET") {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' status capability '${statusCapabilityId}' must use HTTP GET`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' status capability '${statusCapabilityId}' must use HTTP GET`, entry.loc);
       }
       if (statusHttp?.get("path") && directives.get("status_path") && statusHttp.get("path") !== directives.get("status_path")) {
-        pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' status_path must match the path for '${statusCapabilityId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' status_path must match the path for '${statusCapabilityId}'`, entry.loc);
       }
     }
 
     const statusPath = directives.get("status_path");
     if (statusPath && !statusPath.startsWith("/")) {
-      pushError(errors, `Projection ${statement.id} http_async for '${capabilityId}' must use an absolute path for 'status_path'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_jobs for '${capabilityId}' must use an absolute path for 'status_path'`, entry.loc);
     }
   }
 }
@@ -1487,13 +1533,13 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpStatusField = fieldMap.get("http_status")?.[0];
+  const httpStatusField = fieldMap.get("async_status")?.[0];
   if (!httpStatusField || httpStatusField.value.type !== "block") {
     return;
   }
 
   const realized = new Set(symbolValues(getFieldValue(statement, "realizes")));
-  const httpEntries = blockEntries(getFieldValue(statement, "http"));
+  const httpEntries = blockEntries(getFieldValue(statement, "endpoints"));
   const httpMethodsByCapability = new Map();
   for (const entry of httpEntries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
@@ -1511,14 +1557,14 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_status references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_status references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_status must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_status must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1526,7 +1572,7 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1534,13 +1580,13 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
 
     for (const requiredKey of ["async_for", "state_field", "completed", "failed"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["async_for", "state_field", "completed", "failed", "expired", "download_capability", "download_field", "error_field"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
@@ -1548,11 +1594,11 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
     if (asyncCapabilityId) {
       const asyncCapability = registry.get(asyncCapabilityId);
       if (!asyncCapability) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' references missing async capability '${asyncCapabilityId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' references missing async capability '${asyncCapabilityId}'`, entry.loc);
       } else if (asyncCapability.kind !== "capability") {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' must reference a capability for 'async_for', found ${asyncCapability.kind} '${asyncCapability.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' must reference a capability for 'async_for', found ${asyncCapability.kind} '${asyncCapability.id}'`, entry.loc);
       } else if (!realized.has(asyncCapabilityId)) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' async capability '${asyncCapabilityId}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' async capability '${asyncCapabilityId}' must also appear in 'realizes'`, entry.loc);
       }
     }
 
@@ -1563,7 +1609,7 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
       ["error_field", directives.get("error_field")]
     ]) {
       if (fieldName && outputFields.size > 0 && !outputFields.has(fieldName)) {
-        pushError(errors, `Projection ${statement.id} http_status references unknown output field '${fieldName}' for '${directive}' on ${capabilityId}`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status references unknown output field '${fieldName}' for '${directive}' on ${capabilityId}`, entry.loc);
       }
     }
 
@@ -1571,16 +1617,16 @@ function validateProjectionHttpStatus(errors, statement, fieldMap, registry) {
     if (downloadCapabilityId) {
       const downloadCapability = registry.get(downloadCapabilityId);
       if (!downloadCapability) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' references missing download capability '${downloadCapabilityId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' references missing download capability '${downloadCapabilityId}'`, entry.loc);
       } else if (downloadCapability.kind !== "capability") {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' must reference a capability for 'download_capability', found ${downloadCapability.kind} '${downloadCapability.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' must reference a capability for 'download_capability', found ${downloadCapability.kind} '${downloadCapability.id}'`, entry.loc);
       } else if (!realized.has(downloadCapabilityId)) {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' download capability '${downloadCapabilityId}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' download capability '${downloadCapabilityId}' must also appear in 'realizes'`, entry.loc);
       }
 
       const method = httpMethodsByCapability.get(downloadCapabilityId);
       if (method && method !== "GET") {
-        pushError(errors, `Projection ${statement.id} http_status for '${capabilityId}' download capability '${downloadCapabilityId}' must use HTTP GET`, entry.loc);
+        pushError(errors, `Projection ${statement.id} async_status for '${capabilityId}' download capability '${downloadCapabilityId}' must use HTTP GET`, entry.loc);
       }
     }
   }
@@ -1591,7 +1637,7 @@ function validateProjectionHttpDownload(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpDownloadField = fieldMap.get("http_download")?.[0];
+  const httpDownloadField = fieldMap.get("downloads")?.[0];
   if (!httpDownloadField || httpDownloadField.value.type !== "block") {
     return;
   }
@@ -1603,14 +1649,14 @@ function validateProjectionHttpDownload(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_download references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} downloads references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_download must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} downloads must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1618,7 +1664,7 @@ function validateProjectionHttpDownload(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1626,13 +1672,13 @@ function validateProjectionHttpDownload(errors, statement, fieldMap, registry) {
 
     for (const requiredKey of ["async_for", "media", "disposition"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["async_for", "media", "filename", "disposition"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
@@ -1640,22 +1686,22 @@ function validateProjectionHttpDownload(errors, statement, fieldMap, registry) {
     if (asyncCapabilityId) {
       const asyncCapability = registry.get(asyncCapabilityId);
       if (!asyncCapability) {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' references missing async capability '${asyncCapabilityId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' references missing async capability '${asyncCapabilityId}'`, entry.loc);
       } else if (asyncCapability.kind !== "capability") {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' must reference a capability for 'async_for', found ${asyncCapability.kind} '${asyncCapability.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' must reference a capability for 'async_for', found ${asyncCapability.kind} '${asyncCapability.id}'`, entry.loc);
       } else if (!realized.has(asyncCapabilityId)) {
-        pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' async capability '${asyncCapabilityId}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' async capability '${asyncCapabilityId}' must also appear in 'realizes'`, entry.loc);
       }
     }
 
     const media = directives.get("media");
     if (media && !media.includes("/")) {
-      pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' must use a valid media type`, entry.loc);
+      pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' must use a valid media type`, entry.loc);
     }
 
     const disposition = directives.get("disposition");
     if (disposition && !["attachment", "inline"].includes(disposition)) {
-      pushError(errors, `Projection ${statement.id} http_download for '${capabilityId}' has invalid disposition '${disposition}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} downloads for '${capabilityId}' has invalid disposition '${disposition}'`, entry.loc);
     }
   }
 }
@@ -1665,7 +1711,7 @@ function validateProjectionHttpAuthz(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const httpAuthzField = fieldMap.get("http_authz")?.[0];
+  const httpAuthzField = fieldMap.get("authorization")?.[0];
   if (!httpAuthzField || httpAuthzField.value.type !== "block") {
     return;
   }
@@ -1677,14 +1723,14 @@ function validateProjectionHttpAuthz(errors, statement, fieldMap, registry) {
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_authz references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_authz must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1692,7 +1738,7 @@ function validateProjectionHttpAuthz(errors, statement, fieldMap, registry) {
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1700,27 +1746,27 @@ function validateProjectionHttpAuthz(errors, statement, fieldMap, registry) {
 
     for (const key of directives.keys()) {
       if (!["role", "permission", "claim", "claim_value", "ownership", "ownership_field"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     if (directives.size === 0) {
-      pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' must include at least one directive`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' must include at least one directive`, entry.loc);
     }
 
     const ownership = directives.get("ownership");
     if (ownership && !["owner", "owner_or_admin", "project_member", "none"].includes(ownership)) {
-      pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' has invalid ownership '${ownership}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' has invalid ownership '${ownership}'`, entry.loc);
     }
 
     const ownershipField = directives.get("ownership_field");
     if (ownershipField && (!ownership || ownership === "none")) {
-      pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' cannot declare ownership_field without ownership`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' cannot declare ownership_field without ownership`, entry.loc);
     }
 
     const claimValue = directives.get("claim_value");
     if (claimValue && !directives.get("claim")) {
-      pushError(errors, `Projection ${statement.id} http_authz for '${capabilityId}' cannot declare claim_value without claim`, entry.loc);
+      pushError(errors, `Projection ${statement.id} authorization for '${capabilityId}' cannot declare claim_value without claim`, entry.loc);
     }
   }
 }
@@ -1730,7 +1776,7 @@ function validateProjectionHttpCallbacks(errors, statement, fieldMap, registry) 
     return;
   }
 
-  const httpCallbacksField = fieldMap.get("http_callbacks")?.[0];
+  const httpCallbacksField = fieldMap.get("callbacks")?.[0];
   if (!httpCallbacksField || httpCallbacksField.value.type !== "block") {
     return;
   }
@@ -1742,14 +1788,14 @@ function validateProjectionHttpCallbacks(errors, statement, fieldMap, registry) 
     const capability = registry.get(capabilityId);
 
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} http_callbacks references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks references missing capability '${capabilityId}'`, entry.loc);
       continue;
     }
     if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} http_callbacks must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks must target a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     }
     if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     const directives = new Map();
@@ -1757,7 +1803,7 @@ function validateProjectionHttpCallbacks(errors, statement, fieldMap, registry) 
       const key = tokens[i];
       const value = tokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
@@ -1765,40 +1811,40 @@ function validateProjectionHttpCallbacks(errors, statement, fieldMap, registry) 
 
     for (const requiredKey of ["event", "target_field", "method", "payload", "success"]) {
       if (!directives.has(requiredKey)) {
-        pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' must include '${requiredKey}'`, entry.loc);
       }
     }
 
     for (const key of directives.keys()) {
       if (!["event", "target_field", "method", "payload", "success"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
     const method = directives.get("method");
     if (method && !["POST", "PUT", "PATCH"].includes(method)) {
-      pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' has invalid method '${method}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' has invalid method '${method}'`, entry.loc);
     }
 
     const success = directives.get("success");
     if (success && !/^\d{3}$/.test(success)) {
-      pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' must use a 3-digit success status`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' must use a 3-digit success status`, entry.loc);
     }
 
     const payloadShapeId = directives.get("payload");
     if (payloadShapeId) {
       const payloadShape = registry.get(payloadShapeId);
       if (!payloadShape) {
-        pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' references missing shape '${payloadShapeId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' references missing shape '${payloadShapeId}'`, entry.loc);
       } else if (payloadShape.kind !== "shape") {
-        pushError(errors, `Projection ${statement.id} http_callbacks for '${capabilityId}' must reference a shape for 'payload', found ${payloadShape.kind} '${payloadShape.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} callbacks for '${capabilityId}' must reference a shape for 'payload', found ${payloadShape.kind} '${payloadShape.id}'`, entry.loc);
       }
     }
 
     const targetField = directives.get("target_field");
     const inputFields = resolveCapabilityContractFields(registry, capabilityId, "input");
     if (targetField && inputFields.size > 0 && !inputFields.has(targetField)) {
-      pushError(errors, `Projection ${statement.id} http_callbacks references unknown input field '${targetField}' on ${capabilityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} callbacks references unknown input field '${targetField}' on ${capabilityId}`, entry.loc);
     }
   }
 }
@@ -1909,7 +1955,7 @@ function resolveCapabilityOutputShape(registry, capabilityId) {
 }
 
 function collectProjectionUiScreens(statement, fieldMap) {
-  const screensField = fieldMap.get("ui_screens")?.[0];
+  const screensField = fieldMap.get("screens")?.[0];
   if (!screensField || screensField.value.type !== "block") {
     return new Map();
   }
@@ -1954,7 +2000,7 @@ function resolveProjectionUiScreenFieldNames(registry, screenEntry, statement) {
 
 function screenIdsFromProjectionStatement(statement) {
   const screens = new Set();
-  for (const entry of blockEntries(getFieldValue(statement, "ui_screens"))) {
+  for (const entry of blockEntries(getFieldValue(statement, "screens"))) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     if (tokens[0] === "screen" && tokens[1]) {
       screens.add(tokens[1]);
@@ -1978,7 +2024,7 @@ function collectAvailableUiScreenIds(statement, fieldMap, registry) {
 
 function collectProjectionUiRegionKeys(statement) {
   const keys = new Set();
-  for (const entry of blockEntries(getFieldValue(statement, "ui_screen_regions"))) {
+  for (const entry of blockEntries(getFieldValue(statement, "screen_regions"))) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     if (tokens[0] === "screen" && tokens[1] && tokens[2] === "region" && tokens[3]) {
       keys.add(`${tokens[1]}:${tokens[3]}`);
@@ -2002,7 +2048,7 @@ function collectAvailableUiRegionKeys(statement, registry) {
 
 function collectProjectionUiRegionPatterns(statement) {
   const patterns = new Map();
-  for (const entry of blockEntries(getFieldValue(statement, "ui_screen_regions"))) {
+  for (const entry of blockEntries(getFieldValue(statement, "screen_regions"))) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     if (tokens[0] !== "screen" || !tokens[1] || tokens[2] !== "region" || !tokens[3]) {
       continue;
@@ -2056,7 +2102,7 @@ function validateProjectionUiScreens(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const screensField = fieldMap.get("ui_screens")?.[0];
+  const screensField = fieldMap.get("screens")?.[0];
   if (!screensField || screensField.value.type !== "block") {
     return;
   }
@@ -2069,33 +2115,33 @@ function validateProjectionUiScreens(errors, statement, fieldMap, registry) {
     const [keyword, screenId] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_screens entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens entries must start with 'screen'`, entry.loc);
       continue;
     }
     if (!screenId) {
-      pushError(errors, `Projection ${statement.id} ui_screens entries must include a screen id`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens entries must include a screen id`, entry.loc);
       continue;
     }
     if (!IDENTIFIER_PATTERN.test(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_screens has invalid screen id '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens has invalid screen id '${screenId}'`, entry.loc);
     }
     if (seenScreens.has(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_screens has duplicate screen id '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens has duplicate screen id '${screenId}'`, entry.loc);
     }
     seenScreens.add(screenId);
 
-    const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `ui_screens for '${screenId}'`);
+    const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `screens for '${screenId}'`);
     const kind = directives.get("kind");
     if (!kind) {
-      pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' must include 'kind'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens for '${screenId}' must include 'kind'`, entry.loc);
     }
     if (kind && !UI_SCREEN_KINDS.has(kind)) {
-      pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' has invalid kind '${kind}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens for '${screenId}' has invalid kind '${kind}'`, entry.loc);
     }
 
     for (const key of directives.keys()) {
       if (!["kind", "title", "load", "item_shape", "view_shape", "input_shape", "submit", "detail_capability", "primary_action", "secondary_action", "destructive_action", "success_navigate", "success_refresh", "empty_title", "empty_body", "terminal_action", "loading_state", "error_state", "unauthorized_state", "not_found_state", "success_state"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' has unknown directive '${key}'`, entry.loc);
       }
     }
 
@@ -2117,43 +2163,43 @@ function validateProjectionUiScreens(errors, statement, fieldMap, registry) {
       }
       const target = registry.get(targetId);
       if (!target) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' references missing ${expectedKind} '${targetId}' for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' references missing ${expectedKind} '${targetId}' for '${key}'`, entry.loc);
         continue;
       }
       if (target.kind !== expectedKind) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' must reference a ${expectedKind} for '${key}', found ${target.kind} '${target.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' must reference a ${expectedKind} for '${key}', found ${target.kind} '${target.id}'`, entry.loc);
       }
       if (expectedKind === "capability" && !realized.has(targetId)) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' capability '${targetId}' for '${key}' must also appear in 'realizes'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' capability '${targetId}' for '${key}' must also appear in 'realizes'`, entry.loc);
       }
     }
 
     const successNavigate = directives.get("success_navigate");
     const successRefresh = directives.get("success_refresh");
     if (successNavigate && !IDENTIFIER_PATTERN.test(successNavigate)) {
-      pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' has invalid target '${successNavigate}' for 'success_navigate'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens for '${screenId}' has invalid target '${successNavigate}' for 'success_navigate'`, entry.loc);
     }
     if (successRefresh && !IDENTIFIER_PATTERN.test(successRefresh)) {
-      pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' has invalid target '${successRefresh}' for 'success_refresh'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens for '${screenId}' has invalid target '${successRefresh}' for 'success_refresh'`, entry.loc);
     }
 
     if (kind === "list" && !directives.get("load")) {
-      pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' kind 'list' requires 'load'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screens for '${screenId}' kind 'list' requires 'load'`, entry.loc);
     }
     if (kind === "detail") {
       if (!directives.get("load")) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' kind 'detail' requires 'load'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' kind 'detail' requires 'load'`, entry.loc);
       }
       if (!directives.get("view_shape")) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' kind 'detail' requires 'view_shape'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' kind 'detail' requires 'view_shape'`, entry.loc);
       }
     }
     if (kind === "form") {
       if (!directives.get("input_shape")) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' kind 'form' requires 'input_shape'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' kind 'form' requires 'input_shape'`, entry.loc);
       }
       if (!directives.get("submit")) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' kind 'form' requires 'submit'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' kind 'form' requires 'submit'`, entry.loc);
       }
     }
   }
@@ -2168,7 +2214,7 @@ function validateProjectionUiScreens(errors, statement, fieldMap, registry) {
     for (const key of ["success_navigate", "success_refresh"]) {
       const targetScreenId = directives.get(key);
       if (targetScreenId && !seenScreens.has(targetScreenId)) {
-        pushError(errors, `Projection ${statement.id} ui_screens for '${screenId}' references unknown screen '${targetScreenId}' for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screens for '${screenId}' references unknown screen '${targetScreenId}' for '${key}'`, entry.loc);
       }
     }
   }
@@ -2179,7 +2225,7 @@ function validateProjectionUiCollections(errors, statement, fieldMap, registry) 
     return;
   }
 
-  const collectionsField = fieldMap.get("ui_collections")?.[0];
+  const collectionsField = fieldMap.get("collection_views")?.[0];
   if (!collectionsField || collectionsField.value.type !== "block") {
     return;
   }
@@ -2190,23 +2236,23 @@ function validateProjectionUiCollections(errors, statement, fieldMap, registry) 
     const [keyword, screenId, operation, value, extra] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_collections entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views entries must start with 'screen'`, entry.loc);
       continue;
     }
     const screenEntry = screens.get(screenId);
     if (!screenEntry) {
-      pushError(errors, `Projection ${statement.id} ui_collections references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views references unknown screen '${screenId}'`, entry.loc);
       continue;
     }
 
     const screenTokens = blockSymbolItems(screenEntry).map((item) => item.value);
     const screenDirectives = parseUiDirectiveMap(screenTokens, 2, [], statement, screenEntry, "");
     if (screenDirectives.get("kind") !== "list") {
-      pushError(errors, `Projection ${statement.id} ui_collections may only target list screens, found '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views may only target list screens, found '${screenId}'`, entry.loc);
     }
 
     if (!["filter", "search", "pagination", "sort", "group", "view", "refresh"].includes(operation)) {
-      pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' has invalid operation '${operation}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' has invalid operation '${operation}'`, entry.loc);
       continue;
     }
 
@@ -2219,43 +2265,43 @@ function validateProjectionUiCollections(errors, statement, fieldMap, registry) 
 
     if (operation === "filter" || operation === "search") {
       if (!value) {
-        pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' must include a field for '${operation}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' must include a field for '${operation}'`, entry.loc);
       } else if (inputFields.size > 0 && !inputFields.has(value)) {
-        pushError(errors, `Projection ${statement.id} ui_collections references unknown input field '${value}' for '${operation}' on '${screenId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} collection_views references unknown input field '${value}' for '${operation}' on '${screenId}'`, entry.loc);
       }
     }
 
     if (operation === "pagination" && !["cursor", "paged", "none"].includes(value || "")) {
-      pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' has invalid pagination '${value}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' has invalid pagination '${value}'`, entry.loc);
     }
 
     if (operation === "sort") {
       if (!value || !extra) {
-        pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' must use 'sort <field> <asc|desc>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' must use 'sort <field> <asc|desc>'`, entry.loc);
       } else {
         if (!["asc", "desc"].includes(extra)) {
-          pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' has invalid sort direction '${extra}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' has invalid sort direction '${extra}'`, entry.loc);
         }
         if (outputFields.size > 0 && !outputFields.has(value)) {
-          pushError(errors, `Projection ${statement.id} ui_collections references unknown output field '${value}' for sort on '${screenId}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} collection_views references unknown output field '${value}' for sort on '${screenId}'`, entry.loc);
         }
       }
     }
 
     if (operation === "group") {
       if (!value) {
-        pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' must include a field for 'group'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' must include a field for 'group'`, entry.loc);
       } else if (outputFields.size > 0 && !outputFields.has(value)) {
-        pushError(errors, `Projection ${statement.id} ui_collections references unknown output field '${value}' for group on '${screenId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} collection_views references unknown output field '${value}' for group on '${screenId}'`, entry.loc);
       }
     }
 
     if (operation === "view" && !UI_COLLECTION_PRESENTATIONS.has(value || "")) {
-      pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' has invalid view '${value}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' has invalid view '${value}'`, entry.loc);
     }
 
     if (operation === "refresh" && !["manual", "pull_to_refresh", "auto"].includes(value || "")) {
-      pushError(errors, `Projection ${statement.id} ui_collections for '${screenId}' has invalid refresh '${value}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} collection_views for '${screenId}' has invalid refresh '${value}'`, entry.loc);
     }
   }
 }
@@ -2265,7 +2311,7 @@ function validateProjectionUiActions(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const actionsField = fieldMap.get("ui_actions")?.[0];
+  const actionsField = fieldMap.get("screen_actions")?.[0];
   if (!actionsField || actionsField.value.type !== "block") {
     return;
   }
@@ -2278,34 +2324,34 @@ function validateProjectionUiActions(errors, statement, fieldMap, registry) {
     const [keyword, screenId, actionKeyword, capabilityId, prominenceKeyword, prominence, placementKeyword, placement] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_actions entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions entries must start with 'screen'`, entry.loc);
       continue;
     }
     if (!screens.has(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_actions references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions references unknown screen '${screenId}'`, entry.loc);
     }
     if (actionKeyword !== "action") {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' must use 'action'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' must use 'action'`, entry.loc);
     }
     const capability = registry.get(capabilityId);
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} ui_actions references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions references missing capability '${capabilityId}'`, entry.loc);
     } else if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} ui_actions must reference a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions must reference a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     } else if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' capability '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' capability '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (prominenceKeyword !== "prominence") {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' must use 'prominence'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' must use 'prominence'`, entry.loc);
     }
     if (!["primary", "secondary", "destructive", "contextual"].includes(prominence || "")) {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' has invalid prominence '${prominence}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' has invalid prominence '${prominence}'`, entry.loc);
     }
     if (placementKeyword && placementKeyword !== "placement") {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' has unknown directive '${placementKeyword}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' has unknown directive '${placementKeyword}'`, entry.loc);
     }
     if (placementKeyword === "placement" && !["toolbar", "menu", "bulk", "inline", "footer"].includes(placement || "")) {
-      pushError(errors, `Projection ${statement.id} ui_actions for '${screenId}' has invalid placement '${placement}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_actions for '${screenId}' has invalid placement '${placement}'`, entry.loc);
     }
   }
 }
@@ -2315,7 +2361,7 @@ function validateProjectionUiAppShell(errors, statement, fieldMap) {
     return;
   }
 
-  const shellField = fieldMap.get("ui_app_shell")?.[0];
+  const shellField = fieldMap.get("app_shell")?.[0];
   if (!shellField || shellField.value.type !== "block") {
     return;
   }
@@ -2325,42 +2371,42 @@ function validateProjectionUiAppShell(errors, statement, fieldMap) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     const [key, value, extra] = tokens;
     if (!["brand", "shell", "primary_nav", "secondary_nav", "utility_nav", "footer", "global_search", "notifications", "account_menu", "workspace_switcher", "windowing"].includes(key || "")) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell has unknown key '${key}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell has unknown key '${key}'`, entry.loc);
       continue;
     }
     if (!value) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell is missing a value for '${key}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell is missing a value for '${key}'`, entry.loc);
       continue;
     }
     if (extra) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell '${key}' accepts exactly one value`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell '${key}' accepts exactly one value`, entry.loc);
     }
     if (seenKeys.has(key)) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell has duplicate key '${key}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell has duplicate key '${key}'`, entry.loc);
     }
     seenKeys.add(key);
 
     if (key === "shell" && !UI_APP_SHELL_KINDS.has(value)) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell has invalid shell '${value}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell has invalid shell '${value}'`, entry.loc);
     }
     if (["global_search", "notifications", "account_menu", "workspace_switcher"].includes(key) && !["true", "false"].includes(value)) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell '${key}' must be true or false`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell '${key}' must be true or false`, entry.loc);
     }
     if (key === "windowing" && !UI_WINDOWING_MODES.has(value)) {
-      pushError(errors, `Projection ${statement.id} ui_app_shell has invalid windowing '${value}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} app_shell has invalid windowing '${value}'`, entry.loc);
     }
   }
 }
 
 const SHARED_UI_SEMANTIC_BLOCKS = [
-  "ui_screens",
-  "ui_collections",
-  "ui_actions",
-  "ui_visibility",
-  "ui_lookups",
-  "ui_app_shell",
-  "ui_navigation",
-  "ui_screen_regions"
+  "screens",
+  "collection_views",
+  "screen_actions",
+  "visibility_rules",
+  "field_lookups",
+  "app_shell",
+  "navigation",
+  "screen_regions"
 ];
 
 function validateProjectionUiOwnership(errors, statement, fieldMap) {
@@ -2368,26 +2414,26 @@ function validateProjectionUiOwnership(errors, statement, fieldMap) {
     return;
   }
 
-  const platform = symbolValue(getFieldValue(statement, "platform"));
+  const platform = symbolValue(getFieldValue(statement, "type"));
   for (const key of SHARED_UI_SEMANTIC_BLOCKS) {
     const field = fieldMap.get(key)?.[0];
     if (!field || field.value.type !== "block") {
       continue;
     }
-    if (platform !== "ui_shared") {
+    if (platform !== "ui_contract") {
       pushError(
         errors,
-        `Projection ${statement.id} ${key} belongs on shared UI projections; concrete UI projections may define ui_routes and platform surface hints only`,
+        `Projection ${statement.id} ${key} belongs on shared UI projections; concrete UI projections may define screen_routes and platform surface hints only`,
         field.loc
       );
     }
   }
 
-  const routesField = fieldMap.get("ui_routes")?.[0];
-  if (routesField?.value.type === "block" && !["ui_web", "ui_ios"].includes(platform || "")) {
+  const routesField = fieldMap.get("screen_routes")?.[0];
+  if (routesField?.value.type === "block" && !["web_surface", "ios_surface"].includes(platform || "")) {
     pushError(
       errors,
-      `Projection ${statement.id} ui_routes belongs on concrete UI projections; shared UI projections own semantic screens and regions`,
+      `Projection ${statement.id} screen_routes belongs on concrete UI projections; shared UI projections own semantic screens and regions`,
       routesField.loc
     );
   }
@@ -2398,13 +2444,13 @@ function validateProjectionUiDesign(errors, statement, fieldMap) {
     return;
   }
 
-  const designField = fieldMap.get("ui_design")?.[0];
+  const designField = fieldMap.get("design_tokens")?.[0];
   if (!designField || designField.value.type !== "block") {
     return;
   }
 
-  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
-    pushError(errors, `Projection ${statement.id} ui_design belongs on shared UI projections; concrete UI projections inherit semantic design intent through 'realizes'`, designField.loc);
+  if (symbolValue(getFieldValue(statement, "type")) !== "ui_contract") {
+    pushError(errors, `Projection ${statement.id} design_tokens belongs on shared UI projections; concrete UI projections inherit semantic design intent through 'realizes'`, designField.loc);
   }
 
   for (const entry of designField.value.entries) {
@@ -2413,60 +2459,60 @@ function validateProjectionUiDesign(errors, statement, fieldMap) {
 
     if (key === "density") {
       if (!UI_DESIGN_DENSITIES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design density has invalid value '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens density has invalid value '${value}'`, entry.loc);
       }
       if (tokens.length !== 2) {
-        pushError(errors, `Projection ${statement.id} ui_design density accepts exactly one value`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens density accepts exactly one value`, entry.loc);
       }
       continue;
     }
 
     if (key === "tone") {
       if (!UI_DESIGN_TONES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design tone has invalid value '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens tone has invalid value '${value}'`, entry.loc);
       }
       if (tokens.length !== 2) {
-        pushError(errors, `Projection ${statement.id} ui_design tone accepts exactly one value`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens tone accepts exactly one value`, entry.loc);
       }
       continue;
     }
 
     if (key === "radius_scale") {
       if (!UI_DESIGN_RADIUS_SCALES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design radius_scale has invalid value '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens radius_scale has invalid value '${value}'`, entry.loc);
       }
       if (tokens.length !== 2) {
-        pushError(errors, `Projection ${statement.id} ui_design radius_scale accepts exactly one value`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens radius_scale accepts exactly one value`, entry.loc);
       }
       continue;
     }
 
     if (key === "color_role") {
       if (!UI_DESIGN_COLOR_ROLES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design color_role has invalid role '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens color_role has invalid role '${value}'`, entry.loc);
       }
       if (tokens.length !== 3) {
-        pushError(errors, `Projection ${statement.id} ui_design color_role must use 'color_role <role> <semantic-token>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens color_role must use 'color_role <role> <semantic-token>'`, entry.loc);
       }
       continue;
     }
 
     if (key === "typography_role") {
       if (!UI_DESIGN_TYPOGRAPHY_ROLES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design typography_role has invalid role '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens typography_role has invalid role '${value}'`, entry.loc);
       }
       if (tokens.length !== 3) {
-        pushError(errors, `Projection ${statement.id} ui_design typography_role must use 'typography_role <role> <semantic-token>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens typography_role must use 'typography_role <role> <semantic-token>'`, entry.loc);
       }
       continue;
     }
 
     if (key === "action_role") {
       if (!UI_DESIGN_ACTION_ROLES.has(value || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design action_role has invalid role '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens action_role has invalid role '${value}'`, entry.loc);
       }
       if (tokens.length !== 3) {
-        pushError(errors, `Projection ${statement.id} ui_design action_role must use 'action_role <role> <semantic-token>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens action_role must use 'action_role <role> <semantic-token>'`, entry.loc);
       }
       continue;
     }
@@ -2474,17 +2520,17 @@ function validateProjectionUiDesign(errors, statement, fieldMap) {
     if (key === "accessibility") {
       const values = UI_DESIGN_ACCESSIBILITY_VALUES[value];
       if (tokens.length !== 3) {
-        pushError(errors, `Projection ${statement.id} ui_design accessibility must use 'accessibility <setting> <value>'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens accessibility must use 'accessibility <setting> <value>'`, entry.loc);
       }
       if (!values) {
-        pushError(errors, `Projection ${statement.id} ui_design accessibility has invalid setting '${value}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens accessibility has invalid setting '${value}'`, entry.loc);
       } else if (!values.has(extra || "")) {
-        pushError(errors, `Projection ${statement.id} ui_design accessibility '${value}' has invalid value '${extra}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} design_tokens accessibility '${value}' has invalid value '${extra}'`, entry.loc);
       }
       continue;
     }
 
-    pushError(errors, `Projection ${statement.id} ui_design has unknown key '${key}'`, entry.loc);
+    pushError(errors, `Projection ${statement.id} design_tokens has unknown key '${key}'`, entry.loc);
   }
 }
 
@@ -2493,7 +2539,7 @@ function validateProjectionUiNavigation(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const navigationField = fieldMap.get("ui_navigation")?.[0];
+  const navigationField = fieldMap.get("navigation")?.[0];
   if (!navigationField || navigationField.value.type !== "block") {
     return;
   }
@@ -2507,58 +2553,58 @@ function validateProjectionUiNavigation(errors, statement, fieldMap, registry) {
 
     if (targetKind === "group") {
       if (!targetId || !IDENTIFIER_PATTERN.test(targetId)) {
-        pushError(errors, `Projection ${statement.id} ui_navigation group entries must include a valid group id`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation group entries must include a valid group id`, entry.loc);
         continue;
       }
       groups.add(targetId);
-      const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `ui_navigation group '${targetId}'`);
+      const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `navigation group '${targetId}'`);
       for (const key of directives.keys()) {
         if (!["label", "placement", "icon", "order", "pattern"].includes(key)) {
-          pushError(errors, `Projection ${statement.id} ui_navigation group '${targetId}' has unknown directive '${key}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} navigation group '${targetId}' has unknown directive '${key}'`, entry.loc);
         }
       }
       if (directives.has("placement") && !["primary", "secondary", "utility"].includes(directives.get("placement"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation group '${targetId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation group '${targetId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
       }
       if (directives.has("pattern") && !UI_NAVIGATION_PATTERNS.has(directives.get("pattern"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation group '${targetId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation group '${targetId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
       }
       continue;
     }
 
     if (targetKind === "screen") {
       if (!availableScreens.has(targetId)) {
-        pushError(errors, `Projection ${statement.id} ui_navigation references unknown screen '${targetId}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation references unknown screen '${targetId}'`, entry.loc);
       }
-      const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `ui_navigation screen '${targetId}'`);
+      const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `navigation screen '${targetId}'`);
       for (const key of directives.keys()) {
         if (!["group", "label", "order", "visible", "default", "breadcrumb", "sitemap", "placement", "pattern"].includes(key)) {
-          pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has unknown directive '${key}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has unknown directive '${key}'`, entry.loc);
         }
       }
       if (directives.has("visible") && !["true", "false"].includes(directives.get("visible"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has invalid visible '${directives.get("visible")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has invalid visible '${directives.get("visible")}'`, entry.loc);
       }
       if (directives.has("default") && !["true", "false"].includes(directives.get("default"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has invalid default '${directives.get("default")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has invalid default '${directives.get("default")}'`, entry.loc);
       }
       if (directives.has("placement") && !["primary", "secondary", "utility"].includes(directives.get("placement"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
       }
       if (directives.has("sitemap") && !["include", "exclude"].includes(directives.get("sitemap"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has invalid sitemap '${directives.get("sitemap")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has invalid sitemap '${directives.get("sitemap")}'`, entry.loc);
       }
       if (directives.has("pattern") && !UI_NAVIGATION_PATTERNS.has(directives.get("pattern"))) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
       }
       const breadcrumb = directives.get("breadcrumb");
       if (breadcrumb && breadcrumb !== "none" && !availableScreens.has(breadcrumb)) {
-        pushError(errors, `Projection ${statement.id} ui_navigation screen '${targetId}' references unknown breadcrumb screen '${breadcrumb}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} navigation screen '${targetId}' references unknown breadcrumb screen '${breadcrumb}'`, entry.loc);
       }
       continue;
     }
 
-    pushError(errors, `Projection ${statement.id} ui_navigation entries must start with 'group' or 'screen'`, entry.loc);
+    pushError(errors, `Projection ${statement.id} navigation entries must start with 'group' or 'screen'`, entry.loc);
   }
 
   for (const entry of navigationField.value.entries) {
@@ -2568,7 +2614,7 @@ function validateProjectionUiNavigation(errors, statement, fieldMap, registry) {
     }
     const directives = parseUiDirectiveMap(tokens, 2, [], statement, entry, "");
     if (directives.has("group") && !groups.has(directives.get("group"))) {
-      pushError(errors, `Projection ${statement.id} ui_navigation screen '${tokens[1]}' references unknown group '${directives.get("group")}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} navigation screen '${tokens[1]}' references unknown group '${directives.get("group")}'`, entry.loc);
     }
   }
 }
@@ -2578,7 +2624,7 @@ function validateProjectionUiScreenRegions(errors, statement, fieldMap, registry
     return;
   }
 
-  const regionField = fieldMap.get("ui_screen_regions")?.[0];
+  const regionField = fieldMap.get("screen_regions")?.[0];
   if (!regionField || regionField.value.type !== "block") {
     return;
   }
@@ -2589,33 +2635,33 @@ function validateProjectionUiScreenRegions(errors, statement, fieldMap, registry
     const [keyword, screenId, regionKeyword, regionName] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions entries must start with 'screen'`, entry.loc);
       continue;
     }
     if (!availableScreens.has(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions references unknown screen '${screenId}'`, entry.loc);
     }
     if (regionKeyword !== "region") {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' must use 'region'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' must use 'region'`, entry.loc);
     }
     if (!UI_REGION_KINDS.has(regionName || "")) {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid region '${regionName}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' has invalid region '${regionName}'`, entry.loc);
     }
 
-    const directives = parseUiDirectiveMap(tokens, 4, errors, statement, entry, `ui_screen_regions for '${screenId}'`);
+    const directives = parseUiDirectiveMap(tokens, 4, errors, statement, entry, `screen_regions for '${screenId}'`);
     for (const key of directives.keys()) {
       if (!["pattern", "placement", "title", "state", "variant"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' has unknown directive '${key}'`, entry.loc);
       }
     }
     if (directives.has("pattern") && !UI_PATTERN_KINDS.has(directives.get("pattern"))) {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' has invalid pattern '${directives.get("pattern")}'`, entry.loc);
     }
     if (directives.has("placement") && !["primary", "secondary", "supporting"].includes(directives.get("placement"))) {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' has invalid placement '${directives.get("placement")}'`, entry.loc);
     }
     if (directives.has("state") && !UI_STATE_KINDS.has(directives.get("state"))) {
-      pushError(errors, `Projection ${statement.id} ui_screen_regions for '${screenId}' has invalid state '${directives.get("state")}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_regions for '${screenId}' has invalid state '${directives.get("state")}'`, entry.loc);
     }
   }
 }
@@ -2625,13 +2671,13 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const componentsField = fieldMap.get("ui_components")?.[0];
+  const componentsField = fieldMap.get("widget_bindings")?.[0];
   if (!componentsField || componentsField.value.type !== "block") {
     return;
   }
 
-  if (symbolValue(getFieldValue(statement, "platform")) !== "ui_shared") {
-    pushError(errors, `Projection ${statement.id} ui_components belongs on shared UI projections; concrete UI projections inherit component placement through 'realizes'`, componentsField.loc);
+  if (symbolValue(getFieldValue(statement, "type")) !== "ui_contract") {
+    pushError(errors, `Projection ${statement.id} widget_bindings belongs on shared UI projections; concrete UI projections inherit widget placement through 'realizes'`, componentsField.loc);
   }
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
@@ -2643,48 +2689,48 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
     const [screenKeyword, screenId, regionKeyword, regionName, componentKeyword, componentId] = tokens;
 
     if (screenKeyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_components entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings entries must start with 'screen'`, entry.loc);
       continue;
     }
     if (!availableScreens.has(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_components references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings references unknown screen '${screenId}'`, entry.loc);
     }
     if (regionKeyword !== "region") {
-      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' must use 'region'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings for '${screenId}' must use 'region'`, entry.loc);
     }
     if (!UI_REGION_KINDS.has(regionName || "")) {
-      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' has invalid region '${regionName}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings for '${screenId}' has invalid region '${regionName}'`, entry.loc);
     } else if (!availableRegions.has(`${screenId}:${regionName}`)) {
-      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' references undeclared region '${regionName}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings for '${screenId}' references undeclared region '${regionName}'`, entry.loc);
     }
-    if (componentKeyword !== "component") {
-      pushError(errors, `Projection ${statement.id} ui_components for '${screenId}' must use 'component'`, entry.loc);
-    }
-
-    const component = registry.get(componentId);
-    if (!component) {
-      pushError(errors, `Projection ${statement.id} ui_components references missing component '${componentId}'`, entry.loc);
-      continue;
-    }
-    if (component.kind !== "component") {
-      pushError(errors, `Projection ${statement.id} ui_components must reference a component, found ${component.kind} '${component.id}'`, entry.loc);
-      continue;
+    if (componentKeyword !== "widget") {
+      pushError(errors, `Projection ${statement.id} widget_bindings for '${screenId}' must use 'widget'`, entry.loc);
     }
 
-    const propNames = new Set(blockEntries(getFieldValue(component, "props"))
+    const widget = registry.get(componentId);
+    if (!widget) {
+      pushError(errors, `Projection ${statement.id} widget_bindings references missing widget '${componentId}'`, entry.loc);
+      continue;
+    }
+    if (widget.kind !== "widget") {
+      pushError(errors, `Projection ${statement.id} widget_bindings must reference a widget, found ${widget.kind} '${widget.id}'`, entry.loc);
+      continue;
+    }
+
+    const propNames = new Set(blockEntries(getFieldValue(widget, "props"))
       .map((propEntry) => propEntry.items[0])
       .filter((item) => item?.type === "symbol")
       .map((item) => item.value));
-    const eventNames = new Set(blockEntries(getFieldValue(component, "events"))
+    const eventNames = new Set(blockEntries(getFieldValue(widget, "events"))
       .map((eventEntry) => eventEntry.items[0])
       .filter((item) => item?.type === "symbol")
       .map((item) => item.value));
-    const componentRegions = symbolValues(getFieldValue(component, "regions"));
-    const componentPatterns = symbolValues(getFieldValue(component, "patterns"));
+    const componentRegions = symbolValues(getFieldValue(widget, "regions"));
+    const componentPatterns = symbolValues(getFieldValue(widget, "patterns"));
     if (componentRegions.length > 0 && !componentRegions.includes(regionName)) {
       pushError(
         errors,
-        `Projection ${statement.id} ui_components uses component '${componentId}' in region '${regionName}', but the component supports regions [${componentRegions.join(", ")}]`,
+        `Projection ${statement.id} widget_bindings uses widget '${componentId}' in region '${regionName}', but the widget supports regions [${componentRegions.join(", ")}]`,
         entry.loc
       );
     }
@@ -2692,7 +2738,7 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
     if (regionPattern && componentPatterns.length > 0 && !componentPatterns.includes(regionPattern)) {
       pushError(
         errors,
-        `Projection ${statement.id} ui_components uses component '${componentId}' in '${screenId}:${regionName}' with pattern '${regionPattern}', but the component supports patterns [${componentPatterns.join(", ")}]`,
+        `Projection ${statement.id} widget_bindings uses widget '${componentId}' in '${screenId}:${regionName}' with pattern '${regionPattern}', but the widget supports patterns [${componentPatterns.join(", ")}]`,
         entry.loc
       );
     }
@@ -2704,15 +2750,15 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
         const fromKeyword = tokens[i + 2];
         const sourceId = tokens[i + 3];
         if (!propName || fromKeyword !== "from" || !sourceId) {
-          pushError(errors, `Projection ${statement.id} ui_components data bindings must use 'data <prop> from <source>'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings data bindings must use 'data <prop> from <source>'`, entry.loc);
           break;
         }
         if (!propNames.has(propName)) {
-          pushError(errors, `Projection ${statement.id} ui_components references unknown prop '${propName}' on component '${componentId}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings references unknown prop '${propName}' on widget '${componentId}'`, entry.loc);
         }
         const source = registry.get(sourceId);
         if (!source || !["capability", "projection", "shape", "entity"].includes(source.kind)) {
-          pushError(errors, `Projection ${statement.id} ui_components data binding for '${propName}' references missing source '${sourceId}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings data binding for '${propName}' references missing source '${sourceId}'`, entry.loc);
         }
         i += 4;
         continue;
@@ -2723,29 +2769,29 @@ function validateProjectionUiComponents(errors, statement, fieldMap, registry) {
         const action = tokens[i + 2];
         const targetId = tokens[i + 3];
         if (!eventName || !action || !targetId) {
-          pushError(errors, `Projection ${statement.id} ui_components event bindings must use 'event <event> <navigate|action> <target>'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings event bindings must use 'event <event> <navigate|action> <target>'`, entry.loc);
           break;
         }
         if (!eventNames.has(eventName)) {
-          pushError(errors, `Projection ${statement.id} ui_components references unknown event '${eventName}' on component '${componentId}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings references unknown event '${eventName}' on widget '${componentId}'`, entry.loc);
         }
         if (action === "navigate") {
           if (!availableScreens.has(targetId)) {
-            pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' references unknown navigation target '${targetId}'`, entry.loc);
+            pushError(errors, `Projection ${statement.id} widget_bindings event '${eventName}' references unknown navigation target '${targetId}'`, entry.loc);
           }
         } else if (action === "action") {
           const target = registry.get(targetId);
           if (!target || target.kind !== "capability") {
-            pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' references missing capability action '${targetId}'`, entry.loc);
+            pushError(errors, `Projection ${statement.id} widget_bindings event '${eventName}' references missing capability action '${targetId}'`, entry.loc);
           }
         } else {
-          pushError(errors, `Projection ${statement.id} ui_components event '${eventName}' has unsupported action '${action}'`, entry.loc);
+          pushError(errors, `Projection ${statement.id} widget_bindings event '${eventName}' has unsupported action '${action}'`, entry.loc);
         }
         i += 4;
         continue;
       }
 
-      pushError(errors, `Projection ${statement.id} ui_components has unknown directive '${directive}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} widget_bindings has unknown directive '${directive}'`, entry.loc);
       break;
     }
   }
@@ -2756,7 +2802,7 @@ function validateProjectionUiVisibility(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const visibilityField = fieldMap.get("ui_visibility")?.[0];
+  const visibilityField = fieldMap.get("visibility_rules")?.[0];
   if (!visibilityField || visibilityField.value.type !== "block") {
     return;
   }
@@ -2767,30 +2813,30 @@ function validateProjectionUiVisibility(errors, statement, fieldMap, registry) {
     const [keyword, capabilityId, predicateKeyword, predicateType, predicateValue] = tokens;
 
     if (keyword !== "action") {
-      pushError(errors, `Projection ${statement.id} ui_visibility entries must start with 'action'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules entries must start with 'action'`, entry.loc);
       continue;
     }
 
     const capability = registry.get(capabilityId);
     if (!capability) {
-      pushError(errors, `Projection ${statement.id} ui_visibility references missing capability '${capabilityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules references missing capability '${capabilityId}'`, entry.loc);
     } else if (capability.kind !== "capability") {
-      pushError(errors, `Projection ${statement.id} ui_visibility must reference a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules must reference a capability, found ${capability.kind} '${capability.id}'`, entry.loc);
     } else if (!realized.has(capabilityId)) {
-      pushError(errors, `Projection ${statement.id} ui_visibility action '${capabilityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules action '${capabilityId}' must also appear in 'realizes'`, entry.loc);
     }
 
     if (predicateKeyword !== "visible_if") {
-      pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' must use 'visible_if'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' must use 'visible_if'`, entry.loc);
     }
     if (!["permission", "ownership", "claim"].includes(predicateType || "")) {
-      pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' has invalid predicate '${predicateType}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' has invalid predicate '${predicateType}'`, entry.loc);
     }
     if (!predicateValue) {
-      pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' must include a predicate value`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' must include a predicate value`, entry.loc);
     }
     if (predicateType === "ownership" && !["owner", "owner_or_admin", "project_member", "none"].includes(predicateValue || "")) {
-      pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' has invalid ownership '${predicateValue}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' has invalid ownership '${predicateValue}'`, entry.loc);
     }
     const directiveTokens = blockSymbolItems(entry).map((item) => item.value);
     const directives = new Map();
@@ -2798,18 +2844,18 @@ function validateProjectionUiVisibility(errors, statement, fieldMap, registry) {
       const key = directiveTokens[i];
       const value = directiveTokens[i + 1];
       if (!value) {
-        pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' is missing a value for '${key}'`, entry.loc);
         continue;
       }
       directives.set(key, value);
     }
     for (const key of directives.keys()) {
       if (!["claim_value"].includes(key)) {
-        pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' has unknown directive '${key}'`, entry.loc);
       }
     }
     if (directives.get("claim_value") && predicateType !== "claim") {
-      pushError(errors, `Projection ${statement.id} ui_visibility for '${capabilityId}' cannot declare claim_value without claim`, entry.loc);
+      pushError(errors, `Projection ${statement.id} visibility_rules for '${capabilityId}' cannot declare claim_value without claim`, entry.loc);
     }
   }
 }
@@ -2819,7 +2865,7 @@ function validateProjectionUiLookups(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const lookupsField = fieldMap.get("ui_lookups")?.[0];
+  const lookupsField = fieldMap.get("field_lookups")?.[0];
   if (!lookupsField || lookupsField.value.type !== "block") {
     return;
   }
@@ -2831,56 +2877,56 @@ function validateProjectionUiLookups(errors, statement, fieldMap, registry) {
     const [keyword, screenId, fieldKeyword, fieldName, entityKeyword, entityId, labelKeyword, labelField, maybeEmptyKeyword, maybeEmptyLabel] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_lookups entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups entries must start with 'screen'`, entry.loc);
       continue;
     }
 
     const screenEntry = screens.get(screenId);
     if (!screenEntry) {
-      pushError(errors, `Projection ${statement.id} ui_lookups references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups references unknown screen '${screenId}'`, entry.loc);
       continue;
     }
 
     if (fieldKeyword !== "field") {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must use 'field'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must use 'field'`, entry.loc);
     }
     if (!fieldName) {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must include a field name`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must include a field name`, entry.loc);
     }
 
     if (entityKeyword !== "entity") {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must use 'entity'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must use 'entity'`, entry.loc);
     }
     const entity = entityId ? registry.get(entityId) : null;
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' references missing entity '${entityId}'`, entry.loc);
     } else if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must reference an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must reference an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
 
     if (labelKeyword !== "label_field") {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must use 'label_field'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must use 'label_field'`, entry.loc);
     }
     if (!labelField) {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must include a label_field`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must include a label_field`, entry.loc);
     }
 
     if (maybeEmptyKeyword && maybeEmptyKeyword !== "empty_label") {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' has unknown directive '${maybeEmptyKeyword}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' has unknown directive '${maybeEmptyKeyword}'`, entry.loc);
     }
     if (maybeEmptyKeyword === "empty_label" && !maybeEmptyLabel) {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' must include a value for 'empty_label'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' must include a value for 'empty_label'`, entry.loc);
     }
 
     const availableFields = resolveProjectionUiScreenFieldNames(registry, screenEntry, statement);
     if (fieldName && availableFields.size > 0 && !availableFields.has(fieldName)) {
-      pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' references unknown screen field '${fieldName}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' references unknown screen field '${fieldName}'`, entry.loc);
     }
 
     if (entity?.kind === "entity") {
       const entityFieldNames = new Set(statementFieldNames(entity));
       if (labelField && !entityFieldNames.has(labelField)) {
-        pushError(errors, `Projection ${statement.id} ui_lookups for '${screenId}' references unknown entity field '${labelField}' on '${entity.id}'`, entry.loc);
+        pushError(errors, `Projection ${statement.id} field_lookups for '${screenId}' references unknown entity field '${labelField}' on '${entity.id}'`, entry.loc);
       }
     }
   }
@@ -2891,38 +2937,38 @@ function validateProjectionUiRoutes(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const routesField = fieldMap.get("ui_routes")?.[0];
+  const routesField = fieldMap.get("screen_routes")?.[0];
   if (!routesField || routesField.value.type !== "block") {
     return;
   }
 
   const availableScreens = collectAvailableUiScreenIds(statement, fieldMap, registry);
   const seenPaths = new Set();
-  const platform = symbolValue(getFieldValue(statement, "platform"));
+  const platform = symbolValue(getFieldValue(statement, "type"));
 
   for (const entry of routesField.value.entries) {
     const tokens = blockSymbolItems(entry).map((item) => item.value);
     const [keyword, screenId, pathKeyword, routePath] = tokens;
 
     if (keyword !== "screen") {
-      pushError(errors, `Projection ${statement.id} ui_routes entries must start with 'screen'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_routes entries must start with 'screen'`, entry.loc);
       continue;
     }
     if (!availableScreens.has(screenId)) {
-      pushError(errors, `Projection ${statement.id} ui_routes references unknown screen '${screenId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_routes references unknown screen '${screenId}'`, entry.loc);
     }
     if (pathKeyword !== "path") {
-      pushError(errors, `Projection ${statement.id} ui_routes for '${screenId}' must use 'path'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_routes for '${screenId}' must use 'path'`, entry.loc);
     }
     if (!routePath) {
-      pushError(errors, `Projection ${statement.id} ui_routes for '${screenId}' must include a path`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_routes for '${screenId}' must include a path`, entry.loc);
       continue;
     }
-    if ((platform === "ui_web" || platform === "ui_ios") && !routePath.startsWith("/")) {
-      pushError(errors, `Projection ${statement.id} ui_routes for '${screenId}' must use an absolute path`, entry.loc);
+    if ((platform === "web_surface" || platform === "ios_surface") && !routePath.startsWith("/")) {
+      pushError(errors, `Projection ${statement.id} screen_routes for '${screenId}' must use an absolute path`, entry.loc);
     }
     if (seenPaths.has(routePath)) {
-      pushError(errors, `Projection ${statement.id} ui_routes has duplicate path '${routePath}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} screen_routes has duplicate path '${routePath}'`, entry.loc);
     }
     seenPaths.add(routePath);
   }
@@ -2938,7 +2984,7 @@ function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry,
     return;
   }
 
-  const platform = symbolValue(getFieldValue(statement, "platform"));
+  const platform = symbolValue(getFieldValue(statement, "type"));
   if (platform !== expectedPlatform) {
     pushError(errors, `Projection ${statement.id} may only use '${surfaceBlockKey}' when platform is '${expectedPlatform}'`, surfaceField.loc);
     return;
@@ -3010,11 +3056,11 @@ function validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry,
 }
 
 function validateProjectionUiWeb(errors, statement, fieldMap, registry) {
-  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "ui_web", "ui_web");
+  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "web_hints", "web_surface");
 }
 
 function validateProjectionUiIos(errors, statement, fieldMap, registry) {
-  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "ui_ios", "ui_ios");
+  validateProjectionUiSurfaceHints(errors, statement, fieldMap, registry, "ios_hints", "ios_surface");
 }
 
 function validateProjectionGeneratorDefaults(errors, statement, fieldMap) {
@@ -3055,7 +3101,7 @@ function validateProjectionDbTables(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbTablesField = fieldMap.get("db_tables")?.[0];
+  const dbTablesField = fieldMap.get("tables")?.[0];
   if (!dbTablesField || dbTablesField.value.type !== "block") {
     return;
   }
@@ -3068,22 +3114,22 @@ function validateProjectionDbTables(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_tables references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_tables must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_tables entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (tableKeyword !== "table") {
-      pushError(errors, `Projection ${statement.id} db_tables for '${entityId}' must use 'table'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables for '${entityId}' must use 'table'`, entry.loc);
     }
     if (!tableName) {
-      pushError(errors, `Projection ${statement.id} db_tables for '${entityId}' must include a table name`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables for '${entityId}' must include a table name`, entry.loc);
     } else if (seenTables.has(tableName)) {
-      pushError(errors, `Projection ${statement.id} db_tables has duplicate table name '${tableName}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} tables has duplicate table name '${tableName}'`, entry.loc);
     }
     seenTables.add(tableName);
   }
@@ -3094,7 +3140,7 @@ function validateProjectionDbColumns(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbColumnsField = fieldMap.get("db_columns")?.[0];
+  const dbColumnsField = fieldMap.get("columns")?.[0];
   if (!dbColumnsField || dbColumnsField.value.type !== "block") {
     return;
   }
@@ -3106,27 +3152,27 @@ function validateProjectionDbColumns(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_columns references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_columns must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_columns entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (fieldKeyword !== "field") {
-      pushError(errors, `Projection ${statement.id} db_columns for '${entityId}' must use 'field'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns for '${entityId}' must use 'field'`, entry.loc);
     }
     if (columnKeyword !== "column") {
-      pushError(errors, `Projection ${statement.id} db_columns for '${entityId}' must use 'column'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns for '${entityId}' must use 'column'`, entry.loc);
     }
     const entityFieldNames = new Set(statementFieldNames(entity));
     if (fieldName && entityFieldNames.size > 0 && !entityFieldNames.has(fieldName)) {
-      pushError(errors, `Projection ${statement.id} db_columns references unknown field '${fieldName}' on ${entityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns references unknown field '${fieldName}' on ${entityId}`, entry.loc);
     }
     if (!columnName) {
-      pushError(errors, `Projection ${statement.id} db_columns for '${entityId}.${fieldName}' must include a column name`, entry.loc);
+      pushError(errors, `Projection ${statement.id} columns for '${entityId}.${fieldName}' must include a column name`, entry.loc);
     }
   }
 }
@@ -3136,7 +3182,7 @@ function validateProjectionDbKeys(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbKeysField = fieldMap.get("db_keys")?.[0];
+  const dbKeysField = fieldMap.get("keys")?.[0];
   if (!dbKeysField || dbKeysField.value.type !== "block") {
     return;
   }
@@ -3148,27 +3194,27 @@ function validateProjectionDbKeys(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_keys references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} keys references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_keys must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} keys must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_keys entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} keys entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (!["primary", "unique"].includes(keyType || "")) {
-      pushError(errors, `Projection ${statement.id} db_keys for '${entityId}' has invalid key type '${keyType}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} keys for '${entityId}' has invalid key type '${keyType}'`, entry.loc);
     }
     const fieldList = entry.items[2];
     if (!fieldList || fieldList.type !== "list" || fieldList.items.length === 0) {
-      pushError(errors, `Projection ${statement.id} db_keys for '${entityId}' must include a non-empty field list`, entry.loc);
+      pushError(errors, `Projection ${statement.id} keys for '${entityId}' must include a non-empty field list`, entry.loc);
       continue;
     }
     const entityFieldNames = new Set(statementFieldNames(entity));
     for (const item of fieldList.items) {
       if (item.type === "symbol" && entityFieldNames.size > 0 && !entityFieldNames.has(item.value)) {
-        pushError(errors, `Projection ${statement.id} db_keys references unknown field '${item.value}' on ${entityId}`, item.loc);
+        pushError(errors, `Projection ${statement.id} keys references unknown field '${item.value}' on ${entityId}`, item.loc);
       }
     }
   }
@@ -3179,7 +3225,7 @@ function validateProjectionDbIndexes(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbIndexesField = fieldMap.get("db_indexes")?.[0];
+  const dbIndexesField = fieldMap.get("indexes")?.[0];
   if (!dbIndexesField || dbIndexesField.value.type !== "block") {
     return;
   }
@@ -3191,27 +3237,27 @@ function validateProjectionDbIndexes(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_indexes references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} indexes references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_indexes must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} indexes must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_indexes entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} indexes entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (!["index", "unique"].includes(indexType || "")) {
-      pushError(errors, `Projection ${statement.id} db_indexes for '${entityId}' has invalid index type '${indexType}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} indexes for '${entityId}' has invalid index type '${indexType}'`, entry.loc);
     }
     const fieldList = entry.items[2];
     if (!fieldList || fieldList.type !== "list" || fieldList.items.length === 0) {
-      pushError(errors, `Projection ${statement.id} db_indexes for '${entityId}' must include a non-empty field list`, entry.loc);
+      pushError(errors, `Projection ${statement.id} indexes for '${entityId}' must include a non-empty field list`, entry.loc);
       continue;
     }
     const entityFieldNames = new Set(statementFieldNames(entity));
     for (const item of fieldList.items) {
       if (item.type === "symbol" && entityFieldNames.size > 0 && !entityFieldNames.has(item.value)) {
-        pushError(errors, `Projection ${statement.id} db_indexes references unknown field '${item.value}' on ${entityId}`, item.loc);
+        pushError(errors, `Projection ${statement.id} indexes references unknown field '${item.value}' on ${entityId}`, item.loc);
       }
     }
   }
@@ -3222,7 +3268,7 @@ function validateProjectionDbRelations(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbRelationsField = fieldMap.get("db_relations")?.[0];
+  const dbRelationsField = fieldMap.get("relations")?.[0];
   if (!dbRelationsField || dbRelationsField.value.type !== "block") {
     return;
   }
@@ -3234,43 +3280,43 @@ function validateProjectionDbRelations(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_relations references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_relations must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_relations entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
     if (relationType !== "foreign_key") {
-      pushError(errors, `Projection ${statement.id} db_relations for '${entityId}' must use 'foreign_key'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations for '${entityId}' must use 'foreign_key'`, entry.loc);
     }
     if (referencesKeyword !== "references") {
-      pushError(errors, `Projection ${statement.id} db_relations for '${entityId}' must use 'references'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations for '${entityId}' must use 'references'`, entry.loc);
     }
     if (onDeleteKeyword && onDeleteKeyword !== "on_delete") {
-      pushError(errors, `Projection ${statement.id} db_relations for '${entityId}' has unexpected token '${onDeleteKeyword}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations for '${entityId}' has unexpected token '${onDeleteKeyword}'`, entry.loc);
     }
     if (onDeleteValue && !["cascade", "restrict", "set_null", "no_action"].includes(onDeleteValue)) {
-      pushError(errors, `Projection ${statement.id} db_relations for '${entityId}' has invalid on_delete '${onDeleteValue}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations for '${entityId}' has invalid on_delete '${onDeleteValue}'`, entry.loc);
     }
     const entityFieldNames = new Set(statementFieldNames(entity));
     if (fieldName && entityFieldNames.size > 0 && !entityFieldNames.has(fieldName)) {
-      pushError(errors, `Projection ${statement.id} db_relations references unknown field '${fieldName}' on ${entityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations references unknown field '${fieldName}' on ${entityId}`, entry.loc);
     }
     const [targetEntityId, targetFieldName] = (targetRef || "").split(".");
     const targetEntity = registry.get(targetEntityId);
     if (!targetEntity) {
-      pushError(errors, `Projection ${statement.id} db_relations references missing target entity '${targetEntityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations references missing target entity '${targetEntityId}'`, entry.loc);
       continue;
     }
     if (targetEntity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_relations must reference an entity target, found ${targetEntity.kind} '${targetEntity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations must reference an entity target, found ${targetEntity.kind} '${targetEntity.id}'`, entry.loc);
     }
     const targetFieldNames = new Set(statementFieldNames(targetEntity));
     if (targetFieldName && targetFieldNames.size > 0 && !targetFieldNames.has(targetFieldName)) {
-      pushError(errors, `Projection ${statement.id} db_relations references unknown target field '${targetFieldName}' on ${targetEntityId}`, entry.loc);
+      pushError(errors, `Projection ${statement.id} relations references unknown target field '${targetFieldName}' on ${targetEntityId}`, entry.loc);
     }
   }
 }
@@ -3280,7 +3326,7 @@ function validateProjectionDbLifecycle(errors, statement, fieldMap, registry) {
     return;
   }
 
-  const dbLifecycleField = fieldMap.get("db_lifecycle")?.[0];
+  const dbLifecycleField = fieldMap.get("lifecycle")?.[0];
   if (!dbLifecycleField || dbLifecycleField.value.type !== "block") {
     return;
   }
@@ -3292,19 +3338,19 @@ function validateProjectionDbLifecycle(errors, statement, fieldMap, registry) {
     const entity = registry.get(entityId);
 
     if (!entity) {
-      pushError(errors, `Projection ${statement.id} db_lifecycle references missing entity '${entityId}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} lifecycle references missing entity '${entityId}'`, entry.loc);
       continue;
     }
     if (entity.kind !== "entity") {
-      pushError(errors, `Projection ${statement.id} db_lifecycle must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} lifecycle must target an entity, found ${entity.kind} '${entity.id}'`, entry.loc);
     }
     if (!realized.has(entityId)) {
-      pushError(errors, `Projection ${statement.id} db_lifecycle entity '${entityId}' must also appear in 'realizes'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} lifecycle entity '${entityId}' must also appear in 'realizes'`, entry.loc);
     }
 
-    const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `db_lifecycle for '${entityId}'`);
+    const directives = parseUiDirectiveMap(tokens, 2, errors, statement, entry, `lifecycle for '${entityId}'`);
     if (!["soft_delete", "timestamps"].includes(lifecycleType || "")) {
-      pushError(errors, `Projection ${statement.id} db_lifecycle for '${entityId}' has invalid lifecycle '${lifecycleType}'`, entry.loc);
+      pushError(errors, `Projection ${statement.id} lifecycle for '${entityId}' has invalid lifecycle '${lifecycleType}'`, entry.loc);
       continue;
     }
 
@@ -3312,23 +3358,23 @@ function validateProjectionDbLifecycle(errors, statement, fieldMap, registry) {
     if (lifecycleType === "soft_delete") {
       for (const requiredKey of ["field", "value"]) {
         if (!directives.has(requiredKey)) {
-          pushError(errors, `Projection ${statement.id} db_lifecycle for '${entityId}' must include '${requiredKey}' for soft_delete`, entry.loc);
+          pushError(errors, `Projection ${statement.id} lifecycle for '${entityId}' must include '${requiredKey}' for soft_delete`, entry.loc);
         }
       }
       const fieldName = directives.get("field");
       if (fieldName && entityFieldNames.size > 0 && !entityFieldNames.has(fieldName)) {
-        pushError(errors, `Projection ${statement.id} db_lifecycle references unknown field '${fieldName}' on ${entityId}`, entry.loc);
+        pushError(errors, `Projection ${statement.id} lifecycle references unknown field '${fieldName}' on ${entityId}`, entry.loc);
       }
     }
 
     if (lifecycleType === "timestamps") {
       for (const requiredKey of ["created_at", "updated_at"]) {
         if (!directives.has(requiredKey)) {
-          pushError(errors, `Projection ${statement.id} db_lifecycle for '${entityId}' must include '${requiredKey}' for timestamps`, entry.loc);
+          pushError(errors, `Projection ${statement.id} lifecycle for '${entityId}' must include '${requiredKey}' for timestamps`, entry.loc);
         }
         const fieldName = directives.get(requiredKey);
         if (fieldName && entityFieldNames.size > 0 && !entityFieldNames.has(fieldName)) {
-          pushError(errors, `Projection ${statement.id} db_lifecycle references unknown field '${fieldName}' on ${entityId}`, entry.loc);
+          pushError(errors, `Projection ${statement.id} lifecycle references unknown field '${fieldName}' on ${entityId}`, entry.loc);
         }
       }
     }
@@ -3341,7 +3387,11 @@ export function buildRegistry(workspaceAst, errors) {
   for (const file of workspaceAst.files) {
     for (const statement of file.statements) {
       if (!STATEMENT_KINDS.has(statement.kind)) {
-        pushError(errors, `Unknown statement kind '${statement.kind}'`, statement.loc);
+        if (statement.kind === "component") {
+          pushError(errors, `Statement kind 'component' was renamed to 'widget'`, statement.loc);
+        } else {
+          pushError(errors, `Unknown statement kind '${statement.kind}'`, statement.loc);
+        }
       }
 
       if (!IDENTIFIER_PATTERN.test(statement.id)) {
@@ -3561,7 +3611,7 @@ export function validateWorkspace(workspaceAst) {
       validateProjectionDbRelations(errors, statement, fieldMap, registry);
       validateProjectionDbLifecycle(errors, statement, fieldMap, registry);
       validateProjectionGeneratorDefaults(errors, statement, fieldMap);
-      validateComponent(errors, statement, fieldMap, registry);
+      validateWidget(errors, statement, fieldMap, registry);
       validateDomain(errors, statement, fieldMap, registry);
       validateDomainTag(errors, statement, fieldMap, registry);
       validatePitch(errors, statement, fieldMap, registry);

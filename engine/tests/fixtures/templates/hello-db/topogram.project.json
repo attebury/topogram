@@ -7,15 +7,15 @@
     }
   },
   "topology": {
-    "components": [
+    "runtimes": [
       {
         "id": "app_sqlite",
-        "type": "database",
         "projection": "proj_db_sqlite",
         "generator": {
           "id": "topogram/sqlite",
           "version": "1"
-        }
+        },
+        "kind": "database"
       }
     ]
   }

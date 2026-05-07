@@ -68,7 +68,7 @@ test("route fallback import fixture extracts API routes and React screens", () =
     "task_list"
   ]);
   assert.deepEqual(candidateIds(summary.candidates.ui.components), [
-    "component_ui_task_list_results"
+    "widget_task_list_results"
   ]);
 });
 
@@ -112,7 +112,7 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
 });
 
-test("brownfield UI import writes reviewable component candidates and shared bindings", () => {
+test("brownfield UI import writes reviewable widget candidates and shared bindings", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-components."));
   const targetRoot = path.join(runRoot, "imported");
   const result = runCli([
@@ -132,7 +132,7 @@ test("brownfield UI import writes reviewable component candidates and shared bin
 
   const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
   const componentCandidate = uiCandidates.components[0];
-  assert.equal(componentCandidate.id_hint, "component_ui_task_list_results");
+  assert.equal(componentCandidate.id_hint, "widget_task_list_results");
   assert.equal(componentCandidate.inferred_region, "results");
   assert.equal(componentCandidate.inferred_pattern, "search_results");
   assert.deepEqual(componentCandidate.inferred_props, [
@@ -142,30 +142,30 @@ test("brownfield UI import writes reviewable component candidates and shared bin
   assert.equal(componentCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
   assert.equal((componentCandidate.evidence || []).length > 0, true);
 
-  const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-shared.tg");
-  const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "components", "ui-task-list-results.tg");
+  const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-contract.tg");
+  const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "widgets", "widget-task-list-results.tg");
   assert.equal(fs.existsSync(sharedDraftPath), true);
   assert.equal(fs.existsSync(componentDraftPath), true);
 
   const sharedDraft = fs.readFileSync(sharedDraftPath, "utf8");
-  assert.match(sharedDraft, /platform ui_shared/);
-  assert.match(sharedDraft, /ui_design \{/);
-  assert.match(sharedDraft, /ui_components \{/);
-  assert.match(sharedDraft, /screen task_list region results component component_ui_task_list_results data rows from cap_list_tasks/);
+  assert.match(sharedDraft, /type ui_contract/);
+  assert.match(sharedDraft, /design_tokens \{/);
+  assert.match(sharedDraft, /widget_bindings \{/);
+  assert.match(sharedDraft, /screen task_list region results widget widget_task_list_results data rows from cap_list_tasks/);
   assert.doesNotMatch(sharedDraft, /\[object Object\]/);
 
   const componentDraft = fs.readFileSync(componentDraftPath, "utf8");
   assert.match(componentDraft, /# Import metadata: confidence low; evidence \d+; inferred pattern search_results; inferred region results\./);
-  assert.match(componentDraft, /# Missing decisions: confirm component reuse boundary; confirm prop names and data source; confirm events and behavior; confirm supported regions and patterns\./);
-  assert.match(componentDraft, /component component_ui_task_list_results \{/);
+  assert.match(componentDraft, /# Missing decisions: confirm widget reuse boundary; confirm prop names and data source; confirm events and behavior; confirm supported regions and patterns\./);
+  assert.match(componentDraft, /widget widget_task_list_results \{/);
   assert.match(componentDraft, /patterns \[search_results\]/);
   assert.match(componentDraft, /status proposed/);
 
   const uiReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "report.md"), "utf8");
-  assert.match(uiReport, /## Component Candidates/);
-  assert.match(uiReport, /`component_ui_task_list_results` confidence low pattern `search_results` region `results` evidence \d+ missing decisions 4/);
-  assert.match(uiReport, /topogram component check <path>/);
-  assert.match(uiReport, /topogram component behavior <path>/);
+  assert.match(uiReport, /## Widget Candidates/);
+  assert.match(uiReport, /`widget_task_list_results` confidence low pattern `search_results` region `results` evidence \d+ missing decisions 4/);
+  assert.match(uiReport, /topogram widget check <path>/);
+  assert.match(uiReport, /topogram widget behavior <path>/);
 
   const plan = runCli(["import", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
@@ -173,41 +173,41 @@ test("brownfield UI import writes reviewable component candidates and shared bin
   assert.equal(planPayload.summary.proposalItemCount, 9);
   assert.deepEqual(planPayload.bundles[0].kindCounts, {
     capability: 3,
-    component: 1,
+    widget: 1,
     doc: 1,
     ui: 4
   });
   const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
-  const componentItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "component");
-  assert.deepEqual(componentItems.map((item) => item.item), ["component_ui_task_list_results"]);
-  assert.equal(componentItems[0].source_path, "candidates/reconcile/model/bundles/task/components/component_ui_task_list_results.tg");
-  assert.equal(componentItems[0].canonical_rel_path, "components/component-ui-task-list-results.tg");
+  const componentItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
+  assert.deepEqual(componentItems.map((item) => item.item), ["widget_task_list_results"]);
+  assert.equal(componentItems[0].source_path, "candidates/reconcile/model/bundles/task/widgets/widget_task_list_results.tg");
+  assert.equal(componentItems[0].canonical_rel_path, "widgets/widget-task-list-results.tg");
   const reconcileReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.md"), "utf8");
-  assert.match(reconcileReport, /1 components/);
-  assert.match(reconcileReport, /main components `component_ui_task_list_results`/);
+  assert.match(reconcileReport, /1 widgets/);
+  assert.match(reconcileReport, /main widgets `widget_task_list_results`/);
   const bundleReadme = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
-  assert.match(bundleReadme, /Components: 1/);
-  assert.match(bundleReadme, /Main components: `component_ui_task_list_results`/);
+  assert.match(bundleReadme, /Widgets: 1/);
+  assert.match(bundleReadme, /Main widgets: `widget_task_list_results`/);
 
   const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
   const selectorPayload = JSON.parse(selectorList.stdout);
-  const componentSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "components");
+  const componentSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "widgets");
   assert.equal(componentSelector.itemCount, 1);
-  assert.match(componentSelector.previewCommand, /topogram import adopt components .* --dry-run/);
-  assert.match(componentSelector.writeCommand, /topogram import adopt components .* --write/);
+  assert.match(componentSelector.previewCommand, /topogram import adopt widgets .* --dry-run/);
+  assert.match(componentSelector.writeCommand, /topogram import adopt widgets .* --write/);
 
   const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
   assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
   assert.match(humanSelectorList.stdout, /Broad selectors:/);
-  assert.match(humanSelectorList.stdout, /components: 1 components/);
+  assert.match(humanSelectorList.stdout, /widgets: 1 widgets/);
 
-  const adopt = runCli(["import", "adopt", "components", targetRoot, "--write", "--json"]);
+  const adopt = runCli(["import", "adopt", "widgets", targetRoot, "--write", "--json"]);
   assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
   const adoptPayload = JSON.parse(adopt.stdout);
-  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "component" && item.item === "component_ui_task_list_results"), true);
-  assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "components/component-ui-task-list-results.tg" && item.sha256 && item.size > 0), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "components", "component-ui-task-list-results.tg")), true);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "widget" && item.item === "widget_task_list_results"), true);
+  assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "widgets/widget-task-list-results.tg" && item.sha256 && item.size > 0), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "widgets", "widget-task-list-results.tg")), true);
 
   const check = runCli(["check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);

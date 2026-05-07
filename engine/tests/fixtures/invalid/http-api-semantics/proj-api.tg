@@ -1,35 +1,35 @@
 projection proj_api {
   name "API"
   description "Bad HTTP API semantics"
-  platform dotnet
+  type api_contract
 
   realizes [cap_export_tasks, cap_get_task_export_job, cap_download_task_export]
   outputs [endpoints]
 
-  http {
+  endpoints {
     cap_export_tasks method POST path /tasks/export success 202 auth user request body
     cap_get_task_export_job method GET path /task-exports/:job_id success 200 auth user request path
     cap_download_task_export method GET path /task-exports/:job_id/download success 200 auth user request path
   }
 
-  http_async {
+  async_jobs {
     cap_export_tasks mode job accepted 202 location_header Location retry_after_header Retry-After status_path /task-exports/:job_id job shape_output_task_export_job
   }
 
-  http_status {
+  async_status {
     cap_get_task_export_job async_for cap_export_tasks state_field ghost completed completed failed failed download_capability cap_missing_download
   }
 
-  http_download {
+  downloads {
     cap_download_task_export async_for cap_export_tasks media zip filename export.zip disposition stream
   }
 
-  http_authz {
+  authorization {
     cap_export_tasks ownership team
     cap_get_task_export_job ownership_field owner_id
   }
 
-  http_callbacks {
+  callbacks {
     cap_export_tasks event export_completed target_field missing_callback method GET payload shape_missing success 20x
   }
 

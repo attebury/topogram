@@ -1,18 +1,18 @@
-projection proj_ui_web_invalid {
+projection proj_web_surface_invalid {
   name "Invalid Web UI"
   description "Web projection with invalid route and generator defaults"
 
-  platform ui_web
-  realizes [proj_ui_shared_stub]
+  type web_surface
+  realizes [proj_ui_contract_stub]
   outputs [web_app]
 
-  ui_routes {
+  screen_routes {
     screen stub_home path home
     screen ghost_screen path /same
     screen stub_home path /same
   }
 
-  ui_web {
+  web_hints {
     screen ghost_screen layout cards
     action cap_missing confirm popup
   }

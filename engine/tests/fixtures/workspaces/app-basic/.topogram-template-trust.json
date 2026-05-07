@@ -1,7 +1,7 @@
 {
   "version": "1",
   "trustPolicy": "topogram-template-executable-implementation-v1",
-  "trustedAt": "2026-05-07T04:03:28.927Z",
+  "trustedAt": "2026-05-07T15:33:34.761Z",
   "template": {
     "id": null,
     "version": null,
@@ -19,7 +19,7 @@
   "content": {
     "algorithm": "sha256",
     "root": "implementation",
-    "digest": "e62cd01609652d98f8850b9bd046e9b235cf289a5d4198aa6a5adedcbe849ec2",
+    "digest": "140b2b56f8bad7b8781d11b4a6880cc6c42f749ff874cc1bc76248a2039934e4",
     "files": [
       {
         "path": "backend/reference.js",
@@ -68,8 +68,8 @@
       },
       {
         "path": "web/renderers.js",
-        "sha256": "cc89234c83c241487c243cd7f5065f9a54f7fc6d18e029da9c7bfa669c22f528",
-        "size": 46162
+        "sha256": "18090250815e6da18cd1294bfc47f4b336c0387d3c7532ee9d18174804fe3d4c",
+        "size": 46123
       },
       {
         "path": "web/screens-reference.js",

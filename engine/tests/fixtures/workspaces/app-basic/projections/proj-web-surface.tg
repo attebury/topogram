@@ -1,8 +1,8 @@
-projection proj_ui_web {
+projection proj_web_surface {
   name "Sample Workspace Web UI"
   description "Web realization for the shared sample-workspace UI using a SvelteKit profile"
 
-  platform ui_web
+  type web_surface
   realizes [
     cap_list_collections,
     cap_get_collection,
@@ -12,7 +12,7 @@ projection proj_ui_web {
     cap_get_member,
     cap_create_member,
     cap_update_member,
-    proj_ui_shared,
+    proj_ui_contract,
     cap_list_items,
     cap_get_item,
     cap_create_item,
@@ -25,7 +25,7 @@ projection proj_ui_web {
   ]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen collection_list path /collections
     screen collection_detail path /collections/:id
     screen collection_create path /collections/new
@@ -43,7 +43,7 @@ projection proj_ui_web {
     screen item_exports path /item-exports/:job_id
   }
 
-  ui_web {
+  web_hints {
     screen item_list shell bottom_tabs
     screen collection_list layout responsive_collection
     screen collection_list desktop_variant table

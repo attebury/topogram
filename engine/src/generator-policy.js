@@ -175,18 +175,16 @@ export function generatorPackageAllowed(policy, packageName) {
  * @returns {PackageGeneratorBinding[]}
  */
 export function packageBackedGeneratorBindings(projectConfig) {
-  const components = Array.isArray(projectConfig?.topology?.components)
-    ? projectConfig.topology.components
-    : [];
-  return components
-    .filter((component) => typeof component?.generator?.package === "string" && component.generator.package.length > 0)
-    .map((component) => ({
-      componentId: String(component.id || "unknown"),
-      componentType: String(component.type || "unknown"),
-      projection: String(component.projection || "unknown"),
-      generatorId: String(component.generator.id || "unknown"),
-      version: String(component.generator.version || "unknown"),
-      packageName: String(component.generator.package)
+  const runtimes = Array.isArray(projectConfig?.topology?.runtimes) ? projectConfig.topology.runtimes : [];
+  return runtimes
+    .filter((runtime) => typeof runtime?.generator?.package === "string" && runtime.generator.package.length > 0)
+    .map((runtime) => ({
+      componentId: String(runtime.id || "unknown"),
+      componentType: String(runtime.kind || runtime.type || "unknown"),
+      projection: String(runtime.projection || "unknown"),
+      generatorId: String(runtime.generator.id || "unknown"),
+      version: String(runtime.generator.version || "unknown"),
+      packageName: String(runtime.generator.package)
     }));
 }
 

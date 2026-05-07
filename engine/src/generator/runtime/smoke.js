@@ -26,11 +26,11 @@ function buildRuntimeSmokePlan(graph, options = {}) {
       ui: uiProjection.id
     },
     topology: {
-      components: topology.components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        projection: component.projection.id,
-        generator: component.generator
+      runtimes: topology.runtimes.map((runtime) => ({
+        id: runtime.id,
+        kind: runtime.kind,
+        projection: runtime.projection.id,
+        generator: runtime.generator
       }))
     },
     ...(verification ? { verification } : {}),

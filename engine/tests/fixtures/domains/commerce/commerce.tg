@@ -271,7 +271,7 @@ verification verification_sla_status {
 projection proj_fulfillment_web {
   name "Fulfillment Web"
   description "Web operations projection"
-  platform desktop
+  type web_surface
   realizes [cap_fulfill_order, cap_monitor_shipments]
   outputs [web_app]
   status active
@@ -280,7 +280,7 @@ projection proj_fulfillment_web {
 projection proj_fulfillment_mobile {
   name "Fulfillment Mobile"
   description "Mobile operations projection"
-  platform maui
+  type ios_surface
   realizes [cap_fulfill_order]
   outputs [mobile_app]
   status active
@@ -289,7 +289,7 @@ projection proj_fulfillment_mobile {
 projection proj_support_web {
   name "Support Web"
   description "Web support projection"
-  platform desktop
+  type web_surface
   realizes [cap_record_support_case, cap_check_sla_status]
   outputs [web_app]
   status active
@@ -298,7 +298,7 @@ projection proj_support_web {
 projection proj_inventory_desktop {
   name "Inventory Desktop"
   description "Web inventory projection"
-  platform desktop
+  type web_surface
   realizes [cap_record_inventory_count, cap_manage_skus]
   outputs [web_app]
   status active

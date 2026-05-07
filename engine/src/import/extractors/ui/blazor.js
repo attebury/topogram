@@ -138,7 +138,7 @@ export const blazorUiExtractor = {
         }
         for (const pattern of summary.patterns) {
           candidates.actions.push(makeCandidateRecord({
-            kind: "ui_navigation",
+            kind: "navigation",
             idHint: `blazor_${idHintify(pattern)}`,
             label: pattern,
             confidence: "medium",

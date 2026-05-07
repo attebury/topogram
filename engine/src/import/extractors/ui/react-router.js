@@ -42,9 +42,9 @@ export const reactRouterUiExtractor = {
       const features = detectUiPresentationFeatures(rootDir);
       const shellKind = shellKindFromNavigation(navigation);
       const navigationPatterns = navigationPatternsFromStructure(navigation);
-      findings.push({ kind: "react_ui_routes", file: provenance, routes });
-      findings.push({ kind: "react_ui_navigation", file: provenance, navigation });
-      findings.push({ kind: "react_ui_features", file: provenance, features });
+      findings.push({ kind: "react_screen_routes", file: provenance, routes });
+      findings.push({ kind: "react_navigation", file: provenance, navigation });
+      findings.push({ kind: "react_surface_features", file: provenance, features });
       candidates.stacks.push("react_web");
       if (shellKind) {
         candidates.actions.push(makeCandidateRecord({
@@ -62,7 +62,7 @@ export const reactRouterUiExtractor = {
       }
       for (const pattern of navigationPatterns) {
         candidates.actions.push(makeCandidateRecord({
-          kind: "ui_navigation",
+          kind: "navigation",
           idHint: `${path.basename(rootDir)}_${idHintify(pattern)}`,
           label: pattern,
           confidence: "medium",

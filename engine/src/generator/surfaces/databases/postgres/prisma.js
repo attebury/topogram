@@ -40,8 +40,9 @@ function prismaDefaultForColumn(column, byId) {
 export function generatePostgresPrismaSchema(graph, options = {}) {
   resolvePostgresCapabilities(options.profileId);
   const projection = getProjection(graph, options.projectionId);
-  if (projection.platform !== "db_postgres") {
-    throw new Error(`Prisma schema generation currently supports db_postgres projections only, found '${projection.platform}'`);
+  const projectionType = projection.type || projection.platform;
+  if (projectionType !== "db_contract") {
+    throw new Error(`Prisma schema generation currently supports db_contract projections only, found '${projectionType}'`);
   }
 
   const byId = indexGraphStatements(graph);

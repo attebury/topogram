@@ -42,6 +42,7 @@ export function indexGraphStatements(graph) {
 export function dbProjectionCandidates(graph) {
   return (graph.byKind.projection || []).filter(
     (projection) =>
+      (projection.type || projection.platform) === "db_contract" ||
       projection.platform?.startsWith("db_") ||
       (projection.dbTables || []).length > 0 ||
       (projection.dbColumns || []).length > 0 ||
@@ -66,7 +67,7 @@ export function generatorDefaultsMap(projection) {
 
 export function dbProfileForProjection(projection) {
   const defaults = generatorDefaultsMap(projection);
-  return defaults.profile || (projection.platform === "db_sqlite" ? "sqlite_sql" : "postgres_sql");
+  return defaults.profile || "postgres_sql";
 }
 
 function mergeDbKeys(entity, projection) {
@@ -277,7 +278,7 @@ export function buildDbProjectionContract(graph, projection) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      platform: projection.platform
+      type: projection.type || projection.platform
     },
     profile: dbProfileForProjection(projection),
     generatorDefaults: generatorDefaultsMap(projection),

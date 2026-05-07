@@ -1,7 +1,7 @@
 projection proj_api {
   name "API"
   description "HTTP API realization for the sample-workspace fixture"
-  platform dotnet
+  type api_contract
 
   realizes [cap_create_item, cap_get_item, cap_update_item, cap_complete_item, cap_list_items, cap_delete_item, cap_export_items, cap_get_item_export_job, cap_download_item_export, cap_list_collections, cap_get_collection, cap_create_collection, cap_update_collection, cap_list_members, cap_get_member, cap_create_member, cap_update_member]
 
@@ -14,7 +14,7 @@ projection proj_api {
     endpoints
   ]
 
-  http {
+  endpoints {
     cap_create_item method POST path /items success 201 auth user request body
     cap_get_item method GET path /items/:id success 200 auth user request path
     cap_update_item method PATCH path /items/:id success 200 auth user request body
@@ -34,7 +34,7 @@ projection proj_api {
     cap_download_item_export method GET path /item-exports/:job_id/download success 200 auth user request path
   }
 
-  http_errors {
+  error_responses {
     cap_create_item rule_no_item_creation_in_archived_collection 409
     cap_create_item rule_only_active_members_may_own_items 400
     cap_create_item cap_create_item_invalid_request 400
@@ -49,7 +49,7 @@ projection proj_api {
     cap_download_item_export cap_download_item_export_not_ready 409
   }
 
-  http_fields {
+  wire_fields {
     cap_create_item input title in body
     cap_create_item input description in body
     cap_create_item input priority in body
@@ -112,44 +112,44 @@ projection proj_api {
     cap_export_items input callback_url in body
   }
 
-  http_responses {
+  responses {
     cap_list_items mode cursor item shape_output_item_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
     cap_list_collections mode cursor item shape_output_collection_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
     cap_list_members mode cursor item shape_output_member_detail cursor request_after after response_next next_cursor limit field limit default 25 max 100 sort by created_at direction desc total included false
   }
 
-  http_preconditions {
+  preconditions {
     cap_update_item header If-Match required true error 412 source updated_at code cap_update_item_precondition_failed
     cap_complete_item header If-Match required true error 412 source updated_at code cap_complete_item_precondition_failed
     cap_delete_item header If-Match required true error 412 source updated_at code cap_delete_item_precondition_failed
   }
 
-  http_idempotency {
+  idempotency {
     cap_create_item header Idempotency-Key required true error 409 code cap_create_item_idempotency_conflict
     cap_complete_item header Idempotency-Key required true error 409 code cap_complete_item_idempotency_conflict
   }
 
-  http_cache {
+  cache {
     cap_get_item response_header ETag request_header If-None-Match required false not_modified 304 source updated_at code cap_get_item_not_modified
   }
 
-  http_delete {
+  delete_semantics {
     cap_delete_item mode soft field status value archived response body
   }
 
-  http_async {
+  async_jobs {
     cap_export_items mode job accepted 202 location_header Location retry_after_header Retry-After status_path /item-exports/:job_id status_capability cap_get_item_export_job job shape_output_item_export_job
   }
 
-  http_status {
+  async_status {
     cap_get_item_export_job async_for cap_export_items state_field status completed completed failed failed expired expired download_capability cap_download_item_export download_field download_url error_field error_message
   }
 
-  http_download {
+  downloads {
     cap_download_item_export async_for cap_export_items media application/zip filename item-export.zip disposition attachment
   }
 
-  http_authz {
+  authorization {
     cap_create_item permission items.create
     cap_get_item ownership owner_or_admin ownership_field owner_id
     cap_update_item ownership owner_or_admin ownership_field owner_id permission items.update
@@ -169,7 +169,7 @@ projection proj_api {
     cap_download_item_export permission items.export.download ownership owner_or_admin ownership_field owner_id
   }
 
-  http_callbacks {
+  callbacks {
     cap_export_items event export_completed target_field callback_url method POST payload shape_output_item_export_callback success 202
   }
 

@@ -3,12 +3,12 @@
 import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../../ui/taxonomy.js";
 
 /**
- * @typedef {{ id?: string, name?: string }} ComponentReference
- * @typedef {{ component?: ComponentReference, region?: string, pattern?: string }} ComponentUsage
- * @typedef {{ patterns?: string[] }} ComponentContract
- * @typedef {Record<string, ComponentContract>} ComponentContractMap
- * @typedef {{ itemsExpression?: string, componentContracts?: ComponentContractMap, useTypescript?: boolean }} RenderOptions
- * @typedef {{ components?: ComponentUsage[] }} ScreenContract
+ * @typedef {{ id?: string, name?: string }} WidgetReference
+ * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string }} WidgetUsage
+ * @typedef {{ patterns?: string[] }} WidgetContract
+ * @typedef {Record<string, WidgetContract>} WidgetContractMap
+ * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean }} RenderOptions
+ * @typedef {{ widgets?: WidgetUsage[] }} ScreenContract
  */
 
 /**
@@ -33,44 +33,44 @@ function escapeText(value) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @returns {string}
  */
-function componentName(usage) {
-  return usage?.component?.name || usage?.component?.id || "Component";
+function widgetName(usage) {
+  return usage?.widget?.name || usage?.widget?.id || "Widget";
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @returns {string}
  */
-function componentId(usage) {
-  return usage?.component?.id || "component";
+function widgetId(usage) {
+  return usage?.widget?.id || "widget";
 }
 
 /**
- * @param {ComponentUsage} usage
- * @param {ComponentContractMap | undefined} componentContracts
+ * @param {WidgetUsage} usage
+ * @param {WidgetContractMap | undefined} widgetContracts
  * @returns {string[]}
  */
-function componentPatterns(usage, componentContracts) {
-  const id = usage?.component?.id;
-  const contract = id ? componentContracts?.[id] : null;
+function widgetPatterns(usage, widgetContracts) {
+  const id = usage?.widget?.id;
+  const contract = id ? widgetContracts?.[id] : null;
   return Array.isArray(contract?.patterns) ? contract.patterns : [];
 }
 
 /**
- * @param {ComponentUsage} usage
- * @param {ComponentContractMap | undefined} componentContracts
+ * @param {WidgetUsage} usage
+ * @param {WidgetContractMap | undefined} widgetContracts
  * @param {string} pattern
  * @returns {boolean}
  */
-function usagePattern(usage, componentContracts) {
-  return usage?.pattern || componentPatterns(usage, componentContracts)[0] || null;
+function usagePattern(usage, widgetContracts) {
+  return usage?.pattern || widgetPatterns(usage, widgetContracts)[0] || null;
 }
 
-export function reactComponentUsageSupport(usage, componentContracts) {
-  const pattern = usagePattern(usage, componentContracts);
+export function reactWidgetUsageSupport(usage, widgetContracts) {
+  const pattern = usagePattern(usage, widgetContracts);
   return {
     pattern,
     supported: UI_GENERATOR_RENDERED_COMPONENT_PATTERNS.has(pattern || "")
@@ -78,16 +78,16 @@ export function reactComponentUsageSupport(usage, componentContracts) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "items";
-  return `<section className="component-card component-summary" data-topogram-component="${escapeAttribute(componentId(usage))}">
+  return `<section className="widget-card widget-summary" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
           <div>
-            <p className="component-eyebrow">Component</p>
-            <h2>${escapeText(componentName(usage))}</h2>
+            <p className="widget-eyebrow">Widget</p>
+            <h2>${escapeText(widgetName(usage))}</h2>
           </div>
           <div className="summary-grid">
             <div>
@@ -107,22 +107,22 @@ function renderSummaryStats(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderCollectionTable(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="component-card component-table" data-topogram-component="${escapeAttribute(componentId(usage))}">
-          <div className="component-header">
+  return `<div className="widget-card widget-table" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+          <div className="widget-header">
             <div>
-              <p className="component-eyebrow">Component</p>
-              <h2>${escapeText(componentName(usage))}</h2>
+              <p className="widget-eyebrow">Widget</p>
+              <h2>${escapeText(widgetName(usage))}</h2>
             </div>
             <span className="badge">{${items}.length} items</span>
           </div>
-          <div className="table-wrap component-table-wrap">
+          <div className="table-wrap widget-table-wrap">
             <table className="resource-table data-grid">
               <thead>
                 <tr>
@@ -146,18 +146,18 @@ function renderCollectionTable(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="component-card component-board" data-topogram-component="${escapeAttribute(componentId(usage))}">
-          <div className="component-header">
+  return `<div className="widget-card widget-board" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+          <div className="widget-header">
             <div>
-              <p className="component-eyebrow">Component</p>
-              <h2>${escapeText(componentName(usage))}</h2>
+              <p className="widget-eyebrow">Widget</p>
+              <h2>${escapeText(widgetName(usage))}</h2>
             </div>
           </div>
           <div className="board-grid">
@@ -176,18 +176,18 @@ function renderBoard(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="component-card component-calendar" data-topogram-component="${escapeAttribute(componentId(usage))}">
-          <div className="component-header">
+  return `<div className="widget-card widget-calendar" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+          <div className="widget-header">
             <div>
-              <p className="component-eyebrow">Component</p>
-              <h2>${escapeText(componentName(usage))}</h2>
+              <p className="widget-eyebrow">Widget</p>
+              <h2>${escapeText(widgetName(usage))}</h2>
             </div>
           </div>
           <div className="calendar-list">
@@ -202,13 +202,13 @@ function renderCalendar(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderUsage(usage, options) {
-  const componentContracts = options.componentContracts || {};
-  const { pattern } = reactComponentUsageSupport(usage, componentContracts);
+  const widgetContracts = options.widgetContracts || {};
+  const { pattern } = reactWidgetUsageSupport(usage, widgetContracts);
   if (pattern === "summary_stats") {
     return renderSummaryStats(usage, options);
   }
@@ -227,10 +227,10 @@ function renderUsage(usage, options) {
 /**
  * @param {ScreenContract} screen
  * @param {string} region
- * @returns {ComponentUsage[]}
+ * @returns {WidgetUsage[]}
  */
-export function reactComponentUsagesForRegion(screen, region) {
-  return (screen?.components || []).filter((usage) => usage?.region === region);
+export function reactWidgetUsagesForRegion(screen, region) {
+  return (screen?.widgets || []).filter((usage) => usage?.region === region);
 }
 
 /**
@@ -238,8 +238,8 @@ export function reactComponentUsagesForRegion(screen, region) {
  * @param {string} region
  * @returns {boolean}
  */
-export function hasReactComponentRegion(screen, region) {
-  return reactComponentUsagesForRegion(screen, region).length > 0;
+export function hasReactWidgetRegion(screen, region) {
+  return reactWidgetUsagesForRegion(screen, region).length > 0;
 }
 
 /**
@@ -248,8 +248,8 @@ export function hasReactComponentRegion(screen, region) {
  * @param {RenderOptions} [options]
  * @returns {string}
  */
-export function renderReactComponentRegion(screen, region, options = {}) {
-  const rendered = reactComponentUsagesForRegion(screen, region)
+export function renderReactWidgetRegion(screen, region, options = {}) {
+  const rendered = reactWidgetUsagesForRegion(screen, region)
     .map((usage) => renderUsage(usage, options))
     .filter(Boolean);
   if (rendered.length === 0) {

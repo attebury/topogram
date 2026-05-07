@@ -213,7 +213,7 @@ export function makeCandidateRecord({
       ? "db"
       : kind === "capability"
         ? "api"
-        : kind === "component"
+        : kind === "widget"
           ? "ui"
           : null);
   return {

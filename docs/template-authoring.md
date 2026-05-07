@@ -22,7 +22,7 @@ package.json           # required for npm packages
   "topogramVersion": "0.1",
   "includesExecutableImplementation": true,
   "starterScripts": {
-    "component:behavior:query": "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+    "widget:behavior:query": "topogram query widget-behavior ./topogram --projection proj_web_surface --json"
   }
 }
 ```
@@ -122,24 +122,24 @@ Catalog aliases resolve to package specs such as
 template package remains the source of versioned starter content. See
 [Catalog](./catalog.md).
 
-## Component Contracts
+## Widget Contracts
 
-Templates may include reusable `component` statements under `topogram/components/`.
+Templates may include reusable `widget` statements under `topogram/widgets/`.
 These contracts are platform-neutral and can be generated independently:
 
 ```bash
-topogram generate ./topogram --generate ui-component-contract
-topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid
+topogram generate ./topogram --generate ui-widget-contract
+topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid
 ```
 
-See [Components](./components.md) for the full grammar and pack roadmap.
+See [Widgets](./widgets.md) for the full grammar and pack roadmap.
 
 Templates compose Topogram source, topology, generator IDs, and optional trusted
 implementation code. Reusable stack realization belongs in generator packs, not
 inside starter templates. See [Generator Packs](./generator-packs.md) for the
 manifest and adapter contract.
 
-If a template binds topology components to package-backed generators, list those
+If a template binds topology runtimes to package-backed generators, list those
 generator packages in the template package `dependencies` or `devDependencies`.
 `topogram new` copies dependencies whose package names include
 `topogram-generator` into the generated starter `devDependencies`, so
@@ -156,27 +156,27 @@ shows visible dependency, lockfile, and installed npm package versions; policy
 pins still record generator manifest versions and approve exact packages rather
 than whole third-party scopes.
 
-SvelteKit and React template implementations can render supported component
+SvelteKit and React template implementations can render supported widget
 usage with stable packaged helpers:
 
 ```js
-import { renderSvelteKitComponentRegion } from "@topogram/cli/template-helpers/sveltekit.js";
-import { renderReactComponentRegion } from "@topogram/cli/template-helpers/react.js";
+import { renderSvelteKitWidgetRegion } from "@topogram/cli/template-helpers/sveltekit.js";
+import { renderReactWidgetRegion } from "@topogram/cli/template-helpers/react.js";
 ```
 
-Pass the screen contract, region, top-level component contracts, and the data
+Pass the screen contract, region, top-level widget contracts, and the data
 expression for that screen. Set `useTypescript: true` when generating typed
 Svelte or React pages so callback parameters are emitted with explicit types.
 Every web generator should be contract-complete by default: the Topogram
 contract defines the route surface, and template implementation code may replace
 generated files but must not define which screens exist. The SvelteKit generator
 emits generic pages for routed screens first, then lets your implementation
-override specific route files. Generator-owned pages use `ui_components` regions
+override specific route files. Generator-owned pages use `widget_bindings` regions
 before falling back to generic sample list markup.
 SvelteKit and React also write `src/lib/topogram/generation-coverage.json`,
-which lists the screen routes and component usages that were rendered by the
+which lists the screen routes and widget usages that were rendered by the
 implementation or by generic generation.
-Vanilla web templates should still treat `ui_components` as contract metadata
+Vanilla web templates should still treat `widget_bindings` as contract metadata
 until a concrete helper exists.
 
 Public `@topogram/*` packages install from npmjs without extra `.npmrc`

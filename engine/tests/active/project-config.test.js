@@ -14,7 +14,7 @@ import {
   validateGeneratorRegistry
 } from "../../src/generator/registry.js";
 import {
-  generateWithComponentGenerator,
+  generateWithRuntimeGenerator,
   getBundledGeneratorAdapter
 } from "../../src/generator/adapters.js";
 import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
@@ -52,8 +52,9 @@ function writePackageBackedGenerator(root, manifestOverrides = {}) {
     id: "@scope/smoke-web",
     version: "1",
     surface: "web",
-    projectionPlatforms: ["ui_web"],
-    inputs: ["ui-web-contract"],
+    projectionTypes: ["web_surface"],
+    runtimeKinds: ["web_surface"],
+    inputs: ["ui-surface-contract"],
     outputs: ["web-app"],
     stack: {
       runtime: "browser",
@@ -124,12 +125,12 @@ test("generator manifest validation rejects malformed manifests", () => {
     id: "topogram/bad",
     version: "",
     surface: "web",
-    projectionPlatforms: [],
-    inputs: "ui-web-contract",
+    projectionTypes: [],
+    inputs: "ui-surface-contract",
     outputs: [],
     stack: null,
     capabilities: [],
-    componentSupport: {
+    widgetSupport: {
       patterns: "resource_table",
       behaviors: [1],
       unsupported: "ignore"
@@ -139,13 +140,13 @@ test("generator manifest validation rejects malformed manifests", () => {
 
   assert.equal(result.ok, false);
   assert.match(result.errors.join("\n"), /version/);
-  assert.match(result.errors.join("\n"), /projectionPlatforms/);
+  assert.match(result.errors.join("\n"), /projectionTypes/);
   assert.match(result.errors.join("\n"), /inputs/);
   assert.match(result.errors.join("\n"), /stack/);
   assert.match(result.errors.join("\n"), /capabilities/);
-  assert.match(result.errors.join("\n"), /componentSupport\.patterns/);
-  assert.match(result.errors.join("\n"), /componentSupport\.behaviors/);
-  assert.match(result.errors.join("\n"), /componentSupport\.unsupported/);
+  assert.match(result.errors.join("\n"), /widgetSupport\.patterns/);
+  assert.match(result.errors.join("\n"), /widgetSupport\.behaviors/);
+  assert.match(result.errors.join("\n"), /widgetSupport\.unsupported/);
   assert.match(result.errors.join("\n"), /package source/);
 });
 
@@ -208,7 +209,7 @@ test("topogram generator list and show describe bundled and installed package ge
   const bundledPayload = JSON.parse(bundledShow.stdout);
   assert.equal(bundledPayload.ok, true);
   assert.equal(bundledPayload.generator.id, "topogram/react");
-  assert.equal(bundledPayload.exampleTopologyBinding.type, "web");
+  assert.equal(bundledPayload.exampleTopologyBinding.kind, "web_surface");
   assert.equal(bundledPayload.exampleTopologyBinding.generator.id, "topogram/react");
 
   const packageShow = runCli(["generator", "show", packageName, "--json"], { cwd: root });
@@ -318,7 +319,7 @@ test("topogram check reports a valid project config in human and JSON modes", ()
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Topogram check passed/);
   assert.match(human.stdout, /Project topology:/);
-  assert.match(human.stdout, /app_api: api proj_api via topogram\/hono@1 \(port 3000\) -> database app_postgres/);
+  assert.match(human.stdout, /app_api: api_service proj_api via topogram\/hono@1 \(port 3000\) -> uses_database app_postgres/);
   assert.match(human.stdout, /app_sveltekit calls_api app_api/);
 
   const json = runCli(["check", fixtureRoot, "--json"]);
@@ -326,7 +327,7 @@ test("topogram check reports a valid project config in human and JSON modes", ()
   const payload = JSON.parse(json.stdout);
   assert.equal(payload.ok, true);
   assert.equal(payload.project.valid, true);
-  assert.equal(payload.project.topology.components.length, 3);
+  assert.equal(payload.project.topology.runtimes.length, 3);
   assert.deepEqual(payload.project.resolvedTopology.outputs, [
     {
       name: "app",
@@ -334,37 +335,37 @@ test("topogram check reports a valid project config in human and JSON modes", ()
       ownership: "generated"
     }
   ]);
-  assert.deepEqual(payload.project.resolvedTopology.components.map((component) => ({
-    id: component.id,
-    type: component.type,
-    projection: component.projection,
-    generator: component.generator,
-    port: component.port,
-    references: component.references
+  assert.deepEqual(payload.project.resolvedTopology.runtimes.map((runtime) => ({
+    id: runtime.id,
+    kind: runtime.kind,
+    projection: runtime.projection,
+    generator: runtime.generator,
+    port: runtime.port,
+    references: runtime.references
   })), [
     {
       id: "app_api",
-      type: "api",
+      kind: "api_service",
       projection: "proj_api",
       generator: { id: "topogram/hono", version: "1" },
       port: 3000,
-      references: { api: null, database: "app_postgres" }
+      references: { uses_api: null, uses_database: "app_postgres" }
     },
     {
       id: "app_postgres",
-      type: "database",
+      kind: "database",
       projection: "proj_db_postgres",
       generator: { id: "topogram/postgres", version: "1" },
       port: 5432,
-      references: { api: null, database: null }
+      references: { uses_api: null, uses_database: null }
     },
     {
       id: "app_sveltekit",
-      type: "web",
-      projection: "proj_ui_web",
+      kind: "web_surface",
+      projection: "proj_web_surface",
       generator: { id: "topogram/sveltekit", version: "1" },
       port: 5173,
-      references: { api: "app_api", database: null }
+      references: { uses_api: "app_api", uses_database: null }
     }
   ]);
   assert.deepEqual(payload.project.resolvedTopology.edges, [
@@ -406,23 +407,23 @@ test("topogram check supports legacy implementation compatibility fallback", () 
 test("project config validation catches unknown generators, duplicate ports, and missing refs", () => {
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
-  config.topology.components[0].generator.id = "topogram/missing";
-  config.topology.components[1].port = config.topology.components[0].port;
-  config.topology.components[1].api = "missing_api";
+  config.topology.runtimes[0].generator.id = "topogram/missing";
+  config.topology.runtimes[1].port = config.topology.runtimes[0].port;
+  config.topology.runtimes[1].uses_api = "missing_api";
 
   const result = validateProjectConfig(config, graph);
 
   assert.equal(result.ok, false);
   assert.match(result.errors.map((error) => error.message).join("\n"), /unknown generator/);
   assert.match(result.errors.map((error) => error.message).join("\n"), /Port 3000/);
-  assert.match(result.errors.map((error) => error.message).join("\n"), /missing api component/);
+  assert.match(result.errors.map((error) => error.message).join("\n"), /missing api runtime/);
 });
 
 test("project config validation allows optional api database and web api references", () => {
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
-  delete config.topology.components[0].database;
-  delete config.topology.components[1].api;
+  delete config.topology.runtimes[0].uses_database;
+  delete config.topology.runtimes[1].uses_api;
 
   const result = validateProjectConfig(config, graph);
 
@@ -432,11 +433,11 @@ test("project config validation allows optional api database and web api referen
 test("project config validation catches incompatible and planned generators", () => {
   const graph = appBasicGraph();
   const incompatible = appBasicProjectConfig();
-  incompatible.topology.components[0].generator.id = "topogram/sveltekit";
+  incompatible.topology.runtimes[0].generator.id = "topogram/sveltekit";
   const planned = appBasicProjectConfig();
-  planned.topology.components[1].generator.id = "topogram/android-compose";
+  planned.topology.runtimes[1].generator.id = "topogram/android-compose";
   const unsupported = appBasicProjectConfig();
-  unsupported.topology.components[0].generator.version = "999";
+  unsupported.topology.runtimes[0].generator.version = "999";
 
   const incompatibleResult = validateProjectConfig(incompatible, graph);
   const plannedResult = validateProjectConfig(planned, graph);
@@ -456,8 +457,8 @@ test("project config validation resolves installed package-backed generator mani
   writeGeneratorPolicy(root, { allowedPackageScopes: ["@scope"] });
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
-  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
-  webComponent.generator = {
+  const webRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  webRuntime.generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -473,8 +474,8 @@ test("project config validation enforces package-backed generator policy", () =>
   const { packageName } = writePackageBackedGenerator(root);
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
-  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
-  webComponent.generator = {
+  const webRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  webRuntime.generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -509,11 +510,11 @@ exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagn
   );
   const context = {
     graph: {},
-    projection: { id: "proj_ui_web", platform: "ui_web" },
-    component: {
+    projection: { id: "proj_web_surface", type: "web_surface" },
+    runtime: {
       id: "app_web",
-      type: "web",
-      projection: "proj_ui_web",
+      kind: "web_surface",
+      projection: "proj_web_surface",
       generator: {
         id: "@scope/smoke-web",
         version: "1",
@@ -524,7 +525,7 @@ exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagn
     implementation: null,
     contracts: {
       uiWeb: {
-        projection: { id: "proj_ui_web", platform: "ui_web" },
+        projection: { id: "proj_web_surface", type: "web_surface" },
         screens: []
       }
     },
@@ -532,13 +533,13 @@ exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagn
   };
 
   assert.throws(
-    () => generateWithComponentGenerator(context),
+    () => generateWithRuntimeGenerator(context),
     /not allowed by topogram\.generator-policy\.json/
   );
   assert.equal(fs.existsSync(markerPath), false, "denied package adapter must not be imported");
 
   writeGeneratorPolicy(root, { allowedPackages: [packageName] });
-  const result = generateWithComponentGenerator(context);
+  const result = generateWithRuntimeGenerator(context);
   assert.equal(result.files["index.html"], "<h1>loaded</h1>\n");
   assert.equal(fs.existsSync(markerPath), true, "allowed package adapter should import and run");
 });
@@ -548,15 +549,15 @@ test("project config validation rejects missing and mismatched package-backed ge
   const { packageName } = writePackageBackedGenerator(root, { id: "@scope/other-web" });
   const graph = appBasicGraph();
   const missing = appBasicProjectConfig();
-  const missingWeb = missing.topology.components.find((component) => component.id === "app_sveltekit");
-  missingWeb.generator = {
+  const missingRuntime = missing.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  missingRuntime.generator = {
     id: "@scope/missing-web",
     version: "1",
     package: "@scope/topogram-generator-missing"
   };
   const mismatched = appBasicProjectConfig();
-  const mismatchedWeb = mismatched.topology.components.find((component) => component.id === "app_sveltekit");
-  mismatchedWeb.generator = {
+  const mismatchedRuntime = mismatched.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  mismatchedRuntime.generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -578,8 +579,8 @@ test("topogram check reports install command for missing package-backed generato
   fs.cpSync(fixtureRoot, projectRoot, { recursive: true });
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const config = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
-  webComponent.generator = {
+  const webRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  webRuntime.generator = {
     id: "@scope/missing-web",
     version: "1",
     package: "@scope/topogram-generator-missing"
@@ -589,7 +590,7 @@ test("topogram check reports install command for missing package-backed generato
 
   const human = runCli(["check", "."], { cwd: projectRoot });
   assert.notEqual(human.status, 0);
-  assert.match(human.stderr, /Component 'app_sveltekit'/);
+  assert.match(human.stderr, /Runtime 'app_sveltekit'/);
   assert.match(human.stderr, /npm install -D @scope\/topogram-generator-missing/);
 
   const json = runCli(["check", ".", "--json"], { cwd: projectRoot });
@@ -630,8 +631,8 @@ test("topogram generator policy commands explain defaults, blocked packages, and
   });
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const config = readJson(projectConfigPath);
-  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
-  webComponent.generator = {
+  const webRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  webRuntime.generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -704,7 +705,7 @@ test("topogram generator policy commands explain defaults, blocked packages, and
   assert.equal(finalCheck.status, 0, finalCheck.stderr || finalCheck.stdout);
 
   const siblingConfig = readJson(projectConfigPath);
-  siblingConfig.topology.components.find((component) => component.id === "app_sveltekit").generator = {
+  siblingConfig.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit").generator = {
     id: "@scope/other-web",
     version: "1",
     package: "@scope/topogram-generator-other-web"
@@ -737,7 +738,7 @@ test("topogram generator policy status reports non-npm lockfiles without pretend
   writeGeneratorPolicy(projectRoot, { allowedPackageScopes: ["@scope"] });
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const config = readJson(projectConfigPath);
-  config.topology.components.find((component) => component.id === "app_sveltekit").generator = {
+  config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit").generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -767,8 +768,8 @@ test("missing generator policy defaults allow installed @topogram package genera
   });
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const config = readJson(projectConfigPath);
-  const webComponent = config.topology.components.find((component) => component.id === "app_sveltekit");
-  webComponent.generator = {
+  const webRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_sveltekit");
+  webRuntime.generator = {
     id: "@topogram/generator-smoke-web",
     version: "1",
     package: packageName
@@ -829,21 +830,21 @@ test("topogram check flags generated outputs without generated ownership sentine
   assert.match(result.stderr, /missing \.topogram-generated\.json/);
 });
 
-test("environment plans support multiple api services and database lifecycle components", () => {
+test("environment plans support multiple api services and database lifecycle runtimes", () => {
   const graph = appBasicGraph();
   const config = appBasicProjectConfig();
-  config.topology.components.push(
+  config.topology.runtimes.push(
     {
       id: "internal_api",
-      type: "api",
+      kind: "api_service",
       projection: "proj_api",
       generator: { id: "topogram/express", version: "1" },
       port: 3001,
-      database: "audit_db"
+      uses_database: "audit_db"
     },
     {
       id: "audit_db",
-      type: "database",
+      kind: "database",
       projection: "proj_db_sqlite",
       generator: { id: "topogram/sqlite", version: "1" },
       port: null
@@ -855,8 +856,8 @@ test("environment plans support multiple api services and database lifecycle com
     projectConfig: config
   });
 
-  assert.deepEqual(plan.components.apis.map((entry) => entry.id), ["app_api", "internal_api"]);
-  assert.deepEqual(plan.components.databases.map((entry) => entry.id), ["app_postgres", "audit_db"]);
-  assert.equal(plan.components.apis[1].port, 3001);
-  assert.equal(plan.components.databases[1].dir, "db/audit_db");
+  assert.deepEqual(plan.runtimes.apis.map((entry) => entry.id), ["app_api", "internal_api"]);
+  assert.deepEqual(plan.runtimes.databases.map((entry) => entry.id), ["app_postgres", "audit_db"]);
+  assert.equal(plan.runtimes.apis[1].port, 3001);
+  assert.equal(plan.runtimes.databases[1].dir, "db/audit_db");
 });

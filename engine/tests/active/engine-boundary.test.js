@@ -68,6 +68,35 @@ const generatedWorkflowDirectProductReferences = [
   ["topogram", "demo", productNameLower].join("-"),
   ["@topogram", ["template", productNameLower].join("-")].join("/")
 ];
+const staleDslVocabulary = [
+  "component-behavior",
+  "component_conformance",
+  "component_behavior",
+  "component_ui_",
+  "proj_ui_web",
+  "proj_ui_shared",
+  "topogram/components",
+  "data-topogram-component",
+  "component_usages",
+  "rendered_component_usages",
+  "ui-web-contract",
+  "topology.components",
+  "topology.widgets",
+  "ui_shared",
+  "ui_web",
+  "ui_components",
+  "ui_routes",
+  "ui_design",
+  "projectionPlatforms",
+  "componentSupport"
+];
+const staleDslVocabularyAllowedFiles = new Set([
+  "docs/components.md",
+  "engine/src/cli.js",
+  "engine/src/generator/registry.js",
+  "engine/src/project-config.js",
+  "engine/src/validator/index.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -144,6 +173,23 @@ test("generated workflow keeps direct product literals near named constants", ()
   assert.notEqual(boundaryIndex, -1);
   const tail = contents.slice(boundaryIndex);
   const offenders = generatedWorkflowDirectProductReferences.filter((reference) => tail.includes(reference));
+
+  assert.deepEqual(offenders, []);
+});
+
+test("old public DSL vocabulary only appears in migration guidance", () => {
+  const offenders = [];
+  for (const root of [path.join(repoRoot, "docs"), path.join(repoRoot, "engine", "src"), path.join(repoRoot, "scripts")]) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      if (staleDslVocabularyAllowedFiles.has(relative)) continue;
+      const contents = fs.readFileSync(file, "utf8");
+      const references = staleDslVocabulary.filter((reference) => contents.includes(reference));
+      if (references.length > 0) {
+        offenders.push({ file: relative, references });
+      }
+    }
+  }
 
   assert.deepEqual(offenders, []);
 });

@@ -78,15 +78,15 @@
         </div>
       {:else}
         <p class="muted">Showing {data.result.items.length} item{data.result.items.length === 1 ? "" : "s"}.</p>
-        <div class="component-card component-table" data-topogram-component="component_ui_data_grid">
-          <div class="component-header">
+        <div class="widget-card widget-table" data-topogram-widget="widget_data_grid">
+          <div class="widget-header">
             <div>
-              <p class="component-eyebrow">Component</p>
+              <p class="widget-eyebrow">Widget</p>
               <h2>Data Grid</h2>
             </div>
             <span class="badge">{data.result.items.length} items</span>
           </div>
-          <div class="table-wrap component-table-wrap">
+          <div class="table-wrap widget-table-wrap">
             <table class="resource-table data-grid">
               <thead>
                 <tr>

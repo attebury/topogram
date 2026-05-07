@@ -9,9 +9,9 @@ import { generateReactApp } from "./react.js";
 import { generateSvelteKitApp } from "./sveltekit.js";
 import { generateVanillaWebApp } from "./vanilla.js";
 import {
-  generateUiWebContract,
-  generateUiWebDebug
-} from "./ui-web-contract.js";
+  generateUiSurfaceContract,
+  generateUiSurfaceDebug
+} from "./ui-surface-contract.js";
 
 export function generateWebApp(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
@@ -39,11 +39,11 @@ export function generateWebTarget(target, graph, options = {}) {
   if (target === "ui-contract-debug") {
     return generateUiContractDebug(graph, options);
   }
-  if (target === "ui-web-contract") {
-    return generateUiWebContract(graph, options);
+  if (target === "ui-surface-contract") {
+    return generateUiSurfaceContract(graph, options);
   }
-  if (target === "ui-web-debug") {
-    return generateUiWebDebug(graph, options);
+  if (target === "ui-surface-debug") {
+    return generateUiSurfaceDebug(graph, options);
   }
   if (target === "sveltekit-app") {
     return generateWebApp(graph, options);

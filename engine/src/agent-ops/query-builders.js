@@ -138,24 +138,29 @@ function stableOrderedUnion(values = []) {
   return result;
 }
 
+function targetWidgetId(target = {}) {
+  return target.widget_id || target.component_id || null;
+}
+
 function componentBehaviorArtifactPath(target = {}) {
-  if (target.target !== "component-behavior-report") {
+  if (target.target !== "widget-behavior-report") {
     return null;
   }
-  const suffix = [target.projection_id, target.component_id].filter(Boolean).join(".");
-  return suffix ? `${suffix}.component-behavior-report.json` : "component-behavior-report.json";
+  const suffix = [target.projection_id, targetWidgetId(target)].filter(Boolean).join(".");
+  return suffix ? `${suffix}.widget-behavior-report.json` : "widget-behavior-report.json";
 }
 
 function componentBehaviorQueryCommand(target = {}) {
-  if (target.target !== "component-behavior-report") {
+  if (target.target !== "widget-behavior-report") {
     return null;
   }
-  const parts = ["topogram", "query", "component-behavior", "./topogram"];
+  const parts = ["topogram", "query", "widget-behavior", "./topogram"];
   if (target.projection_id) {
     parts.push("--projection", target.projection_id);
   }
-  if (target.component_id) {
-    parts.push("--component", target.component_id);
+  const widgetId = targetWidgetId(target);
+  if (widgetId) {
+    parts.push("--widget", widgetId);
   }
   parts.push("--json");
   return parts.join(" ");
@@ -169,10 +174,10 @@ function recommendedArtifactQueriesFromGeneratorTargets(generatorTargets = []) {
     if (!command || seen.has(command)) continue;
     seen.add(command);
     queries.push({
-      query: "component-behavior",
+      query: "widget-behavior",
       target: target.target,
       projection_id: target.projection_id || null,
-      component_id: target.component_id || null,
+      widget_id: targetWidgetId(target),
       command
     });
   }
@@ -1340,9 +1345,9 @@ function projectionKindForImpact(projection) {
     (projection.uiWeb || []).length > 0 ||
     (projection.uiIos || []).length > 0 ||
     (projection.uiScreens || []).length > 0 ||
-    projection.platform === "ui_web" ||
-    projection.platform === "ui_ios" ||
-    projection.platform === "ui_shared"
+    projection.platform === "web_surface" ||
+    projection.platform === "ios_surface" ||
+    projection.platform === "ui_contract"
   ) {
     return "ui";
   }
@@ -1634,7 +1639,7 @@ function buildProjectionImpacts(graph, { sliceArtifact, diffArtifact }) {
         "selected_entity",
         (projection) => `Projection ${projection.id} is in scope because selected entity ${id} participates in that projection.`
       )) addImpact(impactMap, impact);
-    } else if (kind === "component") {
+    } else if (kind === "widget") {
       for (const impact of projectionImpactsFromComponent(graph, id)) addImpact(impactMap, impact);
     } else if (kind === "workflow") {
       for (const impact of projectionImpactsFromWorkflow(graph, id, true)) addImpact(impactMap, impact);
@@ -1656,11 +1661,15 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
   const targets = [];
   const addTarget = (target) => {
     if (!target?.target) return;
-    if (!target.projection_id && !target.component_id) return;
+    if (target.component_id && !target.widget_id) {
+      target.widget_id = target.component_id;
+      delete target.component_id;
+    }
+    if (!target.projection_id && !target.widget_id) return;
     if (!targets.some((entry) =>
       entry.target === target.target &&
       entry.projection_id === target.projection_id &&
-      entry.component_id === target.component_id
+      targetWidgetId(entry) === targetWidgetId(target)
     )) {
       targets.push(target);
     }
@@ -1668,16 +1677,16 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
 
   for (const entry of diffArtifact?.components || []) {
     addTarget({
-      target: "ui-component-contract",
-      component_id: entry.id,
+      target: "ui-widget-contract",
+      widget_id: entry.id,
       required: true,
-      reason: `Component ${entry.id} changed directly, so its component contract should be refreshed.`
+      reason: `Widget ${entry.id} changed directly, so its widget contract should be refreshed.`
     });
     addTarget({
-      target: "component-behavior-report",
-      component_id: entry.id,
+      target: "widget-behavior-report",
+      widget_id: entry.id,
       required: true,
-      reason: `Component ${entry.id} changed directly, so behavior realizations should be reviewed across affected projections.`
+      reason: `Widget ${entry.id} changed directly, so behavior realizations should be reviewed across affected projections.`
     });
   }
 
@@ -1708,7 +1717,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       });
     }
 
-    if (projection.platform === "ui_shared") {
+    if (projection.platform === "ui_contract") {
       addTarget({
         target: "ui-contract-graph",
         projection_id: impact.projection_id,
@@ -1730,30 +1739,30 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
 
     for (const componentId of componentIds) {
       addTarget({
-        target: "ui-component-contract",
-        component_id: componentId,
+        target: "ui-widget-contract",
+        widget_id: componentId,
         projection_id: impact.projection_id,
         required: true,
-        reason: `Projection ${impact.projection_id} is affected by component ${componentId}, so the component contract should be refreshed.`
+        reason: `Projection ${impact.projection_id} is affected by widget ${componentId}, so the widget contract should be refreshed.`
       });
       addTarget({
-        target: "component-behavior-report",
-        component_id: componentId,
+        target: "widget-behavior-report",
+        widget_id: componentId,
         projection_id: impact.projection_id,
         required: true,
-        reason: `Projection ${impact.projection_id} is affected by component ${componentId}, so behavior data/event/action wiring should be reviewed.`
+        reason: `Projection ${impact.projection_id} is affected by widget ${componentId}, so behavior data/event/action wiring should be reviewed.`
       });
     }
 
-    if (projection.platform === "ui_web") {
+    if (projection.platform === "web_surface") {
       addTarget({
-        target: "ui-web-contract",
+        target: "ui-surface-contract",
         projection_id: impact.projection_id,
         required: true,
         reason: `Projection ${impact.projection_id} is a web UI surface, so the web UI contract should be refreshed.`
       });
       addTarget({
-        target: "ui-web-debug",
+        target: "ui-surface-debug",
         projection_id: impact.projection_id,
         required: false,
         reason: `Projection ${impact.projection_id} may benefit from UI web debug output during review.`
@@ -1768,7 +1777,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
       }
     }
 
-    if (projection.platform === "ui_ios") {
+    if (projection.platform === "ios_surface") {
       addTarget({
         target: "swiftui-app",
         projection_id: impact.projection_id,
@@ -1819,7 +1828,7 @@ function buildGeneratorTargets(graph, projectionImpacts = [], diffArtifact = nul
   return targets.sort((a, b) => {
     const projectionCompare = String(a.projection_id || "").localeCompare(String(b.projection_id || ""));
     if (projectionCompare !== 0) return projectionCompare;
-    const componentCompare = String(a.component_id || "").localeCompare(String(b.component_id || ""));
+    const componentCompare = String(targetWidgetId(a) || "").localeCompare(String(targetWidgetId(b) || ""));
     if (componentCompare !== 0) return componentCompare;
     return projectionCompare !== 0 ? projectionCompare : a.target.localeCompare(b.target);
   });

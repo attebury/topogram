@@ -131,7 +131,7 @@ export const androidComposeUiExtractor = {
     }
     for (const pattern of aggregateSummary.patterns) {
       candidates.actions.push(makeCandidateRecord({
-        kind: "ui_navigation",
+        kind: "navigation",
         idHint: `compose_${idHintify(pattern)}`,
         label: pattern,
         confidence: "medium",

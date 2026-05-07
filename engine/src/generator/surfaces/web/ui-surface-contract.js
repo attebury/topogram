@@ -1,9 +1,9 @@
 import { buildWebRealization } from "../../../realization/ui/index.js";
 
-export function generateUiWebContract(graph, options = {}) {
+export function generateUiSurfaceContract(graph, options = {}) {
   if (!options.projectionId) {
     const output = {};
-    for (const projection of (graph.byKind.projection || []).filter((entry) => entry.platform === "ui_web")) {
+    for (const projection of (graph.byKind.projection || []).filter((entry) => (entry.type || entry.platform) === "web_surface")) {
       output[projection.id] = buildWebRealization(graph, { ...options, projectionId: projection.id }).contract;
     }
     return output;
@@ -12,11 +12,11 @@ export function generateUiWebContract(graph, options = {}) {
   return buildWebRealization(graph, options).contract;
 }
 
-export function generateUiWebDebug(graph, options = {}) {
-  const contracts = options.projectionId ? [generateUiWebContract(graph, options)] : Object.values(generateUiWebContract(graph, options));
+export function generateUiSurfaceDebug(graph, options = {}) {
+  const contracts = options.projectionId ? [generateUiSurfaceContract(graph, options)] : Object.values(generateUiSurfaceContract(graph, options));
   const lines = [];
 
-  lines.push("# UI Web Debug");
+  lines.push("# UI Surface Debug");
   lines.push("");
   lines.push(`Generated from \`${graph.root}\``);
   lines.push("");
@@ -24,8 +24,8 @@ export function generateUiWebDebug(graph, options = {}) {
   for (const contract of contracts) {
     lines.push(`## \`${contract.projection.id}\` - ${contract.projection.name}`);
     lines.push("");
-    if (contract.sharedProjection?.id) {
-      lines.push(`Shared projection: \`${contract.sharedProjection.id}\``);
+    if (contract.uiContract?.id) {
+      lines.push(`UI contract: \`${contract.uiContract.id}\``);
     }
     lines.push(
       `Generator defaults: ${
@@ -47,7 +47,7 @@ export function generateUiWebDebug(graph, options = {}) {
       lines.push(`### \`${screen.id}\``);
       lines.push("");
       lines.push(`Route: ${screen.route ? `\`${screen.route}\`` : "_none_"}`);
-      lines.push(`Layout hints: ${Object.keys(screen.web).length > 0 ? Object.entries(screen.web).map(([key, value]) => `\`${key}=${value}\``).join(", ") : "_none_"}`);
+      lines.push(`Surface hints: ${Object.keys(screen.surfaceHints || {}).length > 0 ? Object.entries(screen.surfaceHints || {}).map(([key, value]) => `\`${key}=${value}\``).join(", ") : "_none_"}`);
       lines.push("");
     }
 

@@ -153,7 +153,7 @@ export const swiftUiExtractor = {
       }
       for (const pattern of summary.patterns) {
         candidates.actions.push(makeCandidateRecord({
-          kind: "ui_navigation",
+          kind: "navigation",
           idHint: `swiftui_${idHintify(pattern)}`,
           label: pattern,
           confidence: "medium",

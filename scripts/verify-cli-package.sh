@@ -54,54 +54,54 @@ echo "Checking installed template helper imports..."
 (
   cd "$CONSUMER_DIR"
   node --input-type=module -e '
-    import { renderSvelteKitComponentRegion } from "@topogram/cli/template-helpers/sveltekit.js";
-    import { renderReactComponentRegion } from "@topogram/cli/template-helpers/react.js";
-    const rendered = renderSvelteKitComponentRegion(
+    import { renderSvelteKitWidgetRegion } from "@topogram/cli/template-helpers/sveltekit.js";
+    import { renderReactWidgetRegion } from "@topogram/cli/template-helpers/react.js";
+    const rendered = renderSvelteKitWidgetRegion(
       {
-        components: [
+        widgets: [
           {
             region: "results",
-            component: { id: "component_grid", name: "Grid" }
+            widget: { id: "widget_grid", name: "Grid" }
           }
         ]
       },
       "results",
       {
-        componentContracts: {
-          component_grid: { patterns: ["resource_table"] }
+        widgetContracts: {
+          widget_grid: { patterns: ["resource_table"] }
         },
         itemsExpression: "data.items",
         useTypescript: true
       }
     );
-    if (!rendered.includes(`data-topogram-component="component_grid"`)) {
-      throw new Error("Expected SvelteKit helper to render component marker.");
+    if (!rendered.includes(`data-topogram-widget="widget_grid"`)) {
+      throw new Error("Expected SvelteKit helper to render widget marker.");
     }
     if (!rendered.includes("data.items")) {
       throw new Error("Expected SvelteKit helper to preserve items expression.");
     }
-    const reactRendered = renderReactComponentRegion(
+    const reactRendered = renderReactWidgetRegion(
       {
-        components: [
+        widgets: [
           {
             region: "results",
-            component: { id: "component_react_grid", name: "React Grid" }
+            widget: { id: "widget_react_grid", name: "React Grid" }
           }
         ]
       },
       "results",
       {
-        componentContracts: {
-          component_react_grid: { patterns: ["resource_table"] }
+        widgetContracts: {
+          widget_react_grid: { patterns: ["resource_table"] }
         },
         itemsExpression: "items",
         useTypescript: true
       }
     );
-    if (!reactRendered.includes(`data-topogram-component="component_react_grid"`)) {
-      throw new Error("Expected React helper to render component marker.");
+    if (!reactRendered.includes(`data-topogram-widget="widget_react_grid"`)) {
+      throw new Error("Expected React helper to render widget marker.");
     }
-    if (!reactRendered.includes("className=\"component-card component-table\"")) {
+    if (!reactRendered.includes("className=\"widget-card widget-table\"")) {
       throw new Error("Expected React helper to render JSX className markup.");
     }
   '
@@ -177,11 +177,14 @@ cat > "$GENERATOR_PACKAGE_DIR/topogram-generator.json" <<'JSON'
   "id": "@topogram/generator-smoke-web",
   "version": "1",
   "surface": "web",
-  "projectionPlatforms": [
-    "ui_web"
+  "runtimeKinds": [
+    "web_surface"
+  ],
+  "projectionTypes": [
+    "web_surface"
   ],
   "inputs": [
-    "ui-web-contract"
+    "ui-surface-contract"
   ],
   "outputs": [
     "web-app"
@@ -205,16 +208,16 @@ const manifest = require("./topogram-generator.json");
 exports.manifest = manifest;
 
 exports.generate = function generate(context) {
-  const screens = Array.isArray(context?.contracts?.uiWeb?.screens)
-    ? context.contracts.uiWeb.screens
+  const screens = Array.isArray(context?.contracts?.uiSurface?.screens)
+    ? context.contracts.uiSurface.screens
     : [];
-  const componentId = context?.component?.id || "";
+  const runtimeId = context?.runtime?.id || "";
   const projectionId = context?.projection?.id || "";
   const html = [
     "<!doctype html>",
     "<html>",
     "<head><meta charset=\"utf-8\"><title>Topogram Generator Smoke</title></head>",
-    `<body data-generator="${manifest.id}" data-component="${componentId}">`,
+    `<body data-generator="${manifest.id}" data-runtime="${runtimeId}">`,
     "<main>",
     "<h1>Topogram package generator smoke</h1>",
     `<p data-projection="${projectionId}">Screens: ${screens.length}</p>`,
@@ -227,7 +230,7 @@ exports.generate = function generate(context) {
       "index.html": `${html}\n`,
       "topogram-generator-context.json": `${JSON.stringify({
         generator: manifest.id,
-        component: componentId,
+        runtime: runtimeId,
         projection: projectionId,
         screens: screens.map((screen) => screen.id)
       }, null, 2)}\n`
@@ -263,11 +266,11 @@ node --input-type=module -e '
   const packageName = process.argv[2];
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  const webComponent = projectConfig.topology.components.find((component) => component.type === "web");
-  if (!webComponent) {
-    throw new Error("Expected hello-web starter to include one web component.");
+  const webRuntime = projectConfig.topology.runtimes.find((runtime) => runtime.kind === "web_surface");
+  if (!webRuntime) {
+    throw new Error("Expected hello-web starter to include one web runtime.");
   }
-  webComponent.generator = {
+  webRuntime.generator = {
     id: packageName,
     version: "1",
     package: packageName
@@ -440,7 +443,7 @@ npm --prefix "$STARTER_TEMPLATE_DIR" install >/dev/null
 echo "Checking and generating the starter..."
 npm --prefix "$STARTER_DIR" run doctor
 npm --prefix "$STARTER_DIR" run query:list
-npm --prefix "$STARTER_DIR" run query:show -- component-behavior
+npm --prefix "$STARTER_DIR" run query:show -- widget-behavior
 npm --prefix "$STARTER_DIR" run source:status
 npm --prefix "$STARTER_DIR" run template:explain
 npm --prefix "$STARTER_DIR" run template:detach:dry-run
@@ -453,7 +456,7 @@ npm --prefix "$STARTER_DIR" run check
 npm --prefix "$STARTER_DIR" run generate
 npm --prefix "$STARTER_TEMPLATE_DIR" run doctor
 npm --prefix "$STARTER_TEMPLATE_DIR" run query:list
-npm --prefix "$STARTER_TEMPLATE_DIR" run query:show -- component-behavior
+npm --prefix "$STARTER_TEMPLATE_DIR" run query:show -- widget-behavior
 npm --prefix "$STARTER_TEMPLATE_DIR" run source:status
 npm --prefix "$STARTER_TEMPLATE_DIR" run template:explain
 npm --prefix "$STARTER_TEMPLATE_DIR" run template:detach:dry-run

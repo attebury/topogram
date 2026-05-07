@@ -3,12 +3,12 @@
 import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../../ui/taxonomy.js";
 
 /**
- * @typedef {{ id?: string, name?: string }} ComponentReference
- * @typedef {{ component?: ComponentReference, region?: string, pattern?: string }} ComponentUsage
- * @typedef {{ patterns?: string[] }} ComponentContract
- * @typedef {Record<string, ComponentContract>} ComponentContractMap
- * @typedef {{ itemsExpression?: string, componentContracts?: ComponentContractMap, useTypescript?: boolean }} RenderOptions
- * @typedef {{ components?: ComponentUsage[] }} ScreenContract
+ * @typedef {{ id?: string, name?: string }} WidgetReference
+ * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string }} WidgetUsage
+ * @typedef {{ patterns?: string[] }} WidgetContract
+ * @typedef {Record<string, WidgetContract>} WidgetContractMap
+ * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean }} RenderOptions
+ * @typedef {{ widgets?: WidgetUsage[] }} ScreenContract
  */
 
 /**
@@ -24,44 +24,44 @@ function escapeHtml(value) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @returns {string}
  */
-function componentName(usage) {
-  return usage?.component?.name || usage?.component?.id || "Component";
+function widgetName(usage) {
+  return usage?.widget?.name || usage?.widget?.id || "Widget";
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @returns {string}
  */
-function componentId(usage) {
-  return usage?.component?.id || "component";
+function widgetId(usage) {
+  return usage?.widget?.id || "widget";
 }
 
 /**
- * @param {ComponentUsage} usage
- * @param {ComponentContractMap | undefined} componentContracts
+ * @param {WidgetUsage} usage
+ * @param {WidgetContractMap | undefined} widgetContracts
  * @returns {string[]}
  */
-function componentPatterns(usage, componentContracts) {
-  const id = usage?.component?.id;
-  const contract = id ? componentContracts?.[id] : null;
+function widgetPatterns(usage, widgetContracts) {
+  const id = usage?.widget?.id;
+  const contract = id ? widgetContracts?.[id] : null;
   return Array.isArray(contract?.patterns) ? contract.patterns : [];
 }
 
 /**
- * @param {ComponentUsage} usage
- * @param {ComponentContractMap | undefined} componentContracts
+ * @param {WidgetUsage} usage
+ * @param {WidgetContractMap | undefined} widgetContracts
  * @param {string} pattern
  * @returns {boolean}
  */
-function usagePattern(usage, componentContracts) {
-  return usage?.pattern || componentPatterns(usage, componentContracts)[0] || null;
+function usagePattern(usage, widgetContracts) {
+  return usage?.pattern || widgetPatterns(usage, widgetContracts)[0] || null;
 }
 
-export function svelteKitComponentUsageSupport(usage, componentContracts) {
-  const pattern = usagePattern(usage, componentContracts);
+export function svelteKitWidgetUsageSupport(usage, widgetContracts) {
+  const pattern = usagePattern(usage, widgetContracts);
   return {
     pattern,
     supported: UI_GENERATOR_RENDERED_COMPONENT_PATTERNS.has(pattern || "")
@@ -69,16 +69,16 @@ export function svelteKitComponentUsageSupport(usage, componentContracts) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<section class="component-card component-summary" data-topogram-component="${escapeHtml(componentId(usage))}">
+  return `<section class="widget-card widget-summary" data-topogram-widget="${escapeHtml(widgetId(usage))}">
           <div>
-            <p class="component-eyebrow">Component</p>
-            <h2>${escapeHtml(componentName(usage))}</h2>
+            <p class="widget-eyebrow">Widget</p>
+            <h2>${escapeHtml(widgetName(usage))}</h2>
           </div>
           <div class="summary-grid">
             <div>
@@ -98,21 +98,21 @@ function renderSummaryStats(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderCollectionTable(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="component-card component-table" data-topogram-component="${escapeHtml(componentId(usage))}">
-          <div class="component-header">
+  return `<div class="widget-card widget-table" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+          <div class="widget-header">
             <div>
-              <p class="component-eyebrow">Component</p>
-              <h2>${escapeHtml(componentName(usage))}</h2>
+              <p class="widget-eyebrow">Widget</p>
+              <h2>${escapeHtml(widgetName(usage))}</h2>
             </div>
             <span class="badge">{${items}.length} items</span>
           </div>
-          <div class="table-wrap component-table-wrap">
+          <div class="table-wrap widget-table-wrap">
             <table class="resource-table data-grid">
               <thead>
                 <tr>
@@ -136,17 +136,17 @@ function renderCollectionTable(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="component-card component-board" data-topogram-component="${escapeHtml(componentId(usage))}">
-          <div class="component-header">
+  return `<div class="widget-card widget-board" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+          <div class="widget-header">
             <div>
-              <p class="component-eyebrow">Component</p>
-              <h2>${escapeHtml(componentName(usage))}</h2>
+              <p class="widget-eyebrow">Widget</p>
+              <h2>${escapeHtml(widgetName(usage))}</h2>
             </div>
           </div>
           <div class="board-grid">
@@ -163,17 +163,17 @@ function renderBoard(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="component-card component-calendar" data-topogram-component="${escapeHtml(componentId(usage))}">
-          <div class="component-header">
+  return `<div class="widget-card widget-calendar" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+          <div class="widget-header">
             <div>
-              <p class="component-eyebrow">Component</p>
-              <h2>${escapeHtml(componentName(usage))}</h2>
+              <p class="widget-eyebrow">Widget</p>
+              <h2>${escapeHtml(widgetName(usage))}</h2>
             </div>
           </div>
           <div class="calendar-list">
@@ -188,13 +188,13 @@ function renderCalendar(usage, options) {
 }
 
 /**
- * @param {ComponentUsage} usage
+ * @param {WidgetUsage} usage
  * @param {RenderOptions} options
  * @returns {string}
  */
 function renderUsage(usage, options) {
-  const componentContracts = options.componentContracts || {};
-  const { pattern } = svelteKitComponentUsageSupport(usage, componentContracts);
+  const widgetContracts = options.widgetContracts || {};
+  const { pattern } = svelteKitWidgetUsageSupport(usage, widgetContracts);
   if (pattern === "summary_stats") {
     return renderSummaryStats(usage, options);
   }
@@ -213,10 +213,10 @@ function renderUsage(usage, options) {
 /**
  * @param {ScreenContract} screen
  * @param {string} region
- * @returns {ComponentUsage[]}
+ * @returns {WidgetUsage[]}
  */
-export function svelteKitComponentUsagesForRegion(screen, region) {
-  return (screen?.components || []).filter((usage) => usage?.region === region);
+export function svelteKitWidgetUsagesForRegion(screen, region) {
+  return (screen?.widgets || []).filter((usage) => usage?.region === region);
 }
 
 /**
@@ -224,8 +224,8 @@ export function svelteKitComponentUsagesForRegion(screen, region) {
  * @param {string} region
  * @returns {boolean}
  */
-export function hasSvelteKitComponentRegion(screen, region) {
-  return svelteKitComponentUsagesForRegion(screen, region).length > 0;
+export function hasSvelteKitWidgetRegion(screen, region) {
+  return svelteKitWidgetUsagesForRegion(screen, region).length > 0;
 }
 
 /**
@@ -234,8 +234,8 @@ export function hasSvelteKitComponentRegion(screen, region) {
  * @param {RenderOptions} [options]
  * @returns {string}
  */
-export function renderSvelteKitComponentRegion(screen, region, options = {}) {
-  const rendered = svelteKitComponentUsagesForRegion(screen, region)
+export function renderSvelteKitWidgetRegion(screen, region, options = {}) {
+  const rendered = svelteKitWidgetUsagesForRegion(screen, region)
     .map((usage) => renderUsage(usage, options))
     .filter(Boolean);
   if (rendered.length === 0) {

@@ -119,9 +119,9 @@ function behaviorStatus({ hasDirectives, state, emits }) {
 }
 
 /**
- * Build projection-specific realizations for component behavior contracts.
+ * Build projection-specific realizations for widget behavior contracts.
  *
- * Components declare reusable behavior capabilities; projection ui_components
+ * Widgets declare reusable behavior capabilities; projection widget_bindings
  * bindings provide concrete data/event outcomes. This derived contract is the
  * normalized bridge agents and generators can use without inferring behavior
  * from stack code.
@@ -130,7 +130,7 @@ function behaviorStatus({ hasDirectives, state, emits }) {
  * @param {Record<string, any>} usage
  * @returns {Array<Record<string, any>>}
  */
-export function buildComponentBehaviorRealizations(contract, usage) {
+export function buildWidgetBehaviorRealizations(contract, usage) {
   const props = propByName(contract);
   const eventNames = new Set((contract?.events || []).map((event) => event.id).filter(Boolean));
   return (contract?.behaviors || []).map((behavior) => {

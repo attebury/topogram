@@ -1,17 +1,17 @@
-projection proj_ui_web {
+projection proj_web_surface {
   name "Hello Vanilla Web"
   description "Vanilla HTML/CSS/JS realization for the hello web starter"
-  platform ui_web
+  type web_surface
 
-  realizes [proj_ui_shared, cap_view_hello]
+  realizes [proj_ui_contract, cap_view_hello]
   outputs [ui_contract, web_app]
 
-  ui_routes {
+  screen_routes {
     screen hello_home path /
     screen hello_workflow path /workflow
   }
 
-  ui_web {
+  web_hints {
     screen hello_home shell topbar
     screen hello_home layout detail_page
     screen hello_workflow layout detail_page

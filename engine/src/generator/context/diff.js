@@ -6,7 +6,7 @@ import {
   maintainedProofMetadata,
   relatedCapabilitiesForEntity,
   relatedProjectionsForCapability,
-  relatedProjectionsForComponent,
+  relatedProjectionsForWidget,
   relatedProjectionsForEntity,
   stableSortedStrings,
   summarizeById,
@@ -79,7 +79,7 @@ function changedIdsForDiffSections(diff) {
     "rules",
     "workflows",
     "projections",
-    "components",
+    "widgets",
     "journeys",
     "verifications",
     "domains",
@@ -100,16 +100,16 @@ function collectAffectedProjectionIds(graph, baselineGraph, diff) {
   const changedCapabilities = stableSortedStrings((diff.capabilities || []).map((entry) => entry.id));
   const changedEntities = stableSortedStrings((diff.entities || []).map((entry) => entry.id));
   const changedProjections = stableSortedStrings((diff.projections || []).map((entry) => entry.id));
-  const changedComponentProjections = stableSortedStrings((diff.components || []).flatMap((entry) => {
+  const changedWidgetProjections = stableSortedStrings((diff.widgets || []).flatMap((entry) => {
     if (entry.classification === "additive") {
-      return relatedProjectionsForComponent(graph, entry.id);
+      return relatedProjectionsForWidget(graph, entry.id);
     }
     if (entry.classification === "removed") {
-      return relatedProjectionsForComponent(baselineGraph, entry.id);
+      return relatedProjectionsForWidget(baselineGraph, entry.id);
     }
     return [
-      ...relatedProjectionsForComponent(graph, entry.id),
-      ...relatedProjectionsForComponent(baselineGraph, entry.id)
+      ...relatedProjectionsForWidget(graph, entry.id),
+      ...relatedProjectionsForWidget(baselineGraph, entry.id)
     ];
   }));
 
@@ -117,7 +117,7 @@ function collectAffectedProjectionIds(graph, baselineGraph, diff) {
     ...changedProjections,
     ...changedCapabilities.flatMap((id) => relatedProjectionsForCapability(graph, id)),
     ...changedEntities.flatMap((id) => relatedProjectionsForEntity(graph, id)),
-    ...changedComponentProjections
+    ...changedWidgetProjections
   ]);
 }
 
@@ -183,7 +183,7 @@ export function generateContextDiff(graph, options = {}) {
     rules: diffMaps(normalizeTargetMap(graph, "rule"), normalizeTargetMap(baselineGraph, "rule")),
     workflows: diffMaps(normalizeTargetMap(graph, "workflow"), normalizeTargetMap(baselineGraph, "workflow")),
     projections: diffMaps(normalizeTargetMap(graph, "projection"), normalizeTargetMap(baselineGraph, "projection")),
-    components: diffMaps(normalizeTargetMap(graph, "component"), normalizeTargetMap(baselineGraph, "component")),
+    widgets: diffMaps(normalizeTargetMap(graph, "widget"), normalizeTargetMap(baselineGraph, "widget")),
     journeys: diffMaps(normalizeTargetMap(graph, "journey"), normalizeTargetMap(baselineGraph, "journey")),
     verifications: diffMaps(normalizeTargetMap(graph, "verification"), normalizeTargetMap(baselineGraph, "verification")),
     domains: diffMaps(normalizeTargetMap(graph, "domain"), normalizeTargetMap(baselineGraph, "domain")),

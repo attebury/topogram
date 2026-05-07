@@ -183,7 +183,7 @@ function buildVanillaGenerationCoverage(contract, files, routes) {
       page: route.file,
       rendered,
       renderer: rendered ? "generator" : "missing",
-      component_usages: []
+      widget_usages: []
     };
   });
   return {
@@ -193,15 +193,15 @@ function buildVanillaGenerationCoverage(contract, files, routes) {
     projection: {
       id: contract.projection.id,
       name: contract.projection.name,
-      platform: contract.projection.platform
+      type: contract.projection.type
     },
     summary: {
       routed_screens: screens.length,
       rendered_screens: screens.filter((screen) => screen.rendered).length,
       implementation_screens: 0,
       generator_screens: screens.filter((screen) => screen.renderer === "generator").length,
-      component_usages: 0,
-      rendered_component_usages: 0,
+      widget_usages: 0,
+      rendered_widget_usages: 0,
       diagnostics: diagnostics.length,
       errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length,
       warnings: diagnostics.filter((diagnostic) => diagnostic.severity === "warning").length
@@ -277,7 +277,7 @@ export function generateVanillaWebApp(graph, options = {}) {
         check: "node ./scripts/check.mjs"
       }
     }, null, 2)}\n`,
-    "styles.css": renderStyles(contract.design),
+    "styles.css": renderStyles(contract.designTokens),
     "app.js": renderBrowserScript(),
     "scripts/build.mjs": renderBuildScript(),
     "scripts/check.mjs": renderCheckScript(),
@@ -300,6 +300,6 @@ export function generateVanillaWebApp(graph, options = {}) {
   const coverage = buildVanillaGenerationCoverage(contract, files, routes);
   assertGenerationCoverage(coverage);
   files["topogram/generation-coverage.json"] = `${JSON.stringify(coverage, null, 2)}\n`;
-  files["topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
+  files["topogram/ui-surface-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   return files;
 }

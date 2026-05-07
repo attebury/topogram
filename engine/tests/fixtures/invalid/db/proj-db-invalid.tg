@@ -2,34 +2,34 @@ projection proj_db_invalid {
   name "Invalid DB"
   description "Projection with malformed DB semantics"
 
-  platform db_postgres
+  type db_contract
   realizes [entity_db_dummy]
   outputs [db_contract, sql_schema]
 
-  db_tables {
+  tables {
     entity_missing table dummies
     entity_db_dummy table dummies
     entity_db_dummy table dummies
   }
 
-  db_columns {
+  columns {
     entity_db_dummy field ghost column ghost_column
   }
 
-  db_keys {
+  keys {
     entity_db_dummy shard [id]
   }
 
-  db_indexes {
+  indexes {
     entity_db_dummy index []
     entity_db_dummy gin [owner_id]
   }
 
-  db_relations {
+  relations {
     entity_db_dummy foreign_key ghost references entity_missing.id on_delete explode
   }
 
-  db_lifecycle {
+  lifecycle {
     entity_db_dummy soft_delete field ghost value archived
     entity_db_dummy timestamps created_at created_at updated_at ghost
   }

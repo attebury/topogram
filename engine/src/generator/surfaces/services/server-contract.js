@@ -11,7 +11,7 @@ function indexStatements(graph) {
 }
 
 function apiProjectionCandidates(graph) {
-  return (graph.byKind.projection || []).filter((projection) => (projection.http || []).length > 0);
+  return (graph.byKind.projection || []).filter((projection) => (projection.http || projection.endpoints || []).length > 0);
 }
 
 function repositoryMethodName(capabilityId) {
@@ -30,7 +30,7 @@ function buildServerContract(graph, projection) {
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      platform: projection.platform
+      type: projection.type || projection.platform
     },
     routes: realizedCapabilities.map((capability) => {
       const apiContract = generateApiContractGraph(graph, { capabilityId: capability.id });
@@ -50,8 +50,8 @@ function buildServerContract(graph, projection) {
           preconditions: apiContract.endpoint.preconditions || [],
           idempotency: apiContract.endpoint.idempotency || [],
           cache: apiContract.endpoint.cache || [],
-          async: apiContract.endpoint.async || [],
-          status: apiContract.endpoint.status || [],
+          asyncJobs: apiContract.endpoint.async || [],
+          asyncStatus: apiContract.endpoint.status || [],
           download: apiContract.endpoint.download || []
         }
       };

@@ -1,9 +1,9 @@
 import { buildWebRealization } from "../../../realization/ui/index.js";
 import { getExampleImplementation } from "../../../example-implementation.js";
 import {
-  reactComponentUsageSupport,
-  renderReactComponentRegion
-} from "./react-components.js";
+  reactWidgetUsageSupport,
+  renderReactWidgetRegion
+} from "./react-widgets.js";
 import { buildDesignIntentCoverage, renderDesignIntentCss } from "./design-intent.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
 
@@ -52,7 +52,7 @@ function screenRegions(screen) {
   for (const region of screen?.regions || []) {
     if (region?.name) names.add(region.name);
   }
-  for (const usage of screen?.components || []) {
+  for (const usage of screen?.widgets || []) {
     if (usage?.region) names.add(usage.region);
   }
   return [...names];
@@ -76,7 +76,7 @@ function sampleItemsForScreen(screen) {
       title: `${title} completed sample`,
       name: `${title} completed sample`,
       message: `${title} completed sample`,
-      description: "Second generated row for component rendering checks.",
+      description: "Second generated row for widget rendering checks.",
       status: "completed",
       priority: "low",
       created_at: "2026-01-02"
@@ -137,8 +137,8 @@ function buildReactScreenPage(screen, contract) {
   const sampleItems = sampleItemsForScreen(screen);
   const renderedRegions = screenRegions(screen)
     .map((region) => {
-      const rendered = renderReactComponentRegion(screen, region, {
-        componentContracts: contract.components,
+      const rendered = renderReactWidgetRegion(screen, region, {
+        widgetContracts: contract.widgets,
         itemsExpression: "items",
         useTypescript: true
       });
@@ -188,8 +188,8 @@ ${renderedRegions || `        ${defaultCollection}`}
 `;
 }
 
-function screenComponentUsages(screen) {
-  return Array.isArray(screen?.components) ? screen.components : [];
+function screenWidgetUsages(screen) {
+  return Array.isArray(screen?.widgets) ? screen.widgets : [];
 }
 
 function screenPagePath(screen) {
@@ -217,38 +217,38 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
           suggested_fix: "Check the React generator contract-complete route emission for this screen."
         });
       }
-      const componentUsages = screenComponentUsages(screen).map((usage) => {
-        const componentId = usage.component?.id || null;
-        const marker = componentId ? `data-topogram-component="${componentId}"` : null;
-        const support = reactComponentUsageSupport(usage, contract.components);
+      const widgetUsages = screenWidgetUsages(screen).map((usage) => {
+        const widgetId = usage.widget?.id || null;
+        const marker = widgetId ? `data-topogram-widget="${widgetId}"` : null;
+        const support = reactWidgetUsageSupport(usage, contract.widgets);
         const usageRendered = Boolean(marker && contents.includes(marker));
-        if (componentId && rendered && !support.supported) {
+        if (widgetId && rendered && !support.supported) {
           diagnostics.push({
-            code: "component_pattern_not_supported",
+            code: "widget_pattern_not_supported",
             severity: "error",
             screen: screen.id,
             route: screen.route,
             region: usage.region || null,
             pattern: support.pattern || null,
-            component: componentId,
-            message: `Screen '${screen.id}' uses component '${componentId}' with unsupported React component pattern '${support.pattern || "(missing)"}'.`,
-            suggested_fix: "Use a supported component pattern for this generator or provide an implementation override."
+            widget: widgetId,
+            message: `Screen '${screen.id}' uses widget '${widgetId}' with unsupported React widget pattern '${support.pattern || "(missing)"}'.`,
+            suggested_fix: "Use a supported widget pattern for this generator or provide an implementation override."
           });
         }
-        if (componentId && rendered && !usageRendered) {
+        if (widgetId && rendered && !usageRendered) {
           diagnostics.push({
-            code: "component_usage_not_rendered",
+            code: "widget_usage_not_rendered",
             severity: "warning",
             screen: screen.id,
             route: screen.route,
             region: usage.region || null,
-            component: componentId,
-            message: `Screen '${screen.id}' uses component '${componentId}' but the generated React page does not contain its component marker.`,
-            suggested_fix: "Render the component region with renderReactComponentRegion or add a supported component pattern."
+            widget: widgetId,
+            message: `Screen '${screen.id}' uses widget '${widgetId}' but the generated React page does not contain its widget marker.`,
+            suggested_fix: "Render the widget region with renderReactWidgetRegion or add a supported widget pattern."
           });
         }
         return {
-          component: componentId,
+          widget: widgetId,
           region: usage.region || null,
           pattern: support.pattern || null,
           supported: support.supported,
@@ -262,7 +262,7 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
         page: pagePath,
         rendered,
         renderer: rendered ? "generator" : "missing",
-        component_usages: componentUsages
+        widget_usages: widgetUsages
       };
     });
 
@@ -273,16 +273,16 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
     projection: {
       id: contract.projection.id,
       name: contract.projection.name,
-      platform: contract.projection.platform
+      type: contract.projection.type
     },
     summary: {
       routed_screens: screens.length,
       rendered_screens: screens.filter((screen) => screen.rendered).length,
       implementation_screens: 0,
       generator_screens: screens.filter((screen) => screen.renderer === "generator").length,
-      component_usages: screens.reduce((total, screen) => total + screen.component_usages.length, 0),
-      rendered_component_usages: screens.reduce(
-        (total, screen) => total + screen.component_usages.filter((usage) => usage.rendered).length,
+      widget_usages: screens.reduce((total, screen) => total + screen.widget_usages.length, 0),
+      rendered_widget_usages: screens.reduce(
+        (total, screen) => total + screen.widget_usages.filter((usage) => usage.rendered).length,
         0
       ),
       diagnostics: diagnostics.length,
@@ -481,7 +481,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 `;
   files["src/vite-env.d.ts"] = `/// <reference types="vite/client" />\n`;
-  files["src/app.css"] = `${renderDesignIntentCss(contract.design)}
+  files["src/app.css"] = `${renderDesignIntentCss(contract.designTokens)}
 
 :root {
   font-family: system-ui, sans-serif;
@@ -536,11 +536,11 @@ button:focus-visible, .button-link:focus-visible, a:focus-visible, input:focus-v
 .muted { color: var(--topogram-muted-color); }
 .empty-state { padding: 1rem 0; }
 .error-text { color: #b42318; }
-.component-card { border: 1px solid var(--topogram-border-color); border-radius: var(--topogram-radius-card); background: var(--topogram-surface-subtle); padding: 1rem; margin-top: 1rem; }
-.component-header { display: flex; align-items: center; justify-content: space-between; gap: var(--topogram-space-unit); flex-wrap: wrap; }
-.component-eyebrow { margin: 0 0 0.25rem; color: var(--topogram-muted-color); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-.component-card h2, .component-card h3 { margin: 0; }
-.component-table-wrap { margin-top: 1rem; }
+.widget-card { border: 1px solid var(--topogram-border-color); border-radius: var(--topogram-radius-card); background: var(--topogram-surface-subtle); padding: 1rem; margin-top: 1rem; }
+.widget-header { display: flex; align-items: center; justify-content: space-between; gap: var(--topogram-space-unit); flex-wrap: wrap; }
+.widget-eyebrow { margin: 0 0 0.25rem; color: var(--topogram-muted-color); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.widget-card h2, .widget-card h3 { margin: 0; }
+.widget-table-wrap { margin-top: 1rem; }
 .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.75rem; }
 .summary-grid div, .board-column { border: 1px solid #e0e8f1; border-radius: var(--topogram-radius-control); background: white; padding: 0.85rem; }
 .summary-grid strong { display: block; font-size: 1.5rem; }
@@ -553,7 +553,7 @@ button:focus-visible, .button-link:focus-visible, a:focus-visible, input:focus-v
 `;
   files["src/App.tsx"] = buildAppTsx(contract, webReferenceWithDefaults);
   files["src/lib/topogram/api-contracts.json"] = `${JSON.stringify(realization.apiContracts, null, 2)}\n`;
-  files["src/lib/topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
+  files["src/lib/topogram/ui-surface-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   files["src/lib/auth/visibility.ts"] = buildReactVisibilityModule();
   files["src/lib/api/client.ts"] = buildReactClientModule(webReferenceWithDefaults);
   files["src/lib/api/lookups.ts"] = buildLookupModule(webReferenceWithDefaults);

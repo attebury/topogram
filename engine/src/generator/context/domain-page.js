@@ -94,13 +94,13 @@ export function generateDomainPage(graph, options = {}) {
   lines.push(renderMembersSection(graph, "Verifications", relatedVerificationsForDomain(graph, domain.id), "verification"));
   lines.push("");
 
-  if (coverage.platforms.length) {
-    lines.push("## Per-platform coverage");
+  if (coverage.projectionTypes.length) {
+    lines.push("## Per-type coverage");
     lines.push("");
-    const headers = ["Capability", ...coverage.platforms];
+    const headers = ["Capability", ...coverage.projectionTypes];
     const rows = coverage.capabilities.map((capabilityId) => {
-      const cells = coverage.platforms.map((platform) =>
-        coverage.coverage_matrix[capabilityId]?.[platform] ? "✓" : "—"
+      const cells = coverage.projectionTypes.map((projectionType) =>
+        coverage.coverage_matrix[capabilityId]?.[projectionType] ? "✓" : "—"
       );
       return [`\`${capabilityId}\``, ...cells];
     });
@@ -108,7 +108,7 @@ export function generateDomainPage(graph, options = {}) {
     lines.push("");
     lines.push(`Projections involved: ${coverage.projections.map((id) => `\`${id}\``).join(", ") || "none"}`);
   } else {
-    lines.push("## Per-platform coverage");
+    lines.push("## Per-type coverage");
     lines.push("");
     lines.push("No projections currently realize capabilities in this domain.");
   }

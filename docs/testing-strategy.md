@@ -28,9 +28,9 @@ or runtime behavior. If Topogram accepts intent, tests should either prove the
 intent is realized through the next meaningful boundary or assert the exact
 diagnostic that tells the user it is not supported.
 
-Component tests follow the same rule. If `ui_components` wiring is accepted,
+Widget tests follow the same rule. If `widget_bindings` wiring is accepted,
 tests must cover validation, normalized contracts, import/adoption drafts, or
-generated markup/coverage as appropriate. Unsupported component usage should
+generated markup/coverage as appropriate. Unsupported widget usage should
 fail with a clear validation or conformance diagnostic, not disappear from a
 contract or generated app.
 

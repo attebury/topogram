@@ -108,8 +108,9 @@ function writePackageBackedGenerator(root, manifestOverrides = {}) {
     id: "@scope/smoke-web",
     version: "1",
     surface: "web",
-    projectionPlatforms: ["ui_web"],
-    inputs: ["ui-web-contract"],
+    projectionTypes: ["web_surface"],
+    runtimeKinds: ["web_surface"],
+    inputs: ["ui-surface-contract"],
     outputs: ["web-app"],
     stack: {
       runtime: "browser",
@@ -149,7 +150,7 @@ exports.generate = function generateSmokeWeb(context) {
         }
       }, null, 2) + "\\n",
       "index.html": "<!doctype html><h1 data-generator=\\"" + context.manifest.id + "\\">Package generator smoke</h1>\\n",
-      "contract.json": JSON.stringify({ projection: context.projection.id, screens: context.contracts.uiWeb.screens.length }, null, 2) + "\\n"
+      "contract.json": JSON.stringify({ projection: context.projection.id, screens: context.contracts.uiSurface.screens.length }, null, 2) + "\\n"
     },
     artifacts: {
       generator: context.manifest.id
@@ -253,7 +254,7 @@ function createPureTopogramPackage(root, name = "topogram-package", options = {}
       }
     },
     topology: {
-      components: []
+      widgets: []
     }
   });
   fs.writeFileSync(path.join(packageRoot, "README.md"), "# Test topogram package\n", "utf8");
@@ -528,10 +529,10 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(help.stdout, /topogram package update-cli <version\|--latest>/);
   assert.match(help.stdout, /topogram new \.\/my-app/);
   assert.match(help.stdout, literalPattern(`topogram new ./my-app --template ${externalTodoCatalogAlias}`));
-  assert.match(help.stdout, /topogram component check --projection proj_ui_web/);
-  assert.match(help.stdout, /topogram component behavior --projection proj_ui_web/);
+  assert.match(help.stdout, /topogram widget check --projection proj_web_surface/);
+  assert.match(help.stdout, /topogram widget behavior --projection proj_web_surface/);
   assert.match(help.stdout, /topogram query list/);
-  assert.match(help.stdout, /topogram query component-behavior \.\/topogram --projection proj_ui_web --json/);
+  assert.match(help.stdout, /topogram query widget-behavior \.\/topogram --projection proj_web_surface --json/);
   assert.match(help.stdout, /topogram import \.\/existing-app --out \.\/imported-topogram/);
   assert.match(help.stdout, /topogram import check \.\/imported-topogram/);
   assert.match(help.stdout, /topogram import plan/);
@@ -565,7 +566,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(fullHelp.status, 0, fullHelp.stderr || fullHelp.stdout);
   assert.match(fullHelp.stdout, /topogram create <path>/);
   assert.match(fullHelp.stdout, /topogram import app <path>/);
-  assert.match(fullHelp.stdout, /query component-behavior <path>/);
+  assert.match(fullHelp.stdout, /query widget-behavior <path>/);
   assert.match(fullHelp.stdout, /query work-packet/);
 
   const generateHelp = runCli(["generate", "--help"]);
@@ -573,23 +574,23 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(generateHelp.stdout, /Usage: topogram generate \[path\] \[--out <path>\]/);
   assert.match(generateHelp.stdout, /topogram generate \[path\] --generate <target> \[--json\]/);
   assert.match(generateHelp.stdout, /Explicit --generate targets print JSON by default and write files only with --write\./);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-component-contract --component component_ui_data_grid --json/);
-  assert.match(generateHelp.stdout, /component-conformance-report/);
-  assert.match(generateHelp.stdout, /component-behavior-report/);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate component-conformance-report --projection proj_ui_web --json/);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate component-behavior-report --projection proj_ui_web --json/);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-widget-contract --widget widget_data_grid --json/);
+  assert.match(generateHelp.stdout, /widget-conformance-report/);
+  assert.match(generateHelp.stdout, /widget-behavior-report/);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate widget-conformance-report --projection proj_web_surface --json/);
+  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate widget-behavior-report --projection proj_web_surface --json/);
   assert.doesNotMatch(generateHelp.stdout, /Common commands:/);
 
   const helpGenerate = runCli(["help", "generate"]);
   assert.equal(helpGenerate.status, 0, helpGenerate.stderr || helpGenerate.stdout);
   assert.equal(helpGenerate.stdout, generateHelp.stdout);
 
-  const componentHelp = runCli(["component", "--help"]);
+  const componentHelp = runCli(["widget", "--help"]);
   assert.equal(componentHelp.status, 0, componentHelp.stderr || componentHelp.stdout);
-  assert.match(componentHelp.stdout, /Usage: topogram component check \[path\]/);
-  assert.match(componentHelp.stdout, /topogram component behavior \[path\]/);
-  assert.match(componentHelp.stdout, /topogram component check --projection proj_ui_web/);
-  assert.match(componentHelp.stdout, /topogram component behavior --projection proj_ui_web/);
+  assert.match(componentHelp.stdout, /Usage: topogram widget check \[path\]/);
+  assert.match(componentHelp.stdout, /topogram widget behavior \[path\]/);
+  assert.match(componentHelp.stdout, /topogram widget check --projection proj_web_surface/);
+  assert.match(componentHelp.stdout, /topogram widget behavior --projection proj_web_surface/);
 
   const newHelp = runCli(["new", "--help"]);
   assert.equal(newHelp.status, 0, newHelp.stderr || newHelp.stdout);
@@ -687,8 +688,8 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const generate = runCli(["generate", fixtureRoot, "--out", outputRoot]);
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
   const generatedItemListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "+page.svelte"));
-  assert.match(generatedItemListPage, /data-topogram-component="component_ui_data_grid"/);
-  assert.match(generatedItemListPage, /class="component-card component-table"/);
+  assert.match(generatedItemListPage, /data-topogram-widget="widget_data_grid"/);
+  assert.match(generatedItemListPage, /class="widget-card widget-table"/);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte")), true);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "calendar", "+page.svelte")), true);
   const generatedSvelteCss = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "app.css"));
@@ -707,7 +708,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.deepEqual(coverage.screens.filter((screen) => screen.renderer === "generator").map((screen) => screen.id), ["item_board", "item_calendar"]);
   assert.equal(coverage.summary.implementation_screens, 13);
   assert.equal(coverage.summary.generator_screens, 2);
-  assert.equal(coverage.summary.rendered_component_usages, 1);
+  assert.equal(coverage.summary.rendered_widget_usages, 1);
   assert.deepEqual(coverage.diagnostics, []);
 
   for (const relativePath of [
@@ -746,11 +747,11 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.notEqual(buildAlias.status, 0, buildAlias.stdout);
 });
 
-test("sveltekit generator routes render projection ui_components for provider-unowned screens", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-route-"));
+test("sveltekit generator routes render projection widget_bindings for provider-unowned screens", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-widget-route-"));
   const workspaceRoot = copyAppBasicFixture(root);
-  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-shared.tg");
-  const componentPath = path.join(workspaceRoot, "components", "component-ui-data-grid.tg");
+  const projectionPath = path.join(workspaceRoot, "projections", "proj-ui-contract.tg");
+  const componentPath = path.join(workspaceRoot, "widgets", "widget-data-grid.tg");
   fs.writeFileSync(
     componentPath,
     fs.readFileSync(componentPath, "utf8").replace(
@@ -763,9 +764,9 @@ test("sveltekit generator routes render projection ui_components for provider-un
   fs.writeFileSync(
     projectionPath,
     source.replace(
-      "    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n",
-      "    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n" +
-        "    screen item_board region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail\n"
+      "    screen item_list region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail\n",
+      "    screen item_list region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail\n" +
+        "    screen item_board region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail\n"
     ),
     "utf8"
   );
@@ -777,14 +778,14 @@ test("sveltekit generator routes render projection ui_components for provider-un
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
 
   const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte"));
-  assert.match(boardPage, /data-topogram-component="component_ui_data_grid"/);
-  assert.match(boardPage, /class="component-card component-board"/);
+  assert.match(boardPage, /data-topogram-widget="widget_data_grid"/);
+  assert.match(boardPage, /class="widget-card widget-board"/);
   assert.doesNotMatch(boardPage, /Sample rows/);
   const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
   const boardCoverage = coverage.screens.find((screen) => screen.id === "item_board");
   assert.equal(boardCoverage.renderer, "generator");
-  assert.equal(boardCoverage.component_usages[0].component, "component_ui_data_grid");
-  assert.equal(boardCoverage.component_usages[0].rendered, true);
+  assert.equal(boardCoverage.widget_usages[0].widget, "widget_data_grid");
+  assert.equal(boardCoverage.widget_usages[0].rendered, true);
   assert.deepEqual(coverage.diagnostics, []);
 });
 
@@ -794,49 +795,49 @@ test("topogram generate honors explicit artifact targets", () => {
     "generate",
     fixtureRoot,
     "--generate",
-    "ui-component-contract",
-    "--component",
-    "component_ui_data_grid",
+    "ui-widget-contract",
+    "--widget",
+    "widget_data_grid",
     "--json"
   ], { cwd });
   assert.equal(selected.status, 0, selected.stderr || selected.stdout);
   const contract = JSON.parse(selected.stdout);
-  assert.equal(contract.id, "component_ui_data_grid");
-  assert.equal(contract.type, "component_contract");
+  assert.equal(contract.id, "widget_data_grid");
+  assert.equal(contract.type, "ui_widget_contract");
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "explicit artifact generation must not write the app shortcut output");
 
   const conformance = runCli([
     "generate",
     fixtureRoot,
     "--generate",
-    "component-conformance-report",
+    "widget-conformance-report",
     "--projection",
-    "proj_ui_web",
-    "--component",
-    "component_ui_data_grid",
+    "proj_web_surface",
+    "--widget",
+    "widget_data_grid",
     "--json"
   ], { cwd });
   assert.equal(conformance.status, 0, conformance.stderr || conformance.stdout);
   const conformanceReport = JSON.parse(conformance.stdout);
-  assert.equal(conformanceReport.type, "component_conformance_report");
+  assert.equal(conformanceReport.type, "widget_conformance_report");
   assert.equal(conformanceReport.summary.total_usages, 1);
   assert.equal(conformanceReport.summary.errors, 0);
-  assert.equal(conformanceReport.projection_usages[0].source_projection.id, "proj_ui_shared");
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component conformance generation must not write the app shortcut output");
+  assert.equal(conformanceReport.projection_usages[0].source_projection.id, "proj_ui_contract");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget conformance generation must not write the app shortcut output");
 
   const outDir = path.join(cwd, "contracts");
   const written = runCli([
     "generate",
     fixtureRoot,
     "--generate",
-    "ui-component-contract",
+    "ui-widget-contract",
     "--write",
     "--out-dir",
     outDir
   ], { cwd });
   assert.equal(written.status, 0, written.stderr || written.stdout);
-  assert.equal(readJson(path.join(outDir, ".topogram-generated.json")).target, "ui-component-contract");
-  assert.equal(readJson(path.join(outDir, "component_ui_data_grid.ui-component-contract.json")).id, "component_ui_data_grid");
+  assert.equal(readJson(path.join(outDir, ".topogram-generated.json")).target, "ui-widget-contract");
+  assert.equal(readJson(path.join(outDir, "widget_data_grid.ui-widget-contract.json")).id, "widget_data_grid");
   assert.equal(fs.existsSync(path.join(outDir, "app-bundle-plan.json")), false);
 
   const reportOutDir = path.join(cwd, "reports");
@@ -844,160 +845,160 @@ test("topogram generate honors explicit artifact targets", () => {
     "generate",
     fixtureRoot,
     "--generate",
-    "component-conformance-report",
+    "widget-conformance-report",
     "--projection",
-    "proj_ui_web",
+    "proj_web_surface",
     "--write",
     "--out-dir",
     reportOutDir
   ], { cwd });
   assert.equal(writtenReport.status, 0, writtenReport.stderr || writtenReport.stdout);
-  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "component-conformance-report");
-  assert.equal(readJson(path.join(reportOutDir, "proj_ui_web.component-conformance-report.json")).summary.total_usages, 1);
+  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "widget-conformance-report");
+  assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
 });
 
-test("topogram component check reports conformance without writing app output", () => {
-  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-check-"));
+test("topogram widget check reports conformance without writing app output", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-widget-check-"));
   const human = runCli([
-    "component",
+    "widget",
     "check",
     fixtureRoot,
     "--projection",
-    "proj_ui_web",
-    "--component",
-    "component_ui_data_grid"
+    "proj_web_surface",
+    "--widget",
+    "widget_data_grid"
   ], { cwd });
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, /Component conformance passed\./);
+  assert.match(human.stdout, /Widget conformance passed\./);
   assert.match(human.stdout, /Usages: 1 total, 1 passed, 0 warning, 0 error/);
-  assert.match(human.stdout, /Affected projections: proj_ui_shared, proj_ui_web/);
-  assert.match(human.stdout, /Affected components: component_ui_data_grid/);
+  assert.match(human.stdout, /Affected projections: proj_ui_contract, proj_web_surface/);
+  assert.match(human.stdout, /Affected widgets: widget_data_grid/);
   assert.match(human.stdout, /Write scope:/);
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component check must not write the app shortcut output");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget check must not write the app shortcut output");
 
   const json = runCli([
-    "component",
+    "widget",
     "check",
     fixtureRoot,
     "--projection",
-    "proj_ui_web",
+    "proj_web_surface",
     "--json"
   ], { cwd });
   assert.equal(json.status, 0, json.stderr || json.stdout);
   const report = JSON.parse(json.stdout);
-  assert.equal(report.type, "component_conformance_report");
-  assert.equal(report.filters.projection, "proj_ui_web");
+  assert.equal(report.type, "widget_conformance_report");
+  assert.equal(report.filters.projection, "proj_web_surface");
   assert.equal(report.summary.total_usages, 1);
   assert.equal(report.summary.errors, 0);
 
   const missing = runCli([
-    "component",
+    "widget",
     "check",
     fixtureRoot,
-    "--component",
-    "component_does_not_exist"
+    "--widget",
+    "widget_does_not_exist"
   ], { cwd });
   assert.notEqual(missing.status, 0);
-  assert.match(missing.stderr, /No component found with id 'component_does_not_exist'/);
+  assert.match(missing.stderr, /No widget found with id 'widget_does_not_exist'/);
 });
 
-test("topogram component behavior reports behavior groups without writing app output", () => {
-  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-component-behavior-"));
+test("topogram widget behavior reports behavior groups without writing app output", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-widget-behavior-"));
   const human = runCli([
-    "component",
+    "widget",
     "behavior",
     fixtureRoot,
     "--projection",
-    "proj_ui_web",
-    "--component",
-    "component_ui_data_grid"
+    "proj_web_surface",
+    "--widget",
+    "widget_data_grid"
   ], { cwd });
   assert.equal(human.status, 0, human.stderr || human.stdout);
-  assert.match(human.stdout, /Component behavior report passed\./);
+  assert.match(human.stdout, /Widget behavior report passed\./);
   assert.match(human.stdout, /Behaviors: 2 total, 2 realized, 0 partial, 0 declared/);
-  assert.match(human.stdout, /Affected projections: proj_ui_shared, proj_ui_web/);
-  assert.match(human.stdout, /Affected components: component_ui_data_grid/);
+  assert.match(human.stdout, /Affected projections: proj_ui_contract, proj_web_surface/);
+  assert.match(human.stdout, /Affected widgets: widget_data_grid/);
   assert.match(human.stdout, /Affected capabilities: cap_list_items/);
-  assert.match(human.stdout, /Groups: 1 component\(s\), 1 screen\(s\), 1 capability group\(s\), 2 effect group\(s\)/);
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior must not write the app shortcut output");
+  assert.match(human.stdout, /Groups: 1 widget\(s\), 1 screen\(s\), 1 capability group\(s\), 2 effect group\(s\)/);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget behavior must not write the app shortcut output");
 
   const json = runCli([
-    "component",
+    "widget",
     "behavior",
     fixtureRoot,
     "--projection",
-    "proj_ui_web",
+    "proj_web_surface",
     "--json"
   ], { cwd });
   assert.equal(json.status, 0, json.stderr || json.stdout);
   const report = JSON.parse(json.stdout);
-  assert.equal(report.type, "component_behavior_report");
-  assert.equal(report.filters.projection, "proj_ui_web");
+  assert.equal(report.type, "widget_behavior_report");
+  assert.equal(report.filters.projection, "proj_web_surface");
   assert.equal(report.summary.total_behaviors, 2);
   assert.deepEqual(report.summary.affected_capabilities, ["cap_list_items"]);
-  assert.deepEqual(report.groups.components.map((group) => group.id), ["component_ui_data_grid"]);
+  assert.deepEqual(report.groups.widgets.map((group) => group.id), ["widget_data_grid"]);
   assert.deepEqual(report.groups.screens.map((group) => group.id), ["item_list"]);
   assert.deepEqual(report.groups.effects.map((group) => group.id), ["navigation", "none"]);
 
   const query = runCli([
     "query",
-    "component-behavior",
+    "widget-behavior",
     fixtureRoot,
     "--projection",
-    "proj_ui_web",
-    "--component",
-    "component_ui_data_grid",
+    "proj_web_surface",
+    "--widget",
+    "widget_data_grid",
     "--json"
   ], { cwd });
   assert.equal(query.status, 0, query.stderr || query.stdout);
   const queryReport = JSON.parse(query.stdout);
-  assert.equal(queryReport.type, "component_behavior_report");
-  assert.equal(queryReport.filters.projection, "proj_ui_web");
-  assert.equal(queryReport.filters.component, "component_ui_data_grid");
+  assert.equal(queryReport.type, "widget_behavior_report");
+  assert.equal(queryReport.filters.projection, "proj_web_surface");
+  assert.equal(queryReport.filters.widget, "widget_data_grid");
   assert.equal(queryReport.summary.total_behaviors, 2);
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior query must not write app shortcut output");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget behavior query must not write app shortcut output");
 
   const reportOutDir = path.join(cwd, "behavior-reports");
   const written = runCli([
     "generate",
     fixtureRoot,
     "--generate",
-    "component-behavior-report",
+    "widget-behavior-report",
     "--projection",
-    "proj_ui_web",
+    "proj_web_surface",
     "--write",
     "--out-dir",
     reportOutDir
   ], { cwd });
   assert.equal(written.status, 0, written.stderr || written.stdout);
-  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "component-behavior-report");
-  assert.equal(readJson(path.join(reportOutDir, "proj_ui_web.component-behavior-report.json")).summary.total_behaviors, 2);
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "component behavior write must not write app shortcut output");
+  assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "widget-behavior-report");
+  assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-behavior-report.json")).summary.total_behaviors, 2);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget behavior write must not write app shortcut output");
 });
 
-test("agent review packets recommend component behavior reports for component impacts", () => {
+test("agent review packets recommend widget behavior reports for widget impacts", () => {
   const changePlan = runCli([
     "query",
     "change-plan",
     fixtureRoot,
-    "--component",
-    "component_ui_data_grid"
+    "--widget",
+    "widget_data_grid"
   ]);
   assert.equal(changePlan.status, 0, changePlan.stderr || changePlan.stdout);
   const changePayload = JSON.parse(changePlan.stdout);
   assert.equal(changePayload.type, "change_plan_query");
   assert.equal(
     changePayload.generator_targets.some((target) =>
-      target.target === "component-behavior-report" &&
-      target.component_id === "component_ui_data_grid" &&
-      target.projection_id === "proj_ui_web"
+      target.target === "widget-behavior-report" &&
+      target.widget_id === "widget_data_grid" &&
+      target.projection_id === "proj_web_surface"
     ),
     true
   );
   assert.equal(
     changePayload.alignment_recommendations.some((recommendation) =>
       recommendation.action === "regenerate_projection_targets" &&
-      recommendation.targets.includes("component-behavior-report")
+      recommendation.targets.includes("widget-behavior-report")
     ),
     true
   );
@@ -1006,8 +1007,8 @@ test("agent review packets recommend component behavior reports for component im
     "query",
     "review-packet",
     fixtureRoot,
-    "--component",
-    "component_ui_data_grid"
+    "--widget",
+    "widget_data_grid"
   ]);
   assert.equal(reviewPacket.status, 0, reviewPacket.stderr || reviewPacket.stdout);
   const reviewPayload = JSON.parse(reviewPacket.stdout);
@@ -1015,9 +1016,9 @@ test("agent review packets recommend component behavior reports for component im
   assert.equal(reviewPayload.source, "change-plan");
   assert.equal(
     reviewPayload.generator_targets.some((target) =>
-      target.target === "component-behavior-report" &&
-      target.component_id === "component_ui_data_grid" &&
-      target.projection_id === "proj_ui_web"
+      target.target === "widget-behavior-report" &&
+      target.widget_id === "widget_data_grid" &&
+      target.projection_id === "proj_web_surface"
     ),
     true
   );
@@ -1028,21 +1029,21 @@ test("agent review packets recommend component behavior reports for component im
     fixtureRoot,
     "--mode",
     "modeling",
-    "--component",
-    "component_ui_data_grid",
+    "--widget",
+    "widget_data_grid",
     "--json"
   ]);
   assert.equal(workflowContext.status, 0, workflowContext.stderr || workflowContext.stdout);
   const workflowPayload = JSON.parse(workflowContext.stdout);
   assert.equal(workflowPayload.type, "resolved_workflow_context_query");
   assert.equal(
-    workflowPayload.artifact_load_order.includes("proj_ui_web.component_ui_data_grid.component-behavior-report.json"),
+    workflowPayload.artifact_load_order.includes("proj_web_surface.widget_data_grid.widget-behavior-report.json"),
     true
   );
   assert.equal(
     workflowPayload.recommended_artifact_queries.some((query) =>
-      query.query === "component-behavior" &&
-      query.command === "topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json"
+      query.query === "widget-behavior" &&
+      query.command === "topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json"
     ),
     true
   );
@@ -1053,15 +1054,15 @@ test("agent review packets recommend component behavior reports for component im
     fixtureRoot,
     "--mode",
     "modeling",
-    "--component",
-    "component_ui_data_grid",
+    "--widget",
+    "widget_data_grid",
     "--json"
   ]);
   assert.equal(singleAgentPlan.status, 0, singleAgentPlan.stderr || singleAgentPlan.stdout);
   const singleAgentPayload = JSON.parse(singleAgentPlan.stdout);
   assert.equal(singleAgentPayload.type, "single_agent_plan");
   assert.equal(
-    singleAgentPayload.primary_artifacts.includes("proj_ui_web.component_ui_data_grid.component-behavior-report.json"),
+    singleAgentPayload.primary_artifacts.includes("proj_web_surface.widget_data_grid.widget-behavior-report.json"),
     true
   );
 });
@@ -2732,7 +2733,7 @@ test("public commands default to project topogram and app paths", () => {
 
   const inspect = runCli(["check", "--json"], { cwd: projectRoot });
   assert.equal(inspect.status, 0, inspect.stderr || inspect.stdout);
-  assert.equal(JSON.parse(inspect.stdout).project.resolvedTopology.components.length, 1);
+  assert.equal(JSON.parse(inspect.stdout).project.resolvedTopology.runtimes.length, 1);
 
   const install = runNpm(["install"], projectRoot);
   assert.equal(install.status, 0, install.stderr || install.stdout);
@@ -2791,7 +2792,7 @@ test("topogram new defaults to the catalog hello-web starter", () => {
   assert.equal(projectConfig.template.source, "package");
   assert.equal(projectConfig.template.catalog.id, "hello-web");
   assert.equal(projectConfig.template.includesExecutableImplementation, false);
-  assert.equal(projectConfig.topology.components[0].generator.id, "topogram/vanilla-web");
+  assert.equal(projectConfig.topology.runtimes[0].generator.id, "topogram/vanilla-web");
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -2885,15 +2886,15 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.match(indexTs, /capability: "cap_list_greetings"/);
       assert.doesNotMatch(indexTs, /capability: "undefined"/);
       const listPage = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "pages", "GreetingListPage.tsx"));
-      assert.match(listPage, /data-topogram-component="component_ui_greeting_table"/);
-      assert.match(listPage, /className="component-card component-table"/);
+      assert.match(listPage, /data-topogram-widget="widget_greeting_table"/);
+      assert.match(listPage, /className="widget-card widget-table"/);
       const coverage = readJson(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "lib", "topogram", "generation-coverage.json"));
       assert.equal(coverage.type, "generation_coverage");
       assert.equal(coverage.generator, "topogram/react");
       assert.equal(coverage.summary.routed_screens, 3);
       assert.equal(coverage.summary.rendered_screens, 3);
       assert.equal(coverage.summary.generator_screens, 3);
-      assert.equal(coverage.summary.rendered_component_usages, 1);
+      assert.equal(coverage.summary.rendered_widget_usages, 1);
       assert.equal(coverage.design_intent.status, "mapped");
       assert.equal(coverage.design_intent.tokens.density, "compact");
       const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "app.css"));
@@ -2931,7 +2932,7 @@ test("package-backed generators can be checked and used by app generation", () =
   const { packageName } = writePackageBackedGenerator(projectRoot);
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
-  projectConfig.topology.components[0].generator = {
+  projectConfig.topology.runtimes[0].generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -2954,7 +2955,7 @@ test("package-backed generators can be checked and used by app generation", () =
     "<!doctype html><h1 data-generator=\"@scope/smoke-web\">Package generator smoke</h1>\n"
   );
   const contract = readJson(path.join(projectRoot, "app", "apps", "web", "app_web", "contract.json"));
-  assert.equal(contract.projection, "proj_ui_web");
+  assert.equal(contract.projection, "proj_web_surface");
   assert.equal(contract.screens, 2);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
 });
@@ -2976,7 +2977,7 @@ exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagn
   );
   const projectConfigPath = path.join(projectRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
-  projectConfig.topology.components[0].generator = {
+  projectConfig.topology.runtimes[0].generator = {
     id: "@scope/smoke-web",
     version: "1",
     package: packageName
@@ -3600,7 +3601,7 @@ test("topogram new carries template starter scripts into starters", () => {
   const manifestPath = path.join(templateRoot, "topogram-template.json");
   const manifest = readJson(manifestPath);
   manifest.starterScripts = {
-    "component:behavior:query": "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+    "widget:behavior:query": "topogram query widget-behavior ./topogram --projection proj_web_surface --json"
   };
   writeJson(manifestPath, manifest);
   const projectRoot = path.join(root, "starter");
@@ -3612,8 +3613,8 @@ test("topogram new carries template starter scripts into starters", () => {
   assert.equal(pkg.scripts["query:list"], "topogram query list --json");
   assert.equal(pkg.scripts["query:show"], "topogram query show");
   assert.equal(
-    pkg.scripts["component:behavior:query"],
-    "topogram query component-behavior ./topogram --projection proj_ui_web --json"
+    pkg.scripts["widget:behavior:query"],
+    "topogram query widget-behavior ./topogram --projection proj_web_surface --json"
   );
 });
 
@@ -4321,7 +4322,7 @@ test("topogram template check reports invalid generated project config", () => {
   const templateRoot = copyBuiltInTemplate(root, "bad-project-config");
   const projectConfigPath = path.join(templateRoot, "topogram.project.json");
   const projectConfig = readJson(projectConfigPath);
-  projectConfig.topology.components[0].generator.id = "topogram/not-real";
+  projectConfig.topology.runtimes[0].generator.id = "topogram/not-real";
   writeJson(projectConfigPath, projectConfig);
 
   const check = runCli(["template", "check", templateRoot, "--json"]);

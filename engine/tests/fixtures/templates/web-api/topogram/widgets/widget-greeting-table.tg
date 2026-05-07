@@ -1,4 +1,4 @@
-component component_ui_greeting_table {
+widget widget_greeting_table {
   name "Greeting Table"
   description "Reusable table display for greeting rows"
   category collection

@@ -168,7 +168,7 @@ function summarizeStatement(statement) {
         reviewBoundary: reviewBoundaryForEntityPolicy(statement),
         ownership_boundary: defaultOwnershipBoundary()
       };
-    case "component":
+    case "widget":
       return summarizeComponent(statement);
     case "shape":
       return {
@@ -396,8 +396,12 @@ export function relatedProjectionsForShape(graph, shapeId) {
   return stableSortedStrings([...directProjectionIds, ...viaCapabilities]);
 }
 
+export function widgetById(graph, widgetId) {
+  return (graph?.byKind?.widget || graph?.byKind?.component || []).find((widget) => widget.id === widgetId) || null;
+}
+
 export function componentById(graph, componentId) {
-  return (graph?.byKind?.component || []).find((component) => component.id === componentId) || null;
+  return widgetById(graph, componentId);
 }
 
 function projectionById(graph, projectionId) {
@@ -430,36 +434,44 @@ function downstreamProjectionIds(graph, projectionIds) {
   return stableSortedStrings([...visited]);
 }
 
-export function relatedComponentsForProjection(graph, projection) {
+export function relatedWidgetsForProjection(graph, projection) {
   const directIds = (projection?.uiComponents || []).map((entry) => entry.component?.id).filter(Boolean);
   const inheritedIds = realizedProjectionIds(projection)
     .map((projectionId) => projectionById(graph, projectionId))
     .filter(Boolean)
-    .flatMap((realizedProjection) => relatedComponentsForProjection(graph, realizedProjection));
+    .flatMap((realizedProjection) => relatedWidgetsForProjection(graph, realizedProjection));
   return stableSortedStrings([...directIds, ...inheritedIds]);
 }
 
-export function relatedShapesForComponent(component) {
-  if (!component) return [];
+export function relatedComponentsForProjection(graph, projection) {
+  return relatedWidgetsForProjection(graph, projection);
+}
+
+export function relatedShapesForWidget(widget) {
+  if (!widget) return [];
   const ids = [
-    ...(component.events || []).map((event) => event.shape?.id),
-    ...(component.lookups || [])
+    ...(widget.events || []).map((event) => event.shape?.id),
+    ...(widget.lookups || [])
       .filter((lookup) => lookup?.target?.kind === "shape" || String(lookup?.id || "").startsWith("shape_"))
       .map((lookup) => lookup.id),
-    ...(component.dependencies || [])
+    ...(widget.dependencies || [])
       .filter((dependency) => referenceKind(dependency) === "shape")
       .map((dependency) => dependency.id)
   ];
   return stableSortedStrings(ids);
 }
 
-export function relatedProjectionsForComponent(graph, componentId) {
-  const component = componentById(graph, componentId);
-  if (!component) return [];
+export function relatedShapesForComponent(component) {
+  return relatedShapesForWidget(component);
+}
+
+export function relatedProjectionsForWidget(graph, widgetId) {
+  const widget = widgetById(graph, widgetId);
+  if (!widget) return [];
   const explicitProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
-    .filter((projection) => (projection.uiComponents || []).some((entry) => entry.component?.id === componentId))
+    .filter((projection) => (projection.uiComponents || []).some((entry) => entry.component?.id === widgetId))
     .map((projection) => projection.id));
-  const dependencyProjectionIds = stableSortedStrings((component.dependencies || []).flatMap((dependency) => {
+  const dependencyProjectionIds = stableSortedStrings((widget.dependencies || []).flatMap((dependency) => {
     const kind = referenceKind(dependency);
     if (kind === "projection") {
       return [dependency.id];
@@ -475,16 +487,20 @@ export function relatedProjectionsForComponent(graph, componentId) {
     }
     return [];
   }));
-  const componentPatterns = new Set(component.patterns || []);
-  const componentRegions = new Set(component.regions || []);
+  const widgetPatterns = new Set(widget.patterns || []);
+  const widgetRegions = new Set(widget.regions || []);
   const viaUiRegions = stableSortedStrings((graph?.byKind?.projection || [])
     .filter((projection) => (projection.uiScreenRegions || []).some((region) =>
-      (region.pattern && componentPatterns.has(region.pattern)) ||
-      (region.region && componentRegions.has(region.region))
+      (region.pattern && widgetPatterns.has(region.pattern)) ||
+      (region.region && widgetRegions.has(region.region))
     ))
     .map((projection) => projection.id));
 
   return downstreamProjectionIds(graph, stableSortedStrings([...explicitProjectionIds, ...dependencyProjectionIds, ...viaUiRegions]));
+}
+
+export function relatedProjectionsForComponent(graph, componentId) {
+  return relatedProjectionsForWidget(graph, componentId);
 }
 
 function referenceKind(reference) {
@@ -539,7 +555,7 @@ export function workspaceInventory(graph) {
     journeys: stableSortedStrings((graph.docs || []).filter((doc) => doc.kind === "journey").map((doc) => doc.id)),
     entities: stableSortedStrings((graph.byKind.entity || []).map((item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map((item) => item.id)),
-    components: stableSortedStrings((graph.byKind.component || []).map((item) => item.id)),
+    widgets: stableSortedStrings((graph.byKind.widget || graph.byKind.component || []).map((item) => item.id)),
     verifications: stableSortedStrings((graph.byKind.verification || []).map((item) => item.id)),
     domains: stableSortedStrings((graph.byKind.domain || []).map((item) => item.id)),
     pitches: stableSortedStrings((graph.byKind.pitch || []).map((item) => item.id)),
@@ -556,7 +572,7 @@ export function ensureContextSelection(options = {}) {
     options.capabilityId ? ["capability", options.capabilityId] : null,
     options.workflowId ? ["workflow", options.workflowId] : null,
     options.projectionId ? ["projection", options.projectionId] : null,
-    options.componentId ? ["component", options.componentId] : null,
+    (options.widgetId || options.componentId) ? ["widget", options.widgetId || options.componentId] : null,
     options.entityId ? ["entity", options.entityId] : null,
     options.journeyId ? ["journey", options.journeyId] : null,
     options.surfaceId ? ["surface", options.surfaceId] : null,
@@ -571,7 +587,7 @@ export function ensureContextSelection(options = {}) {
 
   if (selectors.length !== 1) {
     throw new Error(
-      "Context selection requires exactly one of --capability, --workflow, --projection, --component, --entity, --journey, --surface, --domain, --pitch, --requirement, --acceptance, --task, --bug, or --document"
+      "Context selection requires exactly one of --capability, --workflow, --projection, --widget, --entity, --journey, --surface, --domain, --pitch, --requirement, --acceptance, --task, --bug, or --document"
     );
   }
 

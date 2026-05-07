@@ -388,7 +388,7 @@ function parseReferenceNodes(values) {
 
 function buildComponentContract(statement) {
   return {
-    type: "component_contract",
+    type: "ui_widget_contract",
     id: statement.id,
     name: statement.name || statement.id,
     description: statement.description || null,
@@ -478,12 +478,44 @@ function buildDecisionRecord(statement) {
 function buildProjectionPlan(statement) {
   return {
     type: "projection_plan",
-    platform: statement.platform,
+    projectionType: statement.type,
     realizes: statement.realizes.map((ref, index) => ({
       order: index,
       target: ref.target || { id: ref.id, kind: null }
     })),
     outputs: parseSymbolNodes(statement.outputs),
+    endpoints: statement.http,
+    errorResponses: statement.httpErrors,
+    wireFields: statement.httpFields,
+    responses: statement.httpResponses,
+    preconditions: statement.httpPreconditions,
+    idempotency: statement.httpIdempotency,
+    cache: statement.httpCache,
+    deleteSemantics: statement.httpDelete,
+    asyncJobs: statement.httpAsync,
+    asyncStatus: statement.httpStatus,
+    downloads: statement.httpDownload,
+    authorization: statement.httpAuthz,
+    callbacks: statement.httpCallbacks,
+    screens: statement.uiScreens,
+    collectionViews: statement.uiCollections,
+    screenActions: statement.uiActions,
+    visibilityRules: statement.uiVisibility,
+    fieldLookups: statement.uiLookups,
+    screenRoutes: statement.uiRoutes,
+    webHints: statement.uiWeb,
+    iosHints: statement.uiIos,
+    appShell: statement.uiAppShell,
+    designTokens: statement.uiDesign,
+    navigation: statement.uiNavigation,
+    screenRegions: statement.uiScreenRegions,
+    widgetBindings: statement.uiComponents,
+    tables: statement.dbTables,
+    columns: statement.dbColumns,
+    keys: statement.dbKeys,
+    indexes: statement.dbIndexes,
+    relations: statement.dbRelations,
+    lifecycle: statement.dbLifecycle,
     http: statement.http,
     httpErrors: statement.httpErrors,
     httpFields: statement.httpFields,
@@ -645,7 +677,7 @@ function parseOverridesBlock(statement) {
 }
 
 function parseProjectionHttpBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "endpoints")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -677,7 +709,7 @@ function parseProjectionHttpBlock(statement, registry) {
 }
 
 function parseProjectionHttpErrorsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_errors")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "error_responses")).map((entry) => ({
     type: "http_error_mapping",
     capability: tokenValue(entry.items[0])
       ? {
@@ -693,7 +725,7 @@ function parseProjectionHttpErrorsBlock(statement, registry) {
 }
 
 function parseProjectionHttpFieldsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_fields")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "wire_fields")).map((entry) => ({
     type: "http_field_binding",
     capability: tokenValue(entry.items[0])
       ? {
@@ -711,7 +743,7 @@ function parseProjectionHttpFieldsBlock(statement, registry) {
 }
 
 function parseProjectionHttpResponsesBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_responses")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "responses")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = parseProjectionHttpResponseDirectives(entry.items.slice(1));
 
@@ -756,7 +788,7 @@ function parseProjectionHttpResponsesBlock(statement, registry) {
 }
 
 function parseProjectionHttpPreconditionsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_preconditions")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "preconditions")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -788,7 +820,7 @@ function parseProjectionHttpPreconditionsBlock(statement, registry) {
 }
 
 function parseProjectionHttpIdempotencyBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_idempotency")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "idempotency")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -801,7 +833,7 @@ function parseProjectionHttpIdempotencyBlock(statement, registry) {
     }
 
     return {
-      type: "http_idempotency",
+      type: "idempotency",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -819,7 +851,7 @@ function parseProjectionHttpIdempotencyBlock(statement, registry) {
 }
 
 function parseProjectionHttpCacheBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_cache")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "cache")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -832,7 +864,7 @@ function parseProjectionHttpCacheBlock(statement, registry) {
     }
 
     return {
-      type: "http_cache",
+      type: "cache",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -852,7 +884,7 @@ function parseProjectionHttpCacheBlock(statement, registry) {
 }
 
 function parseProjectionHttpDeleteBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_delete")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "delete_semantics")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -865,7 +897,7 @@ function parseProjectionHttpDeleteBlock(statement, registry) {
     }
 
     return {
-      type: "http_delete",
+      type: "delete_semantics",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -883,7 +915,7 @@ function parseProjectionHttpDeleteBlock(statement, registry) {
 }
 
 function parseProjectionHttpAsyncBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_async")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "async_jobs")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -896,7 +928,7 @@ function parseProjectionHttpAsyncBlock(statement, registry) {
     }
 
     return {
-      type: "http_async",
+      type: "async_jobs",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -927,7 +959,7 @@ function parseProjectionHttpAsyncBlock(statement, registry) {
 }
 
 function parseProjectionHttpStatusBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_status")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "async_status")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -940,7 +972,7 @@ function parseProjectionHttpStatusBlock(statement, registry) {
     }
 
     return {
-      type: "http_status",
+      type: "async_status",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -972,7 +1004,7 @@ function parseProjectionHttpStatusBlock(statement, registry) {
 }
 
 function parseProjectionHttpDownloadBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_download")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "downloads")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -985,7 +1017,7 @@ function parseProjectionHttpDownloadBlock(statement, registry) {
     }
 
     return {
-      type: "http_download",
+      type: "downloads",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -1008,7 +1040,7 @@ function parseProjectionHttpDownloadBlock(statement, registry) {
 }
 
 function parseProjectionHttpAuthzBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_authz")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "authorization")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -1021,7 +1053,7 @@ function parseProjectionHttpAuthzBlock(statement, registry) {
     }
 
     return {
-      type: "http_authz",
+      type: "authorization",
       capability: capabilityId
         ? {
             id: capabilityId,
@@ -1041,7 +1073,7 @@ function parseProjectionHttpAuthzBlock(statement, registry) {
 }
 
 function parseProjectionHttpCallbacksBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "http_callbacks")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "callbacks")).map((entry) => {
     const capabilityId = tokenValue(entry.items[0]);
     const directives = {};
 
@@ -1078,7 +1110,7 @@ function parseProjectionHttpCallbacksBlock(statement, registry) {
 }
 
 function parseProjectionUiScreensBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_screens")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "screens")).map((entry) => {
     const directives = {};
 
     for (let i = 2; i < entry.items.length; i += 2) {
@@ -1130,7 +1162,7 @@ function parseProjectionUiScreensBlock(statement, registry) {
 }
 
 function parseProjectionUiCollectionsBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_collections")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "collection_views")).map((entry) => {
     const operation = tokenValue(entry.items[2]);
     const primaryValue = tokenValue(entry.items[3]) || null;
     const secondaryValue = tokenValue(entry.items[4]) || null;
@@ -1150,7 +1182,7 @@ function parseProjectionUiCollectionsBlock(statement) {
 }
 
 function parseProjectionUiActionsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_actions")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "screen_actions")).map((entry) => ({
     type: "ui_action_binding",
     screenId: tokenValue(entry.items[1]),
     capability: tokenValue(entry.items[3])
@@ -1167,7 +1199,7 @@ function parseProjectionUiActionsBlock(statement, registry) {
 }
 
 function parseProjectionUiVisibilityBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_visibility")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "visibility_rules")).map((entry) => {
     const directives = {};
     for (let i = 5; i < entry.items.length; i += 2) {
       const key = tokenValue(entry.items[i]);
@@ -1178,7 +1210,7 @@ function parseProjectionUiVisibilityBlock(statement, registry) {
     }
 
     return {
-      type: "ui_visibility_rule",
+      type: "visibility_rules_rule",
       capability: tokenValue(entry.items[1])
         ? {
             id: tokenValue(entry.items[1]),
@@ -1195,7 +1227,7 @@ function parseProjectionUiVisibilityBlock(statement, registry) {
 }
 
 function parseProjectionUiLookupsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_lookups")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "field_lookups")).map((entry) => ({
     type: "ui_lookup_binding",
     screenId: tokenValue(entry.items[1]),
     field: tokenValue(entry.items[3]) || null,
@@ -1213,7 +1245,7 @@ function parseProjectionUiLookupsBlock(statement, registry) {
 }
 
 function parseProjectionUiRoutesBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_routes")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "screen_routes")).map((entry) => ({
     type: "ui_route",
     screenId: tokenValue(entry.items[1]),
     path: tokenValue(entry.items[3]) || null,
@@ -1223,8 +1255,8 @@ function parseProjectionUiRoutesBlock(statement) {
 }
 
 function parseProjectionUiIosBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_ios")).map((entry) => ({
-    type: "ui_ios_binding",
+  return blockEntries(getFieldValue(statement, "ios_hints")).map((entry) => ({
+    type: "ios_hint_binding",
     targetKind: tokenValue(entry.items[0]),
     targetId: tokenValue(entry.items[1]),
     capability:
@@ -1242,8 +1274,8 @@ function parseProjectionUiIosBlock(statement, registry) {
 }
 
 function parseProjectionUiWebBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_web")).map((entry) => ({
-    type: "ui_web_binding",
+  return blockEntries(getFieldValue(statement, "web_hints")).map((entry) => ({
+    type: "web_hint_binding",
     targetKind: tokenValue(entry.items[0]),
     targetId: tokenValue(entry.items[1]),
     capability:
@@ -1261,8 +1293,8 @@ function parseProjectionUiWebBlock(statement, registry) {
 }
 
 function parseProjectionUiAppShellBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_app_shell")).map((entry) => ({
-    type: "ui_app_shell_binding",
+  return blockEntries(getFieldValue(statement, "app_shell")).map((entry) => ({
+    type: "app_shell_binding",
     key: tokenValue(entry.items[0]) || null,
     value: tokenValue(entry.items[1]) || null,
     raw: normalizeSequence(entry.items),
@@ -1271,8 +1303,8 @@ function parseProjectionUiAppShellBlock(statement) {
 }
 
 function parseProjectionUiDesignBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_design")).map((entry) => ({
-    type: "ui_design_token",
+  return blockEntries(getFieldValue(statement, "design_tokens")).map((entry) => ({
+    type: "design_tokens_token",
     key: tokenValue(entry.items[0]) || null,
     role: tokenValue(entry.items[1]) || null,
     value: tokenValue(entry.items[2]) || null,
@@ -1282,7 +1314,7 @@ function parseProjectionUiDesignBlock(statement) {
 }
 
 function parseProjectionUiNavigationBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_navigation")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "navigation")).map((entry) => {
     const directives = {};
     for (let i = 2; i < entry.items.length; i += 2) {
       const key = tokenValue(entry.items[i]);
@@ -1293,7 +1325,7 @@ function parseProjectionUiNavigationBlock(statement) {
     }
 
     return {
-      type: "ui_navigation_binding",
+      type: "navigation_binding",
       targetKind: tokenValue(entry.items[0]) || null,
       targetId: tokenValue(entry.items[1]) || null,
       directives,
@@ -1304,7 +1336,7 @@ function parseProjectionUiNavigationBlock(statement) {
 }
 
 function parseProjectionUiScreenRegionsBlock(statement) {
-  return blockEntries(getFieldValue(statement, "ui_screen_regions")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "screen_regions")).map((entry) => {
     const directives = {};
     for (let i = 4; i < entry.items.length; i += 2) {
       const key = tokenValue(entry.items[i]);
@@ -1329,8 +1361,9 @@ function parseProjectionUiScreenRegionsBlock(statement) {
   });
 }
 
-function parseProjectionUiComponentsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "ui_components")).map((entry) => {
+function parseProjectionUiComponentsBlock(statement, registry, options = {}) {
+  const includeComponentAlias = options.includeComponentAlias !== false;
+  return blockEntries(getFieldValue(statement, "widget_bindings")).map((entry) => {
     const dataBindings = [];
     const eventBindings = [];
 
@@ -1371,22 +1404,29 @@ function parseProjectionUiComponentsBlock(statement, registry) {
       i += 1;
     }
 
-    const componentId = tokenValue(entry.items[5]);
-    return {
-      type: "ui_component_binding",
+    const widgetId = tokenValue(entry.items[5]);
+    const widgetRef = widgetId
+      ? {
+          id: widgetId,
+          kind: registry.get(widgetId)?.kind || null
+        }
+      : null;
+    const binding = {
+      type: "widget_binding",
       screenId: tokenValue(entry.items[1]) || null,
       region: tokenValue(entry.items[3]) || null,
-      component: componentId
-        ? {
-            id: componentId,
-            kind: registry.get(componentId)?.kind || null
-          }
-        : null,
+      widget: widgetRef,
       dataBindings,
       eventBindings,
       raw: normalizeSequence(entry.items),
       loc: entry.loc
     };
+    if (includeComponentAlias) {
+      // Internal compatibility for existing generator adapters during the
+      // coordinated public DSL rename. Public contracts should expose widget.
+      binding.component = widgetRef;
+    }
+    return binding;
   });
 }
 
@@ -1401,7 +1441,7 @@ function parseProjectionGeneratorDefaultsBlock(statement) {
 }
 
 function parseProjectionDbTablesBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_tables")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "tables")).map((entry) => ({
     type: "db_table_mapping",
     entity: tokenValue(entry.items[0])
       ? {
@@ -1416,7 +1456,7 @@ function parseProjectionDbTablesBlock(statement, registry) {
 }
 
 function parseProjectionDbColumnsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_columns")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "columns")).map((entry) => ({
     type: "db_column_mapping",
     entity: tokenValue(entry.items[0])
       ? {
@@ -1432,7 +1472,7 @@ function parseProjectionDbColumnsBlock(statement, registry) {
 }
 
 function parseProjectionDbKeysBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_keys")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "keys")).map((entry) => ({
     type: "db_key",
     entity: tokenValue(entry.items[0])
       ? {
@@ -1448,7 +1488,7 @@ function parseProjectionDbKeysBlock(statement, registry) {
 }
 
 function parseProjectionDbIndexesBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_indexes")).map((entry) => ({
+  return blockEntries(getFieldValue(statement, "indexes")).map((entry) => ({
     type: "db_index",
     entity: tokenValue(entry.items[0])
       ? {
@@ -1464,7 +1504,7 @@ function parseProjectionDbIndexesBlock(statement, registry) {
 }
 
 function parseProjectionDbRelationsBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_relations")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "relations")).map((entry) => {
     const targetRef = tokenValue(entry.items[4]) || null;
     const [targetEntityId, targetField] = (targetRef || "").split(".");
     return {
@@ -1492,7 +1532,7 @@ function parseProjectionDbRelationsBlock(statement, registry) {
 }
 
 function parseProjectionDbLifecycleBlock(statement, registry) {
-  return blockEntries(getFieldValue(statement, "db_lifecycle")).map((entry) => {
+  return blockEntries(getFieldValue(statement, "lifecycle")).map((entry) => {
     const directives = {};
     for (let i = 2; i < entry.items.length; i += 2) {
       const key = tokenValue(entry.items[i]);
@@ -1503,7 +1543,7 @@ function parseProjectionDbLifecycleBlock(statement, registry) {
     }
 
     return {
-      type: "db_lifecycle",
+      type: "lifecycle",
       entity: tokenValue(entry.items[0])
         ? {
             id: tokenValue(entry.items[0]),
@@ -1803,7 +1843,7 @@ export function normalizeStatement(statement, registry) {
         output: resolveReferenceList(registry, getFieldValue(statement, "output")),
         resolvedDomain: resolveDomainTag(statement, registry)
       };
-    case "component":
+    case "widget":
       return {
         ...base,
         category: symbolValue(getFieldValue(statement, "category")),
@@ -1856,9 +1896,25 @@ export function normalizeStatement(statement, registry) {
     case "projection":
       return {
         ...base,
-        platform: symbolValue(getFieldValue(statement, "platform")),
+        type: symbolValue(getFieldValue(statement, "type")),
+        // Internal compatibility for existing generator adapters during the
+        // coordinated public DSL rename. Public contracts should expose type.
+        platform: symbolValue(getFieldValue(statement, "type")),
         realizes: resolveReferenceList(registry, getFieldValue(statement, "realizes")),
         outputs: symbolValues(getFieldValue(statement, "outputs")),
+        endpoints: parseProjectionHttpBlock(statement, registry),
+        errorResponses: parseProjectionHttpErrorsBlock(statement, registry),
+        wireFields: parseProjectionHttpFieldsBlock(statement, registry),
+        responses: parseProjectionHttpResponsesBlock(statement, registry),
+        preconditions: parseProjectionHttpPreconditionsBlock(statement, registry),
+        idempotency: parseProjectionHttpIdempotencyBlock(statement, registry),
+        cache: parseProjectionHttpCacheBlock(statement, registry),
+        deleteSemantics: parseProjectionHttpDeleteBlock(statement, registry),
+        asyncJobs: parseProjectionHttpAsyncBlock(statement, registry),
+        asyncStatus: parseProjectionHttpStatusBlock(statement, registry),
+        downloads: parseProjectionHttpDownloadBlock(statement, registry),
+        authorization: parseProjectionHttpAuthzBlock(statement, registry),
+        callbacks: parseProjectionHttpCallbacksBlock(statement, registry),
         http: parseProjectionHttpBlock(statement, registry),
         httpErrors: parseProjectionHttpErrorsBlock(statement, registry),
         httpFields: parseProjectionHttpFieldsBlock(statement, registry),
@@ -1873,24 +1929,43 @@ export function normalizeStatement(statement, registry) {
         httpAuthz: parseProjectionHttpAuthzBlock(statement, registry),
         httpCallbacks: parseProjectionHttpCallbacksBlock(statement, registry),
         uiScreens: parseProjectionUiScreensBlock(statement, registry),
+        screens: parseProjectionUiScreensBlock(statement, registry),
         uiCollections: parseProjectionUiCollectionsBlock(statement),
+        collectionViews: parseProjectionUiCollectionsBlock(statement),
         uiActions: parseProjectionUiActionsBlock(statement, registry),
+        screenActions: parseProjectionUiActionsBlock(statement, registry),
         uiVisibility: parseProjectionUiVisibilityBlock(statement, registry),
+        visibilityRules: parseProjectionUiVisibilityBlock(statement, registry),
         uiLookups: parseProjectionUiLookupsBlock(statement, registry),
+        fieldLookups: parseProjectionUiLookupsBlock(statement, registry),
         uiRoutes: parseProjectionUiRoutesBlock(statement),
+        screenRoutes: parseProjectionUiRoutesBlock(statement),
         uiWeb: parseProjectionUiWebBlock(statement, registry),
+        webHints: parseProjectionUiWebBlock(statement, registry),
         uiIos: parseProjectionUiIosBlock(statement, registry),
+        iosHints: parseProjectionUiIosBlock(statement, registry),
         uiAppShell: parseProjectionUiAppShellBlock(statement),
+        appShell: parseProjectionUiAppShellBlock(statement),
         uiDesign: parseProjectionUiDesignBlock(statement),
+        designTokens: parseProjectionUiDesignBlock(statement),
         uiNavigation: parseProjectionUiNavigationBlock(statement),
+        navigation: parseProjectionUiNavigationBlock(statement),
         uiScreenRegions: parseProjectionUiScreenRegionsBlock(statement),
+        screenRegions: parseProjectionUiScreenRegionsBlock(statement),
         uiComponents: parseProjectionUiComponentsBlock(statement, registry),
+        widgetBindings: parseProjectionUiComponentsBlock(statement, registry, { includeComponentAlias: false }),
         dbTables: parseProjectionDbTablesBlock(statement, registry),
+        tables: parseProjectionDbTablesBlock(statement, registry),
         dbColumns: parseProjectionDbColumnsBlock(statement, registry),
+        columns: parseProjectionDbColumnsBlock(statement, registry),
         dbKeys: parseProjectionDbKeysBlock(statement, registry),
+        keys: parseProjectionDbKeysBlock(statement, registry),
         dbIndexes: parseProjectionDbIndexesBlock(statement, registry),
+        indexes: parseProjectionDbIndexesBlock(statement, registry),
         dbRelations: parseProjectionDbRelationsBlock(statement, registry),
+        relations: parseProjectionDbRelationsBlock(statement, registry),
         dbLifecycle: parseProjectionDbLifecycleBlock(statement, registry),
+        lifecycle: parseProjectionDbLifecycleBlock(statement, registry),
         generatorDefaults: parseProjectionGeneratorDefaultsBlock(statement)
       };
     case "orchestration":
@@ -2270,9 +2345,12 @@ export function resolveWorkspace(workspaceAst) {
           ...statement,
           flow: buildCapabilityFlow(statement)
         };
-      case "component":
-        return {
-          ...statement,
+    case "widget":
+      return {
+        ...statement,
+          widgetContract: buildComponentContract(statement),
+          // Internal compatibility for existing generator adapters during the
+          // coordinated public DSL rename. Public contracts should expose widgetContract.
           componentContract: buildComponentContract(statement)
         };
       case "rule":
@@ -2359,7 +2437,7 @@ export function resolveWorkspace(workspaceAst) {
   });
 
   // After per-kind enrichment, add `affectedBy*` lists onto the targets
-  // (capability/entity/rule/projection/component/orchestration/operation) and
+  // (capability/entity/rule/projection/widget/orchestration/operation) and
   // the change-tracking lists onto the carrier kinds (rule, decision).
   const affectedByPitches = sdlcIndex.affectedByPitches;
   const affectedByRequirements = sdlcIndex.affectedByRequirements;
@@ -2376,7 +2454,7 @@ export function resolveWorkspace(workspaceAst) {
       case "capability":
       case "entity":
       case "projection":
-      case "component":
+      case "widget":
       case "orchestration":
       case "operation":
         return {
@@ -2419,6 +2497,11 @@ export function resolveWorkspace(workspaceAst) {
     };
   });
   const finalByKind = groupBy(finalStatements, (statement) => statement.kind);
+  if (finalByKind.widget && !finalByKind.component) {
+    // Internal compatibility for existing generator/context modules while the
+    // public DSL moves from component to widget in one coordinated release.
+    finalByKind.component = finalByKind.widget;
+  }
 
   const graph = mergeArchivedIntoGraph({
     root: workspaceAst.root,

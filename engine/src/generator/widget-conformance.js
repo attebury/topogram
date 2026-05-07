@@ -1,5 +1,5 @@
 import { getProjection, sharedUiProjectionForWeb, uiProjectionCandidates } from "./surfaces/shared.js";
-import { buildComponentBehaviorRealizations } from "../component-behavior.js";
+import { buildWidgetBehaviorRealizations } from "../widget-behavior.js";
 
 function byId(entries = []) {
   return new Map(entries.map((entry) => [entry.id, entry]));
@@ -13,8 +13,8 @@ function sourcePath(entry) {
   return entry?.loc?.file || null;
 }
 
-function componentContract(component) {
-  return component?.componentContract || null;
+function widgetContract(widget) {
+  return widget?.widgetContract || null;
 }
 
 function summarizeProjection(projection) {
@@ -22,28 +22,28 @@ function summarizeProjection(projection) {
     ? {
         id: projection.id,
         name: projection.name || projection.id,
-        platform: projection.platform || null,
+        type: projection.type || projection.platform || null,
         status: projection.status || null,
         source_path: sourcePath(projection)
       }
     : null;
 }
 
-function summarizeComponent(component) {
-  return component
+function summarizeWidget(widget) {
+  return widget
     ? {
-        id: component.id,
-        name: component.name || component.id,
-        category: component.category || null,
-        version: component.version || null,
-        status: component.status || null,
-        source_path: sourcePath(component)
+        id: widget.id,
+        name: widget.name || widget.id,
+        category: widget.category || null,
+        version: widget.version || null,
+        status: widget.status || null,
+        source_path: sourcePath(widget)
       }
     : null;
 }
 
-function summarizeComponentContract(component) {
-  const contract = componentContract(component);
+function summarizeWidgetContract(widget) {
+  const contract = widgetContract(widget);
   if (!contract) return null;
   return {
     id: contract.id,
@@ -57,7 +57,7 @@ function summarizeComponentContract(component) {
     behavior: contract.behavior || [],
     approvals: contract.approvals || [],
     dependencies: contract.dependencies || [],
-    source_path: sourcePath(component)
+    source_path: sourcePath(widget)
   };
 }
 
@@ -136,7 +136,7 @@ function checkRecord({
   message,
   projection,
   sourceProjection,
-  component,
+  widget,
   usage,
   prop = null,
   event = null,
@@ -149,7 +149,7 @@ function checkRecord({
     message,
     projection: projection?.id || null,
     source_projection: sourceProjection?.id || null,
-    component: component?.id || usage.component?.id || null,
+    widget: widget?.id || usage.widget?.id || null,
     screen: usage.screenId || null,
     region: usage.region || null,
     prop,
@@ -159,20 +159,20 @@ function checkRecord({
   };
 }
 
-function componentUsageKey(projection, sourceProjection, usage, index) {
+function widgetUsageKey(projection, sourceProjection, usage, index) {
   return [
     projection.id,
     sourceProjection?.id || projection.id,
     usage.screenId || "screen",
     usage.region || "region",
-    usage.component?.id || "component",
+    usage.widget?.id || "widget",
     String(index)
   ].join(":");
 }
 
-function collectUsageChecks({ graph, projection, sourceProjection, usage, component }) {
+function collectUsageChecks({ graph, projection, sourceProjection, usage, widget }) {
   const checks = [];
-  const contract = componentContract(component);
+  const contract = widgetContract(widget);
   const props = contract?.props || [];
   const events = contract?.events || [];
   const propNames = new Set(props.map((prop) => prop.name));
@@ -183,71 +183,71 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
   const regionKeys = projectionRegionKeys(graph, sourceProjection);
   const realizedIds = projectionContextRealizesIds(graph, sourceProjection);
 
-  if (!component) {
+  if (!widget) {
     checks.push(checkRecord({
-      code: "component_missing",
+      code: "widget_missing",
       severity: "error",
-      message: `Component '${usage.component?.id || "(missing)"}' could not be resolved.`,
+      message: `Widget '${usage.widget?.id || "(missing)"}' could not be resolved.`,
       projection,
       sourceProjection,
-      component,
+      widget,
       usage,
-      suggestedFix: "Create the component or update the projection ui_components binding."
+      suggestedFix: "Create the widget or update the projection widget_bindings binding."
     }));
     return checks;
   }
 
-  if (projection.status === "active" && component.status && component.status !== "active") {
+  if (projection.status === "active" && widget.status && widget.status !== "active") {
     checks.push(checkRecord({
-      code: "component_status_not_active",
+      code: "widget_status_not_active",
       severity: "warning",
-      message: `Active projection '${projection.id}' uses component '${component.id}' with status '${component.status}'.`,
+      message: `Active projection '${projection.id}' uses widget '${widget.id}' with status '${widget.status}'.`,
       projection,
       sourceProjection,
-      component,
+      widget,
       usage,
-      suggestedFix: "Promote the component to active or move the usage behind an explicit review boundary."
+      suggestedFix: "Promote the widget to active or move the usage behind an explicit review boundary."
     }));
   }
 
   if (!screens.has(usage.screenId)) {
     checks.push(checkRecord({
-      code: "component_usage_screen_missing",
+      code: "widget_usage_screen_missing",
       severity: "error",
-      message: `Component usage references missing screen '${usage.screenId}'.`,
+      message: `Widget usage references missing screen '${usage.screenId}'.`,
       projection,
       sourceProjection,
-      component,
+      widget,
       usage,
-      suggestedFix: "Add the screen to ui_screens or update the component usage screen id."
+      suggestedFix: "Add the screen to screens or update the widget usage screen id."
     }));
   }
 
   if (!regionKeys.has(`${usage.screenId}:${usage.region}`)) {
     checks.push(checkRecord({
-      code: "component_usage_region_missing",
+      code: "widget_usage_region_missing",
       severity: "error",
-      message: `Component usage references undeclared region '${usage.region}' on screen '${usage.screenId}'.`,
+      message: `Widget usage references undeclared region '${usage.region}' on screen '${usage.screenId}'.`,
       projection,
       sourceProjection,
-      component,
+      widget,
       usage,
-      suggestedFix: "Add the region to ui_screen_regions or update the component usage region."
+      suggestedFix: "Add the region to screen_regions or update the widget usage region."
     }));
   }
 
   for (const prop of props.filter((entry) => entry.requiredness === "required")) {
     if (!boundProps.has(prop.name)) {
       checks.push(checkRecord({
-        code: "component_required_prop_missing",
+        code: "widget_required_prop_missing",
         severity: "error",
-        message: `Required prop '${prop.name}' is not bound for component '${component.id}'.`,
+        message: `Required prop '${prop.name}' is not bound for widget '${widget.id}'.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         prop: prop.name,
-        suggestedFix: `Add 'data ${prop.name} from <source>' to the projection ui_components entry.`
+        suggestedFix: `Add 'data ${prop.name} from <source>' to the projection widget_bindings entry.`
       }));
     }
   }
@@ -255,25 +255,25 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
   for (const binding of usage.dataBindings || []) {
     if (!propNames.has(binding.prop)) {
       checks.push(checkRecord({
-        code: "component_prop_unknown",
+        code: "widget_prop_unknown",
         severity: "error",
-        message: `Prop '${binding.prop}' is not declared by component '${component.id}'.`,
+        message: `Prop '${binding.prop}' is not declared by widget '${widget.id}'.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         prop: binding.prop || null,
-        suggestedFix: "Declare the prop on the component or update the projection binding."
+        suggestedFix: "Declare the prop on the widget or update the projection binding."
       }));
     }
     if (!binding.source?.id || !statements.has(binding.source.id)) {
       checks.push(checkRecord({
-        code: "component_data_source_missing",
+        code: "widget_data_source_missing",
         severity: "error",
         message: `Data binding for prop '${binding.prop}' references a missing source.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         prop: binding.prop || null,
         suggestedFix: "Bind the prop to an existing capability, projection, shape, or entity."
@@ -284,26 +284,26 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
   for (const binding of usage.eventBindings || []) {
     if (!eventNames.has(binding.event)) {
       checks.push(checkRecord({
-        code: "component_event_unknown",
+        code: "widget_event_unknown",
         severity: "error",
-        message: `Event '${binding.event}' is not declared by component '${component.id}'.`,
+        message: `Event '${binding.event}' is not declared by widget '${widget.id}'.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         event: binding.event || null,
-        suggestedFix: "Declare the event on the component or update the projection binding."
+        suggestedFix: "Declare the event on the widget or update the projection binding."
       }));
     }
     if (binding.action === "navigate") {
       if (!screens.has(binding.target?.id)) {
         checks.push(checkRecord({
-          code: "component_event_navigation_target_missing",
+          code: "widget_event_navigation_target_missing",
           severity: "error",
           message: `Event '${binding.event}' navigates to missing screen '${binding.target?.id || "(missing)"}'.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           event: binding.event || null,
           suggestedFix: "Add the target screen or update the event navigation target."
@@ -313,24 +313,24 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       const target = binding.target?.id ? statements.get(binding.target.id) : null;
       if (!target || target.kind !== "capability") {
         checks.push(checkRecord({
-          code: "component_event_action_missing",
+          code: "widget_event_action_missing",
           severity: "error",
           message: `Event '${binding.event}' targets missing capability '${binding.target?.id || "(missing)"}'.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           event: binding.event || null,
           suggestedFix: "Bind the event to an existing capability."
         }));
       } else if (!realizedIds.has(target.id)) {
         checks.push(checkRecord({
-          code: "component_event_action_not_in_projection",
+          code: "widget_event_action_not_in_projection",
           severity: "error",
           message: `Event '${binding.event}' targets capability '${target.id}', but projection '${sourceProjection.id}' does not realize it through its UI context.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           event: binding.event || null,
           suggestedFix: `Add '${target.id}' to projection '${sourceProjection.id}' or an inherited shared projection realizes list, or choose a capability already in this projection context.`
@@ -338,12 +338,12 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       }
     } else {
       checks.push(checkRecord({
-        code: "component_event_action_unsupported",
+        code: "widget_event_action_unsupported",
         severity: "error",
         message: `Event '${binding.event}' uses unsupported action '${binding.action}'.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         event: binding.event || null,
         suggestedFix: "Use 'navigate' or 'action'."
@@ -355,12 +355,12 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
     const stateProp = behavior.directives?.state;
     if (stateProp && !propNames.has(stateProp)) {
       checks.push(checkRecord({
-        code: "component_behavior_prop_missing",
+        code: "widget_behavior_prop_missing",
         severity: "error",
         message: `Behavior '${behavior.kind}' references missing prop '${stateProp}'.`,
         projection,
         sourceProjection,
-        component,
+        widget,
         usage,
         prop: stateProp,
         behavior: behavior.kind,
@@ -373,12 +373,12 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
     for (const eventName of emits) {
       if (!eventNames.has(eventName)) {
         checks.push(checkRecord({
-          code: "component_behavior_event_missing",
+          code: "widget_behavior_event_missing",
           severity: "error",
           message: `Behavior '${behavior.kind}' references missing event '${eventName}'.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           event: eventName,
           behavior: behavior.kind,
@@ -388,16 +388,16 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       }
       if (!(usage.eventBindings || []).some((binding) => binding.event === eventName)) {
         checks.push(checkRecord({
-          code: "component_behavior_event_unbound",
+          code: "widget_behavior_event_unbound",
           severity: "warning",
           message: `Behavior '${behavior.kind}' emits event '${eventName}', but this projection usage does not bind that event to navigation or an action.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           event: eventName,
           behavior: behavior.kind,
-          suggestedFix: `Add 'event ${eventName} navigate <screen>' or 'event ${eventName} action <capability>' to the projection ui_components entry.`
+          suggestedFix: `Add 'event ${eventName} navigate <screen>' or 'event ${eventName} action <capability>' to the projection widget_bindings entry.`
         }));
       }
     }
@@ -409,16 +409,16 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       if (eventNames.has(actionTarget)) {
         if (!(usage.eventBindings || []).some((binding) => binding.event === actionTarget)) {
           checks.push(checkRecord({
-            code: "component_behavior_action_unbound",
+            code: "widget_behavior_action_unbound",
             severity: "warning",
             message: `Behavior '${behavior.kind}' declares action event '${actionTarget}', but this projection usage does not bind that event to navigation or an action.`,
             projection,
             sourceProjection,
-            component,
+            widget,
             usage,
             event: actionTarget,
             behavior: behavior.kind,
-            suggestedFix: `Add 'event ${actionTarget} action <capability>' or 'event ${actionTarget} navigate <screen>' to the projection ui_components entry.`
+            suggestedFix: `Add 'event ${actionTarget} action <capability>' or 'event ${actionTarget} navigate <screen>' to the projection widget_bindings entry.`
           }));
         }
         continue;
@@ -427,12 +427,12 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       const target = statements.get(actionTarget);
       if (!target || target.kind !== "capability") {
         checks.push(checkRecord({
-          code: "component_behavior_action_missing",
+          code: "widget_behavior_action_missing",
           severity: "error",
           message: `Behavior '${behavior.kind}' references missing capability action '${actionTarget}'.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           behavior: behavior.kind,
           suggestedFix: "Update the behavior directive or declare the referenced capability."
@@ -441,12 +441,12 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
       }
       if (!realizedIds.has(actionTarget)) {
         checks.push(checkRecord({
-          code: "component_behavior_action_not_in_projection",
+          code: "widget_behavior_action_not_in_projection",
           severity: "error",
           message: `Behavior '${behavior.kind}' references capability '${actionTarget}', but projection '${sourceProjection.id}' does not realize it.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           behavior: behavior.kind,
           suggestedFix: `Add '${actionTarget}' to projection '${sourceProjection.id}' realizes or choose a capability already in this projection context.`
@@ -458,15 +458,15 @@ function collectUsageChecks({ graph, projection, sourceProjection, usage, compon
         binding.target?.kind === "capability"
       )) {
         checks.push(checkRecord({
-          code: "component_behavior_action_unbound",
+          code: "widget_behavior_action_unbound",
           severity: "warning",
-          message: `Behavior '${behavior.kind}' declares capability action '${actionTarget}', but this projection usage does not bind any component event to that capability.`,
+          message: `Behavior '${behavior.kind}' declares capability action '${actionTarget}', but this projection usage does not bind any widget event to that capability.`,
           projection,
           sourceProjection,
-          component,
+          widget,
           usage,
           behavior: behavior.kind,
-          suggestedFix: `Add 'event <component_event> action ${actionTarget}' to the projection ui_components entry.`
+          suggestedFix: `Add 'event <widget_event> action ${actionTarget}' to the projection widget_bindings entry.`
         }));
       }
     }
@@ -507,35 +507,36 @@ function candidateProjections(graph, projectionId) {
   return [...direct, ...inherited].sort((a, b) => a.id.localeCompare(b.id));
 }
 
-function relatedVerificationFiles(graph, componentIds, projectionIds) {
-  const ids = new Set([...componentIds, ...projectionIds]);
+function relatedVerificationFiles(graph, widgetIds, projectionIds) {
+  const ids = new Set([...widgetIds, ...projectionIds]);
   return stableUnique((graph.byKind.verification || [])
     .filter((verification) => (verification.validates || []).some((ref) => ids.has(ref.id)))
     .map((verification) => sourcePath(verification)));
 }
 
-export function generateComponentConformanceReport(graph, options = {}) {
-  const components = byId(graph.byKind.component || []);
-  if (options.componentId && !components.has(options.componentId)) {
-    throw new Error(`No component found with id '${options.componentId}'`);
+export function generateWidgetConformanceReport(graph, options = {}) {
+  const selectedWidgetId = options.widgetId || options.componentId || null;
+  const widgets = byId(graph.byKind.widget || []);
+  if (selectedWidgetId && !widgets.has(selectedWidgetId)) {
+    throw new Error(`No widget found with id '${selectedWidgetId}'`);
   }
 
   const projectionUsageRecords = [];
   const checks = [];
-  const referencedComponentIds = new Set();
+  const referencedWidgetIds = new Set();
   const affectedProjectionIds = new Set();
 
   for (const projection of candidateProjections(graph, options.projectionId)) {
     for (const entry of projectionUsageEntries(graph, projection)) {
-      const componentId = entry.usage.component?.id || null;
-      if (options.componentId && componentId !== options.componentId) {
+      const widgetId = entry.usage.widget?.id || null;
+      if (selectedWidgetId && widgetId !== selectedWidgetId) {
         continue;
       }
-      const component = componentId ? components.get(componentId) : null;
-      if (componentId) referencedComponentIds.add(componentId);
+      const widget = widgetId ? widgets.get(widgetId) : null;
+      if (widgetId) referencedWidgetIds.add(widgetId);
       affectedProjectionIds.add(entry.projection.id);
       if (entry.sourceProjection?.id) affectedProjectionIds.add(entry.sourceProjection.id);
-      const usageChecks = collectUsageChecks({ graph, projection: entry.projection, sourceProjection: entry.sourceProjection, usage: entry.usage, component });
+      const usageChecks = collectUsageChecks({ graph, projection: entry.projection, sourceProjection: entry.sourceProjection, usage: entry.usage, widget });
       checks.push(...usageChecks);
       const outcome = usageChecks.some((check) => check.severity === "error")
         ? "error"
@@ -543,7 +544,7 @@ export function generateComponentConformanceReport(graph, options = {}) {
           ? "warning"
           : "pass";
       projectionUsageRecords.push({
-        key: componentUsageKey(entry.projection, entry.sourceProjection, entry.usage, entry.index),
+        key: widgetUsageKey(entry.projection, entry.sourceProjection, entry.usage, entry.index),
         projection: summarizeProjection(entry.projection),
         source_projection: entry.sourceProjection.id === entry.projection.id ? null : summarizeProjection(entry.sourceProjection),
         screen: {
@@ -552,29 +553,29 @@ export function generateComponentConformanceReport(graph, options = {}) {
           title: projectionScreenMap(graph, entry.sourceProjection).get(entry.usage.screenId)?.title || null
         },
         region: entry.usage.region || null,
-        component: summarizeComponent(component) || { id: componentId, name: componentId, category: null, version: null, status: null, source_path: null },
+        widget: summarizeWidget(widget) || { id: widgetId, name: widgetId, category: null, version: null, status: null, source_path: null },
         data_bindings: entry.usage.dataBindings || [],
         event_bindings: entry.usage.eventBindings || [],
-        behavior_realizations: buildComponentBehaviorRealizations(componentContract(component), entry.usage),
+        behavior_realizations: buildWidgetBehaviorRealizations(widgetContract(widget), entry.usage),
         outcome,
         check_codes: usageChecks.map((check) => check.code)
       });
     }
   }
 
-  const componentFiles = stableUnique([...referencedComponentIds].map((id) => sourcePath(components.get(id))));
+  const widgetFiles = stableUnique([...referencedWidgetIds].map((id) => sourcePath(widgets.get(id))));
   const projectionFiles = stableUnique(
     [...affectedProjectionIds].map((id) => sourcePath((graph.byKind.projection || []).find((projection) => projection.id === id)))
   );
-  const verificationFiles = relatedVerificationFiles(graph, referencedComponentIds, affectedProjectionIds);
+  const verificationFiles = relatedVerificationFiles(graph, referencedWidgetIds, affectedProjectionIds);
   const errors = checks.filter((check) => check.severity === "error");
   const warnings = checks.filter((check) => check.severity === "warning");
 
   return {
-    type: "component_conformance_report",
+    type: "widget_conformance_report",
     filters: {
       projection: options.projectionId || null,
-      component: options.componentId || null
+      widget: selectedWidgetId
     },
     summary: {
       total_usages: projectionUsageRecords.length,
@@ -584,22 +585,22 @@ export function generateComponentConformanceReport(graph, options = {}) {
       warnings: warnings.length,
       errors: errors.length,
       affected_projections: stableUnique([...affectedProjectionIds]),
-      affected_components: stableUnique([...referencedComponentIds])
+      affected_widgets: stableUnique([...referencedWidgetIds])
     },
     projection_usages: projectionUsageRecords,
     checks,
-    component_contracts: stableUnique([...referencedComponentIds])
-      .map((id) => summarizeComponentContract(components.get(id)))
+    widget_contracts: stableUnique([...referencedWidgetIds])
+      .map((id) => summarizeWidgetContract(widgets.get(id)))
       .filter(Boolean),
     write_scope: {
-      component_files: componentFiles,
+      widget_files: widgetFiles,
       projection_files: projectionFiles,
       verification_files: verificationFiles,
-      paths: stableUnique([...componentFiles, ...projectionFiles, ...verificationFiles])
+      paths: stableUnique([...widgetFiles, ...projectionFiles, ...verificationFiles])
     },
     impact: {
       projections: stableUnique([...affectedProjectionIds]),
-      components: stableUnique([...referencedComponentIds])
+      widgets: stableUnique([...referencedWidgetIds])
     }
   };
 }
@@ -644,9 +645,9 @@ function effectTypesFromBehavior(behavior) {
 function checksForBehavior(conformanceReport, usage, behavior) {
   return (conformanceReport.checks || [])
     .filter((check) =>
-      check.code?.startsWith("component_behavior_") &&
+      check.code?.startsWith("widget_behavior_") &&
       check.projection === usage.projection?.id &&
-      check.component === usage.component?.id &&
+      check.widget === usage.widget?.id &&
       check.screen === usage.screen?.id &&
       check.region === usage.region &&
       (!check.behavior || check.behavior === behavior.kind)
@@ -667,29 +668,29 @@ function behaviorHighlights(behaviorRows) {
     if (row.behavior.status === "partial") {
       highlights.push({
         severity: "warning",
-        code: "component_behavior_partial",
-        message: `Behavior '${row.behavior.kind}' is partially realized for component '${row.component.id}' on screen '${row.screen.id}'.`,
+        code: "widget_behavior_partial",
+        message: `Behavior '${row.behavior.kind}' is partially realized for widget '${row.widget.id}' on screen '${row.screen.id}'.`,
         projection: row.projection.id,
-        component: row.component.id,
+        widget: row.widget.id,
         screen: row.screen.id,
         region: row.region,
         behavior: row.behavior.kind,
-        suggested_fix: "Bind the required behavior data, events, or capability actions in the projection ui_components entry."
+        suggested_fix: "Bind the required behavior data, events, or capability actions in the projection widget_bindings entry."
       });
     }
     for (const emittedEvent of row.emits || []) {
       if (!emittedEvent.bound) {
         highlights.push({
           severity: "warning",
-          code: "component_behavior_event_unbound",
-          message: `Behavior '${row.behavior.kind}' emits event '${emittedEvent.event}', but this component usage does not bind it.`,
+          code: "widget_behavior_event_unbound",
+          message: `Behavior '${row.behavior.kind}' emits event '${emittedEvent.event}', but this widget usage does not bind it.`,
           projection: row.projection.id,
-          component: row.component.id,
+          widget: row.widget.id,
           screen: row.screen.id,
           region: row.region,
           event: emittedEvent.event || null,
           behavior: row.behavior.kind,
-          suggested_fix: `Add 'event ${emittedEvent.event} navigate <screen>' or 'event ${emittedEvent.event} action <capability>' to the projection ui_components entry.`
+          suggested_fix: `Add 'event ${emittedEvent.event} navigate <screen>' or 'event ${emittedEvent.event} action <capability>' to the projection widget_bindings entry.`
         });
       }
     }
@@ -698,18 +699,18 @@ function behaviorHighlights(behaviorRows) {
         const target = action.capability?.id || action.event || "(unknown)";
         highlights.push({
           severity: "warning",
-          code: "component_behavior_action_unbound",
-          message: `Behavior '${row.behavior.kind}' declares action '${target}', but this component usage does not bind it.`,
+          code: "widget_behavior_action_unbound",
+          message: `Behavior '${row.behavior.kind}' declares action '${target}', but this widget usage does not bind it.`,
           projection: row.projection.id,
-          component: row.component.id,
+          widget: row.widget.id,
           screen: row.screen.id,
           region: row.region,
           event: action.event || null,
           capability: action.capability?.id || null,
           behavior: row.behavior.kind,
           suggested_fix: action.capability?.id
-            ? `Add 'event <component_event> action ${action.capability.id}' to the projection ui_components entry.`
-            : `Add 'event ${action.event} action <capability>' or 'event ${action.event} navigate <screen>' to the projection ui_components entry.`
+            ? `Add 'event <widget_event> action ${action.capability.id}' to the projection widget_bindings entry.`
+            : `Add 'event ${action.event} action <capability>' or 'event ${action.event} navigate <screen>' to the projection widget_bindings entry.`
         });
       }
     }
@@ -739,8 +740,8 @@ function groupBehaviorRows(rows, keyFn, itemFn = null) {
     }));
 }
 
-export function generateComponentBehaviorReport(graph, options = {}) {
-  const conformanceReport = generateComponentConformanceReport(graph, options);
+export function generateWidgetBehaviorReport(graph, options = {}) {
+  const conformanceReport = generateWidgetConformanceReport(graph, options);
   const behaviorRows = [];
 
   for (const usage of conformanceReport.projection_usages || []) {
@@ -752,7 +753,7 @@ export function generateComponentBehaviorReport(graph, options = {}) {
         source_projection: usage.source_projection,
         screen: usage.screen,
         region: usage.region,
-        component: usage.component,
+        widget: usage.widget,
         behavior: {
           kind: behavior.kind || null,
           source: behavior.source || null,
@@ -775,7 +776,7 @@ export function generateComponentBehaviorReport(graph, options = {}) {
   const affectedCapabilities = stableUnique(behaviorRows.flatMap((row) => row.capabilities));
 
   return {
-    type: "component_behavior_report",
+    type: "widget_behavior_report",
     filters: conformanceReport.filters,
     summary: {
       total_usages: conformanceReport.summary.total_usages,
@@ -785,14 +786,14 @@ export function generateComponentBehaviorReport(graph, options = {}) {
       declared: behaviorRows.filter((row) => row.behavior.status === "declared").length,
       warnings: conformanceReport.summary.warnings,
       errors: conformanceReport.summary.errors,
-      affected_components: conformanceReport.summary.affected_components,
+      affected_widgets: conformanceReport.summary.affected_widgets,
       affected_projections: conformanceReport.summary.affected_projections,
       affected_capabilities: affectedCapabilities
     },
     groups: {
-      components: groupBehaviorRows(
+      widgets: groupBehaviorRows(
         behaviorRows,
-        (row) => [row.component.id].filter(Boolean),
+        (row) => [row.widget.id].filter(Boolean),
         (row) => row.key
       ),
       screens: groupBehaviorRows(
@@ -813,11 +814,11 @@ export function generateComponentBehaviorReport(graph, options = {}) {
     },
     behaviors: behaviorRows,
     highlights,
-    checks: conformanceReport.checks.filter((check) => check.code?.startsWith("component_behavior_")),
+    checks: conformanceReport.checks.filter((check) => check.code?.startsWith("widget_behavior_")),
     write_scope: conformanceReport.write_scope,
     impact: {
       projections: conformanceReport.impact.projections,
-      components: conformanceReport.impact.components,
+      widgets: conformanceReport.impact.widgets,
       capabilities: affectedCapabilities
     }
   };

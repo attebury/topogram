@@ -1,6 +1,6 @@
-component component_missing_event_shape {
+widget widget_missing_event_shape {
   name "Missing Event Shape"
-  description "Invalid component fixture"
+  description "Invalid widget fixture"
   props {
     rows array required
   }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Holds decoded ui-web-contract.json for runtime-driven navigation (parity with web bundle).
+/// Holds decoded ui-surface-contract.json for runtime-driven navigation (parity with web bundle).
 public final class TodoUiContract: ObservableObject {
     public let raw: [String: Any]
 
@@ -12,9 +12,9 @@ public final class TodoUiContract: ObservableObject {
     }
 
     public static func loadBundled() throws -> Data {
-        guard let url = Bundle.module.url(forResource: "ui-web-contract", withExtension: "json"),
+        guard let url = Bundle.module.url(forResource: "ui-surface-contract", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
-            throw NSError(domain: "TodoUiContract", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ui-web-contract.json"])
+            throw NSError(domain: "TodoUiContract", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ui-surface-contract.json"])
         }
         return data
     }

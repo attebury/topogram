@@ -9,14 +9,15 @@ import {
   summarizeDomain
 } from "./shared.js";
 
-function platformsFromProjections(projections) {
-  const platforms = new Set();
+function projectionTypesFromProjections(projections) {
+  const projectionTypes = new Set();
   for (const projection of projections) {
-    if (projection?.platform) {
-      platforms.add(projection.platform);
+    const projectionType = projection?.type || projection?.platform;
+    if (projectionType) {
+      projectionTypes.add(projectionType);
     }
   }
-  return [...platforms].sort();
+  return [...projectionTypes].sort();
 }
 
 export function generateDomainCoverage(graph, options = {}) {
@@ -45,17 +46,17 @@ export function generateDomainCoverage(graph, options = {}) {
     );
   }
 
-  const platforms = platformsFromProjections(projectionStatements);
+  const projectionTypes = projectionTypesFromProjections(projectionStatements);
   const matrix = {};
   for (const capabilityId of capabilities) {
     matrix[capabilityId] = {};
-    for (const platform of platforms) {
+    for (const projectionType of projectionTypes) {
       const realized = projectionStatements.some(
         (projection) =>
-          projection.platform === platform &&
+          (projection.type || projection.platform) === projectionType &&
           (projection.realizes || []).some((entry) => entry.id === capabilityId)
       );
-      matrix[capabilityId][platform] = realized;
+      matrix[capabilityId][projectionType] = realized;
     }
   }
 
@@ -64,7 +65,7 @@ export function generateDomainCoverage(graph, options = {}) {
     version: 1,
     focus: { kind: "domain", id: domain.id },
     summary: summarizeDomain(domain),
-    platforms,
+    projectionTypes,
     capabilities,
     entities,
     rules,

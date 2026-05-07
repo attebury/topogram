@@ -194,8 +194,8 @@ function printUsage(options = {}) {
   console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
   console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
   console.log("Usage: topogram check [path] [--json]");
-  console.log("   or: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
-  console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("   or: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
+  console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
   console.log("   or: topogram query list [--json]");
@@ -252,11 +252,11 @@ function printUsage(options = {}) {
   console.log("  topogram new ./my-app --template todo");
   console.log("  topogram check");
   console.log("  topogram check --json");
-  console.log("  topogram component check --projection proj_ui_web");
-  console.log("  topogram component behavior --projection proj_ui_web");
+  console.log("  topogram widget check --projection proj_web_surface");
+  console.log("  topogram widget behavior --projection proj_web_surface");
   console.log("  topogram query list");
-  console.log("  topogram query show component-behavior");
-  console.log("  topogram query component-behavior ./topogram --projection proj_ui_web --json");
+  console.log("  topogram query show widget-behavior");
+  console.log("  topogram query widget-behavior ./topogram --projection proj_web_surface --json");
   console.log("  topogram generator list");
   console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
@@ -325,35 +325,35 @@ function printUsage(options = {}) {
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
-  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--component <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
+  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--widget <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
   console.log("   or: node ./src/cli.js generate journeys <path> [--write]");
   console.log("   or: node ./src/cli.js report gaps <path> [--write]");
-  console.log("   or: node ./src/cli.js query task-mode <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query task-mode <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query adoption-plan <path>");
   console.log("   or: node ./src/cli.js query maintained-boundary <path>");
   console.log("   or: node ./src/cli.js query maintained-conformance <path> [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--domain <id>]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>]");
   console.log("   or: node ./src/cli.js query domain-list <path>");
   console.log("   or: node ./src/cli.js query domain-coverage <path> --domain <id>");
-  console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>]");
-  console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query component-behavior <path> [--projection <id>] [--component <id>] [--json]");
-  console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>]");
+  console.log("   or: node ./src/cli.js query write-scope <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query widget-behavior <path> [--projection <id>] [--widget <id>] [--json]");
+  console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query import-plan <path>");
-  console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query canonical-writes <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query canonical-writes <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query multi-agent-plan <path> --mode import-adopt");
-  console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--component <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-activation <path> --mode <id> [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-diff <path> --provider <id> [--preset <id>]");
   console.log("   or: node ./src/cli.js query workflow-preset-customization <path> --provider <id> --preset <id>");
@@ -366,10 +366,10 @@ function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
-  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-component-contract, component-conformance-report, component-behavior-report, ui-web-contract, ui-web-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
+  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-widget-contract, widget-conformance-report, widget-behavior-report, ui-surface-contract, ui-surface-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
   console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Import tracks: db, api, ui, workflows, verification");
-  console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, components, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
+  console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, widgets, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
 }
 
 function printNewHelp() {
@@ -405,15 +405,15 @@ function printGenerateHelp() {
   console.log("Explicit --generate targets print JSON by default and write files only with --write.");
   console.log("");
   console.log("Common artifact targets:");
-  console.log("  ui-component-contract");
-  console.log("  component-conformance-report");
-  console.log("  component-behavior-report");
+  console.log("  ui-widget-contract");
+  console.log("  widget-conformance-report");
+  console.log("  widget-behavior-report");
   console.log("  context-slice");
   console.log("  context-diff");
   console.log("  verification-targets");
   console.log("");
   console.log("Selectors:");
-  console.log("  --component <id>");
+  console.log("  --widget <id>");
   console.log("  --capability <id>");
   console.log("  --projection <id>");
   console.log("  --entity <id>");
@@ -423,27 +423,27 @@ function printGenerateHelp() {
   console.log("  topogram generate");
   console.log("  topogram generate ./topogram --out ./app");
   console.log("  topogram generate app ./topogram --out ./app");
-  console.log("  topogram generate ./topogram --generate ui-component-contract --component component_ui_data_grid --json");
-  console.log("  topogram generate ./topogram --generate component-conformance-report --projection proj_ui_web --json");
-  console.log("  topogram generate ./topogram --generate component-behavior-report --projection proj_ui_web --json");
-  console.log("  topogram generate ./topogram --generate ui-component-contract --write --out-dir ./contracts");
+  console.log("  topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid --json");
+  console.log("  topogram generate ./topogram --generate widget-conformance-report --projection proj_web_surface --json");
+  console.log("  topogram generate ./topogram --generate widget-behavior-report --projection proj_web_surface --json");
+  console.log("  topogram generate ./topogram --generate ui-widget-contract --write --out-dir ./contracts");
 }
 
-function printComponentHelp() {
-  console.log("Usage: topogram component check [path] [--projection <id>] [--component <id>] [--json]");
-  console.log("   or: topogram component behavior [path] [--projection <id>] [--component <id>] [--json]");
+function printWidgetHelp() {
+  console.log("Usage: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
+  console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("");
-  console.log("Checks projection ui_components usage against reusable component contracts and behavior realizations.");
+  console.log("Checks projection widget_bindings usage against reusable widget contracts and behavior realizations.");
   console.log("");
   console.log("Defaults: path is ./topogram.");
   console.log("");
   console.log("Examples:");
-  console.log("  topogram component check");
-  console.log("  topogram component check --projection proj_ui_web");
-  console.log("  topogram component check ./topogram --component component_ui_data_grid --json");
-  console.log("  topogram component behavior");
-  console.log("  topogram component behavior --projection proj_ui_web");
-  console.log("  topogram component behavior ./topogram --component component_ui_data_grid --json");
+  console.log("  topogram widget check");
+  console.log("  topogram widget check --projection proj_web_surface");
+  console.log("  topogram widget check ./topogram --widget widget_data_grid --json");
+  console.log("  topogram widget behavior");
+  console.log("  topogram widget behavior --projection proj_web_surface");
+  console.log("  topogram widget behavior ./topogram --widget widget_data_grid --json");
 }
 
 function queryDefinitions() {
@@ -452,79 +452,79 @@ function queryDefinitions() {
       name: "slice",
       purpose: "Give an agent the smallest graph slice needed to reason about one selected semantic surface.",
       description: "Return a focused semantic context slice for one selected surface.",
-      selectors: ["capability", "workflow", "projection", "component", "entity", "journey", "domain"],
+      selectors: ["capability", "workflow", "projection", "widget", "entity", "journey", "domain"],
       args: ["[path]", "[selectors]", "[--json]"],
       output: "context_slice",
-      example: "topogram query slice ./topogram --component component_ui_data_grid"
+      example: "topogram query slice ./topogram --widget widget_data_grid"
     },
     {
       name: "verification-targets",
       purpose: "Map a selected change or mode to the smallest verification set worth running.",
       description: "Return the smallest verification target set for a mode, selector, or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "verification_targets",
-      example: "topogram query verification-targets ./topogram --component component_ui_data_grid"
+      example: "topogram query verification-targets ./topogram --widget widget_data_grid"
     },
     {
-      name: "component-behavior",
-      purpose: "Show how reusable component behavior is realized by projection usage.",
-      description: "Return component behavior realization data grouped by component, screen, capability, and effect.",
-      selectors: ["projection", "component"],
-      args: ["[path]", "[--projection <id>]", "[--component <id>]", "[--json]"],
-      output: "component_behavior_report",
-      example: "topogram query component-behavior ./topogram --projection proj_ui_web --component component_ui_data_grid --json"
+      name: "widget-behavior",
+      purpose: "Show how reusable widget behavior is realized by projection usage.",
+      description: "Return widget behavior realization data grouped by widget, screen, capability, and effect.",
+      selectors: ["projection", "widget"],
+      args: ["[path]", "[--projection <id>]", "[--widget <id>]", "[--json]"],
+      output: "widget_behavior_report",
+      example: "topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json"
     },
     {
       name: "change-plan",
       purpose: "Summarize what a selected change affects before code or Topogram edits start.",
       description: "Return the semantic change plan, generator targets, risk, and alignment recommendations.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "change_plan_query",
-      example: "topogram query change-plan ./topogram --component component_ui_data_grid"
+      example: "topogram query change-plan ./topogram --widget widget_data_grid"
     },
     {
       name: "review-packet",
       purpose: "Bundle the context a human or agent needs to review a selected semantic change.",
       description: "Return the review packet for a selected change or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "review_packet_query",
-      example: "topogram query review-packet ./topogram --component component_ui_data_grid"
+      example: "topogram query review-packet ./topogram --widget widget_data_grid"
     },
     {
       name: "resolved-workflow-context",
       purpose: "Resolve workflow guidance and artifact load order for a selected mode or change.",
       description: "Return resolved workflow guidance, artifact load order, preset policy, and recommended artifact queries.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "resolved_workflow_context_query",
-      example: "topogram query resolved-workflow-context ./topogram --mode modeling --component component_ui_data_grid --json"
+      example: "topogram query resolved-workflow-context ./topogram --mode modeling --widget widget_data_grid --json"
     },
     {
       name: "single-agent-plan",
       purpose: "Give one coding agent a bounded plan, artifact set, and write guidance.",
       description: "Return a single-agent operating plan for a mode and optional selector.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "single_agent_plan_query",
-      example: "topogram query single-agent-plan ./topogram --mode modeling --component component_ui_data_grid --json"
+      example: "topogram query single-agent-plan ./topogram --mode modeling --widget widget_data_grid --json"
     },
     {
       name: "risk-summary",
       purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "risk_summary_query",
-      example: "topogram query risk-summary ./topogram --component component_ui_data_grid"
+      example: "topogram query risk-summary ./topogram --widget widget_data_grid"
     },
     {
       name: "proceed-decision",
       purpose: "Tell a human or agent whether enough context and proof exist to proceed.",
       description: "Return a proceed/no-go decision for the current selected work.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "surface", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "proceed_decision_query",
       example: "topogram query proceed-decision ./topogram --mode verification"
@@ -533,10 +533,10 @@ function queryDefinitions() {
       name: "write-scope",
       purpose: "Define where an agent may edit for a selected semantic surface.",
       description: "Return safe edit boundaries for a selected mode or semantic surface.",
-      selectors: ["mode", "capability", "workflow", "projection", "component", "entity", "journey", "from-topogram"],
+      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "write_scope_query",
-      example: "topogram query write-scope ./topogram --component component_ui_data_grid"
+      example: "topogram query write-scope ./topogram --widget widget_data_grid"
     }
   ];
 }
@@ -565,7 +565,7 @@ function buildQueryShowPayload(name) {
 function printQueryHelp() {
   console.log("Usage: topogram query list [--json]");
   console.log("   or: topogram query show <name> [--json]");
-  console.log("   or: topogram query component-behavior [path] [--projection <id>] [--component <id>] [--json]");
+  console.log("   or: topogram query widget-behavior [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram query <name> [path] [selectors] [--json]");
   console.log("");
   console.log("Agent-facing queries return focused JSON packets for context, review, verification, and generation follow-up.");
@@ -856,8 +856,8 @@ function printCommandHelp(command) {
     printGenerateHelp();
     return true;
   }
-  if (command === "component") {
-    printComponentHelp();
+  if (command === "widget") {
+    printWidgetHelp();
     return true;
   }
   if (command === "query") {
@@ -1035,8 +1035,8 @@ function targetRequiresImplementationProvider(target) {
 
 function topologyComponentReferences(component) {
   return {
-    api: component.api || null,
-    database: component.database || null
+    uses_api: component.uses_api || component.api || null,
+    uses_database: component.uses_database || component.database || null
   };
 }
 
@@ -1052,10 +1052,10 @@ function summarizeProjectTopology(config) {
       ownership: output?.ownership || null
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
-  const components = (config?.topology?.components || [])
+  const runtimes = (config?.topology?.runtimes || config?.topology?.components || [])
     .map((component) => ({
       id: component.id,
-      type: component.type,
+      kind: component.kind || component.type,
       projection: component.projection,
       generator: {
         id: component.generator?.id || null,
@@ -1065,19 +1065,19 @@ function summarizeProjectTopology(config) {
       references: topologyComponentReferences(component)
     }))
     .sort((left, right) => left.id.localeCompare(right.id));
-  const edges = components.flatMap((component) => {
+  const edges = runtimes.flatMap((component) => {
     const references = [];
-    if (component.references.api) {
+    if (component.references.uses_api) {
       references.push({
         from: component.id,
-        to: component.references.api,
+        to: component.references.uses_api,
         type: "calls_api"
       });
     }
-    if (component.references.database) {
+    if (component.references.uses_database) {
       references.push({
         from: component.id,
-        to: component.references.database,
+        to: component.references.uses_database,
         type: "uses_database"
       });
     }
@@ -1085,8 +1085,18 @@ function summarizeProjectTopology(config) {
   }).sort((left, right) => `${left.from}:${left.type}:${left.to}`.localeCompare(`${right.from}:${right.type}:${right.to}`));
   return {
     outputs,
-    components,
+    runtimes,
     edges
+  };
+}
+
+function publicProjectTopology(topology) {
+  if (!topology || typeof topology !== "object") {
+    return topology || null;
+  }
+  return {
+    ...Object.fromEntries(Object.entries(topology).filter(([key]) => !["components", "__normalizedRuntimeAliases"].includes(key))),
+    runtimes: topology.runtimes || []
   };
 }
 
@@ -1099,7 +1109,7 @@ function formatTopologyComponent(component) {
     .filter(([, value]) => Boolean(value))
     .map(([key, value]) => `${key} ${value}`);
   const suffix = refs.length ? ` -> ${refs.join(", ")}` : "";
-  return `  - ${component.id}: ${component.type} ${component.projection} via ${generator} (${port})${suffix}`;
+  return `  - ${component.id}: ${component.kind} ${component.projection} via ${generator} (${port})${suffix}`;
 }
 
 function printTopologySummary(topology) {
@@ -1110,9 +1120,9 @@ function printTopologySummary(topology) {
       console.log(`  - ${output.name}: ${output.path || "unset"} (${output.ownership || "unknown"})`);
     }
   }
-  if (topology.components.length > 0) {
-    console.log("  Components:");
-    for (const component of topology.components) {
+  if (topology.runtimes.length > 0) {
+    console.log("  Runtimes:");
+    for (const component of topology.runtimes) {
       console.log(formatTopologyComponent(component));
     }
   }
@@ -1144,7 +1154,7 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
       configPath: projectInfo.configPath,
       compatibility: Boolean(projectInfo.compatibility),
       valid: projectValidation.ok,
-      topology: projectInfo.config.topology,
+      topology: publicProjectTopology(projectInfo.config.topology),
       resolvedTopology
     },
     errors: [
@@ -1162,23 +1172,23 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
   };
 }
 
-function printComponentConformanceReport(report) {
+function printWidgetConformanceReport(report) {
   const summary = report.summary || {};
   const ok = (summary.errors || 0) === 0;
-  console.log(ok ? "Component conformance passed." : "Component conformance found issues.");
+  console.log(ok ? "Widget conformance passed." : "Widget conformance found issues.");
   console.log(`Usages: ${summary.total_usages || 0} total, ${summary.passed_usages || 0} passed, ${summary.warning_usages || 0} warning, ${summary.error_usages || 0} error`);
   console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
   if (report.filters?.projection) {
     console.log(`Projection filter: ${report.filters.projection}`);
   }
-  if (report.filters?.component) {
-    console.log(`Component filter: ${report.filters.component}`);
+  if (report.filters?.widget) {
+    console.log(`Widget filter: ${report.filters.widget}`);
   }
   if ((summary.affected_projections || []).length > 0) {
     console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
   }
-  if ((summary.affected_components || []).length > 0) {
-    console.log(`Affected components: ${summary.affected_components.join(", ")}`);
+  if ((summary.affected_widgets || []).length > 0) {
+    console.log(`Affected widgets: ${summary.affected_widgets.join(", ")}`);
   }
   if ((report.checks || []).length > 0) {
     console.log("");
@@ -1186,7 +1196,7 @@ function printComponentConformanceReport(report) {
     for (const check of report.checks) {
       const context = [
         check.projection ? `projection ${check.projection}` : null,
-        check.component ? `component ${check.component}` : null,
+        check.widget ? `widget ${check.widget}` : null,
         check.screen ? `screen ${check.screen}` : null,
         check.region ? `region ${check.region}` : null,
         check.prop ? `prop ${check.prop}` : null,
@@ -1209,23 +1219,23 @@ function printComponentConformanceReport(report) {
   }
 }
 
-function printComponentBehaviorReport(report) {
+function printWidgetBehaviorReport(report) {
   const summary = report.summary || {};
   const ok = (summary.errors || 0) === 0;
-  console.log(ok ? "Component behavior report passed." : "Component behavior report found issues.");
+  console.log(ok ? "Widget behavior report passed." : "Widget behavior report found issues.");
   console.log(`Behaviors: ${summary.total_behaviors || 0} total, ${summary.realized || 0} realized, ${summary.partial || 0} partial, ${summary.declared || 0} declared`);
   console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
   if (report.filters?.projection) {
     console.log(`Projection filter: ${report.filters.projection}`);
   }
-  if (report.filters?.component) {
-    console.log(`Component filter: ${report.filters.component}`);
+  if (report.filters?.widget) {
+    console.log(`Widget filter: ${report.filters.widget}`);
   }
   if ((summary.affected_projections || []).length > 0) {
     console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
   }
-  if ((summary.affected_components || []).length > 0) {
-    console.log(`Affected components: ${summary.affected_components.join(", ")}`);
+  if ((summary.affected_widgets || []).length > 0) {
+    console.log(`Affected widgets: ${summary.affected_widgets.join(", ")}`);
   }
   if ((summary.affected_capabilities || []).length > 0) {
     console.log(`Affected capabilities: ${summary.affected_capabilities.join(", ")}`);
@@ -1237,7 +1247,7 @@ function printComponentBehaviorReport(report) {
     for (const highlight of highlights) {
       const context = [
         highlight.projection ? `projection ${highlight.projection}` : null,
-        highlight.component ? `component ${highlight.component}` : null,
+        highlight.widget ? `widget ${highlight.widget}` : null,
         highlight.screen ? `screen ${highlight.screen}` : null,
         highlight.region ? `region ${highlight.region}` : null,
         highlight.event ? `event ${highlight.event}` : null,
@@ -1252,7 +1262,7 @@ function printComponentBehaviorReport(report) {
   }
   const groupSummary = report.groups || {};
   console.log("");
-  console.log(`Groups: ${(groupSummary.components || []).length} component(s), ${(groupSummary.screens || []).length} screen(s), ${(groupSummary.capabilities || []).length} capability group(s), ${(groupSummary.effects || []).length} effect group(s)`);
+  console.log(`Groups: ${(groupSummary.widgets || []).length} widget(s), ${(groupSummary.screens || []).length} screen(s), ${(groupSummary.capabilities || []).length} capability group(s), ${(groupSummary.effects || []).length} effect group(s)`);
 }
 
 function printGeneratorCheck(payload) {
@@ -1268,7 +1278,7 @@ function printGeneratorCheck(payload) {
   if (payload.manifest) {
     console.log(`Generator: ${payload.manifest.id}@${payload.manifest.version}`);
     console.log(`Surface: ${payload.manifest.surface}`);
-    console.log(`Projection platforms: ${payload.manifest.projectionPlatforms.join(", ")}`);
+    console.log(`Projection types: ${payload.manifest.projectionTypes.join(", ")}`);
     console.log(`Source mode: ${payload.manifest.source}`);
   }
   console.log("Executes package code: yes (loads adapter and runs smoke generate)");
@@ -1301,7 +1311,7 @@ function generatorManifestSummary(manifest, metadata = {}) {
     id: manifest.id,
     version: manifest.version,
     surface: manifest.surface,
-    projectionPlatforms: manifest.projectionPlatforms || [],
+    projectionTypes: manifest.projectionTypes || [],
     inputs: manifest.inputs || [],
     outputs: manifest.outputs || [],
     stack: manifest.stack || {},
@@ -1325,12 +1335,12 @@ function generatorManifestSummary(manifest, metadata = {}) {
  * @param {string[]} platforms
  * @returns {string}
  */
-function exampleProjectionId(surface, platforms = []) {
-  const platform = platforms[0] || "";
+function exampleProjectionId(surface, projectionTypes = []) {
+  const projectionType = projectionTypes[0] || "";
   if (surface === "api") return "proj_api";
-  if (surface === "database") return platform === "db_sqlite" ? "proj_db_sqlite" : "proj_db_postgres";
-  if (surface === "native") return platform === "ui_android" ? "proj_ui_android" : "proj_ui_ios";
-  return "proj_ui_web";
+  if (surface === "database") return projectionType === "db_contract" ? "proj_db" : "proj_db";
+  if (surface === "native") return projectionType === "android_surface" ? "proj_android_surface" : "proj_ios_surface";
+  return "proj_web_surface";
 }
 
 /**
@@ -1338,7 +1348,7 @@ function exampleProjectionId(surface, platforms = []) {
  * @returns {Record<string, any>}
  */
 function exampleTopologyBinding(manifest) {
-  const componentId = manifest.surface === "api"
+  const runtimeId = manifest.surface === "api"
     ? "app_api"
     : manifest.surface === "database"
       ? "app_db"
@@ -1346,9 +1356,9 @@ function exampleTopologyBinding(manifest) {
         ? "app_ios"
         : "app_web";
   return {
-    id: componentId,
-    type: manifest.surface,
-    projection: exampleProjectionId(manifest.surface, manifest.projectionPlatforms),
+    id: runtimeId,
+    kind: manifest.runtimeKinds?.[0] || manifest.surface,
+    projection: exampleProjectionId(manifest.surface, manifest.projectionTypes),
     generator: {
       id: manifest.id,
       version: manifest.version,
@@ -1410,7 +1420,7 @@ function buildGeneratorListPayload(cwd) {
         id: null,
         version: null,
         surface: null,
-        projectionPlatforms: [],
+        projectionTypes: [],
         inputs: [],
         outputs: [],
         stack: {},
@@ -1516,7 +1526,7 @@ function printGeneratorList(payload) {
         : generator.source === "package"
           ? (generator.installed ? "package installed" : "package missing")
           : "bundled";
-    const platforms = generator.projectionPlatforms.join(", ") || "none";
+    const platforms = generator.projectionTypes.join(", ") || "none";
     const stack = Object.values(generator.stack || {}).join(" + ") || "not declared";
     console.log(`- ${id}${generator.version ? `@${generator.version}` : ""} (${generator.surface || "unknown"}, ${status})`);
     console.log(`  Source: ${generator.source}`);
@@ -1569,7 +1579,7 @@ function printGeneratorShow(payload) {
   if (generator.manifestPath) {
     console.log(`Manifest: ${generator.manifestPath}`);
   }
-  console.log(`Projection platforms: ${generator.projectionPlatforms.join(", ") || "none"}`);
+  console.log(`Projection types: ${generator.projectionTypes.join(", ") || "none"}`);
   console.log(`Inputs: ${generator.inputs.join(", ") || "none"}`);
   console.log(`Outputs: ${generator.outputs.join(", ") || "none"}`);
   console.log(`Stack: ${Object.entries(generator.stack || {}).map(([key, value]) => `${key}=${value}`).join(", ") || "not declared"}`);
@@ -5473,7 +5483,7 @@ function importedProjectConfig() {
       }
     },
     topology: {
-      components: []
+      runtimes: []
     }
   };
 }
@@ -6231,7 +6241,7 @@ const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
   { selector: "shapes", kind: "kind", label: "shapes", matches: (item) => item.kind === "shape" },
   { selector: "entities", kind: "kind", label: "entities", matches: (item) => item.kind === "entity" },
   { selector: "capabilities", kind: "kind", label: "capabilities", matches: (item) => item.kind === "capability" },
-  { selector: "components", kind: "kind", label: "components", matches: (item) => item.kind === "component" },
+  { selector: "widgets", kind: "kind", label: "widgets", matches: (item) => item.kind === "widget" },
   { selector: "docs", kind: "track", label: "docs", matches: (item) => item.track === "docs" },
   {
     selector: "journeys",
@@ -6241,7 +6251,7 @@ const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
   },
   { selector: "workflows", kind: "track", label: "workflows", matches: (item) => item.track === "workflows" || item.kind === "decision" },
   { selector: "verification", kind: "kind", label: "verification", matches: (item) => item.kind === "verification" },
-  { selector: "ui", kind: "track", label: "UI reports and components", matches: (item) => item.track === "ui" }
+  { selector: "ui", kind: "track", label: "UI reports and widgets", matches: (item) => item.track === "ui" }
 ];
 
 function readImportAdoptionArtifacts(inputPath) {
@@ -7362,7 +7372,7 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       code: "template_project_config_missing",
       message,
       path: localTemplatePath(templateSpec, "topogram.project.json"),
-      suggestedFix: "Add topogram.project.json beside topogram/ with outputs and topology.components.",
+      suggestedFix: "Add topogram.project.json beside topogram/ with outputs and topology.runtimes.",
       step
     });
   }
@@ -8220,6 +8230,29 @@ if (args[0] === "setup") {
   process.exit(args[1] ? 1 : 0);
 }
 
+const RENAMED_CLI_ARGS = new Map([
+  ["--component", "--widget"]
+]);
+const RENAMED_GENERATE_TARGETS = new Map([
+  ["ui-component-contract", "ui-widget-contract"],
+  ["component-conformance-report", "widget-conformance-report"],
+  ["component-behavior-report", "widget-behavior-report"],
+  ["ui-web-contract", "ui-surface-contract"],
+  ["ui-web-debug", "ui-surface-debug"]
+]);
+
+if (args[0] === "component") {
+  console.error("Command 'topogram component' was renamed to 'topogram widget'.");
+  process.exit(1);
+}
+
+for (const [oldArg, newArg] of RENAMED_CLI_ARGS) {
+  if (args.includes(oldArg)) {
+    console.error(`CLI flag '${oldArg}' was renamed to '${newArg}'.`);
+    process.exit(1);
+  }
+}
+
 function commandPath(index, fallback = "./topogram") {
   const value = args[index];
   return value && !value.startsWith("-") ? value : fallback;
@@ -8268,12 +8301,12 @@ if (args[0] === "version" || args[0] === "--version") {
     : { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
-} else if (args[0] === "component" && args[1] === "check") {
+} else if (args[0] === "widget" && args[1] === "check") {
   commandArgs = { componentCheck: true, inputPath: commandPath(2) };
-} else if (args[0] === "component" && args[1] === "behavior") {
+} else if (args[0] === "widget" && args[1] === "behavior") {
   commandArgs = { componentBehavior: true, inputPath: commandPath(2) };
-} else if (args[0] === "component") {
-  printComponentHelp();
+} else if (args[0] === "widget") {
+  printWidgetHelp();
   process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "generator" && args[1] === "list") {
   commandArgs = { generatorList: true, inputPath: null };
@@ -8409,8 +8442,8 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { queryName: "write-scope", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "verification-targets") {
   commandArgs = { queryName: "verification-targets", inputPath: args[2] };
-} else if (args[0] === "query" && args[1] === "component-behavior") {
-  commandArgs = { queryName: "component-behavior", inputPath: commandPath(2) };
+} else if (args[0] === "query" && args[1] === "widget-behavior") {
+  commandArgs = { queryName: "widget-behavior", inputPath: commandPath(2) };
 } else if (args[0] === "query" && args[1] === "change-plan") {
   commandArgs = { queryName: "change-plan", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "import-plan") {
@@ -8539,6 +8572,10 @@ const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--valida
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
 const generateTarget = commandArgs?.generateTarget || (generateIndex >= 0 ? args[generateIndex + 1] : null);
+if (RENAMED_GENERATE_TARGETS.has(generateTarget)) {
+  console.error(`Generator target '${generateTarget}' was renamed to '${RENAMED_GENERATE_TARGETS.get(generateTarget)}'.`);
+  process.exit(1);
+}
 const workflowIndex = args.indexOf("--workflow");
 const workflowFlagValue = workflowIndex >= 0 ? args[workflowIndex + 1] : null;
 const modeIndex = args.indexOf("--mode");
@@ -8553,7 +8590,7 @@ const shapeIndex = args.indexOf("--shape");
 const shapeId = shapeIndex >= 0 ? args[shapeIndex + 1] : null;
 const capabilityIndex = args.indexOf("--capability");
 const capabilityId = capabilityIndex >= 0 ? args[capabilityIndex + 1] : null;
-const componentIndex = args.indexOf("--component");
+const componentIndex = args.indexOf("--widget");
 const componentId = componentIndex >= 0 ? args[componentIndex + 1] : null;
 const projectionIndex = args.indexOf("--projection");
 const projectionId = projectionIndex >= 0 ? args[projectionIndex + 1] : null;
@@ -8782,8 +8819,9 @@ try {
   if (shouldComponentCheck) {
     const ast = parsePath(inputPath);
     const result = generateWorkspace(ast, {
-      target: "component-conformance-report",
+      target: "widget-conformance-report",
       projectionId,
+      widgetId: componentId,
       componentId
     });
     if (!result.ok) {
@@ -8795,7 +8833,7 @@ try {
     if (emitJson) {
       console.log(stableStringify(report));
     } else {
-      printComponentConformanceReport(report);
+      printWidgetConformanceReport(report);
     }
     process.exit(ok ? 0 : 1);
   }
@@ -8803,8 +8841,9 @@ try {
   if (shouldComponentBehavior) {
     const ast = parsePath(inputPath);
     const result = generateWorkspace(ast, {
-      target: "component-behavior-report",
+      target: "widget-behavior-report",
       projectionId,
+      widgetId: componentId,
       componentId
     });
     if (!result.ok) {
@@ -8816,7 +8855,7 @@ try {
     if (emitJson) {
       console.log(stableStringify(report));
     } else {
-      printComponentBehaviorReport(report);
+      printWidgetBehaviorReport(report);
     }
     process.exit(ok ? 0 : 1);
   }
@@ -9706,6 +9745,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      widgetId: componentId,
       componentId,
       entityId,
       journeyId,
@@ -9739,6 +9779,7 @@ try {
         capabilityId,
         workflowId,
         projectionId,
+        widgetId: componentId,
         componentId,
         entityId,
         journeyId,
@@ -9787,6 +9828,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      widgetId: componentId,
       componentId,
       entityId,
       journeyId,
@@ -9820,6 +9862,7 @@ try {
         capabilityId,
         workflowId,
         projectionId,
+        widgetId: componentId,
         componentId,
         entityId,
         journeyId,
@@ -9879,6 +9922,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      widgetId: componentId,
       componentId,
       entityId,
       journeyId,
@@ -9899,10 +9943,10 @@ try {
     process.exit(0);
   }
 
-  if (commandArgs?.queryName === "component-behavior") {
+  if (commandArgs?.queryName === "widget-behavior") {
     const ast = parsePath(normalizeTopogramPath(inputPath));
     const result = generateWorkspace(ast, {
-      target: "component-behavior-report",
+      target: "widget-behavior-report",
       projectionId,
       componentId
     });
@@ -11293,6 +11337,7 @@ try {
       capabilityId,
       workflowId,
       projectionId,
+      widgetId: componentId,
       componentId,
       entityId,
       journeyId,

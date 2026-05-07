@@ -1,10 +1,10 @@
 # Todo SwiftUI (generated)
 
-Apple SwiftUI client generated from the same **`buildWebRealization`** routed UI contract as the web stacks. Prefer the **`proj_ui_native__ios`** projection when present; otherwise the generator falls back to a **`proj_ui_web__*`** projection (often **`proj_ui_web__sveltekit`**).
+Apple SwiftUI client generated from the same **`buildWebRealization`** routed UI contract as the web stacks. Prefer the **`proj_ios_surface__swiftui`** projection when present; otherwise the generator falls back to a **`proj_web_surface__*`** projection (often **`proj_web_surface__sveltekit`**).
 
 ## Bundle inputs
 
-- **`Resources/ui-web-contract.json`** — same shape as `apps/web/src/lib/topogram/ui-web-contract.json`
+- **`Resources/ui-surface-contract.json`** — same shape as `apps/web/src/lib/topogram/ui-surface-contract.json`
 - **`Resources/api-contracts.json`** — same shape as `apps/web/src/lib/topogram/api-contracts.json`
 
 ## Run
@@ -22,5 +22,5 @@ Configure the API base URL and demo auth token via scheme environment variables 
 From `engine/`:
 
 ```bash
-topogram ./topogram --generate swiftui-app --projection proj_ui_native__ios --write --out-dir ./app/ios-swiftui
+topogram ./topogram --generate swiftui-app --projection proj_ios_surface__swiftui --write --out-dir ./app/ios-swiftui
 ```

@@ -1,12 +1,12 @@
-projection proj_ui_shared_stub {
+projection proj_ui_contract_stub {
   name "Stub Shared UI"
   description "Shared UI for invalid web projection tests"
 
-  platform ui_shared
+  type ui_contract
   realizes []
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen stub_home kind dashboard title "Stub Home"
   }
 

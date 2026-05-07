@@ -2,26 +2,26 @@ projection proj_ui_invalid {
   name "Invalid UI"
   description "Projection with malformed UI semantics"
 
-  platform ui_shared
+  type ui_contract
   realizes [cap_list_dummy]
   outputs [ui_contract]
 
-  ui_screens {
+  screens {
     screen bad_list kind list title "Bad List" load cap_missing
     screen form_without_submit kind form title "Broken Form" input_shape shape_input_dummy
   }
 
-  ui_collections {
+  collection_views {
     screen missing_screen filter status
     screen bad_list pagination drift
     screen bad_list sort ghost sideways
   }
 
-  ui_actions {
+  screen_actions {
     screen bad_list action cap_missing prominence giant
   }
 
-  ui_visibility {
+  visibility_rules {
     action cap_missing visible_if team nope
   }
 

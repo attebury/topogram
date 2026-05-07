@@ -80,15 +80,16 @@ function dbLifecyclePlan(graph, projection, options = {}) {
 }
 
 function renderEmptySnapshotForProjection(projection) {
-  const engine = projection.platform === "db_sqlite" ? "sqlite" : "postgres";
+  const profile = dbProfileForProjection(projection);
+  const engine = profile.startsWith("sqlite") ? "sqlite" : "postgres";
   return {
     type: "db_schema_snapshot",
     projection: {
       id: projection.id,
       name: projection.name || projection.id,
-      platform: projection.platform
+      type: projection.type || projection.platform
     },
-    profile: dbProfileForProjection(projection),
+    profile,
     generatorDefaults: generatorDefaultsMap(projection),
     engine,
     enums: [],
@@ -97,7 +98,7 @@ function renderEmptySnapshotForProjection(projection) {
 }
 
 function renderDbLifecycleEnvExample(projection, plan) {
-  const engine = projection.platform === "db_sqlite" ? "sqlite" : "postgres";
+  const engine = plan.engine || (dbProfileForProjection(projection).startsWith("sqlite") ? "sqlite" : "postgres");
   const inputPath = "../../../../topogram";
   if (engine === "sqlite") {
     return `DATABASE_URL=file:./var/${projection.id}.sqlite\nTOPOGRAM_INPUT_PATH=${inputPath}\n`;
@@ -580,7 +581,7 @@ function generateDbLifecycleBundle(graph, projection, options = {}) {
 
   if (plan.bundle.prismaSchema) {
     files[plan.bundle.prismaSchema] =
-      projection.platform === "db_sqlite"
+      plan.engine === "sqlite"
         ? generateSqlitePrismaSchema(graph, { projectionId: projection.id })
         : generatePostgresPrismaSchema(graph, { projectionId: projection.id });
   }

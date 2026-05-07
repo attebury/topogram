@@ -94,18 +94,18 @@ test("query slice --domain returns the focused subgraph", () => {
   );
 });
 
-test("domain-coverage produces a per-platform realization matrix", () => {
+test("domain-coverage produces a per-type realization matrix", () => {
   const ast = parsePath(fixtureRoot);
   const result = generateWorkspace(ast, {
     target: "domain-coverage",
     domainId: "dom_order_fulfillment"
   });
   assert.equal(result.ok, true);
-  assert.deepEqual(result.artifact.platforms, ["desktop", "maui"]);
-  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.desktop, true);
-  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.maui, true);
-  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.desktop, true);
-  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.maui, false);
+  assert.deepEqual(result.artifact.projectionTypes, ["ios_surface", "web_surface"]);
+  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.web_surface, true);
+  assert.equal(result.artifact.coverage_matrix.cap_fulfill_order.ios_surface, true);
+  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.web_surface, true);
+  assert.equal(result.artifact.coverage_matrix.cap_monitor_shipments.ios_surface, false);
 });
 
 test("domain-list returns a sorted navigation summary", () => {
@@ -130,8 +130,8 @@ test("domain-page emits a markdown artifact at the canonical path", () => {
   assert.equal(result.artifact.output.path, "topogram/docs-generated/domains/dom_order_fulfillment.md");
   assert.match(result.artifact.output.contents, /# Order Fulfillment/);
   assert.match(result.artifact.output.contents, /## In scope/);
-  assert.match(result.artifact.output.contents, /## Per-platform coverage/);
-  assert.match(result.artifact.output.contents, /\| desktop \| maui \|/);
+  assert.match(result.artifact.output.contents, /## Per-type coverage/);
+  assert.match(result.artifact.output.contents, /\| ios_surface \| web_surface \|/);
 });
 
 test("validator rejects a domain field referencing an unknown id", () => {

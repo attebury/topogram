@@ -33,7 +33,7 @@ function buildDeploymentPlan(graph, options = {}) {
   const profile = options.profileId || "fly_io";
   const supportedProfiles = ["fly_io", "railway"];
   const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
-  const databaseTarget = dbProjection.platform === "db_sqlite"
+  const databaseTarget = dbProjection.platform === "db_contract"
     ? "sqlite_file"
     : profile === "fly_io"
       ? "managed_postgres"
@@ -54,14 +54,14 @@ function buildDeploymentPlan(graph, options = {}) {
       db: dbProjection.id
     },
     topology: {
-      components: topology.components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        projection: component.projection.id,
-        generator: component.generator,
-        port: component.port ?? null,
-        api: component.api || null,
-        database: component.database || null
+      runtimes: topology.runtimes.map((runtime) => ({
+        id: runtime.id,
+        kind: runtime.kind,
+        projection: runtime.projection.id,
+        generator: runtime.generator,
+        port: runtime.port ?? null,
+        uses_api: runtime.api || null,
+        uses_database: runtime.database || null
       }))
     },
     directories: {

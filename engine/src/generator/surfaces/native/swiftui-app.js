@@ -8,13 +8,13 @@ import { pickDefaultIosUiProjection, pickDefaultUiWebProjection } from "../../ru
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Emits a SwiftPM iOS SwiftUI app driven by the routed UI contract (default: `proj_ui_native__ios` when present, else first `proj_ui_web__*` projection).
+ * Emits a SwiftPM iOS SwiftUI app driven by the routed UI contract (default: `proj_ios_surface__swiftui` when present, else first `proj_web_surface__*` projection).
  */
 export function generateSwiftUiApp(graph, options = {}) {
   const fallbackId =
     pickDefaultIosUiProjection(graph)?.id ||
     pickDefaultUiWebProjection(graph)?.id ||
-    "proj_ui_web__sveltekit";
+    "proj_web_surface__sveltekit";
   const projectionId = options.projectionId || fallbackId;
   const realization = buildWebRealization(graph, { projectionId });
   const apiContracts = realization.apiContracts;
@@ -31,7 +31,7 @@ export function generateSwiftUiApp(graph, options = {}) {
 
   files["Package.swift"] = fs.readFileSync(path.join(__dirname, "swiftui-templates", "Package.swift.txt"), "utf8");
   files["README.md"] = fs.readFileSync(path.join(__dirname, "swiftui-templates", "README.generated.md"), "utf8");
-  files["Sources/TodoSwiftUIApp/Resources/ui-web-contract.json"] = contractJson;
+  files["Sources/TodoSwiftUIApp/Resources/ui-surface-contract.json"] = contractJson;
   files["Sources/TodoSwiftUIApp/Resources/api-contracts.json"] = apiJson;
 
   return files;

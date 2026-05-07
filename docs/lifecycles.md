@@ -122,7 +122,7 @@ stateDiagram-v2
   archived --> draft
 ```
 
-`published` returns to `review` when a linked component changes — the
+`published` returns to `review` when a linked widget changes — the
 staleness signal.
 
 DoD highlights:

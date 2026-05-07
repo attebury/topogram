@@ -1,4 +1,4 @@
-component component_ui_data_grid {
+widget widget_data_grid {
   name "Data Grid"
   description "Reusable tabular display for item rows"
   category collection

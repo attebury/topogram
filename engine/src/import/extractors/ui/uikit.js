@@ -144,7 +144,7 @@ export const uiKitExtractor = {
 
     if (candidates.screens.length > 0) {
       candidates.actions.push(makeCandidateRecord({
-        kind: "ui_navigation",
+        kind: "navigation",
         idHint: "uikit_stack_navigation",
         label: "stack_navigation",
         confidence: "medium",

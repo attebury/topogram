@@ -2,17 +2,17 @@ projection proj_db_postgres {
   name "Sample Workspace Postgres DB"
   description "Postgres persistence realization for the work tracking domain"
 
-  platform db_postgres
+  type db_contract
   realizes [entity_item, entity_collection, entity_member]
   outputs [db_contract, sql_schema]
 
-  db_tables {
+  tables {
     entity_item table items
     entity_collection table collections
     entity_member table members
   }
 
-  db_columns {
+  columns {
     entity_item field owner_id column owner_id
     entity_item field collection_id column collection_id
     entity_collection field owner_id column owner_id
@@ -20,13 +20,13 @@ projection proj_db_postgres {
     entity_member field display_name column display_name
   }
 
-  db_keys {
+  keys {
     entity_item primary [id]
     entity_collection primary [id]
     entity_member primary [id]
   }
 
-  db_indexes {
+  indexes {
     entity_item index [collection_id, status]
     entity_item index [owner_id, status]
     entity_collection unique [name]
@@ -34,13 +34,13 @@ projection proj_db_postgres {
     entity_member unique [email]
   }
 
-  db_relations {
+  relations {
     entity_item foreign_key owner_id references entity_member.id on_delete set_null
     entity_item foreign_key collection_id references entity_collection.id on_delete cascade
     entity_collection foreign_key owner_id references entity_member.id on_delete set_null
   }
 
-  db_lifecycle {
+  lifecycle {
     entity_item soft_delete field status value archived
     entity_item timestamps created_at created_at updated_at updated_at
   }

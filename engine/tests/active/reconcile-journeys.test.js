@@ -39,9 +39,10 @@ test("buildJourneyDrafts creates creation lifecycle and core flow drafts with st
     ],
     projections: [
       {
-        id: "proj_ui_shared",
-        platform: "ui_shared",
-        uiScreens: [
+        id: "proj_ui_contract",
+        platform: "ui_contract",
+        type: "ui_contract",
+        screens: [
           { id: "issue_list", kind: "list", title: "Issue Board" },
           { id: "issue_detail", kind: "detail", title: "Issue Detail" },
           { id: "issue_create", kind: "form", title: "Create Issue", submit: { id: "cap_create_issue" } }
@@ -60,8 +61,8 @@ test("buildJourneyDrafts creates creation lifecycle and core flow drafts with st
   assert.equal(creation.path, "candidates/docs/journeys/issue-creation-and-discovery.md");
   assert.equal(creation.metadata.review_required, true);
   assert.deepEqual(creation.metadata.related_entities, ["entity_issue"]);
-  assert.match(creation.body, /Issue Board/);
-  assert.match(creation.body, /Issue Detail/);
+  assert.match(creation.body, /Issue list/);
+  assert.match(creation.body, /Issue detail/);
   assert.match(creation.body, /cap_create_issue/);
 
   const lifecycle = result.drafts.find((draft) => draft.id === "issue_update_and_lifecycle");

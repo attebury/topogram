@@ -9,7 +9,7 @@ review_required: false
 related_capabilities:
   - cap_view_hello
 related_projections:
-  - proj_ui_web
+  - proj_web_surface
 tags:
   - starter
   - workflow

@@ -29,7 +29,7 @@ import { generateServerContract } from "./surfaces/services/server-contract.js";
 import { generateStatelessServer } from "./surfaces/services/stateless.js";
 import { generateReactApp } from "./surfaces/web/react.js";
 import { generateSvelteKitApp } from "./surfaces/web/sveltekit.js";
-import { generateUiWebContract } from "./surfaces/web/ui-web-contract.js";
+import { generateUiSurfaceContract } from "./surfaces/web/ui-surface-contract.js";
 import { generateVanillaWebApp } from "./surfaces/web/vanilla.js";
 
 /**
@@ -40,7 +40,8 @@ import { generateVanillaWebApp } from "./surfaces/web/vanilla.js";
  * @typedef {Object} GeneratorContext
  * @property {Record<string, any>} graph
  * @property {Record<string, any>} projection
- * @property {Record<string, any>} component
+ * @property {Record<string, any>} runtime
+ * @property {Record<string, any>} component Internal runtime alias.
  * @property {Record<string, any>|null} [topology]
  * @property {Record<string, any>} [contracts]
  * @property {Record<string, any>|null} [implementation]
@@ -86,8 +87,17 @@ function requiredManifest(generatorId) {
  * @param {GeneratorContext} context
  * @returns {string}
  */
+function runtimeFor(context) {
+  return context.runtime || context.component || {};
+}
+
+/**
+ * @param {GeneratorContext} context
+ * @returns {string}
+ */
 function projectionIdFor(context) {
-  return context.projection?.id || context.component?.projection?.id || context.options?.projectionId;
+  const runtime = runtimeFor(context);
+  return context.projection?.id || runtime.projection?.id || context.options?.projectionId;
 }
 
 /**
@@ -97,12 +107,14 @@ function projectionIdFor(context) {
  */
 function serverOptions(context, profile) {
   const projectionId = projectionIdFor(context);
-  const dbProjectionId = context.component?.databaseComponent?.projection?.id || context.options?.dbProjectionId;
+  const runtime = runtimeFor(context);
+  const dbProjectionId = runtime.databaseComponent?.projection?.id || context.options?.dbProjectionId;
   return {
     ...(context.options || {}),
     projectionId,
     dbProjectionId,
-    component: context.component,
+    component: runtime,
+    runtime,
     topology: context.topology,
     contracts: context.contracts,
     implementation: context.implementation,
@@ -115,10 +127,12 @@ function serverOptions(context, profile) {
  * @returns {Record<string, any>}
  */
 function commonOptions(context) {
+  const runtime = runtimeFor(context);
   return {
     ...(context.options || {}),
     projectionId: projectionIdFor(context),
-    component: context.component,
+    component: runtime,
+    runtime,
     topology: context.topology,
     contracts: context.contracts,
     implementation: context.implementation
@@ -131,26 +145,28 @@ function commonOptions(context) {
  */
 function buildContractsForContext(context) {
   const projectionId = projectionIdFor(context);
-  if (context.component.type === "web") {
+  const runtime = runtimeFor(context);
+  const surface = runtime.type || runtime.kind;
+  if (surface === "web" || surface === "web_surface") {
     return {
-      uiWeb: generateUiWebContract(context.graph, { ...(context.options || {}), projectionId })
+      uiSurface: generateUiSurfaceContract(context.graph, { ...(context.options || {}), projectionId })
     };
   }
-  if (context.component.type === "api") {
+  if (surface === "api" || surface === "api_service") {
     return {
       server: generateServerContract(context.graph, { ...(context.options || {}), projectionId }),
       api: generateApiContractGraph(context.graph, {})
     };
   }
-  if (context.component.type === "database") {
+  if (surface === "database") {
     return {
       db: generateDbContractGraph(context.graph, { ...(context.options || {}), projectionId }),
       lifecyclePlan: generateDbLifecyclePlan(context.graph, { ...(context.options || {}), projectionId })
     };
   }
-  if (context.component.type === "native") {
+  if (surface === "native" || surface === "ios_surface" || surface === "android_surface") {
     return {
-      uiWeb: generateUiWebContract(context.graph, { ...(context.options || {}), projectionId })
+      uiSurface: generateUiSurfaceContract(context.graph, { ...(context.options || {}), projectionId })
     };
   }
   return {};
@@ -161,7 +177,8 @@ export const BUNDLED_GENERATOR_ADAPTERS = [
   {
     manifest: requiredManifest("topogram/hono"),
     generate(context) {
-      if (context.component && !context.component.databaseComponent) {
+      const runtime = runtimeFor(context);
+      if (runtime && !runtime.databaseComponent) {
         return fileResult(generateStatelessServer(context.graph, serverOptions(context, "hono")));
       }
       return fileResult(generateHonoServer(context.graph, serverOptions(context, "hono")));
@@ -170,7 +187,8 @@ export const BUNDLED_GENERATOR_ADAPTERS = [
   {
     manifest: requiredManifest("topogram/express"),
     generate(context) {
-      if (context.component && !context.component.databaseComponent) {
+      const runtime = runtimeFor(context);
+      if (runtime && !runtime.databaseComponent) {
         return fileResult(generateStatelessServer(context.graph, serverOptions(context, "express")));
       }
       return fileResult(generateExpressServer(context.graph, serverOptions(context, "express")));
@@ -246,24 +264,24 @@ function selectPackageExport(moduleValue, exportName) {
 
 /**
  * @param {GeneratorManifest} manifest
- * @param {Record<string, any>} component
+ * @param {Record<string, any>} runtime
  * @param {{ rootDir?: string|null, configDir?: string|null }} [options]
  * @returns {GeneratorAdapter}
  */
-function loadPackageGeneratorAdapter(manifest, component, options = {}) {
-  const packageName = manifest.package || component?.generator?.package;
+function loadPackageGeneratorAdapter(manifest, runtime, options = {}) {
+  const packageName = manifest.package || runtime?.generator?.package;
   if (!packageName) {
-    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is package-backed but does not declare a package.`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is package-backed but does not declare a package.`);
   }
   const rootDir = options.configDir || options.rootDir || process.cwd();
   const diagnostics = generatorPolicyDiagnosticsForBindings(
     loadGeneratorPolicy(rootDir),
     [{
-      componentId: String(component?.id || "unknown"),
-      componentType: String(component?.type || manifest.surface || "unknown"),
-      projection: String(component?.projection?.id || component?.projection || "unknown"),
-      generatorId: String(component?.generator?.id || manifest.id),
-      version: String(component?.generator?.version || manifest.version),
+      componentId: String(runtime?.id || "unknown"),
+      componentType: String(runtime?.kind || runtime?.type || manifest.surface || "unknown"),
+      projection: String(runtime?.projection?.id || runtime?.projection || "unknown"),
+      generatorId: String(runtime?.generator?.id || manifest.id),
+      version: String(runtime?.generator?.version || manifest.version),
       packageName
     }],
     "generator-adapter"
@@ -281,15 +299,15 @@ function loadPackageGeneratorAdapter(manifest, component, options = {}) {
     moduleValue = requireFromProject(rootDir)(packageName);
   } catch (error) {
     const installHint = packageGeneratorInstallHint(packageName);
-    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}${installHint ? `. ${installHint}` : ""}`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator package '${packageName}' could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}${installHint ? `. ${installHint}` : ""}`);
   }
   const adapter = selectPackageExport(moduleValue, manifest.export);
   if (!adapter || typeof adapter.generate !== "function") {
-    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' must export an adapter with a generate(context) function.`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator package '${packageName}' must export an adapter with a generate(context) function.`);
   }
   const adapterManifest = adapter.manifest || manifest;
   if (adapterManifest.id !== manifest.id || adapterManifest.version !== manifest.version) {
-    throw new Error(`Component '${component?.id || "unknown"}' generator package '${packageName}' adapter manifest '${adapterManifest.id}@${adapterManifest.version}' does not match '${manifest.id}@${manifest.version}'.`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator package '${packageName}' adapter manifest '${adapterManifest.id}@${adapterManifest.version}' does not match '${manifest.id}@${manifest.version}'.`);
   }
   return {
     manifest,
@@ -300,35 +318,35 @@ function loadPackageGeneratorAdapter(manifest, component, options = {}) {
 }
 
 /**
- * @param {Record<string, any>} component
+ * @param {Record<string, any>} runtime
  * @param {{ rootDir?: string|null, configDir?: string|null }} [options]
  * @returns {{ manifest: GeneratorManifest, adapter: GeneratorAdapter }}
  */
-export function resolveGeneratorForComponent(component, options = {}) {
-  const generatorId = component?.generator?.id;
-  const resolved = resolveGeneratorManifestForBinding(component?.generator, options);
+export function resolveGeneratorForComponent(runtime, options = {}) {
+  const generatorId = runtime?.generator?.id;
+  const resolved = resolveGeneratorManifestForBinding(runtime?.generator, options);
   const manifest = resolved.manifest || getGeneratorManifest(generatorId);
   if (!manifest) {
     const detail = resolved.errors.length > 0 ? ` ${resolved.errors.join(" ")}` : "";
-    throw new Error(`Component '${component?.id || "unknown"}' uses unknown generator '${generatorId || "unknown"}'.${detail}`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' uses unknown generator '${generatorId || "unknown"}'.${detail}`);
   }
   if (manifest.planned) {
-    throw new Error(`Component '${component?.id || "unknown"}' uses planned generator '${manifest.id}', which is not implemented yet.`);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' uses planned generator '${manifest.id}', which is not implemented yet.`);
   }
-  if (component.generator?.version !== manifest.version) {
-    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}' version '${component.generator?.version}' is unsupported; expected '${manifest.version}'.`);
+  if (runtime.generator?.version !== manifest.version) {
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator '${manifest.id}' version '${runtime.generator?.version}' is unsupported; expected '${manifest.version}'.`);
   }
   const manifestValidation = validateGeneratorManifest(manifest);
   if (!manifestValidation.ok) {
     throw new Error(manifestValidation.errors.join("\n"));
   }
   if (manifest.source === "package") {
-    return { manifest, adapter: loadPackageGeneratorAdapter(manifest, component, options) };
+    return { manifest, adapter: loadPackageGeneratorAdapter(manifest, runtime, options) };
   }
   const adapter = getBundledGeneratorAdapter(manifest.id);
   if (!adapter) {
-    const installHint = packageGeneratorInstallHint(component?.generator?.package || manifest.package);
-    throw new Error(`Component '${component?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is not available. Package-backed generators must be installed before generation.${installHint ? ` ${installHint}` : ""}`);
+    const installHint = packageGeneratorInstallHint(runtime?.generator?.package || manifest.package);
+    throw new Error(`Runtime '${runtime?.id || "unknown"}' generator '${manifest.id}@${manifest.version}' is not available. Package-backed generators must be installed before generation.${installHint ? ` ${installHint}` : ""}`);
   }
   return { manifest, adapter };
 }
@@ -337,13 +355,20 @@ export function resolveGeneratorForComponent(component, options = {}) {
  * @param {Omit<GeneratorContext, "contracts"> & { contracts?: Record<string, any> }} context
  * @returns {GeneratorResult}
  */
-export function generateWithComponentGenerator(context) {
-  const { manifest, adapter } = resolveGeneratorForComponent(context.component, context.options || {});
+export function generateWithRuntimeGenerator(context) {
+  const runtime = runtimeFor(context);
+  const { manifest, adapter } = resolveGeneratorForComponent(runtime, context.options || {});
   const contracts = context.contracts || buildContractsForContext(context);
   return adapter.generate({
     ...context,
+    runtime,
+    component: runtime,
     projection: context.projection,
     manifest,
     contracts
   });
+}
+
+export function generateWithComponentGenerator(context) {
+  return generateWithRuntimeGenerator(context);
 }

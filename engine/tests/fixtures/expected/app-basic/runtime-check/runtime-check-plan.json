@@ -3,14 +3,14 @@
   "name": "Sample Workspace Runtime Check Plan",
   "projections": {
     "api": "proj_api",
-    "ui": "proj_ui_web",
+    "ui": "proj_web_surface",
     "db": "proj_db_postgres"
   },
   "topology": {
-    "components": [
+    "runtimes": [
       {
         "id": "app_api",
-        "type": "api",
+        "kind": "api_service",
         "projection": "proj_api",
         "generator": {
           "id": "topogram/hono",
@@ -19,8 +19,8 @@
       },
       {
         "id": "app_sveltekit",
-        "type": "web",
-        "projection": "proj_ui_web",
+        "kind": "web_surface",
+        "projection": "proj_web_surface",
         "generator": {
           "id": "topogram/sveltekit",
           "version": "1"
@@ -28,7 +28,7 @@
       },
       {
         "id": "app_postgres",
-        "type": "database",
+        "kind": "database",
         "projection": "proj_db_postgres",
         "generator": {
           "id": "topogram/postgres",

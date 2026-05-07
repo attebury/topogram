@@ -42,7 +42,7 @@ default board.
 ## Cross-reference fields
 
 ```text
-pitch.affects                 → capability/entity/rule/projection/component/orchestration/operation
+pitch.affects                 → capability/entity/rule/projection/widget/orchestration/operation
 pitch.decisions               → decision
 requirement.pitch             → pitch (single)
 requirement.affects           → same set as pitch.affects

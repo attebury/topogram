@@ -23,8 +23,8 @@ test("query help lists discovery commands", () => {
   assert.equal(queryHelp.status, 0, queryHelp.stderr || queryHelp.stdout);
   assert.match(queryHelp.stdout, /Usage: topogram query list \[--json\]/);
   assert.match(queryHelp.stdout, /topogram query show <name> \[--json\]/);
-  assert.match(queryHelp.stdout, /topogram query component-behavior \[path\]/);
-  assert.match(queryHelp.stdout, /component-behavior/);
+  assert.match(queryHelp.stdout, /topogram query widget-behavior \[path\]/);
+  assert.match(queryHelp.stdout, /widget-behavior/);
   assert.match(queryHelp.stdout, /recommended artifact queries/);
 });
 
@@ -35,30 +35,30 @@ test("query list exposes stable query definitions", () => {
   assert.equal(payload.type, "query_list");
   assert.equal(payload.version, 1);
 
-  const componentBehaviorQuery = payload.queries.find((query) => query.name === "component-behavior");
+  const componentBehaviorQuery = payload.queries.find((query) => query.name === "widget-behavior");
   assert.ok(componentBehaviorQuery);
-  assert.equal(componentBehaviorQuery.output, "component_behavior_report");
-  assert.match(componentBehaviorQuery.purpose, /component behavior/);
-  assert.deepEqual(componentBehaviorQuery.selectors, ["projection", "component"]);
-  assert.deepEqual(componentBehaviorQuery.args, ["[path]", "[--projection <id>]", "[--component <id>]", "[--json]"]);
-  assert.match(componentBehaviorQuery.example, /topogram query component-behavior/);
+  assert.equal(componentBehaviorQuery.output, "widget_behavior_report");
+  assert.match(componentBehaviorQuery.purpose, /widget behavior/);
+  assert.deepEqual(componentBehaviorQuery.selectors, ["projection", "widget"]);
+  assert.deepEqual(componentBehaviorQuery.args, ["[path]", "[--projection <id>]", "[--widget <id>]", "[--json]"]);
+  assert.match(componentBehaviorQuery.example, /topogram query widget-behavior/);
 });
 
 test("query show exposes one query definition", () => {
-  const queryShow = runCli(["query", "show", "component-behavior", "--json"]);
+  const queryShow = runCli(["query", "show", "widget-behavior", "--json"]);
   assert.equal(queryShow.status, 0, queryShow.stderr || queryShow.stdout);
   const payload = JSON.parse(queryShow.stdout);
   assert.equal(payload.type, "query_definition");
   assert.equal(payload.version, 1);
-  assert.equal(payload.query.name, "component-behavior");
-  assert.equal(payload.query.output, "component_behavior_report");
-  assert.deepEqual(payload.query.selectors, ["projection", "component"]);
+  assert.equal(payload.query.name, "widget-behavior");
+  assert.equal(payload.query.output, "widget_behavior_report");
+  assert.deepEqual(payload.query.selectors, ["projection", "widget"]);
 
-  const queryShowHuman = runCli(["query", "show", "component-behavior"]);
+  const queryShowHuman = runCli(["query", "show", "widget-behavior"]);
   assert.equal(queryShowHuman.status, 0, queryShowHuman.stderr || queryShowHuman.stdout);
-  assert.match(queryShowHuman.stdout, /Query: component-behavior/);
-  assert.match(queryShowHuman.stdout, /Purpose: Show how reusable component behavior/);
-  assert.match(queryShowHuman.stdout, /Output: component_behavior_report/);
+  assert.match(queryShowHuman.stdout, /Query: widget-behavior/);
+  assert.match(queryShowHuman.stdout, /Purpose: Show how reusable widget behavior/);
+  assert.match(queryShowHuman.stdout, /Output: widget_behavior_report/);
 });
 
 test("query show rejects unknown query names", () => {

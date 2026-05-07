@@ -109,17 +109,17 @@ function loadInstalledAdapter(packageName, rootDir, manifest) {
  * @returns {Record<string, any>}
  */
 function smokeProjection(manifest) {
-  const platform = manifest.projectionPlatforms[0] || "";
+  const type = manifest.projectionTypes[0] || "";
   if (manifest.surface === "api") {
     return {
       id: "proj_generator_check_api",
-      platform: "api",
-      http: [{ method: "GET", path: "/generator-check", capabilityId: "cap_generator_check", success: 200 }]
+      type: "api_contract",
+      endpoints: [{ method: "GET", path: "/generator-check", capabilityId: "cap_generator_check", success: 200 }]
     };
   }
   return {
     id: `proj_generator_check_${manifest.surface}`,
-    platform
+    type
   };
 }
 
@@ -131,8 +131,8 @@ function smokeProjection(manifest) {
 function smokeContracts(manifest, projection) {
   if (manifest.surface === "web" || manifest.surface === "native") {
     return {
-      uiWeb: {
-        projection: { id: projection.id, platform: projection.platform },
+      uiSurface: {
+        projection: { id: projection.id, type: projection.type },
         appShell: { brand: "Generator Check" },
         screens: [
           { id: "screen_generator_check_home", title: "Generator Check", route: "/" },
@@ -148,22 +148,22 @@ function smokeContracts(manifest, projection) {
   if (manifest.surface === "api") {
     return {
       server: {
-        projection: { id: projection.id, platform: "api" },
-        routes: projection.http,
+        projection: { id: projection.id, type: "api_contract" },
+        routes: projection.endpoints,
         preconditions: [],
         responses: []
       },
-      api: { projections: [{ id: projection.id, http: projection.http }] }
+      api: { projections: [{ id: projection.id, endpoints: projection.endpoints }] }
     };
   }
   if (manifest.surface === "database") {
     return {
       db: {
-        projection: { id: projection.id, platform: projection.platform },
+        projection: { id: projection.id, type: projection.type },
         tables: []
       },
       lifecyclePlan: {
-        projection: { id: projection.id, platform: projection.platform },
+        projection: { id: projection.id, type: projection.type },
         migrations: [],
         seeds: []
       }
@@ -177,8 +177,15 @@ function smokeContracts(manifest, projection) {
  * @returns {Record<string, any>}
  */
 function smokeComponent(manifest) {
+  const runtimeKindBySurface = {
+    api: "api_service",
+    web: "web_surface",
+    native: "ios_surface",
+    database: "database"
+  };
   return {
-    id: `component_generator_check_${manifest.surface}`,
+    id: `runtime_generator_check_${manifest.surface}`,
+    kind: runtimeKindBySurface[manifest.surface] || manifest.surface,
     type: manifest.surface,
     projection: `proj_generator_check_${manifest.surface}`,
     generator: {

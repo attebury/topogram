@@ -8,7 +8,7 @@ about.
 
 `domain` is orthogonal to `projection.platform`. A capability lives in a
 domain (`dom_order_fulfillment`) and is realized by projections
-targeting one or more platforms (`ui_web`, `api`, `database`). The two
+targeting one or more platforms (`web_surface`, `api`, `database`). The two
 axes never collide; the combination falls out as a coverage matrix from
 the existing graph.
 
@@ -77,7 +77,7 @@ capability cap_fulfill_order {
 ```
 
 Cross-cutting statements (`entity_party`, `rule_audit_trail_required`,
-shared terms, actors, roles, enums, shapes, components, projections)
+shared terms, actors, roles, enums, shapes, widgets, projections)
 omit `domain`. The validator only allows the field on
 `capability`, `entity`, `rule`, `verification`, `orchestration`,
 `operation`, and `decision`.
@@ -143,7 +143,7 @@ topogram query verification-targets ./topogram --domain dom_order_fulfillment
 topogram query change-plan ./topogram --domain dom_order_fulfillment
 ```
 
-Unknown domain ids hard-error (mirroring `--component` behavior).
+Unknown domain ids hard-error (mirroring `--widget` behavior).
 
 ## Generators
 

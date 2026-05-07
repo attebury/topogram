@@ -262,7 +262,7 @@ function requiredDesignMarkers(design) {
  * @returns {{ coverage: any, diagnostics: any[] }}
  */
 export function buildDesignIntentCoverage(contract, files, cssPath) {
-  const design = normalizeDesignIntent(contract?.design);
+  const design = normalizeDesignIntent(contract?.designTokens);
   const css = files[cssPath] || "";
   const markers = requiredDesignMarkers(design);
   const mapped = markers.filter((item) => css.includes(item.marker));

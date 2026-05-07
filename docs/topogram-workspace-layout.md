@@ -59,7 +59,7 @@ my-topogram-app/app/
 
 This output is generated. Prefer regenerating it instead of hand-editing it.
 
-Generated app bundles use component directories:
+Generated app bundles use runtime directories:
 
 ```text
 apps/services/<api-id>/

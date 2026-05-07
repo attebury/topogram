@@ -13,7 +13,7 @@ let package = Package(
             path: "Sources/TodoSwiftUIApp",
             resources: [
                 .copy("Resources/api-contracts.json"),
-                .copy("Resources/ui-web-contract.json")
+                .copy("Resources/ui-surface-contract.json")
             ]
         )
     ]

@@ -25,7 +25,7 @@ The parser accepts any `kind identifier { ... }` shape. The validator defines th
 | `shape` | `name`, `description`, `status` | Input/output payload shape, optionally derived from an entity. |
 | `rule` | `name`, `description`, `applies_to`, `status` | Policy or invariant linked to model elements. |
 | `capability` | `name`, `description`, `status` | User-visible operation over entities and shapes. |
-| `component` | `name`, `description`, `props`, `status` | Reusable UI or service contract addressable in the semantic graph. |
+| `widget` | `name`, `description`, `props`, `status` | Reusable UI or service contract addressable in the semantic graph. |
 | `decision` | `name`, `description`, `status` | Architectural or product decision record. |
 | `projection` | `name`, `description`, `platform`, `realizes`, `outputs`, `status` | Platform-specific realization surface. |
 | `orchestration` | `name`, `description`, `inputs`, `steps`, `outputs`, `status` | Multi-step process model. |
@@ -58,7 +58,7 @@ capability cap_call_feed {
 Kinds that may carry `domain`: `capability`, `entity`, `rule`,
 `verification`, `orchestration`, `operation`, `decision`, `pitch`,
 `requirement`, `task`, `bug`. Cross-cutting kinds (`term`, `actor`, `role`,
-`enum`, `shape`, `component`, `projection`, `acceptance_criterion`)
+`enum`, `shape`, `widget`, `projection`, `acceptance_criterion`)
 cannot. The validator hard-errors on unknown ids and
 wrong-kind references.
 
@@ -66,12 +66,12 @@ The resolver populates a `resolvedDomain` pointer on each tagged
 statement and a reverse-indexed `members` block on each `domain`. See
 [Domains](./domains.md) for the full guide.
 
-## Components
+## Widgets
 
-`component` statements model reusable contracts independent of a target framework:
+`widget` statements model reusable contracts independent of a target framework:
 
 ```text
-component component_ui_data_grid {
+widget widget_data_grid {
   name "Data Grid"
   description "Reusable tabular display"
   category collection
@@ -103,37 +103,37 @@ component component_ui_data_grid {
 
 Validation enforces supported categories, prop entry shape, event shape references, slot entries, UI pattern and region symbols, and dependency references.
 
-Shared UI projection statements bind components to shared screens and regions:
+Shared UI projection statements bind widgets to shared screens and regions:
 
 ```text
-projection proj_ui_shared {
+projection proj_ui_contract {
   # ...
-  ui_components {
-    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail
+  widget_bindings {
+    screen item_list region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail
   }
 }
 ```
 
-Validation enforces known screens, regions, components, component props,
-component events, and binding targets. Component behavior declarations are
+Validation enforces known screens, regions, widgets, widget props,
+widget events, and binding targets. Widget behavior declarations are
 realized through those projection bindings: generated UI contracts include
 `behaviorRealizations` with data dependencies, emitted-event bindings,
 navigation or command effects, and `declared`/`realized`/`partial` status.
-Behavior `actions` and `submit` directives may reference declared component
+Behavior `actions` and `submit` directives may reference declared widget
 events or existing capabilities.
 
-Semantic UI ownership belongs on `ui_shared`: `ui_screens`, `ui_collections`,
-`ui_actions`, `ui_visibility`, `ui_lookups`, `ui_app_shell`, `ui_navigation`,
-`ui_screen_regions`, `ui_components`, and `ui_design`. Concrete `ui_web`,
-`ui_ios`, and future `ui_android` projections inherit those semantics through
-`realizes`; they own `ui_routes` and platform surface hints such as `ui_web` or
-`ui_ios`. Validation rejects semantic UI blocks on concrete projections and
-rejects `ui_routes` on shared UI projections.
+Semantic UI ownership belongs on `ui_contract`: `screens`, `collection_views`,
+`screen_actions`, `visibility_rules`, `field_lookups`, `app_shell`, `navigation`,
+`screen_regions`, `widget_bindings`, and `design_tokens`. Concrete `web_surface`,
+`ios_surface`, and future `android_surface` projections inherit those semantics through
+`realizes`; they own `screen_routes` and platform surface hints such as `web_hints` or
+`ios_hints`. Validation rejects semantic UI blocks on concrete projections and
+rejects `screen_routes` on shared UI projections.
 
 ```text
-projection proj_ui_shared {
+projection proj_ui_contract {
   # ...
-  ui_design {
+  design_tokens {
     density compact
     tone operational
     radius_scale medium
@@ -145,8 +145,8 @@ projection proj_ui_shared {
 }
 ```
 
-`ui_design` captures semantic intent only. CSS classes, Tailwind tokens,
+`design_tokens` captures semantic intent only. CSS classes, Tailwind tokens,
 framework modifiers, and pixel-level styling stay in generators, templates, or
 maintained application code.
 
-See [Components](./components.md) for generator output and roadmap details.
+See [Widgets](./widgets.md) for generator output and roadmap details.

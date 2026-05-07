@@ -1470,9 +1470,9 @@ function renderCandidateComponent(component) {
   const region = component.region || "results";
   return ensureTrailingNewline(
     [
-      `component ${component.id_hint} {`,
+      `widget ${component.id_hint} {`,
       `  name "${component.label || component.id_hint}"`,
-      '  description "Candidate reusable component inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
+      '  description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
       "  category collection",
       "  props {",
       `    ${propName} array required`,
@@ -1540,7 +1540,7 @@ function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_permissions || []).length > 0) {
     lines.push("## Inferred Permission Rules", "");
     for (const entry of patch.missing_auth_permissions) {
-      lines.push(`- ${formatAuthPermissionHintInline(entry)} on ${entry.projection_surface === "ui_visibility" ? "`ui_visibility`" : "`http_authz`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthPermissionHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthPermissionReviewGuidance(entry)}`);
     }
@@ -1550,7 +1550,7 @@ function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_claims || []).length > 0) {
     lines.push("## Inferred Auth Claim Rules", "");
     for (const entry of patch.missing_auth_claims) {
-      lines.push(`- ${formatAuthClaimHintInline(entry)} on ${entry.projection_surface === "ui_visibility" ? "`ui_visibility`" : "`http_authz`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthClaimHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthClaimReviewGuidance(entry)}`);
     }
@@ -1560,7 +1560,7 @@ function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_ownerships || []).length > 0) {
     lines.push("## Inferred Ownership Rules", "");
     for (const entry of patch.missing_auth_ownerships) {
-      lines.push(`- ${formatAuthOwnershipHintInline(entry)} on \`http_authz\` for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthOwnershipHintInline(entry)} on \`authorization\` for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthOwnershipReviewGuidance(entry)}`);
     }
@@ -1710,7 +1710,7 @@ function buildBundleOperatorSummary(bundle) {
   const evidenceKinds = [
     (bundle.entities || []).length > 0 ? "entity evidence" : null,
     (bundle.capabilities || []).length > 0 ? "API capability evidence" : null,
-    (bundle.components || []).length > 0 ? "UI component evidence" : null,
+    (bundle.components || []).length > 0 ? "UI widget evidence" : null,
     (bundle.screens || []).length > 0 || (bundle.uiRoutes || []).length > 0 ? "UI screen/route evidence" : null,
     (bundle.workflows || []).length > 0 ? "workflow evidence" : null,
     (bundle.docs || []).length > 0 ? "doc evidence" : null,
@@ -2715,7 +2715,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `Enums: ${bundle.enums.length}`,
     `Capabilities: ${bundle.capabilities.length}`,
     `Shapes: ${bundle.shapes.length}`,
-    `Components: ${bundle.components.length}`,
+    `Widgets: ${bundle.components.length}`,
     `Screens: ${bundle.screens.length}`,
     `UI routes: ${bundle.uiRoutes.length}`,
     `UI actions: ${bundle.uiActions.length}`,
@@ -2733,7 +2733,7 @@ function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `- Primary entity: ${summary.primaryEntityId ? `\`${summary.primaryEntityId}\`` : "_none_"}`,
     `- Participants: ${summary.participants.label}`,
     `- Main capabilities: ${summarizeBundleSurface(bundle, summary.capabilityIds)}`,
-    `- Main components: ${summarizeBundleSurface(bundle, summary.componentIds)}`,
+    `- Main widgets: ${summarizeBundleSurface(bundle, summary.componentIds)}`,
     `- Main screens: ${summarizeBundleSurface(bundle, summary.screenIds)}`,
     `- Main routes: ${summarizeBundleSurface(bundle, summary.routePaths)}`,
     `- Main workflows: ${summarizeBundleSurface(bundle, summary.workflowIds)}`,
@@ -3013,15 +3013,15 @@ function capabilityEntityTargets(capability) {
 }
 
 function projectionKindForImpact(projection) {
-  if ((projection.http || []).length > 0 || projection.platform === "dotnet") {
+  if ((projection.http || []).length > 0 || projection.platform === "api_contract") {
     return "api";
   }
   if (
     (projection.uiRoutes || []).length > 0 ||
     (projection.uiWeb || []).length > 0 ||
     (projection.uiIos || []).length > 0 ||
-    projection.platform === "ui_web" ||
-    projection.platform === "ui_ios"
+    projection.platform === "web_surface" ||
+    projection.platform === "ios_surface"
   ) {
     return "ui";
   }
@@ -3190,14 +3190,14 @@ function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
   }
   for (const entry of bundle.components || []) {
     steps.push({
-      action: "promote_component",
+      action: "promote_widget",
       item: entry.id_hint,
       target: null,
       confidence: entry.confidence || "low",
       inference_summary: entry.inference_summary || null,
       related_capabilities: [entry.data_source].filter(Boolean),
-      source_path: `candidates/reconcile/model/bundles/${bundle.slug}/components/${entry.id_hint}.tg`,
-      canonical_rel_path: `components/${dashedTopogramId(entry.id_hint)}.tg`
+      source_path: `candidates/reconcile/model/bundles/${bundle.slug}/widgets/${entry.id_hint}.tg`,
+      canonical_rel_path: `widgets/${dashedTopogramId(entry.id_hint)}.tg`
     });
   }
   for (const screen of bundle.screens) {
@@ -3247,7 +3247,7 @@ function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
         item: `projection_ownership_patch:${patch.projection_id}:${hint.ownership_field}`,
         target: patch.projection_id,
         projection_kind: patch.kind,
-        projection_surface: "http_authz",
+        projection_surface: "authorization",
         ownership: hint.ownership,
         ownership_field: hint.ownership_field,
         confidence: hint.confidence || "low",
@@ -3295,7 +3295,7 @@ function buildUiImpacts(bundle, graph) {
   if ((bundle.screens || []).length === 0) {
     return [];
   }
-  const uiProjections = (graph?.byKind.projection || []).filter((projection) => ["ui_shared", "ui_web"].includes(projection.platform));
+  const uiProjections = (graph?.byKind.projection || []).filter((projection) => ["ui_contract", "web_surface"].includes(projection.platform));
   const bundleScreenIds = bundle.screens.map((screen) => screen.id_hint);
   return uiProjections
     .map((projection) => {
@@ -3418,7 +3418,7 @@ function buildProjectionPatchCandidates(bundle) {
       if (relatedCapabilities.length === 0) {
         continue;
       }
-      const projectionSurface = impact.kind === "ui" ? "ui_visibility" : "http_authz";
+      const projectionSurface = impact.kind === "ui" ? "visibility_rules" : "authorization";
       const entry = {
         claim: hint.claim,
         claim_value: hint.claim_value,
@@ -3466,7 +3466,7 @@ function buildProjectionPatchCandidates(bundle) {
       if (relatedCapabilities.length === 0) {
         continue;
       }
-      const projectionSurface = impact.kind === "ui" ? "ui_visibility" : "http_authz";
+      const projectionSurface = impact.kind === "ui" ? "visibility_rules" : "authorization";
       const entry = {
         permission: hint.permission,
         confidence: hint.confidence,
@@ -4014,7 +4014,7 @@ function buildCandidateModelFiles(graph, appImport, topogramRoot) {
       files[`${bundleRoot}/verifications/${entry.id_hint}.tg`] = renderCandidateVerification(entry, entry.scenarios || []);
     }
     for (const entry of bundle.components || []) {
-      files[`${bundleRoot}/components/${entry.id_hint}.tg`] = renderCandidateComponent(entry);
+      files[`${bundleRoot}/widgets/${entry.id_hint}.tg`] = renderCandidateComponent(entry);
     }
     for (const entry of bundle.docs) {
       if (entry.existing_canonical) {
@@ -4085,8 +4085,8 @@ function canonicalRelativePathForItem(kind, item) {
       return `shapes/${dashedTopogramId(item)}.tg`;
     case "capability":
       return `capabilities/${dashedTopogramId(item)}.tg`;
-    case "component":
-      return `components/${dashedTopogramId(item)}.tg`;
+    case "widget":
+      return `widgets/${dashedTopogramId(item)}.tg`;
     case "verification":
       return `verifications/${dashedTopogramId(item)}.tg`;
     default:
@@ -4114,8 +4114,8 @@ function candidateSourcePathForItem(bundle, kind, item) {
       return `${base}/shapes/${item}.tg`;
     case "capability":
       return `${base}/capabilities/${item}.tg`;
-    case "component":
-      return `${base}/components/${item}.tg`;
+    case "widget":
+      return `${base}/widgets/${item}.tg`;
     case "verification":
       return `${base}/verifications/${item}.tg`;
     default:
@@ -4137,8 +4137,8 @@ function reasonForAdoptionItem(step) {
       return step.target ? `Promote this shape to support concept ${step.target}.` : "Promote this imported shape into canonical Topogram.";
     case "promote_capability":
       return "Promote this imported capability into canonical Topogram.";
-    case "promote_component":
-      return "Promote this imported reusable UI component into canonical Topogram.";
+    case "promote_widget":
+      return "Promote this imported reusable UI widget into canonical Topogram.";
     case "merge_capability_into_existing_entity":
       return `Adopt this capability while preserving the existing canonical entity ${step.target}.`;
     case "promote_doc":
@@ -4184,8 +4184,8 @@ function recommendationForAdoptionItem(step) {
   if (step.action === "apply_projection_ownership_patch") {
     return `Update \`${step.target}\` with inferred ownership auth rules for ${(step.related_capabilities || []).map((item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
   }
-  if (step.action === "promote_component") {
-    return "Promote this reviewed component candidate before binding or reusing it from canonical projections.";
+  if (step.action === "promote_widget") {
+    return "Promote this reviewed widget candidate before binding or reusing it from canonical projections.";
   }
   if (!["promote_actor", "promote_role"].includes(step.action)) {
     return null;
@@ -4305,7 +4305,7 @@ function buildAdoptionPlan(bundles) {
         step.action.includes("doc") ? "doc" :
         step.action.includes("decision") ? "decision" :
         step.action.includes("verification") ? "verification" :
-        step.action.includes("component") ? "component" :
+        step.action.includes("widget") ? "widget" :
         step.action.includes("ui_") ? "ui" :
         step.action.includes("actor") ? "actor" :
         step.action.includes("role") ? "role" :
@@ -4477,7 +4477,7 @@ function buildAdoptionPlan(bundles) {
   );
 }
 
-const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "components", "docs", "journeys", "workflows", "verification", "ui"]);
+const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "ui"]);
 
 function readAdoptionPlan(paths) {
   return readJsonIfExists(path.join(paths.topogramRoot, "candidates", "reconcile", "adoption-plan.json"));
@@ -4671,8 +4671,8 @@ function applyProjectionAuthPatchToTopogram(baseContents, item) {
   const realizesResult = ensureProjectionRealizes(lines, capabilities);
   changed = changed || realizesResult.changed;
 
-  if (item.projection_surface === "http_authz") {
-    const block = ensureProjectionBlock(lines, "http_authz");
+  if (item.projection_surface === "authorization") {
+    const block = ensureProjectionBlock(lines, "authorization");
     for (const capabilityId of capabilities) {
       const lineIndex = lines.findIndex((line, index) =>
         index > block.startIndex &&
@@ -4723,8 +4723,8 @@ function applyProjectionAuthPatchToTopogram(baseContents, item) {
     }
   }
 
-  if (item.projection_surface === "ui_visibility") {
-    const block = ensureProjectionBlock(lines, "ui_visibility");
+  if (item.projection_surface === "visibility_rules") {
+    const block = ensureProjectionBlock(lines, "visibility_rules");
     for (const capabilityId of capabilities) {
       if (item.suggested_action === "apply_projection_permission_patch") {
         const hasExistingPermissionRule = lines.some((line, index) =>
@@ -6511,7 +6511,7 @@ function collectUiImport(paths) {
     }
     const provenance = relativeTo(paths.repoRoot, path.join(rootDir, "src", "App.tsx"));
     findings.push({
-      kind: "react_ui_routes",
+      kind: "react_screen_routes",
       file: provenance,
       routes
     });
@@ -6576,7 +6576,7 @@ function collectUiImport(paths) {
     }
     const provenance = relativeTo(paths.repoRoot, path.join(rootDir, "src", "routes"));
     findings.push({
-      kind: "sveltekit_ui_routes",
+      kind: "sveltekit_screen_routes",
       file: provenance,
       routes
     });
@@ -6975,7 +6975,7 @@ function collectCanonicalUiSurface(graph) {
   const screens = new Set();
   const routes = new Set();
   for (const projection of graph.byKind.projection || []) {
-    if (!["ui_shared", "ui_web"].includes(projection.platform)) {
+    if (!["ui_contract", "web_surface"].includes(projection.platform)) {
       continue;
     }
     for (const screen of projection.uiScreens || []) {
@@ -7588,6 +7588,7 @@ function reconcileWorkflow(inputPath, options = {}) {
       capabilities: bundle.capabilities.map((entry) => entry.id_hint),
       shapes: bundle.shapes.map((entry) => entry.id),
       components: bundle.components.map((entry) => entry.id_hint),
+      widgets: bundle.components.map((entry) => entry.id_hint),
       screens: bundle.screens.map((entry) => entry.id_hint),
       workflows: bundle.workflows.map((entry) => entry.id_hint),
       docs: bundle.docs.map((entry) => entry.id),
@@ -7611,11 +7612,11 @@ function reconcileWorkflow(inputPath, options = {}) {
     : "## Promoted Canonical Items";
   files["candidates/reconcile/report.json"] = `${stableStringify(report)}\n`;
   const candidateModelBundlesMarkdown = report.candidate_model_bundles.length
-    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.components.length} components, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
+    ? report.candidate_model_bundles.map((bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.components.length} widgets, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
   - primary concept \`${bundle.operator_summary.primaryConcept}\`${bundle.operator_summary.primaryEntityId ? `, primary entity \`${bundle.operator_summary.primaryEntityId}\`` : ""}
   - participants ${bundle.operator_summary.participants.label}
   - main capabilities ${summarizeBundleSurface(bundle, bundle.operator_summary.capabilityIds)}
-  - main components ${summarizeBundleSurface(bundle, bundle.operator_summary.componentIds)}
+  - main widgets ${summarizeBundleSurface(bundle, bundle.operator_summary.componentIds)}
   - main routes ${summarizeBundleSurface(bundle, bundle.operator_summary.routePaths)}
   - candidate maintained seam mappings ${renderMaintainedSeamCandidatesInline(bundle)}
   - permission hints ${bundle.auth_permission_hints?.length ? bundle.auth_permission_hints.map((entry) => formatAuthPermissionHintInline(entry)).join(", ") : "_none_"}

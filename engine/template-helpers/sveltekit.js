@@ -1,5 +1,5 @@
 export {
-  hasSvelteKitComponentRegion,
-  renderSvelteKitComponentRegion,
-  svelteKitComponentUsagesForRegion
-} from "../src/generator/surfaces/web/sveltekit-components.js";
+  hasSvelteKitWidgetRegion,
+  renderSvelteKitWidgetRegion,
+  svelteKitWidgetUsagesForRegion
+} from "../src/generator/surfaces/web/sveltekit-widgets.js";

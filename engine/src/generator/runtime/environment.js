@@ -43,10 +43,10 @@ function buildEnvironmentPlan(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
   const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
-  const profile = options.profileId || (dbProjection?.platform === "db_sqlite" || !dbProjection ? "local_process" : "local_docker");
+  const profile = options.profileId || (dbProjection?.platform === "db_contract" || !dbProjection ? "local_process" : "local_docker");
   const usesDocker = profile === "local_docker";
   const webProfile = manifestGeneratorProfile(topology.primaryWeb?.generator?.id, null) || projectionHintProfile(uiProjection, "sveltekit");
-  const isSqlite = dbProjection?.platform === "db_sqlite";
+  const isSqlite = dbProjection?.platform === "db_contract";
   const ports = runtimePorts(runtimeReference, topology);
 
   return {
@@ -58,14 +58,14 @@ function buildEnvironmentPlan(graph, options = {}) {
       profile
     },
     topology: {
-      components: topology.components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        projection: component.projection.id,
-        generator: component.generator,
-        port: component.port ?? null,
-        api: component.api || null,
-        database: component.database || null
+      runtimes: topology.runtimes.map((runtime) => ({
+        id: runtime.id,
+        kind: runtime.kind,
+        projection: runtime.projection.id,
+        generator: runtime.generator,
+        port: runtime.port ?? null,
+        uses_api: runtime.api || null,
+        uses_database: runtime.database || null
       }))
     },
     projections: {
@@ -110,7 +110,7 @@ function buildEnvironmentPlan(graph, options = {}) {
       db: topology.primaryDb ? topology.dbDir(topology.primaryDb) : null,
       scripts: "scripts"
     },
-    components: {
+    runtimes: {
       apis: topology.apiComponents.map((component) => ({
         id: component.id,
         projection: component.projection.id,
@@ -165,11 +165,11 @@ function renderEnvironmentEnvExample(plan) {
     primaryApi: { port: plan.ports.server },
     primaryWeb: { port: plan.ports.web }
   });
-  const extraDatabaseLines = plan.components.databases
-    .filter((component) => component.id !== plan.components.databases[0]?.id)
+  const extraDatabaseLines = plan.runtimes.databases
+    .filter((component) => component.id !== plan.runtimes.databases[0]?.id)
     .map((component) => {
       const fallbackName = `${databaseName}_${component.id}`;
-      if (component.platform === "db_sqlite") {
+      if (component.platform === "db_contract") {
         return `${component.env.databaseUrl}=file:./var/${component.id}.sqlite`;
       }
       return [
@@ -185,7 +185,7 @@ function renderEnvironmentEnvExample(plan) {
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
 
 # Local stack ports
-${plan.components.apis.length ? `SERVER_PORT=${plan.ports.server}\n` : ""}${plan.components.webs.length ? `WEB_PORT=${plan.ports.web}\n` : ""}${plan.components.webs.length && plan.components.apis.length ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.components.webs.length ? `TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+${plan.runtimes.apis.length ? `SERVER_PORT=${plan.ports.server}\n` : ""}${plan.runtimes.webs.length ? `WEB_PORT=${plan.ports.web}\n` : ""}${plan.runtimes.webs.length && plan.runtimes.apis.length ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.runtimes.webs.length ? `TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
 TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
@@ -193,7 +193,7 @@ TOPOGRAM_SEED_DEMO=true
   if (!plan.projections.db.platform) {
     return commonLines;
   }
-  if (plan.projections.db.platform === "db_sqlite") {
+  if (plan.projections.db.platform === "db_contract") {
     return `# Environment profile
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
 
@@ -267,12 +267,12 @@ function apiDatabaseExportLines(component) {
 }
 
 function renderEnvironmentReadme(plan) {
-  const hasDb = plan.components.databases.length > 0;
-  const hasApi = plan.components.apis.length > 0;
-  const hasWeb = plan.components.webs.length > 0;
+  const hasDb = plan.runtimes.databases.length > 0;
+  const hasApi = plan.runtimes.apis.length > 0;
+  const hasWeb = plan.runtimes.webs.length > 0;
   const localProcessNotes = !hasDb
     ? "- This bundle has no generated database surface."
-    : plan.projections.db.platform === "db_sqlite"
+    : plan.projections.db.platform === "db_contract"
     ? "- SQLite is file-backed for this bundle; no separate DB server is required."
     : `- Make sure the Postgres server is already running before \`${plan.commands.bootstrapDb}\`.\n- \`DATABASE_URL\` and \`DATABASE_ADMIN_URL\` should point at your local or managed Postgres instance.`;
   const dockerSection = plan.orchestration.usesDocker
@@ -291,13 +291,13 @@ ${localProcessNotes}
 
 This bundle packages the generated runtime into one local environment:
 
-${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.platform === "db_sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
+${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.platform === "db_contract" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
 
 ## Quick Start
 
 1. Copy \`.env.example\` to \`.env\` if you want to customize defaults
 2. Start the database:
-   - ${!hasDb ? "not applicable" : plan.projections.db.platform === "db_sqlite" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
+   - ${!hasDb ? "not applicable" : plan.projections.db.platform === "db_contract" ? "no separate DB service is required" : plan.orchestration.usesDocker ? `\`${plan.commands.dockerDb}\`` : "use your local Postgres service"}
 3. Bootstrap or migrate the database:
    - \`${plan.commands.bootstrapDb}\`
 4. Start the stack:
@@ -313,7 +313,7 @@ ${dockerSection}
 
 ## Notes
 
-- ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.platform === "db_sqlite" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
+- ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.platform === "db_contract" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
 - ${hasWeb && hasApi ? "The generated web app talks to `PUBLIC_TOPOGRAM_API_BASE_URL`." : hasWeb ? "The generated web app is standalone." : "No web surface is generated."}
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`.
 - The DB lifecycle scripts remain the source of truth for greenfield bootstrap and brownfield migration.
@@ -325,9 +325,9 @@ function renderEnvironmentLoadEnvScript() {
 }
 
 function renderEnvironmentBootstrapDbScript(plan) {
-  const dbBootstrapLines = plan.components.databases.map((component) => {
+  const dbBootstrapLines = plan.runtimes.databases.map((component) => {
     const env = component.env;
-    const runtimeApi = plan.components.apis.find((apiComponent) => apiComponent.database === component.id);
+    const runtimeApi = plan.runtimes.apis.find((apiComponent) => apiComponent.database === component.id);
     const assignments = [
       `DATABASE_URL="\${${env.databaseUrl}:-}"`,
       `DATABASE_ADMIN_URL="\${${env.databaseAdminUrl}:-}"`,
@@ -335,10 +335,10 @@ function renderEnvironmentBootstrapDbScript(plan) {
     ].filter(Boolean).join(" ");
     return `(cd "$ROOT_DIR/${component.dir}" && TOPOGRAM_ENV_FILE=/dev/null ${assignments} bash ./scripts/db-bootstrap-or-migrate.sh)`;
   });
-  const primaryApi = plan.components.apis[0];
-  if (plan.components.databases.length === 0) {
+  const primaryApi = plan.runtimes.apis[0];
+  if (plan.runtimes.databases.length === 0) {
     return renderEnvAwareShellScript([
-      'echo "No database components are configured; skipping DB bootstrap."'
+      'echo "No database runtimes are configured; skipping DB bootstrap."'
     ]);
   }
   return renderEnvAwareShellScript([
@@ -367,9 +367,9 @@ function componentScriptOptions() {
   };
 }
 
-function renderEnvironmentServerDevScript(plan, component = plan.components.apis[0], options = {}) {
+function renderEnvironmentServerDevScript(plan, component = plan.runtimes.apis[0], options = {}) {
   if (!component) {
-    return renderEnvAwareShellScript(['echo "No API components are configured."']);
+    return renderEnvAwareShellScript(['echo "No API runtimes are configured."']);
   }
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
@@ -386,11 +386,11 @@ function renderEnvironmentServerDevScript(plan, component = plan.components.apis
   ], options.componentScript ? componentScriptOptions() : {});
 }
 
-function renderEnvironmentWebDevScript(plan, component = plan.components.webs[0], options = {}) {
+function renderEnvironmentWebDevScript(plan, component = plan.runtimes.webs[0], options = {}) {
   if (!component) {
-    return renderEnvAwareShellScript(['echo "No web components are configured."']);
+    return renderEnvAwareShellScript(['echo "No web runtimes are configured."']);
   }
-  const apiComponent = plan.components.apis.find((entry) => entry.id === component.api) || plan.components.apis[0];
+  const apiComponent = plan.runtimes.apis.find((entry) => entry.id === component.api) || plan.runtimes.apis[0];
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} web`,
@@ -406,8 +406,8 @@ function renderEnvironmentWebDevScript(plan, component = plan.components.webs[0]
 
 function renderEnvironmentStackDevScript(plan) {
   const startLines = [
-    ...plan.components.apis.map((component) => `bash "$SCRIPT_DIR/services/${component.id}-dev.sh" &\nPIDS+=($!)`),
-    ...plan.components.webs.map((component) => `bash "$SCRIPT_DIR/web/${component.id}-dev.sh" &\nPIDS+=($!)`)
+    ...plan.runtimes.apis.map((component) => `bash "$SCRIPT_DIR/services/${component.id}-dev.sh" &\nPIDS+=($!)`),
+    ...plan.runtimes.webs.map((component) => `bash "$SCRIPT_DIR/web/${component.id}-dev.sh" &\nPIDS+=($!)`)
   ];
   return `#!/usr/bin/env bash
 set -euo pipefail
@@ -447,8 +447,8 @@ ${startLines.length ? "wait" : ""}
 
 function renderEnvironmentGuardPortsScript(plan) {
   const ports = [
-    ...plan.components.apis.map((component) => ({ id: component.id, type: "api", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "SERVER_PORT", port: component.port })),
-    ...plan.components.webs.map((component) => ({ id: component.id, type: "web", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "WEB_PORT", port: component.port }))
+    ...plan.runtimes.apis.map((component) => ({ id: component.id, type: "api", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "SERVER_PORT", port: component.port })),
+    ...plan.runtimes.webs.map((component) => ({ id: component.id, type: "web", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "WEB_PORT", port: component.port }))
   ];
   return `#!/usr/bin/env node
 import net from "node:net";
@@ -596,10 +596,10 @@ export function generateEnvironmentBundle(graph, options = {}) {
     "scripts/guard-ports.mjs": renderEnvironmentGuardPortsScript(plan)
   };
 
-  for (const component of plan.components.apis) {
+  for (const component of plan.runtimes.apis) {
     files[`scripts/services/${component.id}-dev.sh`] = renderEnvironmentServerDevScript(plan, component, { componentScript: true });
   }
-  for (const component of plan.components.webs) {
+  for (const component of plan.runtimes.webs) {
     files[`scripts/web/${component.id}-dev.sh`] = renderEnvironmentWebDevScript(plan, component, { componentScript: true });
   }
 

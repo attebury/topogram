@@ -1,8 +1,8 @@
-projection proj_ui_shared {
+projection proj_ui_contract {
   name "Sample Workspace Shared UI"
   description "Platform-neutral UI semantics for the sample-workspace fixture"
 
-  platform ui_shared
+  type ui_contract
   realizes [
     cap_list_collections,
     cap_get_collection,
@@ -24,7 +24,7 @@ projection proj_ui_shared {
   ]
   outputs [ui_contract]
 
-  ui_app_shell {
+  app_shell {
     brand "Topogram Sample Workspace"
     shell bottom_tabs
     global_search true
@@ -33,7 +33,7 @@ projection proj_ui_shared {
     footer legal
   }
 
-  ui_design {
+  design_tokens {
     density compact
     tone operational
     radius_scale medium
@@ -47,7 +47,7 @@ projection proj_ui_shared {
     accessibility focus visible
   }
 
-  ui_screens {
+  screens {
     screen collection_list kind list title "Collections" load cap_list_collections item_shape shape_output_collection_card detail_capability cap_get_collection primary_action cap_create_collection empty_title "No collections yet" empty_body "Create a collection to organize your items" loading_state skeleton error_state inline
     screen collection_detail kind detail title "Collection Details" load cap_get_collection view_shape shape_output_collection_detail primary_action cap_update_collection loading_state skeleton
     screen collection_create kind form title "Create Collection" input_shape shape_input_create_collection submit cap_create_collection success_navigate collection_detail success_state banner
@@ -65,7 +65,7 @@ projection proj_ui_shared {
     screen item_exports kind job_status title "Export Status" load cap_get_item_export_job view_shape shape_output_item_export_status terminal_action cap_download_item_export
   }
 
-  ui_collections {
+  collection_views {
     screen collection_list pagination cursor
     screen collection_list sort created_at desc
     screen collection_list view table
@@ -81,7 +81,7 @@ projection proj_ui_shared {
     screen item_list view table
   }
 
-  ui_actions {
+  screen_actions {
     screen collection_list action cap_create_collection prominence primary placement toolbar
     screen member_list action cap_create_member prominence primary placement toolbar
     screen item_list action cap_export_items prominence secondary placement toolbar
@@ -89,7 +89,7 @@ projection proj_ui_shared {
     screen item_detail action cap_delete_item prominence destructive placement footer
   }
 
-  ui_visibility {
+  visibility_rules {
     action cap_create_collection visible_if permission collections.create
     action cap_update_collection visible_if permission collections.update
     action cap_create_member visible_if permission members.create
@@ -100,7 +100,7 @@ projection proj_ui_shared {
     action cap_export_items visible_if permission items.export
   }
 
-  ui_lookups {
+  field_lookups {
     screen collection_create field owner_id entity entity_member label_field display_name empty_label "Unassigned"
     screen collection_edit field owner_id entity entity_member label_field display_name empty_label "Unassigned"
     screen item_list field collection_id entity entity_collection label_field name empty_label "All collections"
@@ -110,7 +110,7 @@ projection proj_ui_shared {
     screen item_edit field owner_id entity entity_member label_field display_name empty_label "Unassigned"
   }
 
-  ui_navigation {
+  navigation {
     group workspace label "Workspace" placement primary pattern bottom_tabs
     group admin label "Admin" placement primary pattern bottom_tabs
     screen item_list group workspace label "Items" order 10 visible true default true sitemap include pattern bottom_tabs
@@ -122,7 +122,7 @@ projection proj_ui_shared {
     screen item_detail group workspace label "Item Details" visible false breadcrumb item_list sitemap exclude pattern stack_navigation
   }
 
-  ui_screen_regions {
+  screen_regions {
     screen item_list region hero pattern summary_stats placement primary
     screen item_list region toolbar pattern action_bar placement primary
     screen item_list region results pattern resource_table placement primary
@@ -136,8 +136,8 @@ projection proj_ui_shared {
     screen member_list region results pattern resource_table placement primary
   }
 
-  ui_components {
-    screen item_list region results component component_ui_data_grid data rows from cap_list_items event row_select navigate item_detail
+  widget_bindings {
+    screen item_list region results widget widget_data_grid data rows from cap_list_items event row_select navigate item_detail
   }
 
   status active

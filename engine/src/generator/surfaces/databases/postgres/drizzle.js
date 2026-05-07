@@ -50,8 +50,9 @@ function drizzleColumnBuilder(column, relation, targetTableVar) {
 export function generatePostgresDrizzleSchema(graph, options = {}) {
   resolvePostgresCapabilities(options.profileId);
   const projection = getProjection(graph, options.projectionId);
-  if (projection.platform !== "db_postgres") {
-    throw new Error(`Drizzle schema generation currently supports db_postgres projections only, found '${projection.platform}'`);
+  const projectionType = projection.type || projection.platform;
+  if (projectionType !== "db_contract") {
+    throw new Error(`Drizzle schema generation currently supports db_contract projections only, found '${projectionType}'`);
   }
 
   const contract = buildDbProjectionContract(graph, projection);

@@ -33,7 +33,7 @@ Topogram turns a `.tg` workspace into generated artifacts and apps through five 
 Generator adapters
 - Own stack-specific realization such as React, SvelteKit, Hono, Express,
   Postgres, SQLite, Prisma, Drizzle, SwiftUI, or future Android files.
-- Consume normalized contracts, topology component metadata, and optional
+- Consume normalized contracts, topology runtime metadata, widget contracts, and optional
   implementation hooks.
 - Return generated files and diagnostics through the shared generator interface.
 
@@ -42,9 +42,9 @@ Workspace `implementation/`
 - Can include seed data, custom page renderers, repository implementations, and runtime-check specifics.
 - Must not be treated as engine contracts.
 
-`component` statements live in the semantic graph beside entities, capabilities,
-shapes, and projections. They produce `componentContract` resolver enrichment
-and can be emitted through the `ui-component-contract` generator target without
+`widget` statements live in the semantic graph beside entities, capabilities,
+shapes, and projections. They produce `widgetContract` resolver enrichment
+and can be emitted through the `ui-widget-contract` generator target without
 requiring an implementation provider.
 
 ## Stable Internal Contracts

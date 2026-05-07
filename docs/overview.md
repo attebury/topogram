@@ -93,9 +93,9 @@ my-topogram-app/app/
 
 Treat generated output as disposable. Change the Topogram, then regenerate.
 
-Reusable UI and service contracts can be modeled as `component` statements. See
-[Grammar](./grammar.md) for statement fields and [Components](./components.md)
-for generated `ui-component-contract` output.
+Reusable UI and service contracts can be modeled as `widget` statements. See
+[Grammar](./grammar.md) for statement fields and [Widgets](./widgets.md)
+for generated `ui-widget-contract` output.
 
 ## Engine Development
 

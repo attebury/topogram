@@ -23,8 +23,8 @@ related_rules:
   - rule_only_active_members_may_own_items
 related_projections:
   - proj_api
-  - proj_ui_shared
-  - proj_ui_web
+  - proj_ui_contract
+  - proj_web_surface
 failure_signals:
   - The member can create a item in an archived collection.
   - The member can assign a item to an inactive owner.

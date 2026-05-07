@@ -11,7 +11,7 @@ import {
 } from "./shared.js";
 
 export function normalizeDbSchemaSnapshot(contract, byId = null) {
-  const engine = contract.projection.platform === "db_sqlite" ? "sqlite" : "postgres";
+  const engine = contract.profile?.startsWith("sqlite") ? "sqlite" : "postgres";
   const tables = [...contract.tables]
     .map((table) => ({
       table: table.table,
