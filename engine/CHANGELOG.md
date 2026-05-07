@@ -5,6 +5,24 @@
 - Install package-backed generator dependencies during `topogram template check`
   before starter validation.
 
+## 0.3.55 - 2026-05-07
+
+- Complete the public DSL cleanup from `component` to `widget`: normalized
+  graph/context output now uses `widget`, `widgetBindings`, `widgetContract`,
+  and widget report target names without publishing component compatibility
+  aliases.
+- Reconcile/adoption import reports now emit `widgets` in candidate model
+  bundles, evidence, summaries, and promoted item plans. Existing imported
+  workspaces with `candidates.ui.components` are still accepted as a read-only
+  fallback, but new import output writes `candidates.ui.widgets`.
+- Old CLI names fail with explicit rename guidance instead of silently running:
+  `topogram component`, `--component`, `ui-component-contract`,
+  `component-conformance-report`, and `component-behavior-report`.
+- Generator policy diagnostics now describe topology entries as runtimes
+  (`runtimeId`) instead of components.
+- Tighten boundary tests so old public DSL vocabulary is allowed only in
+  migration guidance and explicit rename diagnostics.
+
 ## 0.3.16 - 2026-05-03
 
 - Install package-backed generator dependencies during `topogram template check`
