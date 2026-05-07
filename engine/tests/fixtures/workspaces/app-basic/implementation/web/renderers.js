@@ -58,15 +58,15 @@ export function renderAppBasicHomePage({
 export function renderAppBasicItemRoutes({
   useTypescript,
   contract,
-  taskList: itemList,
-  taskDetail: itemDetail,
-  taskCreate: itemCreate,
-  taskEdit: itemEdit,
-  taskExports: itemExports,
-  taskListLookups: itemListLookups,
-  taskCreateLookups: itemCreateLookups,
-  taskEditLookups: itemEditLookups,
-  projectEnvVar: collectionEnvVar,
+  primaryList: itemList,
+  primaryDetail: itemDetail,
+  primaryCreate: itemCreate,
+  primaryEdit: itemEdit,
+  primaryExports: itemExports,
+  primaryListLookups: itemListLookups,
+  primaryCreateLookups: itemCreateLookups,
+  primaryEditLookups: itemEditLookups,
+  containerEnvVar: collectionEnvVar,
   ownerEnvVar,
   webReference,
   prettyScreenKind
@@ -85,10 +85,10 @@ export function renderAppBasicItemRoutes({
     itemsExpression: "data.result.items",
     useTypescript
   });
-  const itemListDefaultResults = `<ul class="item-list">
+  const itemListDefaultResults = `<ul class="item-list resource-list">
           {#each data.result.items as item}
             <li>
-              <div class="item-meta">
+              <div class="item-meta resource-meta">
                 <a href={'/items/' + item.id}><strong>{item.title}</strong></a>
                 {#if item.description}<span class="muted">{item.description}</span>{/if}
                 <span class="muted">Priority: {item.priority ?? "medium"}</span>
@@ -434,7 +434,7 @@ let created;`,
 `;
 
   files["items/new/+page.svelte"] = `<script${useTypescript ? ' lang="ts"' : ""}>
-  import { ${collectionEnvVar} as DEMO_PROJECT_ID, ${ownerEnvVar} as DEMO_USER_ID } from "$env/static/public";
+  import { ${collectionEnvVar} as DEMO_COLLECTION_ID, ${ownerEnvVar} as DEMO_MEMBER_ID } from "$env/static/public";
 
   export let data;
   export let form;
@@ -443,8 +443,8 @@ let created;`,
     title: form?.values?.title ?? "",
     description: form?.values?.description ?? "",
     priority: form?.values?.priority ?? "medium",
-    owner_id: form?.values?.owner_id ?? DEMO_USER_ID ?? "",
-    collection_id: form?.values?.collection_id ?? DEMO_PROJECT_ID ?? "",
+    owner_id: form?.values?.owner_id ?? DEMO_MEMBER_ID ?? "",
+    collection_id: form?.values?.collection_id ?? DEMO_COLLECTION_ID ?? "",
     due_at: form?.values?.due_at ?? ""
   };
 </script>

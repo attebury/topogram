@@ -2,6 +2,7 @@ import {
   buildVerificationSummary,
   getDefaultEnvironmentProjections,
   resolveRuntimeTopology,
+  runtimeDemoUserId,
   runtimeUrls,
   selectChecksByVerification
 } from "./shared.js";
@@ -126,7 +127,7 @@ process.on("unhandledRejection", reportFatal);
 const apiBase = process.env.TOPOGRAM_API_BASE_URL || "";
 const webBase = process.env.TOPOGRAM_WEB_BASE_URL || "";
 const demoContainerId = process.env.${runtimeReference.smoke.defaultContainerEnvVar} || "${runtimeReference.demoEnv.containerId}";
-const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "${runtimeReference.demoEnv.userId}";
+const demoUserId = process.env.TOPOGRAM_AUTH_USER_ID || process.env.TOPOGRAM_DEMO_USER_ID || "${runtimeDemoUserId(runtimeReference)}";
 const authToken = process.env.TOPOGRAM_AUTH_TOKEN || "";
 
 if (!apiBase || !webBase) {

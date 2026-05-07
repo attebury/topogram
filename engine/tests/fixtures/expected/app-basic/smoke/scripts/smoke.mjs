@@ -9,7 +9,7 @@ process.on("unhandledRejection", reportFatal);
 const apiBase = process.env.TOPOGRAM_API_BASE_URL || "";
 const webBase = process.env.TOPOGRAM_WEB_BASE_URL || "";
 const demoContainerId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "22222222-2222-4222-8222-222222222222";
-const demoUserId = process.env.TOPOGRAM_DEMO_USER_ID || "undefined";
+const demoUserId = process.env.TOPOGRAM_AUTH_USER_ID || process.env.TOPOGRAM_DEMO_USER_ID || "11111111-1111-4111-8111-111111111111";
 const authToken = process.env.TOPOGRAM_AUTH_TOKEN || "";
 
 if (!apiBase || !webBase) {

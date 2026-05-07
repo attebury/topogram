@@ -506,7 +506,7 @@ main { max-width: 72rem; margin: 0 auto; padding: var(--topogram-page-padding); 
 .command-palette-button { background: var(--topogram-text-color); color: white; border: none; border-radius: var(--topogram-radius-pill); padding: var(--topogram-control-padding); font: inherit; cursor: pointer; }
 .app-footer { max-width: 72rem; margin: 0 auto; padding: 0 1.25rem 2rem; color: var(--topogram-muted-color); }
 .card { background: var(--topogram-surface-card); border-radius: var(--topogram-radius-card); padding: 1.25rem; box-shadow: 0 12px 30px rgba(24, 32, 38, 0.08); }
-.hero, .stack, .grid, .filters, .task-meta, .resource-meta, .definition-list { display: grid; gap: var(--topogram-space-unit); }
+.hero, .stack, .grid, .filters, .resource-meta, .definition-list { display: grid; gap: var(--topogram-space-unit); }
 .grid.two { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
 .filters { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); margin: 1rem 0 1.25rem; }
 label { display: grid; gap: 0.35rem; font-size: 0.95rem; }
@@ -517,8 +517,8 @@ button, .button-link { display: inline-flex; align-items: center; justify-conten
 button:focus-visible, .button-link:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: var(--topogram-focus-outline); outline-offset: 2px; }
 .button-link.secondary { background: #e9eef6; color: var(--topogram-text-color); }
 .button-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
-.task-list, .resource-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.75rem; }
-.task-list li, .resource-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--topogram-space-unit); padding: 1rem; border: 1px solid #e0e8f1; border-radius: var(--topogram-radius-card); background: var(--topogram-surface-subtle); }
+.resource-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.75rem; }
+.resource-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--topogram-space-unit); padding: 1rem; border: 1px solid #e0e8f1; border-radius: var(--topogram-radius-card); background: var(--topogram-surface-subtle); }
 .table-wrap { margin-top: 1rem; overflow-x: auto; border: 1px solid var(--topogram-border-color); border-radius: var(--topogram-radius-card); background: white; }
 .resource-table { width: 100%; border-collapse: collapse; min-width: 42rem; }
 .resource-table th, .resource-table td { padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid #e7edf5; vertical-align: top; }
@@ -549,7 +549,7 @@ button:focus-visible, .button-link:focus-visible, a:focus-visible, input:focus-v
 .board-card, .calendar-card { display: grid; gap: 0.25rem; border: 1px solid #e0e8f1; border-radius: var(--topogram-radius-control); background: #f8fbff; padding: 0.75rem; }
 .calendar-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
 @media (max-width: 900px) { .app-workspace { grid-template-columns: 1fr; } .app-sidebar { position: static; min-height: auto; border-right: none; border-bottom: 1px solid rgba(24, 32, 38, 0.08); } }
-@media (max-width: 640px) { .definition-list { grid-template-columns: 1fr; } .task-list li, .resource-list li { flex-direction: column; } .resource-table { min-width: 36rem; } .app-nav { flex-wrap: wrap; } }
+@media (max-width: 640px) { .definition-list { grid-template-columns: 1fr; } .resource-list li { flex-direction: column; } .resource-table { min-width: 36rem; } .app-nav { flex-wrap: wrap; } }
 `;
   files["src/App.tsx"] = buildAppTsx(contract, webReferenceWithDefaults);
   files["src/lib/topogram/api-contracts.json"] = `${JSON.stringify(realization.apiContracts, null, 2)}\n`;

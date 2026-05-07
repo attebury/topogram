@@ -3,6 +3,7 @@ import {
   buildVerificationSummary,
   getDefaultEnvironmentProjections,
   resolveRuntimeTopology,
+  runtimeDemoUserId,
   selectChecksByVerification,
   runtimePorts,
   runtimeUrls
@@ -74,11 +75,10 @@ function buildRuntimeCheckPlan(graph, options = {}) {
 
 function renderRuntimeCheckEnvExample(graph, options = {}) {
   const runtimeReference = getExampleImplementation(graph, options).runtime.reference;
-  const demo = runtimeReference.demoEnv;
   const urls = runtimeUrls(runtimeReference, resolveRuntimeTopology(graph, options));
   return `TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_WEB_BASE_URL=${urls.web}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+TOPOGRAM_DEMO_USER_ID=${runtimeDemoUserId(runtimeReference)}
 ${runtimeReference.environment.envExample || ""}
 `;
 }
@@ -168,7 +168,7 @@ function envValue(name) {
     TOPOGRAM_WEB_BASE_URL: process.env.PUBLIC_TOPOGRAM_WEB_BASE_URL || \`http://localhost:\${process.env.WEB_PORT || "${ports.web}"}\`,
     ${runtimeReference.runtimeCheck.demoContainerEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID || "",
     ${runtimeReference.runtimeCheck.demoPrimaryEnvVar}: process.env.PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID || "",
-    TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
+    TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_AUTH_USER_ID || process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
     TOPOGRAM_AUTH_USER_ID: process.env.TOPOGRAM_DEMO_USER_ID || ""
   };
 

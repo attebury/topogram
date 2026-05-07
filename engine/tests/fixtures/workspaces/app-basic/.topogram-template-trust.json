@@ -1,7 +1,7 @@
 {
   "version": "1",
   "trustPolicy": "topogram-template-executable-implementation-v1",
-  "trustedAt": "2026-05-07T03:01:30.659Z",
+  "trustedAt": "2026-05-07T04:03:28.927Z",
   "template": {
     "id": null,
     "version": null,
@@ -19,11 +19,11 @@
   "content": {
     "algorithm": "sha256",
     "root": "implementation",
-    "digest": "47c875c333296cebc0a3f43de886c7a549700aa33f6eee9b47c1004221c1c5ca",
+    "digest": "e62cd01609652d98f8850b9bd046e9b235cf289a5d4198aa6a5adedcbe849ec2",
     "files": [
       {
         "path": "backend/reference.js",
-        "sha256": "ff892d6bfff9f43a30bf0a6a40b72144a7b99ec61adc99656f18c2c5b64228c8",
+        "sha256": "f6edf7c0350c9297f61f8027da57cf3a3a13855edaf6e58056b6e434a0039e0e",
         "size": 6204
       },
       {
@@ -63,13 +63,13 @@
       },
       {
         "path": "web/reference.js",
-        "sha256": "f965c4a0e74c744739ebae71f4adf02d1e54e9d0299432e4d227a7c259dd6b4e",
-        "size": 1780
+        "sha256": "42b0a9dfcbfed36f56629ee9f8fa02d8ec453546448b0a576d97c7da231f7f6a",
+        "size": 1777
       },
       {
         "path": "web/renderers.js",
-        "sha256": "20ac85cfe92d708f9e6a22aa1c42126af3749e90ab21681e77050fb35d2154a8",
-        "size": 46098
+        "sha256": "cc89234c83c241487c243cd7f5065f9a54f7fc6d18e029da9c7bfa669c22f528",
+        "size": 46162
       },
       {
         "path": "web/screens-reference.js",

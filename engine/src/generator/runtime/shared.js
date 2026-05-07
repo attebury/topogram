@@ -513,3 +513,12 @@ export function runtimeUrls(runtimeReference, topology = null) {
     web: `http://localhost:${ports.web}`
   };
 }
+
+/**
+ * @param {Record<string, any>|null|undefined} runtimeReference
+ * @returns {string}
+ */
+export function runtimeDemoUserId(runtimeReference) {
+  const demo = runtimeReference?.demoEnv || {};
+  return demo.userId || demo.memberId || demo.ownerId || demo.primaryActorId || "";
+}

@@ -7,6 +7,7 @@ import {
   dbEnvVarsForComponent,
   getDefaultEnvironmentProjections,
   resolveRuntimeTopology,
+  runtimeDemoUserId,
   runtimePorts,
   runtimeUrls
 } from "./shared.js";
@@ -158,7 +159,7 @@ function buildEnvironmentPlan(graph, options = {}) {
 }
 
 function renderEnvironmentEnvExample(plan) {
-  const demo = plan.runtimeReference.demoEnv;
+  const demoUserId = runtimeDemoUserId(plan.runtimeReference);
   const databaseName = plan.runtimeReference.environment.databaseName || "topogram_app";
   const urls = runtimeUrls(plan.runtimeReference, {
     primaryApi: { port: plan.ports.server },
@@ -184,8 +185,8 @@ function renderEnvironmentEnvExample(plan) {
 TOPOGRAM_ENVIRONMENT_PROFILE=${plan.environment.profile}
 
 # Local stack ports
-${plan.components.apis.length ? `SERVER_PORT=${plan.ports.server}\n` : ""}${plan.components.webs.length ? `WEB_PORT=${plan.ports.web}\n` : ""}${plan.components.webs.length && plan.components.apis.length ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.components.webs.length ? `TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+${plan.components.apis.length ? `SERVER_PORT=${plan.ports.server}\n` : ""}${plan.components.webs.length ? `WEB_PORT=${plan.ports.web}\n` : ""}${plan.components.webs.length && plan.components.apis.length ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}${plan.components.webs.length ? `TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 `;
@@ -204,8 +205,8 @@ WEB_PORT=${plan.ports.web}
 DATABASE_URL=file:./var/${databaseName}.sqlite
 ${extraDatabaseLines ? `${extraDatabaseLines}\n` : ""}PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 `;
@@ -229,8 +230,8 @@ DATABASE_URL=postgresql://\${POSTGRES_USER}@localhost:${plan.ports.database || 5
 DATABASE_ADMIN_URL=postgresql://\${POSTGRES_USER}@localhost:${plan.ports.database || 5432}/postgres
 ${extraDatabaseLines ? `${extraDatabaseLines}\n` : ""}PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
 TOPOGRAM_CORS_ORIGINS=${urls.web},http://127.0.0.1:${plan.ports.web}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 `;

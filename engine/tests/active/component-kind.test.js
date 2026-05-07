@@ -288,8 +288,8 @@ test("projection ui_components resolve component placement and bindings", () => 
   });
   assert.equal(webContract.ok, true);
   assert.equal(webContract.artifact.components.component_ui_data_grid.id, "component_ui_data_grid");
-  const taskList = webContract.artifact.screens.find((screen) => screen.id === "item_list");
-  assert.deepEqual(taskList.components, [
+  const itemList = webContract.artifact.screens.find((screen) => screen.id === "item_list");
+  assert.deepEqual(itemList.components, [
       {
         type: "ui_component_usage",
         region: "results",

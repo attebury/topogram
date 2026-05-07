@@ -7,7 +7,7 @@ export const APP_BASIC_BACKEND_REFERENCE = {
 
 const prisma = new PrismaClient();
 
-const demoMemberId = process.env.TOPOGRAM_DEMO_USER_ID || "${reference.demo.memberId}";
+const demoMemberId = process.env.TOPOGRAM_AUTH_USER_ID || "${reference.demo.memberId}";
 const demoCollectionId = process.env.TOPOGRAM_DEMO_CONTAINER_ID || "${reference.demo.collectionId}";
 const demoItemId = process.env.TOPOGRAM_DEMO_PRIMARY_ID || "${reference.demo.itemId}";
 

@@ -3,6 +3,7 @@ import {
   generateWebBundle,
   getDefaultEnvironmentProjections,
   resolveRuntimeTopology,
+  runtimeDemoUserId,
   runtimeUrls
 } from "./shared.js";
 import { getExampleImplementation } from "../../example-implementation.js";
@@ -75,13 +76,13 @@ function renderCompileCheckEnvExample(graph, options = {}) {
   if (dbProjection?.platform === "db_sqlite") {
     return `DATABASE_URL=./var/${runtimeReference.environment.databaseName || "topogram_app"}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeReference.demoEnv.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeDemoUserId(runtimeReference)}
 ${runtimeReference.environment.envExample || ""}
 `;
   }
   return `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${runtimeReference.environment.databaseName || "topogram_app"}?schema=public
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeReference.demoEnv.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${runtimeDemoUserId(runtimeReference)}
 ${runtimeReference.environment.envExample || ""}
 `;
 }

@@ -41,7 +41,7 @@ export const APP_BASIC_WEB_REFERENCE = {
     noRouteText: "No direct route is exposed for this screen."
   },
   createPrimary: {
-    defaultAssigneeEnvVar: "PUBLIC_TOPOGRAM_DEMO_USER_ID",
+    defaultOwnerEnvVar: "PUBLIC_TOPOGRAM_AUTH_USER_ID",
     defaultContainerEnvVar: "PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID",
     helperText: "A collection is required to create a item. Owner is optional.",
     collectionPlaceholder: "Select a collection",

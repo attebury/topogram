@@ -30,7 +30,7 @@ function envValue(name) {
     TOPOGRAM_WEB_BASE_URL: process.env.PUBLIC_TOPOGRAM_WEB_BASE_URL || `http://localhost:${process.env.WEB_PORT || "5173"}`,
     TOPOGRAM_DEMO_CONTAINER_ID: process.env.PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID || "",
     TOPOGRAM_DEMO_PRIMARY_ID: process.env.PUBLIC_TOPOGRAM_DEMO_PRIMARY_ID || "",
-    TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
+    TOPOGRAM_DEMO_USER_ID: process.env.PUBLIC_TOPOGRAM_AUTH_USER_ID || process.env.PUBLIC_TOPOGRAM_DEMO_USER_ID || "",
     TOPOGRAM_AUTH_USER_ID: process.env.TOPOGRAM_DEMO_USER_ID || ""
   };
 

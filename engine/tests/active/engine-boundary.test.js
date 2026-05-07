@@ -7,6 +7,10 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 const testsRoot = path.join(repoRoot, "engine", "tests");
 const activeTestsRoot = path.join(testsRoot, "active");
 const fixturesRoot = path.join(testsRoot, "fixtures");
+const appBasicRoots = [
+  path.join(fixturesRoot, "workspaces", "app-basic"),
+  path.join(fixturesRoot, "expected", "app-basic")
+];
 const productNameLower = ["to", "do"].join("");
 const productNameTitle = ["To", "do"].join("");
 const generatedWorkflowBoundaryFile = path.join(activeTestsRoot, "generated-app-workflow.test.js");
@@ -19,6 +23,36 @@ const forbiddenFixtureReferences = [
   productNameTitle,
   ["topogram", productNameLower].join("_"),
   ["topogram", productNameLower].join("-")
+];
+const forbiddenAppBasicProductArtifacts = [
+  "taskList",
+  "taskDetail",
+  "taskCreate",
+  "taskEdit",
+  "taskExports",
+  "taskListLookups",
+  "taskCreateLookups",
+  "taskEditLookups",
+  "task-list",
+  "task-meta",
+  "cap_list_tasks",
+  "cap_create_task",
+  "cap_update_task",
+  "cap_delete_task",
+  "cap_complete_task",
+  "entity_task",
+  "entity_project",
+  "entity_user",
+  "/tasks",
+  "/projects",
+  "/users",
+  "tasks/",
+  "projects/",
+  "users/",
+  "TOPOGRAM_DEMO_TASK_ID",
+  "PUBLIC_TOPOGRAM_DEMO_TASK_ID",
+  "TOPOGRAM_DEMO_PROJECT_ID",
+  "PUBLIC_TOPOGRAM_DEMO_PROJECT_ID"
 ];
 const externalProductReferences = [
   productNameLower,
@@ -68,6 +102,22 @@ test("engine fixtures do not carry product-specific vocabulary", () => {
     const contents = fs.readFileSync(file, "utf8");
     if (forbiddenFixtureReferences.some((reference) => contents.includes(reference))) {
       offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("app-basic stays neutral instead of reintroducing old product artifacts", () => {
+  const offenders = [];
+  for (const root of appBasicRoots) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      const contents = fs.readFileSync(file, "utf8");
+      const references = forbiddenAppBasicProductArtifacts.filter((reference) => contents.includes(reference));
+      if (references.length > 0) {
+        offenders.push({ file: relative, references });
+      }
     }
   }
 

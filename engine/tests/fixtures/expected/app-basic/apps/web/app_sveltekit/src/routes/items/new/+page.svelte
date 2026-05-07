@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID as DEMO_PROJECT_ID, PUBLIC_TOPOGRAM_DEMO_USER_ID as DEMO_USER_ID } from "$env/static/public";
+  import { PUBLIC_TOPOGRAM_DEMO_CONTAINER_ID as DEMO_COLLECTION_ID, PUBLIC_TOPOGRAM_AUTH_USER_ID as DEMO_MEMBER_ID } from "$env/static/public";
 
   export let data;
   export let form;
@@ -8,8 +8,8 @@
     title: form?.values?.title ?? "",
     description: form?.values?.description ?? "",
     priority: form?.values?.priority ?? "medium",
-    owner_id: form?.values?.owner_id ?? DEMO_USER_ID ?? "",
-    collection_id: form?.values?.collection_id ?? DEMO_PROJECT_ID ?? "",
+    owner_id: form?.values?.owner_id ?? DEMO_MEMBER_ID ?? "",
+    collection_id: form?.values?.collection_id ?? DEMO_COLLECTION_ID ?? "",
     due_at: form?.values?.due_at ?? ""
   };
 </script>

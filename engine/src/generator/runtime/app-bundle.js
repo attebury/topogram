@@ -17,6 +17,7 @@ import {
   buildVerificationSummary,
   getDefaultEnvironmentProjections,
   resolveRuntimeTopology,
+  runtimeDemoUserId,
   runtimePorts,
   runtimeUrls
 } from "./shared.js";
@@ -104,7 +105,7 @@ function buildAppBundlePlan(graph, options = {}) {
 }
 
 function renderAppBundleEnvExample(plan) {
-  const demo = plan.runtimeReference.demoEnv;
+  const demoUserId = runtimeDemoUserId(plan.runtimeReference);
   const databaseName = plan.runtimeReference.environment.databaseName || "topogram_app";
   const topology = {
     primaryApi: { port: plan.topology.components.find((component) => component.type === "api")?.port },
@@ -118,8 +119,8 @@ TOPOGRAM_ENVIRONMENT_PROFILE=${plan.profiles.environment}
 TOPOGRAM_DEPLOY_PROFILE=${plan.profiles.deployment}
 
 # Local runtime defaults
-${plan.projections.api ? `SERVER_PORT=${ports.server}\n` : ""}${plan.projections.ui ? `WEB_PORT=${ports.web}\n` : ""}${plan.projections.api && plan.projections.ui ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+${plan.projections.api ? `SERVER_PORT=${ports.server}\n` : ""}${plan.projections.ui ? `WEB_PORT=${ports.web}\n` : ""}${plan.projections.api && plan.projections.ui ? `PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}\n` : ""}PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 
 # Smoke-test defaults
@@ -135,8 +136,8 @@ SERVER_PORT=${ports.server}
 WEB_PORT=${ports.web}
 DATABASE_URL=file:./var/${databaseName}.sqlite
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 
@@ -159,8 +160,8 @@ POSTGRES_PASSWORD=postgres
 DATABASE_URL=postgresql://\${POSTGRES_USER}@localhost:5432/${databaseName}
 DATABASE_ADMIN_URL=postgresql://\${POSTGRES_USER}@localhost:5432/postgres
 PUBLIC_TOPOGRAM_API_BASE_URL=${urls.api}
-PUBLIC_TOPOGRAM_DEMO_USER_ID=${demo.userId}
-TOPOGRAM_DEMO_USER_ID=${demo.userId}
+PUBLIC_TOPOGRAM_DEMO_USER_ID=${demoUserId}
+TOPOGRAM_DEMO_USER_ID=${demoUserId}
 ${plan.runtimeReference.environment.envExample || ""}
 TOPOGRAM_SEED_DEMO=true
 
