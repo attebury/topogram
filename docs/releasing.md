@@ -118,9 +118,9 @@ local checkout. If the default workflow token cannot read one of those
 repositories or its Actions runs, add a `TOPOGRAM_RELEASE_STATUS_TOKEN`
 repository secret with read access.
 
-To record the release evidence without hand-copying workflow URLs, write a
-markdown report after strict status is green:
+To record the release evidence without hand-copying workflow URLs, regenerate
+the known-good release matrix after strict status is green:
 
 ```bash
-npm run release:status:strict -- --write-report ./release-baseline.md
+npm run release:status:strict -- --write-report ./docs/release-matrix.md
 ```

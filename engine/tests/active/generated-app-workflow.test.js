@@ -2288,16 +2288,39 @@ test("topogram release status warns when latest npm version cannot be checked", 
 test("topogram release status strict passes when package, tag, and consumers are current", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-pass-"));
   writeKnownCliConsumerPins(root, cliPackageVersion);
+  const catalogPath = createCatalog(root, [
+    sampleTemplateCatalogEntry({
+      id: "sample-template",
+      package: "@topogram/starter-sample",
+      defaultVersion: "0.1.0",
+      generators: ["@topogram/generator-react-web", "@topogram/generator-express-api"],
+      stack: "React + Express"
+    }),
+    {
+      id: "sample-topogram",
+      kind: "topogram",
+      package: "@topogram/topogram-sample",
+      defaultVersion: "0.1.0",
+      description: "Sample topogram",
+      tags: ["sample"],
+      trust: {
+        scope: "@topogram",
+        includesExecutableImplementation: false
+      }
+    }
+  ]);
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
   const fakeGhBin = createFakeGh(root);
+  const strictEnv = {
+    FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+    FAKE_GIT_HEAD: "abc123",
+    TOPOGRAM_CATALOG_SOURCE: catalogPath,
+    PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+  };
   const status = runCli(["release", "status", "--strict", "--json"], {
     cwd: root,
-    env: {
-      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      FAKE_GIT_HEAD: "abc123",
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
-    }
+    env: strictEnv
   });
   assert.equal(status.status, 0, status.stderr || status.stdout);
   const payload = JSON.parse(status.stdout);
@@ -2314,11 +2337,7 @@ test("topogram release status strict passes when package, tag, and consumers are
 
   const human = runCli(["release", "status", "--strict"], {
     cwd: root,
-    env: {
-      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      FAKE_GIT_HEAD: "abc123",
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
-    }
+    env: strictEnv
   });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Strict: enabled/);
@@ -2328,28 +2347,27 @@ test("topogram release status strict passes when package, tag, and consumers are
   const reportPath = path.join(root, "release-baseline.md");
   const report = runCli(["release", "status", "--strict", "--write-report", reportPath], {
     cwd: root,
-    env: {
-      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      FAKE_GIT_HEAD: "abc123",
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
-    }
+    env: strictEnv
   });
   assert.equal(report.status, 0, report.stderr || report.stdout);
   const reportText = fs.readFileSync(reportPath, "utf8");
-  assert.match(reportText, new RegExp(`# Topogram CLI release ${literalPattern(cliPackageVersion).source}`));
+  assert.match(reportText, /^# Known-Good Release Matrix/m);
+  assert.match(reportText, new RegExp(`\`@topogram/cli@${literalPattern(cliPackageVersion).source}\``));
   assert.match(reportText, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
+  assert.match(reportText, /## Catalog Entries/);
+  assert.match(reportText, /\| `sample-template` \| template \| `@topogram\/starter-sample` \| `0\.1\.0` \| React \+ Express \|/);
+  assert.match(reportText, /\| `sample-topogram` \| topogram \| `@topogram\/topogram-sample` \| `0\.1\.0` \| not declared \|/);
+  assert.match(reportText, /## Generator Packages/);
+  assert.match(reportText, /\| `@topogram\/generator-react-web` \| web \| sample-template \|/);
+  assert.match(reportText, /\| `@topogram\/generator-express-api` \| api \| sample-template \|/);
   assert.match(reportText, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
 
   const markdown = runCli(["release", "status", "--strict", "--markdown"], {
     cwd: root,
-    env: {
-      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
-      FAKE_GIT_HEAD: "abc123",
-      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
-    }
+    env: strictEnv
   });
   assert.equal(markdown.status, 0, markdown.stderr || markdown.stdout);
-  assert.match(markdown.stdout, /^# Topogram CLI release/m);
+  assert.match(markdown.stdout, /^# Known-Good Release Matrix/m);
 });
 
 test("topogram release status strict accepts remote release tags without a local fetched tag", () => {
