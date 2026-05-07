@@ -8,9 +8,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.52` | Local package smoke passed and npmjs publish verified |
+| `@topogram/cli` | `0.3.53` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
 | `attebury/topograms` catalog | pending | Local catalog check passed; `todo` resolves to `@topogram/template-todo@0.1.34` |
-| `topogram-demo-todo` | `1cfc817` | Demo Verification passed from default catalog creation through runtime |
+| `topogram-demo-todo` | `4b3e71f` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
@@ -37,8 +37,8 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-postgres-db` | `0.1.7` | database |
 | `@topogram/generator-swiftui-native` | `0.1.3` | native |
 
-All generator repos passed local package checks against `@topogram/cli@0.3.52`
-before publishing their npmjs patch versions.
+All first-party consumer repos passed their verification workflows after rolling
+their `@topogram/cli` pins to `0.3.53`.
 
 ## Consumer Proofs
 
