@@ -8,9 +8,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.53` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
-| `attebury/topograms` catalog | `0e4d651` | Catalog Verification passed against pinned `@topogram/cli@0.3.53`; `todo` resolves to `@topogram/template-todo@0.1.34` |
-| `topogram-demo-todo` | `4b3e71f` | Demo Verification passed from default catalog creation through runtime |
+| `@topogram/cli` | `0.3.54` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
+| `attebury/topograms` catalog | `19809ce` | Catalog Verification passed against pinned `@topogram/cli@0.3.54`; `todo` resolves to `@topogram/template-todo@0.1.34` |
+| `topogram-demo-todo` | `fff69fa` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
@@ -38,7 +38,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-swiftui-native` | `0.1.3` | native |
 
 All first-party consumer repos passed their verification workflows after rolling
-their `@topogram/cli` pins to `0.3.53`.
+their `@topogram/cli` pins to `0.3.54`.
 
 ## Consumer Proofs
 
