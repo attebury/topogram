@@ -8,29 +8,29 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.49` | `attebury/topogram` Fresh npmjs Smoke, Installed CLI First Use, and strict release status passed on `main` |
-| `attebury/topograms` catalog | `6189159` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.31` |
-| `topogram-demo-todo` | `378f6a1` | Demo Verification passed from default catalog creation through runtime |
+| `@topogram/cli` | `0.3.50` | `attebury/topogram` Publish CLI Package and strict release status passed on `main` |
+| `attebury/topograms` catalog | `1780cfe` | Catalog Verification passed; `todo` resolves to `@topogram/template-todo@0.1.33` |
+| `topogram-demo-todo` | `4df639f` | Demo Verification passed from default catalog creation through runtime |
 
 ## Starters
 
 | Catalog ID | Package | Version | Stack |
 | --- | --- | --- | --- |
-| `hello-web` | `@topogram/starter-hello-web` | `0.1.9` | Vanilla HTML/CSS/JS |
-| `hello-api` | `@topogram/starter-hello-api` | `0.1.9` | Hono |
-| `hello-db` | `@topogram/starter-hello-db` | `0.1.9` | SQLite |
-| `web-api` | `@topogram/starter-web-api` | `0.1.9` | React + Express |
-| `web-api-db` | `@topogram/starter-web-api-db` | `0.1.9` | SvelteKit + Hono + Postgres |
-| `todo` | `@topogram/template-todo` | `0.1.31` | SvelteKit + Hono + Postgres |
+| `hello-web` | `@topogram/starter-hello-web` | `0.1.10` | Vanilla HTML/CSS/JS |
+| `hello-api` | `@topogram/starter-hello-api` | `0.1.10` | Hono |
+| `hello-db` | `@topogram/starter-hello-db` | `0.1.10` | SQLite |
+| `web-api` | `@topogram/starter-web-api` | `0.1.10` | React + Express |
+| `web-api-db` | `@topogram/starter-web-api-db` | `0.1.10` | SvelteKit + Hono + Postgres |
+| `todo` | `@topogram/template-todo` | `0.1.33` | SvelteKit + Hono + Postgres |
 | `hello` | `@topogram/topogram-hello` | `0.1.1` | Pure Topogram package |
 
 ## Generators
 
 | Generator Package | Version | Surface |
 | --- | --- | --- |
-| `@topogram/generator-vanilla-web` | `0.1.2` | web |
-| `@topogram/generator-react-web` | `0.1.5` | web |
-| `@topogram/generator-sveltekit-web` | `0.1.15` | web |
+| `@topogram/generator-vanilla-web` | `0.1.3` | web |
+| `@topogram/generator-react-web` | `0.1.6` | web |
+| `@topogram/generator-sveltekit-web` | `0.1.16` | web |
 | `@topogram/generator-hono-api` | `0.2.7` | api |
 | `@topogram/generator-express-api` | `0.1.3` | api |
 | `@topogram/generator-sqlite-db` | `0.1.2` | database |
@@ -38,7 +38,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-swiftui-native` | `0.1.2` | native |
 
 All generator repos reported passing `Generator Verification` on `main` after
-rolling their `@topogram/cli` pins to `0.3.49`.
+rolling their `@topogram/cli` pins to `0.3.50`.
 
 ## Consumer Proofs
 
