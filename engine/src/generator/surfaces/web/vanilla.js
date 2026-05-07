@@ -1,6 +1,7 @@
 // @ts-check
 
-import { getProjection } from "../shared.js";
+import { buildWebRealization } from "../../../realization/ui/index.js";
+import { buildDesignIntentCoverage, renderDesignIntentCss } from "./design-intent.js";
 
 function slugify(value) {
   return String(value || "page")
@@ -9,14 +10,8 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "") || "page";
 }
 
-function titleForScreen(graph, screenId) {
-  for (const projection of graph.byKind.projection || []) {
-    const screen = (projection.uiScreens || []).find((entry) => entry.id === screenId);
-    if (screen?.title) {
-      return screen.title;
-    }
-  }
-  return screenId
+function titleForScreen(screenId) {
+  return String(screenId || "page")
     .split(/[_\-\s]+/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -55,10 +50,12 @@ ${body}
 `;
 }
 
-function renderStyles() {
-  return `:root {
-  color: #182026;
-  background: #f6f8fb;
+function renderStyles(design) {
+  return `${renderDesignIntentCss(design)}
+
+:root {
+  color: var(--topogram-text-color);
+  background: var(--topogram-surface-background);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -70,14 +67,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #d8e0ea;
-  background: #ffffff;
+  border-bottom: 1px solid var(--topogram-border-color);
+  background: var(--topogram-surface-card);
 }
 
 .brand {
-  color: #182026;
+  color: var(--topogram-text-color);
   font-weight: 700;
   text-decoration: none;
 }
@@ -89,27 +86,32 @@ nav {
 }
 
 nav a {
-  color: #0f5cc0;
+  color: var(--topogram-action-primary-background);
   text-decoration: none;
 }
 
 main {
   display: grid;
-  gap: 1rem;
+  gap: var(--topogram-space-unit);
   max-width: 56rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: var(--topogram-page-padding);
 }
 
 .panel {
-  border: 1px solid #d8e0ea;
-  border-radius: 8px;
-  background: #ffffff;
+  border: 1px solid var(--topogram-border-color);
+  border-radius: var(--topogram-radius-card);
+  background: var(--topogram-surface-card);
   padding: 1.25rem;
 }
 
 .muted {
-  color: #607284;
+  color: var(--topogram-muted-color);
+}
+
+a:focus-visible {
+  outline: var(--topogram-focus-outline);
+  outline-offset: 2px;
 }
 `;
 }
@@ -158,6 +160,67 @@ console.log(\`Checked \${htmlFiles.length} vanilla page(s).\`);
 `;
 }
 
+function buildVanillaGenerationCoverage(contract, files, routes) {
+  const diagnostics = [];
+  const designIntent = buildDesignIntentCoverage(contract, files, "styles.css");
+  diagnostics.push(...designIntent.diagnostics);
+  const screens = routes.map((route) => {
+    const contents = files[route.file] || "";
+    const rendered = Boolean(contents);
+    if (!rendered) {
+      diagnostics.push({
+        code: "screen_route_not_rendered",
+        severity: "error",
+        screen: route.screenId,
+        route: route.path,
+        message: `Screen '${route.screenId}' has route '${route.path}' but no vanilla HTML page was generated.`,
+        suggested_fix: "Check the vanilla web generator route emission for this screen."
+      });
+    }
+    return {
+      id: route.screenId,
+      route: route.path,
+      page: route.file,
+      rendered,
+      renderer: rendered ? "generator" : "missing",
+      component_usages: []
+    };
+  });
+  return {
+    type: "generation_coverage",
+    surface: "web",
+    generator: "topogram/vanilla-web",
+    projection: {
+      id: contract.projection.id,
+      name: contract.projection.name,
+      platform: contract.projection.platform
+    },
+    summary: {
+      routed_screens: screens.length,
+      rendered_screens: screens.filter((screen) => screen.rendered).length,
+      implementation_screens: 0,
+      generator_screens: screens.filter((screen) => screen.renderer === "generator").length,
+      component_usages: 0,
+      rendered_component_usages: 0,
+      diagnostics: diagnostics.length,
+      errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length,
+      warnings: diagnostics.filter((diagnostic) => diagnostic.severity === "warning").length
+    },
+    design_intent: designIntent.coverage,
+    screens,
+    diagnostics
+  };
+}
+
+function assertGenerationCoverage(coverage) {
+  const errors = (coverage.diagnostics || []).filter((diagnostic) => diagnostic.severity === "error");
+  if (errors.length === 0) {
+    return;
+  }
+  const details = errors.map((diagnostic) => diagnostic.message).join("; ");
+  throw new Error(`Vanilla web generation coverage failed: ${details}`);
+}
+
 function renderDevScript() {
   return `import http from "node:http";
 import fs from "node:fs";
@@ -192,20 +255,19 @@ http.createServer((req, res) => {
 }
 
 export function generateVanillaWebApp(graph, options = {}) {
-  const projection = getProjection(graph, options.projectionId);
-  const routeEntries = projection.uiRoutes?.length
-    ? projection.uiRoutes
-    : [{ screenId: "home", path: "/" }];
-  const routes = routeEntries.map((route) => ({
-    screenId: route.screenId,
-    path: route.path,
-    title: titleForScreen(graph, route.screenId),
-    file: routeFileName(route.path)
+  const realization = buildWebRealization(graph, options);
+  const contract = realization.contract;
+  const routeScreens = (contract.screens || []).filter((screen) => Boolean(screen.route));
+  const routes = (routeScreens.length > 0 ? routeScreens : [{ id: "home", route: "/", title: "Home" }]).map((screen) => ({
+    screenId: screen.id,
+    path: screen.route || "/",
+    title: screen.title || titleForScreen(screen.id),
+    file: routeFileName(screen.route || "/")
   }));
   const nav = routes.map(({ title, file }) => ({ title, file }));
   const files = {
     "package.json": `${JSON.stringify({
-      name: projection.id,
+      name: contract.projection.id,
       private: true,
       version: "0.1.0",
       type: "module",
@@ -215,7 +277,7 @@ export function generateVanillaWebApp(graph, options = {}) {
         check: "node ./scripts/check.mjs"
       }
     }, null, 2)}\n`,
-    "styles.css": renderStyles(),
+    "styles.css": renderStyles(contract.design),
     "app.js": renderBrowserScript(),
     "scripts/build.mjs": renderBuildScript(),
     "scripts/check.mjs": renderCheckScript(),
@@ -229,11 +291,15 @@ export function generateVanillaWebApp(graph, options = {}) {
       body: `      <section class="panel">
         <p class="muted">Page ${index + 1} of ${routes.length}</p>
         <h1>${route.title}</h1>
-        <p>This page was generated from the <code>${projection.id}</code> Topogram web projection.</p>
+        <p>This page was generated from the <code>${contract.projection.id}</code> Topogram web projection.</p>
         <p class="muted">Generated timestamp: <span data-generated-at>pending</span></p>
       </section>`
     });
   });
 
+  const coverage = buildVanillaGenerationCoverage(contract, files, routes);
+  assertGenerationCoverage(coverage);
+  files["topogram/generation-coverage.json"] = `${JSON.stringify(coverage, null, 2)}\n`;
+  files["topogram/ui-web-contract.json"] = `${JSON.stringify(contract, null, 2)}\n`;
   return files;
 }

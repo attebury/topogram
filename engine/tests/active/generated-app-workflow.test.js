@@ -691,10 +691,19 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.match(generatedTaskListPage, /class="component-card component-table"/);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "board", "+page.svelte")), true);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "tasks", "calendar", "+page.svelte")), true);
+  const generatedSvelteCss = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "app.css"));
+  assert.match(generatedSvelteCss, /--topogram-design-density: compact;/);
+  assert.match(generatedSvelteCss, /--topogram-design-tone: operational;/);
+  assert.match(generatedSvelteCss, /--topogram-design-color-primary: accent;/);
+  assert.match(generatedSvelteCss, /--topogram-design-action-primary: prominent;/);
+  assert.match(generatedSvelteCss, /--topogram-page-padding: 1\.5rem 1rem 3rem;/);
   const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
   assert.equal(coverage.type, "generation_coverage");
   assert.equal(coverage.summary.routed_screens, 15);
   assert.equal(coverage.summary.rendered_screens, 15);
+  assert.equal(coverage.design_intent.status, "mapped");
+  assert.equal(coverage.design_intent.tokens.density, "compact");
+  assert.equal(coverage.design_intent.tokens.color_roles.primary, "accent");
   assert.deepEqual(coverage.screens.filter((screen) => screen.renderer === "generator").map((screen) => screen.id), ["task_board", "task_calendar"]);
   assert.equal(coverage.summary.implementation_screens, 13);
   assert.equal(coverage.summary.generator_screens, 2);
@@ -2844,6 +2853,15 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.match(homePage, /href="\.\/workflow\.html"/);
       assert.match(workflowPage, /Hello Workflow/);
       assert.match(workflowPage, /href="\.\/index\.html"/);
+      const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_web", "styles.css"));
+      assert.match(styles, /--topogram-design-tone: editorial;/);
+      assert.match(styles, /--topogram-design-radius-scale: small;/);
+      const coverage = readJson(path.join(projectRoot, "app", "apps", "web", "app_web", "topogram", "generation-coverage.json"));
+      assert.equal(coverage.type, "generation_coverage");
+      assert.equal(coverage.generator, "topogram/vanilla-web");
+      assert.equal(coverage.design_intent.status, "mapped");
+      assert.equal(coverage.design_intent.tokens.tone, "editorial");
+      assert.deepEqual(coverage.diagnostics, []);
     }
     if (item.template === "hello-api") {
       const indexTs = readText(path.join(projectRoot, "app", "apps", "services", "app_api", "src", "index.ts"));
@@ -2876,6 +2894,11 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.equal(coverage.summary.rendered_screens, 3);
       assert.equal(coverage.summary.generator_screens, 3);
       assert.equal(coverage.summary.rendered_component_usages, 1);
+      assert.equal(coverage.design_intent.status, "mapped");
+      assert.equal(coverage.design_intent.tokens.density, "compact");
+      const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "app.css"));
+      assert.match(styles, /--topogram-design-density: compact;/);
+      assert.match(styles, /--topogram-design-color-danger: critical;/);
       assert.deepEqual(coverage.diagnostics, []);
     }
     if (item.template === "web-api-db") {
@@ -2890,6 +2913,11 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.equal(coverage.generator, "topogram/sveltekit");
       assert.equal(coverage.summary.routed_screens, 3);
       assert.equal(coverage.summary.rendered_screens, 3);
+      assert.equal(coverage.design_intent.status, "mapped");
+      assert.equal(coverage.design_intent.tokens.action_roles.destructive, "danger");
+      const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_sveltekit", "src", "app.css"));
+      assert.match(styles, /--topogram-design-action-destructive: danger;/);
+      assert.match(styles, /--topogram-design-accessibility-focus: visible;/);
       assert.deepEqual(coverage.diagnostics, []);
     }
   }

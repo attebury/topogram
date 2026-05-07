@@ -15,6 +15,18 @@ projection proj_ui_shared {
     footer none
   }
 
+  ui_design {
+    density comfortable
+    tone editorial
+    radius_scale small
+    color_role primary accent
+    typography_role body readable
+    typography_role heading prominent
+    action_role primary prominent
+    accessibility contrast aa
+    accessibility focus visible
+  }
+
   ui_screens {
     screen hello_home kind detail title "Hello Web" load cap_view_hello view_shape shape_output_hello loading_state none
     screen hello_workflow kind detail title "Hello Workflow" load cap_view_hello view_shape shape_output_hello loading_state none

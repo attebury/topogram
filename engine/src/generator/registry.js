@@ -63,7 +63,7 @@ export const GENERATOR_MANIFESTS = [
     inputs: ["ui-web-contract"],
     outputs: ["web-app", "generation-coverage"],
     stack: { runtime: "browser", framework: "vanilla", language: "javascript" },
-    capabilities: { routes: true, components: false, coverage: false },
+    capabilities: { routes: true, components: false, coverage: true },
     componentSupport: { patterns: [], behaviors: [], unsupported: "contract-only" },
     source: "bundled",
     profile: "vanilla"

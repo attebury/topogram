@@ -15,6 +15,20 @@ projection proj_ui_shared {
     footer none
   }
 
+  ui_design {
+    density compact
+    tone operational
+    radius_scale medium
+    color_role primary accent
+    color_role danger critical
+    typography_role body readable
+    typography_role heading prominent
+    action_role primary prominent
+    action_role destructive danger
+    accessibility contrast aa
+    accessibility focus visible
+  }
+
   ui_screens {
     screen greeting_list kind list title "Greetings" load cap_list_greetings item_shape shape_output_greeting_card detail_capability cap_get_greeting primary_action cap_create_greeting empty_title "No greetings yet" empty_body "Create a greeting to verify the generated stack" loading_state skeleton error_state inline
     screen greeting_detail kind detail title "Greeting Details" load cap_get_greeting view_shape shape_output_greeting_detail primary_action cap_update_greeting loading_state skeleton
