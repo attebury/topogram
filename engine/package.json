@@ -1,6 +1,6 @@
 {
   "name": "@topogram/cli",
-  "version": "0.3.61",
+  "version": "0.3.62",
   "description": "Topogram CLI for checking Topogram workspaces and generating app bundles.",
   "license": "Apache-2.0",
   "repository": {
