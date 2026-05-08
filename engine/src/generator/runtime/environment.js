@@ -2,6 +2,7 @@ import { generateDbLifecyclePlan } from "../surfaces/databases/lifecycle-shared.
 import { getExampleImplementation } from "../../example-implementation.js";
 import {
   generateDbBundle,
+  generateNativeBundle,
   generateServerBundle,
   generateWebBundle,
   dbEnvVarsForComponent,
@@ -110,6 +111,7 @@ function buildEnvironmentPlan(graph, options = {}) {
       server: topology.primaryApi ? topology.serviceDir(topology.primaryApi) : null,
       web: topology.primaryWeb ? topology.webDir(topology.primaryWeb) : null,
       db: topology.primaryDb ? topology.dbDir(topology.primaryDb) : null,
+      native: topology.nativeRuntimes[0] ? topology.nativeDir(topology.nativeRuntimes[0]) : null,
       scripts: "scripts"
     },
     runtimes: {
@@ -128,6 +130,12 @@ function buildEnvironmentPlan(graph, options = {}) {
         projection: component.projection.id,
         port: component.port || ports.web,
         dir: topology.webDir(component),
+        uses_api: component.api
+      })),
+      natives: topology.nativeRuntimes.map((component) => ({
+        id: component.id,
+        projection: component.projection.id,
+        dir: topology.nativeDir(component),
         uses_api: component.api
       })),
       databases: topology.dbRuntimes.map((component) => ({
@@ -273,6 +281,7 @@ function renderEnvironmentReadme(plan) {
   const hasDb = plan.runtimes.databases.length > 0;
   const hasApi = plan.runtimes.apis.length > 0;
   const hasWeb = plan.runtimes.webs.length > 0;
+  const hasNative = plan.runtimes.natives.length > 0;
   const localProcessNotes = !hasDb
     ? "- This bundle has no generated database surface."
     : plan.projections.db.engine === "sqlite"
@@ -294,7 +303,7 @@ ${localProcessNotes}
 
 This bundle packages the generated runtime into one local environment:
 
-${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.engine === "sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
+${hasApi ? "- `services/<api-id>/`: generated API service scaffolds\n" : ""}${hasWeb ? `- \`web/<web-id>/\`: generated ${plan.runtimeProfiles.web === "react" ? "Vite + React Router" : plan.runtimeProfiles.web === "vanilla" ? "vanilla HTML/CSS/JS" : "SvelteKit"} web scaffolds\n` : ""}${hasNative ? "- `native/<native-id>/`: generated native app scaffolds\n" : ""}${hasDb ? "- `db/<db-id>/`: generated DB lifecycle bundles\n" : ""}${plan.files.dockerCompose ? `- \`${plan.files.dockerCompose}\`: local Postgres container` : hasDb ? (plan.projections.db.engine === "sqlite" ? "- local SQLite file orchestration (no Docker files generated)" : "- local-process Postgres orchestration (no Docker files generated)") : "- no DB orchestration is generated"}
 
 ## Quick Start
 
@@ -318,6 +327,7 @@ ${dockerSection}
 
 - ${hasApi && hasDb ? `The generated server expects ${plan.projections.db.engine === "sqlite" ? "SQLite plus Prisma." : "Postgres plus Prisma."}` : hasApi ? "The generated server is stateless." : "No server surface is generated."}
 - ${hasWeb && hasApi ? "The generated web app talks to `PUBLIC_TOPOGRAM_API_BASE_URL`." : hasWeb ? "The generated web app is standalone." : "No web surface is generated."}
+- ${hasNative ? "Native app scaffolds use the same UI surface contracts as web surfaces." : "No native surface is generated."}
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`.
 - The DB lifecycle scripts remain the source of truth for greenfield bootstrap and brownfield migration.
 `;
@@ -633,6 +643,12 @@ export function generateEnvironmentBundle(graph, options = {}) {
     const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.webDir(component)]: webBundle
+    });
+  }
+  for (const component of topology.nativeRuntimes) {
+    const nativeBundle = generateNativeBundle(graph, component.projection.id, { ...options, component });
+    mergeNamedBundles(files, {
+      [topology.nativeDir(component)]: nativeBundle
     });
   }
   for (const component of topology.dbRuntimes) {

@@ -132,6 +132,26 @@ resolve it during `topogram check` and `topogram generate`:
 The generator package must expose `topogram-generator.json`. The manifest `id`,
 `version`, `source`, and `package` must match the topology binding.
 
+Native generators are package-first. Prefer package-backed bindings such as
+`@topogram/generator-swiftui-native` for `ios_surface` runtimes:
+
+```json
+{
+  "id": "app_ios",
+  "kind": "ios_surface",
+  "projection": "proj_ios_surface",
+  "generator": {
+    "id": "@topogram/generator-swiftui-native",
+    "version": "1",
+    "package": "@topogram/generator-swiftui-native"
+  },
+  "uses_api": "app_api"
+}
+```
+
+The bundled `topogram/swiftui` generator remains in `@topogram/cli` only as a
+compatibility fallback for older topology bindings and engine fixtures.
+
 Web generator adapters should consume the normalized UI contract instead of
 inferring behavior from framework code. Widget usages include
 `behaviorRealizations`, which bridge widget behavior declarations to concrete
@@ -161,6 +181,7 @@ The package should publish only the generator runtime and docs:
   "main": "index.cjs",
   "files": [
     "index.cjs",
+    "templates/",
     "topogram-generator.json",
     "README.md"
   ],

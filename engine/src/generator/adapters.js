@@ -182,7 +182,8 @@ function buildContractsForContext(context) {
   }
   if (surface === "native" || surface === "ios_surface" || surface === "android_surface") {
     return {
-      uiSurface: generateUiSurfaceContract(context.graph, { ...(context.options || {}), projectionId })
+      uiSurface: generateUiSurfaceContract(context.graph, { ...(context.options || {}), projectionId }),
+      api: generateApiContractGraph(context.graph, {})
     };
   }
   return {};

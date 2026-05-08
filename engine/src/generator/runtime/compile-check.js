@@ -1,4 +1,5 @@
 import {
+  generateNativeBundle,
   generateServerBundle,
   generateWebBundle,
   getDefaultEnvironmentProjections,
@@ -49,6 +50,12 @@ function buildCompileCheckPlan(graph, options = {}) {
       command: "npm run build"
     }
   ]);
+  const nativeChecks = topology.nativeRuntimes.map((component, index) => ({
+    id: index === 0 ? "native_swift_build" : `native_swift_build_${component.id}`,
+    cwd: topology.nativeDir(component),
+    install: null,
+    command: "swift build"
+  }));
   return {
     type: "compile_check_plan",
     name: compileCheckName(graph, options),
@@ -65,7 +72,7 @@ function buildCompileCheckPlan(graph, options = {}) {
         generator: runtime.generator
       }))
     },
-    checks: [...apiChecks, ...webChecks]
+    checks: [...apiChecks, ...webChecks, ...nativeChecks]
   };
 }
 
@@ -92,13 +99,14 @@ ${runtimeReference.environment.envExample || ""}
 function renderCompileCheckReadme(graph, options = {}) {
   return `# ${compileCheckName(graph, options).replace("Plan", "Bundle")}
 
-This bundle verifies that the generated server and web projects typecheck and build.
+This bundle verifies that generated server, web, and native projects compile.
 
 ## Checks
 
 - server TypeScript check
 - web TypeScript check
 - web production build
+- native Swift build
 
 ## Usage
 
@@ -124,15 +132,17 @@ function renderCompileCheckScript(plan) {
     ""
   ];
   if (plan.checks.length === 0) {
-    lines.push('echo "No API or web runtimes are configured; compile check is a no-op."');
+    lines.push('echo "No API, web, or native runtimes are configured; compile check is a no-op."');
   }
   for (const check of plan.checks) {
     const label = check.id.includes("web")
       ? check.id.includes("build") ? "Building generated web" : "Checking generated web"
-      : "Checking generated server";
+      : check.id.includes("native") ? "Building generated native app" : "Checking generated server";
     lines.push(`echo "${label} (${check.cwd})..."`);
-    lines.push(`echo "Installing dependencies (${check.cwd})..."`);
-    lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.install})`);
+    if (check.install) {
+      lines.push(`echo "Installing dependencies (${check.cwd})..."`);
+      lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.install})`);
+    }
     lines.push(`echo "Running ${check.command} (${check.cwd})..."`);
     lines.push(`(cd "$ROOT_DIR/${check.cwd}" && ${check.command})`);
     lines.push("");
@@ -157,6 +167,10 @@ export function generateCompileCheckBundle(graph, options = {}) {
   for (const component of topology.webRuntimes) {
     const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
     mergeBundleFiles(files, topology.webDir(component), webBundle);
+  }
+  for (const component of topology.nativeRuntimes) {
+    const nativeBundle = generateNativeBundle(graph, component.projection.id, { ...options, component });
+    mergeBundleFiles(files, topology.nativeDir(component), nativeBundle);
   }
   return files;
 }

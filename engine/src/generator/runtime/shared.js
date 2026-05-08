@@ -43,16 +43,19 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
  * @property {RuntimeComponent[]} runtimes
  * @property {RuntimeComponent[]} apiRuntimes
  * @property {RuntimeComponent[]} webRuntimes
+ * @property {RuntimeComponent[]} nativeRuntimes
  * @property {RuntimeComponent[]} dbRuntimes
  * @property {RuntimeComponent[]} components Legacy alias for runtimes.
  * @property {RuntimeComponent[]} apiComponents Legacy alias for apiRuntimes.
  * @property {RuntimeComponent[]} webComponents Legacy alias for webRuntimes.
+ * @property {RuntimeComponent[]} nativeComponents Legacy alias for nativeRuntimes.
  * @property {RuntimeComponent[]} dbComponents Legacy alias for dbRuntimes.
  * @property {RuntimeComponent|null} primaryApi
  * @property {RuntimeComponent|null} primaryWeb
  * @property {RuntimeComponent|null} primaryDb
  * @property {(component: RuntimeComponent) => string} serviceDir
  * @property {(component: RuntimeComponent) => string} webDir
+ * @property {(component: RuntimeComponent) => string} nativeDir
  * @property {(component: RuntimeComponent) => string} dbDir
  */
 
@@ -377,6 +380,29 @@ export function generateWebBundle(graph, projectionId, options = {}) {
  * @param {RuntimeGenerationOptions} [options]
  * @returns {any}
  */
+export function generateNativeBundle(graph, projectionId, options = {}) {
+  const topology = resolveRuntimeTopology(graph, options);
+  const runtime = options.runtime || options.component || topology.nativeRuntimes.find((entry) => entry.projection.id === projectionId);
+  if (!runtime) {
+    throw new Error(`No native runtime found for projection '${projectionId}'`);
+  }
+  return generateWithComponentGenerator({
+    graph,
+    projection: runtime.projection,
+    runtime,
+    component: runtime,
+    topology,
+    implementation: options.implementation || null,
+    options: { ...options, projectionId }
+  }).files;
+}
+
+/**
+ * @param {ResolvedGraph} graph
+ * @param {string} projectionId
+ * @param {RuntimeGenerationOptions} [options]
+ * @returns {any}
+ */
 export function generateDbBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const runtime = options.runtime || options.component || topology.dbRuntimes.find((entry) => entry.projection.id === projectionId);
@@ -450,7 +476,7 @@ function decorateRuntimes(graph, config) {
       runtime.databaseRuntime = byId.get(runtime.database) || null;
       runtime.databaseComponent = runtime.databaseRuntime;
     }
-    if (runtime.kind === "web_surface" && runtime.api) {
+    if (["web_surface", "ios_surface", "android_surface"].includes(runtime.kind) && runtime.api) {
       runtime.apiRuntime = byId.get(runtime.api) || null;
       runtime.apiComponent = runtime.apiRuntime;
     }
@@ -475,6 +501,7 @@ export function resolveRuntimeTopology(graph, options = {}) {
   const runtimes = decorateRuntimes(graph, config);
   const apiRuntimes = runtimes.filter((runtime) => runtime.kind === "api_service");
   const webRuntimes = runtimes.filter((runtime) => runtime.kind === "web_surface");
+  const nativeRuntimes = runtimes.filter((runtime) => runtime.kind === "ios_surface" || runtime.kind === "android_surface");
   const dbRuntimes = runtimes.filter((runtime) => runtime.kind === "database");
   const primaryApi = apiRuntimes[0] || null;
   const primaryWeb = webRuntimes[0] || null;
@@ -486,9 +513,11 @@ export function resolveRuntimeTopology(graph, options = {}) {
     components: runtimes,
     apiRuntimes,
     webRuntimes,
+    nativeRuntimes,
     dbRuntimes,
     apiComponents: apiRuntimes,
     webComponents: webRuntimes,
+    nativeComponents: nativeRuntimes,
     dbComponents: dbRuntimes,
     primaryApi,
     primaryWeb,
@@ -498,6 +527,9 @@ export function resolveRuntimeTopology(graph, options = {}) {
     },
     webDir(component) {
       return `web/${component.id}`;
+    },
+    nativeDir(component) {
+      return `native/${component.id}`;
     },
     dbDir(component) {
       return `db/${component.id}`;

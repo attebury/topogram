@@ -163,6 +163,61 @@ exports.generate = function generateSmokeWeb(context) {
   return { packageName, packageRoot, manifest };
 }
 
+function writePackageBackedNativeGenerator(root, manifestOverrides = {}) {
+  const packageName = manifestOverrides.package || "@scope/topogram-generator-smoke-native";
+  const packageRoot = path.join(root, "node_modules", ...packageName.split("/"));
+  fs.mkdirSync(packageRoot, { recursive: true });
+  const manifest = {
+    id: "@scope/smoke-native",
+    version: "1",
+    surface: "native",
+    projectionTypes: ["ios_surface"],
+    runtimeKinds: ["ios_surface"],
+    inputs: ["ui-surface-contract", "api-contracts"],
+    outputs: ["native-app"],
+    stack: {
+      platform: "ios",
+      framework: "smoke",
+      language: "swift"
+    },
+    capabilities: {
+      routes: true
+    },
+    source: "package",
+    package: packageName,
+    ...manifestOverrides
+  };
+  writeJson(path.join(packageRoot, "topogram-generator.json"), manifest);
+  writePackageJson(packageRoot, {
+    name: packageName,
+    version: "0.1.0",
+    main: "index.cjs",
+    exports: {
+      ".": "./index.cjs",
+      "./topogram-generator.json": "./topogram-generator.json",
+      "./package.json": "./package.json"
+    }
+  });
+  fs.writeFileSync(path.join(packageRoot, "index.cjs"), `exports.manifest = require("./topogram-generator.json");
+exports.generate = function generateSmokeNative(context) {
+  return {
+    files: {
+      "Package.swift": "// swift-tools-version: 5.9\\nimport PackageDescription\\nlet package = Package(name: \\"SmokeNative\\", targets: [.executableTarget(name: \\"SmokeNative\\")])\\n",
+      "Sources/SmokeNative/main.swift": "print(\\"Smoke native\\")\\n",
+      "Sources/SmokeNative/Resources/ui-surface-contract.json": JSON.stringify(context.contracts.uiSurface, null, 2) + "\\n",
+      "Sources/SmokeNative/Resources/api-contracts.json": JSON.stringify(context.contracts.api, null, 2) + "\\n"
+    },
+    artifacts: {
+      generator: context.manifest.id,
+      apiContractCount: Object.keys(context.contracts.api || {}).length
+    },
+    diagnostics: []
+  };
+};
+`, "utf8");
+  return { packageName, packageRoot, manifest };
+}
+
 function copyBuiltInTemplate(root, name = "template") {
   const templateRoot = path.join(root, name);
   fs.cpSync(builtInTemplateRoot, templateRoot, { recursive: true });
@@ -3009,6 +3064,74 @@ test("package-backed generators can be checked and used by app generation", () =
   assert.equal(contract.projection, "proj_web_surface");
   assert.equal(contract.screens, 2);
   assert.equal(fs.existsSync(path.join(projectRoot, "app", ".topogram-generated.json")), true);
+});
+
+test("package-backed native generators are used by app generation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-backed-native-generator-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, "web-api")]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+  const { packageName } = writePackageBackedNativeGenerator(projectRoot);
+  fs.writeFileSync(
+    path.join(projectRoot, "topogram", "projections", "proj-ios-surface.tg"),
+    `projection proj_ios_surface {
+  name "Starter iOS Surface"
+  description "Package-backed native realization for the shared starter UI"
+
+  type ios_surface
+  realizes [
+    proj_ui_contract,
+    cap_list_greetings
+  ]
+  outputs [ui_contract, native_app]
+
+  screen_routes {
+    screen greeting_list path /greetings
+  }
+
+  status active
+}
+`,
+    "utf8"
+  );
+  const projectConfigPath = path.join(projectRoot, "topogram.project.json");
+  const projectConfig = readJson(projectConfigPath);
+  projectConfig.topology.runtimes.push({
+    id: "app_ios",
+    projection: "proj_ios_surface",
+    generator: {
+      id: "@scope/smoke-native",
+      version: "1",
+      package: packageName
+    },
+    kind: "ios_surface",
+    uses_api: "app_api"
+  });
+  writeJson(projectConfigPath, projectConfig);
+  writeJson(path.join(projectRoot, "topogram.generator-policy.json"), {
+    version: "0.1",
+    allowedPackageScopes: ["@scope"],
+    allowedPackages: [],
+    pinnedVersions: {}
+  });
+
+  const check = runCli(["check"], { cwd: projectRoot });
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const generate = runCli(["generate"], { cwd: projectRoot });
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+
+  const nativeRoot = path.join(projectRoot, "app", "apps", "native", "app_ios");
+  assert.equal(fs.existsSync(path.join(nativeRoot, "Package.swift")), true);
+  const uiContract = readJson(path.join(nativeRoot, "Sources", "SmokeNative", "Resources", "ui-surface-contract.json"));
+  const apiContracts = readJson(path.join(nativeRoot, "Sources", "SmokeNative", "Resources", "api-contracts.json"));
+  assert.equal(uiContract.projection.id, "proj_ios_surface");
+  assert.equal(uiContract.screens.length, 3);
+  assert.equal(Object.keys(apiContracts).length > 0, true);
+  const compilePlan = readJson(path.join(projectRoot, "app", "compile", "compile-check-plan.json"));
+  assert.deepEqual(
+    compilePlan.checks.filter((entry) => entry.id === "native_swift_build").map((entry) => entry.cwd),
+    ["native/app_ios"]
+  );
 });
 
 test("package-backed app generation refuses packages blocked by generator policy", () => {
