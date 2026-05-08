@@ -74,6 +74,7 @@ Catalog starter aliases:
 topogram new ./hello-web
 topogram new ./hello-api --template hello-api
 topogram new ./hello-db --template hello-db
+topogram new ./hello-ios --template hello-ios
 topogram new ./web-api --template web-api
 topogram new ./web-api-db --template web-api-db
 ```
@@ -83,6 +84,7 @@ topogram new ./web-api-db --template web-api-db
 | `hello-web` | web | Vanilla HTML/CSS/JS | Default starter, two pages, one workflow doc. |
 | `hello-api` | api | Hono | API-only topology. |
 | `hello-db` | database | SQLite | Database lifecycle output only. |
+| `hello-ios` | native | SwiftUI | Generated iOS starter without web/API/database code. |
 | `web-api` | web, api | React + Express | Executable implementation starter without a database. |
 | `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
 

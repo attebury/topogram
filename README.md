@@ -131,6 +131,7 @@ topogram new ./todo-demo --template todo
 | `hello-web` | Vanilla HTML/CSS/JS | You want the smallest generated web app. |
 | `hello-api` | Hono | You want API topology without web or database surfaces. |
 | `hello-db` | SQLite | You want database lifecycle output only. |
+| `hello-ios` | SwiftUI | You want a generated iOS starter without web/API/database code. |
 | `web-api` | React + Express | You want a web/API starter without a database. |
 | `web-api-db` | SvelteKit + Hono + Postgres | You want the heavier full-stack starter. |
 
