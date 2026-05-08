@@ -1843,7 +1843,20 @@ test("context-slice with --widget focuses on the widget contract closure", () =>
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_contract"]);
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages[0].usage, {
     screenId: "item_list",
+    screen: {
+      id: "item_list",
+      kind: "list",
+      title: "Items"
+    },
     region: "results",
+    regionContract: {
+      name: "results",
+      pattern: "resource_table",
+      placement: "primary",
+      title: null,
+      state: null,
+      variant: null
+    },
     widgetId: "widget_data_grid",
     dataBindings: [{ prop: "rows", source: "cap_list_items" }],
     eventBindings: [{ event: "row_select", action: "navigate", target: "item_detail" }]
@@ -1865,6 +1878,12 @@ test("context-slice with --projection exposes inherited UI agent packet", () => 
   assert.equal(result.artifact.ui_agent_packet.sharedProjection.id, "proj_ui_contract");
   assert.equal(result.artifact.ui_agent_packet.ownership.widgetPlacement, "ui_contract");
   assert.deepEqual(result.artifact.ui_agent_packet.widgets.map((usage) => usage.widgetId), ["widget_data_grid"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.widgets[0].screen, {
+    id: "item_list",
+    kind: "list",
+    title: "Items"
+  });
+  assert.equal(result.artifact.ui_agent_packet.widgets[0].regionContract.pattern, "resource_table");
   assert.equal(result.artifact.ui_agent_packet.designTokens.find((entry) => entry.key === "density")?.role, "compact");
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram widget check --projection proj_web_surface")));
 });

@@ -368,7 +368,7 @@ function uiAgentPacketForProjection(graph, projection) {
       screenId: route.screenId,
       path: route.path
     })),
-    widgets: (ownerProjection.widgetBindings || []).map((usage) => widgetUsagePacket(usage)),
+    widgets: (ownerProjection.widgetBindings || []).map((usage) => widgetUsagePacket(usage, ownerProjection)),
     designTokens: designIntentPacket(ownerProjection),
     requiredGates: uiRequiredGates(projection.id)
   };
@@ -387,7 +387,7 @@ function uiAgentPacketForWidget(graph, widget, projectionIds) {
           type: projectionType,
           ownership: projectionType === "ui_contract" ? "owner" : "concrete"
         },
-        usage: widgetUsagePacket(usage),
+        usage: widgetUsagePacket(usage, projection),
         designTokens: designIntentPacket(projection)
       });
       projectionSet.add(projection.id);
@@ -428,10 +428,31 @@ function sharedUiProjectionFor(graph, projection) {
   return null;
 }
 
-function widgetUsagePacket(usage) {
+function widgetUsagePacket(usage, projection = null) {
+  const screen = (projection?.uiScreens || []).find((entry) => entry.id === usage.screenId) || null;
+  const region = (projection?.uiScreenRegions || []).find((entry) =>
+    entry.screenId === usage.screenId && entry.region === usage.region
+  ) || null;
   return {
     screenId: usage.screenId || null,
+    screen: screen
+      ? {
+          id: screen.id,
+          kind: screen.kind || null,
+          title: screen.title || screen.id
+        }
+      : null,
     region: usage.region || null,
+    regionContract: region
+      ? {
+          name: region.region || null,
+          pattern: region.pattern || null,
+          placement: region.placement || null,
+          title: region.title || null,
+          state: region.state || null,
+          variant: region.variant || null
+        }
+      : null,
     widgetId: usage.widget?.id || null,
     dataBindings: (usage.dataBindings || []).map((binding) => ({
       prop: binding.prop || null,

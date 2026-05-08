@@ -325,8 +325,8 @@ any of those, and a `review_boundary` of
 `{ automation_class: "review_required", reasons: ["widget_surface"] }`.
 Widget and UI projection slices also include `ui_agent_packet`, a compact
 agent-facing packet with shared ownership rules, widget usage bindings,
-semantic design intent, inherited concrete projections, and the required UI
-gates: `topogram check`, `topogram widget check`, and
+resolved screen/region pattern context, semantic design intent, inherited
+concrete projections, and the required UI gates: `topogram check`, `topogram widget check`, and
 `topogram widget behavior`.
 
 `context-diff` now emits a `widgets` section and folds widget changes into `affected_generated_surfaces.projections`, so `change-plan`, `review-packet`, and `verification-targets` (with `--from-topogram <path>`) automatically pick up widget impacts and recommend `ui-widget-contract` regeneration for the affected ids. When `widget-behavior-report` is recommended, `resolved-workflow-context` and `single-agent-plan` include the matching behavior report artifact and a `topogram query widget-behavior ... --json` command in `recommended_artifact_queries`.
