@@ -262,19 +262,19 @@ export function generateDeploymentBundle(graph, options = {}) {
     files["railway.json"] = renderRailwayJson(plan);
   }
 
-  for (const component of topology.apiComponents) {
+  for (const component of topology.apiRuntimes) {
     const serverBundle = generateServerBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.serviceDir(component)]: serverBundle
     });
   }
-  for (const component of topology.webComponents) {
+  for (const component of topology.webRuntimes) {
     const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.webDir(component)]: webBundle
     });
   }
-  for (const component of topology.dbComponents) {
+  for (const component of topology.dbRuntimes) {
     const dbBundle = generateDbBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.dbDir(component)]: dbBundle

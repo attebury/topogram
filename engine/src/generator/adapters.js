@@ -41,7 +41,7 @@ import { generateVanillaWebApp } from "./surfaces/web/vanilla.js";
  * @property {Record<string, any>} graph
  * @property {Record<string, any>} projection
  * @property {Record<string, any>} runtime
- * @property {Record<string, any>} component Internal runtime alias.
+ * @property {Record<string, any>} [component] Legacy runtime alias for existing generator packages.
  * @property {Record<string, any>|null} [topology]
  * @property {Record<string, any>} [contracts]
  * @property {Record<string, any>|null} [implementation]
@@ -88,7 +88,23 @@ function requiredManifest(generatorId) {
  * @returns {string}
  */
 function runtimeFor(context) {
-  return context.runtime || context.component || {};
+  return normalizeRuntimeForGenerator(context.runtime || context.component || {});
+}
+
+/**
+ * Keep package-backed generator context canonical while preserving aliases for already-published adapters.
+ *
+ * @param {Record<string, any>} runtime
+ * @returns {Record<string, any>}
+ */
+function normalizeRuntimeForGenerator(runtime) {
+  const apiRuntime = runtime.apiRuntime || runtime.apiComponent || null;
+  const databaseRuntime = runtime.databaseRuntime || runtime.databaseComponent || null;
+  return {
+    ...runtime,
+    ...(apiRuntime ? { apiRuntime, apiComponent: apiRuntime } : {}),
+    ...(databaseRuntime ? { databaseRuntime, databaseComponent: databaseRuntime } : {})
+  };
 }
 
 /**
@@ -108,7 +124,7 @@ function projectionIdFor(context) {
 function serverOptions(context, profile) {
   const projectionId = projectionIdFor(context);
   const runtime = runtimeFor(context);
-  const dbProjectionId = runtime.databaseComponent?.projection?.id || context.options?.dbProjectionId;
+  const dbProjectionId = runtime.databaseRuntime?.projection?.id || runtime.databaseComponent?.projection?.id || context.options?.dbProjectionId;
   return {
     ...(context.options || {}),
     projectionId,
@@ -178,7 +194,7 @@ export const BUNDLED_GENERATOR_ADAPTERS = [
     manifest: requiredManifest("topogram/hono"),
     generate(context) {
       const runtime = runtimeFor(context);
-      if (runtime && !runtime.databaseComponent) {
+      if (runtime && !runtime.databaseRuntime) {
         return fileResult(generateStatelessServer(context.graph, serverOptions(context, "hono")));
       }
       return fileResult(generateHonoServer(context.graph, serverOptions(context, "hono")));
@@ -188,7 +204,7 @@ export const BUNDLED_GENERATOR_ADAPTERS = [
     manifest: requiredManifest("topogram/express"),
     generate(context) {
       const runtime = runtimeFor(context);
-      if (runtime && !runtime.databaseComponent) {
+      if (runtime && !runtime.databaseRuntime) {
         return fileResult(generateStatelessServer(context.graph, serverOptions(context, "express")));
       }
       return fileResult(generateExpressServer(context.graph, serverOptions(context, "express")));

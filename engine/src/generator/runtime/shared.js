@@ -27,8 +27,10 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
  * @property {string|null} [api]
  * @property {string|null} [database]
  * @property {Record<string, string>} [env]
- * @property {RuntimeComponent|null} [apiComponent]
- * @property {RuntimeComponent|null} [databaseComponent]
+ * @property {RuntimeComponent|null} [apiRuntime]
+ * @property {RuntimeComponent|null} [databaseRuntime]
+ * @property {RuntimeComponent|null} [apiComponent] Legacy adapter alias for apiRuntime.
+ * @property {RuntimeComponent|null} [databaseComponent] Legacy adapter alias for databaseRuntime.
  */
 
 /**
@@ -39,10 +41,13 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
  * @typedef {Object} RuntimeTopology
  * @property {import("../../project-config.js").ProjectConfig} config
  * @property {RuntimeComponent[]} runtimes
- * @property {RuntimeComponent[]} components
- * @property {RuntimeComponent[]} apiComponents
- * @property {RuntimeComponent[]} webComponents
- * @property {RuntimeComponent[]} dbComponents
+ * @property {RuntimeComponent[]} apiRuntimes
+ * @property {RuntimeComponent[]} webRuntimes
+ * @property {RuntimeComponent[]} dbRuntimes
+ * @property {RuntimeComponent[]} components Legacy alias for runtimes.
+ * @property {RuntimeComponent[]} apiComponents Legacy alias for apiRuntimes.
+ * @property {RuntimeComponent[]} webComponents Legacy alias for webRuntimes.
+ * @property {RuntimeComponent[]} dbComponents Legacy alias for dbRuntimes.
  * @property {RuntimeComponent|null} primaryApi
  * @property {RuntimeComponent|null} primaryWeb
  * @property {RuntimeComponent|null} primaryDb
@@ -65,7 +70,8 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../proje
  * @property {string} [dbProjectionId]
  * @property {string} [configDir]
  * @property {string} [projectRoot]
- * @property {RuntimeComponent} [component]
+ * @property {RuntimeComponent} [runtime]
+ * @property {RuntimeComponent} [component] Legacy alias for runtime.
  */
 
 /**
@@ -327,14 +333,15 @@ export function getDefaultEnvironmentProjections(graph, options = {}) {
  */
 export function generateServerBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const component = options.component || topology.apiComponents.find((entry) => entry.projection.id === projectionId);
-  if (!component) {
-    throw new Error(`No api topology component found for projection '${projectionId}'`);
+  const runtime = options.runtime || options.component || topology.apiRuntimes.find((entry) => entry.projection.id === projectionId);
+  if (!runtime) {
+    throw new Error(`No api runtime found for projection '${projectionId}'`);
   }
   return generateWithComponentGenerator({
     graph,
-    projection: component.projection,
-    component,
+    projection: runtime.projection,
+    runtime,
+    component: runtime,
     topology,
     implementation: options.implementation || null,
     options: { ...options, projectionId }
@@ -349,14 +356,15 @@ export function generateServerBundle(graph, projectionId, options = {}) {
  */
 export function generateWebBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const component = options.component || topology.webComponents.find((entry) => entry.projection.id === projectionId);
-  if (!component) {
-    throw new Error(`No web topology component found for projection '${projectionId}'`);
+  const runtime = options.runtime || options.component || topology.webRuntimes.find((entry) => entry.projection.id === projectionId);
+  if (!runtime) {
+    throw new Error(`No web runtime found for projection '${projectionId}'`);
   }
   return generateWithComponentGenerator({
     graph,
-    projection: component.projection,
-    component,
+    projection: runtime.projection,
+    runtime,
+    component: runtime,
     topology,
     implementation: options.implementation || null,
     options: { ...options, projectionId }
@@ -371,14 +379,15 @@ export function generateWebBundle(graph, projectionId, options = {}) {
  */
 export function generateDbBundle(graph, projectionId, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
-  const component = options.component || topology.dbComponents.find((entry) => entry.projection.id === projectionId);
-  if (!component) {
-    throw new Error(`No database topology component found for projection '${projectionId}'`);
+  const runtime = options.runtime || options.component || topology.dbRuntimes.find((entry) => entry.projection.id === projectionId);
+  if (!runtime) {
+    throw new Error(`No database runtime found for projection '${projectionId}'`);
   }
   return generateWithComponentGenerator({
     graph,
     projection: getProjection(graph, projectionId),
-    component,
+    runtime,
+    component: runtime,
     topology,
     implementation: options.implementation || null,
     options: { ...options, projectionId }
@@ -438,10 +447,12 @@ function decorateRuntimes(graph, config) {
   const byId = new Map(runtimes.map((runtime) => [runtime.id, runtime]));
   for (const runtime of runtimes) {
     if (runtime.kind === "api_service" && runtime.database) {
-      runtime.databaseComponent = byId.get(runtime.database) || null;
+      runtime.databaseRuntime = byId.get(runtime.database) || null;
+      runtime.databaseComponent = runtime.databaseRuntime;
     }
     if (runtime.kind === "web_surface" && runtime.api) {
-      runtime.apiComponent = byId.get(runtime.api) || null;
+      runtime.apiRuntime = byId.get(runtime.api) || null;
+      runtime.apiComponent = runtime.apiRuntime;
     }
   }
   return runtimes;
@@ -462,20 +473,23 @@ export function resolveRuntimeTopology(graph, options = {}) {
     throw new Error(validation.errors.map((error) => error.message).join("\n"));
   }
   const runtimes = decorateRuntimes(graph, config);
-  const apiComponents = runtimes.filter((runtime) => runtime.kind === "api_service");
-  const webComponents = runtimes.filter((runtime) => runtime.kind === "web_surface");
-  const dbComponents = runtimes.filter((runtime) => runtime.kind === "database");
-  const primaryApi = apiComponents[0] || null;
-  const primaryWeb = webComponents[0] || null;
-  const primaryDb = primaryApi?.databaseComponent || dbComponents[0] || null;
+  const apiRuntimes = runtimes.filter((runtime) => runtime.kind === "api_service");
+  const webRuntimes = runtimes.filter((runtime) => runtime.kind === "web_surface");
+  const dbRuntimes = runtimes.filter((runtime) => runtime.kind === "database");
+  const primaryApi = apiRuntimes[0] || null;
+  const primaryWeb = webRuntimes[0] || null;
+  const primaryDb = primaryApi?.databaseRuntime || dbRuntimes[0] || null;
 
   return {
     config,
     runtimes,
     components: runtimes,
-    apiComponents,
-    webComponents,
-    dbComponents,
+    apiRuntimes,
+    webRuntimes,
+    dbRuntimes,
+    apiComponents: apiRuntimes,
+    webComponents: webRuntimes,
+    dbComponents: dbRuntimes,
     primaryApi,
     primaryWeb,
     primaryDb,

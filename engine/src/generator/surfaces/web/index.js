@@ -15,17 +15,19 @@ import {
 
 export function generateWebApp(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
-  if (options.component?.generator?.id) {
+  const runtime = options.runtime || options.component;
+  if (runtime?.generator?.id) {
     return generateWithComponentGenerator({
       graph,
       projection,
-      component: options.component,
+      runtime,
+      component: runtime,
       topology: options.topology || null,
       implementation: options.implementation || null,
       options: { ...options, projectionId: projection.id }
     }).files;
   }
-  const profile = generatorProfile(options.component?.generator?.id, null) || generatorDefaultsMap(projection).profile || "sveltekit";
+  const profile = generatorProfile(runtime?.generator?.id, null) || generatorDefaultsMap(projection).profile || "sveltekit";
   if (profile === "vanilla") {
     return generateVanillaWebApp(graph, options);
   }

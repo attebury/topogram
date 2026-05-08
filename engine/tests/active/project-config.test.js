@@ -18,6 +18,7 @@ import {
   getBundledGeneratorAdapter
 } from "../../src/generator/adapters.js";
 import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
+import { resolveRuntimeTopology } from "../../src/generator/runtime/shared.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
@@ -550,6 +551,71 @@ exports.generate = () => ({ files: { "index.html": "<h1>loaded</h1>\\n" }, diagn
   const result = generateWithRuntimeGenerator(context);
   assert.equal(result.files["index.html"], "<h1>loaded</h1>\n");
   assert.equal(fs.existsSync(markerPath), true, "allowed package adapter should import and run");
+});
+
+test("runtime topology exposes canonical runtime relationships with legacy aliases", () => {
+  const topology = resolveRuntimeTopology(appBasicGraph(), {
+    projectConfig: appBasicProjectConfig(),
+    implementation: APP_BASIC_IMPLEMENTATION
+  });
+
+  assert.equal(topology.apiRuntimes.length, 1);
+  assert.equal(topology.webRuntimes.length, 1);
+  assert.equal(topology.dbRuntimes.length, 1);
+  assert.equal(topology.apiComponents, topology.apiRuntimes);
+  assert.equal(topology.webComponents, topology.webRuntimes);
+  assert.equal(topology.dbComponents, topology.dbRuntimes);
+  assert.equal(topology.primaryApi.databaseRuntime.id, "app_postgres");
+  assert.equal(topology.primaryApi.databaseComponent, topology.primaryApi.databaseRuntime);
+  assert.equal(topology.primaryWeb.apiRuntime.id, "app_api");
+  assert.equal(topology.primaryWeb.apiComponent, topology.primaryWeb.apiRuntime);
+});
+
+test("package-backed adapters receive canonical runtime links and compatibility aliases", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-runtime-context-"));
+  const { packageName, packageRoot } = writePackageBackedGenerator(root);
+  const capturePath = path.join(root, "adapter-runtime-context.json");
+  fs.writeFileSync(
+    path.join(packageRoot, "index.cjs"),
+    `exports.manifest = require("./topogram-generator.json");
+exports.generate = (context) => {
+  require("node:fs").writeFileSync(${JSON.stringify(capturePath)}, JSON.stringify({
+    runtimeId: context.runtime.id,
+    apiRuntime: context.runtime.apiRuntime && context.runtime.apiRuntime.id,
+    apiComponent: context.runtime.apiComponent && context.runtime.apiComponent.id
+  }, null, 2));
+  return { files: { "index.html": "<h1>runtime</h1>\\n" }, diagnostics: [] };
+};
+`,
+    "utf8"
+  );
+  writeGeneratorPolicy(root, { allowedPackages: [packageName] });
+  const result = generateWithRuntimeGenerator({
+    graph: {},
+    projection: { id: "proj_web_surface", type: "web_surface" },
+    runtime: {
+      id: "app_web",
+      kind: "web_surface",
+      projection: "proj_web_surface",
+      apiComponent: { id: "app_api", kind: "api_service" },
+      generator: {
+        id: "@scope/smoke-web",
+        version: "1",
+        package: packageName
+      }
+    },
+    topology: null,
+    implementation: null,
+    contracts: { uiSurface: { projection: { id: "proj_web_surface", type: "web_surface" }, screens: [] } },
+    options: { configDir: root }
+  });
+
+  assert.equal(result.files["index.html"], "<h1>runtime</h1>\n");
+  assert.deepEqual(readJson(capturePath), {
+    runtimeId: "app_web",
+    apiRuntime: "app_api",
+    apiComponent: "app_api"
+  });
 });
 
 test("project config validation rejects missing and mismatched package-backed generators", () => {

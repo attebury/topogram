@@ -413,7 +413,7 @@ function noopBundle(name, message) {
 export function generateAppBundle(graph, options = {}) {
   const plan = buildAppBundlePlan(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
-  const fullStack = topology.apiComponents.length > 0 && topology.webComponents.length > 0 && topology.dbComponents.length > 0;
+  const fullStack = topology.apiRuntimes.length > 0 && topology.webRuntimes.length > 0 && topology.dbRuntimes.length > 0;
   const envBundle = generateEnvironmentBundle(graph, { ...options, profileId: plan.profiles.environment });
   const deployBundle = fullStack
     ? generateDeploymentBundle(graph, { ...options, profileId: plan.profiles.deployment })

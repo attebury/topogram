@@ -57,11 +57,13 @@ export function generateDbTarget(target, graph, options = {}) {
       : generatePostgresDbLifecyclePlan(graph, options);
   }
   if (target === "db-lifecycle-bundle") {
-    if (options.component?.generator?.id) {
+    const runtime = options.runtime || options.component;
+    if (runtime?.generator?.id) {
       return generateWithComponentGenerator({
         graph,
-        projection: options.component.projection,
-        component: options.component,
+        projection: runtime.projection,
+        runtime,
+        component: runtime,
         topology: options.topology || null,
         implementation: options.implementation || null,
         options

@@ -8,11 +8,13 @@ export function generateAppTarget(target, graph, options = {}) {
     return generateBackendTarget(target, graph, options);
   }
   if (target === "swiftui-app") {
-    if (options.component?.generator?.id) {
+    const runtime = options.runtime || options.component;
+    if (runtime?.generator?.id) {
       return generateWithComponentGenerator({
         graph,
-        projection: options.component.projection,
-        component: options.component,
+        projection: runtime.projection,
+        runtime,
+        component: runtime,
         topology: options.topology || null,
         implementation: options.implementation || null,
         options

@@ -113,24 +113,24 @@ function buildEnvironmentPlan(graph, options = {}) {
       scripts: "scripts"
     },
     runtimes: {
-      apis: topology.apiComponents.map((component) => ({
+      apis: topology.apiRuntimes.map((component) => ({
         id: component.id,
         projection: component.projection.id,
         port: component.port || ports.server,
         dir: topology.serviceDir(component),
         uses_database: component.database,
-        databaseEnv: component.databaseComponent
-          ? dbEnvVarsForComponent(component.databaseComponent, { primary: component.databaseComponent?.id === topology.primaryDb?.id })
+        databaseEnv: component.databaseRuntime
+          ? dbEnvVarsForComponent(component.databaseRuntime, { primary: component.databaseRuntime?.id === topology.primaryDb?.id })
           : null
       })),
-      webs: topology.webComponents.map((component) => ({
+      webs: topology.webRuntimes.map((component) => ({
         id: component.id,
         projection: component.projection.id,
         port: component.port || ports.web,
         dir: topology.webDir(component),
         uses_api: component.api
       })),
-      databases: topology.dbComponents.map((component) => ({
+      databases: topology.dbRuntimes.map((component) => ({
         id: component.id,
         projection: component.projection.id,
         type: component.projection.type,
@@ -330,7 +330,7 @@ function renderEnvironmentLoadEnvScript() {
 function renderEnvironmentBootstrapDbScript(plan) {
   const dbBootstrapLines = plan.runtimes.databases.map((component) => {
     const env = component.env;
-    const runtimeApi = plan.runtimes.apis.find((apiComponent) => apiComponent.uses_database === component.id);
+    const runtimeApi = plan.runtimes.apis.find((apiRuntime) => apiRuntime.uses_database === component.id);
     const assignments = [
       `DATABASE_URL="\${${env.databaseUrl}:-}"`,
       `DATABASE_ADMIN_URL="\${${env.databaseAdminUrl}:-}"`,
@@ -393,12 +393,12 @@ function renderEnvironmentWebDevScript(plan, component = plan.runtimes.webs[0], 
   if (!component) {
     return renderEnvAwareShellScript(['echo "No web runtimes are configured."']);
   }
-  const apiComponent = plan.runtimes.apis.find((entry) => entry.id === component.uses_api) || plan.runtimes.apis[0];
+  const apiRuntime = plan.runtimes.apis.find((entry) => entry.id === component.uses_api) || plan.runtimes.apis[0];
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} web`,
     "",
-    ...(apiComponent ? [`export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiComponent.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiComponent.port}}}}"`] : []),
+    ...(apiRuntime ? [`export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiRuntime.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiRuntime.port}}}}"`] : []),
     `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}},http://127.0.0.1:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}}}"`,
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
@@ -612,19 +612,19 @@ export function generateEnvironmentBundle(graph, options = {}) {
     files["scripts/docker-stack.sh"] = renderEnvironmentDockerStackScript();
   }
 
-  for (const component of topology.apiComponents) {
+  for (const component of topology.apiRuntimes) {
     const serverBundle = generateServerBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.serviceDir(component)]: serverBundle
     });
   }
-  for (const component of topology.webComponents) {
+  for (const component of topology.webRuntimes) {
     const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.webDir(component)]: webBundle
     });
   }
-  for (const component of topology.dbComponents) {
+  for (const component of topology.dbRuntimes) {
     const dbBundle = generateDbBundle(graph, component.projection.id, { ...options, component });
     mergeNamedBundles(files, {
       [topology.dbDir(component)]: dbBundle

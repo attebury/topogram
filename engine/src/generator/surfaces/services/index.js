@@ -12,11 +12,13 @@ export function generateBackendTarget(target, graph, options = {}) {
     return generatePersistenceScaffold(graph, options);
   }
   if (target === "hono-server") {
-    if (options.component?.generator?.id) {
+    const runtime = options.runtime || options.component;
+    if (runtime?.generator?.id) {
       return generateWithComponentGenerator({
         graph,
-        projection: options.component.projection,
-        component: options.component,
+        projection: runtime.projection,
+        runtime,
+        component: runtime,
         topology: options.topology || null,
         implementation: options.implementation || null,
         options
@@ -25,11 +27,13 @@ export function generateBackendTarget(target, graph, options = {}) {
     return generateHonoServer(graph, options);
   }
   if (target === "express-server") {
-    if (options.component?.generator?.id) {
+    const runtime = options.runtime || options.component;
+    if (runtime?.generator?.id) {
       return generateWithComponentGenerator({
         graph,
-        projection: options.component.projection,
-        component: options.component,
+        projection: runtime.projection,
+        runtime,
+        component: runtime,
         topology: options.topology || null,
         implementation: options.implementation || null,
         options

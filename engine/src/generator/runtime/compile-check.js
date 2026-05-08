@@ -29,13 +29,13 @@ function runtimeReferenceFor(graph, options = {}) {
 function buildCompileCheckPlan(graph, options = {}) {
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
-  const apiChecks = topology.apiComponents.map((component, index) => ({
+  const apiChecks = topology.apiRuntimes.map((component, index) => ({
     id: index === 0 ? "server_typecheck" : `server_typecheck_${component.id}`,
     cwd: topology.serviceDir(component),
     install: "npm install --no-audit --no-fund",
     command: "npm run check"
   }));
-  const webChecks = topology.webComponents.flatMap((component, index) => [
+  const webChecks = topology.webRuntimes.flatMap((component, index) => [
     {
       id: index === 0 ? "web_typecheck" : `web_typecheck_${component.id}`,
       cwd: topology.webDir(component),
@@ -150,11 +150,11 @@ export function generateCompileCheckBundle(graph, options = {}) {
     "compile-check-plan.json": `${JSON.stringify(plan, null, 2)}\n`,
     "scripts/check.sh": renderCompileCheckScript(plan)
   };
-  for (const component of topology.apiComponents) {
+  for (const component of topology.apiRuntimes) {
     const serverBundle = generateServerBundle(graph, component.projection.id, { ...options, component });
     mergeBundleFiles(files, topology.serviceDir(component), serverBundle);
   }
-  for (const component of topology.webComponents) {
+  for (const component of topology.webRuntimes) {
     const webBundle = generateWebBundle(graph, component.projection.id, { ...options, component });
     mergeBundleFiles(files, topology.webDir(component), webBundle);
   }
