@@ -228,8 +228,8 @@ test("old generator manifest names fail with manifest rename examples", () => {
 test("documented widget command examples execute against the canonical fixture", () => {
   const docs = fs.readFileSync(path.join(repoRoot, "docs", "widgets.md"), "utf8");
   const documentedShapes = [
-    "topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid",
-    "topogram generate ./topogram --generate widget-conformance-report --projection proj_web_surface --json",
+    "topogram emit ui-widget-contract ./topogram --widget widget_data_grid",
+    "topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json",
     "topogram widget check ./topogram --projection proj_web_surface",
     "topogram widget behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json",
     "topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json",
@@ -240,8 +240,8 @@ test("documented widget command examples execute against the canonical fixture",
   }
 
   const commands = [
-    ["generate", fixtureRoot, "--generate", "ui-widget-contract", "--widget", "widget_data_grid", "--json"],
-    ["generate", fixtureRoot, "--generate", "widget-conformance-report", "--projection", "proj_web_surface", "--json"],
+    ["emit", "ui-widget-contract", fixtureRoot, "--widget", "widget_data_grid", "--json"],
+    ["emit", "widget-conformance-report", fixtureRoot, "--projection", "proj_web_surface", "--json"],
     ["widget", "check", fixtureRoot, "--projection", "proj_web_surface"],
     ["widget", "behavior", fixtureRoot, "--projection", "proj_web_surface", "--widget", "widget_data_grid", "--json"],
     ["query", "widget-behavior", fixtureRoot, "--projection", "proj_web_surface", "--widget", "widget_data_grid", "--json"],
@@ -266,15 +266,15 @@ test("old component CLI names fail with rename guidance", () => {
     },
     {
       args: ["generate", fixtureRoot, "--generate", "ui-component-contract", "--widget", "widget_data_grid", "--json"],
-      expected: "Generator target 'ui-component-contract' was renamed to 'ui-widget-contract'."
+      expected: "Artifact target 'ui-component-contract' was renamed to 'ui-widget-contract'."
     },
     {
       args: ["generate", fixtureRoot, "--generate", "component-conformance-report", "--projection", "proj_web_surface", "--json"],
-      expected: "Generator target 'component-conformance-report' was renamed to 'widget-conformance-report'."
+      expected: "Artifact target 'component-conformance-report' was renamed to 'widget-conformance-report'."
     },
     {
       args: ["generate", fixtureRoot, "--generate", "component-behavior-report", "--widget", "widget_data_grid", "--json"],
-      expected: "Generator target 'component-behavior-report' was renamed to 'widget-behavior-report'."
+      expected: "Artifact target 'component-behavior-report' was renamed to 'widget-behavior-report'."
     }
   ];
 

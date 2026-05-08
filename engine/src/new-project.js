@@ -2046,6 +2046,8 @@ Or run self-contained local runtime verification:
 
 Useful inspection:
    npm run check:json
+   topogram emit ui-widget-contract ./topogram --json
+   topogram emit widget-conformance-report ./topogram --json
    npm run doctor
    npm run source:status
    npm run source:status:remote
@@ -2123,6 +2125,7 @@ ${workflowCommands.join("\n")}
 
 Edit \`topogram/\` and \`topogram.project.json\`, then regenerate with \`npm run generate\`.
 Generated app code is written to \`app/\`.
+Use \`topogram emit <target>\` to inspect contracts, reports, snapshots, and other artifacts without regenerating the app.
 ${template.includesExecutableImplementation ? "\nThis template copied `implementation/` code. `topogram new` did not execute it; review `implementation/`, `topogram.template-policy.json`, and `.topogram-template-trust.json` before regenerating after edits.\n" : ""}
 `;
   fs.writeFileSync(path.join(projectRoot, "README.md"), readme, "utf8");

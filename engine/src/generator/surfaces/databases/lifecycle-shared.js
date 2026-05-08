@@ -352,17 +352,17 @@ infer_current_snapshot_from_live_tables() {
 }
 
 generate_desired_snapshot() {
-  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate db-schema-snapshot --projection "$PROJECTION_ID" > "$DESIRED_SNAPSHOT"
+  "$TOPOGRAM_BIN" emit db-schema-snapshot "$INPUT_PATH" --projection "$PROJECTION_ID" > "$DESIRED_SNAPSHOT"
 }
 
 generate_migration_plan() {
   local from_snapshot="$1"
-  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate db-migration-plan --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$PLAN_JSON"
+  "$TOPOGRAM_BIN" emit db-migration-plan "$INPUT_PATH" --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$PLAN_JSON"
 }
 
 generate_sql_migration() {
   local from_snapshot="$1"
-  "$TOPOGRAM_BIN" "$INPUT_PATH" --generate sql-migration --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$MIGRATION_SQL"
+  "$TOPOGRAM_BIN" emit sql-migration "$INPUT_PATH" --projection "$PROJECTION_ID" --from-snapshot "$from_snapshot" > "$MIGRATION_SQL"
 }
 
 ensure_supported_plan() {

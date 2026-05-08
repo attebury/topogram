@@ -157,16 +157,16 @@ Bare unquoted symbols other than `true`, `false`, `null`, and numerics are passe
 
 ## Generated Contract
 
-Generate one widget contract:
+Emit one widget contract:
 
 ```bash
-topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid
+topogram emit ui-widget-contract ./topogram --widget widget_data_grid
 ```
 
-Generate all widget contracts:
+Emit all widget contracts:
 
 ```bash
-topogram generate ./topogram --generate ui-widget-contract
+topogram emit ui-widget-contract ./topogram
 ```
 
 Passing `--widget <id>` for a missing id is now a hard error rather than a silent `null` artifact, so typos surface immediately.
@@ -177,10 +177,10 @@ tools.
 
 ## Conformance Report
 
-Generate a widget conformance report for one projection:
+Emit a widget conformance report for one projection:
 
 ```bash
-topogram generate ./topogram --generate widget-conformance-report --projection proj_web_surface --json
+topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json
 ```
 
 For day-to-day validation, use the friendlier command alias:
@@ -192,7 +192,7 @@ topogram widget check ./topogram --projection proj_web_surface
 Optionally narrow the report to one widget:
 
 ```bash
-topogram generate ./topogram --generate widget-conformance-report --projection proj_web_surface --widget widget_data_grid --json
+topogram emit widget-conformance-report ./topogram --projection proj_web_surface --widget widget_data_grid --json
 ```
 
 The report checks `projection.widget_bindings` usage against widget contracts,
@@ -225,7 +225,7 @@ topogram query widget-behavior ./topogram --projection proj_web_surface --widget
 The equivalent artifact target is:
 
 ```bash
-topogram generate ./topogram --generate widget-behavior-report --projection proj_web_surface --json
+topogram emit widget-behavior-report ./topogram --projection proj_web_surface --json
 ```
 
 The JSON artifact groups behavior realizations by widget, screen,

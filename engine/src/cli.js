@@ -210,7 +210,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
-  console.log("   or: topogram generate [path] --generate <target> [--json|--write --out-dir <path>]");
+  console.log("   or: topogram emit <target> [path] [--json|--write --out-dir <path>]");
   console.log("   or: topogram query list [--json]");
   console.log("   or: topogram query show <name> [--json]");
   console.log("   or: topogram trust template [path]");
@@ -270,6 +270,8 @@ function printUsage(options = {}) {
   console.log("  topogram query list");
   console.log("  topogram query show widget-behavior");
   console.log("  topogram query widget-behavior ./topogram --projection proj_web_surface --json");
+  console.log("  topogram emit ui-widget-contract --widget widget_data_grid --json");
+  console.log("  topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json");
   console.log("  topogram generator list");
   console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
@@ -338,7 +340,8 @@ function printUsage(options = {}) {
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
-  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--generate <target>] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--widget <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
+  console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--widget <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
+  console.log("   or: node ./src/cli.js emit <target> [path] [--json] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: node ./src/cli.js import docs <path> [--write]");
   console.log("   or: node ./src/cli.js generate journeys <path> [--write]");
@@ -411,11 +414,23 @@ function printNewHelp() {
 function printGenerateHelp() {
   console.log("Usage: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate app [path] [--out <path>]");
-  console.log("   or: topogram generate [path] --generate <target> [--json]");
-  console.log("   or: topogram generate [path] --generate <target> --write [--out-dir <path>]");
   console.log("");
   console.log("Defaults: path is ./topogram and app generation writes ./app.");
-  console.log("Explicit --generate targets print JSON by default and write files only with --write.");
+  console.log("Use `topogram emit <target>` for contracts, reports, snapshots, migration plans, and other artifacts.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram generate");
+  console.log("  topogram generate ./topogram --out ./app");
+  console.log("  topogram generate app ./topogram --out ./app");
+}
+
+function printEmitHelp() {
+  console.log("Usage: topogram emit <target> [path] [--json]");
+  console.log("   or: topogram emit <target> [path] --write [--out-dir <path>]");
+  console.log("");
+  console.log("Emits named contracts, reports, snapshots, migration plans, and other artifacts.");
+  console.log("");
+  console.log("Defaults: path is ./topogram. Emit prints to stdout unless --write is passed. --write writes ./artifacts unless --out-dir is supplied.");
   console.log("");
   console.log("Common artifact targets:");
   console.log("  ui-widget-contract");
@@ -433,13 +448,12 @@ function printGenerateHelp() {
   console.log("  --journey <id>");
   console.log("");
   console.log("Examples:");
-  console.log("  topogram generate");
-  console.log("  topogram generate ./topogram --out ./app");
-  console.log("  topogram generate app ./topogram --out ./app");
-  console.log("  topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid --json");
-  console.log("  topogram generate ./topogram --generate widget-conformance-report --projection proj_web_surface --json");
-  console.log("  topogram generate ./topogram --generate widget-behavior-report --projection proj_web_surface --json");
-  console.log("  topogram generate ./topogram --generate ui-widget-contract --write --out-dir ./contracts");
+  console.log("  topogram emit ui-widget-contract --widget widget_data_grid --json");
+  console.log("  topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json");
+  console.log("  topogram emit widget-behavior-report ./topogram --projection proj_web_surface --json");
+  console.log("  topogram emit db-schema-snapshot ./topogram --projection proj_db_postgres --json");
+  console.log("  topogram emit sql-migration ./topogram --projection proj_db_postgres --from-snapshot ./state/current.json");
+  console.log("  topogram emit ui-widget-contract --write --out-dir ./contracts");
 }
 
 function printWidgetHelp() {
@@ -867,6 +881,10 @@ function printCommandHelp(command) {
   }
   if (command === "generate") {
     printGenerateHelp();
+    return true;
+  }
+  if (command === "emit") {
+    printEmitHelp();
     return true;
   }
   if (command === "widget") {
@@ -8594,12 +8612,18 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
+} else if (args[0] === "emit") {
+  if (!args[1] || args[1].startsWith("-")) {
+    printEmitHelp();
+    process.exit(1);
+  }
+  commandArgs = { generateTarget: args[1], inputPath: commandPath(2), emitArtifact: true };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
 } else if (args[0] === "generate" && args.indexOf("--generate") >= 0) {
-  commandArgs = { inputPath: commandPath(1) };
+  commandArgs = { inputPath: commandPath(1), deprecatedGenerateArtifact: true };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {
@@ -8839,8 +8863,13 @@ const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--valida
 const shouldResolve = args.includes("--resolve");
 const generateIndex = args.indexOf("--generate");
 const generateTarget = commandArgs?.generateTarget || (generateIndex >= 0 ? args[generateIndex + 1] : null);
+if (commandArgs?.deprecatedGenerateArtifact && (!generateTarget || generateTarget.startsWith("-"))) {
+  console.error("Missing required --generate <target>.");
+  printUsage();
+  process.exit(1);
+}
 if (RENAMED_GENERATE_TARGETS.has(generateTarget)) {
-  console.error(`Generator target '${generateTarget}' was renamed to '${RENAMED_GENERATE_TARGETS.get(generateTarget)}'.`);
+  console.error(`Artifact target '${generateTarget}' was renamed to '${RENAMED_GENERATE_TARGETS.get(generateTarget)}'.`);
   process.exit(1);
 }
 const workflowIndex = args.indexOf("--workflow");
@@ -11573,6 +11602,9 @@ try {
   const ast = parsePath(inputPath);
 
   if (generateTarget) {
+    if (commandArgs?.deprecatedGenerateArtifact) {
+      console.error(`Deprecated: use \`topogram emit ${generateTarget} ${inputPath || "./topogram"}\` instead of \`topogram generate ${inputPath || "./topogram"} --generate ${generateTarget}\`.`);
+    }
     const projectRoot = normalizeProjectRoot(inputPath);
     const explicitProjectConfig = loadProjectConfig(projectRoot) || loadProjectConfig(inputPath);
     const implementationOptionalTargets = new Set(["app-bundle-plan", "app-bundle", "environment-plan", "environment-bundle", "compile-check-plan", "compile-check-bundle"]);

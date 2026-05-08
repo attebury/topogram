@@ -109,7 +109,7 @@ npm run explain
 npm run doctor
 npm run check
 npm run generate
-topogram generate ./topogram --generate ui-widget-contract
+topogram emit ui-widget-contract ./topogram
 npm run verify
 ```
 

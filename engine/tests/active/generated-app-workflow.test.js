@@ -651,18 +651,25 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   const generateHelp = runCli(["generate", "--help"]);
   assert.equal(generateHelp.status, 0, generateHelp.stderr || generateHelp.stdout);
   assert.match(generateHelp.stdout, /Usage: topogram generate \[path\] \[--out <path>\]/);
-  assert.match(generateHelp.stdout, /topogram generate \[path\] --generate <target> \[--json\]/);
-  assert.match(generateHelp.stdout, /Explicit --generate targets print JSON by default and write files only with --write\./);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate ui-widget-contract --widget widget_data_grid --json/);
-  assert.match(generateHelp.stdout, /widget-conformance-report/);
-  assert.match(generateHelp.stdout, /widget-behavior-report/);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate widget-conformance-report --projection proj_web_surface --json/);
-  assert.match(generateHelp.stdout, /topogram generate \.\/topogram --generate widget-behavior-report --projection proj_web_surface --json/);
+  assert.match(generateHelp.stdout, /Use `topogram emit <target>` for contracts/);
+  assert.doesNotMatch(generateHelp.stdout, /topogram generate \[path\] --generate <target>/);
+  assert.doesNotMatch(generateHelp.stdout, /Explicit --generate targets/);
   assert.doesNotMatch(generateHelp.stdout, /Common commands:/);
 
   const helpGenerate = runCli(["help", "generate"]);
   assert.equal(helpGenerate.status, 0, helpGenerate.stderr || helpGenerate.stdout);
   assert.equal(helpGenerate.stdout, generateHelp.stdout);
+
+  const emitHelp = runCli(["emit", "--help"]);
+  assert.equal(emitHelp.status, 0, emitHelp.stderr || emitHelp.stdout);
+  assert.match(emitHelp.stdout, /Usage: topogram emit <target> \[path\] \[--json\]/);
+  assert.match(emitHelp.stdout, /topogram emit ui-widget-contract --widget widget_data_grid --json/);
+  assert.match(emitHelp.stdout, /topogram emit widget-conformance-report \.\/topogram --projection proj_web_surface --json/);
+  assert.match(emitHelp.stdout, /topogram emit widget-behavior-report \.\/topogram --projection proj_web_surface --json/);
+
+  const helpEmit = runCli(["help", "emit"]);
+  assert.equal(helpEmit.status, 0, helpEmit.stderr || helpEmit.stdout);
+  assert.equal(helpEmit.stdout, emitHelp.stdout);
 
   const componentHelp = runCli(["widget", "--help"]);
   assert.equal(componentHelp.status, 0, componentHelp.stderr || componentHelp.stdout);
@@ -870,13 +877,12 @@ test("sveltekit generator routes render projection widget_bindings for provider-
   assert.deepEqual(coverage.diagnostics, []);
 });
 
-test("topogram generate honors explicit artifact targets", () => {
-  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generate-target-"));
+test("topogram emit honors explicit artifact targets", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-emit-target-"));
   const selected = runCli([
-    "generate",
-    fixtureRoot,
-    "--generate",
+    "emit",
     "ui-widget-contract",
+    fixtureRoot,
     "--widget",
     "widget_data_grid",
     "--json"
@@ -887,11 +893,30 @@ test("topogram generate honors explicit artifact targets", () => {
   assert.equal(contract.type, "ui_widget_contract");
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "explicit artifact generation must not write the app shortcut output");
 
+  const defaultProjectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-emit-default-path-"));
+  const defaultTopogramRoot = path.join(defaultProjectRoot, "topogram");
+  fs.mkdirSync(defaultTopogramRoot, { recursive: true });
+  for (const entry of fs.readdirSync(fixtureRoot)) {
+    const source = path.join(fixtureRoot, entry);
+    const destination = ["topogram.project.json", "implementation", "README.md"].includes(entry)
+      ? path.join(defaultProjectRoot, entry)
+      : path.join(defaultTopogramRoot, entry);
+    fs.cpSync(source, destination, { recursive: true });
+  }
+  const selectedDefaultPath = runCli([
+    "emit",
+    "ui-widget-contract",
+    "--widget",
+    "widget_data_grid",
+    "--json"
+  ], { cwd: defaultProjectRoot });
+  assert.equal(selectedDefaultPath.status, 0, selectedDefaultPath.stderr || selectedDefaultPath.stdout);
+  assert.equal(JSON.parse(selectedDefaultPath.stdout).id, "widget_data_grid");
+
   const conformance = runCli([
-    "generate",
-    fixtureRoot,
-    "--generate",
+    "emit",
     "widget-conformance-report",
+    fixtureRoot,
     "--projection",
     "proj_web_surface",
     "--widget",
@@ -908,10 +933,9 @@ test("topogram generate honors explicit artifact targets", () => {
 
   const outDir = path.join(cwd, "contracts");
   const written = runCli([
-    "generate",
-    fixtureRoot,
-    "--generate",
+    "emit",
     "ui-widget-contract",
+    fixtureRoot,
     "--write",
     "--out-dir",
     outDir
@@ -923,10 +947,9 @@ test("topogram generate honors explicit artifact targets", () => {
 
   const reportOutDir = path.join(cwd, "reports");
   const writtenReport = runCli([
-    "generate",
-    fixtureRoot,
-    "--generate",
+    "emit",
     "widget-conformance-report",
+    fixtureRoot,
     "--projection",
     "proj_web_surface",
     "--write",
@@ -936,6 +959,25 @@ test("topogram generate honors explicit artifact targets", () => {
   assert.equal(writtenReport.status, 0, writtenReport.stderr || writtenReport.stdout);
   assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "widget-conformance-report");
   assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
+});
+
+test("deprecated generate --generate artifact form warns without corrupting JSON stdout", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generate-deprecated-"));
+  const selected = runCli([
+    "generate",
+    fixtureRoot,
+    "--generate",
+    "ui-widget-contract",
+    "--widget",
+    "widget_data_grid",
+    "--json"
+  ], { cwd });
+  assert.equal(selected.status, 0, selected.stderr || selected.stdout);
+  assert.match(selected.stderr, /Deprecated: use `topogram emit ui-widget-contract/);
+  const contract = JSON.parse(selected.stdout);
+  assert.equal(contract.id, "widget_data_grid");
+  assert.equal(contract.type, "ui_widget_contract");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "deprecated artifact form must not write the app shortcut output");
 });
 
 test("topogram widget check reports conformance without writing app output", () => {
@@ -1041,10 +1083,9 @@ test("topogram widget behavior reports behavior groups without writing app outpu
 
   const reportOutDir = path.join(cwd, "behavior-reports");
   const written = runCli([
-    "generate",
-    fixtureRoot,
-    "--generate",
+    "emit",
     "widget-behavior-report",
+    fixtureRoot,
     "--projection",
     "proj_web_surface",
     "--write",

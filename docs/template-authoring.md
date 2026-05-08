@@ -134,8 +134,8 @@ Templates may include reusable `widget` statements under `topogram/widgets/`.
 These contracts are platform-neutral and can be generated independently:
 
 ```bash
-topogram generate ./topogram --generate ui-widget-contract
-topogram generate ./topogram --generate ui-widget-contract --widget widget_data_grid
+topogram emit ui-widget-contract ./topogram
+topogram emit ui-widget-contract ./topogram --widget widget_data_grid
 ```
 
 See [Widgets](./widgets.md) for the full grammar and pack roadmap.
