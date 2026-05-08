@@ -305,128 +305,128 @@ function validateOutputConfig(errors, config) {
 }
 
 /**
- * @param {any} component
+ * @param {any} runtime
  * @returns {string}
  */
-function componentLabel(component) {
-  return component?.id ? `Runtime '${component.id}'` : "Topology runtime";
+function runtimeLabel(runtime) {
+  return runtime?.id ? `Runtime '${runtime.id}'` : "Topology runtime";
 }
 
 /**
  * @param {ValidationError[]} errors
- * @param {any} component
+ * @param {any} runtime
  * @param {Set<string>} seenIds
  * @returns {boolean}
  */
-function validateComponentShape(errors, component, seenIds) {
-  if (!component || typeof component !== "object" || Array.isArray(component)) {
+function validateRuntimeShape(errors, runtime, seenIds) {
+  if (!runtime || typeof runtime !== "object" || Array.isArray(runtime)) {
     pushError(errors, "Topology runtime must be an object");
     return false;
   }
-  if (typeof component.id !== "string" || !IDENTIFIER_PATTERN.test(component.id)) {
-    pushError(errors, `${componentLabel(component)} id must match ${IDENTIFIER_PATTERN}`);
-  } else if (seenIds.has(component.id)) {
-    pushError(errors, `Duplicate topology runtime id '${component.id}'`);
+  if (typeof runtime.id !== "string" || !IDENTIFIER_PATTERN.test(runtime.id)) {
+    pushError(errors, `${runtimeLabel(runtime)} id must match ${IDENTIFIER_PATTERN}`);
+  } else if (seenIds.has(runtime.id)) {
+    pushError(errors, `Duplicate topology runtime id '${runtime.id}'`);
   } else {
-    seenIds.add(component.id);
+    seenIds.add(runtime.id);
   }
-  if (component.type != null) {
-    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'type'", "'kind'", `"kind": "api_service"`)}`);
+  if (runtime.type != null) {
+    pushError(errors, `${runtimeLabel(runtime)} ${renameDiagnostic("'type'", "'kind'", `"kind": "api_service"`)}`);
   }
-  if (component.database != null) {
-    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'database'", "'uses_database'", `"uses_database": "app_db"`)}`);
+  if (runtime.database != null) {
+    pushError(errors, `${runtimeLabel(runtime)} ${renameDiagnostic("'database'", "'uses_database'", `"uses_database": "app_db"`)}`);
   }
-  if (component.api != null) {
-    pushError(errors, `${componentLabel(component)} ${renameDiagnostic("'api'", "'uses_api'", `"uses_api": "app_api"`)}`);
+  if (runtime.api != null) {
+    pushError(errors, `${runtimeLabel(runtime)} ${renameDiagnostic("'api'", "'uses_api'", `"uses_api": "app_api"`)}`);
   }
-  if (!["api_service", "web_surface", "ios_surface", "android_surface", "database"].includes(component.kind)) {
-    pushError(errors, `${componentLabel(component)} kind must be api_service, web_surface, ios_surface, android_surface, or database`);
+  if (!["api_service", "web_surface", "ios_surface", "android_surface", "database"].includes(runtime.kind)) {
+    pushError(errors, `${runtimeLabel(runtime)} kind must be api_service, web_surface, ios_surface, android_surface, or database`);
   }
-  if (typeof component.projection !== "string" || component.projection.length === 0) {
-    pushError(errors, `${componentLabel(component)} projection must be a non-empty string`);
+  if (typeof runtime.projection !== "string" || runtime.projection.length === 0) {
+    pushError(errors, `${runtimeLabel(runtime)} projection must be a non-empty string`);
   }
-  if (!component.generator || typeof component.generator !== "object") {
-    pushError(errors, `${componentLabel(component)} generator must be an object`);
+  if (!runtime.generator || typeof runtime.generator !== "object") {
+    pushError(errors, `${runtimeLabel(runtime)} generator must be an object`);
   } else {
-    if (typeof component.generator.id !== "string" || component.generator.id.length === 0) {
-      pushError(errors, `${componentLabel(component)} generator.id must be a non-empty string`);
+    if (typeof runtime.generator.id !== "string" || runtime.generator.id.length === 0) {
+      pushError(errors, `${runtimeLabel(runtime)} generator.id must be a non-empty string`);
     }
-    if (typeof component.generator.version !== "string" || component.generator.version.length === 0) {
-      pushError(errors, `${componentLabel(component)} generator.version must be a non-empty string`);
+    if (typeof runtime.generator.version !== "string" || runtime.generator.version.length === 0) {
+      pushError(errors, `${runtimeLabel(runtime)} generator.version must be a non-empty string`);
     }
-    if (component.generator.package != null && (typeof component.generator.package !== "string" || component.generator.package.length === 0)) {
-      pushError(errors, `${componentLabel(component)} generator.package must be a non-empty string when provided`);
+    if (runtime.generator.package != null && (typeof runtime.generator.package !== "string" || runtime.generator.package.length === 0)) {
+      pushError(errors, `${runtimeLabel(runtime)} generator.package must be a non-empty string when provided`);
     }
   }
-  if (component.port != null && (!Number.isInteger(component.port) || component.port <= 0 || component.port > 65535)) {
-    pushError(errors, `${componentLabel(component)} port must be an integer from 1 to 65535`);
+  if (runtime.port != null && (!Number.isInteger(runtime.port) || runtime.port <= 0 || runtime.port > 65535)) {
+    pushError(errors, `${runtimeLabel(runtime)} port must be an integer from 1 to 65535`);
   }
   return true;
 }
 
 /**
  * @param {ValidationError[]} errors
- * @param {RuntimeTopologyRuntime} component
+ * @param {RuntimeTopologyRuntime} runtime
  * @param {Map<string, Record<string, any>>} projections
  * @param {{ configDir?: string|null, rootDir?: string|null }} [options]
  * @returns {void}
  */
-function validateComponentCompatibility(errors, component, projections, options = {}) {
-  const projection = projections.get(component.projection);
+function validateRuntimeCompatibility(errors, runtime, projections, options = {}) {
+  const projection = projections.get(runtime.projection);
   if (!projection) {
-    pushError(errors, `${componentLabel(component)} references missing projection '${component.projection}'`);
+    pushError(errors, `${runtimeLabel(runtime)} references missing projection '${runtime.projection}'`);
     return;
   }
 
-  const resolvedManifest = resolveGeneratorManifestForBinding(component.generator, options);
+  const resolvedManifest = resolveGeneratorManifestForBinding(runtime.generator, options);
   const manifest = resolvedManifest.manifest;
   if (!manifest) {
     const details = resolvedManifest.errors.length > 0 ? `: ${resolvedManifest.errors.join("; ")}` : "";
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses unknown generator '${component.generator?.id}' version '${component.generator?.version || "unknown"}'${details}`);
+    pushError(errors, `${runtimeLabel(runtime)} for projection '${projection.id}' uses unknown generator '${runtime.generator?.id}' version '${runtime.generator?.version || "unknown"}'${details}`);
     return;
   }
   const manifestValidation = validateGeneratorManifest(manifest);
   if (!manifestValidation.ok) {
     for (const message of manifestValidation.errors) {
-      pushError(errors, `${componentLabel(component)} generator manifest invalid: ${message}`);
+      pushError(errors, `${runtimeLabel(runtime)} generator manifest invalid: ${message}`);
     }
   }
   if (manifest.planned) {
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' uses planned generator '${manifest.id}@${manifest.version}', which is not implemented yet`);
+    pushError(errors, `${runtimeLabel(runtime)} for projection '${projection.id}' uses planned generator '${manifest.id}@${manifest.version}', which is not implemented yet`);
   }
-  if (manifest.version !== component.generator.version) {
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}' version '${component.generator.version}' is unsupported; expected '${manifest.version}'`);
+  if (manifest.version !== runtime.generator.version) {
+    pushError(errors, `${runtimeLabel(runtime)} for projection '${projection.id}' generator '${manifest.id}' version '${runtime.generator.version}' is unsupported; expected '${manifest.version}'`);
   }
-  if (!isGeneratorCompatible(manifest, component.kind, projection)) {
-    pushError(errors, `${componentLabel(component)} for projection '${projection.id}' generator '${manifest.id}@${manifest.version}' is incompatible with runtime kind '${component.kind}' and projection type '${projection.type || "api_contract"}'`);
+  if (!isGeneratorCompatible(manifest, runtime.kind, projection)) {
+    pushError(errors, `${runtimeLabel(runtime)} for projection '${projection.id}' generator '${manifest.id}@${manifest.version}' is incompatible with runtime kind '${runtime.kind}' and projection type '${projection.type || "api_contract"}'`);
   }
 }
 
 /**
  * @param {ValidationError[]} errors
- * @param {RuntimeTopologyRuntime[]} components
+ * @param {RuntimeTopologyRuntime[]} runtimes
  * @returns {void}
  */
-function validateTopologyReferences(errors, components) {
-  const byId = new Map(components.map((component) => [component.id, component]));
+function validateTopologyReferences(errors, runtimes) {
+  const byId = new Map(runtimes.map((runtime) => [runtime.id, runtime]));
   const usedPorts = new Map();
-  for (const component of components) {
-    if (component.port != null) {
-      const existing = usedPorts.get(component.port);
+  for (const runtime of runtimes) {
+    if (runtime.port != null) {
+      const existing = usedPorts.get(runtime.port);
       if (existing) {
-        pushError(errors, `Port ${component.port} is used by both '${existing}' and '${component.id}'`);
+        pushError(errors, `Port ${runtime.port} is used by both '${existing}' and '${runtime.id}'`);
       } else {
-        usedPorts.set(component.port, component.id);
+        usedPorts.set(runtime.port, runtime.id);
       }
     }
-    if (component.kind === "api_service") {
-      if (component.uses_database && byId.get(component.uses_database)?.kind !== "database") {
-        pushError(errors, `${componentLabel(component)} references missing database runtime '${component.uses_database}'`);
+    if (runtime.kind === "api_service") {
+      if (runtime.uses_database && byId.get(runtime.uses_database)?.kind !== "database") {
+        pushError(errors, `${runtimeLabel(runtime)} references missing database runtime '${runtime.uses_database}'`);
       }
     }
-    if (["web_surface", "ios_surface", "android_surface"].includes(component.kind)) {
-      if (component.uses_api && byId.get(component.uses_api)?.kind !== "api_service") {
-        pushError(errors, `${componentLabel(component)} references missing api runtime '${component.uses_api}'`);
+    if (["web_surface", "ios_surface", "android_surface"].includes(runtime.kind)) {
+      if (runtime.uses_api && byId.get(runtime.uses_api)?.kind !== "api_service") {
+        pushError(errors, `${runtimeLabel(runtime)} references missing api runtime '${runtime.uses_api}'`);
       }
     }
   }
@@ -455,8 +455,8 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     pushError(errors, "topogram.project.json topology.runtimes must be an array");
   } else {
     const seenIds = new Set();
-    for (const component of config.topology.runtimes) {
-      validateComponentShape(errors, component, seenIds);
+    for (const runtime of config.topology.runtimes) {
+      validateRuntimeShape(errors, runtime, seenIds);
     }
     const generatorPolicy = validateProjectGeneratorPolicy(config, options);
     for (const error of generatorPolicy.errors) {
@@ -464,8 +464,8 @@ export function validateProjectConfig(config, graph = null, options = {}) {
     }
     if (graph) {
       const projections = projectionById(graph);
-      for (const component of config.topology.runtimes) {
-        validateComponentCompatibility(errors, component, projections, options);
+      for (const runtime of config.topology.runtimes) {
+        validateRuntimeCompatibility(errors, runtime, projections, options);
       }
       validateTopologyReferences(errors, config.topology.runtimes);
     }

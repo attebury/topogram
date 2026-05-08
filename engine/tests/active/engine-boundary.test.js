@@ -11,6 +11,7 @@ const appBasicRoots = [
   path.join(fixturesRoot, "workspaces", "app-basic"),
   path.join(fixturesRoot, "expected", "app-basic")
 ];
+const nativeGeneratorRoot = path.join(repoRoot, "engine", "src", "generator", "surfaces", "native");
 const productNameLower = ["to", "do"].join("");
 const productNameTitle = ["To", "do"].join("");
 const generatedWorkflowBoundaryFile = path.join(activeTestsRoot, "generated-app-workflow.test.js");
@@ -53,6 +54,20 @@ const forbiddenAppBasicProductArtifacts = [
   "PUBLIC_TOPOGRAM_DEMO_TASK_ID",
   "TOPOGRAM_DEMO_PROJECT_ID",
   "PUBLIC_TOPOGRAM_DEMO_PROJECT_ID"
+];
+const forbiddenNativeGeneratorProductArtifacts = [
+  [productNameTitle, "SwiftUIApp"].join(""),
+  [productNameTitle, "APIClient"].join(""),
+  [productNameTitle, "UiContract"].join(""),
+  "PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN",
+  "cap_complete_task",
+  "cap_export_tasks",
+  "cap_update_task",
+  "cap_get_task",
+  "task_list",
+  "task_detail",
+  "task_create",
+  "task_exports"
 ];
 const externalProductReferences = [
   productNameLower,
@@ -195,6 +210,20 @@ test("app-basic stays neutral instead of reintroducing old product artifacts", (
       if (references.length > 0) {
         offenders.push({ file: relative, references });
       }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("native generator templates stay neutral instead of reintroducing product behavior", () => {
+  const offenders = [];
+  for (const file of visitFiles(nativeGeneratorRoot)) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenNativeGeneratorProductArtifacts.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
     }
   }
 

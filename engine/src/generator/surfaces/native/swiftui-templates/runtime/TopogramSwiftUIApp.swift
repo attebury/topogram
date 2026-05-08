@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct TodoSwiftUIApp: App {
+struct TopogramSwiftUIApp: App {
     @StateObject private var contractHolder = ContractHolder()
 
     var body: some Scene {
@@ -13,7 +13,7 @@ struct TodoSwiftUIApp: App {
                     Text("Failed to load Topogram UI contract: \(err)")
                         .padding()
                 } else {
-                    ProgressView("Loading Topogram Todo…")
+                    ProgressView("Loading Topogram UI…")
                 }
             }
             .task {
@@ -25,16 +25,16 @@ struct TodoSwiftUIApp: App {
 
 @MainActor
 final class ContractHolder: ObservableObject {
-    @Published var contract: TodoUiContract?
-    @Published var client: TodoAPIClient?
+    @Published var contract: TopogramUiContract?
+    @Published var client: TopogramAPIClient?
     @Published var error: String?
 
     func bootstrap() async {
         do {
-            let uiData = try TodoUiContract.loadBundled()
-            let apiData = try TodoAPIClient.loadBundledContracts()
-            let ui = try TodoUiContract(data: uiData)
-            let cli = try TodoAPIClient(contractsData: apiData)
+            let uiData = try TopogramUiContract.loadBundled()
+            let apiData = try TopogramAPIClient.loadBundledContracts()
+            let ui = try TopogramUiContract(data: uiData)
+            let cli = try TopogramAPIClient(contractsData: apiData)
             contract = ui
             client = cli
         } catch {

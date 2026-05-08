@@ -108,11 +108,12 @@ public enum Visibility {
     }
 
     private static func currentPrincipal(overrides: PrincipalOverride?) -> Principal? {
-        let token = env("PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN")
+        let token = env("PUBLIC_TOPOGRAM_AUTH_TOKEN")
         let jwtPrincipal = token.isEmpty ? nil : principalFromJwt(token)
         let envClaims = parseClaims(env("PUBLIC_TOPOGRAM_AUTH_CLAIMS"))
+        let envUserId = env("PUBLIC_TOPOGRAM_AUTH_USER_ID")
         let userId = overrides?.userId
-            ?? env("PUBLIC_TOPOGRAM_AUTH_USER_ID")
+            ?? (!envUserId.isEmpty ? envUserId : nil)
             ?? jwtPrincipal?.userId
             ?? ""
 

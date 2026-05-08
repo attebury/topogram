@@ -1,13 +1,13 @@
 import Foundation
 
 /// Dynamic capability client mirroring `src/lib/api/client.ts` (requestCapability over bundled api-contracts.json).
-public final class TodoAPIClient: @unchecked Sendable {
+public final class TopogramAPIClient: @unchecked Sendable {
     private let session: URLSession
     let contracts: [String: Any]
     public init(session: URLSession = .shared, contractsData: Data) throws {
         self.session = session
         guard let root = try JSONSerialization.jsonObject(with: contractsData) as? [String: Any] else {
-            throw TodoAPIError.invalidContracts
+            throw TopogramAPIError.invalidContracts
         }
         self.contracts = root
     }
@@ -15,7 +15,7 @@ public final class TodoAPIClient: @unchecked Sendable {
     public static func loadBundledContracts() throws -> Data {
         guard let url = Bundle.module.url(forResource: "api-contracts", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
-            throw TodoAPIError.missingResource("api-contracts.json")
+            throw TopogramAPIError.missingResource("api-contracts.json")
         }
         return data
     }
@@ -26,13 +26,34 @@ public final class TodoAPIClient: @unchecked Sendable {
     }
 
     private func authToken() -> String {
-        ProcessInfo.processInfo.environment["PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN"] ?? ""
+        ProcessInfo.processInfo.environment["PUBLIC_TOPOGRAM_AUTH_TOKEN"] ?? ""
+    }
+
+    private func transportFields(for capabilityId: String, section: String) -> [[String: Any]] {
+        guard let contract = contracts[capabilityId] as? [String: Any],
+              let requestContract = contract["requestContract"] as? [String: Any],
+              let transport = requestContract["transport"] as? [String: Any] else {
+            return []
+        }
+        return transport[section] as? [[String: Any]] ?? []
+    }
+
+    public func pathFieldNames(for capabilityId: String) -> [String] {
+        transportFields(for: capabilityId, section: "path").compactMap { $0["name"] as? String }
+    }
+
+    public func queryFieldNames(for capabilityId: String) -> [String] {
+        transportFields(for: capabilityId, section: "query").compactMap { $0["name"] as? String }
+    }
+
+    public func bodyFieldNames(for capabilityId: String) -> [String] {
+        transportFields(for: capabilityId, section: "body").compactMap { $0["name"] as? String }
     }
 
     private func buildPath(contract: [String: Any], input: [String: Any]) throws -> String {
         guard let endpoint = contract["endpoint"] as? [String: Any],
               let rawPath = endpoint["path"] as? String else {
-            throw TodoAPIError.invalidContracts
+            throw TopogramAPIError.invalidContracts
         }
         var path = rawPath
         let requestContract = contract["requestContract"] as? [String: Any]
@@ -78,15 +99,15 @@ public final class TodoAPIClient: @unchecked Sendable {
         extraHeaders: [String: String] = [:]
     ) async throws -> Any {
         guard let contract = contracts[capabilityId] as? [String: Any] else {
-            throw TodoAPIError.unknownCapability(capabilityId)
+            throw TopogramAPIError.unknownCapability(capabilityId)
         }
         guard let endpoint = contract["endpoint"] as? [String: Any],
               let method = endpoint["method"] as? String else {
-            throw TodoAPIError.invalidContracts
+            throw TopogramAPIError.invalidContracts
         }
         let path = try buildPath(contract: contract, input: input)
         guard let url = URL(string: path, relativeTo: URL(string: apiBase()))?.absoluteURL else {
-            throw TodoAPIError.badURL(path)
+            throw TopogramAPIError.badURL(path)
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -121,11 +142,11 @@ public final class TodoAPIClient: @unchecked Sendable {
         let downloadable = endpoint["download"] as? [[String: Any]] ?? []
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw TodoAPIError.invalidResponse
+            throw TopogramAPIError.invalidResponse
         }
         guard (200 ..< 300).contains(http.statusCode) else {
             let text = String(data: data, encoding: .utf8) ?? ""
-            throw TodoAPIError.http(http.statusCode, text)
+            throw TopogramAPIError.http(http.statusCode, text)
         }
         if http.statusCode == 204 {
             return NSNull()
@@ -146,7 +167,7 @@ public final class TodoAPIClient: @unchecked Sendable {
     }
 }
 
-public enum TodoAPIError: Error {
+public enum TopogramAPIError: Error {
     case invalidContracts
     case missingResource(String)
     case unknownCapability(String)

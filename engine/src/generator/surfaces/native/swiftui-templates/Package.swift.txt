@@ -2,15 +2,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "TodoSwiftUIApp",
+    name: "TopogramSwiftUIApp",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .executable(name: "TodoSwiftUIApp", targets: ["TodoSwiftUIApp"])
+        .executable(name: "TopogramSwiftUIApp", targets: ["TopogramSwiftUIApp"])
     ],
     targets: [
         .executableTarget(
-            name: "TodoSwiftUIApp",
-            path: "Sources/TodoSwiftUIApp",
+            name: "TopogramSwiftUIApp",
+            path: "Sources/TopogramSwiftUIApp",
             resources: [
                 .copy("Resources/api-contracts.json"),
                 .copy("Resources/ui-surface-contract.json")

@@ -26,13 +26,13 @@ export function generateSwiftUiApp(graph, options = {}) {
   const files = {};
 
   for (const name of swiftFiles) {
-    files[`Sources/TodoSwiftUIApp/${name}`] = fs.readFileSync(path.join(runtimeDir, name), "utf8");
+    files[`Sources/TopogramSwiftUIApp/${name}`] = fs.readFileSync(path.join(runtimeDir, name), "utf8");
   }
 
   files["Package.swift"] = fs.readFileSync(path.join(__dirname, "swiftui-templates", "Package.swift.txt"), "utf8");
   files["README.md"] = fs.readFileSync(path.join(__dirname, "swiftui-templates", "README.generated.md"), "utf8");
-  files["Sources/TodoSwiftUIApp/Resources/ui-surface-contract.json"] = contractJson;
-  files["Sources/TodoSwiftUIApp/Resources/api-contracts.json"] = apiJson;
+  files["Sources/TopogramSwiftUIApp/Resources/ui-surface-contract.json"] = contractJson;
+  files["Sources/TopogramSwiftUIApp/Resources/api-contracts.json"] = apiJson;
 
   return files;
 }

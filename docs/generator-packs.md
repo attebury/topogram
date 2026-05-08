@@ -123,7 +123,7 @@ resolve it during `topogram check` and `topogram generate`:
 ```json
 {
   "devDependencies": {
-    "@topogram/cli": "^0.3.24",
+    "@topogram/cli": "^0.3.58",
     "@topogram/generator-react-web": "^0.1.0"
   }
 }

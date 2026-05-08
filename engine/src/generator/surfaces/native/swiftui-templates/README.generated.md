@@ -1,4 +1,4 @@
-# Todo SwiftUI (generated)
+# Topogram SwiftUI (generated)
 
 Apple SwiftUI client generated from the same **`buildWebRealization`** routed UI contract as the web stacks. Prefer the **`proj_ios_surface__swiftui`** projection when present; otherwise the generator falls back to a **`proj_web_surface__*`** projection (often **`proj_web_surface__sveltekit`**).
 
@@ -9,12 +9,12 @@ Apple SwiftUI client generated from the same **`buildWebRealization`** routed UI
 
 ## Run
 
-Open **`Package.swift`** in Xcode 15+ and run the **`TodoSwiftUIApp`** scheme on an iOS Simulator.
+Open **`Package.swift`** in Xcode 15+ and run the **`TopogramSwiftUIApp`** scheme on an iOS Simulator.
 
-Configure the API base URL and demo auth token via scheme environment variables (mirror web):
+Configure the API base URL and optional auth token via scheme environment variables (mirror web):
 
 - `PUBLIC_TOPOGRAM_API_BASE_URL` (default `http://localhost:3000`)
-- `PUBLIC_TOPOGRAM_DEMO_AUTH_TOKEN`
+- `PUBLIC_TOPOGRAM_AUTH_TOKEN`
 - Optional JWT / permission env vars matching web `visibility.ts` (`PUBLIC_TOPOGRAM_AUTH_*`).
 
 ## Regenerate

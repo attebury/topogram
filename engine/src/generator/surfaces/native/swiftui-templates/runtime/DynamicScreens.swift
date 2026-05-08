@@ -1,12 +1,12 @@
 import SwiftUI
 
 /// Holds decoded ui-surface-contract.json for runtime-driven navigation (parity with web bundle).
-public final class TodoUiContract: ObservableObject {
+public final class TopogramUiContract: ObservableObject {
     public let raw: [String: Any]
 
     public init(data: Data) throws {
         guard let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw NSError(domain: "TodoUiContract", code: 1)
+            throw NSError(domain: "TopogramUiContract", code: 1)
         }
         self.raw = obj
     }
@@ -14,7 +14,7 @@ public final class TodoUiContract: ObservableObject {
     public static func loadBundled() throws -> Data {
         guard let url = Bundle.module.url(forResource: "ui-surface-contract", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
-            throw NSError(domain: "TodoUiContract", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ui-surface-contract.json"])
+            throw NSError(domain: "TopogramUiContract", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ui-surface-contract.json"])
         }
         return data
     }
@@ -25,6 +25,12 @@ public final class TodoUiContract: ObservableObject {
 
     public func screen(id: String) -> [String: Any]? {
         screens.first { ($0["id"] as? String) == id }
+    }
+
+    public func firstScreen(kind: String, excluding excludedId: String? = nil) -> [String: Any]? {
+        screens.first {
+            ($0["kind"] as? String) == kind && ($0["id"] as? String) != excludedId
+        }
     }
 
     public var tabItems: [NavigationItem] {
@@ -63,10 +69,10 @@ public struct NavigationItem: Identifiable {
 }
 
 public struct RootTabView: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
 
-    public init(contract: TodoUiContract, client: TodoAPIClient) {
+    public init(contract: TopogramUiContract, client: TopogramAPIClient) {
         self.contract = contract
         self.client = client
     }
@@ -85,11 +91,11 @@ public struct RootTabView: View {
 }
 
 public struct DynamicScreenView: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let rootScreenId: String
 
-    public init(contract: TodoUiContract, client: TodoAPIClient, rootScreenId: String) {
+    public init(contract: TopogramUiContract, client: TopogramAPIClient, rootScreenId: String) {
         self.contract = contract
         self.client = client
         self.rootScreenId = rootScreenId
@@ -105,8 +111,8 @@ public struct DynamicScreenView: View {
 }
 
 struct ScreenSwitcher: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let screen: [String: Any]
     let baseParams: [String: String]
 
@@ -136,8 +142,8 @@ struct ScreenSwitcher: View {
 // MARK: - List
 
 struct ListScreen: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let screen: [String: Any]
     let baseParams: [String: String]
     @State private var rows: [[String: Any]] = []
@@ -148,10 +154,11 @@ struct ListScreen: View {
         let title = screen["title"] as? String ?? "List"
         let loadCap = (screen["loadCapability"] as? [String: Any])?["id"] as? String
         let screenId = screen["id"] as? String ?? ""
+        let filterFields = loadCap.map { client.queryFieldNames(for: $0) } ?? []
 
         VStack(alignment: .leading, spacing: 8) {
-            if screenId == "task_list" {
-                filterBar
+            if let loadCap, !filterFields.isEmpty {
+                filterBar(loadCap: loadCap, fields: filterFields)
             }
             if let errorText {
                 Text(errorText).foregroundStyle(.red)
@@ -161,7 +168,7 @@ struct ListScreen: View {
                 List(0 ..< rows.count, id: \.self) { i in
                     let row = rows[i]
                     NavigationLink {
-                        linkedDetail(row: row, listScreenId: screenId)
+                        linkedDetail(row: row)
                     } label: {
                         VStack(alignment: .leading) {
                             Text(rowTitle(row))
@@ -181,13 +188,8 @@ struct ListScreen: View {
                Visibility.canShowAction(pid, screen: screen, resource: nil) {
                 ToolbarItem(placement: .primaryAction) {
                     NavigationLink("Add") {
-                        linkedCreate(listScreenId: screenId)
+                        linkedCreate(currentScreenId: screenId)
                     }
-                }
-            }
-            if screenId == "task_list", Visibility.canShowAction("cap_export_tasks", screen: screen, resource: nil) {
-                ToolbarItem(placement: .automatic) {
-                    ExportTasksButton(client: client, contract: contract)
                 }
             }
         }
@@ -199,18 +201,18 @@ struct ListScreen: View {
     }
 
     @ViewBuilder
-    private var filterBar: some View {
+    private func filterBar(loadCap: String, fields: [String]) -> some View {
         VStack(alignment: .leading) {
             Text("Filters").font(.caption).foregroundStyle(.secondary)
             HStack {
-                TextField("project_id", text: bindingFilter("project_id"))
-                TextField("owner_id", text: bindingFilter("owner_id"))
-                TextField("status", text: bindingFilter("status"))
+                ForEach(fields, id: \.self) { field in
+                    TextField(field, text: bindingFilter(field))
+                }
             }
             .textFieldStyle(.roundedBorder)
             Button("Apply") {
                 Task {
-                    await reload(loadCap: "cap_list_tasks")
+                    await reload(loadCap: loadCap)
                 }
             }
         }
@@ -237,29 +239,19 @@ struct ListScreen: View {
     }
 
     @ViewBuilder
-    private func linkedDetail(row: [String: Any], listScreenId: String) -> some View {
-        let rid = row["id"] as? String ?? ""
-        if listScreenId.contains("task") {
-            DetailScreen(contract: contract, client: client, screen: contract.screen(id: "task_detail") ?? [:], params: ["task_id": rid])
-        } else if listScreenId.contains("project") {
-            DetailScreen(contract: contract, client: client, screen: contract.screen(id: "project_detail") ?? [:], params: ["project_id": rid])
-        } else if listScreenId.contains("user") {
-            DetailScreen(contract: contract, client: client, screen: contract.screen(id: "user_detail") ?? [:], params: ["user_id": rid])
+    private func linkedDetail(row: [String: Any]) -> some View {
+        if let detail = contract.firstScreen(kind: "detail") {
+            DetailScreen(contract: contract, client: client, screen: detail, params: navigationParams(for: detail, row: row, client: client))
         } else {
-            Text("Detail")
+            RowDetailFallback(row: row)
         }
     }
 
     @ViewBuilder
-    private func linkedCreate(listScreenId: String) -> some View {
-        switch listScreenId {
-        case "project_list":
-            FormScreen(client: client, contract: contract, screen: contract.screen(id: "project_create") ?? [:], params: [:])
-        case "user_list":
-            FormScreen(client: client, contract: contract, screen: contract.screen(id: "user_create") ?? [:], params: [:])
-        case "task_list", "task_board", "task_calendar":
-            FormScreen(client: client, contract: contract, screen: contract.screen(id: "task_create") ?? [:], params: [:])
-        default:
+    private func linkedCreate(currentScreenId: String) -> some View {
+        if let form = contract.firstScreen(kind: "form", excluding: currentScreenId) ?? contract.firstScreen(kind: "wizard", excluding: currentScreenId) {
+            FormScreen(client: client, contract: contract, screen: form, params: [:])
+        } else {
             Text("Create")
         }
     }
@@ -279,8 +271,8 @@ private func rowSubtitle(_ row: [String: Any]) -> String {
 // MARK: - Detail
 
 struct DetailScreen: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let screen: [String: Any]
     let params: [String: String]
     @State private var payload: [String: Any]?
@@ -310,7 +302,7 @@ struct DetailScreen: View {
         }
         .navigationTitle((screen["title"] as? String) ?? "Detail")
         .toolbar {
-            ToolbarItemGroup(placement: .bottomBar) {
+            ToolbarItemGroup(placement: .automatic) {
                 if let primary = (screen["actions"] as? [String: Any])?["primary"] as? [String: Any],
                    let cid = primary["id"] as? String {
                     NavigationLink("Edit") {
@@ -353,19 +345,12 @@ struct DetailScreen: View {
 
     @MainActor
     private func runSecondary(_ capabilityId: String) async {
-        guard capabilityId == "cap_complete_task",
-              let taskId = params["task_id"] ?? params["id"],
-              let detail = payload else { return }
-        let etag = String(describing: detail["updated_at"] ?? "")
         var headers: [String: String] = [:]
-        if !etag.isEmpty { headers["If-Match"] = etag }
-        let body: [String: Any] = [
-            "task_id": taskId,
-            "completed": true,
-            "idempotency_key": UUID().uuidString
-        ]
+        if let detail = payload, let updatedAt = detail["updated_at"] {
+            headers["If-Match"] = String(describing: updatedAt)
+        }
         do {
-            _ = try await client.requestCapability(capabilityId, input: body, extraHeaders: headers)
+            _ = try await client.requestCapability(capabilityId, input: params, extraHeaders: headers)
             await load()
         } catch {
             errorText = String(describing: error)
@@ -374,13 +359,8 @@ struct DetailScreen: View {
 
     @MainActor
     private func runDestructive(_ capabilityId: String) async {
-        guard let rid = params["task_id"] ?? params["project_id"] ?? params["user_id"] ?? params["id"] else { return }
-        var input: [String: Any] = [:]
-        if capabilityId.contains("task") { input["task_id"] = rid }
-        if capabilityId.contains("project") { input["project_id"] = rid }
-        if capabilityId.contains("user") { input["user_id"] = rid }
         do {
-            _ = try await client.requestCapability(capabilityId, input: input)
+            _ = try await client.requestCapability(capabilityId, input: params)
         } catch {
             errorText = String(describing: error)
         }
@@ -388,16 +368,22 @@ struct DetailScreen: View {
 
     @ViewBuilder
     private func editForm(cid: String) -> some View {
-        let sid = cid.contains("project") ? "project_edit" : cid.contains("user") ? "user_edit" : "task_edit"
-        FormScreen(client: client, contract: contract, screen: contract.screen(id: sid) ?? [:], params: params)
+        if let form = contract.screens.first(where: { screen in
+            guard let submit = (screen["submitCapability"] as? [String: Any])?["id"] as? String else { return false }
+            return submit == cid
+        }) ?? contract.firstScreen(kind: "form") {
+            FormScreen(client: client, contract: contract, screen: form, params: params)
+        } else {
+            Text("Edit")
+        }
     }
 }
 
 // MARK: - Form
 
 struct FormScreen: View {
-    let client: TodoAPIClient
-    @ObservedObject var contract: TodoUiContract
+    let client: TopogramAPIClient
+    @ObservedObject var contract: TopogramUiContract
     let screen: [String: Any]
     let params: [String: String]
     @State private var values: [String: String] = [:]
@@ -434,23 +420,16 @@ struct FormScreen: View {
     }
 
     private func preload() async {
-        guard let sid = screen["id"] as? String else { return }
-        if sid.contains("edit") {
-            let getCap = sid.contains("task") ? "cap_get_task" : sid.contains("project") ? "cap_get_project" : "cap_get_user"
-            var p = params
-            if sid.contains("task") { p["task_id"] = params["task_id"] ?? params["id"] ?? "" }
-            if sid.contains("project") { p["project_id"] = params["project_id"] ?? params["id"] ?? "" }
-            if sid.contains("user") { p["user_id"] = params["user_id"] ?? params["id"] ?? "" }
-            do {
-                let json = try await client.requestCapability(getCap, input: p)
-                if let dict = json as? [String: Any] {
-                    for key in dict.keys {
-                        values[key] = String(describing: dict[key] ?? "")
-                    }
+        guard let loadCap = (screen["loadCapability"] as? [String: Any])?["id"] as? String else { return }
+        do {
+            let json = try await client.requestCapability(loadCap, input: params)
+            if let dict = json as? [String: Any] {
+                for key in dict.keys {
+                    values[key] = String(describing: dict[key] ?? "")
                 }
-            } catch {
-                message = String(describing: error)
             }
+        } catch {
+            message = String(describing: error)
         }
     }
 
@@ -466,7 +445,7 @@ struct FormScreen: View {
             input[k] = v
         }
         var headers: [String: String] = [:]
-        if submitId == "cap_update_task", let etag = values["updated_at"] {
+        if let etag = values["updated_at"], !etag.isEmpty {
             headers["If-Match"] = etag
         }
         do {
@@ -478,59 +457,11 @@ struct FormScreen: View {
     }
 }
 
-extension TodoAPIClient {
-    func bodyFieldNames(for capabilityId: String) -> [String] {
-        guard let contract = contracts[capabilityId] as? [String: Any],
-              let rc = contract["requestContract"] as? [String: Any],
-              let transport = rc["transport"] as? [String: Any],
-              let body = transport["body"] as? [[String: Any]] else {
-            return []
-        }
-        return body.compactMap { $0["name"] as? String }
-    }
-}
-
-struct ExportTasksButton: View {
-    let client: TodoAPIClient
-    @ObservedObject var contract: TodoUiContract
-    @State private var jobId: String?
-
-    var body: some View {
-        Group {
-            if let jobId {
-                NavigationLink("Export job") {
-                    JobStatusScreen(
-                        client: client,
-                        contract: contract,
-                        screen: contract.screen(id: "task_exports") ?? [:],
-                        params: ["job_id": jobId]
-                    )
-                }
-            } else {
-                Button("Export") {
-                    Task { await run() }
-                }
-            }
-        }
-    }
-
-    private func run() async {
-        do {
-            let json = try await client.requestCapability("cap_export_tasks", input: [:])
-            if let dict = json as? [String: Any], let id = dict["job_id"] as? String {
-                jobId = id
-            }
-        } catch {
-            jobId = nil
-        }
-    }
-}
-
 // MARK: - Board & Calendar
 
 struct BoardScreen: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let screen: [String: Any]
     let baseParams: [String: String]
     @State private var rows: [[String: Any]] = []
@@ -549,8 +480,8 @@ struct BoardScreen: View {
                             DetailScreen(
                                 contract: contract,
                                 client: client,
-                                screen: contract.screen(id: "task_detail") ?? [:],
-                                params: ["task_id": row["id"] as? String ?? ""]
+                                screen: contract.firstScreen(kind: "detail") ?? [:],
+                                params: navigationParams(for: contract.firstScreen(kind: "detail") ?? [:], row: row, client: client)
                             )
                         } label: {
                             Text(rowTitle(row))
@@ -578,8 +509,8 @@ struct BoardScreen: View {
 }
 
 struct CalendarScreen: View {
-    @ObservedObject var contract: TodoUiContract
-    let client: TodoAPIClient
+    @ObservedObject var contract: TopogramUiContract
+    let client: TopogramAPIClient
     let screen: [String: Any]
     let baseParams: [String: String]
     @State private var rows: [[String: Any]] = []
@@ -602,8 +533,8 @@ struct CalendarScreen: View {
                             DetailScreen(
                                 contract: contract,
                                 client: client,
-                                screen: contract.screen(id: "task_detail") ?? [:],
-                                params: ["task_id": row["id"] as? String ?? ""]
+                                screen: contract.firstScreen(kind: "detail") ?? [:],
+                                params: navigationParams(for: contract.firstScreen(kind: "detail") ?? [:], row: row, client: client)
                             )
                         } label: {
                             Text(rowTitle(row))
@@ -630,8 +561,8 @@ struct CalendarScreen: View {
 }
 
 struct JobStatusScreen: View {
-    let client: TodoAPIClient
-    @ObservedObject var contract: TodoUiContract
+    let client: TopogramAPIClient
+    @ObservedObject var contract: TopogramUiContract
     let screen: [String: Any]
     let params: [String: String]
     @State private var job: [String: Any]?
@@ -672,11 +603,45 @@ struct JobStatusScreen: View {
     }
 
     private func download(_ capabilityId: String) async {
-        let jobId = params["job_id"] ?? ""
         do {
-            _ = try await client.requestCapability(capabilityId, input: ["job_id": jobId])
+            _ = try await client.requestCapability(capabilityId, input: params)
         } catch {
             // ignore download errors in stub
         }
     }
+}
+
+struct RowDetailFallback: View {
+    let row: [String: Any]
+
+    var body: some View {
+        List(Array(row.keys.sorted()), id: \.self) { key in
+            HStack {
+                Text(key).foregroundStyle(.secondary)
+                Spacer()
+                Text(String(describing: row[key] ?? ""))
+            }
+        }
+        .navigationTitle(rowTitle(row))
+    }
+}
+
+private func navigationParams(for screen: [String: Any], row: [String: Any], client: TopogramAPIClient) -> [String: String] {
+    guard let cap = (screen["loadCapability"] as? [String: Any])?["id"] as? String else {
+        return row.compactMapValues { $0 as? String }
+    }
+    let pathFields = client.pathFieldNames(for: cap)
+    if pathFields.isEmpty {
+        return row.compactMapValues { $0 as? String }
+    }
+    var params: [String: String] = [:]
+    let fallbackId = row["id"].map { String(describing: $0) } ?? ""
+    for field in pathFields {
+        if let value = row[field] {
+            params[field] = String(describing: value)
+        } else if !fallbackId.isEmpty {
+            params[field] = fallbackId
+        }
+    }
+    return params
 }
