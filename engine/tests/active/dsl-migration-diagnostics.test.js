@@ -261,19 +261,19 @@ test("old component CLI names fail with rename guidance", () => {
       expected: "Command 'topogram component' was renamed to 'topogram widget'."
     },
     {
-      args: ["generate", fixtureRoot, "--generate", "ui-widget-contract", "--component", "widget_data_grid", "--json"],
+      args: ["emit", "ui-widget-contract", fixtureRoot, "--component", "widget_data_grid", "--json"],
       expected: "CLI flag '--component' was renamed to '--widget'."
     },
     {
-      args: ["generate", fixtureRoot, "--generate", "ui-component-contract", "--widget", "widget_data_grid", "--json"],
+      args: ["emit", "ui-component-contract", fixtureRoot, "--widget", "widget_data_grid", "--json"],
       expected: "Artifact target 'ui-component-contract' was renamed to 'ui-widget-contract'."
     },
     {
-      args: ["generate", fixtureRoot, "--generate", "component-conformance-report", "--projection", "proj_web_surface", "--json"],
+      args: ["emit", "component-conformance-report", fixtureRoot, "--projection", "proj_web_surface", "--json"],
       expected: "Artifact target 'component-conformance-report' was renamed to 'widget-conformance-report'."
     },
     {
-      args: ["generate", fixtureRoot, "--generate", "component-behavior-report", "--widget", "widget_data_grid", "--json"],
+      args: ["emit", "component-behavior-report", fixtureRoot, "--widget", "widget_data_grid", "--json"],
       expected: "Artifact target 'component-behavior-report' was renamed to 'widget-behavior-report'."
     }
   ];

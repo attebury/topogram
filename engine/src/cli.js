@@ -8543,6 +8543,17 @@ function commandPath(index, fallback = "./topogram") {
   return value && !value.startsWith("-") ? value : fallback;
 }
 
+const removedGenerateIndex = args.indexOf("--generate");
+if (removedGenerateIndex >= 0) {
+  const target = args[removedGenerateIndex + 1];
+  const input = args[0] === "generate" ? commandPath(1) : commandPath(0);
+  const replacement = target && !target.startsWith("-")
+    ? `topogram emit ${target} ${input}`
+    : "topogram emit <target> <path>";
+  console.error(`The artifact flag '--generate' was removed. Use '${replacement}' instead.`);
+  process.exit(1);
+}
+
 function commandOperandFrom(index, fallback = ".") {
   const valueFlags = new Set([
     "--accept-current",
@@ -8622,8 +8633,6 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "generate" && args[1] === "app") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
-} else if (args[0] === "generate" && args.indexOf("--generate") >= 0) {
-  commandArgs = { inputPath: commandPath(1), deprecatedGenerateArtifact: true };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "trust" && args[1] === "template") {
@@ -8861,13 +8870,7 @@ const shouldImportStatus = Boolean(commandArgs?.importStatus);
 const shouldImportHistory = Boolean(commandArgs?.importHistory);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
-const generateIndex = args.indexOf("--generate");
-const generateTarget = commandArgs?.generateTarget || (generateIndex >= 0 ? args[generateIndex + 1] : null);
-if (commandArgs?.deprecatedGenerateArtifact && (!generateTarget || generateTarget.startsWith("-"))) {
-  console.error("Missing required --generate <target>.");
-  printUsage();
-  process.exit(1);
-}
+const generateTarget = commandArgs?.generateTarget || null;
 if (RENAMED_GENERATE_TARGETS.has(generateTarget)) {
   console.error(`Artifact target '${generateTarget}' was renamed to '${RENAMED_GENERATE_TARGETS.get(generateTarget)}'.`);
   process.exit(1);
@@ -11602,9 +11605,6 @@ try {
   const ast = parsePath(inputPath);
 
   if (generateTarget) {
-    if (commandArgs?.deprecatedGenerateArtifact) {
-      console.error(`Deprecated: use \`topogram emit ${generateTarget} ${inputPath || "./topogram"}\` instead of \`topogram generate ${inputPath || "./topogram"} --generate ${generateTarget}\`.`);
-    }
     const projectRoot = normalizeProjectRoot(inputPath);
     const explicitProjectConfig = loadProjectConfig(projectRoot) || loadProjectConfig(inputPath);
     const implementationOptionalTargets = new Set(["app-bundle-plan", "app-bundle", "environment-plan", "environment-bundle", "compile-check-plan", "compile-check-bundle"]);

@@ -84,9 +84,9 @@ ARTIFACT_CWD="$RUN_DIR/widget-contract-check"
 mkdir -p "$ARTIFACT_CWD"
 (
   cd "$ARTIFACT_CWD"
-  "$TOPOGRAM_BIN" generate "$ROOT_DIR/engine/tests/fixtures/workspaces/app-basic" --generate ui-widget-contract --widget widget_data_grid --json > widget-contract.json
+  "$TOPOGRAM_BIN" emit ui-widget-contract "$ROOT_DIR/engine/tests/fixtures/workspaces/app-basic" --widget widget_data_grid --json > widget-contract.json
   if [[ -e app ]]; then
-    echo "Explicit artifact generation unexpectedly wrote ./app." >&2
+    echo "Artifact emission unexpectedly wrote ./app." >&2
     exit 1
   fi
   node --input-type=module - widget-contract.json <<'NODE'

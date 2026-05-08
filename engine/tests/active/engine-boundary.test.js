@@ -83,6 +83,13 @@ const generatedWorkflowDirectProductReferences = [
   ["topogram", "demo", productNameLower].join("-"),
   ["@topogram", ["template", productNameLower].join("-")].join("/")
 ];
+const removedGenerateArtifactReferences = ["--generate"];
+const removedGenerateArtifactAllowedFiles = new Set([
+  "engine/src/cli.js",
+  "engine/tests/active/dsl-migration-diagnostics.test.js",
+  "engine/tests/active/engine-boundary.test.js",
+  "engine/tests/active/generated-app-workflow.test.js"
+]);
 const staleDslVocabulary = [
   "component-behavior",
   "component_conformance",
@@ -262,6 +269,23 @@ test("old public DSL vocabulary only appears in migration guidance", () => {
       if (staleDslVocabularyAllowedFiles.has(relative)) continue;
       const contents = fs.readFileSync(file, "utf8");
       const references = staleDslVocabulary.filter((reference) => contents.includes(reference));
+      if (references.length > 0) {
+        offenders.push({ file: relative, references });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("removed generate artifact flag only appears in migration guidance", () => {
+  const offenders = [];
+  for (const root of [path.join(repoRoot, "docs"), path.join(repoRoot, "engine", "src"), path.join(repoRoot, "engine", "tests", "active"), path.join(repoRoot, "scripts")]) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      if (removedGenerateArtifactAllowedFiles.has(relative)) continue;
+      const contents = fs.readFileSync(file, "utf8");
+      const references = removedGenerateArtifactReferences.filter((reference) => contents.includes(reference));
       if (references.length > 0) {
         offenders.push({ file: relative, references });
       }

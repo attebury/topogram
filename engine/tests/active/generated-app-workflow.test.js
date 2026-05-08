@@ -961,7 +961,7 @@ test("topogram emit honors explicit artifact targets", () => {
   assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
 });
 
-test("deprecated generate --generate artifact form warns without corrupting JSON stdout", () => {
+test("removed generate --generate artifact form fails with emit guidance", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generate-deprecated-"));
   const selected = runCli([
     "generate",
@@ -972,12 +972,23 @@ test("deprecated generate --generate artifact form warns without corrupting JSON
     "widget_data_grid",
     "--json"
   ], { cwd });
-  assert.equal(selected.status, 0, selected.stderr || selected.stdout);
-  assert.match(selected.stderr, /Deprecated: use `topogram emit ui-widget-contract/);
-  const contract = JSON.parse(selected.stdout);
-  assert.equal(contract.id, "widget_data_grid");
-  assert.equal(contract.type, "ui_widget_contract");
-  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "deprecated artifact form must not write the app shortcut output");
+  assert.notEqual(selected.status, 0, selected.stdout);
+  assert.match(selected.stderr, /artifact flag '--generate' was removed/i);
+  assert.match(selected.stderr, /topogram emit ui-widget-contract/);
+  assert.equal(selected.stdout, "");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "removed artifact form must not write the app shortcut output");
+
+  const directLegacy = runCli([
+    fixtureRoot,
+    "--generate",
+    "ui-widget-contract",
+    "--widget",
+    "widget_data_grid",
+    "--json"
+  ], { cwd });
+  assert.notEqual(directLegacy.status, 0, directLegacy.stdout);
+  assert.match(directLegacy.stderr, /artifact flag '--generate' was removed/i);
+  assert.match(directLegacy.stderr, /topogram emit ui-widget-contract/);
 });
 
 test("topogram widget check reports conformance without writing app output", () => {
