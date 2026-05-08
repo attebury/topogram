@@ -194,6 +194,13 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
         const marker = widgetId ? `data-topogram-widget="${widgetId}"` : null;
         const support = svelteKitWidgetUsageSupport(usage, contract.widgets);
         const usageRendered = Boolean(marker && contents.includes(marker));
+        const status = !support.supported
+          ? "unsupported"
+          : usageRendered
+            ? "rendered"
+            : renderer === "implementation"
+              ? "implementation_owned"
+              : "failed";
         if (widgetId && rendered && renderer !== "implementation" && !support.supported) {
           diagnostics.push({
             code: "widget_pattern_not_supported",
@@ -210,7 +217,7 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
         if (widgetId && rendered && !usageRendered) {
           diagnostics.push({
             code: "widget_usage_not_rendered",
-            severity: "warning",
+            severity: renderer === "implementation" ? "warning" : "error",
             screen: screen.id,
             route: screen.route,
             region: usage.region || null,
@@ -224,6 +231,7 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
           region: usage.region || null,
           pattern: support.pattern || null,
           supported: support.supported,
+          status,
           rendered: usageRendered,
           marker
         };

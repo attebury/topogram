@@ -710,6 +710,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(coverage.summary.implementation_screens, 13);
   assert.equal(coverage.summary.generator_screens, 2);
   assert.equal(coverage.summary.rendered_widget_usages, 1);
+  assert.equal(coverage.screens.find((screen) => screen.id === "item_list").widget_usages[0].status, "rendered");
   assert.deepEqual(coverage.diagnostics, []);
 
   for (const relativePath of [
@@ -786,6 +787,7 @@ test("sveltekit generator routes render projection widget_bindings for provider-
   const boardCoverage = coverage.screens.find((screen) => screen.id === "item_board");
   assert.equal(boardCoverage.renderer, "generator");
   assert.equal(boardCoverage.widget_usages[0].widget, "widget_data_grid");
+  assert.equal(boardCoverage.widget_usages[0].status, "rendered");
   assert.equal(boardCoverage.widget_usages[0].rendered, true);
   assert.deepEqual(coverage.diagnostics, []);
 });
@@ -2914,6 +2916,7 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.equal(coverage.summary.rendered_screens, 3);
       assert.equal(coverage.summary.generator_screens, 3);
       assert.equal(coverage.summary.rendered_widget_usages, 1);
+      assert.equal(coverage.screens.find((screen) => screen.id === "greeting_list").widget_usages[0].status, "rendered");
       assert.equal(coverage.design_intent.status, "mapped");
       assert.equal(coverage.design_intent.tokens.density, "compact");
       const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "app.css"));

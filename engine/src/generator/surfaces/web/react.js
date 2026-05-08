@@ -222,6 +222,7 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
         const marker = widgetId ? `data-topogram-widget="${widgetId}"` : null;
         const support = reactWidgetUsageSupport(usage, contract.widgets);
         const usageRendered = Boolean(marker && contents.includes(marker));
+        const status = !support.supported ? "unsupported" : usageRendered ? "rendered" : "failed";
         if (widgetId && rendered && !support.supported) {
           diagnostics.push({
             code: "widget_pattern_not_supported",
@@ -238,7 +239,7 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
         if (widgetId && rendered && !usageRendered) {
           diagnostics.push({
             code: "widget_usage_not_rendered",
-            severity: "warning",
+            severity: "error",
             screen: screen.id,
             route: screen.route,
             region: usage.region || null,
@@ -252,6 +253,7 @@ function buildReactGenerationCoverage(contract, files, routeScreens) {
           region: usage.region || null,
           pattern: support.pattern || null,
           supported: support.supported,
+          status,
           rendered: usageRendered,
           marker
         };

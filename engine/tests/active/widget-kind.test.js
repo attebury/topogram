@@ -1552,7 +1552,7 @@ projection proj_web_surface {
 });
 
 test("web generation fails instead of silently omitting unsupported widget patterns", () => {
-  const ast = workspaceFromSource(`
+  const source = `
 capability cap_list_items {
   name "List Items"
   description "List items"
@@ -1605,7 +1605,8 @@ projection proj_web_surface {
 
   status active
 }
-`);
+`;
+  const ast = workspaceFromSource(source);
   const validation = validateWorkspace(ast);
   assert.equal(validation.ok, true, validation.errors.map((error) => error.message).join("\n"));
 
@@ -1616,6 +1617,19 @@ projection proj_web_surface {
       implementation: APP_BASIC_IMPLEMENTATION
     }),
     /unsupported SvelteKit widget pattern 'lookup_select'/
+  );
+
+  const reactAst = workspaceFromSource(source.replace(
+    "  screen_routes {\n    screen item_list path /items\n  }\n",
+    "  screen_routes {\n    screen item_list path /items\n  }\n\n  generator_defaults {\n    profile react\n  }\n"
+  ));
+  assert.throws(
+    () => generateWorkspace(reactAst, {
+      target: "sveltekit-app",
+      projectionId: "proj_web_surface",
+      implementation: APP_BASIC_IMPLEMENTATION
+    }),
+    /unsupported React widget pattern 'lookup_select'/
   );
 });
 

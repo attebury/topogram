@@ -291,9 +291,12 @@ render widget-marked markup for `summary_stats`, `resource_table`,
 Generated SvelteKit and React apps include a coverage artifact at
 `src/lib/topogram/generation-coverage.json`. It records every routed screen,
 whether the page came from the implementation provider or the generic generator,
-and whether each `widget_bindings` usage produced widget-marked markup. Treat
-warnings in that file as places where projection intent exists but generated UI
-did not fully realize it.
+the resolved widget pattern, whether the generator supports it, and an explicit
+per-usage status such as `rendered`, `unsupported`, `failed`, or
+`implementation_owned`. Generator-owned pages fail generation when a declared
+widget usage is unsupported or does not produce widget-marked markup. Treat
+warnings in that file as places where implementation-owned UI has projection
+intent that the generator could not prove from markers.
 
 Template implementations can call the packaged helpers directly when they need
 custom route structure:
