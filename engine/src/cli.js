@@ -153,6 +153,17 @@ const KNOWN_CLI_CONSUMER_WORKFLOWS = {
   "topogram-hello": "Topogram Package Verification",
   "topograms": "Catalog Verification"
 };
+const KNOWN_CLI_CONSUMER_WORKFLOW_JOBS = {
+  "topograms": [
+    "Validate catalog",
+    "Smoke native starter",
+    "Smoke starter alias (hello-web)",
+    "Smoke starter alias (hello-api)",
+    "Smoke starter alias (hello-db)",
+    "Smoke starter alias (web-api)",
+    "Smoke starter alias (web-api-db)"
+  ]
+};
 const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
   "cli:surface",
   "doctor",
@@ -3212,6 +3223,14 @@ function expectedConsumerWorkflowName(name) {
 }
 
 /**
+ * @param {string} name
+ * @returns {string[]}
+ */
+function expectedConsumerWorkflowJobs(name) {
+  return KNOWN_CLI_CONSUMER_WORKFLOW_JOBS[name] || [];
+}
+
+/**
  * @param {string[]} args
  * @param {string} cwd
  * @returns {ReturnType<typeof childProcess.spawnSync>}
@@ -3351,16 +3370,18 @@ function waitForConsumerCi(consumer, options = {}) {
 /**
  * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
  * @param {{ strict?: boolean }} [options]
- * @returns {{ checked: boolean, ok: boolean|null, expectedWorkflow: string|null, headSha: string|null, run: { databaseId?: number, workflowName?: string, status?: string, conclusion?: string, headSha?: string, url?: string }|null, diagnostics: Array<Record<string, any>> }}
+ * @returns {{ checked: boolean, ok: boolean|null, expectedWorkflow: string|null, expectedJobs: string[], headSha: string|null, run: { databaseId?: number, workflowName?: string, status?: string, conclusion?: string, headSha?: string, url?: string, jobs?: Array<Record<string, any>> }|null, diagnostics: Array<Record<string, any>> }}
  */
 function inspectConsumerCi(consumer, options = {}) {
   const diagnostics = [];
   const expectedWorkflow = consumer.workflow || expectedConsumerWorkflowName(consumer.name);
+  const expectedJobs = expectedConsumerWorkflowJobs(consumer.name);
   if (!consumer.root || !fs.existsSync(consumer.root)) {
     return {
       checked: false,
       ok: null,
       expectedWorkflow,
+      expectedJobs,
       headSha: null,
       run: null,
       diagnostics: []
@@ -3388,6 +3409,7 @@ function inspectConsumerCi(consumer, options = {}) {
       checked: true,
       ok: false,
       expectedWorkflow,
+      expectedJobs,
       headSha,
       run: null,
       diagnostics
@@ -3424,6 +3446,7 @@ function inspectConsumerCi(consumer, options = {}) {
       checked: true,
       ok: false,
       expectedWorkflow,
+      expectedJobs,
       headSha,
       run: null,
       diagnostics
@@ -3454,6 +3477,7 @@ function inspectConsumerCi(consumer, options = {}) {
       checked: true,
       ok: false,
       expectedWorkflow,
+      expectedJobs,
       headSha,
       run: null,
       diagnostics
@@ -3477,15 +3501,103 @@ function inspectConsumerCi(consumer, options = {}) {
       suggestedFix: "Wait for or fix the consumer verification workflow, then rerun release status."
     });
   }
+  if (expectedJobs.length > 0 && run.databaseId) {
+    const jobResult = inspectConsumerWorkflowJobs(consumer, run.databaseId, expectedJobs, options);
+    if (jobResult.jobs) {
+      run.jobs = jobResult.jobs;
+    }
+    diagnostics.push(...jobResult.diagnostics);
+  } else if (expectedJobs.length > 0) {
+    diagnostics.push({
+      code: "release_consumer_ci_jobs_unavailable",
+      severity: options.strict ? "error" : "warning",
+      message: `${consumer.name} ${expectedWorkflow} run did not include a database id, so expected jobs could not be inspected.`,
+      path: run.url || `attebury/${consumer.name}`,
+      suggestedFix: "Rerun release status after GitHub exposes the workflow run id."
+    });
+  }
+  const errorCount = diagnostics.filter((diagnostic) => diagnostic.severity === "error").length;
   return {
     checked: true,
-    ok: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length === 0 &&
+    ok: errorCount === 0 &&
       (!options.strict || (run.status === "completed" && run.conclusion === "success" && (!headSha || !run.headSha || run.headSha === headSha))),
     expectedWorkflow,
+    expectedJobs,
     headSha,
     run,
     diagnostics
   };
+}
+
+/**
+ * @param {{ name: string, root?: string|null }} consumer
+ * @param {number|string} runId
+ * @param {string[]} expectedJobs
+ * @param {{ strict?: boolean }} [options]
+ * @returns {{ jobs: Array<Record<string, any>>|null, diagnostics: Array<Record<string, any>> }}
+ */
+function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}) {
+  const diagnostics = [];
+  const result = childProcess.spawnSync("gh", [
+    "run",
+    "view",
+    String(runId),
+    "--repo",
+    `attebury/${consumer.name}`,
+    "--json",
+    "jobs"
+  ], {
+    cwd: consumer.root || process.cwd(),
+    encoding: "utf8",
+    env: { ...process.env, PATH: process.env.PATH || "" }
+  });
+  if (result.status !== 0) {
+    diagnostics.push(commandDiagnostic({
+      code: "release_consumer_ci_jobs_unavailable",
+      severity: options.strict ? "error" : "warning",
+      message: `Could not inspect expected jobs for ${consumer.name}.`,
+      path: `attebury/${consumer.name}`,
+      suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
+      result
+    }));
+    return { jobs: null, diagnostics };
+  }
+  let payload = {};
+  try {
+    payload = JSON.parse(String(result.stdout || "{}"));
+  } catch (error) {
+    diagnostics.push({
+      code: "release_consumer_ci_jobs_unreadable",
+      severity: options.strict ? "error" : "warning",
+      message: `Could not parse ${consumer.name} workflow job status: ${messageFromError(error)}`,
+      path: `attebury/${consumer.name}`,
+      suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
+    });
+  }
+  const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+  for (const expectedJob of expectedJobs) {
+    const job = jobs.find((candidate) => candidate?.name === expectedJob);
+    if (!job) {
+      diagnostics.push({
+        code: "release_consumer_ci_job_missing",
+        severity: options.strict ? "error" : "warning",
+        message: `${consumer.name} workflow is missing expected job '${expectedJob}'.`,
+        path: `attebury/${consumer.name}`,
+        suggestedFix: "Update the consumer workflow or the release-status expected job list, then rerun release status."
+      });
+      continue;
+    }
+    if (job.status !== "completed" || job.conclusion !== "success") {
+      diagnostics.push({
+        code: "release_consumer_ci_job_not_successful",
+        severity: options.strict ? "error" : "warning",
+        message: `${consumer.name} job '${expectedJob}' is ${job.status || "unknown"}/${job.conclusion || "unknown"}.`,
+        path: job.url || `attebury/${consumer.name}`,
+        suggestedFix: "Wait for or fix the expected workflow job, then rerun release status."
+      });
+    }
+  }
+  return { jobs, diagnostics };
 }
 
 /**

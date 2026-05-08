@@ -555,6 +555,29 @@ if (args[0] === "run" && args[1] === "list") {
   }]));
   process.exit(0);
 }
+if (args[0] === "run" && args[1] === "view") {
+  const jobConclusion = process.env.FAKE_GH_JOB_CONCLUSION || "success";
+  const jobStatus = process.env.FAKE_GH_JOB_STATUS || "completed";
+  const jobs = process.env.FAKE_GH_JOBS
+    ? JSON.parse(process.env.FAKE_GH_JOBS)
+    : [
+      "Validate catalog",
+      "Smoke native starter",
+      "Smoke starter alias (hello-web)",
+      "Smoke starter alias (hello-api)",
+      "Smoke starter alias (hello-db)",
+      "Smoke starter alias (web-api)",
+      "Smoke starter alias (web-api-db)"
+    ].map((name, index) => ({
+      databaseId: 2000 + index,
+      name,
+      status: jobStatus,
+      conclusion: jobConclusion,
+      url: "https://github.com/attebury/fake/actions/runs/12345/job/" + (2000 + index)
+    }));
+  process.stdout.write(JSON.stringify({ jobs }));
+  process.exit(0);
+}
 if (args[0] === "api" && args.includes("/users/attebury/packages/npm/topogram/versions?per_page=30")) {
   process.stdout.write(${JSON.stringify(JSON.stringify(versions.map((version) => ({ name: version }))))});
   process.exit(0);
@@ -2499,6 +2522,33 @@ test("topogram release status strict fails when consumer CI is not green on the 
   assert.equal(payload.consumerCi.failing, knownCliConsumerRepos.length);
   const codes = payload.diagnostics.map((diagnostic) => diagnostic.code);
   assert.ok(codes.includes("release_consumer_ci_not_successful"));
+  assert.ok(codes.includes("release_consumer_ci_not_current"));
+});
+
+test("topogram release status strict fails when an expected consumer CI job is not green", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-strict-ci-job-fail-"));
+  writeKnownCliConsumerPins(root, cliPackageVersion);
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const fakeGhBin = createFakeGh(root);
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "abc123",
+      FAKE_GH_JOB_CONCLUSION: "failure",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 1, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.consumerPins.allKnownPinned, true);
+  assert.equal(payload.consumerCi.allCheckedAndPassing, false);
+  const topograms = payload.consumers.find((consumer) => consumer.name === "topograms");
+  assert.equal(topograms.ci.run.conclusion, "success");
+  assert.equal(topograms.ci.run.jobs.length, 7);
+  const codes = payload.diagnostics.map((diagnostic) => diagnostic.code);
+  assert.ok(codes.includes("release_consumer_ci_job_not_successful"));
   assert.ok(codes.includes("release_consumer_ci_not_current"));
 });
 

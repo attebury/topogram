@@ -88,6 +88,10 @@ topogram new ./web-api-db --template web-api-db
 | `web-api` | web, api | React + Express | Executable implementation starter without a database. |
 | `web-api-db` | web, api, database | SvelteKit + Hono + Postgres | Heavier full-stack executable implementation starter. |
 
+Native SwiftUI starter compile proof requires macOS. Linux Swift toolchains do
+not include Apple's `SwiftUI` module, so catalog CI keeps `hello-ios` compile
+coverage on a macOS runner while non-native starter aliases smoke on Linux.
+
 Use `topogram new --list-templates --json` when an agent or setup script needs
 the same list with structured `surfaces`, `generators`, `stack`,
 `includesExecutableImplementation`, and `recommendedCommand` fields.
