@@ -370,16 +370,26 @@ function componentScriptOptions() {
   };
 }
 
+function runtimePortExpression(plan, runtimes, component, sharedEnvName) {
+  const runtimeEnvName = `${component.id.toUpperCase()}_PORT`;
+  const primaryRuntime = runtimes[0];
+  const fallback = primaryRuntime?.id === component.id
+    ? `\${${sharedEnvName}:-${component.port}}`
+    : `${component.port}`;
+  return `\${${runtimeEnvName}:-${fallback}}`;
+}
+
 function renderEnvironmentServerDevScript(plan, component = plan.runtimes.apis[0], options = {}) {
   if (!component) {
     return renderEnvAwareShellScript(['echo "No API runtimes are configured."']);
   }
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
+  const serverPortExpression = runtimePortExpression(plan, plan.runtimes.apis, component, "SERVER_PORT");
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} api`,
     "",
     ...apiDatabaseExportLines(component),
-    `export PORT="\${${component.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${component.port}}}"`,
+    `export PORT="${serverPortExpression}"`,
     `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${WEB_PORT:-${plan.ports.web}},http://127.0.0.1:\${WEB_PORT:-${plan.ports.web}}}"`,
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
@@ -395,15 +405,16 @@ function renderEnvironmentWebDevScript(plan, component = plan.runtimes.webs[0], 
   }
   const apiRuntime = plan.runtimes.apis.find((entry) => entry.id === component.uses_api) || plan.runtimes.apis[0];
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
+  const webPortExpression = runtimePortExpression(plan, plan.runtimes.webs, component, "WEB_PORT");
   return renderEnvAwareShellScript([
     `node ${guardPortsScript} web`,
     "",
     ...(apiRuntime ? [`export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiRuntime.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiRuntime.port}}}}"`] : []),
-    `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}},http://127.0.0.1:\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}}}"`,
+    `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:${webPortExpression},http://127.0.0.1:${webPortExpression}}"`,
     "",
     `cd "$ROOT_DIR/${component.dir}"`,
     "npm install",
-    `npm run dev -- --host "\${WEB_HOST:-127.0.0.1}" --port "\${${component.id.toUpperCase()}_PORT:-\${WEB_PORT:-${component.port}}}"`,
+    `npm run dev -- --host "\${WEB_HOST:-127.0.0.1}" --port "${webPortExpression}"`,
   ], options.componentScript ? componentScriptOptions() : {});
 }
 
@@ -450,8 +461,8 @@ ${startLines.length ? "wait" : ""}
 
 function renderEnvironmentGuardPortsScript(plan) {
   const ports = [
-    ...plan.runtimes.apis.map((component) => ({ id: component.id, type: "api", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "SERVER_PORT", port: component.port })),
-    ...plan.runtimes.webs.map((component) => ({ id: component.id, type: "web", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: "WEB_PORT", port: component.port }))
+    ...plan.runtimes.apis.map((component, index) => ({ id: component.id, type: "api", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: index === 0 ? "SERVER_PORT" : null, port: component.port })),
+    ...plan.runtimes.webs.map((component, index) => ({ id: component.id, type: "web", env: `${component.id.toUpperCase()}_PORT`, fallbackEnv: index === 0 ? "WEB_PORT" : null, port: component.port }))
   ];
   return `#!/usr/bin/env node
 import net from "node:net";
@@ -461,7 +472,7 @@ const ports = ${JSON.stringify(ports, null, 2)};
 const expectedService = ${JSON.stringify(plan.runtimeReference.serviceName || "")};
 
 function effectivePort(entry) {
-  return Number(process.env[entry.env] || process.env[entry.fallbackEnv] || entry.port);
+  return Number(process.env[entry.env] || (entry.fallbackEnv ? process.env[entry.fallbackEnv] : "") || entry.port);
 }
 
 function portInUse(port) {

@@ -2946,6 +2946,35 @@ test("fixture starter templates generate the expected surface layout", () => {
   }
 });
 
+test("multiple web runtime scripts keep secondary topology ports when WEB_PORT is set", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-multi-web-ports-"));
+  const projectRoot = path.join(root, "starter");
+  const create = runCli(["new", projectRoot, "--template", path.join(fixtureTemplatesRoot, "web-api")]);
+  assert.equal(create.status, 0, create.stderr || create.stdout);
+
+  const configPath = path.join(projectRoot, "topogram.project.json");
+  const config = readJson(configPath);
+  const primaryWeb = config.topology.runtimes.find((runtime) => runtime.id === "app_react");
+  config.topology.runtimes.push({
+    ...primaryWeb,
+    id: "app_react_secondary",
+    port: 5174
+  });
+  fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const generate = runCli(["generate"], { cwd: projectRoot });
+  assert.equal(generate.status, 0, generate.stderr || generate.stdout);
+
+  const primaryScript = readText(path.join(projectRoot, "app", "apps", "scripts", "web", "app_react-dev.sh"));
+  const secondaryScript = readText(path.join(projectRoot, "app", "apps", "scripts", "web", "app_react_secondary-dev.sh"));
+  const guardScript = readText(path.join(projectRoot, "app", "apps", "scripts", "guard-ports.mjs"));
+  assert.match(primaryScript, /\$\{APP_REACT_PORT:-\$\{WEB_PORT:-5173\}\}/);
+  assert.match(secondaryScript, /\$\{APP_REACT_SECONDARY_PORT:-5174\}/);
+  assert.doesNotMatch(secondaryScript, /WEB_PORT:-5174/);
+  assert.match(guardScript, /"id": "app_react"[\s\S]*"fallbackEnv": "WEB_PORT"/);
+  assert.match(guardScript, /"id": "app_react_secondary"[\s\S]*"fallbackEnv": null/);
+});
+
 test("package-backed generators can be checked and used by app generation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-package-backed-generator-"));
   const projectRoot = path.join(root, "starter");
