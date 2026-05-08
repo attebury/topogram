@@ -18,7 +18,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
 | `@topogram/cli` | `0.3.60` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
-| `attebury/topograms` catalog | `b8bc3d6` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.60 |
+| `attebury/topograms` catalog | `4bc692e` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.60 |
 | `topogram-demo-todo` | `63cd738` | Demo Verification: completed/success; pinned @topogram/cli@0.3.60 |
 
 ## Catalog Entries
@@ -63,7 +63,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `topogram-template-todo` | `0.3.60` | Template Verification | completed/success | [25574594619](https://github.com/attebury/topogram-template-todo/actions/runs/25574594619) |
 | `topogram-demo-todo` | `0.3.60` | Demo Verification | completed/success | [25574645301](https://github.com/attebury/topogram-demo-todo/actions/runs/25574645301) |
 | `topogram-hello` | `0.3.60` | Topogram Package Verification | completed/success | [25574729328](https://github.com/attebury/topogram-hello/actions/runs/25574729328) |
-| `topograms` | `0.3.60` | Catalog Verification | completed/success | [25576071417](https://github.com/attebury/topograms/actions/runs/25576071417) |
+| `topograms` | `0.3.60` | Catalog Verification | completed/success | [25576419157](https://github.com/attebury/topograms/actions/runs/25576419157) |
 
 ## Consumer Proofs
 
