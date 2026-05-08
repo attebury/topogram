@@ -180,7 +180,7 @@ exports.manifest = require("./topogram-generator.json");
 exports.generate = function generate({
   graph,
   projection,
-  widget,
+  runtime,
   topology,
   contracts,
   implementation,
@@ -194,10 +194,18 @@ exports.generate = function generate({
 };
 ```
 
-The adapter receives normalized contracts and returns generated files relative
-to that widget output directory. `files` must be an object whose keys are
-relative paths and whose values are string file contents. `artifacts` and
-`diagnostics` are optional.
+The adapter receives normalized contracts and the resolved topology runtime for
+the generated surface. `files` must be an object whose keys are relative paths
+and whose values are string file contents. `artifacts` and `diagnostics` are
+optional.
+
+Generator adapters must treat `context.runtime` as the canonical topology
+object. Runtime relationships are exposed as `runtime.apiRuntime` for web or
+native surfaces that call an API, and `runtime.databaseRuntime` for API services
+that use a database. Older names such as `context.component`,
+`runtime.apiComponent`, and `runtime.databaseComponent` are compatibility
+aliases only for packages that still support older CLI releases; new generator
+code should not depend on them.
 
 Generator adapters should prefer `contracts` over raw projection internals for
 consumer-visible semantics. For example, API generators should render routes

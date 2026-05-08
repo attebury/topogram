@@ -131,6 +131,20 @@ const staleDslVocabularyAllowedFiles = new Set([
   "engine/src/project-config.js",
   "engine/src/validator/index.js"
 ]);
+const legacyRuntimeAliasReferences = [
+  "context.component",
+  "apiComponent",
+  "databaseComponent",
+  "apiComponents",
+  "webComponents",
+  "dbComponents"
+];
+const legacyRuntimeAliasAllowedFiles = new Set([
+  "engine/src/generator/adapters.js",
+  "engine/src/generator/runtime/shared.js",
+  "engine/tests/active/engine-boundary.test.js",
+  "engine/tests/active/project-config.test.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -219,6 +233,23 @@ test("old public DSL vocabulary only appears in migration guidance", () => {
       if (staleDslVocabularyAllowedFiles.has(relative)) continue;
       const contents = fs.readFileSync(file, "utf8");
       const references = staleDslVocabulary.filter((reference) => contents.includes(reference));
+      if (references.length > 0) {
+        offenders.push({ file: relative, references });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("legacy generator runtime aliases stay isolated to adapter compatibility", () => {
+  const offenders = [];
+  for (const root of [path.join(repoRoot, "engine", "src"), path.join(repoRoot, "engine", "tests", "active")]) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      if (legacyRuntimeAliasAllowedFiles.has(relative)) continue;
+      const contents = fs.readFileSync(file, "utf8");
+      const references = legacyRuntimeAliasReferences.filter((reference) => contents.includes(reference));
       if (references.length > 0) {
         offenders.push({ file: relative, references });
       }
