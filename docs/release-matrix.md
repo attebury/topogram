@@ -43,6 +43,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `@topogram/generator-react-web` | web | web-api |
 | `@topogram/generator-sqlite-db` | database | hello-db |
 | `@topogram/generator-sveltekit-web` | web | todo, web-api-db, hello |
+| `@topogram/generator-swiftui-native` | native | package-first native proof |
 | `@topogram/generator-vanilla-web` | web | hello-web |
 
 ## Consumers
