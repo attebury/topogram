@@ -51,5 +51,11 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "trust" && args[1] === "diff") {
     return { trustDiff: true, inputPath: commandPath(args, 2) };
   }
+  if (args[0] === "release" && args[1] === "status") {
+    return { releaseStatus: true, inputPath: null };
+  }
+  if (args[0] === "release" && args[1] === "roll-consumers") {
+    return { releaseRollConsumers: true, releaseRollVersion: args[2], inputPath: null };
+  }
   return null;
 }
