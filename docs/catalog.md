@@ -78,9 +78,10 @@ topogram catalog doctor --json
 topogram catalog doctor --catalog ./topograms.catalog.json
 ```
 
-`catalog doctor` loads and validates the catalog, reports GitHub token or
-`gh auth` readiness for restricted GitHub catalog sources, and checks each entry's
-package/version with npm. It is read-only and does not install packages.
+`catalog doctor` loads and validates the catalog, reports GitHub token readiness
+plus local `gh` fallback status for restricted GitHub catalog sources, and checks
+each entry's package/version with npm. It is read-only and does not install
+packages.
 
 For a complete new-user setup check, prefer the top-level doctor:
 
@@ -290,14 +291,21 @@ apply.
 ## Private Access
 
 The default catalog is public. For private `github:` catalog sources, the CLI
-uses `gh api`. Set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate locally with:
+uses the GitHub REST API when `GITHUB_TOKEN` or `GH_TOKEN` is set:
+
+```bash
+export GITHUB_TOKEN=<token-with-repo-read>
+topogram catalog list
+```
+
+Local `gh` auth is only a no-token fallback for developer machines:
 
 ```bash
 gh auth login
 ```
 
 Catalog auth failures are reported separately from missing catalog paths. A
-401/403 means the token or local `gh` session cannot read the private catalog
+401/403 means the token or local fallback session cannot read the private catalog
 repo. A 404 means the `github:owner/repo/path` source is wrong, or the current
 token cannot see that repo.
 

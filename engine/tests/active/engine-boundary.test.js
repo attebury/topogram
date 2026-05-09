@@ -186,6 +186,10 @@ const runtimeDefaultAllowedFiles = new Set([
   "engine/src/topogram-config.js",
   "engine/tests/active/engine-boundary.test.js"
 ]);
+const githubShellAllowedFiles = new Set([
+  "engine/src/github-client.js",
+  "engine/tests/active/engine-boundary.test.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -406,6 +410,27 @@ test("repo and catalog owner defaults stay isolated to runtime config", () => {
       "github.com/attebury",
       "raw.githubusercontent.com/attebury",
       "owner: \"attebury\""
+    ].filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("GitHub shell fallback stays isolated to the GitHub client", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    if (githubShellAllowedFiles.has(relative)) continue;
+    const contents = fs.readFileSync(file, "utf8");
+    const references = [
+      'spawnSync("gh"',
+      "spawnSync('gh'",
+      '"gh", ["auth"',
+      '"gh", ["run"',
+      '"gh", ["api"'
     ].filter((reference) => contents.includes(reference));
     if (references.length > 0) {
       offenders.push({ file: relative, references });

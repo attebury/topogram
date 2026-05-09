@@ -7,6 +7,7 @@ import path from "node:path";
 
 import { installPackageSpec } from "./new-project.js";
 import { DEFAULT_CATALOG_SOURCE, defaultCatalogSource } from "./topogram-config.js";
+import { readGithubCatalogSourceText } from "./github-client.js";
 
 export const CATALOG_FILE_NAME = "topograms.catalog.json";
 export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
@@ -437,65 +438,7 @@ function readCatalogText(source) {
  * @returns {string}
  */
 function readGithubCatalogText(source) {
-  const spec = source.slice("github:".length);
-  const [pathPart, ref] = spec.split("?ref=");
-  const segments = pathPart.split("/").filter(Boolean);
-  if (segments.length < 3) {
-    throw new Error(`Invalid GitHub catalog source '${source}'. Expected github:owner/repo/path/to/catalog.json.`);
-  }
-  const [owner, repo, ...fileSegments] = segments;
-  const apiPath = `repos/${owner}/${repo}/contents/${fileSegments.join("/")}`;
-  const args = ["api", apiPath, "--jq", ".content"];
-  if (ref) {
-    args.splice(2, 0, "-f", `ref=${ref}`);
-  }
-  const result = childProcess.spawnSync("gh", args, {
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "",
-      PATH: process.env.PATH || ""
-    }
-  });
-  if (result.status !== 0) {
-    throw new Error(formatGithubCatalogError(source, result));
-  }
-  return Buffer.from(result.stdout.replace(/\s+/g, ""), "base64").toString("utf8");
-}
-
-/**
- * @param {string} source
- * @param {any} result
- * @returns {string}
- */
-function formatGithubCatalogError(source, result) {
-  const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
-  const normalized = output.toLowerCase();
-  if (result.error?.code === "ENOENT") {
-    return [
-      `GitHub CLI (gh) is required to read catalog '${source}'.`,
-      "Install gh, or set TOPOGRAM_CATALOG_SOURCE to a local topograms.catalog.json file."
-    ].join("\n");
-  }
-  if (/\b(401|403)\b/.test(normalized) || normalized.includes("authentication") || normalized.includes("not logged in") || normalized.includes("forbidden")) {
-    return [
-      `Authentication is required to read private catalog '${source}'.`,
-      "Set GITHUB_TOKEN or GH_TOKEN with repository read access, or run gh auth login.",
-      output
-    ].filter(Boolean).join("\n");
-  }
-  if (/\b404\b/.test(normalized) || normalized.includes("not found")) {
-    return [
-      `Catalog source '${source}' was not found, or the current token does not have repository access.`,
-      "Check the github:owner/repo/path source and grant repository read access to the token or GitHub Actions workflow.",
-      output
-    ].filter(Boolean).join("\n");
-  }
-  return [
-    `Failed to read catalog '${source}' with gh api.`,
-    "Set GITHUB_TOKEN or GH_TOKEN, or run gh auth login.",
-    output || "unknown error"
-  ].join("\n");
+  return readGithubCatalogSourceText(source);
 }
 
 /**

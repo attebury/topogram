@@ -121,6 +121,11 @@ import {
 } from "./agent-brief.js";
 import { assertSafeNpmSpec, LOCAL_NPMRC_ENV, localNpmrcEnv, localNpmrcStatus } from "./npm-safety.js";
 import {
+  githubAuthStatus,
+  latestWorkflowRun,
+  workflowRunJobs
+} from "./github-client.js";
+import {
   catalogRepoSlug,
   githubRepoSlug,
   releaseConsumerRepos,
@@ -730,9 +735,13 @@ function printCatalogAuthSetup() {
   console.log("Topogram catalog auth setup");
   console.log("");
   console.log("The default Topogram catalog is public and does not require GitHub auth.");
-  console.log("Restricted GitHub catalog reads use GITHUB_TOKEN, GH_TOKEN, or `gh auth token`.");
+  console.log("Restricted GitHub catalog reads prefer GITHUB_TOKEN or GH_TOKEN. Local `gh auth login` is a fallback when no token env var is set.");
   console.log("");
   console.log("Restricted catalog local setup:");
+  console.log("  export GITHUB_TOKEN=<token-with-repo-read>");
+  console.log("  topogram catalog list");
+  console.log("");
+  console.log("Local fallback without token env:");
   console.log("  gh auth login");
   console.log("  topogram catalog list");
   console.log("");
@@ -3442,33 +3451,22 @@ function inspectConsumerCi(consumer, options = {}) {
       diagnostics
     };
   }
-  const result = childProcess.spawnSync("gh", [
-    "run",
-    "list",
-    "--repo",
-    repoSlug,
-    "--branch",
-    "main",
-    "--workflow",
-    expectedWorkflow,
-    "--limit",
-    "1",
-    "--json",
-    "databaseId,workflowName,status,conclusion,headSha,url"
-  ], {
-    cwd: consumer.root,
-    encoding: "utf8",
-    env: { ...process.env, PATH: process.env.PATH || "" }
-  });
-  if (result.status !== 0) {
-    diagnostics.push(commandDiagnostic({
+  let run = null;
+  try {
+    run = latestWorkflowRun({
+      repoSlug,
+      branch: "main",
+      workflowName: expectedWorkflow,
+      cwd: consumer.root
+    });
+  } catch (error) {
+    diagnostics.push({
       code: "release_consumer_ci_unavailable",
       severity: options.strict ? "error" : "warning",
-      message: `Could not inspect ${expectedWorkflow} for ${consumer.name}.`,
+      message: [`Could not inspect ${expectedWorkflow} for ${consumer.name}.`, messageFromError(error)].filter(Boolean).join("\n"),
       path: repoSlug,
-      suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
-      result
-    }));
+      suggestedFix: "Set GITHUB_TOKEN or GH_TOKEN with Actions read access, or run `gh auth login` for local fallback; then rerun release status."
+    });
     return {
       checked: true,
       ok: false,
@@ -3479,19 +3477,6 @@ function inspectConsumerCi(consumer, options = {}) {
       diagnostics
     };
   }
-  let runs = [];
-  try {
-    runs = JSON.parse(String(result.stdout || "[]"));
-  } catch (error) {
-    diagnostics.push({
-      code: "release_consumer_ci_unreadable",
-      severity: options.strict ? "error" : "warning",
-      message: `Could not parse ${consumer.name} workflow status: ${messageFromError(error)}`,
-      path: repoSlug,
-      suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
-    });
-  }
-  const run = Array.isArray(runs) && runs.length > 0 ? runs[0] : null;
   if (!run) {
     diagnostics.push({
       code: "release_consumer_ci_missing",
@@ -3566,43 +3551,23 @@ function inspectConsumerCi(consumer, options = {}) {
 function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}) {
   const diagnostics = [];
   const repoSlug = consumerGithubRepoSlug(consumer);
-  const result = childProcess.spawnSync("gh", [
-    "run",
-    "view",
-    String(runId),
-    "--repo",
-    repoSlug,
-    "--json",
-    "jobs"
-  ], {
-    cwd: consumer.root || process.cwd(),
-    encoding: "utf8",
-    env: { ...process.env, PATH: process.env.PATH || "" }
-  });
-  if (result.status !== 0) {
-    diagnostics.push(commandDiagnostic({
-      code: "release_consumer_ci_jobs_unavailable",
-      severity: options.strict ? "error" : "warning",
-      message: `Could not inspect expected jobs for ${consumer.name}.`,
-      path: repoSlug,
-      suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
-      result
-    }));
-    return { jobs: null, diagnostics };
-  }
-  let payload = {};
+  let jobs = [];
   try {
-    payload = JSON.parse(String(result.stdout || "{}"));
+    jobs = workflowRunJobs({
+      repoSlug,
+      runId,
+      cwd: consumer.root || process.cwd()
+    });
   } catch (error) {
     diagnostics.push({
-      code: "release_consumer_ci_jobs_unreadable",
+      code: "release_consumer_ci_jobs_unavailable",
       severity: options.strict ? "error" : "warning",
-      message: `Could not parse ${consumer.name} workflow job status: ${messageFromError(error)}`,
+      message: [`Could not inspect expected jobs for ${consumer.name}.`, messageFromError(error)].filter(Boolean).join("\n"),
       path: repoSlug,
-      suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
+      suggestedFix: "Set GITHUB_TOKEN or GH_TOKEN with Actions read access, or run `gh auth login` for local fallback; then rerun release status."
     });
+    return { jobs: null, diagnostics };
   }
-  const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
   for (const expectedJob of expectedJobs) {
     const job = jobs.find((candidate) => candidate?.name === expectedJob);
     if (!job) {
@@ -4117,7 +4082,7 @@ function printDoctorSetupGuidance(payload) {
   if (isCatalogSourceDisabled(payload.catalog.source)) {
     console.log("- Catalog auth: skipped because catalog discovery is disabled for this project.");
   } else {
-    console.log("- Catalog auth: the default catalog is public; private catalogs can use GITHUB_TOKEN, GH_TOKEN, or `gh auth login`.");
+    console.log("- Catalog auth: the default catalog is public; private catalogs should use GITHUB_TOKEN or GH_TOKEN. Local `gh auth login` is only a no-token fallback.");
   }
   console.log("- Template package auth: private template packages may need registry-specific npm auth during npm install.");
   console.log(`- Local .npmrc: ignored by default. Use --allow-local-npmrc or ${LOCAL_NPMRC_ENV}=1 only after reviewing the file.`);
@@ -5458,34 +5423,9 @@ function buildCatalogDoctorPayload(source) {
  */
 function buildCatalogDoctorAuth(source) {
   const shouldCheckGh = source.startsWith("github:");
-  const ghCli = {
-    checked: shouldCheckGh,
-    available: false,
-    authenticated: false,
-    reason: null
-  };
-  if (shouldCheckGh) {
-    const result = childProcess.spawnSync("gh", ["auth", "token"], {
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "",
-        PATH: process.env.PATH || ""
-      }
-    });
-    ghCli.available = result.error?.code !== "ENOENT";
-    ghCli.authenticated = result.status === 0 && Boolean(String(result.stdout || "").trim());
-    if (!ghCli.available) {
-      ghCli.reason = "GitHub CLI (gh) is not installed or not on PATH.";
-    } else if (!ghCli.authenticated) {
-      ghCli.reason = (result.stderr || result.stdout || result.error?.message || "gh auth token failed.").trim();
-    }
-  }
-  return {
-    githubTokenEnv: Boolean(process.env.GITHUB_TOKEN),
-    ghTokenEnv: Boolean(process.env.GH_TOKEN),
-    ghCli
-  };
+  return githubAuthStatus({
+    checkGh: shouldCheckGh && !process.env.GITHUB_TOKEN && !process.env.GH_TOKEN
+  });
 }
 
 /**
@@ -5604,7 +5544,7 @@ function catalogDoctorPackageDiagnostic(entry, packageSpec, result) {
  */
 function catalogDoctorSourceFix(source) {
   if (source.startsWith("github:")) {
-    return "Set GITHUB_TOKEN or GH_TOKEN with repository read access, run `gh auth login`, or pass --catalog ./topograms.catalog.json.";
+    return "Set GITHUB_TOKEN or GH_TOKEN with repository read access, use `gh auth login` only as a local no-token fallback, or pass --catalog ./topograms.catalog.json.";
   }
   if (source.startsWith("http://") || source.startsWith("https://")) {
     return "Check the catalog URL and token access, or pass --catalog ./topograms.catalog.json.";

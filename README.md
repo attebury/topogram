@@ -30,9 +30,9 @@ npx topogram doctor
 ```
 
 Catalog aliases such as `hello-web`, `web-api-db`, and `todo` are resolved
-through the public `attebury/topograms` catalog. Private catalog sources can use
-`GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth login`. Public `@topogram/*` package
-installs should not require registry auth.
+through the public `attebury/topograms` catalog. Private catalog sources should
+use `GITHUB_TOKEN` or `GH_TOKEN`; local `gh auth login` is a no-token fallback.
+Public `@topogram/*` package installs should not require registry auth.
 
 `TOPOGRAM_CATALOG_SOURCE=none` intentionally disables catalog discovery. In
 that mode, `topogram template list` shows no shared starters and
@@ -318,9 +318,9 @@ requires.
 
 Use `topogram version` to audit the installed CLI package, version, executable
 path, and Node runtime. Use `topogram doctor` when setup is unclear. It checks
-Node.js, npm, public CLI package access, catalog reachability, GitHub token or
-`gh auth` readiness for restricted GitHub catalog sources, and npm package access
-for each catalog entry:
+Node.js, npm, public CLI package access, catalog reachability, GitHub token
+readiness plus local `gh` fallback status for restricted GitHub catalog sources,
+and npm package access for each catalog entry:
 
 ```bash
 topogram version

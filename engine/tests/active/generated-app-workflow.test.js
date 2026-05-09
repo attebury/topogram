@@ -590,6 +590,12 @@ process.exit(1);
   return binDir;
 }
 
+function readJsonl(filePath) {
+  return fs.existsSync(filePath)
+    ? fs.readFileSync(filePath, "utf8").split(/\n+/).filter(Boolean).map((line) => JSON.parse(line))
+    : [];
+}
+
 function writeKnownCliConsumerPins(root, version) {
   for (const consumer of knownCliConsumerRepos) {
     fs.mkdirSync(path.join(root, consumer), { recursive: true });
@@ -2502,6 +2508,84 @@ test("topogram release status strict passes when package, tag, and consumers are
   });
   assert.equal(markdown.status, 0, markdown.stderr || markdown.stdout);
   assert.match(markdown.stdout, /^# Known-Good Release Matrix/m);
+});
+
+test("GitHub token path uses REST for catalog and release checks without gh", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-github-rest-"));
+  fs.mkdirSync(path.join(root, "topogram-starters"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topogram-starters", "topogram-cli.version"), `${cliPackageVersion}\n`, "utf8");
+  writeJson(path.join(root, "topogram.config.json"), {
+    release: {
+      consumers: ["topogram-starters"],
+      workflows: {
+        "topogram-starters": "Starter Verification"
+      }
+    }
+  });
+  const catalog = {
+    version: "0.1",
+    entries: [
+      sampleTemplateCatalogEntry({
+        id: "hello-web",
+        package: "@topogram/starter-hello-web",
+        defaultVersion: "0.1.0",
+        description: "Hello web starter",
+        tags: ["hello", "web"]
+      })
+    ]
+  };
+  const fixtureRoot = path.join(root, "github-api-fixtures");
+  const catalogFixturePath = path.join(fixtureRoot, "repos", "attebury", "topograms", "contents", "topograms.catalog.json.json");
+  const runsFixturePath = path.join(fixtureRoot, "repos", "attebury", "topogram-starters", "actions", "runs.json");
+  fs.mkdirSync(path.dirname(catalogFixturePath), { recursive: true });
+  fs.mkdirSync(path.dirname(runsFixturePath), { recursive: true });
+  writeJson(catalogFixturePath, {
+    content: Buffer.from(JSON.stringify(catalog, null, 2) + "\n").toString("base64")
+  });
+  writeJson(runsFixturePath, {
+    workflow_runs: [{
+      id: 12345,
+      name: "Starter Verification",
+      status: "completed",
+      conclusion: "success",
+      head_sha: "abc123",
+      html_url: "https://github.com/attebury/fake/actions/runs/12345"
+    }]
+  });
+  const fixtureLog = path.join(root, "github-api-requests.jsonl");
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const pathWithoutGh = `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${path.dirname(process.execPath)}`;
+  const env = {
+    FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+    GITHUB_TOKEN: "test-token",
+    TOPOGRAM_GITHUB_API_FIXTURE_ROOT: fixtureRoot,
+    TOPOGRAM_GITHUB_API_FIXTURE_LOG: fixtureLog,
+    PATH: pathWithoutGh
+  };
+
+  const catalogList = runCli(["catalog", "list", "--catalog", "github:attebury/topograms/topograms.catalog.json", "--json"], {
+    cwd: root,
+    env
+  });
+  assert.equal(catalogList.status, 0, catalogList.stderr || catalogList.stdout);
+  assert.equal(JSON.parse(catalogList.stdout).entries[0].id, "hello-web");
+
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env
+  });
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.consumerCi.passing, 1);
+  assert.equal(payload.consumers[0].ci.run.workflowName, "Starter Verification");
+
+  const apiRequests = readJsonl(fixtureLog);
+  assert.equal(apiRequests.some((request) => request.path === "repos/attebury/topograms/contents/topograms.catalog.json"), true);
+  assert.equal(apiRequests.some((request) => request.path === "repos/attebury/topogram-starters/actions/runs"), true);
+  assert.deepEqual([...new Set(apiRequests.map((request) => request.tokenPresent))], [true]);
+  assert.deepEqual([...new Set(apiRequests.map((request) => request.tokenWouldAttach))], [true]);
 });
 
 test("topogram release status strict accepts remote release tags without a local fetched tag", () => {

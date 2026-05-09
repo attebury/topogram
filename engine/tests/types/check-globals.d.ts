@@ -28,3 +28,4 @@ declare module "node:module" {
 }
 
 declare const process: any;
+declare const Buffer: any;
