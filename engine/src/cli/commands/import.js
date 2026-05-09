@@ -28,6 +28,14 @@ import { CLI_PACKAGE_NAME, readInstalledCliPackageVersion } from "./package.js";
 
 const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {string} inputPath
+ * @returns {string}
+ */
 function normalizeTopogramPath(inputPath) {
   const absolute = path.resolve(inputPath);
   if (path.basename(absolute) === "topogram") {
@@ -37,6 +45,10 @@ function normalizeTopogramPath(inputPath) {
   return fs.existsSync(candidate) ? candidate : absolute;
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {string}
+ */
 function normalizeProjectRoot(inputPath) {
   const absolute = path.resolve(inputPath);
   if (path.basename(absolute) === "topogram") {
@@ -45,6 +57,10 @@ function normalizeProjectRoot(inputPath) {
   return absolute;
 }
 
+/**
+ * @param  {...{ ok: boolean, errors?: any[] }|null|undefined} results
+ * @returns {{ ok: boolean, errors: any[] }}
+ */
 function combineProjectValidationResults(...results) {
   const errors = [];
   for (const result of results) {
@@ -56,6 +72,10 @@ function combineProjectValidationResults(...results) {
   };
 }
 
+/**
+ * @param {AnyRecord} component
+ * @returns {{ uses_api: string|null, uses_database: string|null }}
+ */
 function topologyComponentReferences(component) {
   return {
     uses_api: component.uses_api || null,
@@ -63,10 +83,18 @@ function topologyComponentReferences(component) {
   };
 }
 
+/**
+ * @param {AnyRecord} component
+ * @returns {any}
+ */
 function topologyComponentPort(component) {
   return Object.prototype.hasOwnProperty.call(component, "port") ? component.port : null;
 }
 
+/**
+ * @param {AnyRecord|null|undefined} config
+ * @returns {{ outputs: any[], runtimes: any[], edges: any[] }}
+ */
 function summarizeProjectTopology(config) {
   const outputs = Object.entries(config?.outputs || {})
     .map(([name, output]) => ({
@@ -76,7 +104,7 @@ function summarizeProjectTopology(config) {
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
   const runtimes = (config?.topology?.runtimes || [])
-    .map((component) => ({
+    .map((/** @type {AnyRecord} */ component) => ({
       id: component.id,
       kind: component.kind,
       projection: component.projection,
@@ -87,8 +115,8 @@ function summarizeProjectTopology(config) {
       port: topologyComponentPort(component),
       references: topologyComponentReferences(component)
     }))
-    .sort((left, right) => left.id.localeCompare(right.id));
-  const edges = runtimes.flatMap((component) => {
+    .sort((/** @type {AnyRecord} */ left, /** @type {AnyRecord} */ right) => left.id.localeCompare(right.id));
+  const edges = runtimes.flatMap((/** @type {AnyRecord} */ component) => {
     const references = [];
     if (component.references.uses_api) {
       references.push({
@@ -105,7 +133,7 @@ function summarizeProjectTopology(config) {
       });
     }
     return references;
-  }).sort((left, right) => `${left.from}:${left.type}:${left.to}`.localeCompare(`${right.from}:${right.type}:${right.to}`));
+  }).sort((/** @type {AnyRecord} */ left, /** @type {AnyRecord} */ right) => `${left.from}:${left.type}:${left.to}`.localeCompare(`${right.from}:${right.type}:${right.to}`));
   return {
     outputs,
     runtimes,
@@ -113,6 +141,10 @@ function summarizeProjectTopology(config) {
   };
 }
 
+/**
+ * @param {AnyRecord|null|undefined} topology
+ * @returns {AnyRecord|null}
+ */
 function publicProjectTopology(topology) {
   if (!topology || typeof topology !== "object") {
     return topology || null;
@@ -123,8 +155,12 @@ function publicProjectTopology(topology) {
   };
 }
 
+/**
+ * @param {{ inputPath: string, ast: AnyRecord, resolved: AnyRecord, projectConfigInfo: AnyRecord|null, projectValidation: { ok: boolean, errors: any[] } }} input
+ * @returns {AnyRecord}
+ */
 function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation }) {
-  const statementCount = ast.files.flatMap((file) => file.statements).length;
+  const statementCount = ast.files.flatMap((/** @type {{ statements: any[] }} */ file) => file.statements).length;
   const projectInfo = projectConfigInfo || {
     configPath: null,
     compatibility: false,
@@ -147,7 +183,7 @@ function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, proj
       resolvedTopology
     },
     errors: [
-      ...(resolved.ok ? [] : resolved.validation.errors.map((error) => ({
+      ...(resolved.ok ? [] : resolved.validation.errors.map((/** @type {AnyRecord} */ error) => ({
         source: "topogram",
         message: error.message,
         loc: error.loc
@@ -228,7 +264,7 @@ function ensureEmptyImportTarget(targetPath) {
   if (!fs.statSync(targetPath).isDirectory()) {
     throw new Error(`Cannot import into non-directory path '${targetPath}'.`);
   }
-  const entries = fs.readdirSync(targetPath).filter((entry) => entry !== ".DS_Store");
+  const entries = fs.readdirSync(targetPath).filter((/** @type {string} */ entry) => entry !== ".DS_Store");
   if (entries.length > 0) {
     throw new Error(`Refusing to import into non-empty directory '${targetPath}'.`);
   }
@@ -360,7 +396,7 @@ function readTopogramImportRecord(projectRoot) {
  */
 function importTrackValueFromRecord(importRecord) {
   const tracks = Array.isArray(importRecord.import?.tracks)
-    ? importRecord.import.tracks.map((track) => String(track).trim()).filter(Boolean)
+    ? importRecord.import.tracks.map((/** @type {any} */ track) => String(track).trim()).filter(Boolean)
     : [];
   return tracks.length ? [...new Set(tracks)].join(",") : null;
 }
@@ -381,6 +417,10 @@ function clearImportRefreshCandidateArtifacts(topogramRoot) {
   return removed;
 }
 
+/**
+ * @param {{ changed?: any[], added?: any[], removed?: any[] }} [content]
+ * @returns {{ changed: number, added: number, removed: number }}
+ */
 function sourceDiffCounts(content = {}) {
   return {
     changed: content.changed?.length || 0,
@@ -389,13 +429,22 @@ function sourceDiffCounts(content = {}) {
   };
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {AnyRecord} importRecord
+ * @param {string} sourceRoot
+ * @returns {AnyRecord}
+ */
 function compareImportRecordToSource(projectRoot, importRecord, sourceRoot) {
   const trustedFiles = Array.isArray(importRecord.files) ? importRecord.files : [];
-  const trustedByPath = new Map(trustedFiles.map((file) => [String(file.path), file]));
+  const trustedByPath = new Map(trustedFiles.map((/** @type {AnyRecord} */ file) => [String(file.path), file]));
   const currentFiles = collectImportSourceFileRecords(sourceRoot, { excludeRoots: [projectRoot] });
-  const currentByPath = new Map(currentFiles.map((file) => [file.path, file]));
+  const currentByPath = new Map(currentFiles.map((/** @type {AnyRecord} */ file) => [file.path, file]));
+  /** @type {string[]} */
   const changed = [];
+  /** @type {string[]} */
   const added = [];
+  /** @type {string[]} */
   const removed = [];
   for (const [filePath, current] of currentByPath) {
     const trusted = trustedByPath.get(filePath);
@@ -426,9 +475,16 @@ function compareImportRecordToSource(projectRoot, importRecord, sourceRoot) {
   };
 }
 
+/**
+ * @param {Record<string, number>} [previous]
+ * @param {Record<string, number>} [next]
+ * @returns {AnyRecord}
+ */
 function buildCountDeltas(previous = {}, next = {}) {
   const keys = [...new Set([...Object.keys(previous || {}), ...Object.keys(next || {})])].sort((a, b) => a.localeCompare(b));
+  /** @type {Record<string, { previous: number, next: number, delta: number }>} */
   const deltas = {};
+  /** @type {Array<{ key: string, previous: number, next: number, delta: number }>} */
   const changed = [];
   for (const key of keys) {
     const previousCount = Number(previous?.[key] || 0);
@@ -447,10 +503,18 @@ function buildCountDeltas(previous = {}, next = {}) {
   };
 }
 
+/**
+ * @param {AnyRecord} item
+ * @returns {string}
+ */
 function adoptionSurfaceKey(item) {
   return `${item?.bundle || "unbundled"}:${item?.kind || "unknown"}:${item?.item || item?.id || "unknown"}`;
 }
 
+/**
+ * @param {AnyRecord} item
+ * @returns {AnyRecord}
+ */
 function summarizeAdoptionSurface(item) {
   return {
     key: adoptionSurfaceKey(item),
@@ -461,11 +525,19 @@ function summarizeAdoptionSurface(item) {
   };
 }
 
+/**
+ * @param {AnyRecord[]} [currentSurfaces]
+ * @param {AnyRecord[]} [nextSurfaces]
+ * @returns {AnyRecord}
+ */
 function summarizeAdoptionPlanDeltas(currentSurfaces = [], nextSurfaces = []) {
   const currentByKey = new Map((currentSurfaces || []).map((item) => [adoptionSurfaceKey(item), item]));
   const nextByKey = new Map((nextSurfaces || []).map((item) => [adoptionSurfaceKey(item), item]));
+  /** @type {AnyRecord[]} */
   const added = [];
+  /** @type {AnyRecord[]} */
   const removed = [];
+  /** @type {AnyRecord[]} */
   const changed = [];
   for (const [key, next] of nextByKey) {
     const current = currentByKey.get(key);
@@ -494,6 +566,10 @@ function summarizeAdoptionPlanDeltas(currentSurfaces = [], nextSurfaces = []) {
   };
 }
 
+/**
+ * @param {string|null|undefined} fileContents
+ * @returns {AnyRecord[]}
+ */
 function adoptionSurfacesFromPlanFile(fileContents) {
   if (!fileContents) {
     return [];
@@ -502,6 +578,12 @@ function adoptionSurfacesFromPlanFile(fileContents) {
   return parsed.imported_proposal_surfaces || [];
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {string} topogramRoot
+ * @param {Record<string, any>} importFiles
+ * @returns {AnyRecord}
+ */
 function buildRefreshPreviewReconcile(projectRoot, topogramRoot, importFiles) {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-refresh-preview."));
   try {
@@ -527,6 +609,10 @@ function buildRefreshPreviewReconcile(projectRoot, topogramRoot, importFiles) {
   }
 }
 
+/**
+ * @param {string} topogramRoot
+ * @returns {AnyRecord[]}
+ */
 function readCurrentAdoptionSurfaces(topogramRoot) {
   const planPath = path.join(topogramRoot, "candidates", "reconcile", "adoption-plan.agent.json");
   if (!fs.existsSync(planPath)) {
@@ -535,6 +621,11 @@ function readCurrentAdoptionSurfaces(topogramRoot) {
   return adoptionSurfacesFromPlanFile(fs.readFileSync(planPath, "utf8"));
 }
 
+/**
+ * @param {string} inputPath
+ * @param {{ sourcePath?: string|null }} [options]
+ * @returns {AnyRecord}
+ */
 function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const topogramRoot = normalizeTopogramPath(projectRoot);
@@ -573,9 +664,9 @@ function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
   const plannedFiles = [
     TOPOGRAM_IMPORT_FILE,
     ...Object.keys(importResult.files || {}).map((filePath) => `topogram/${filePath}`),
-    ...previewReconcile.reconcileFilePaths.map((filePath) => `topogram/${filePath}`)
+    ...previewReconcile.reconcileFilePaths.map((/** @type {string} */ filePath) => `topogram/${filePath}`)
   ].sort((a, b) => a.localeCompare(b));
-  const analysis = {
+  const analysis = /** @type {AnyRecord} */ ({
     projectRoot,
     topogramRoot,
     sourcePath: sourceRoot,
@@ -599,7 +690,7 @@ function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
     adoptionPlanDeltas,
     receiptVerification,
     plannedFiles
-  };
+  });
   Object.defineProperty(analysis, "importResult", {
     value: importResult,
     enumerable: false
@@ -686,7 +777,9 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
   const dryRun = Boolean(options.dryRun);
   let provenancePath = analysis.provenancePath;
   let currentImportStatus = dryRun ? analysis.previousImportStatus : "unknown";
+  /** @type {string[]} */
   let writtenFiles = [];
+  /** @type {AnyRecord|null} */
   let refreshMetadata = null;
   if (!dryRun) {
     const removedCandidateFiles = clearImportRefreshCandidateArtifacts(analysis.topogramRoot);
@@ -757,6 +850,11 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
   };
 }
 
+/**
+ * @param {string} inputPath
+ * @param {{ sourcePath?: string|null }} [options]
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportDiffPayload(inputPath, options = {}) {
   const analysis = buildBrownfieldImportRefreshAnalysis(inputPath, options);
   return {
@@ -918,7 +1016,7 @@ export function buildBrownfieldImportCheckPayload(projectRoot) {
     import: importStatus,
     topogram: topogramCheck,
     errors: [
-      ...(importStatus.errors || []).map((message) => ({ source: "import", message })),
+      ...(importStatus.errors || []).map((/** @type {string} */ message) => ({ source: "import", message })),
       ...(topogramCheck.errors || [])
     ]
   };
@@ -957,6 +1055,10 @@ export function printBrownfieldImportCheck(payload) {
   }
 }
 
+/**
+ * @param {string} filePath
+ * @returns {AnyRecord|null}
+ */
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) {
     return null;
@@ -964,10 +1066,18 @@ function readJsonIfExists(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+/**
+ * @param {string} projectRoot
+ * @returns {string}
+ */
 function importAdoptionsPath(projectRoot) {
   return path.join(normalizeProjectRoot(projectRoot), TOPOGRAM_IMPORT_ADOPTIONS_FILE);
 }
 
+/**
+ * @param {string} projectRoot
+ * @returns {AnyRecord[]}
+ */
 function readImportAdoptionReceipts(projectRoot) {
   const historyPath = importAdoptionsPath(projectRoot);
   if (!fs.existsSync(historyPath)) {
@@ -975,9 +1085,9 @@ function readImportAdoptionReceipts(projectRoot) {
   }
   return fs.readFileSync(historyPath, "utf8")
     .split(/\r?\n/)
-    .map((line) => line.trim())
+    .map((/** @type {string} */ line) => line.trim())
     .filter(Boolean)
-    .map((line, index) => {
+    .map((/** @type {string} */ line, /** @type {number} */ index) => {
       try {
         return JSON.parse(line);
       } catch (error) {
@@ -986,13 +1096,24 @@ function readImportAdoptionReceipts(projectRoot) {
     });
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {AnyRecord} receipt
+ * @returns {string}
+ */
 function appendImportAdoptionReceipt(projectRoot, receipt) {
   const historyPath = importAdoptionsPath(projectRoot);
   fs.appendFileSync(historyPath, `${JSON.stringify(receipt)}\n`, "utf8");
   return historyPath;
 }
 
+/**
+ * @param {AnyRecord[]} items
+ * @param {string} fieldName
+ * @returns {Record<string, number>}
+ */
 function countByField(items, fieldName) {
+  /** @type {Record<string, number>} */
   const counts = {};
   for (const item of items || []) {
     const key = item?.[fieldName] || "unknown";
@@ -1001,10 +1122,20 @@ function countByField(items, fieldName) {
   return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
 }
 
+/**
+ * @param {string} projectRoot
+ * @returns {string}
+ */
 function importProjectCommandPath(projectRoot) {
   return shellCommandArg(path.relative(process.cwd(), projectRoot) || ".");
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {string} selector
+ * @param {boolean} [write]
+ * @returns {string}
+ */
 function importAdoptCommand(projectRoot, selector, write = false) {
   return `topogram import adopt ${selector} ${importProjectCommandPath(projectRoot)} ${write ? "--write" : "--dry-run"}`;
 }
@@ -1014,27 +1145,31 @@ const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
     selector: "from-plan",
     kind: "plan",
     label: "approved or pending plan items",
-    matches: (item) => item.current_state === "stage" || item.current_state === "accept"
+    matches: (/** @type {AnyRecord} */ item) => item.current_state === "stage" || item.current_state === "accept"
   },
-  { selector: "actors", kind: "kind", label: "actors", matches: (item) => item.kind === "actor" },
-  { selector: "roles", kind: "kind", label: "roles", matches: (item) => item.kind === "role" },
-  { selector: "enums", kind: "kind", label: "enums", matches: (item) => item.kind === "enum" },
-  { selector: "shapes", kind: "kind", label: "shapes", matches: (item) => item.kind === "shape" },
-  { selector: "entities", kind: "kind", label: "entities", matches: (item) => item.kind === "entity" },
-  { selector: "capabilities", kind: "kind", label: "capabilities", matches: (item) => item.kind === "capability" },
-  { selector: "widgets", kind: "kind", label: "widgets", matches: (item) => item.kind === "widget" },
-  { selector: "docs", kind: "track", label: "docs", matches: (item) => item.track === "docs" },
+  { selector: "actors", kind: "kind", label: "actors", matches: (/** @type {AnyRecord} */ item) => item.kind === "actor" },
+  { selector: "roles", kind: "kind", label: "roles", matches: (/** @type {AnyRecord} */ item) => item.kind === "role" },
+  { selector: "enums", kind: "kind", label: "enums", matches: (/** @type {AnyRecord} */ item) => item.kind === "enum" },
+  { selector: "shapes", kind: "kind", label: "shapes", matches: (/** @type {AnyRecord} */ item) => item.kind === "shape" },
+  { selector: "entities", kind: "kind", label: "entities", matches: (/** @type {AnyRecord} */ item) => item.kind === "entity" },
+  { selector: "capabilities", kind: "kind", label: "capabilities", matches: (/** @type {AnyRecord} */ item) => item.kind === "capability" },
+  { selector: "widgets", kind: "kind", label: "widgets", matches: (/** @type {AnyRecord} */ item) => item.kind === "widget" },
+  { selector: "docs", kind: "track", label: "docs", matches: (/** @type {AnyRecord} */ item) => item.track === "docs" },
   {
     selector: "journeys",
     kind: "track",
     label: "journey docs",
-    matches: (item) => item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/")
+    matches: (/** @type {AnyRecord} */ item) => item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/")
   },
-  { selector: "workflows", kind: "track", label: "workflows", matches: (item) => item.track === "workflows" || item.kind === "decision" },
-  { selector: "verification", kind: "kind", label: "verification", matches: (item) => item.kind === "verification" },
-  { selector: "ui", kind: "track", label: "UI reports and widgets", matches: (item) => item.track === "ui" }
+  { selector: "workflows", kind: "track", label: "workflows", matches: (/** @type {AnyRecord} */ item) => item.track === "workflows" || item.kind === "decision" },
+  { selector: "verification", kind: "kind", label: "verification", matches: (/** @type {AnyRecord} */ item) => item.kind === "verification" },
+  { selector: "ui", kind: "track", label: "UI reports and widgets", matches: (/** @type {AnyRecord} */ item) => item.track === "ui" }
 ];
 
+/**
+ * @param {string} inputPath
+ * @returns {AnyRecord}
+ */
 function readImportAdoptionArtifacts(inputPath) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const topogramRoot = normalizeTopogramPath(inputPath);
@@ -1059,13 +1194,18 @@ function readImportAdoptionArtifacts(inputPath) {
   };
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {AnyRecord} adoptionPlan
+ * @returns {AnyRecord[]}
+ */
 function buildBrownfieldBroadAdoptSelectors(projectRoot, adoptionPlan) {
-  const surfaces = adoptionPlan.imported_proposal_surfaces || [];
+  const surfaces = /** @type {AnyRecord[]} */ (adoptionPlan.imported_proposal_surfaces || []);
   return BROWNFIELD_BROAD_ADOPT_SELECTORS.map((definition) => {
     const items = surfaces.filter(definition.matches);
-    const pendingItems = items.filter((item) => !["accept", "accepted", "applied"].includes(item.current_state));
-    const appliedItems = items.filter((item) => ["accept", "accepted", "applied"].includes(item.current_state));
-    const blockedItems = items.filter((item) => item.human_review_required);
+    const pendingItems = items.filter((/** @type {AnyRecord} */ item) => !["accept", "accepted", "applied"].includes(item.current_state));
+    const appliedItems = items.filter((/** @type {AnyRecord} */ item) => ["accept", "accepted", "applied"].includes(item.current_state));
+    const blockedItems = items.filter((/** @type {AnyRecord} */ item) => item.human_review_required);
     return {
       selector: definition.selector,
       kind: definition.kind,
@@ -1080,9 +1220,17 @@ function buildBrownfieldBroadAdoptSelectors(projectRoot, adoptionPlan) {
   }).filter((selector) => selector.itemCount > 0);
 }
 
+/**
+ * @param {AnyRecord} adoptionPlan
+ * @param {AnyRecord} adoptionStatus
+ * @param {string} projectRoot
+ * @returns {AnyRecord}
+ */
 function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
   const surfaces = adoptionPlan.imported_proposal_surfaces || [];
+  /** @type {string[]} */
   const slugs = [];
+  /** @type {Map<string, AnyRecord[]>} */
   const surfaceMap = new Map();
   for (const surface of surfaces) {
     const slug = surface.bundle || "unbundled";
@@ -1090,23 +1238,23 @@ function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
       surfaceMap.set(slug, []);
       slugs.push(slug);
     }
-    surfaceMap.get(slug).push(surface);
+    surfaceMap.get(slug)?.push(surface);
   }
-  for (const item of adoptionStatus?.bundle_priorities || []) {
+  for (const item of /** @type {AnyRecord[]} */ (adoptionStatus?.bundle_priorities || [])) {
     if (item?.bundle && !surfaceMap.has(item.bundle)) {
       surfaceMap.set(item.bundle, []);
       slugs.push(item.bundle);
     }
   }
-  const blockersByBundle = new Map((adoptionStatus?.bundle_blockers || []).map((item) => [item.bundle, item]));
-  const prioritiesByBundle = new Map((adoptionStatus?.bundle_priorities || []).map((item) => [item.bundle, item]));
+  const blockersByBundle = new Map((/** @type {AnyRecord[]} */ (adoptionStatus?.bundle_blockers || [])).map((item) => [item.bundle, item]));
+  const prioritiesByBundle = new Map((/** @type {AnyRecord[]} */ (adoptionStatus?.bundle_priorities || [])).map((item) => [item.bundle, item]));
   const bundles = slugs.sort((left, right) => left.localeCompare(right)).map((slug) => {
     const bundleSurfaces = surfaceMap.get(slug) || [];
     const blocker = blockersByBundle.get(slug) || null;
     const priority = prioritiesByBundle.get(slug) || null;
     const pendingItems = blocker?.pending_items || bundleSurfaces
-      .filter((item) => !["accept", "accepted", "applied"].includes(item.current_state))
-      .map((item) => item.item);
+      .filter((/** @type {AnyRecord} */ item) => !["accept", "accepted", "applied"].includes(item.current_state))
+      .map((/** @type {AnyRecord} */ item) => item.item);
     const appliedItems = blocker?.applied_items || [];
     const blockedItems = blocker?.blocked_items || [];
     return {
@@ -1115,7 +1263,7 @@ function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
       pendingItemCount: pendingItems.length,
       appliedItemCount: appliedItems.length,
       blockedItemCount: blockedItems.length,
-      humanReviewRequiredCount: bundleSurfaces.filter((item) => item.human_review_required).length,
+      humanReviewRequiredCount: bundleSurfaces.filter((/** @type {AnyRecord} */ item) => item.human_review_required).length,
       kindCounts: countByField(bundleSurfaces, "kind"),
       complete: Boolean(priority?.is_complete) || (pendingItems.length === 0 && blockedItems.length === 0 && appliedItems.length > 0),
       evidenceScore: priority?.evidence_score || 0,
@@ -1134,12 +1282,12 @@ function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
       pendingItemCount: pendingCount,
       appliedItemCount: appliedCount,
       blockedItemCount: blockedCount,
-      requiresHumanReviewCount: (adoptionPlan.requires_human_review || []).length || surfaces.filter((item) => item.human_review_required).length
+      requiresHumanReviewCount: (adoptionPlan.requires_human_review || []).length || surfaces.filter((/** @type {AnyRecord} */ item) => item.human_review_required).length
     },
     bundles,
     risks: [
       ...(blockedCount > 0 ? [`${blockedCount} adoption item(s) are blocked.`] : []),
-      ...(((adoptionPlan.requires_human_review || []).length || surfaces.some((item) => item.human_review_required))
+      ...(((adoptionPlan.requires_human_review || []).length || surfaces.some((/** @type {AnyRecord} */ item) => item.human_review_required))
         ? ["Imported proposal items require human review before adoption."]
         : [])
     ],
@@ -1147,6 +1295,10 @@ function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
   };
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportPlanPayload(inputPath) {
   const artifacts = readImportAdoptionArtifacts(inputPath);
   const adoptionStatus = runWorkflow("adoption-status", artifacts.projectRoot).summary || artifacts.adoptionStatus || {};
@@ -1169,6 +1321,10 @@ export function buildBrownfieldImportPlanPayload(inputPath) {
   };
 }
 
+/**
+ * @param {AnyRecord} payload
+ * @returns {void}
+ */
 export function printBrownfieldImportPlan(payload) {
   console.log(`Import adoption plan for ${payload.projectRoot}`);
   console.log(`Proposal items: ${payload.summary.proposalItemCount}`);
@@ -1190,10 +1346,14 @@ export function printBrownfieldImportPlan(payload) {
   console.log(`Next: ${payload.nextCommand}`);
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportAdoptListPayload(inputPath) {
   const artifacts = readImportAdoptionArtifacts(inputPath);
   const plan = buildBrownfieldImportPlanPayload(inputPath);
-  const selectors = plan.bundles.map((bundle) => ({
+  const selectors = plan.bundles.map((/** @type {AnyRecord} */ bundle) => ({
     selector: `bundle:${bundle.bundle}`,
     kind: "bundle",
     bundle: bundle.bundle,
@@ -1214,10 +1374,14 @@ export function buildBrownfieldImportAdoptListPayload(inputPath) {
     selectors,
     broadSelectorCount: broadSelectors.length,
     broadSelectors,
-    nextCommand: selectors.find((selector) => !selector.complete)?.previewCommand || plan.commands.status
+    nextCommand: selectors.find((/** @type {AnyRecord} */ selector) => !selector.complete)?.previewCommand || plan.commands.status
   };
 }
 
+/**
+ * @param {AnyRecord} payload
+ * @returns {void}
+ */
 export function printBrownfieldImportAdoptList(payload) {
   console.log(`Import adoption selectors for ${payload.projectRoot}`);
   if (payload.selectors.length === 0) {
@@ -1242,6 +1406,11 @@ export function printBrownfieldImportAdoptList(payload) {
   console.log(`Next: ${payload.nextCommand}`);
 }
 
+/**
+ * @param {string} outputRoot
+ * @param {string[]} writtenFiles
+ * @returns {AnyRecord[]}
+ */
 function writtenFileHashesForReceipt(outputRoot, writtenFiles) {
   return (writtenFiles || []).map((relativePath) => {
     const filePath = path.join(outputRoot, relativePath);
@@ -1254,6 +1423,10 @@ function writtenFileHashesForReceipt(outputRoot, writtenFiles) {
   });
 }
 
+/**
+ * @param {{ artifacts: AnyRecord, selector: string, options: AnyRecord, importStatus: AnyRecord, summary: AnyRecord, writtenFiles: string[], outputRoot: string }} input
+ * @returns {AnyRecord}
+ */
 function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus, summary, writtenFiles, outputRoot }) {
   return {
     type: "topogram_import_adoption_receipt",
@@ -1278,7 +1451,7 @@ function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus
       added: importStatus.content?.added || [],
       removed: importStatus.content?.removed || []
     },
-    promotedCanonicalItems: (summary.promoted_canonical_items || []).map((item) => ({
+    promotedCanonicalItems: (summary.promoted_canonical_items || []).map((/** @type {AnyRecord} */ item) => ({
       bundle: item.bundle || null,
       kind: item.kind || null,
       item: item.item || null,
@@ -1292,6 +1465,12 @@ function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus
   };
 }
 
+/**
+ * @param {string} selector
+ * @param {string} inputPath
+ * @param {{ write?: boolean, dryRun?: boolean, force?: boolean, reason?: string|null, refreshAdopted?: boolean }} [options]
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportAdoptPayload(selector, inputPath, options = {}) {
   if (!selector) {
     throw new Error("Missing required <selector>. Example: topogram import adopt bundle:task --dry-run");
@@ -1352,6 +1531,10 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
   };
 }
 
+/**
+ * @param {AnyRecord} payload
+ * @returns {void}
+ */
 export function printBrownfieldImportAdopt(payload) {
   console.log(`${payload.dryRun ? "Previewed" : "Applied"} import adoption for ${payload.selector}.`);
   console.log(`Project: ${payload.projectRoot}`);
@@ -1373,6 +1556,10 @@ export function printBrownfieldImportAdopt(payload) {
   }
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportStatusPayload(inputPath) {
   const artifacts = readImportAdoptionArtifacts(inputPath);
   const importCheck = buildBrownfieldImportCheckPayload(artifacts.projectRoot);
@@ -1397,6 +1584,10 @@ export function buildBrownfieldImportStatusPayload(inputPath) {
   };
 }
 
+/**
+ * @param {AnyRecord} payload
+ * @returns {void}
+ */
 export function printBrownfieldImportStatus(payload) {
   console.log(`Import status: ${payload.import.status}`);
   console.log(`Topogram check: ${payload.topogram.ok ? "passed" : "failed"}`);
@@ -1407,12 +1598,17 @@ export function printBrownfieldImportStatus(payload) {
   }
 }
 
+/**
+ * @param {string} projectRoot
+ * @param {AnyRecord[]} receipts
+ * @returns {AnyRecord}
+ */
 function verifyImportAdoptionReceipts(projectRoot, receipts) {
   const topogramRoot = normalizeTopogramPath(projectRoot);
   const files = [];
   for (const receipt of receipts || []) {
     const hashedFiles = Array.isArray(receipt.writtenFileHashes) ? receipt.writtenFileHashes : [];
-    const hashedPaths = new Set(hashedFiles.map((item) => item.path));
+    const hashedPaths = new Set(hashedFiles.map((/** @type {AnyRecord} */ item) => item.path));
     for (const item of hashedFiles) {
       const relativePath = item.path;
       const filePath = path.join(topogramRoot, relativePath);
@@ -1479,6 +1675,11 @@ function verifyImportAdoptionReceipts(projectRoot, receipts) {
   };
 }
 
+/**
+ * @param {string} inputPath
+ * @param {{ verify?: boolean }} [options]
+ * @returns {AnyRecord}
+ */
 export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const historyPath = importAdoptionsPath(projectRoot);
@@ -1503,6 +1704,10 @@ export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
   };
 }
 
+/**
+ * @param {AnyRecord} payload
+ * @returns {void}
+ */
 export function printBrownfieldImportHistory(payload) {
   console.log(`Import adoption history for ${payload.projectRoot}`);
   console.log(`Receipts: ${payload.summary.receiptCount}`);
@@ -1521,7 +1726,7 @@ export function printBrownfieldImportHistory(payload) {
     console.log("");
     console.log(`Verification: ${payload.verification.status}`);
     console.log(`Matched: ${summary.matchedFileCount}; changed: ${summary.changedFileCount}; removed: ${summary.removedFileCount}; unverifiable: ${summary.unverifiableFileCount}`);
-    for (const file of payload.verification.files.filter((item) => item.status !== "matched")) {
+    for (const file of payload.verification.files.filter((/** @type {AnyRecord} */ item) => item.status !== "matched")) {
       console.log(`- ${file.path}: ${file.status}`);
     }
     console.log(payload.verification.note);
