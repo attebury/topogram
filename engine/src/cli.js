@@ -127,6 +127,11 @@ import { loadImplementationProvider } from "./example-implementation.js";
 import { runGenerateAppCommand } from "./cli/commands/generate.js";
 import { runEmitCommand } from "./cli/commands/emit.js";
 import { runQueryCommand } from "./cli/commands/query.js";
+import { runSdlcCommand } from "./cli/commands/sdlc.js";
+import {
+  runLegacyWorkflowCommand,
+  runValidateCommand
+} from "./cli/commands/workflow.js";
 import { writeTemplatePolicyForProject } from "./new-project.js";
 import {
   TEMPLATE_TRUST_FILE,
@@ -134,8 +139,7 @@ import {
 } from "./template-trust.js";
 import { GENERATOR_POLICY_FILE } from "./generator-policy.js";
 import { resolveWorkspace } from "./resolver.js";
-import { formatValidationErrors, validateWorkspace } from "./validator.js";
-import { runWorkflow } from "./workflows.js";
+import { formatValidationErrors } from "./validator.js";
 import { isCatalogSourceDisabled } from "./catalog.js";
 import {
   formatProjectConfigErrors,
@@ -408,8 +412,6 @@ if (commandArgs?.emitHelp) {
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "validate") {
-  commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "catalog" && args[1] === "list") {
   commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
 } else if (args[0] === "catalog" && args[1] === "show") {
@@ -460,48 +462,14 @@ if (commandArgs?.emitHelp) {
   commandArgs = { importStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "import" && args[1] === "history") {
   commandArgs = { importHistory: true, inputPath: commandOperandFrom(2, ".") };
-} else if (args[0] === "import" && args[1] === "app") {
-  commandArgs = { workflowName: "import-app", inputPath: args[2] };
-} else if (args[0] === "import" && args[1] === "docs") {
-  commandArgs = { workflowName: "scan-docs", inputPath: args[2] };
 } else if (args[0] === "import" && args[1] && !args[1].startsWith("-")) {
   commandArgs = { importWorkspace: true, inputPath: args[1] };
 } else if (args[0] === "import") {
   printImportHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "generate" && args[1] === "journeys") {
-  commandArgs = { workflowName: "generate-journeys", inputPath: args[2] };
-} else if (args[0] === "report" && args[1] === "gaps") {
-  commandArgs = { workflowName: "report-gaps", inputPath: args[2] };
-} else if (args[0] === "reconcile" && args[1] === "adopt") {
-  commandArgs = { workflowName: "reconcile", inputPath: args[3], adoptValue: args[2] };
-} else if (args[0] === "reconcile") {
-  commandArgs = { workflowName: "reconcile", inputPath: args[1] };
-} else if (args[0] === "adoption" && args[1] === "status") {
-  commandArgs = { workflowName: "adoption-status", inputPath: args[2] };
 } else if (args[0] === "query") {
   printQueryHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "sdlc" && args[1] === "transition") {
-  const sdlcInput = args[4] && !args[4].startsWith("--") ? args[4] : ".";
-  commandArgs = { sdlcCommand: "transition", inputPath: sdlcInput, sdlcId: args[2], sdlcTargetStatus: args[3] };
-} else if (args[0] === "sdlc" && args[1] === "check") {
-  commandArgs = { sdlcCommand: "check", inputPath: args[2] || "." };
-} else if (args[0] === "sdlc" && args[1] === "explain") {
-  const sdlcInput = args[3] && !args[3].startsWith("--") ? args[3] : ".";
-  commandArgs = { sdlcCommand: "explain", sdlcId: args[2], inputPath: sdlcInput };
-} else if (args[0] === "sdlc" && args[1] === "archive") {
-  commandArgs = { sdlcCommand: "archive", inputPath: args[2] || "." };
-} else if (args[0] === "sdlc" && args[1] === "unarchive") {
-  commandArgs = { sdlcCommand: "unarchive", sdlcId: args[2], inputPath: args[3] || "." };
-} else if (args[0] === "sdlc" && args[1] === "compact") {
-  commandArgs = { sdlcCommand: "compact", sdlcArchiveFile: args[2] };
-} else if (args[0] === "sdlc" && args[1] === "new") {
-  commandArgs = { sdlcCommand: "new", sdlcNewKind: args[2], sdlcNewSlug: args[3], inputPath: args[4] || "." };
-} else if (args[0] === "sdlc" && args[1] === "adopt") {
-  commandArgs = { sdlcCommand: "adopt", inputPath: args[2] || "." };
-} else if (args[0] === "release") {
-  commandArgs = { sdlcCommand: "release", inputPath: args[1] || "." };
 }
 if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath")) {
   inputPath = commandArgs.inputPath;
@@ -615,27 +583,15 @@ const documentIndex = args.indexOf("--document");
 const documentId = documentIndex >= 0 ? args[documentIndex + 1] : null;
 const sdlcKindIndex = args.indexOf("--kind");
 const sdlcKind = sdlcKindIndex >= 0 ? args[sdlcKindIndex + 1] : null;
-const sdlcStatusIndex = args.indexOf("--status");
-const sdlcStatus = sdlcStatusIndex >= 0 ? args[sdlcStatusIndex + 1] : null;
-const sdlcNoteIndex = args.indexOf("--note");
-const sdlcNote = sdlcNoteIndex >= 0 ? args[sdlcNoteIndex + 1] : null;
 const reasonIndex = args.indexOf("--reason");
 const reasonValue = reasonIndex >= 0 && args[reasonIndex + 1] && !args[reasonIndex + 1].startsWith("-")
   ? args[reasonIndex + 1]
   : null;
-const sdlcActorIndex = args.indexOf("--actor");
-const sdlcActor = sdlcActorIndex >= 0 ? args[sdlcActorIndex + 1] : null;
 const sdlcAppVersionIndex = args.indexOf("--app-version");
 const sdlcAppVersion = sdlcAppVersionIndex >= 0 ? args[sdlcAppVersionIndex + 1] : null;
 const sdlcSinceIndex = args.indexOf("--since-tag");
 const sdlcSinceTag = sdlcSinceIndex >= 0 ? args[sdlcSinceIndex + 1] : null;
-const sdlcBeforeIndex = args.indexOf("--before");
-const sdlcBefore = sdlcBeforeIndex >= 0 ? args[sdlcBeforeIndex + 1] : null;
-const sdlcDryRun = args.includes("--dry-run");
-const sdlcStrict = args.includes("--strict");
 const sdlcIncludeArchived = args.includes("--include-archived");
-const sdlcIncludeHistory = args.includes("--history") || args.includes("--include-history");
-const sdlcBrief = args.includes("--brief");
 const profileIndex = args.indexOf("--profile");
 const profileId = profileIndex >= 0 ? args[profileIndex + 1] : null;
 const providerIndex = args.indexOf("--provider");
@@ -1309,121 +1265,19 @@ try {
   }
 
   if (commandArgs?.sdlcCommand) {
-    const sdlcRoot = path.resolve(inputPath || ".");
-    if (commandArgs.sdlcCommand === "transition") {
-      const { transitionStatement } = await import("./sdlc/transition.js");
-      const result = transitionStatement(sdlcRoot, commandArgs.sdlcId, commandArgs.sdlcTargetStatus, {
-        actor: sdlcActor,
-        note: sdlcNote,
-        dryRun: sdlcDryRun
-      });
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "check") {
-      const { checkWorkspace } = await import("./sdlc/check.js");
-      const ast = parsePath(sdlcRoot);
-      const resolved = resolveWorkspace(ast);
-      if (!resolved.ok) {
-        console.error(formatValidationErrors(resolved.validation));
-        process.exit(1);
-      }
-      const result = checkWorkspace(sdlcRoot, resolved);
-      console.log(stableStringify(result));
-      process.exit(sdlcStrict && (!result.ok || result.warnings.length > 0) ? 1 : 0);
-    }
-    if (commandArgs.sdlcCommand === "explain") {
-      const { explain } = await import("./sdlc/explain.js");
-      const ast = parsePath(sdlcRoot);
-      const resolved = resolveWorkspace(ast);
-      if (!resolved.ok) {
-        console.error(formatValidationErrors(resolved.validation));
-        process.exit(1);
-      }
-      const result = explain(sdlcRoot, resolved, commandArgs.sdlcId, {
-        includeHistory: sdlcIncludeHistory
-      });
-      if (sdlcBrief && result.ok) {
-        console.log(stableStringify({
-          id: result.id,
-          status: result.status,
-          next_action: result.next_action
-        }));
-      } else {
-        console.log(stableStringify(result));
-      }
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "archive") {
-      const { archiveBatch, archiveEligibleStatements } = await import("./archive/archive.js");
-      const ast = parsePath(sdlcRoot);
-      const resolved = resolveWorkspace(ast);
-      if (!resolved.ok) {
-        console.error(formatValidationErrors(resolved.validation));
-        process.exit(1);
-      }
-      const ids = archiveEligibleStatements(resolved, {
-        before: sdlcBefore,
-        statuses: sdlcStatus ? sdlcStatus.split(",") : null
-      });
-      const result = archiveBatch(sdlcRoot, ids, { dryRun: sdlcDryRun, by: sdlcActor, reason: sdlcNote });
-      console.log(stableStringify({ candidates: ids, ...result }));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "unarchive") {
-      const { unarchive } = await import("./archive/unarchive.js");
-      const result = unarchive(sdlcRoot, commandArgs.sdlcId, {});
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "compact") {
-      const { compact } = await import("./archive/compact.js");
-      const result = compact(path.resolve(commandArgs.sdlcArchiveFile));
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "new") {
-      const { scaffoldNew } = await import("./sdlc/scaffold.js");
-      const result = scaffoldNew(sdlcRoot, commandArgs.sdlcNewKind, commandArgs.sdlcNewSlug);
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "adopt") {
-      const { sdlcAdopt } = await import("./sdlc/adopt.js");
-      const result = sdlcAdopt(sdlcRoot);
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    if (commandArgs.sdlcCommand === "release") {
-      const { runRelease } = await import("./sdlc/release.js");
-      const result = runRelease(sdlcRoot, {
-        appVersion: sdlcAppVersion,
-        sinceTag: sdlcSinceTag,
-        dryRun: sdlcDryRun,
-        actor: sdlcActor
-      });
-      console.log(stableStringify(result));
-      process.exit(result.ok ? 0 : 1);
-    }
-    throw new Error(`Unknown sdlc command '${commandArgs.sdlcCommand}'`);
+    process.exit(await runSdlcCommand({ commandArgs, args, inputPath }));
   }
 
   if (workflowName) {
-    const result = runWorkflow(workflowName, inputPath, { from: fromValue, adopt: adoptValue, write: shouldWrite, refreshAdopted });
-    if (shouldWrite) {
-      const resolvedOutDir = path.resolve(effectiveOutDir || result.defaultOutDir || "artifacts");
-      fs.mkdirSync(resolvedOutDir, { recursive: true });
-      for (const [relativePath, contents] of Object.entries(result.files || {})) {
-        const destination = path.join(resolvedOutDir, relativePath);
-        fs.mkdirSync(path.dirname(destination), { recursive: true });
-        fs.writeFileSync(destination, typeof contents === "string" ? contents : `${stableStringify(contents)}\n`, "utf8");
-      }
-      console.log(`Wrote ${Object.keys(result.files || {}).length} file(s) to ${resolvedOutDir}`);
-      process.exit(0);
-    }
-
-    console.log(stableStringify(result.summary));
-    process.exit(0);
+    process.exit(runLegacyWorkflowCommand({
+      workflowName,
+      inputPath,
+      from: fromValue,
+      adopt: adoptValue,
+      write: shouldWrite,
+      refreshAdopted,
+      outDir: effectiveOutDir
+    }));
   }
 
   if (generateTarget === "app-bundle" && shouldWrite && !commandArgs?.emitArtifact) {
@@ -1482,9 +1336,8 @@ try {
     }));
   }
 
-  const ast = parsePath(inputPath);
-
   if (shouldResolve) {
+    const ast = parsePath(inputPath);
     const result = resolveWorkspace(ast);
     if (!result.ok) {
       console.error(formatValidationErrors(result.validation));
@@ -1496,16 +1349,10 @@ try {
   }
 
   if (shouldValidate) {
-    const result = validateWorkspace(ast);
-    if (!result.ok) {
-      console.error(formatValidationErrors(result));
-      process.exit(1);
-    }
-
-    const statementCount = ast.files.flatMap((file) => file.statements).length;
-    console.log(`Validated ${ast.files.length} file(s) and ${statementCount} statement(s) with 0 errors.`);
-    process.exit(0);
+    process.exit(runValidateCommand(inputPath));
   }
+
+  const ast = parsePath(inputPath);
 
   if (emitJson) {
     console.log(stableStringify(ast));

@@ -527,6 +527,9 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printQueryDefinition(",
     "function printQueryList(",
     "function runQueryCommand(",
+    "function runSdlcCommand(",
+    "function runValidateCommand(",
+    "function runLegacyWorkflowCommand(",
     "function printGeneratorHelp(",
     "function printGeneratorCheck(",
     "function buildGeneratorListPayload(",
@@ -583,7 +586,10 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { generateTarget: args[1]",
     "commandArgs = { agentBrief:",
     "commandArgs = { widgetCheck:",
-    "commandArgs = { widgetBehavior:"
+    "commandArgs = { widgetBehavior:",
+    "commandArgs = { validate:",
+    "commandArgs = { workflowName:",
+    "commandArgs = { sdlcCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 

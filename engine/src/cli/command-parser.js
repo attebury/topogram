@@ -70,6 +70,9 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "generate" && args[1] === "app") {
     return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 2), defaultOutDir: "./app" };
   }
+  if (args[0] === "generate" && args[1] === "journeys") {
+    return { workflowName: "generate-journeys", inputPath: args[2] };
+  }
   if (args[0] === "generate" && args[1] !== "journeys") {
     return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 1), defaultOutDir: "./app" };
   }
@@ -103,6 +106,9 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "check") {
     return { check: true, inputPath: commandPath(args, 1) };
   }
+  if (args[0] === "validate") {
+    return { validate: true, inputPath: args[1] };
+  }
   if (args[0] === "agent" && args[1] === "brief") {
     return { agentBrief: true, inputPath: commandPath(args, 2) };
   }
@@ -129,6 +135,60 @@ export function parseSplitCommandArgs(args) {
   }
   if (args[0] === "release" && args[1] === "roll-consumers") {
     return { releaseRollConsumers: true, releaseRollVersion: args[2], inputPath: null };
+  }
+  if (args[0] === "import" && args[1] === "app") {
+    return { workflowName: "import-app", inputPath: args[2] };
+  }
+  if (args[0] === "import" && args[1] === "docs") {
+    return { workflowName: "scan-docs", inputPath: args[2] };
+  }
+  if (args[0] === "report" && args[1] === "gaps") {
+    return { workflowName: "report-gaps", inputPath: args[2] };
+  }
+  if (args[0] === "reconcile" && args[1] === "adopt") {
+    return { workflowName: "reconcile", inputPath: args[3], adoptValue: args[2] };
+  }
+  if (args[0] === "reconcile") {
+    return { workflowName: "reconcile", inputPath: args[1] };
+  }
+  if (args[0] === "adoption" && args[1] === "status") {
+    return { workflowName: "adoption-status", inputPath: args[2] };
+  }
+  if (args[0] === "sdlc" && args[1] === "transition") {
+    return {
+      sdlcCommand: "transition",
+      inputPath: args[4] && !args[4].startsWith("-") ? args[4] : ".",
+      sdlcId: args[2],
+      sdlcTargetStatus: args[3]
+    };
+  }
+  if (args[0] === "sdlc" && args[1] === "check") {
+    return { sdlcCommand: "check", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "sdlc" && args[1] === "explain") {
+    return {
+      sdlcCommand: "explain",
+      sdlcId: args[2],
+      inputPath: args[3] && !args[3].startsWith("-") ? args[3] : "."
+    };
+  }
+  if (args[0] === "sdlc" && args[1] === "archive") {
+    return { sdlcCommand: "archive", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "sdlc" && args[1] === "unarchive") {
+    return { sdlcCommand: "unarchive", sdlcId: args[2], inputPath: commandPath(args, 3, ".") };
+  }
+  if (args[0] === "sdlc" && args[1] === "compact") {
+    return { sdlcCommand: "compact", sdlcArchiveFile: args[2], inputPath: "." };
+  }
+  if (args[0] === "sdlc" && args[1] === "new") {
+    return { sdlcCommand: "new", sdlcNewKind: args[2], sdlcNewSlug: args[3], inputPath: commandPath(args, 4, ".") };
+  }
+  if (args[0] === "sdlc" && args[1] === "adopt") {
+    return { sdlcCommand: "adopt", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "release") {
+    return { sdlcCommand: "release", inputPath: commandPath(args, 1, ".") };
   }
   return null;
 }
