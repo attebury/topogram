@@ -27,6 +27,11 @@ function commandPath(args, index, fallback = "./topogram") {
  * @returns {SplitCommandArgs|null}
  */
 export function parseSplitCommandArgs(args) {
+  if (args[0] === "new" || args[0] === "create") {
+    return args.includes("--list-templates")
+      ? { templateList: true, inputPath: null }
+      : { newProject: true, inputPath: args[1] };
+  }
   if (args[0] === "version" || args[0] === "--version") {
     return { version: true, inputPath: null };
   }

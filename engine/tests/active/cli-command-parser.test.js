@@ -4,6 +4,18 @@ import test from "node:test";
 import { parseSplitCommandArgs } from "../../src/cli/command-parser.js";
 
 test("split command parser handles extracted command families", () => {
+  assert.deepEqual(parseSplitCommandArgs(["new", "./starter", "--template", "hello-web"]), {
+    newProject: true,
+    inputPath: "./starter"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["create", "./starter"]), {
+    newProject: true,
+    inputPath: "./starter"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["new", "--list-templates"]), {
+    templateList: true,
+    inputPath: null
+  });
   assert.deepEqual(parseSplitCommandArgs(["version"]), { version: true, inputPath: null });
   assert.deepEqual(parseSplitCommandArgs(["--version"]), { version: true, inputPath: null });
   assert.deepEqual(parseSplitCommandArgs(["query", "list", "--json"]), { queryList: true, inputPath: null });

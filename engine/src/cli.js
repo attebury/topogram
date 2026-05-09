@@ -11,6 +11,7 @@ import {
   printAgentHelp,
   runAgentBriefCommand
 } from "./cli/commands/agent.js";
+import { runNewProjectCommand } from "./cli/commands/new.js";
 import { handleSetupCommand, printSetupHelp } from "./cli/commands/setup.js";
 import { buildVersionPayload, printVersion } from "./cli/commands/version.js";
 import {
@@ -125,10 +126,7 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
-import {
-  createNewProject,
-  writeTemplatePolicyForProject
-} from "./new-project.js";
+import { writeTemplatePolicyForProject } from "./new-project.js";
 import {
   TEMPLATE_TRUST_FILE,
   validateProjectImplementationTrust
@@ -167,7 +165,6 @@ import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
 import { isCatalogSourceDisabled } from "./catalog.js";
-import { resolveCatalogTemplateAlias } from "./cli/catalog-alias.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -211,8 +208,6 @@ try {
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
 const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "persistence-scaffold",
   "hono-server",
@@ -410,65 +405,6 @@ function targetRequiresImplementationProvider(target) {
   return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
 }
 
-/**
- * @param {ReturnType<typeof createNewProject>} result
- * @param {string} cwd
- * @returns {string}
- */
-function displayProjectRootForNewProject(result, cwd) {
-  const relativeProjectRoot = path.relative(cwd, result.projectRoot);
-  return !relativeProjectRoot || relativeProjectRoot.startsWith("..")
-    ? result.projectRoot
-    : relativeProjectRoot;
-}
-
-/**
- * @param {ReturnType<typeof createNewProject>} result
- * @param {string} cwd
- * @returns {void}
- */
-function printNewProjectResult(result, cwd) {
-  const template = result.template || {};
-  console.log(`Created Topogram project at ${result.projectRoot}.`);
-  console.log(`Template: ${result.templateName}`);
-  console.log(`Source: ${template.source || "unknown"}`);
-  if (template.sourceSpec) {
-    console.log(`Source spec: ${template.sourceSpec}`);
-  }
-  if (template.catalog) {
-    console.log(`Catalog: ${template.catalog.id} from ${template.catalog.source}`);
-    console.log(`Package: ${template.catalog.packageSpec}`);
-  }
-  console.log(`Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
-  console.log("Policy: topogram.template-policy.json");
-  console.log(`Generator policy: ${GENERATOR_POLICY_FILE}`);
-  console.log("Template files: .topogram-template-files.json");
-  if (template.includesExecutableImplementation) {
-    console.log("Trust: .topogram-template-trust.json");
-  }
-  for (const warning of result.warnings) {
-    console.warn(`Warning: ${warning}`);
-  }
-  console.log("");
-  console.log("Next steps:");
-  console.log(`  cd ${displayProjectRootForNewProject(result, cwd)}`);
-  console.log("  npm install");
-  console.log("  npm run agent:brief");
-  console.log("  npm run doctor");
-  console.log("  npm run source:status");
-  console.log("  npm run template:explain");
-  console.log("  npm run check");
-  console.log("  npm run generator:policy:status");
-  console.log("  npm run generator:policy:check");
-  if (template.includesExecutableImplementation) {
-    console.log("  npm run template:policy:explain");
-    console.log("  npm run trust:status");
-  }
-  console.log("  npm run generate");
-  console.log("  npm run verify");
-}
-
-
 function workflowPresetSelectors({
   taskModeArtifact,
   providerId = null,
@@ -631,10 +567,6 @@ let inputPath = args[0];
 commandArgs = parseSplitCommandArgs(args);
 if (commandArgs) {
   // Parsed by split command modules.
-} else if (args[0] === "new" || args[0] === "create") {
-  commandArgs = args.includes("--list-templates")
-    ? { templateList: true, inputPath: null }
-    : { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "widget") {
@@ -1418,23 +1350,7 @@ try {
   }
 
   if (commandArgs?.newProject) {
-    const projectRoot = path.resolve(inputPath);
-    const relativeToEngine = path.relative(ENGINE_ROOT, projectRoot);
-    if (relativeToEngine === "" || (!relativeToEngine.startsWith("..") && !path.isAbsolute(relativeToEngine))) {
-      throw new Error(
-        `Refusing to create a generated project inside the engine directory. Use a path outside engine, for example '../${path.basename(projectRoot)}'.`
-      );
-    }
-    const resolvedTemplate = resolveCatalogTemplateAlias(templateName, catalogSource);
-    const result = createNewProject({
-      targetPath: inputPath,
-      templateName: resolvedTemplate.templateName,
-      templateProvenance: resolvedTemplate.provenance,
-      engineRoot: ENGINE_ROOT,
-      templatesRoot: TEMPLATES_ROOT
-    });
-    printNewProjectResult(result, process.cwd());
-    process.exit(0);
+    process.exit(runNewProjectCommand(inputPath, { templateName, catalogSource, cwd: process.cwd() }));
   }
 
   if (shouldTemplateList) {

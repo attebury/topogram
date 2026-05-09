@@ -451,6 +451,9 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printVersion(",
     "function printUsage(",
     "function printNewHelp(",
+    "function displayProjectRootForNewProject(",
+    "function printNewProjectResult(",
+    "function runNewProjectCommand(",
     "function printGenerateHelp(",
     "function printEmitHelp(",
     "function printWidgetHelp(",
@@ -565,6 +568,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { version:",
     "commandArgs = { queryList:",
     "commandArgs = { queryShow:",
+    "commandArgs = { newProject:",
     "commandArgs = { agentBrief:",
     "commandArgs = { widgetCheck:",
     "commandArgs = { widgetBehavior:"
