@@ -1,0 +1,440 @@
+// @ts-nocheck
+import { normalizeEndpointPathForMatch, SCALAR_FIELD_TYPES } from "../import-app/index.js";
+import { canonicalCandidateTerm, ensureTrailingNewline, idHintify, titleCase } from "../../text-helpers.js";
+import { renderMarkdownDoc } from "../shared.js";
+import {
+  buildAuthClaimReviewGuidance,
+  buildAuthOwnershipReviewGuidance,
+  buildAuthPermissionReviewGuidance,
+  formatAuthClaimHintInline,
+  formatAuthOwnershipHintInline,
+  formatAuthPermissionHintInline
+} from "./auth.js";
+
+export function normalizeCandidateFieldType(fieldType, knownEnums = new Set()) {
+  const normalized = idHintify(fieldType);
+  if (SCALAR_FIELD_TYPES.has(normalized)) {
+    return normalized;
+  }
+  if (knownEnums.has(normalized)) {
+    return normalized;
+  }
+  return normalized || "string";
+}
+
+export function renderCandidateMetadataComments(record) {
+  const lines = [
+    `# imported confidence: ${record.confidence || "unknown"}`,
+    `# imported source_kind: ${record.source_kind || "unknown"}`
+  ];
+  if (record.inference_summary) {
+    lines.push(`# imported inference: ${record.inference_summary}`);
+  }
+  for (const provenance of (record.provenance || []).slice(0, 3)) {
+    lines.push(`# imported provenance: ${provenance}`);
+  }
+  if ((record.provenance || []).length > 3) {
+    lines.push(`# imported provenance_more: ${(record.provenance || []).length - 3}`);
+  }
+  return lines.join("\n");
+}
+
+export function renderCandidateEntity(record, knownEnums = new Set()) {
+  const fields = record.fields || [];
+  const primaryKeys = fields.filter((field) => field.primary_key).map((field) => field.name);
+  const uniqueKeys = fields.filter((field) => field.unique && !field.primary_key).map((field) => field.name);
+  const fieldLines = fields.map((field) => {
+    const fieldType = normalizeCandidateFieldType(field.field_type, knownEnums);
+    const requiredness = field.required ? "required" : "optional";
+    return `    ${field.name} ${fieldType} ${requiredness}`;
+  });
+  const lines = [
+    `entity ${record.id_hint} {`,
+    `  name "${record.label}"`,
+    `  description "Candidate entity imported from brownfield schema evidence"`,
+    "",
+    "  fields {",
+    ...fieldLines,
+    "  }"
+  ];
+  if (primaryKeys.length > 0 || uniqueKeys.length > 0) {
+    lines.push("", "  keys {");
+    if (primaryKeys.length > 0) {
+      lines.push(`    primary [${primaryKeys.join(", ")}]`);
+    }
+    if (uniqueKeys.length > 0) {
+      lines.push(`    unique [${uniqueKeys.join(", ")}]`);
+    }
+    lines.push("  }");
+  }
+  lines.push("", "  status active", "}");
+  return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
+}
+
+export function renderCandidateEnum(record) {
+  return ensureTrailingNewline(
+    `${renderCandidateMetadataComments(record)}\n${[
+      `enum ${record.id_hint} {`,
+      `  values [${(record.values || []).join(", ")}]`,
+      "}"
+    ].join("\n")}`
+  );
+}
+
+export function inferCapabilityVerb(record) {
+  const id = record.id_hint || "";
+  if (id.startsWith("cap_create_")) return "creates";
+  if (id.startsWith("cap_update_") || (record.endpoint?.method || "").toUpperCase() === "PATCH") return "updates";
+  if (id.startsWith("cap_delete_") || (record.endpoint?.method || "").toUpperCase() === "DELETE") return "deletes";
+  return "reads";
+}
+
+export function inferCapabilityEntityId(record) {
+  if (record.entity_id) {
+    return record.entity_id;
+  }
+  const pathSegments = normalizeEndpointPathForMatch(record.endpoint?.path || "")
+    .split("/")
+    .filter(Boolean)
+    .filter((segment) => segment !== "{}");
+  const resourceSegment = pathSegments[0] || record.id_hint.replace(/^cap_(create|update|delete|get|list)_/, "");
+  return `entity_${idHintify(canonicalCandidateTerm(resourceSegment))}`;
+}
+
+export function shapeIdForCapability(record, direction) {
+  const stem = record.id_hint.replace(/^cap_/, "");
+  return direction === "input" ? `shape_input_${stem}` : `shape_output_${stem}`;
+}
+
+export function renderCandidateShape(shapeId, label, fields) {
+  const lines = [
+    `shape ${shapeId} {`,
+    `  name "${label}"`,
+    `  description "Candidate shape imported from brownfield API evidence"`,
+    "",
+    "  fields {"
+  ];
+  for (const field of fields) {
+    lines.push(`    ${field} string optional`);
+  }
+  lines.push("  }", "", "  status active", "}");
+  return ensureTrailingNewline(lines.join("\n"));
+}
+
+export function renderCandidateCapability(record, inputShapeId, outputShapeId) {
+  const operationKind = inferCapabilityVerb(record);
+  const entityId = inferCapabilityEntityId(record);
+  const lines = [
+    `capability ${record.id_hint} {`,
+    `  name "${record.label}"`,
+    `  description "Candidate capability imported from brownfield API evidence"`,
+    ""
+  ];
+  if (record.auth_hint === "secured") {
+    lines.push("  actors [user]", "");
+  }
+  lines.push(`  ${operationKind} [${entityId}]`);
+  if (inputShapeId) {
+    lines.push("", `  input [${inputShapeId}]`);
+  }
+  if (outputShapeId) {
+    lines.push(`  output [${outputShapeId}]`);
+  }
+  lines.push("", "  status active", "}");
+  return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
+}
+
+export function renderCandidateVerification(record, scenarios = []) {
+  const validates = [...new Set(record.related_capabilities || [])];
+  const scenarioSymbols = scenarios.length > 0
+    ? scenarios.map((entry) => entry.id_hint)
+    : (record.scenario_ids || []).map((entry) => idHintify(entry));
+  const lines = [
+    `verification ${record.id_hint} {`,
+    `  name "${record.label}"`,
+    `  description "Candidate verification imported from brownfield test evidence"`,
+    "",
+    `  validates [${validates.join(", ")}]`,
+    `  method ${record.method || "runtime"}`,
+    "",
+    `  scenarios [${scenarioSymbols.join(", ")}]`,
+    "",
+    "  status active",
+    "}"
+  ];
+  return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
+}
+
+export function renderCandidateWorkflowDecision(record, states, transitions) {
+  const context = [
+    ...states.map((state) => state.state_id),
+    ...transitions.map((transition) => transition.capability_id).filter(Boolean)
+  ].filter(Boolean);
+  const consequences = transitions.map((transition) => transition.to_state).filter(Boolean);
+  return ensureTrailingNewline(
+    `${renderCandidateMetadataComments(record)}\n${[
+      `decision dec_${record.id_hint.replace(/^workflow_/, "")} {`,
+      `  name "${record.label}"`,
+      `  description "Candidate workflow decision imported from brownfield evidence"`,
+      "",
+      `  context [${[...new Set(context)].join(", ")}]`,
+      `  consequences [${[...new Set(consequences)].join(", ")}]`,
+      "",
+      "  status proposed",
+      "}"
+    ].join("\n")}`
+  );
+}
+
+export function renderCandidateWorkflowDoc(record, states, transitions) {
+  const metadata = {
+    id: record.id_hint,
+    kind: "workflow",
+    title: record.label,
+    status: "inferred",
+    source_of_truth: "imported",
+    confidence: record.confidence || "medium",
+    review_required: true,
+    related_entities: [record.entity_id].filter(Boolean),
+    related_capabilities: record.related_capabilities || [],
+    provenance: record.provenance || [],
+    tags: ["import", "workflow"]
+  };
+  const body = [
+    "Candidate workflow imported from brownfield evidence.",
+    "",
+    `Entity: \`${record.entity_id}\``,
+    `States: ${states.length ? states.map((state) => `\`${state.state_id}\``).join(", ") : "_none_"}`,
+    `Transitions: ${transitions.length ? transitions.map((transition) => `\`${transition.capability_id || transition.id_hint}\` -> \`${transition.to_state}\``).join(", ") : "_none_"}`,
+    "",
+    "Review this workflow before promoting it as canonical."
+  ].join("\n");
+  return renderMarkdownDoc(metadata, body);
+}
+
+export function renderCandidateUiReportDoc(screen, routes, actions) {
+  const metadata = {
+    id: `ui_${screen.id_hint}`,
+    kind: "report",
+    title: `${screen.label} UI Surface`,
+    status: "inferred",
+    source_of_truth: "imported",
+    confidence: screen.confidence || "medium",
+    review_required: true,
+    related_entities: [screen.entity_id].filter(Boolean),
+    provenance: screen.provenance || [],
+    tags: ["import", "ui"]
+  };
+  const body = [
+    "Candidate UI surface imported from brownfield route evidence.",
+    "",
+    `Screen: \`${screen.id_hint}\` (${screen.screen_kind})`,
+    `Routes: ${routes.length ? routes.map((route) => `\`${route.path}\``).join(", ") : "_none_"}`,
+    `Actions: ${actions.length ? actions.map((action) => `\`${action.capability_hint}\``).join(", ") : "_none_"}`,
+    "",
+    "Review this UI surface before promoting it into canonical docs or projections."
+  ].join("\n");
+  return renderMarkdownDoc(metadata, body);
+}
+
+export function renderCandidateWidget(widget) {
+  const propName = widget.data_prop || "rows";
+  const pattern = widget.pattern || "search_results";
+  const region = widget.region || "results";
+  return ensureTrailingNewline(
+    [
+      `widget ${widget.id_hint} {`,
+      `  name "${widget.label || widget.id_hint}"`,
+      '  description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
+      "  category collection",
+      "  props {",
+      `    ${propName} array required`,
+      "  }",
+      `  patterns [${pattern}]`,
+      `  regions [${region}]`,
+      "  status proposed",
+      "}"
+    ].join("\n")
+  );
+}
+
+export function renderProjectionPatchDoc(patch) {
+  const lines = [
+    `# ${patch.projection_id} Patch Candidate`,
+    "",
+    `Projection: \`${patch.projection_id}\``,
+    `Kind: \`${patch.kind}\``,
+    patch.projection_type ? `Projection type: \`${patch.projection_type}\`` : null,
+    "",
+    patch.reason || "Candidate additive projection patch inferred during reconcile.",
+    ""
+  ].filter(Boolean);
+
+  if ((patch.missing_realizes || []).length > 0) {
+    lines.push("## Missing Realizes", "");
+    for (const item of patch.missing_realizes) {
+      lines.push(`- \`${item}\``);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_http || []).length > 0) {
+    lines.push("## Missing HTTP Entries", "");
+    for (const entry of patch.missing_http) {
+      lines.push(`- \`${entry.capability_id}\` ${entry.method} \`${entry.path}\``);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_screens || []).length > 0) {
+    lines.push("## Missing UI Screens", "");
+    for (const item of patch.missing_screens) {
+      lines.push(`- \`${item}\``);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_routes || []).length > 0) {
+    lines.push("## Missing UI Routes", "");
+    for (const entry of patch.missing_routes) {
+      lines.push(`- \`${entry.screen_id}\` -> \`${entry.path}\``);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_actions || []).length > 0) {
+    lines.push("## Missing UI Actions", "");
+    for (const entry of patch.missing_actions) {
+      lines.push(`- \`${entry.capability_hint}\` on \`${entry.screen_id}\``);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_auth_permissions || []).length > 0) {
+    lines.push("## Inferred Permission Rules", "");
+    for (const entry of patch.missing_auth_permissions) {
+      lines.push(`- ${formatAuthPermissionHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
+      lines.push(`  - review next: ${entry.review_guidance || buildAuthPermissionReviewGuidance(entry)}`);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_auth_claims || []).length > 0) {
+    lines.push("## Inferred Auth Claim Rules", "");
+    for (const entry of patch.missing_auth_claims) {
+      lines.push(`- ${formatAuthClaimHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
+      lines.push(`  - review next: ${entry.review_guidance || buildAuthClaimReviewGuidance(entry)}`);
+    }
+    lines.push("");
+  }
+
+  if ((patch.missing_auth_ownerships || []).length > 0) {
+    lines.push("## Inferred Ownership Rules", "");
+    for (const entry of patch.missing_auth_ownerships) {
+      lines.push(`- ${formatAuthOwnershipHintInline(entry)} on \`authorization\` for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
+      lines.push(`  - review next: ${entry.review_guidance || buildAuthOwnershipReviewGuidance(entry)}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("## Review Notes", "", "- Review this patch before editing canonical projection files.", "- This artifact is additive guidance only and is not auto-applied.");
+  return ensureTrailingNewline(lines.join("\n"));
+}
+
+export function renderDocLinkPatchDoc(patch) {
+  const metadata = {
+    id: `doc-link-${patch.doc_id}`,
+    kind: "report",
+    title: `Doc Link Update for ${titleCase(String(patch.doc_id || "").replaceAll("_", " "))}`,
+    status: "inferred",
+    source_of_truth: "imported",
+    confidence: "medium",
+    review_required: true,
+    related_docs: [patch.doc_id],
+    related_actors: patch.add_related_actors || [],
+    related_roles: patch.add_related_roles || [],
+    related_capabilities: patch.add_related_capabilities || [],
+    related_rules: patch.add_related_rules || [],
+    related_workflows: patch.add_related_workflows || [],
+    tags: ["import", "doc-link-update"]
+  };
+  const lines = [
+    `Target doc: \`${patch.doc_id}\` (${patch.doc_kind})`,
+    "",
+    "Suggested metadata updates:"
+  ];
+  if ((patch.add_related_actors || []).length > 0) {
+    lines.push("", "```yaml", "related_actors:");
+    for (const actorId of patch.add_related_actors || []) {
+      lines.push(`  - ${actorId}`);
+    }
+    lines.push("```");
+  }
+  if ((patch.add_related_roles || []).length > 0) {
+    lines.push("", "```yaml", "related_roles:");
+    for (const roleId of patch.add_related_roles || []) {
+      lines.push(`  - ${roleId}`);
+    }
+    lines.push("```");
+  }
+  if ((patch.add_related_capabilities || []).length > 0) {
+    lines.push("", "```yaml", "related_capabilities:");
+    for (const capabilityId of patch.add_related_capabilities || []) {
+      lines.push(`  - ${capabilityId}`);
+    }
+    lines.push("```");
+  }
+  if ((patch.add_related_rules || []).length > 0) {
+    lines.push("", "```yaml", "related_rules:");
+    for (const ruleId of patch.add_related_rules || []) {
+      lines.push(`  - ${ruleId}`);
+    }
+    lines.push("```");
+  }
+  if ((patch.add_related_workflows || []).length > 0) {
+    lines.push("", "```yaml", "related_workflows:");
+    for (const workflowId of patch.add_related_workflows || []) {
+      lines.push(`  - ${workflowId}`);
+    }
+    lines.push("```");
+  }
+  lines.push("", patch.recommendation, "", "Review this draft update before editing the canonical doc.");
+  return renderMarkdownDoc(metadata, lines.join("\n"));
+}
+
+export function renderDocMetadataPatchDoc(patch) {
+  const metadata = {
+    id: `doc-metadata-${patch.doc_id}`,
+    kind: "report",
+    title: `Doc Metadata Update for ${titleCase(String(patch.doc_id || "").replaceAll("_", " "))}`,
+    status: "inferred",
+    source_of_truth: "imported",
+    confidence: patch.imported_confidence || "medium",
+    review_required: true,
+    related_docs: [patch.doc_id],
+    tags: ["import", "doc-metadata-update"]
+  };
+  const lines = [
+    `Target doc: \`${patch.doc_id}\` (${patch.doc_kind})`,
+    "",
+    "Suggested metadata updates:"
+  ];
+  if (patch.summary) {
+    lines.push("", "```yaml", `summary: ${JSON.stringify(patch.summary)}`, "```");
+  }
+  if (patch.success_outcome) {
+    lines.push("", "```yaml", `success_outcome: ${JSON.stringify(patch.success_outcome)}`, "```");
+  }
+  if ((patch.actors || []).length > 0) {
+    lines.push("", "```yaml", "actors:");
+    for (const actor of patch.actors || []) {
+      lines.push(`  - ${actor}`);
+    }
+    lines.push("```");
+  }
+  lines.push("", patch.recommendation, "", "Review this draft update before editing the canonical doc.");
+  return renderMarkdownDoc(metadata, lines.join("\n"));
+}

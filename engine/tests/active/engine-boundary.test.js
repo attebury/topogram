@@ -643,3 +643,43 @@ test("split command parser stays a command-family composition root", () => {
 
   assert.deepEqual(offenders, []);
 });
+
+test("workflow entrypoint stays dispatch-only after workflow split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "workflows.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenWorkflowDetails = [
+    "from \"node:fs\"",
+    "from \"node:path\"",
+    "parsePath",
+    "resolveWorkspace",
+    "function scanDocsWorkflow",
+    "function importAppWorkflow",
+    "function reconcileWorkflow",
+    "function adoptionStatusWorkflow",
+    "function reportGapsWorkflow",
+    "function refreshDocsWorkflow"
+  ];
+  const offenders = forbiddenWorkflowDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 80, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/workflows\//);
+});
+
+test("workflow implementation modules stay focused after split", () => {
+  const roots = [
+    path.join(repoRoot, "engine", "src", "workflows")
+  ];
+  const offenders = [];
+  for (const root of roots) {
+    for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      const lineCount = fs.readFileSync(file, "utf8").split(/\r?\n/).length;
+      if (lineCount > 800) {
+        offenders.push({ file: relative, lineCount });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
