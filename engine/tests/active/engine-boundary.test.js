@@ -439,3 +439,17 @@ test("GitHub shell fallback stays isolated to the GitHub client", () => {
 
   assert.deepEqual(offenders, []);
 });
+
+test("split CLI command families stay out of the binary shim", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli.js"), "utf8");
+  const forbiddenDefinitions = [
+    "function printSetupHelp(",
+    "function printPackageAuthSetup(",
+    "function printCatalogAuthSetup(",
+    "function buildVersionPayload(",
+    "function printVersion("
+  ];
+  const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
+
+  assert.deepEqual(offenders, []);
+});
