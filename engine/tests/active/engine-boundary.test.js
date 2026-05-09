@@ -85,7 +85,7 @@ const generatedWorkflowDirectProductReferences = [
 ];
 const removedGenerateArtifactReferences = ["--generate"];
 const removedGenerateArtifactAllowedFiles = new Set([
-  "engine/src/cli.js",
+  "engine/src/cli/migration-guidance.js",
   "engine/tests/active/dsl-migration-diagnostics.test.js",
   "engine/tests/active/engine-boundary.test.js",
   "engine/tests/active/generated-app-workflow.test.js"
@@ -148,7 +148,7 @@ const staleDslVocabulary = [
 ];
 const staleDslVocabularyAllowedFiles = new Set([
   "docs/components.md",
-  "engine/src/cli.js",
+  "engine/src/cli/migration-guidance.js",
   "engine/src/cli/help.js",
   "engine/src/generator/registry.js",
   "engine/src/project-config.js",
@@ -471,6 +471,13 @@ test("split CLI command families stay out of the binary shim", () => {
     "function runWidgetCheckCommand(",
     "function runWidgetBehaviorCommand(",
     "function runCheckCommand(",
+    "function summarize(",
+    "function runResolveCommand(",
+    "function runParseCommand(",
+    "function cliMigrationError(",
+    "function artifactTargetMigrationError(",
+    "function parseCliOptions(",
+    "function optionValue(",
     "function printImportHelp(",
     "function buildBrownfieldImportWorkspacePayload(",
     "function printBrownfieldImportWorkspace(",

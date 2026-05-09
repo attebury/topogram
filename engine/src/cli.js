@@ -7,6 +7,11 @@ import { fileURLToPath } from "node:url";
 import { assertSupportedNode } from "./runtime-support.js";
 import { parseSplitCommandArgs } from "./cli/command-parser.js";
 import {
+  artifactTargetMigrationError,
+  cliMigrationError
+} from "./cli/migration-guidance.js";
+import { parseCliOptions } from "./cli/options.js";
+import {
   printAgentHelp,
   runAgentBriefCommand
 } from "./cli/commands/agent.js";
@@ -56,17 +61,19 @@ import {
   printImportHelp
 } from "./cli/commands/import.js";
 import { runImportCommand } from "./cli/commands/import-runner.js";
-import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
 import { runGenerateAppCommand } from "./cli/commands/generate.js";
 import { runEmitCommand } from "./cli/commands/emit.js";
+import {
+  runParseCommand,
+  runResolveCommand
+} from "./cli/commands/inspect.js";
 import { runQueryCommand } from "./cli/commands/query.js";
 import { runSdlcCommand } from "./cli/commands/sdlc.js";
 import {
   runLegacyWorkflowCommand,
   runValidateCommand
 } from "./cli/commands/workflow.js";
-import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors } from "./validator.js";
 import { LOCAL_NPMRC_ENV } from "./npm-safety.js";
 import {
@@ -166,20 +173,6 @@ function printCommandHelp(command) {
   return false;
 }
 
-function summarize(workspaceAst) {
-  const statements = workspaceAst.files.flatMap((file) => file.statements);
-  const byKind = new Map();
-
-  for (const statement of statements) {
-    byKind.set(statement.kind, (byKind.get(statement.kind) || 0) + 1);
-  }
-
-  console.log(`Parsed ${workspaceAst.files.length} file(s) and ${statements.length} statement(s).`);
-  for (const [kind, count] of [...byKind.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    console.log(`- ${kind}: ${count}`);
-  }
-}
-
 function normalizeTopogramPath(inputPath) {
   const absolute = path.resolve(inputPath);
   if (path.basename(absolute) === "topogram") {
@@ -224,42 +217,9 @@ if (setupExitCode !== null) {
   process.exit(setupExitCode);
 }
 
-const RENAMED_CLI_ARGS = new Map([
-  ["--component", "--widget"]
-]);
-const RENAMED_GENERATE_TARGETS = new Map([
-  ["ui-component-contract", "ui-widget-contract"],
-  ["component-conformance-report", "widget-conformance-report"],
-  ["component-behavior-report", "widget-behavior-report"],
-  ["ui-web-contract", "ui-surface-contract"],
-  ["ui-web-debug", "ui-surface-debug"]
-]);
-
-if (args[0] === "component") {
-  console.error("Command 'topogram component' was renamed to 'topogram widget'.");
-  process.exit(1);
-}
-
-for (const [oldArg, newArg] of RENAMED_CLI_ARGS) {
-  if (args.includes(oldArg)) {
-    console.error(`CLI flag '${oldArg}' was renamed to '${newArg}'.`);
-    process.exit(1);
-  }
-}
-
-function commandPath(index, fallback = "./topogram") {
-  const value = args[index];
-  return value && !value.startsWith("-") ? value : fallback;
-}
-
-const removedGenerateIndex = args.indexOf("--generate");
-if (removedGenerateIndex >= 0) {
-  const target = args[removedGenerateIndex + 1];
-  const input = args[0] === "generate" ? commandPath(1) : commandPath(0);
-  const replacement = target && !target.startsWith("-")
-    ? `topogram emit ${target} ${input}`
-    : "topogram emit <target> <path>";
-  console.error(`The artifact flag '--generate' was removed. Use '${replacement}' instead.`);
+const migrationError = cliMigrationError(args);
+if (migrationError) {
+  console.error(migrationError);
   process.exit(1);
 }
 
@@ -271,8 +231,6 @@ if (commandArgs?.emitHelp) {
   process.exit(1);
 } else if (commandArgs) {
   // Parsed by split command modules.
-} else if (args[0] === "check") {
-  commandArgs = { check: true, inputPath: commandPath(1) };
 } else if (args[0] === "widget") {
   printWidgetHelp();
   process.exit(args[1] ? 1 : 0);
@@ -295,105 +253,68 @@ if (commandArgs?.emitHelp) {
 if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath")) {
   inputPath = commandArgs.inputPath;
 }
-const emitJson = args.includes("--json");
+const cliOptions = parseCliOptions(args, commandArgs);
+const {
+  emitJson,
+  shouldForce,
+  shouldValidate,
+  shouldResolve,
+  generateTarget,
+  workflowName,
+  workflowId,
+  fromValue,
+  adoptValue,
+  reasonValue,
+  modeId,
+  profileId,
+  providerId,
+  presetId,
+  templateName,
+  catalogSource,
+  requestedVersion,
+  bundleSlug,
+  laneId,
+  fromSnapshotPath,
+  fromTopogramPath,
+  shouldWrite,
+  refreshAdopted,
+  outPath,
+  effectiveOutDir
+} = cliOptions;
+const {
+  shapeId,
+  capabilityId,
+  projectionId,
+  widgetId: componentId,
+  entityId,
+  journeyId,
+  surfaceId,
+  domainId,
+  seamId,
+  taskId,
+  pitchId,
+  requirementId,
+  acceptanceId,
+  bugId,
+  documentId,
+  kind: sdlcKind,
+  appVersion: sdlcAppVersion,
+  sinceTag: sdlcSinceTag,
+  includeArchived: sdlcIncludeArchived
+} = cliOptions.selectors;
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldWidgetCheck = Boolean(commandArgs?.widgetCheck);
 const shouldWidgetBehavior = Boolean(commandArgs?.widgetBehavior);
 const shouldAgentBrief = Boolean(commandArgs?.agentBrief);
-const shouldForce = Boolean(commandArgs?.force) || args.includes("--force");
 const shouldQueryList = Boolean(commandArgs?.queryList);
 const shouldQueryShow = Boolean(commandArgs?.queryShow);
-const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
-const shouldResolve = args.includes("--resolve");
-const generateTarget = commandArgs?.generateTarget || null;
-if (RENAMED_GENERATE_TARGETS.has(generateTarget)) {
-  console.error(`Artifact target '${generateTarget}' was renamed to '${RENAMED_GENERATE_TARGETS.get(generateTarget)}'.`);
+const targetMigrationError = artifactTargetMigrationError(generateTarget);
+if (targetMigrationError) {
+  console.error(targetMigrationError);
   process.exit(1);
 }
-const workflowIndex = args.indexOf("--workflow");
-const workflowFlagValue = workflowIndex >= 0 ? args[workflowIndex + 1] : null;
-const modeIndex = args.indexOf("--mode");
-const modeId = modeIndex >= 0 ? args[modeIndex + 1] : null;
-const workflowName = commandArgs?.workflowName || (!generateTarget && workflowFlagValue ? workflowFlagValue : null);
-const workflowId = generateTarget ? workflowFlagValue : null;
-const fromIndex = args.indexOf("--from");
-const fromValue = fromIndex >= 0 ? args[fromIndex + 1] : null;
-const adoptIndex = args.indexOf("--adopt");
-const adoptValue = commandArgs?.adoptValue || (adoptIndex >= 0 ? args[adoptIndex + 1] : null);
-const shapeIndex = args.indexOf("--shape");
-const shapeId = shapeIndex >= 0 ? args[shapeIndex + 1] : null;
-const capabilityIndex = args.indexOf("--capability");
-const capabilityId = capabilityIndex >= 0 ? args[capabilityIndex + 1] : null;
-const componentIndex = args.indexOf("--widget");
-const componentId = componentIndex >= 0 ? args[componentIndex + 1] : null;
-const projectionIndex = args.indexOf("--projection");
-const projectionId = projectionIndex >= 0 ? args[projectionIndex + 1] : null;
-const entityIndex = args.indexOf("--entity");
-const entityId = entityIndex >= 0 ? args[entityIndex + 1] : null;
-const journeyIndex = args.indexOf("--journey");
-const journeyId = journeyIndex >= 0 ? args[journeyIndex + 1] : null;
-const surfaceIndex = args.indexOf("--surface");
-const surfaceId = surfaceIndex >= 0 ? args[surfaceIndex + 1] : null;
-const domainIndex = args.indexOf("--domain");
-const domainId = domainIndex >= 0 ? args[domainIndex + 1] : null;
-const seamIndex = args.indexOf("--seam");
-const seamId = seamIndex >= 0 ? args[seamIndex + 1] : null;
-const taskIndex = args.indexOf("--task");
-const taskId = taskIndex >= 0 ? args[taskIndex + 1] : null;
-const pitchIndex = args.indexOf("--pitch");
-const pitchId = pitchIndex >= 0 ? args[pitchIndex + 1] : null;
-const requirementIndex = args.indexOf("--requirement");
-const requirementId = requirementIndex >= 0 ? args[requirementIndex + 1] : null;
-const acceptanceIndex = args.indexOf("--acceptance");
-const acceptanceId = acceptanceIndex >= 0 ? args[acceptanceIndex + 1] : null;
-const bugIndex = args.indexOf("--bug");
-const bugId = bugIndex >= 0 ? args[bugIndex + 1] : null;
-const documentIndex = args.indexOf("--document");
-const documentId = documentIndex >= 0 ? args[documentIndex + 1] : null;
-const sdlcKindIndex = args.indexOf("--kind");
-const sdlcKind = sdlcKindIndex >= 0 ? args[sdlcKindIndex + 1] : null;
-const reasonIndex = args.indexOf("--reason");
-const reasonValue = reasonIndex >= 0 && args[reasonIndex + 1] && !args[reasonIndex + 1].startsWith("-")
-  ? args[reasonIndex + 1]
-  : null;
-const sdlcAppVersionIndex = args.indexOf("--app-version");
-const sdlcAppVersion = sdlcAppVersionIndex >= 0 ? args[sdlcAppVersionIndex + 1] : null;
-const sdlcSinceIndex = args.indexOf("--since-tag");
-const sdlcSinceTag = sdlcSinceIndex >= 0 ? args[sdlcSinceIndex + 1] : null;
-const sdlcIncludeArchived = args.includes("--include-archived");
-const profileIndex = args.indexOf("--profile");
-const profileId = profileIndex >= 0 ? args[profileIndex + 1] : null;
-const providerIndex = args.indexOf("--provider");
-const providerId = providerIndex >= 0 ? args[providerIndex + 1] : null;
-const presetIndex = args.indexOf("--preset");
-const presetId = presetIndex >= 0 ? args[presetIndex + 1] : null;
-const templateIndex = args.indexOf("--template");
-const templateName = templateIndex >= 0 ? args[templateIndex + 1] : "hello-web";
-const catalogIndex = args.indexOf("--catalog");
-const catalogSource = catalogIndex >= 0 && args[catalogIndex + 1] && !args[catalogIndex + 1].startsWith("-")
-  ? args[catalogIndex + 1]
-  : null;
-const versionIndex = args.indexOf("--version");
-const requestedVersion = versionIndex >= 0 && args[versionIndex + 1] && !args[versionIndex + 1].startsWith("-")
-  ? args[versionIndex + 1]
-  : null;
-const bundleIndex = args.indexOf("--bundle");
-const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
-const laneIndex = args.indexOf("--lane");
-const laneId = laneIndex >= 0 ? args[laneIndex + 1] : null;
-const fromSnapshotIndex = args.indexOf("--from-snapshot");
-const fromSnapshotPath = fromSnapshotIndex >= 0 ? path.resolve(args[fromSnapshotIndex + 1]) : null;
-const fromTopogramIndex = args.indexOf("--from-topogram");
-const fromTopogramPath = fromTopogramIndex >= 0 ? path.resolve(args[fromTopogramIndex + 1]) : null;
-const shouldWrite = Boolean(commandArgs?.write) || args.includes("--write");
-const refreshAdopted = args.includes("--refresh-adopted");
-const outDirIndex = args.indexOf("--out-dir");
-const outDir = outDirIndex >= 0 ? args[outDirIndex + 1] : null;
-const outIndex = args.indexOf("--out");
-const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
-const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
 if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || commandArgs?.generatorPolicyCommand || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
@@ -645,28 +566,14 @@ try {
   }
 
   if (shouldResolve) {
-    const ast = parsePath(inputPath);
-    const result = resolveWorkspace(ast);
-    if (!result.ok) {
-      console.error(formatValidationErrors(result.validation));
-      process.exit(1);
-    }
-
-    console.log(JSON.stringify(result.graph, null, 2));
-    process.exit(0);
+    process.exit(runResolveCommand(inputPath));
   }
 
   if (shouldValidate) {
     process.exit(runValidateCommand(inputPath));
   }
 
-  const ast = parsePath(inputPath);
-
-  if (emitJson) {
-    console.log(stableStringify(ast));
-  } else {
-    summarize(ast);
-  }
+  process.exit(runParseCommand(inputPath, { json: emitJson }));
 } catch (error) {
   if (error.validation) {
     console.error(formatValidationErrors(error.validation));
