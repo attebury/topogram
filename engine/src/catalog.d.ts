@@ -2,6 +2,9 @@ export function catalogEntryPackageSpec(entry: any, version?: string | null): st
 export function catalogSourceOrDefault(source?: string | null): string;
 export function catalogTemplateListItem(entry: any): any;
 export function buildTopogramSourceStatus(projectRoot: string): any;
+export function checkCatalogSource(source: string): any;
+export function copyCatalogTopogramEntry(entry: any, targetPath: string, options: any): any;
 export function findCatalogEntry(catalog: any, id: string, kind?: "template" | "topogram" | null): any | null;
 export function isCatalogSourceDisabled(source: string | null | undefined): boolean;
 export function loadCatalog(sourceInput?: string | null): any;
+export const TOPOGRAM_SOURCE_FILE: string;

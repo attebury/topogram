@@ -7,10 +7,8 @@ import path from "node:path";
 
 import {
   buildTopogramSourceStatus,
-  catalogEntryPackageSpec,
   catalogSourceOrDefault,
   catalogTemplateListItem,
-  findCatalogEntry,
   isCatalogSourceDisabled,
   loadCatalog
 } from "../../catalog.js";
@@ -20,6 +18,11 @@ import {
   getTemplateTrustStatus,
   TEMPLATE_TRUST_FILE
 } from "../../template-trust.js";
+import {
+  buildCatalogShowPayload,
+  catalogShowCommands,
+  shellCommandArg
+} from "./catalog.js";
 
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
@@ -60,14 +63,6 @@ function messageFromError(error) {
 }
 
 /**
- * @param {string} value
- * @returns {string}
- */
-function shellCommandArg(value) {
-  return /^[A-Za-z0-9_./:@=-]+$/.test(value) ? value : JSON.stringify(value);
-}
-
-/**
  * @param {string} spec
  * @returns {string}
  */
@@ -84,81 +79,6 @@ function packageNameFromPackageSpec(spec) {
   }
   const versionIndex = spec.indexOf("@");
   return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
-}
-
-/**
- * @param {any} entry
- * @param {string} source
- * @returns {{ primary: string, followUp: string[] }}
- */
-function catalogShowCommands(entry, source) {
-  const catalogOption = source === catalogSourceOrDefault(null)
-    ? ""
-    : ` --catalog ${shellCommandArg(source)}`;
-  if (entry.kind === "template") {
-    const target = "./my-app";
-    return {
-      primary: `topogram new ${target} --template ${shellCommandArg(entry.id)}${catalogOption}`,
-      followUp: [
-        `cd ${target}`,
-        "npm install",
-        "npm run check",
-        "npm run generate"
-      ]
-    };
-  }
-  const target = `./${entry.id}-topogram`;
-  return {
-    primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
-    followUp: [
-      `cd ${target}`,
-      "topogram source status --local",
-      "topogram check",
-      "topogram generate"
-    ]
-  };
-}
-
-/**
- * @param {string} id
- * @param {string|null} source
- * @returns {{ ok: boolean, source: string, catalog: { version: string }, entry: any|null, packageSpec: string|null, commands: { primary: string|null, followUp: string[] }, diagnostics: any[], errors: string[] }}
- */
-function buildCatalogShowPayload(id, source) {
-  if (!id || id.startsWith("-")) {
-    throw new Error("topogram catalog show requires <id>.");
-  }
-  const loaded = loadCatalog(source || null);
-  const entry = findCatalogEntry(loaded.catalog, id, null);
-  if (!entry) {
-    const diagnostic = {
-      code: "catalog_entry_not_found",
-      severity: "error",
-      message: `Catalog entry '${id}' was not found in ${loaded.source}.`,
-      path: loaded.source,
-      suggestedFix: "Run `topogram catalog list` to see available entries."
-    };
-    return {
-      ok: false,
-      source: loaded.source,
-      catalog: { version: loaded.catalog.version },
-      entry: null,
-      packageSpec: null,
-      commands: { primary: null, followUp: [] },
-      diagnostics: [diagnostic],
-      errors: [diagnostic.message]
-    };
-  }
-  return {
-    ok: true,
-    source: loaded.source,
-    catalog: { version: loaded.catalog.version },
-    entry,
-    packageSpec: catalogEntryPackageSpec(entry),
-    commands: catalogShowCommands(entry, loaded.source),
-    diagnostics: loaded.diagnostics,
-    errors: []
-  };
 }
 
 /**

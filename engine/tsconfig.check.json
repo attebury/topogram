@@ -32,6 +32,7 @@
     "./src/topogram-config.js",
     "./src/catalog.d.ts",
     "./src/cli/command-parser.js",
+    "./src/cli/commands/catalog.js",
     "./src/cli/commands/generator.js",
     "./src/cli/commands/template.js",
     "./src/cli/commands/setup.js",
