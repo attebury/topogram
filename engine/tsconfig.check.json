@@ -34,6 +34,7 @@
     "./src/cli/command-parser.js",
     "./src/cli/commands/catalog.js",
     "./src/cli/commands/generator.js",
+    "./src/cli/commands/package.js",
     "./src/cli/commands/template.js",
     "./src/cli/commands/setup.js",
     "./src/cli/commands/version.js",
