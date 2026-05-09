@@ -17,6 +17,39 @@ function commandPath(args, index, fallback = "./topogram") {
   return value && !value.startsWith("-") ? value : fallback;
 }
 
+/**
+ * @param {string[]} args
+ * @param {number} index
+ * @param {string} [fallback]
+ * @returns {string}
+ */
+function commandOperandFrom(args, index, fallback = ".") {
+  const valueFlags = new Set([
+    "--accept-current",
+    "--accept-candidate",
+    "--delete-current",
+    "--from",
+    "--out",
+    "--out-dir",
+    "--reason",
+    "--template",
+    "--version"
+  ]);
+  for (let i = index; i < args.length; i += 1) {
+    const value = args[i];
+    if (!value) {
+      continue;
+    }
+    if (!value.startsWith("-")) {
+      return value;
+    }
+    if (valueFlags.has(value)) {
+      i += 1;
+    }
+  }
+  return fallback;
+}
+
 const QUERY_NAMES = new Set([
   "task-mode",
   "diff",
@@ -64,7 +97,7 @@ const QUERY_NAMES = new Set([
 export function parseSplitCommandArgs(args) {
   if (args[0] === "new" || args[0] === "create") {
     return args.includes("--list-templates")
-      ? { templateList: true, inputPath: null }
+      ? { templateCommand: "list", inputPath: null }
       : { newProject: true, inputPath: args[1] };
   }
   if (args[0] === "generate" && args[1] === "app") {
@@ -146,6 +179,43 @@ export function parseSplitCommandArgs(args) {
       inputPath: commandPath(args, 4)
     };
   }
+  if (args[0] === "template" && args[1] === "list") {
+    return { templateCommand: "list", inputPath: null };
+  }
+  if (args[0] === "template" && args[1] === "show") {
+    return { templateCommand: "show", inputPath: args[2] };
+  }
+  if (args[0] === "template" && args[1] === "explain") {
+    return { templateCommand: "explain", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "template" && args[1] === "status") {
+    return { templateCommand: "status", inputPath: commandPath(args, 2) };
+  }
+  if (args[0] === "template" && args[1] === "detach") {
+    return { templateCommand: "detach", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
+    return { templateCommand: "policy:init", inputPath: commandPath(args, 3) };
+  }
+  if (args[0] === "template" && args[1] === "policy" && args[2] === "check") {
+    return { templateCommand: "policy:check", inputPath: commandPath(args, 3) };
+  }
+  if (args[0] === "template" && args[1] === "policy" && args[2] === "explain") {
+    return { templateCommand: "policy:explain", inputPath: commandPath(args, 3) };
+  }
+  if (args[0] === "template" && args[1] === "policy" && args[2] === "pin") {
+    return {
+      templateCommand: "policy:pin",
+      templatePolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null,
+      inputPath: commandPath(args, 4)
+    };
+  }
+  if (args[0] === "template" && args[1] === "check") {
+    return { templateCommand: "check", inputPath: args[2] };
+  }
+  if (args[0] === "template" && args[1] === "update") {
+    return { templateCommand: "update", inputPath: commandPath(args, 2) };
+  }
   if (args[0] === "source" && args[1] === "status") {
     return { sourceCommand: "status", inputPath: commandPath(args, 2, ".") };
   }
@@ -187,6 +257,33 @@ export function parseSplitCommandArgs(args) {
   }
   if (args[0] === "import" && args[1] === "docs") {
     return { workflowName: "scan-docs", inputPath: args[2] };
+  }
+  if (args[0] === "import" && args[1] === "diff") {
+    return { importCommand: "diff", inputPath: commandOperandFrom(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] === "refresh") {
+    return { importCommand: "refresh", inputPath: commandOperandFrom(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] === "check") {
+    return { importCommand: "check", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] === "plan") {
+    return { importCommand: "plan", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] === "adopt" && (args[2] === "--list" || args[2] === "list")) {
+    return { importCommand: "adopt-list", inputPath: commandPath(args, 3, ".") };
+  }
+  if (args[0] === "import" && args[1] === "adopt") {
+    return { importCommand: "adopt", importAdoptSelector: args[2], inputPath: commandPath(args, 3, ".") };
+  }
+  if (args[0] === "import" && args[1] === "status") {
+    return { importCommand: "status", inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] === "history") {
+    return { importCommand: "history", verify: args.includes("--verify"), inputPath: commandOperandFrom(args, 2, ".") };
+  }
+  if (args[0] === "import" && args[1] && !args[1].startsWith("-")) {
+    return { importCommand: "workspace", inputPath: args[1] };
   }
   if (args[0] === "report" && args[1] === "gaps") {
     return { workflowName: "report-gaps", inputPath: args[2] };

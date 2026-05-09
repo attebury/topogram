@@ -13,7 +13,7 @@ test("split command parser handles extracted command families", () => {
     inputPath: "./starter"
   });
   assert.deepEqual(parseSplitCommandArgs(["new", "--list-templates"]), {
-    templateList: true,
+    templateCommand: "list",
     inputPath: null
   });
   assert.deepEqual(parseSplitCommandArgs(["generate"]), {
@@ -144,6 +144,51 @@ test("split command parser handles extracted command families", () => {
     generatorPolicyPinSpec: "@topogram/generator-react-web@1",
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["template", "list", "--json"]), {
+    templateCommand: "list",
+    inputPath: null
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "show", "hello-web"]), {
+    templateCommand: "show",
+    inputPath: "hello-web"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "explain", "./custom-topogram"]), {
+    templateCommand: "explain",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "status"]), {
+    templateCommand: "status",
+    inputPath: "./topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "detach", "./custom-topogram", "--dry-run"]), {
+    templateCommand: "detach",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "policy", "init", "./custom-topogram"]), {
+    templateCommand: "policy:init",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "policy", "check", "./custom-topogram"]), {
+    templateCommand: "policy:check",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "policy", "explain", "./custom-topogram"]), {
+    templateCommand: "policy:explain",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "policy", "pin", "topogram/hello-web@0.1.0", "./custom-topogram"]), {
+    templateCommand: "policy:pin",
+    templatePolicyPinSpec: "topogram/hello-web@0.1.0",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "check", "./local-template"]), {
+    templateCommand: "check",
+    inputPath: "./local-template"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["template", "update", "./custom-topogram", "--recommend"]), {
+    templateCommand: "update",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["source", "status", "./custom-topogram", "--local"]), {
     sourceCommand: "status",
     inputPath: "./custom-topogram"
@@ -196,6 +241,44 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["import", "docs", "./legacy-app"]), {
     workflowName: "scan-docs",
+    inputPath: "./legacy-app"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "diff", "./imported-topogram"]), {
+    importCommand: "diff",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "refresh", "--from", "./legacy-app"]), {
+    importCommand: "refresh",
+    inputPath: "."
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "check", "./imported-topogram"]), {
+    importCommand: "check",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "plan", "./imported-topogram"]), {
+    importCommand: "plan",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "adopt", "--list", "./imported-topogram"]), {
+    importCommand: "adopt-list",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "adopt", "bundle:record", "./imported-topogram"]), {
+    importCommand: "adopt",
+    importAdoptSelector: "bundle:record",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "status", "./imported-topogram"]), {
+    importCommand: "status",
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "history", "./imported-topogram", "--verify"]), {
+    importCommand: "history",
+    verify: true,
+    inputPath: "./imported-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["import", "./legacy-app", "--out", "./imported-topogram"]), {
+    importCommand: "workspace",
     inputPath: "./legacy-app"
   });
   assert.deepEqual(parseSplitCommandArgs(["report", "gaps", "./custom-topogram"]), {
@@ -261,5 +344,5 @@ test("split command parser handles extracted command families", () => {
 });
 
 test("split command parser leaves unsplit command families to the legacy parser", () => {
-  assert.equal(parseSplitCommandArgs(["template", "list"]), null);
+  assert.equal(parseSplitCommandArgs(["parse", "./custom-topogram"]), null);
 });

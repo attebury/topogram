@@ -40,29 +40,9 @@ import {
   runPackageCommand
 } from "./cli/commands/package.js";
 import {
-  buildTemplateListPayload,
-  buildTemplateShowPayload,
-  buildTemplateStatusPayload,
-  buildTemplateExplainPayload,
-  buildTemplateDetachPayload,
-  buildTemplateCheckPayload,
-  buildTemplatePolicyCheckPayload,
-  buildTemplatePolicyExplainPayload,
-  buildTemplatePolicyPinPayload,
-  buildTemplateUpdateCliPayload,
-  printTemplateCheckPayload,
-  printTemplateHelp,
-  printTemplateList,
-  printTemplateShow,
-  printTemplateStatus,
-  printTemplateExplain,
-  printTemplateDetachPayload,
-  printTemplatePolicyCheckPayload,
-  printTemplatePolicyExplainPayload,
-  printTemplatePolicyPinPayload,
-  printTemplateUpdatePlan,
-  printTemplateUpdateRecommendation
+  printTemplateHelp
 } from "./cli/commands/template.js";
+import { runTemplateCommand } from "./cli/commands/template-runner.js";
 import {
   printEmitHelp,
   printGenerateHelp,
@@ -75,29 +55,11 @@ import {
   runWidgetCheckCommand
 } from "./cli/commands/widget.js";
 import {
-  buildBrownfieldImportAdoptListPayload,
-  buildBrownfieldImportAdoptPayload,
-  buildBrownfieldImportCheckPayload,
-  buildBrownfieldImportDiffPayload,
-  buildBrownfieldImportHistoryPayload,
-  buildBrownfieldImportPlanPayload,
-  buildBrownfieldImportRefreshPayload,
-  buildBrownfieldImportStatusPayload,
-  buildBrownfieldImportWorkspacePayload,
-  printBrownfieldImportAdopt,
-  printBrownfieldImportAdoptList,
-  printBrownfieldImportCheck,
-  printBrownfieldImportDiff,
-  printBrownfieldImportHistory,
-  printBrownfieldImportPlan,
-  printBrownfieldImportRefresh,
-  printBrownfieldImportStatus,
-  printBrownfieldImportWorkspace,
   printImportHelp
 } from "./cli/commands/import.js";
+import { runImportCommand } from "./cli/commands/import-runner.js";
 import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
-import { generateWorkspace } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import { runGenerateAppCommand } from "./cli/commands/generate.js";
 import { runEmitCommand } from "./cli/commands/emit.js";
@@ -107,15 +69,9 @@ import {
   runLegacyWorkflowCommand,
   runValidateCommand
 } from "./cli/commands/workflow.js";
-import { writeTemplatePolicyForProject } from "./new-project.js";
-import {
-  TEMPLATE_TRUST_FILE,
-  validateProjectImplementationTrust
-} from "./template-trust.js";
-import { GENERATOR_POLICY_FILE } from "./generator-policy.js";
+import { validateProjectImplementationTrust } from "./template-trust.js";
 import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors } from "./validator.js";
-import { isCatalogSourceDisabled } from "./catalog.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -322,33 +278,6 @@ if (removedGenerateIndex >= 0) {
   process.exit(1);
 }
 
-function commandOperandFrom(index, fallback = ".") {
-  const valueFlags = new Set([
-    "--accept-current",
-    "--accept-candidate",
-    "--delete-current",
-    "--from",
-    "--out",
-    "--out-dir",
-    "--reason",
-    "--template",
-    "--version"
-  ]);
-  for (let i = index; i < args.length; i += 1) {
-    const value = args[i];
-    if (!value) {
-      continue;
-    }
-    if (!value.startsWith("-")) {
-      return value;
-    }
-    if (valueFlags.has(value)) {
-      i += 1;
-    }
-  }
-  return fallback;
-}
-
 let commandArgs = null;
 let inputPath = args[0];
 commandArgs = parseSplitCommandArgs(args);
@@ -368,46 +297,9 @@ if (commandArgs?.emitHelp) {
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "template" && args[1] === "list") {
-  commandArgs = { templateList: true, inputPath: null };
-} else if (args[0] === "template" && args[1] === "show") {
-  commandArgs = { templateShow: true, inputPath: args[2] };
-} else if (args[0] === "template" && args[1] === "explain") {
-  commandArgs = { templateExplain: true, inputPath: commandPath(2, ".") };
-} else if (args[0] === "template" && args[1] === "status") {
-  commandArgs = { templateStatus: true, inputPath: commandPath(2) };
-} else if (args[0] === "template" && args[1] === "detach") {
-  commandArgs = { templateDetach: true, inputPath: commandPath(2, ".") };
-} else if (args[0] === "template" && args[1] === "policy" && args[2] === "init") {
-  commandArgs = { templatePolicyInit: true, inputPath: commandPath(3) };
-} else if (args[0] === "template" && args[1] === "policy" && args[2] === "check") {
-  commandArgs = { templatePolicyCheck: true, inputPath: commandPath(3) };
-} else if (args[0] === "template" && args[1] === "policy" && args[2] === "explain") {
-  commandArgs = { templatePolicyExplain: true, inputPath: commandPath(3) };
-} else if (args[0] === "template" && args[1] === "policy" && args[2] === "pin") {
-  commandArgs = { templatePolicyPin: true, templatePolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null, inputPath: commandPath(4) };
-} else if (args[0] === "template" && args[1] === "check") {
-  commandArgs = { templateCheck: true, inputPath: args[2] };
-} else if (args[0] === "template" && args[1] === "update") {
-  commandArgs = { templateUpdate: true, inputPath: commandPath(2) };
-} else if (args[0] === "import" && args[1] === "diff") {
-  commandArgs = { importDiff: true, inputPath: commandOperandFrom(2, ".") };
-} else if (args[0] === "import" && args[1] === "refresh") {
-  commandArgs = { importRefresh: true, inputPath: commandOperandFrom(2, ".") };
-} else if (args[0] === "import" && args[1] === "check") {
-  commandArgs = { importCheck: true, inputPath: commandPath(2, ".") };
-} else if (args[0] === "import" && args[1] === "plan") {
-  commandArgs = { importPlan: true, inputPath: commandPath(2, ".") };
-} else if (args[0] === "import" && args[1] === "adopt" && (args[2] === "--list" || args[2] === "list")) {
-  commandArgs = { importAdoptList: true, inputPath: commandPath(3, ".") };
-} else if (args[0] === "import" && args[1] === "adopt") {
-  commandArgs = { importAdopt: true, importAdoptSelector: args[2], inputPath: commandPath(3, ".") };
-} else if (args[0] === "import" && args[1] === "status") {
-  commandArgs = { importStatus: true, inputPath: commandPath(2, ".") };
-} else if (args[0] === "import" && args[1] === "history") {
-  commandArgs = { importHistory: true, inputPath: commandOperandFrom(2, ".") };
-} else if (args[0] === "import" && args[1] && !args[1].startsWith("-")) {
-  commandArgs = { importWorkspace: true, inputPath: args[1] };
+} else if (args[0] === "template") {
+  printTemplateHelp();
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "import") {
   printImportHelp();
   process.exit(args[1] ? 1 : 0);
@@ -440,26 +332,6 @@ const shouldAgentBrief = Boolean(commandArgs?.agentBrief);
 const shouldForce = Boolean(commandArgs?.force) || args.includes("--force");
 const shouldQueryList = Boolean(commandArgs?.queryList);
 const shouldQueryShow = Boolean(commandArgs?.queryShow);
-const shouldTemplateList = Boolean(commandArgs?.templateList);
-const shouldTemplateShow = Boolean(commandArgs?.templateShow);
-const shouldTemplateExplain = Boolean(commandArgs?.templateExplain);
-const shouldTemplateStatus = Boolean(commandArgs?.templateStatus);
-const shouldTemplateDetach = Boolean(commandArgs?.templateDetach);
-const shouldTemplatePolicyInit = Boolean(commandArgs?.templatePolicyInit);
-const shouldTemplatePolicyCheck = Boolean(commandArgs?.templatePolicyCheck);
-const shouldTemplatePolicyExplain = Boolean(commandArgs?.templatePolicyExplain);
-const shouldTemplatePolicyPin = Boolean(commandArgs?.templatePolicyPin);
-const shouldTemplateCheck = Boolean(commandArgs?.templateCheck);
-const shouldTemplateUpdate = Boolean(commandArgs?.templateUpdate);
-const shouldImportWorkspace = Boolean(commandArgs?.importWorkspace);
-const shouldImportDiff = Boolean(commandArgs?.importDiff);
-const shouldImportRefresh = Boolean(commandArgs?.importRefresh);
-const shouldImportCheck = Boolean(commandArgs?.importCheck);
-const shouldImportPlan = Boolean(commandArgs?.importPlan);
-const shouldImportAdoptList = Boolean(commandArgs?.importAdoptList);
-const shouldImportAdopt = Boolean(commandArgs?.importAdopt);
-const shouldImportStatus = Boolean(commandArgs?.importStatus);
-const shouldImportHistory = Boolean(commandArgs?.importHistory);
 const shouldValidate = Boolean(commandArgs?.validate) || args.includes("--validate");
 const shouldResolve = args.includes("--resolve");
 const generateTarget = commandArgs?.generateTarget || null;
@@ -534,7 +406,6 @@ const versionIndex = args.indexOf("--version");
 const requestedVersion = versionIndex >= 0 && args[versionIndex + 1] && !args[versionIndex + 1].startsWith("-")
   ? args[versionIndex + 1]
   : null;
-const useLatestTemplate = args.includes("--latest");
 const bundleIndex = args.indexOf("--bundle");
 const bundleSlug = bundleIndex >= 0 ? args[bundleIndex + 1] : null;
 const laneIndex = args.indexOf("--lane");
@@ -551,14 +422,8 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || commandArgs?.generatorPolicyCommand || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || commandArgs?.generatorPolicyCommand || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
-  printUsage();
-  process.exit(1);
-}
-
-if (shouldTemplateShow && !inputPath) {
-  console.error("Missing required <id>.");
   printUsage();
   process.exit(1);
 }
@@ -575,31 +440,13 @@ if (shouldReleaseRollConsumers && shouldWatchReleaseConsumers && !shouldPushRele
   process.exit(1);
 }
 
-if (shouldImportWorkspace && !outPath) {
-  console.error("Missing required --out <target>.");
-  printImportHelp();
-  process.exit(1);
-}
-
-if (shouldImportAdopt && (!commandArgs?.importAdoptSelector || commandArgs.importAdoptSelector.startsWith("-"))) {
-  console.error("Missing required <selector>.");
-  printImportHelp();
-  process.exit(1);
-}
-
-if (shouldImportAdopt && shouldWrite && args.includes("--dry-run")) {
-  console.error("Use either --dry-run or --write, not both.");
-  printImportHelp();
-  process.exit(1);
-}
-
 if (shouldQueryShow && !commandArgs?.queryShowName) {
   console.error("Missing required <name>.");
   printQueryHelp();
   process.exit(1);
 }
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || commandArgs?.generatorPolicyCommand || commandArgs?.trustCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || commandArgs?.generatorPolicyCommand || commandArgs?.trustCommand || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -726,100 +573,19 @@ try {
     process.exit(runPackageCommand({ commandArgs, inputPath, json: emitJson }));
   }
 
-  if (shouldImportWorkspace) {
-    const payload = buildBrownfieldImportWorkspacePayload(inputPath, outPath, { from: fromValue });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportWorkspace(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldImportDiff) {
-    const payload = buildBrownfieldImportDiffPayload(inputPath, { sourcePath: fromValue });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportDiff(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldImportRefresh) {
-    const payload = buildBrownfieldImportRefreshPayload(inputPath, { sourcePath: fromValue, dryRun: args.includes("--dry-run") });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportRefresh(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldImportCheck) {
-    const payload = buildBrownfieldImportCheckPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportCheck(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldImportPlan) {
-    const payload = buildBrownfieldImportPlanPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportPlan(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldImportAdoptList) {
-    const payload = buildBrownfieldImportAdoptListPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportAdoptList(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldImportAdopt) {
-    const payload = buildBrownfieldImportAdoptPayload(commandArgs.importAdoptSelector, inputPath, {
+  if (commandArgs?.importCommand) {
+    process.exit(runImportCommand({
+      commandArgs,
+      inputPath,
+      outPath,
+      fromValue,
+      reasonValue,
+      refreshAdopted,
       dryRun: args.includes("--dry-run"),
       write: shouldWrite,
       force: shouldForce,
-      reason: reasonValue,
-      refreshAdopted
-    });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportAdopt(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldImportStatus) {
-    const payload = buildBrownfieldImportStatusPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportStatus(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldImportHistory) {
-    const payload = buildBrownfieldImportHistoryPayload(inputPath, { verify: args.includes("--verify") });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printBrownfieldImportHistory(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
+      json: emitJson
+    }));
   }
 
   if (commandArgs?.sourceCommand) {
@@ -830,152 +596,16 @@ try {
     process.exit(runNewProjectCommand(inputPath, { templateName, catalogSource, cwd: process.cwd() }));
   }
 
-  if (shouldTemplateList) {
-    const payload = buildTemplateListPayload({ catalogSource });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplateList(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldTemplateShow) {
-    const payload = buildTemplateShowPayload(inputPath, catalogSource);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplateShow(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplateExplain) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot explain template lifecycle without topogram.project.json.");
-    }
-    const payload = buildTemplateExplainPayload(projectConfigInfo);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplateExplain(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplateStatus) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot inspect template status without topogram.project.json.");
-    }
-    const status = buildTemplateStatusPayload(projectConfigInfo, { latest: useLatestTemplate });
-    if (emitJson) {
-      console.log(stableStringify(status));
-    } else {
-      printTemplateStatus(status);
-    }
-    process.exit(status.ok ? 0 : 1);
-  }
-
-  if (shouldTemplateDetach) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot detach template metadata without topogram.project.json.");
-    }
-    const payload = buildTemplateDetachPayload(projectConfigInfo, {
-      dryRun: args.includes("--dry-run"),
-      removePolicy: args.includes("--remove-policy")
-    });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplateDetachPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplatePolicyInit) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot initialize template policy without topogram.project.json.");
-    }
-    const policy = writeTemplatePolicyForProject(projectConfigInfo.configDir, projectConfigInfo.config);
-    const payload = {
-      ok: true,
-      path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
-      policy,
-      diagnostics: [],
-      errors: []
-    };
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      console.log(`Wrote template policy: ${payload.path}`);
-      console.log(`Allowed template ids: ${policy.allowedTemplateIds.join(", ") || "(any)"}`);
-      console.log(`Allowed sources: ${policy.allowedSources.join(", ") || "(any)"}`);
-    }
-    process.exit(0);
-  }
-
-  if (shouldTemplatePolicyCheck) {
-    const payload = buildTemplatePolicyCheckPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplatePolicyCheckPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplatePolicyExplain) {
-    const payload = buildTemplatePolicyExplainPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplatePolicyExplainPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplatePolicyPin) {
-    const payload = buildTemplatePolicyPinPayload(inputPath, commandArgs?.templatePolicyPinSpec);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplatePolicyPinPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplateCheck) {
-    const payload = buildTemplateCheckPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTemplateCheckPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldTemplateUpdate) {
-    const recommendUpdate = args.includes("--recommend");
-    const update = buildTemplateUpdateCliPayload({
+  if (commandArgs?.templateCommand) {
+    process.exit(runTemplateCommand({
+      commandArgs,
       args,
       inputPath,
-      templateIndex,
+      catalogSource,
       templateName,
-      useLatestTemplate,
-      outPath
-    });
-    if (emitJson) {
-      console.log(stableStringify(update));
-    } else if (recommendUpdate) {
-      printTemplateUpdateRecommendation(update);
-    } else {
-      printTemplateUpdatePlan(update);
-    }
-    process.exit(update.ok ? 0 : 1);
+      outPath,
+      json: emitJson
+    }));
   }
 
   if (commandArgs?.trustCommand) {

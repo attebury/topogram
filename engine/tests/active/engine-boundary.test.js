@@ -580,6 +580,8 @@ test("split CLI command families stay out of the binary shim", () => {
     "function buildTemplateUpdateCliPayload(",
     "function templateListItemFromCatalogEntry(",
     "function templateDecisionSummary(",
+    "function runTemplateCommand(",
+    "function runImportCommand(",
     "function runSourceCommand(",
     "function runTrustCommand(",
     "commandArgs = { version:",
@@ -601,7 +603,9 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { sourceCommand:",
     "commandArgs = { trustCommand:",
     "commandArgs = { generatorCommand:",
-    "commandArgs = { generatorPolicyCommand:"
+    "commandArgs = { generatorPolicyCommand:",
+    "commandArgs = { templateCommand:",
+    "commandArgs = { importCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 
