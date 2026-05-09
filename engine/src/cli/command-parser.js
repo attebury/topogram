@@ -42,6 +42,15 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "check") {
     return { check: true, inputPath: commandPath(args, 1) };
   }
+  if (args[0] === "agent" && args[1] === "brief") {
+    return { agentBrief: true, inputPath: commandPath(args, 2) };
+  }
+  if (args[0] === "widget" && args[1] === "check") {
+    return { widgetCheck: true, inputPath: commandPath(args, 2) };
+  }
+  if (args[0] === "widget" && args[1] === "behavior") {
+    return { widgetBehavior: true, inputPath: commandPath(args, 2) };
+  }
   if (args[0] === "source" && args[1] === "status") {
     return { sourceStatus: true, inputPath: commandPath(args, 2, ".") };
   }

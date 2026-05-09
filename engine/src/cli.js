@@ -7,6 +7,10 @@ import { fileURLToPath } from "node:url";
 
 import { assertSupportedNode } from "./runtime-support.js";
 import { parseSplitCommandArgs } from "./cli/command-parser.js";
+import {
+  printAgentHelp,
+  runAgentBriefCommand
+} from "./cli/commands/agent.js";
 import { handleSetupCommand, printSetupHelp } from "./cli/commands/setup.js";
 import { buildVersionPayload, printVersion } from "./cli/commands/version.js";
 import {
@@ -92,6 +96,10 @@ import {
   printWidgetHelp
 } from "./cli/help.js";
 import {
+  runWidgetBehaviorCommand,
+  runWidgetCheckCommand
+} from "./cli/commands/widget.js";
+import {
   buildBrownfieldImportAdoptListPayload,
   buildBrownfieldImportAdoptPayload,
   buildBrownfieldImportCheckPayload,
@@ -168,11 +176,6 @@ import {
   validateProjectConfig,
   validateProjectOutputOwnership
 } from "./project-config.js";
-import {
-  buildAgentBrief,
-  formatAgentBrief,
-  normalizeAgentTopogramPath
-} from "./agent-brief.js";
 import { LOCAL_NPMRC_ENV } from "./npm-safety.js";
 import {
   buildDoctorPayload,
@@ -230,19 +233,6 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "native-parity-plan",
   "native-parity-bundle"
 ]);
-
-function printAgentHelp() {
-  console.log("Usage: topogram agent brief [path] [--json]");
-  console.log("");
-  console.log("Prints read-only first-run guidance for humans and agents working in a Topogram project.");
-  console.log("");
-  console.log("Defaults: path is ./topogram. The command validates the Topogram and project config, but does not write files, generate apps, load generator adapters, or execute template implementation.");
-  console.log("");
-  console.log("Examples:");
-  console.log("  topogram agent brief");
-  console.log("  topogram agent brief --json");
-  console.log("  topogram agent brief ./topogram --json");
-}
 
 function printCommandHelp(command) {
   if (command === "new" || command === "create") {
@@ -418,99 +408,6 @@ function topogramInputPathForGeneration(inputPath) {
 
 function targetRequiresImplementationProvider(target) {
   return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
-}
-
-function printWidgetConformanceReport(report) {
-  const summary = report.summary || {};
-  const ok = (summary.errors || 0) === 0;
-  console.log(ok ? "Widget conformance passed." : "Widget conformance found issues.");
-  console.log(`Usages: ${summary.total_usages || 0} total, ${summary.passed_usages || 0} passed, ${summary.warning_usages || 0} warning, ${summary.error_usages || 0} error`);
-  console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
-  if (report.filters?.projection) {
-    console.log(`Projection filter: ${report.filters.projection}`);
-  }
-  if (report.filters?.widget) {
-    console.log(`Widget filter: ${report.filters.widget}`);
-  }
-  if ((summary.affected_projections || []).length > 0) {
-    console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
-  }
-  if ((summary.affected_widgets || []).length > 0) {
-    console.log(`Affected widgets: ${summary.affected_widgets.join(", ")}`);
-  }
-  if ((report.checks || []).length > 0) {
-    console.log("");
-    console.log("Issues:");
-    for (const check of report.checks) {
-      const context = [
-        check.projection ? `projection ${check.projection}` : null,
-        check.widget ? `widget ${check.widget}` : null,
-        check.screen ? `screen ${check.screen}` : null,
-        check.region ? `region ${check.region}` : null,
-        check.prop ? `prop ${check.prop}` : null,
-        check.event ? `event ${check.event}` : null,
-        check.behavior ? `behavior ${check.behavior}` : null
-      ].filter(Boolean).join(", ");
-      console.log(`- ${check.severity.toUpperCase()} ${check.code}${context ? ` (${context})` : ""}: ${check.message}`);
-      if (check.suggested_fix) {
-        console.log(`  Fix: ${check.suggested_fix}`);
-      }
-    }
-  }
-  const writeScopePaths = report.write_scope?.paths || [];
-  if (writeScopePaths.length > 0) {
-    console.log("");
-    console.log("Write scope:");
-    for (const filePath of writeScopePaths) {
-      console.log(`- ${filePath}`);
-    }
-  }
-}
-
-function printWidgetBehaviorReport(report) {
-  const summary = report.summary || {};
-  const ok = (summary.errors || 0) === 0;
-  console.log(ok ? "Widget behavior report passed." : "Widget behavior report found issues.");
-  console.log(`Behaviors: ${summary.total_behaviors || 0} total, ${summary.realized || 0} realized, ${summary.partial || 0} partial, ${summary.declared || 0} declared`);
-  console.log(`Checks: ${summary.errors || 0} error(s), ${summary.warnings || 0} warning(s)`);
-  if (report.filters?.projection) {
-    console.log(`Projection filter: ${report.filters.projection}`);
-  }
-  if (report.filters?.widget) {
-    console.log(`Widget filter: ${report.filters.widget}`);
-  }
-  if ((summary.affected_projections || []).length > 0) {
-    console.log(`Affected projections: ${summary.affected_projections.join(", ")}`);
-  }
-  if ((summary.affected_widgets || []).length > 0) {
-    console.log(`Affected widgets: ${summary.affected_widgets.join(", ")}`);
-  }
-  if ((summary.affected_capabilities || []).length > 0) {
-    console.log(`Affected capabilities: ${summary.affected_capabilities.join(", ")}`);
-  }
-  const highlights = report.highlights || [];
-  if (highlights.length > 0) {
-    console.log("");
-    console.log("Behavior highlights:");
-    for (const highlight of highlights) {
-      const context = [
-        highlight.projection ? `projection ${highlight.projection}` : null,
-        highlight.widget ? `widget ${highlight.widget}` : null,
-        highlight.screen ? `screen ${highlight.screen}` : null,
-        highlight.region ? `region ${highlight.region}` : null,
-        highlight.event ? `event ${highlight.event}` : null,
-        highlight.capability ? `capability ${highlight.capability}` : null,
-        highlight.behavior ? `behavior ${highlight.behavior}` : null
-      ].filter(Boolean).join(", ");
-      console.log(`- ${highlight.severity.toUpperCase()} ${highlight.code}${context ? ` (${context})` : ""}: ${highlight.message}`);
-      if (highlight.suggested_fix) {
-        console.log(`  Fix: ${highlight.suggested_fix}`);
-      }
-    }
-  }
-  const groupSummary = report.groups || {};
-  console.log("");
-  console.log(`Groups: ${(groupSummary.widgets || []).length} widget(s), ${(groupSummary.screens || []).length} screen(s), ${(groupSummary.capabilities || []).length} capability group(s), ${(groupSummary.effects || []).length} effect group(s)`);
 }
 
 /**
@@ -740,15 +637,9 @@ if (commandArgs) {
     : { newProject: true, inputPath: args[1] };
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
-} else if (args[0] === "widget" && args[1] === "check") {
-  commandArgs = { componentCheck: true, inputPath: commandPath(2) };
-} else if (args[0] === "widget" && args[1] === "behavior") {
-  commandArgs = { componentBehavior: true, inputPath: commandPath(2) };
 } else if (args[0] === "widget") {
   printWidgetHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "agent" && args[1] === "brief") {
-  commandArgs = { agentBrief: true, inputPath: commandPath(2) };
 } else if (args[0] === "agent") {
   printAgentHelp();
   process.exit(args[1] ? 1 : 0);
@@ -961,8 +852,8 @@ const shouldDoctor = Boolean(commandArgs?.doctor);
 const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
 const shouldReleaseRollConsumers = Boolean(commandArgs?.releaseRollConsumers);
 const shouldCheck = Boolean(commandArgs?.check);
-const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
-const shouldComponentBehavior = Boolean(commandArgs?.componentBehavior);
+const shouldWidgetCheck = Boolean(commandArgs?.widgetCheck);
+const shouldWidgetBehavior = Boolean(commandArgs?.widgetBehavior);
 const shouldAgentBrief = Boolean(commandArgs?.agentBrief);
 const shouldGeneratorList = Boolean(commandArgs?.generatorList);
 const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
@@ -1108,7 +999,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -1174,7 +1065,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -1202,22 +1093,7 @@ try {
   }
 
   if (shouldAgentBrief) {
-    const ast = parsePath(normalizeAgentTopogramPath(inputPath));
-    const result = buildAgentBrief(inputPath, ast);
-    if (!result.ok) {
-      if (result.kind === "project") {
-        console.error(formatProjectConfigErrors(result.validation, result.configPath));
-      } else {
-        console.error(formatValidationErrors(result.validation));
-      }
-      process.exit(1);
-    }
-    if (emitJson) {
-      console.log(stableStringify(result.payload));
-    } else {
-      process.stdout.write(formatAgentBrief(result.payload));
-    }
-    process.exit(0);
+    process.exit(runAgentBriefCommand(inputPath, { json: emitJson }));
   }
 
   if (shouldReleaseStatus) {
@@ -1273,48 +1149,20 @@ try {
     process.exit(0);
   }
 
-  if (shouldComponentCheck) {
-    const ast = parsePath(inputPath);
-    const result = generateWorkspace(ast, {
-      target: "widget-conformance-report",
+  if (shouldWidgetCheck) {
+    process.exit(runWidgetCheckCommand(inputPath, {
+      json: emitJson,
       projectionId,
-      widgetId: componentId,
-      componentId
-    });
-    if (!result.ok) {
-      console.error(formatValidationErrors(result.validation));
-      process.exit(1);
-    }
-    const report = result.artifact;
-    const ok = (report.summary?.errors || 0) === 0;
-    if (emitJson) {
-      console.log(stableStringify(report));
-    } else {
-      printWidgetConformanceReport(report);
-    }
-    process.exit(ok ? 0 : 1);
+      widgetId: componentId
+    }));
   }
 
-  if (shouldComponentBehavior) {
-    const ast = parsePath(inputPath);
-    const result = generateWorkspace(ast, {
-      target: "widget-behavior-report",
+  if (shouldWidgetBehavior) {
+    process.exit(runWidgetBehaviorCommand(inputPath, {
+      json: emitJson,
       projectionId,
-      widgetId: componentId,
-      componentId
-    });
-    if (!result.ok) {
-      console.error(formatValidationErrors(result.validation));
-      process.exit(1);
-    }
-    const report = result.artifact;
-    const ok = (report.summary?.errors || 0) === 0;
-    if (emitJson) {
-      console.log(stableStringify(report));
-    } else {
-      printWidgetBehaviorReport(report);
-    }
-    process.exit(ok ? 0 : 1);
+      widgetId: componentId
+    }));
   }
 
   if (shouldGeneratorCheck) {

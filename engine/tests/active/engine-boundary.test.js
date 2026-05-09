@@ -454,6 +454,12 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printGenerateHelp(",
     "function printEmitHelp(",
     "function printWidgetHelp(",
+    "function printAgentHelp(",
+    "function runAgentBriefCommand(",
+    "function printWidgetConformanceReport(",
+    "function printWidgetBehaviorReport(",
+    "function runWidgetCheckCommand(",
+    "function runWidgetBehaviorCommand(",
     "function printImportHelp(",
     "function buildBrownfieldImportWorkspacePayload(",
     "function printBrownfieldImportWorkspace(",
@@ -558,7 +564,10 @@ test("split CLI command families stay out of the binary shim", () => {
     "function templateDecisionSummary(",
     "commandArgs = { version:",
     "commandArgs = { queryList:",
-    "commandArgs = { queryShow:"
+    "commandArgs = { queryShow:",
+    "commandArgs = { agentBrief:",
+    "commandArgs = { widgetCheck:",
+    "commandArgs = { widgetBehavior:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 
