@@ -447,6 +447,12 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printSetupHelp(",
     "function printPackageAuthSetup(",
     "function printCatalogAuthSetup(",
+    "function printCommandHelp(",
+    "function handleGlobalHelp(",
+    "function handleUnparsedCommandHelp(",
+    "function normalizeTopogramPath(",
+    "function normalizeProjectRoot(",
+    "function runCliDispatch(",
     "function buildVersionPayload(",
     "function printVersion(",
     "function printUsage(",
@@ -620,6 +626,20 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { releaseCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
+
+  assert.deepEqual(offenders, []);
+});
+
+test("split command parser stays a command-family composition root", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "command-parser.js"), "utf8");
+  const forbiddenParserDetails = [
+    "if (args[0]",
+    "else if (args[0]",
+    "const QUERY_NAMES",
+    "function commandPath(",
+    "function commandOperandFrom("
+  ];
+  const offenders = forbiddenParserDetails.filter((reference) => contents.includes(reference));
 
   assert.deepEqual(offenders, []);
 });
