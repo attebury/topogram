@@ -1963,6 +1963,7 @@ function writeProjectPackage(projectRoot, engineRoot, template) {
     scripts: {
       explain: "node ./scripts/explain.mjs",
       doctor: "topogram doctor",
+      "agent:brief": "topogram agent brief --json",
       "source:status": "topogram source status --local",
       "source:status:remote": "topogram source status --remote",
       check: "topogram check",
@@ -2022,29 +2023,33 @@ Topogram app workflow
    topogram/
    topogram.project.json
 
-2. Validate:
+2. Start with project guidance:
+   npm run agent:brief
+
+3. Validate:
    npm run doctor
    npm run source:status
    npm run template:explain
    npm run check
 
-3. Regenerate:
+4. Regenerate:
    npm run generate
 
-4. Verify generated app:
+5. Verify generated app:
    npm run verify
 
-5. Run locally:
+6. Run locally:
    npm run bootstrap
    npm run dev
 
-6. Probe the running app from another terminal:
+7. Probe the running app from another terminal:
    npm run app:probe
 
 Or run self-contained local runtime verification:
    npm run app:runtime
 
 Useful inspection:
+   npm run agent:brief
    npm run check:json
    topogram emit ui-widget-contract ./topogram --json
    topogram emit widget-conformance-report ./topogram --json
@@ -2084,6 +2089,7 @@ function writeProjectReadme(projectRoot, projectConfig) {
   const workflowCommands = [
     "npm install",
     "npm run explain",
+    "npm run agent:brief",
     "npm run doctor",
     "npm run source:status",
     "npm run template:explain",
@@ -2126,9 +2132,91 @@ ${workflowCommands.join("\n")}
 Edit \`topogram/\` and \`topogram.project.json\`, then regenerate with \`npm run generate\`.
 Generated app code is written to \`app/\`.
 Use \`topogram emit <target>\` to inspect contracts, reports, snapshots, and other artifacts without regenerating the app.
+Agents should start with \`AGENTS.md\` and \`npm run agent:brief\`. The direct \`topogram agent brief --json\` command is the canonical machine-readable first-run guidance.
 ${template.includesExecutableImplementation ? "\nThis template copied `implementation/` code. `topogram new` did not execute it; review `implementation/`, `topogram.template-policy.json`, and `.topogram-template-trust.json` before regenerating after edits.\n" : ""}
 `;
   fs.writeFileSync(path.join(projectRoot, "README.md"), readme, "utf8");
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {Record<string, any>} projectConfig
+ * @returns {void}
+ */
+function writeAgentsGuide(projectRoot, projectConfig) {
+  const template = projectConfig.template || {};
+  const hasImplementation = Boolean(projectConfig.implementation || template.includesExecutableImplementation);
+  const guide = `# Agent Guide
+
+Start here before editing this Topogram project.
+
+## First Read
+
+1. \`AGENTS.md\`
+2. \`README.md\`
+3. \`topogram.project.json\`
+4. \`topogram.template-policy.json\`
+5. \`topogram.generator-policy.json\`
+${hasImplementation ? "6. `.topogram-template-trust.json`\n7. `implementation/`\n8. Focused `topogram query ...` output\n" : "6. Focused `topogram query ...` output\n"}
+Machine-readable source:
+
+\`\`\`bash
+topogram agent brief --json
+\`\`\`
+
+Local shortcut:
+
+\`\`\`bash
+npm run agent:brief
+\`\`\`
+
+Reference: https://github.com/attebury/topogram/blob/main/docs/agent-first-run.md
+
+## First Commands
+
+\`\`\`bash
+npm run agent:brief
+npm run doctor
+npm run source:status
+npm run template:explain
+npm run generator:policy:check
+${hasImplementation ? "npm run trust:status\n" : ""}npm run check
+npm run query:list
+npm run query:show -- widget-behavior
+\`\`\`
+
+## Edit Rules
+
+- Edit \`topogram/**\` and \`topogram.project.json\` first.
+- Review policy files before editing \`topogram.template-policy.json\` or \`topogram.generator-policy.json\`.
+- Do not make lasting edits under generated-owned \`app/**\`; use \`npm run generate\` to replace generated output.
+- If an output is changed to maintained ownership, agents may edit that app code directly after reading focused query packets.
+
+## UI And Widgets
+
+- \`ui_contract\` owns screens, regions, widget bindings, behavior, visibility, and semantic design tokens.
+- Web/iOS/Android surfaces realize the shared UI contract; they do not own widget placement.
+- Use \`topogram widget check --json\`, \`topogram widget behavior --json\`, and focused \`topogram query ...\` packets after UI edits.
+
+## Template And Trust
+
+- Local edits to template-derived Topogram files are project-owned.
+- Use \`npm run source:status\` and \`npm run template:update:recommend\` before applying template updates.
+${hasImplementation ? "- This project has executable `implementation/` code. `topogram new` did not execute it. Do not refresh trust until the implementation has been reviewed.\n" : "- This template does not declare executable implementation code.\n"}
+## Import And Adoption
+
+- If \`.topogram-import.json\` exists, run \`topogram import check .\`, \`topogram import plan .\`, \`topogram import adopt --list .\`, and \`topogram import history . --verify\`.
+- Imported Topogram files are project-owned after adoption; source hashes record trusted import evidence at the time of import.
+
+## Verification Gates
+
+\`\`\`bash
+npm run check
+npm run generate
+npm run verify
+\`\`\`
+`;
+  fs.writeFileSync(path.join(projectRoot, "AGENTS.md"), guide, "utf8");
 }
 
 /**
@@ -2165,6 +2253,7 @@ export function createNewProject({
   writeProjectPackage(projectRoot, engineRoot, template);
   writeExplainScript(projectRoot);
   writeProjectReadme(projectRoot, projectConfig);
+  writeAgentsGuide(projectRoot, projectConfig);
   writeTemplateFilesManifest(projectRoot, projectConfig);
   writeTemplatePolicy(projectRoot, defaultTemplatePolicyForTemplate(template));
   writeGeneratorPolicy(projectRoot, defaultGeneratorPolicy());

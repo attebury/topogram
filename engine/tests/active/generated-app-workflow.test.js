@@ -1624,6 +1624,7 @@ test("topogram new resolves catalog template aliases to package specs", () => {
   assert.match(create.stdout, /Policy: topogram\.template-policy\.json/);
   assert.match(create.stdout, /Trust: \.topogram-template-trust\.json/);
   assert.match(create.stdout, /npm run doctor/);
+  assert.match(create.stdout, /npm run agent:brief/);
   assert.match(create.stdout, /npm run source:status/);
   assert.match(create.stdout, /npm run template:policy:explain/);
   assert.match(create.stdout, /npm run generator:policy:status/);
@@ -3284,6 +3285,7 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   assert.equal(pkg.scripts.explain, "node ./scripts/explain.mjs");
   assert.equal(pkg.scripts.doctor, "topogram doctor");
+  assert.equal(pkg.scripts["agent:brief"], "topogram agent brief --json");
   assert.equal(pkg.scripts["source:status"], "topogram source status --local");
   assert.equal(pkg.scripts["source:status:remote"], "topogram source status --remote");
   assert.equal(pkg.scripts.check, "topogram check");
@@ -3341,6 +3343,12 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.template-policy.json")), true);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram.generator-policy.json")), true);
+  assert.equal(fs.existsSync(path.join(projectRoot, "AGENTS.md")), true);
+  const agentsGuide = fs.readFileSync(path.join(projectRoot, "AGENTS.md"), "utf8");
+  assert.match(agentsGuide, /npm run agent:brief/);
+  assert.match(agentsGuide, /topogram query/);
+  assert.match(agentsGuide, /Do not make lasting edits under generated-owned `app\/\*\*`/);
+  assert.doesNotMatch(agentsGuide, /edit generated `app\/\*\*`/i);
   const generatorPolicy = readJson(path.join(projectRoot, "topogram.generator-policy.json"));
   assert.deepEqual(generatorPolicy.allowedPackageScopes, ["@topogram"]);
   assert.deepEqual(generatorPolicy.allowedPackages, []);
@@ -3364,12 +3372,14 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.match(readme, /Template: `topogram\/web-api-db@/);
   assert.match(readme, /Executable implementation: `yes`/);
   assert.match(readme, /npm run doctor/);
+  assert.match(readme, /npm run agent:brief/);
   assert.match(readme, /npm run source:status/);
   assert.match(readme, /npm run template:explain/);
   assert.match(readme, /npm run generator:policy:status/);
   assert.match(readme, /npm run template:policy:explain/);
   assert.match(readme, /npm run trust:status/);
   const explainScript = fs.readFileSync(path.join(projectRoot, "scripts", "explain.mjs"), "utf8");
+  assert.match(explainScript, /npm run agent:brief/);
   assert.match(explainScript, /npm run doctor/);
   assert.match(explainScript, /npm run source:status/);
   assert.match(explainScript, /npm run source:status:remote/);
@@ -3454,10 +3464,18 @@ test("topogram new creates an executable web-api-db starter project", () => {
   assert.equal(explain.status, 0, explain.stderr || explain.stdout);
   assert.match(explain.stdout, /Topogram app workflow/);
   assert.match(explain.stdout, /npm run check/);
+  assert.match(explain.stdout, /npm run agent:brief/);
   assert.match(explain.stdout, /npm run generate/);
   assert.match(explain.stdout, /npm run verify/);
   assert.match(explain.stdout, /npm run app:probe/);
   assert.match(explain.stdout, /npm run app:runtime/);
+
+  const agentBrief = runNpm(["run", "agent:brief"], projectRoot);
+  assert.equal(agentBrief.status, 0, agentBrief.stderr || agentBrief.stdout);
+  const agentBriefPayload = JSON.parse(agentBrief.stdout.slice(agentBrief.stdout.indexOf("{")));
+  assert.equal(agentBriefPayload.type, "agent_brief");
+  assert.equal(agentBriefPayload.template.id, "topogram/web-api-db");
+  assert.equal(agentBriefPayload.trust.requiresTrust, true);
 
   const check = runNpm(["run", "check"], projectRoot);
   assert.equal(check.status, 0, check.stderr || check.stdout);

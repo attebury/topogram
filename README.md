@@ -48,6 +48,7 @@ npx topogram template list
 npx topogram new ./hello-web --template hello-web
 cd ./hello-web
 npm install
+npm run agent:brief
 npm run check
 npm run generate
 
@@ -105,6 +106,7 @@ npm install
 npm run new -- ./my-topogram-app --template ./engine/tests/fixtures/templates/hello-web
 cd ./my-topogram-app
 npm install
+npm run agent:brief
 npm run explain
 npm run doctor
 npm run check
@@ -138,6 +140,7 @@ topogram new ./todo-demo --template todo
 The JSON form is intended for agents and setup scripts:
 
 ```bash
+topogram agent brief --json
 topogram new --list-templates --json
 topogram query list --json
 topogram query show widget-behavior --json
@@ -150,6 +153,11 @@ Use `topogram query list` to discover focused agent packets such as
 `widget-behavior`, `change-plan`, `review-packet`, and
 `resolved-workflow-context`. Use `topogram query show <name>` when an agent
 needs the purpose, arguments, selectors, output type, and example for one query.
+Generated projects also include `AGENTS.md` and `npm run agent:brief`; see
+[Agent First Run](./docs/agent-first-run.md) for the expected read order,
+commands, edit boundaries, and verification gates. Use
+`topogram agent brief --json` or `npm run --silent agent:brief` when a tool
+needs parseable JSON stdout.
 
 The package-backed starter templates in `topogram-starters` are the canonical
 shared starter examples and are surfaced through the `attebury/topograms`

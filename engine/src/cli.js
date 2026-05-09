@@ -113,6 +113,11 @@ import {
   validateProjectConfig,
   validateProjectOutputOwnership
 } from "./project-config.js";
+import {
+  buildAgentBrief,
+  formatAgentBrief,
+  normalizeAgentTopogramPath
+} from "./agent-brief.js";
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
@@ -209,6 +214,7 @@ function printUsage(options = {}) {
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");
+  console.log("   or: topogram agent brief [path] [--json]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram emit <target> [path] [--json|--write --out-dir <path>]");
   console.log("   or: topogram query list [--json]");
@@ -267,6 +273,8 @@ function printUsage(options = {}) {
   console.log("  topogram check --json");
   console.log("  topogram widget check --projection proj_web_surface");
   console.log("  topogram widget behavior --projection proj_web_surface");
+  console.log("  topogram agent brief");
+  console.log("  topogram agent brief --json");
   console.log("  topogram query list");
   console.log("  topogram query show widget-behavior");
   console.log("  topogram query widget-behavior ./topogram --projection proj_web_surface --json");
@@ -874,6 +882,19 @@ function printCheckHelp() {
   console.log("  topogram check ./topogram");
 }
 
+function printAgentHelp() {
+  console.log("Usage: topogram agent brief [path] [--json]");
+  console.log("");
+  console.log("Prints read-only first-run guidance for humans and agents working in a Topogram project.");
+  console.log("");
+  console.log("Defaults: path is ./topogram. The command validates the Topogram and project config, but does not write files, generate apps, load generator adapters, or execute template implementation.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram agent brief");
+  console.log("  topogram agent brief --json");
+  console.log("  topogram agent brief ./topogram --json");
+}
+
 function printCommandHelp(command) {
   if (command === "new" || command === "create") {
     printNewHelp();
@@ -893,6 +914,10 @@ function printCommandHelp(command) {
   }
   if (command === "query") {
     printQueryHelp();
+    return true;
+  }
+  if (command === "agent") {
+    printAgentHelp();
     return true;
   }
   if (command === "generator") {
@@ -5007,6 +5032,7 @@ function printNewProjectResult(result, cwd) {
   console.log("Next steps:");
   console.log(`  cd ${displayProjectRootForNewProject(result, cwd)}`);
   console.log("  npm install");
+  console.log("  npm run agent:brief");
   console.log("  npm run doctor");
   console.log("  npm run source:status");
   console.log("  npm run template:explain");
@@ -8604,6 +8630,11 @@ if (args[0] === "version" || args[0] === "--version") {
 } else if (args[0] === "widget") {
   printWidgetHelp();
   process.exit(args[1] ? 1 : 0);
+} else if (args[0] === "agent" && args[1] === "brief") {
+  commandArgs = { agentBrief: true, inputPath: commandPath(2) };
+} else if (args[0] === "agent") {
+  printAgentHelp();
+  process.exit(args[1] ? 1 : 0);
 } else if (args[0] === "generator" && args[1] === "list") {
   commandArgs = { generatorList: true, inputPath: null };
 } else if (args[0] === "generator" && args[1] === "show") {
@@ -8827,6 +8858,7 @@ const shouldReleaseRollConsumers = Boolean(commandArgs?.releaseRollConsumers);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldComponentCheck = Boolean(commandArgs?.componentCheck);
 const shouldComponentBehavior = Boolean(commandArgs?.componentBehavior);
+const shouldAgentBrief = Boolean(commandArgs?.agentBrief);
 const shouldGeneratorList = Boolean(commandArgs?.generatorList);
 const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
 const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
@@ -9037,7 +9069,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldComponentCheck || shouldComponentBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -9060,6 +9092,25 @@ try {
       printDoctor(payload);
     }
     process.exit(payload.ok ? 0 : 1);
+  }
+
+  if (shouldAgentBrief) {
+    const ast = parsePath(normalizeAgentTopogramPath(inputPath));
+    const result = buildAgentBrief(inputPath, ast);
+    if (!result.ok) {
+      if (result.kind === "project") {
+        console.error(formatProjectConfigErrors(result.validation, result.configPath));
+      } else {
+        console.error(formatValidationErrors(result.validation));
+      }
+      process.exit(1);
+    }
+    if (emitJson) {
+      console.log(stableStringify(result.payload));
+    } else {
+      process.stdout.write(formatAgentBrief(result.payload));
+    }
+    process.exit(0);
   }
 
   if (shouldReleaseStatus) {
