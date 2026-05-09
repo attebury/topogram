@@ -26,6 +26,7 @@
     "./src/project-config.js",
     "./src/template-trust.js",
     "./src/npm-safety.js",
+    "./src/topogram-config.js",
     "./src/new-project.js",
     "./src/ui/taxonomy.js",
     "./src/generator/registry.js",

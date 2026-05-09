@@ -9,6 +9,7 @@ import path from "node:path";
 import { defaultGeneratorPolicy, writeGeneratorPolicy } from "./generator-policy.js";
 import { assertSafeNpmSpec, localNpmrcEnv } from "./npm-safety.js";
 import { writeTemplateTrustRecord } from "./template-trust.js";
+import { githubRepoSlug } from "./topogram-config.js";
 
 const CLI_PACKAGE_NAME = "@topogram/cli";
 const DEFAULT_TEMPLATE_NAME = "hello-web";
@@ -2169,7 +2170,7 @@ Local shortcut:
 npm run agent:brief
 \`\`\`
 
-Reference: https://github.com/attebury/topogram/blob/main/docs/agent-first-run.md
+Reference: https://github.com/${githubRepoSlug(null)}/blob/main/docs/agent-first-run.md
 
 ## First Commands
 

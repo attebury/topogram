@@ -10,6 +10,46 @@ github:attebury/topograms/topograms.catalog.json
 The catalog is not executable template storage. It only maps stable ids to
 versioned packages.
 
+## Defaults And Overrides
+
+The built-in defaults live in the CLI runtime config, not in scattered command
+code. Normal users do not need to configure anything. Maintainers can override
+repo and catalog defaults with a repo-local `topogram.config.json`:
+
+```json
+{
+  "github": {
+    "owner": "attebury",
+    "repo": "topogram"
+  },
+  "catalog": {
+    "owner": "attebury",
+    "repo": "topograms",
+    "ref": "main",
+    "path": "topograms.catalog.json"
+  },
+  "release": {
+    "consumers": ["topogram-starters"],
+    "workflows": {
+      "topogram-starters": "Starter Verification"
+    },
+    "workflowJobs": {}
+  }
+}
+```
+
+Environment variables win over the file when release or catalog automation
+needs a temporary override:
+
+```bash
+TOPOGRAM_GITHUB_OWNER=example-org topogram release status
+TOPOGRAM_CATALOG_REPO=example-topograms topogram catalog list
+TOPOGRAM_RELEASE_CONSUMERS=repo-one,repo-two topogram release status --strict
+```
+
+`TOPOGRAM_CATALOG_SOURCE` remains the direct source override for one command,
+including local catalog fixtures and `none`/`off` for disabled catalog checks.
+
 ## Commands
 
 List catalog entries:

@@ -1,4 +1,5 @@
 import { getExampleImplementation } from "../../example-implementation.js";
+import { githubRepoSlug } from "../../topogram-config.js";
 import { getDefaultEnvironmentProjections, resolveRuntimeTopology, runtimeUrls } from "../runtime/shared.js";
 
 /** Pinned toolchains for reproducible native parity stubs (document in README). */
@@ -62,7 +63,7 @@ function buildNativeParityPlan(graph, options = {}) {
 
 function renderRootReadme(plan, urls) {
   const demoOpsUrl =
-    "https://github.com/attebury/topogram/blob/main/docs/README.md";
+    `https://github.com/${githubRepoSlug(null)}/blob/main/docs/README.md`;
   return `# Native parity bundle
 
 Minimal **Android (Gradle/Kotlin)** and **iOS (Swift Package / SwiftUI)** stubs wired to the same runtime URL metadata as other Topogram bundles.

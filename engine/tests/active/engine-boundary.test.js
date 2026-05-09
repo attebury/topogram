@@ -182,6 +182,10 @@ const helperDefinitionAllowedFiles = new Set([
   "engine/src/path-helpers.js",
   "engine/tests/active/engine-boundary.test.js"
 ]);
+const runtimeDefaultAllowedFiles = new Set([
+  "engine/src/topogram-config.js",
+  "engine/tests/active/engine-boundary.test.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -382,6 +386,26 @@ test("candidate naming and stopword helpers have one source of truth", () => {
       "const STOPWORDS",
       "const GENERIC_STOPWORDS",
       "const TECHNICAL_STOPWORDS"
+    ].filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("repo and catalog owner defaults stay isolated to runtime config", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    if (runtimeDefaultAllowedFiles.has(relative)) continue;
+    const contents = fs.readFileSync(file, "utf8");
+    const references = [
+      "attebury/",
+      "github.com/attebury",
+      "raw.githubusercontent.com/attebury",
+      "owner: \"attebury\""
     ].filter((reference) => contents.includes(reference));
     if (references.length > 0) {
       offenders.push({ file: relative, references });

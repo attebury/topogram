@@ -6,8 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { installPackageSpec } from "./new-project.js";
+import { DEFAULT_CATALOG_SOURCE, defaultCatalogSource } from "./topogram-config.js";
 
-export const DEFAULT_CATALOG_SOURCE = "https://raw.githubusercontent.com/attebury/topograms/main/topograms.catalog.json";
 export const CATALOG_FILE_NAME = "topograms.catalog.json";
 export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
 const KNOWN_CATALOG_SURFACES = new Set(["web", "api", "database", "native"]);
@@ -122,7 +122,7 @@ function catalogDiagnostic(input) {
  * @returns {string}
  */
 export function catalogSourceOrDefault(source = null) {
-  return source || process.env.TOPOGRAM_CATALOG_SOURCE || DEFAULT_CATALOG_SOURCE;
+  return source || process.env.TOPOGRAM_CATALOG_SOURCE || defaultCatalogSource();
 }
 
 /**

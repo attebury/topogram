@@ -120,6 +120,13 @@ import {
   normalizeAgentTopogramPath
 } from "./agent-brief.js";
 import { assertSafeNpmSpec, LOCAL_NPMRC_ENV, localNpmrcEnv, localNpmrcStatus } from "./npm-safety.js";
+import {
+  catalogRepoSlug,
+  githubRepoSlug,
+  releaseConsumerRepos,
+  releaseConsumerWorkflowJobs,
+  releaseConsumerWorkflowName
+} from "./topogram-config.js";
 
 try {
   assertSupportedNode();
@@ -134,50 +141,6 @@ const CLI_PACKAGE_NAME = "@topogram/cli";
 const NPMJS_REGISTRY = "https://registry.npmjs.org";
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
-const FIRST_PARTY_GENERATOR_REPOS = [
-  "topogram-generator-express-api",
-  "topogram-generator-hono-api",
-  "topogram-generator-postgres-db",
-  "topogram-generator-react-web",
-  "topogram-generator-sqlite-db",
-  "topogram-generator-sveltekit-web",
-  "topogram-generator-swiftui-native",
-  "topogram-generator-vanilla-web"
-];
-const KNOWN_CLI_CONSUMER_REPOS = [
-  ...FIRST_PARTY_GENERATOR_REPOS,
-  "topogram-starters",
-  "topogram-template-todo",
-  "topogram-demo-todo",
-  "topogram-hello",
-  "topograms"
-];
-const KNOWN_CLI_CONSUMER_WORKFLOWS = {
-  "topogram-generator-express-api": "Generator Verification",
-  "topogram-generator-hono-api": "Generator Verification",
-  "topogram-generator-postgres-db": "Generator Verification",
-  "topogram-generator-react-web": "Generator Verification",
-  "topogram-generator-sqlite-db": "Generator Verification",
-  "topogram-generator-sveltekit-web": "Generator Verification",
-  "topogram-generator-swiftui-native": "Generator Verification",
-  "topogram-generator-vanilla-web": "Generator Verification",
-  "topogram-starters": "Starter Verification",
-  "topogram-template-todo": "Template Verification",
-  "topogram-demo-todo": "Demo Verification",
-  "topogram-hello": "Topogram Package Verification",
-  "topograms": "Catalog Verification"
-};
-const KNOWN_CLI_CONSUMER_WORKFLOW_JOBS = {
-  "topograms": [
-    "Validate catalog",
-    "Smoke native starter",
-    "Smoke starter alias (hello-web)",
-    "Smoke starter alias (hello-api)",
-    "Smoke starter alias (hello-db)",
-    "Smoke starter alias (web-api)",
-    "Smoke starter alias (web-api-db)"
-  ]
-};
 const PACKAGE_UPDATE_CLI_CHECK_SCRIPTS = [
   "cli:surface",
   "doctor",
@@ -3011,6 +2974,7 @@ function renderReleaseStatusMarkdown(payload) {
   const matrix = buildReleaseMatrixCatalogPayload();
   const catalogConsumer = payload.consumers.find((consumer) => consumer.name === "topograms");
   const demoConsumer = payload.consumers.find((consumer) => consumer.name === "topogram-demo-todo");
+  const catalogSlug = catalogRepoSlug();
   const lines = [
     "# Known-Good Release Matrix",
     "",
@@ -3032,7 +2996,7 @@ function renderReleaseStatusMarkdown(payload) {
     "| Package or Repo | Version or Commit | Verification |",
     "| --- | --- | --- |",
     `| \`${payload.packageName}\` | \`${payload.localVersion}\` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |`,
-    `| \`attebury/topograms\` catalog | \`${releaseMatrixConsumerCommit(catalogConsumer)}\` | ${releaseMatrixConsumerVerification(catalogConsumer, "Catalog Verification", payload.localVersion)} |`,
+    `| \`${catalogSlug}\` catalog | \`${releaseMatrixConsumerCommit(catalogConsumer)}\` | ${releaseMatrixConsumerVerification(catalogConsumer, "Catalog Verification", payload.localVersion)} |`,
     `| \`topogram-demo-todo\` | \`${releaseMatrixConsumerCommit(demoConsumer)}\` | ${releaseMatrixConsumerVerification(demoConsumer, "Demo Verification", payload.localVersion)} |`,
     "",
     "## Catalog Entries",
@@ -3272,7 +3236,7 @@ function inspectReleaseGitTag(version, cwd) {
  * @returns {string|null}
  */
 function expectedConsumerWorkflowName(name) {
-  return KNOWN_CLI_CONSUMER_WORKFLOWS[name] || null;
+  return releaseConsumerWorkflowName(name);
 }
 
 /**
@@ -3280,7 +3244,16 @@ function expectedConsumerWorkflowName(name) {
  * @returns {string[]}
  */
 function expectedConsumerWorkflowJobs(name) {
-  return KNOWN_CLI_CONSUMER_WORKFLOW_JOBS[name] || [];
+  return releaseConsumerWorkflowJobs(name);
+}
+
+/**
+ * @param {{ name: string }|string} consumer
+ * @returns {string}
+ */
+function consumerGithubRepoSlug(consumer) {
+  const name = typeof consumer === "string" ? consumer : consumer.name;
+  return githubRepoSlug(name);
 }
 
 /**
@@ -3409,7 +3382,7 @@ function waitForConsumerCi(consumer, options = {}) {
         code: "release_consumer_ci_watch_timeout",
         severity: "error",
         message: `${consumer.name} verification workflow did not complete on the current commit before the watch timeout.`,
-        path: strictLatest.run?.url || `attebury/${consumer.name}`,
+        path: strictLatest.run?.url || consumerGithubRepoSlug(consumer),
         suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status."
       });
       strictLatest.ok = false;
@@ -3429,6 +3402,7 @@ function inspectConsumerCi(consumer, options = {}) {
   const diagnostics = [];
   const expectedWorkflow = consumer.workflow || expectedConsumerWorkflowName(consumer.name);
   const expectedJobs = expectedConsumerWorkflowJobs(consumer.name);
+  const repoSlug = consumerGithubRepoSlug(consumer);
   if (!consumer.root || !fs.existsSync(consumer.root)) {
     return {
       checked: false,
@@ -3456,7 +3430,7 @@ function inspectConsumerCi(consumer, options = {}) {
       severity: options.strict ? "error" : "warning",
       message: `No expected verification workflow is configured for ${consumer.name}.`,
       path: consumer.name,
-      suggestedFix: "Add the consumer repo to KNOWN_CLI_CONSUMER_WORKFLOWS."
+      suggestedFix: "Add the consumer repo to topogram.config.json release.workflows or the built-in release workflow defaults."
     });
     return {
       checked: true,
@@ -3472,7 +3446,7 @@ function inspectConsumerCi(consumer, options = {}) {
     "run",
     "list",
     "--repo",
-    `attebury/${consumer.name}`,
+    repoSlug,
     "--branch",
     "main",
     "--workflow",
@@ -3491,7 +3465,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_unavailable",
       severity: options.strict ? "error" : "warning",
       message: `Could not inspect ${expectedWorkflow} for ${consumer.name}.`,
-      path: `attebury/${consumer.name}`,
+      path: repoSlug,
       suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
       result
     }));
@@ -3513,7 +3487,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_unreadable",
       severity: options.strict ? "error" : "warning",
       message: `Could not parse ${consumer.name} workflow status: ${messageFromError(error)}`,
-      path: `attebury/${consumer.name}`,
+      path: repoSlug,
       suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
     });
   }
@@ -3523,7 +3497,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_missing",
       severity: options.strict ? "error" : "warning",
       message: `${consumer.name} has no ${expectedWorkflow} run on main.`,
-      path: `attebury/${consumer.name}`,
+      path: repoSlug,
       suggestedFix: "Push the consumer repo and wait for its verification workflow."
     });
     return {
@@ -3541,7 +3515,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_head_mismatch",
       severity: options.strict ? "error" : "warning",
       message: `${consumer.name} latest ${expectedWorkflow} run is for ${run.headSha}, not checked-out HEAD ${headSha}.`,
-      path: run.url || `attebury/${consumer.name}`,
+      path: run.url || repoSlug,
       suggestedFix: "Wait for the verification workflow on the current consumer commit, then rerun release status."
     });
   }
@@ -3550,7 +3524,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_not_successful",
       severity: options.strict ? "error" : "warning",
       message: `${consumer.name} ${expectedWorkflow} is ${run.status || "unknown"}/${run.conclusion || "unknown"}.`,
-      path: run.url || `attebury/${consumer.name}`,
+      path: run.url || repoSlug,
       suggestedFix: "Wait for or fix the consumer verification workflow, then rerun release status."
     });
   }
@@ -3565,7 +3539,7 @@ function inspectConsumerCi(consumer, options = {}) {
       code: "release_consumer_ci_jobs_unavailable",
       severity: options.strict ? "error" : "warning",
       message: `${consumer.name} ${expectedWorkflow} run did not include a database id, so expected jobs could not be inspected.`,
-      path: run.url || `attebury/${consumer.name}`,
+      path: run.url || repoSlug,
       suggestedFix: "Rerun release status after GitHub exposes the workflow run id."
     });
   }
@@ -3591,12 +3565,13 @@ function inspectConsumerCi(consumer, options = {}) {
  */
 function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}) {
   const diagnostics = [];
+  const repoSlug = consumerGithubRepoSlug(consumer);
   const result = childProcess.spawnSync("gh", [
     "run",
     "view",
     String(runId),
     "--repo",
-    `attebury/${consumer.name}`,
+    repoSlug,
     "--json",
     "jobs"
   ], {
@@ -3609,7 +3584,7 @@ function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}
       code: "release_consumer_ci_jobs_unavailable",
       severity: options.strict ? "error" : "warning",
       message: `Could not inspect expected jobs for ${consumer.name}.`,
-      path: `attebury/${consumer.name}`,
+      path: repoSlug,
       suggestedFix: "Check GitHub CLI auth/network access, then rerun release status.",
       result
     }));
@@ -3623,7 +3598,7 @@ function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}
       code: "release_consumer_ci_jobs_unreadable",
       severity: options.strict ? "error" : "warning",
       message: `Could not parse ${consumer.name} workflow job status: ${messageFromError(error)}`,
-      path: `attebury/${consumer.name}`,
+      path: repoSlug,
       suggestedFix: "Rerun release status after GitHub CLI output is valid JSON."
     });
   }
@@ -3635,7 +3610,7 @@ function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}
         code: "release_consumer_ci_job_missing",
         severity: options.strict ? "error" : "warning",
         message: `${consumer.name} workflow is missing expected job '${expectedJob}'.`,
-        path: `attebury/${consumer.name}`,
+        path: repoSlug,
         suggestedFix: "Update the consumer workflow or the release-status expected job list, then rerun release status."
       });
       continue;
@@ -3645,7 +3620,7 @@ function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}
         code: "release_consumer_ci_job_not_successful",
         severity: options.strict ? "error" : "warning",
         message: `${consumer.name} job '${expectedJob}' is ${job.status || "unknown"}/${job.conclusion || "unknown"}.`,
-        path: job.url || `attebury/${consumer.name}`,
+        path: job.url || repoSlug,
         suggestedFix: "Wait for or fix the expected workflow job, then rerun release status."
       });
     }
@@ -3666,7 +3641,7 @@ function discoverTopogramCliVersionConsumers(cwd) {
     }
   }
   const consumers = [];
-  for (const name of KNOWN_CLI_CONSUMER_REPOS) {
+  for (const name of releaseConsumerRepos(cwd)) {
     let found = null;
     for (const root of roots) {
       const consumerRoot = path.join(root, name);
