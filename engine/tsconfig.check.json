@@ -30,6 +30,7 @@
     "./src/topogram-config.js",
     "./src/cli/commands/setup.js",
     "./src/cli/commands/version.js",
+    "./src/cli/commands/query.js",
     "./src/cli/help.js",
     "./src/new-project.js",
     "./src/ui/taxonomy.js",
