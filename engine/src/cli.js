@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -126,6 +125,15 @@ import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
 import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
+import {
+  assertProjectOutputAllowsWrite,
+  assertSafeGeneratedOutputDir,
+  GENERATED_OUTPUT_SENTINEL,
+  generatedOutputSentinel,
+  runGenerateAppCommand,
+  targetRequiresImplementationProvider,
+  topogramInputPathForGeneration
+} from "./cli/commands/generate.js";
 import { writeTemplatePolicyForProject } from "./new-project.js";
 import {
   TEMPLATE_TRUST_FILE,
@@ -168,7 +176,6 @@ import { isCatalogSourceDisabled } from "./catalog.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
-  outputOwnershipForPath,
   projectConfigOrDefault,
   validateProjectConfig,
   validateProjectOutputOwnership
@@ -205,29 +212,6 @@ try {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 }
-
-const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
-  "persistence-scaffold",
-  "hono-server",
-  "express-server",
-  "sveltekit-app",
-  "environment-plan",
-  "environment-bundle",
-  "deployment-plan",
-  "deployment-bundle",
-  "runtime-smoke-plan",
-  "runtime-smoke-bundle",
-  "runtime-check-plan",
-  "runtime-check-bundle",
-  "compile-check-plan",
-  "compile-check-bundle",
-  "app-bundle-plan",
-  "app-bundle",
-  "native-parity-plan",
-  "native-parity-bundle"
-]);
 
 function printCommandHelp(command) {
   if (command === "new" || command === "create") {
@@ -330,79 +314,6 @@ function normalizeProjectRoot(inputPath) {
     return path.dirname(absolute);
   }
   return absolute;
-}
-
-function isSameOrInside(parent, child) {
-  const relative = path.relative(path.resolve(parent), path.resolve(child));
-  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
-}
-
-function rejectOutputDir(message) {
-  throw new Error(`${message} Choose a generated output directory such as ./app.`);
-}
-
-function assertSafeGeneratedOutputDir(outDir, topogramRoot) {
-  const resolvedOutDir = path.resolve(outDir);
-  const resolvedTopogramRoot = path.resolve(topogramRoot);
-  const homeDir = path.resolve(os.homedir());
-  const cwd = path.resolve(process.cwd());
-
-  if (resolvedOutDir === cwd) {
-    rejectOutputDir("Refusing to replace the current working directory.");
-  }
-  if (resolvedOutDir === REPO_ROOT) {
-    rejectOutputDir("Refusing to replace the repository root.");
-  }
-  if (resolvedOutDir === homeDir) {
-    rejectOutputDir("Refusing to replace the home directory.");
-  }
-  if (isSameOrInside(resolvedOutDir, resolvedTopogramRoot) || isSameOrInside(resolvedTopogramRoot, resolvedOutDir)) {
-    rejectOutputDir("Refusing to replace the Topogram source directory or one of its parents/children.");
-  }
-
-  if (!fs.existsSync(resolvedOutDir)) {
-    return;
-  }
-  const stat = fs.statSync(resolvedOutDir);
-  if (!stat.isDirectory()) {
-    throw new Error(`Refusing to write generated output over non-directory path: ${resolvedOutDir}`);
-  }
-  const hasSentinel = fs.existsSync(path.join(resolvedOutDir, GENERATED_OUTPUT_SENTINEL));
-  const isEmpty = fs.readdirSync(resolvedOutDir).length === 0;
-  if (!isEmpty && !hasSentinel) {
-    rejectOutputDir(
-      `Refusing to replace non-empty directory without ${GENERATED_OUTPUT_SENTINEL}: ${resolvedOutDir}.`
-    );
-  }
-}
-
-function assertProjectOutputAllowsWrite(configInfo, outDir) {
-  const ownership = outputOwnershipForPath(configInfo, outDir);
-  if (ownership?.ownership === "maintained") {
-    throw new Error(
-      `Refusing to write generated output to maintained output '${ownership.name}': ${ownership.path}`
-    );
-  }
-}
-
-function generatedOutputSentinel(target) {
-  return `${JSON.stringify({
-    generated_by: "topogram",
-    target,
-    safe_to_replace: true
-  }, null, 2)}\n`;
-}
-
-function topogramInputPathForGeneration(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (isSameOrInside(REPO_ROOT, absolute)) {
-    return `./${path.relative(REPO_ROOT, absolute).replace(/\\/g, "/")}`;
-  }
-  return path.basename(absolute) === "topogram" ? "./topogram" : ".";
-}
-
-function targetRequiresImplementationProvider(target) {
-  return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
 }
 
 function workflowPresetSelectors({
@@ -602,10 +513,6 @@ if (commandArgs) {
   commandArgs = { generateTarget: args[1], inputPath: commandPath(2), emitArtifact: true };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
-} else if (args[0] === "generate" && args[1] === "app") {
-  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
-} else if (args[0] === "generate" && args[1] !== "journeys") {
-  commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
 } else if (args[0] === "catalog" && args[1] === "list") {
   commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
 } else if (args[0] === "catalog" && args[1] === "show") {
@@ -3291,6 +3198,15 @@ try {
 
     console.log(stableStringify(result.summary));
     process.exit(0);
+  }
+
+  if (generateTarget === "app-bundle" && shouldWrite && !commandArgs?.emitArtifact) {
+    process.exit(await runGenerateAppCommand({
+      inputPath,
+      projectRoot: normalizeProjectRoot(inputPath),
+      outDir: effectiveOutDir,
+      profileId
+    }));
   }
 
   const ast = parsePath(inputPath);

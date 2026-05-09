@@ -32,6 +32,12 @@ export function parseSplitCommandArgs(args) {
       ? { templateList: true, inputPath: null }
       : { newProject: true, inputPath: args[1] };
   }
+  if (args[0] === "generate" && args[1] === "app") {
+    return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 2), defaultOutDir: "./app" };
+  }
+  if (args[0] === "generate" && args[1] !== "journeys") {
+    return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 1), defaultOutDir: "./app" };
+  }
   if (args[0] === "version" || args[0] === "--version") {
     return { version: true, inputPath: null };
   }
