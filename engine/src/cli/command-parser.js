@@ -39,6 +39,9 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "doctor") {
     return { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
   }
+  if (args[0] === "check") {
+    return { check: true, inputPath: commandPath(args, 1) };
+  }
   if (args[0] === "source" && args[1] === "status") {
     return { sourceStatus: true, inputPath: commandPath(args, 2, ".") };
   }

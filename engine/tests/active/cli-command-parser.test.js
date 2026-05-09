@@ -22,10 +22,14 @@ test("split command parser handles extracted command families", () => {
     queryShowName: "--json",
     inputPath: null
   });
+  assert.deepEqual(parseSplitCommandArgs(["check"]), { check: true, inputPath: "./topogram" });
+  assert.deepEqual(parseSplitCommandArgs(["check", "./custom-topogram"]), {
+    check: true,
+    inputPath: "./custom-topogram"
+  });
 });
 
 test("split command parser leaves unsplit command families to the legacy parser", () => {
-  assert.equal(parseSplitCommandArgs(["check"]), null);
   assert.equal(parseSplitCommandArgs(["query", "slice", "./topogram"]), null);
   assert.equal(parseSplitCommandArgs(["generate"]), null);
 });

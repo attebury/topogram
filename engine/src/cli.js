@@ -10,6 +10,12 @@ import { parseSplitCommandArgs } from "./cli/command-parser.js";
 import { handleSetupCommand, printSetupHelp } from "./cli/commands/setup.js";
 import { buildVersionPayload, printVersion } from "./cli/commands/version.js";
 import {
+  checkSummaryPayload,
+  combineProjectValidationResults,
+  printCheckHelp,
+  printTopologySummary
+} from "./cli/commands/check.js";
+import {
   buildQueryListPayload,
   buildQueryShowPayload,
   printQueryDefinition,
@@ -225,19 +231,6 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "native-parity-bundle"
 ]);
 
-function printCheckHelp() {
-  console.log("Usage: topogram check [path] [--json]");
-  console.log("");
-  console.log("Validates Topogram files, project configuration, topology, generator compatibility, generator policy, output ownership, and template policy.");
-  console.log("");
-  console.log("Defaults: path is ./topogram.");
-  console.log("");
-  console.log("Examples:");
-  console.log("  topogram check");
-  console.log("  topogram check --json");
-  console.log("  topogram check ./topogram");
-}
-
 function printAgentHelp() {
   console.log("Usage: topogram agent brief [path] [--json]");
   console.log("");
@@ -427,145 +420,6 @@ function targetRequiresImplementationProvider(target) {
   return IMPLEMENTATION_PROVIDER_TARGETS.has(target);
 }
 
-function topologyComponentReferences(component) {
-  return {
-    uses_api: component.uses_api || null,
-    uses_database: component.uses_database || null
-  };
-}
-
-function topologyComponentPort(component) {
-  return Object.prototype.hasOwnProperty.call(component, "port") ? component.port : null;
-}
-
-function summarizeProjectTopology(config) {
-  const outputs = Object.entries(config?.outputs || {})
-    .map(([name, output]) => ({
-      name,
-      path: output?.path || null,
-      ownership: output?.ownership || null
-    }))
-    .sort((left, right) => left.name.localeCompare(right.name));
-  const runtimes = (config?.topology?.runtimes || [])
-    .map((component) => ({
-      id: component.id,
-      kind: component.kind,
-      projection: component.projection,
-      generator: {
-        id: component.generator?.id || null,
-        version: component.generator?.version || null
-      },
-      port: topologyComponentPort(component),
-      references: topologyComponentReferences(component)
-    }))
-    .sort((left, right) => left.id.localeCompare(right.id));
-  const edges = runtimes.flatMap((component) => {
-    const references = [];
-    if (component.references.uses_api) {
-      references.push({
-        from: component.id,
-        to: component.references.uses_api,
-        type: "calls_api"
-      });
-    }
-    if (component.references.uses_database) {
-      references.push({
-        from: component.id,
-        to: component.references.uses_database,
-        type: "uses_database"
-      });
-    }
-    return references;
-  }).sort((left, right) => `${left.from}:${left.type}:${left.to}`.localeCompare(`${right.from}:${right.type}:${right.to}`));
-  return {
-    outputs,
-    runtimes,
-    edges
-  };
-}
-
-function publicProjectTopology(topology) {
-  if (!topology || typeof topology !== "object") {
-    return topology || null;
-  }
-  return {
-    ...Object.fromEntries(Object.entries(topology).filter(([key]) => key !== "components")),
-    runtimes: topology.runtimes || []
-  };
-}
-
-function formatTopologyComponent(component) {
-  const generator = component.generator.id
-    ? `${component.generator.id}${component.generator.version ? `@${component.generator.version}` : ""}`
-    : "unbound generator";
-  const port = component.port == null ? "no port" : `port ${component.port}`;
-  const refs = Object.entries(component.references)
-    .filter(([, value]) => Boolean(value))
-    .map(([key, value]) => `${key} ${value}`);
-  const suffix = refs.length ? ` -> ${refs.join(", ")}` : "";
-  return `  - ${component.id}: ${component.kind} ${component.projection} via ${generator} (${port})${suffix}`;
-}
-
-function printTopologySummary(topology) {
-  console.log("Project topology:");
-  if (topology.outputs.length > 0) {
-    console.log("  Outputs:");
-    for (const output of topology.outputs) {
-      console.log(`  - ${output.name}: ${output.path || "unset"} (${output.ownership || "unknown"})`);
-    }
-  }
-  if (topology.runtimes.length > 0) {
-    console.log("  Runtimes:");
-    for (const component of topology.runtimes) {
-      console.log(formatTopologyComponent(component));
-    }
-  }
-  if (topology.edges.length > 0) {
-    console.log("  Edges:");
-    for (const edge of topology.edges) {
-      console.log(`  - ${edge.from} ${edge.type} ${edge.to}`);
-    }
-  }
-}
-
-function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation }) {
-  const statementCount = ast.files.flatMap((file) => file.statements).length;
-  const projectInfo = projectConfigInfo || {
-    configPath: null,
-    compatibility: false,
-    config: { topology: null }
-  };
-  const resolvedTopology = summarizeProjectTopology(projectInfo.config);
-  return {
-    ok: resolved.ok && projectValidation.ok,
-    inputPath,
-    topogram: {
-      files: ast.files.length,
-      statements: statementCount,
-      valid: resolved.ok
-    },
-    project: {
-      configPath: projectInfo.configPath,
-      compatibility: Boolean(projectInfo.compatibility),
-      valid: projectValidation.ok,
-      topology: publicProjectTopology(projectInfo.config.topology),
-      resolvedTopology
-    },
-    errors: [
-      ...(resolved.ok ? [] : resolved.validation.errors.map((error) => ({
-        source: "topogram",
-        message: error.message,
-        loc: error.loc
-      }))),
-      ...projectValidation.errors.map((error) => ({
-        source: "project",
-        message: error.message,
-        loc: error.loc
-      }))
-    ]
-  };
-}
-
 function printWidgetConformanceReport(report) {
   const summary = report.summary || {};
   const ok = (summary.errors || 0) === 0;
@@ -657,17 +511,6 @@ function printWidgetBehaviorReport(report) {
   const groupSummary = report.groups || {};
   console.log("");
   console.log(`Groups: ${(groupSummary.widgets || []).length} widget(s), ${(groupSummary.screens || []).length} screen(s), ${(groupSummary.capabilities || []).length} capability group(s), ${(groupSummary.effects || []).length} effect group(s)`);
-}
-
-function combineProjectValidationResults(...results) {
-  const errors = [];
-  for (const result of results) {
-    errors.push(...(result?.errors || []));
-  }
-  return {
-    ok: errors.length === 0,
-    errors
-  };
 }
 
 /**
