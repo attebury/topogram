@@ -1,15 +1,20 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
 import { ensureTrailingNewline } from "../../text-helpers.js";
 import { adoptionItemKey } from "../../adoption/plan.js";
+import {
+  applyDocLinkPatchToMarkdown as applyDocLinkPatchToMarkdownReconcile,
+  applyDocMetadataPatchToMarkdown as applyDocMetadataPatchToMarkdownReconcile
+} from "../../reconcile/docs.js";
 import { confidenceRank } from "../docs.js";
 import { dashedTopogramId } from "./ids.js";
 import { readJsonIfExists, readTextIfExists } from "../shared.js";
 import { buildProjectionReviewGroups, buildUiReviewGroups, buildWorkflowReviewGroups } from "../../adoption/review-groups.js";
 import { buildProjectionImpacts, buildUiImpacts, buildWorkflowImpacts } from "./impacts.js";
 
+/** @param {string} kind @param {string} item @returns {any} */
 export function canonicalRelativePathForItem(kind, item) {
   switch (kind) {
     case "actor":
@@ -33,11 +38,13 @@ export function canonicalRelativePathForItem(kind, item) {
   }
 }
 
+/** @param {string} kind @param {string} item @returns {any} */
 export function canonicalDisplayPathForItem(kind, item) {
   const relativePath = canonicalRelativePathForItem(kind, item);
   return relativePath ? `topogram/${relativePath}` : null;
 }
 
+/** @param {CandidateBundle} bundle @param {string} kind @param {WorkflowRecord} item @returns {any} */
 export function candidateSourcePathForItem(bundle, kind, item) {
   const base = `candidates/reconcile/model/bundles/${bundle.slug}`;
   switch (kind) {
@@ -62,6 +69,7 @@ export function candidateSourcePathForItem(bundle, kind, item) {
   }
 }
 
+/** @param {WorkflowRecord} step @returns {any} */
 export function reasonForAdoptionItem(step) {
   switch (step.action) {
     case "promote_actor":
@@ -107,6 +115,7 @@ export function reasonForAdoptionItem(step) {
   }
 }
 
+/** @param {WorkflowRecord} step @returns {any} */
 export function recommendationForAdoptionItem(step) {
   if (step.action === "apply_doc_link_patch") {
     return `Update \`${step.target}\` with the suggested related actor/role links.`;
@@ -115,13 +124,13 @@ export function recommendationForAdoptionItem(step) {
     return `Update \`${step.target}\` with the suggested safe metadata changes.`;
   }
   if (step.action === "apply_projection_permission_patch") {
-    return `Update \`${step.target}\` with inferred permission auth rules for ${(step.related_capabilities || []).map((item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
+    return `Update \`${step.target}\` with inferred permission auth rules for ${(step.related_capabilities || []).map((/** @type {any} */ item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
   }
   if (step.action === "apply_projection_auth_patch") {
-    return `Update \`${step.target}\` with inferred claim auth rules for ${(step.related_capabilities || []).map((item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
+    return `Update \`${step.target}\` with inferred claim auth rules for ${(step.related_capabilities || []).map((/** @type {any} */ item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
   }
   if (step.action === "apply_projection_ownership_patch") {
-    return `Update \`${step.target}\` with inferred ownership auth rules for ${(step.related_capabilities || []).map((item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
+    return `Update \`${step.target}\` with inferred ownership auth rules for ${(step.related_capabilities || []).map((/** @type {any} */ item) => `\`${item}\``).join(", ") || "the related capabilities"}.`;
   }
   if (step.action === "promote_widget") {
     return "Promote this reviewed widget candidate before binding or reusing it from canonical projections.";
@@ -130,38 +139,43 @@ export function recommendationForAdoptionItem(step) {
     return null;
   }
   const kindLabel = step.action === "promote_actor" ? "actor" : "role";
+  /** @type {any[]} */
   const linkHints = [];
   if ((step.related_docs || []).length > 0) {
-    linkHints.push(`link to docs ${step.related_docs.map((item) => `\`${item}\``).join(", ")}`);
+    linkHints.push(`link to docs ${step.related_docs.map((/** @type {any} */ item) => `\`${item}\``).join(", ")}`);
   }
   if ((step.related_capabilities || []).length > 0) {
-    linkHints.push(`check capabilities ${step.related_capabilities.map((item) => `\`${item}\``).join(", ")}`);
+    linkHints.push(`check capabilities ${step.related_capabilities.map((/** @type {any} */ item) => `\`${item}\``).join(", ")}`);
   }
   return `Promote this ${kindLabel}${step.confidence ? ` (${step.confidence})` : ""}${linkHints.length ? ` and ${linkHints.join("; ")}` : ""}.`;
 }
 
+/** @param {WorkflowRecord} item @returns {any} */
 export function formatDocLinkSuggestionInline(item) {
   return `doc \`${item.doc_id}\`` +
-    `${item.add_related_actors?.length ? ` add-actors=${item.add_related_actors.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
-    `${item.add_related_roles?.length ? ` add-roles=${item.add_related_roles.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
-    `${item.add_related_capabilities?.length ? ` add-capabilities=${item.add_related_capabilities.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
-    `${item.add_related_rules?.length ? ` add-rules=${item.add_related_rules.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
-    `${item.add_related_workflows?.length ? ` add-workflows=${item.add_related_workflows.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.add_related_actors?.length ? ` add-actors=${item.add_related_actors.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.add_related_roles?.length ? ` add-roles=${item.add_related_roles.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.add_related_capabilities?.length ? ` add-capabilities=${item.add_related_capabilities.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.add_related_rules?.length ? ` add-rules=${item.add_related_rules.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.add_related_workflows?.length ? ` add-workflows=${item.add_related_workflows.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
     `${item.patch_rel_path ? ` draft=\`${item.patch_rel_path}\`` : ""}`;
 }
 
+/** @param {WorkflowRecord} item @returns {any} */
 export function formatDocDriftSummaryInline(item) {
-  return `doc \`${item.doc_id}\` (${item.recommendation_type}) fields=${item.differing_fields.map((entry) => entry.field).join(", ")} confidence=${item.imported_confidence}`;
+  return `doc \`${item.doc_id}\` (${item.recommendation_type}) fields=${item.differing_fields.map((/** @type {any} */ entry) => entry.field).join(", ")} confidence=${item.imported_confidence}`;
 }
 
+/** @param {WorkflowRecord} item @returns {any} */
 export function formatDocMetadataPatchInline(item) {
   return `doc \`${item.doc_id}\`` +
     `${item.summary ? " set-summary=yes" : ""}` +
     `${item.success_outcome ? " set-success_outcome=yes" : ""}` +
-    `${item.actors?.length ? ` add-actors=${item.actors.map((entry) => `\`${entry}\``).join(", ")}` : ""}` +
+    `${item.actors?.length ? ` add-actors=${item.actors.map((/** @type {any} */ entry) => `\`${entry}\``).join(", ")}` : ""}` +
     `${item.patch_rel_path ? ` draft=\`${item.patch_rel_path}\`` : ""}`;
 }
 
+/** @param {WorkflowRecord} step @param {any[]} projectionImpacts @param {any[]} uiImpacts @param {any[]} workflowImpacts @returns {any} */
 export function adoptionStatusForStep(step, projectionImpacts = [], uiImpacts = [], workflowImpacts = []) {
   if (step.action === "skip_duplicate_shape") {
     return "skipped";
@@ -187,13 +201,14 @@ export function adoptionStatusForStep(step, projectionImpacts = [], uiImpacts = 
   return "pending";
 }
 
+/** @param {CandidateBundle} bundle @param {WorkflowRecord} step @returns {any} */
 export function projectionImpactsForAdoptionItem(bundle, step) {
   if (!step.action.includes("capability")) {
     return [];
   }
   return (bundle.projectionImpacts || [])
-    .filter((impact) => (impact.missing_capabilities || []).includes(step.item))
-    .map((impact) => ({
+    .filter((/** @type {any} */ impact) => (impact.missing_capabilities || []).includes(step.item))
+    .map((/** @type {any} */ impact) => ({
       projection_id: impact.projection_id,
       kind: impact.kind,
       projection_type: impact.projection_type,
@@ -201,8 +216,9 @@ export function projectionImpactsForAdoptionItem(bundle, step) {
     }));
 }
 
+/** @param {any[]} projectionImpacts @returns {any} */
 export function blockingDependenciesForProjectionImpacts(projectionImpacts) {
-  return projectionImpacts.map((impact) => ({
+  return projectionImpacts.map((/** @type {any} */ impact) => ({
     type: "projection_review",
     id: `projection_review:${impact.projection_id}`,
     projection_id: impact.projection_id,
@@ -212,8 +228,9 @@ export function blockingDependenciesForProjectionImpacts(projectionImpacts) {
   }));
 }
 
+/** @param {any[]} uiImpacts @returns {any} */
 export function blockingDependenciesForUiImpacts(uiImpacts) {
-  return uiImpacts.map((impact) => ({
+  return uiImpacts.map((/** @type {any} */ impact) => ({
     type: "ui_review",
     id: `ui_review:${impact.projection_id}`,
     projection_id: impact.projection_id,
@@ -223,15 +240,18 @@ export function blockingDependenciesForUiImpacts(uiImpacts) {
   }));
 }
 
+/** @param {any[]} workflowImpacts @returns {any} */
 export function blockingDependenciesForWorkflowImpacts(workflowImpacts) {
-  return workflowImpacts.map((impact) => ({
+  return workflowImpacts.map((/** @type {any} */ impact) => ({
     type: "workflow_review",
     id: impact.review_group_id,
     reason: impact.reason
   }));
 }
 
+/** @param {CandidateBundle[]} bundles @returns {any} */
 export function buildAdoptionPlan(bundles) {
+  /** @type {any[]} */
   const items = [];
   for (const bundle of bundles) {
     for (const step of bundle.adoptionPlan || []) {
@@ -407,7 +427,7 @@ export function buildAdoptionPlan(bundles) {
       });
     }
   }
-  return items.sort((a, b) =>
+  return items.sort((/** @type {any} */ a, /** @type {any} */ b) =>
     a.bundle.localeCompare(b.bundle) ||
     confidenceRank(b.confidence || "low") - confidenceRank(a.confidence || "low") ||
     a.kind.localeCompare(b.kind) ||
@@ -417,21 +437,26 @@ export function buildAdoptionPlan(bundles) {
 
 const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "ui"]);
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function readAdoptionPlan(paths) {
   return readJsonIfExists(path.join(paths.topogramRoot, "candidates", "reconcile", "adoption-plan.json"));
 }
 
+/** @param {WorkspacePaths} paths @param {any[]} candidateFiles @param {any[]} planItems @param {any[]} selectedItems @param {WorkflowOptions} options @returns {any} */
 export function buildCanonicalAdoptionOutputs(paths, candidateFiles, planItems, selectedItems, options = {}) {
   const refreshAdopted = Boolean(options.refreshAdopted);
+  /** @type {WorkflowFiles} */
+  /** @type {WorkflowFiles} */
   const files = {};
+  /** @type {any[]} */
   const refreshedFiles = [];
   const selectedSet = new Set(selectedItems);
-  const itemMap = new Map(planItems.map((item) => [adoptionItemKey(item), item]));
+  const itemMap = new Map(planItems.map((/** @type {any} */ item) => [adoptionItemKey(item), item]));
   const capabilityBundleSet = new Set(
     [...selectedSet]
-      .map((key) => itemMap.get(key))
-      .filter((item) => item?.kind === "capability")
-      .map((item) => item.bundle)
+      .map((/** @type {any} */ key) => itemMap.get(key))
+      .filter((/** @type {any} */ item) => item?.kind === "capability")
+      .map((/** @type {any} */ item) => item.bundle)
   );
   for (const item of planItems) {
     if (item.kind === "shape" && item.status !== "skipped" && capabilityBundleSet.has(item.bundle)) {
@@ -515,14 +540,15 @@ export function buildCanonicalAdoptionOutputs(paths, candidateFiles, planItems, 
   return { files, refreshedFiles: [...new Set(refreshedFiles)].sort() };
 }
 
+/** @param {any[]} planItems @param {any[]} selectedItems @param {any[]} writtenCanonicalFiles @param {string} selector @returns {any} */
 export function buildPromotedCanonicalItems(planItems, selectedItems, writtenCanonicalFiles, selector) {
-  const itemMap = new Map((planItems || []).map((item) => [adoptionItemKey(item), item]));
-  const writtenSet = new Set((writtenCanonicalFiles || []).map((item) => String(item).replaceAll(path.sep, "/")));
+  const itemMap = new Map((planItems || []).map((/** @type {any} */ item) => [adoptionItemKey(item), item]));
+  const writtenSet = new Set((writtenCanonicalFiles || []).map((/** @type {any} */ item) => String(item).replaceAll(path.sep, "/")));
   return [...new Set(selectedItems || [])]
-    .map((key) => itemMap.get(key))
+    .map((/** @type {any} */ key) => itemMap.get(key))
     .filter(Boolean)
-    .filter((item) => item.canonical_rel_path && writtenSet.has(String(item.canonical_rel_path).replaceAll(path.sep, "/")))
-    .map((item) => ({
+    .filter((/** @type {any} */ item) => item.canonical_rel_path && writtenSet.has(String(item.canonical_rel_path).replaceAll(path.sep, "/")))
+    .map((/** @type {any} */ item) => ({
       selector: selector || null,
       bundle: item.bundle,
       item: item.item,
@@ -533,7 +559,7 @@ export function buildPromotedCanonicalItems(planItems, selectedItems, writtenCan
       canonical_path: item.canonical_path || `topogram/${String(item.canonical_rel_path).replaceAll(path.sep, "/")}`,
       suggested_action: item.suggested_action || null
     }))
-    .sort((a, b) =>
+    .sort((/** @type {any} */ a, /** @type {any} */ b) =>
       (a.bundle || "").localeCompare(b.bundle || "") ||
       (a.track || "").localeCompare(b.track || "") ||
       (a.kind || "").localeCompare(b.kind || "") ||
@@ -541,8 +567,9 @@ export function buildPromotedCanonicalItems(planItems, selectedItems, writtenCan
     );
 }
 
+/** @param {any[]} lines @param {string} blockName @returns {any} */
 export function ensureProjectionBlock(lines, blockName) {
-  const startIndex = lines.findIndex((line) => new RegExp(`^\\s*${blockName}\\s*\\{\\s*$`).test(line));
+  const startIndex = lines.findIndex((/** @type {any} */ line) => new RegExp(`^\\s*${blockName}\\s*\\{\\s*$`).test(line));
   if (startIndex !== -1) {
     let endIndex = -1;
     for (let index = startIndex + 1; index < lines.length; index += 1) {
@@ -555,7 +582,7 @@ export function ensureProjectionBlock(lines, blockName) {
       return { lines, startIndex, endIndex };
     }
   }
-  const insertBeforeStatus = lines.findIndex((line) => /^\s*status\s+\w+/.test(line));
+  const insertBeforeStatus = lines.findIndex((/** @type {any} */ line) => /^\s*status\s+\w+/.test(line));
   const insertIndex = insertBeforeStatus === -1 ? lines.length : insertBeforeStatus;
   const blockLines = ["", `  ${blockName} {`, "  }"];
   lines.splice(insertIndex, 0, ...blockLines);
@@ -566,8 +593,9 @@ export function ensureProjectionBlock(lines, blockName) {
   };
 }
 
+/** @param {any[]} lines @param {any[]} capabilityIds @returns {any} */
 export function ensureProjectionRealizes(lines, capabilityIds) {
-  const startIndex = lines.findIndex((line) => /^\s*realizes\s*\[/.test(line));
+  const startIndex = lines.findIndex((/** @type {any} */ line) => /^\s*realizes\s*\[/.test(line));
   if (startIndex === -1) {
     return { changed: false, lines };
   }
@@ -578,6 +606,7 @@ export function ensureProjectionRealizes(lines, capabilityIds) {
   if (endIndex >= lines.length) {
     return { changed: false, lines };
   }
+  /** @type {any[]} */
   const existingItems = [];
   for (let index = startIndex; index <= endIndex; index += 1) {
     const text = lines[index]
@@ -587,7 +616,7 @@ export function ensureProjectionRealizes(lines, capabilityIds) {
     if (!text) {
       continue;
     }
-    for (const item of text.split(",").map((entry) => entry.trim()).filter(Boolean)) {
+    for (const item of text.split(",").map((/** @type {any} */ entry) => entry.trim()).filter(Boolean)) {
       existingItems.push(item);
     }
   }
@@ -595,11 +624,12 @@ export function ensureProjectionRealizes(lines, capabilityIds) {
   if (merged.length === existingItems.length) {
     return { changed: false, lines };
   }
-  const replacement = ["  realizes [", ...merged.map((item, index) => `    ${item}${index === merged.length - 1 ? "" : ","}`), "  ]"];
+  const replacement = ["  realizes [", ...merged.map((/** @type {any} */ item, /** @type {any} */ index) => `    ${item}${index === merged.length - 1 ? "" : ","}`), "  ]"];
   lines.splice(startIndex, endIndex - startIndex + 1, ...replacement);
   return { changed: true, lines };
 }
 
+/** @param {string} baseContents @param {WorkflowRecord} item @returns {any} */
 export function applyProjectionAuthPatchToTopogram(baseContents, item) {
   const lines = String(baseContents || "").replace(/\r\n/g, "\n").split("\n");
   const capabilities = [...new Set(item.related_capabilities || [])];
@@ -611,7 +641,7 @@ export function applyProjectionAuthPatchToTopogram(baseContents, item) {
   if (item.projection_surface === "authorization") {
     const block = ensureProjectionBlock(lines, "authorization");
     for (const capabilityId of capabilities) {
-      const lineIndex = lines.findIndex((line, index) =>
+      const lineIndex = lines.findIndex((/** @type {any} */ line, /** @type {any} */ index) =>
         index > block.startIndex &&
         index < block.endIndex &&
         new RegExp(`^\\s*${capabilityId}(\\s|$)`).test(line)
@@ -664,7 +694,7 @@ export function applyProjectionAuthPatchToTopogram(baseContents, item) {
     const block = ensureProjectionBlock(lines, "visibility_rules");
     for (const capabilityId of capabilities) {
       if (item.suggested_action === "apply_projection_permission_patch") {
-        const hasExistingPermissionRule = lines.some((line, index) =>
+        const hasExistingPermissionRule = lines.some((/** @type {any} */ line, /** @type {any} */ index) =>
           index > block.startIndex &&
           index < block.endIndex &&
           new RegExp(`^\\s*action\\s+${capabilityId}\\s+visible_if\\s+permission\\s+${item.permission}(\\s|$)`).test(line)
@@ -672,7 +702,7 @@ export function applyProjectionAuthPatchToTopogram(baseContents, item) {
         if (hasExistingPermissionRule) {
           continue;
         }
-        const hasAnyVisibilityRule = lines.some((line, index) =>
+        const hasAnyVisibilityRule = lines.some((/** @type {any} */ line, /** @type {any} */ index) =>
           index > block.startIndex &&
           index < block.endIndex &&
           new RegExp(`^\\s*action\\s+${capabilityId}\\s+visible_if\\s+`).test(line)
@@ -686,7 +716,7 @@ export function applyProjectionAuthPatchToTopogram(baseContents, item) {
         continue;
       }
 
-      const hasExistingClaimRule = lines.some((line, index) =>
+      const hasExistingClaimRule = lines.some((/** @type {any} */ line, /** @type {any} */ index) =>
         index > block.startIndex &&
         index < block.endIndex &&
         new RegExp(`^\\s*action\\s+${capabilityId}\\s+visible_if\\s+claim\\s+${item.claim}(\\s|$)`).test(line)
@@ -694,7 +724,7 @@ export function applyProjectionAuthPatchToTopogram(baseContents, item) {
       if (hasExistingClaimRule) {
         continue;
       }
-      const hasAnyVisibilityRule = lines.some((line, index) =>
+      const hasAnyVisibilityRule = lines.some((/** @type {any} */ line, /** @type {any} */ index) =>
         index > block.startIndex &&
         index < block.endIndex &&
         new RegExp(`^\\s*action\\s+${capabilityId}\\s+visible_if\\s+`).test(line)

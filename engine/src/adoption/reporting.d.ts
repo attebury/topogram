@@ -1,0 +1,10 @@
+export function attachBundleOperatorHints(...args: any[]): any;
+export function annotateBundlePriorities(...args: any[]): any;
+export function buildAdoptionStatusFiles(...args: any[]): any;
+export function buildAdoptionStatusSummary(...args: any[]): any;
+export function buildPromotedCanonicalItems(...args: any[]): any;
+export function renderBundlePriorityActionsMarkdown(...args: any[]): string;
+export function renderNextBestActionMarkdown(...args: any[]): string;
+export function renderPreviewFollowupMarkdown(...args: any[]): string;
+export function renderPreviewRiskMarkdown(...args: any[]): string;
+export function renderPromotedCanonicalItemsMarkdown(...args: any[]): string;

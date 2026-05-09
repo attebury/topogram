@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import path from "node:path";
 
 import { relativeTo } from "../../path-helpers.js";
@@ -6,6 +6,7 @@ import { idHintify, slugify, titleCase } from "../../text-helpers.js";
 import { readJsonIfExists, readTextIfExists } from "../shared.js";
 import { dedupeCandidateRecords, findImportFiles, makeCandidateRecord, selectPreferredImportFiles } from "./shared.js";
 
+/** @param {any} typeName @returns {any} */
 function normalizePrismaType(typeName) {
   const normalized = String(typeName || "").toLowerCase();
   switch (normalized) {
@@ -33,21 +34,27 @@ function normalizePrismaType(typeName) {
   }
 }
 
+/** @param {any} schemaText @returns {any} */
 function parsePrismaSchema(schemaText) {
+  /** @type {any[]} */
   const enums = [];
+  /** @type {any[]} */
   const entities = [];
+  /** @type {any[]} */
   const relations = [];
+  /** @type {any[]} */
   const indexes = [];
   const enumNames = new Set();
+  /** @type {any[]} */
   const modelNames = [];
 
   for (const match of schemaText.matchAll(/^enum\s+([A-Za-z0-9_]+)\s*\{([\s\S]*?)^\}/gm)) {
     const [, enumName, body] = match;
     const values = body
       .split(/\r?\n/)
-      .map((line) => line.replace(/\/\/.*$/, "").trim())
-      .filter((line) => line && !line.startsWith("@@"))
-      .map((line) => line.split(/\s+/)[0]);
+      .map((/** @type {any} */ line) => line.replace(/\/\/.*$/, "").trim())
+      .filter((/** @type {any} */ line) => line && !line.startsWith("@@"))
+      .map((/** @type {any} */ line) => line.split(/\s+/)[0]);
     enumNames.add(enumName);
     enums.push({ name: enumName, values });
   }
@@ -59,11 +66,13 @@ function parsePrismaSchema(schemaText) {
 
   for (const match of schemaText.matchAll(/^model\s+([A-Za-z0-9_]+)\s*\{([\s\S]*?)^\}/gm)) {
     const [, modelName, body] = match;
+    /** @type {any[]} */
     const fields = [];
+    /** @type {any[]} */
     const localIndexes = [];
     const lines = body
       .split(/\r?\n/)
-      .map((line) => line.replace(/\/\/.*$/, "").trim())
+      .map((/** @type {any} */ line) => line.replace(/\/\/.*$/, "").trim())
       .filter(Boolean);
 
     for (const line of lines) {
@@ -73,7 +82,7 @@ function parsePrismaSchema(schemaText) {
           const [, type, rawFields] = indexMatch;
           localIndexes.push({
             id_hint: `index_${slugify(`${modelName}_${rawFields}`)}`,
-            fields: rawFields.split(",").map((field) => field.trim()),
+            fields: rawFields.split(",").map((/** @type {any} */ field) => field.trim()),
             unique: type === "unique"
           });
         }
@@ -100,8 +109,8 @@ function parsePrismaSchema(schemaText) {
           from_entity: `entity_${slugify(modelName)}`,
           to_entity: `entity_${slugify(baseType)}`,
           relation_field: fieldName,
-          fields: fieldsMatch ? fieldsMatch[1].split(",").map((field) => field.trim()) : [],
-          references: refsMatch ? refsMatch[1].split(",").map((field) => field.trim()) : []
+          fields: fieldsMatch ? fieldsMatch[1].split(",").map((/** @type {any} */ field) => field.trim()) : [],
+          references: refsMatch ? refsMatch[1].split(",").map((/** @type {any} */ field) => field.trim()) : []
         });
         continue;
       }
@@ -130,34 +139,41 @@ function parsePrismaSchema(schemaText) {
     }
 
     entities.push({ name: modelName, fields });
-    indexes.push(...localIndexes.map((index) => ({ ...index, entity: `entity_${slugify(modelName)}` })));
+    indexes.push(...localIndexes.map((/** @type {any} */ index) => ({ ...index, entity: `entity_${slugify(modelName)}` })));
   }
 
   return { entities, enums, relations, indexes };
 }
 
+/** @param {string} body @returns {any} */
 function splitSqlSegments(body) {
   return body
     .split(/,\s*\n/)
-    .map((segment) => segment.trim())
+    .map((/** @type {any} */ segment) => segment.trim())
     .filter(Boolean);
 }
 
+/** @param {any} sqlText @returns {any} */
 function parseSqlSchema(sqlText) {
+  /** @type {any[]} */
   const entities = [];
+  /** @type {any[]} */
   const enums = [];
+  /** @type {any[]} */
   const relations = [];
+  /** @type {any[]} */
   const indexes = [];
 
   for (const match of sqlText.matchAll(/CREATE\s+TYPE\s+([A-Za-z0-9_"]+)\s+AS\s+ENUM\s*\(([\s\S]*?)\);/gi)) {
     const enumName = match[1].replace(/"/g, "");
-    const values = [...match[2].matchAll(/'([^']+)'/g)].map((valueMatch) => valueMatch[1]);
+    const values = [...match[2].matchAll(/'([^']+)'/g)].map((/** @type {any} */ valueMatch) => valueMatch[1]);
     enums.push({ name: enumName, values });
   }
 
   for (const match of sqlText.matchAll(/CREATE\s+TABLE\s+([A-Za-z0-9_"]+)\s*\(([\s\S]*?)\);/gi)) {
     const tableName = match[1].replace(/"/g, "");
     const entityId = `entity_${slugify(tableName.replace(/s$/, ""))}`;
+    /** @type {any[]} */
     const fields = [];
     for (const segment of splitSqlSegments(match[2])) {
       if (/^(PRIMARY\s+KEY|UNIQUE|CONSTRAINT|FOREIGN\s+KEY)/i.test(segment)) {
@@ -167,8 +183,8 @@ function parseSqlSchema(sqlText) {
             from_entity: entityId,
             to_entity: `entity_${slugify(foreignKeyMatch[2].replace(/"/g, "").replace(/s$/, ""))}`,
             relation_field: foreignKeyMatch[1].replace(/"/g, "").trim(),
-            fields: foreignKeyMatch[1].split(",").map((field) => field.replace(/"/g, "").trim()),
-            references: foreignKeyMatch[3].split(",").map((field) => field.replace(/"/g, "").trim())
+            fields: foreignKeyMatch[1].split(",").map((/** @type {any} */ field) => field.replace(/"/g, "").trim()),
+            references: foreignKeyMatch[3].split(",").map((/** @type {any} */ field) => field.replace(/"/g, "").trim())
           });
         }
         const uniqueMatch = segment.match(/UNIQUE\s*\(([^)]+)\)/i);
@@ -176,7 +192,7 @@ function parseSqlSchema(sqlText) {
           indexes.push({
             entity: entityId,
             id_hint: `index_${slugify(`${tableName}_${uniqueMatch[1]}`)}`,
-            fields: uniqueMatch[1].split(",").map((field) => field.replace(/"/g, "").trim()),
+            fields: uniqueMatch[1].split(",").map((/** @type {any} */ field) => field.replace(/"/g, "").trim()),
             unique: true
           });
         }
@@ -202,7 +218,7 @@ function parseSqlSchema(sqlText) {
           to_entity: `entity_${slugify(inlineReferenceMatch[1].replace(/"/g, "").replace(/s$/, ""))}`,
           relation_field: fieldName,
           fields: [fieldName],
-          references: inlineReferenceMatch[2].split(",").map((field) => field.replace(/"/g, "").trim())
+          references: inlineReferenceMatch[2].split(",").map((/** @type {any} */ field) => field.replace(/"/g, "").trim())
         });
       }
       if (/\bUNIQUE\b/i.test(remainder)) {
@@ -221,7 +237,7 @@ function parseSqlSchema(sqlText) {
     indexes.push({
       entity: `entity_${slugify(match[3].replace(/"/g, "").replace(/s$/, ""))}`,
       id_hint: `index_${slugify(match[2].replace(/"/g, ""))}`,
-      fields: match[4].split(",").map((field) => field.replace(/"/g, "").trim()),
+      fields: match[4].split(",").map((/** @type {any} */ field) => field.replace(/"/g, "").trim()),
       unique: Boolean(match[1])
     });
   }
@@ -229,12 +245,13 @@ function parseSqlSchema(sqlText) {
   return { entities, enums, relations, indexes };
 }
 
+/** @param {any} snapshot @returns {any} */
 function parseDbSchemaSnapshot(snapshot) {
   return {
-    entities: (snapshot.tables || []).map((table) => ({
+    entities: (snapshot.tables || []).map((/** @type {any} */ table) => ({
       name: table.entity?.name || table.table.replace(/s$/, ""),
       table_name: table.table,
-      fields: (table.columns || []).map((column) => ({
+      fields: (table.columns || []).map((/** @type {any} */ column) => ({
         name: column.name,
         field_type: column.type,
         required: !column.nullable,
@@ -243,12 +260,12 @@ function parseDbSchemaSnapshot(snapshot) {
         primary_key: false
       }))
     })),
-    enums: (snapshot.enums || []).map((entry) => ({
+    enums: (snapshot.enums || []).map((/** @type {any} */ entry) => ({
       name: entry.name || entry.id,
       values: entry.values || []
     })),
-    relations: (snapshot.tables || []).flatMap((table) =>
-      (table.foreignKeys || []).map((foreignKey) => ({
+    relations: (snapshot.tables || []).flatMap((/** @type {any} */ table) =>
+      (table.foreignKeys || []).map((/** @type {any} */ foreignKey) => ({
         from_entity: table.entity?.id || `entity_${slugify(table.table.replace(/s$/, ""))}`,
         to_entity: foreignKey.references?.id || foreignKey.reference?.id || `entity_${slugify((foreignKey.references?.table || "").replace(/s$/, ""))}`,
         relation_field: foreignKey.columns?.[0] || "",
@@ -256,8 +273,8 @@ function parseDbSchemaSnapshot(snapshot) {
         references: foreignKey.references?.columns || []
       }))
     ),
-    indexes: (snapshot.tables || []).flatMap((table) =>
-      (table.indexes || []).map((index) => ({
+    indexes: (snapshot.tables || []).flatMap((/** @type {any} */ table) =>
+      (table.indexes || []).map((/** @type {any} */ index) => ({
         entity: table.entity?.id || `entity_${slugify(table.table.replace(/s$/, ""))}`,
         id_hint: `index_${slugify(index.name || `${table.table}_${(index.columns || []).join("_")}`)}`,
         fields: index.columns || [],
@@ -267,13 +284,14 @@ function parseDbSchemaSnapshot(snapshot) {
   };
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function discoverDbSources(paths) {
-  const allPrismaFiles = findImportFiles(paths, (filePath) => filePath.endsWith(path.join("prisma", "schema.prisma")) || filePath.endsWith("/prisma/schema.prisma"));
-  const allSqlFiles = findImportFiles(paths, (filePath) => filePath.endsWith(".sql") && /(schema|migration|migrations|db)/i.test(filePath));
-  const snapshotFiles = findImportFiles(paths, (filePath) => filePath.endsWith(".db-schema-snapshot.json"));
+  const allPrismaFiles = findImportFiles(paths, (/** @type {any} */ filePath) => filePath.endsWith(path.join("prisma", "schema.prisma")) || filePath.endsWith("/prisma/schema.prisma"));
+  const allSqlFiles = findImportFiles(paths, (/** @type {any} */ filePath) => filePath.endsWith(".sql") && /(schema|migration|migrations|db)/i.test(filePath));
+  const snapshotFiles = findImportFiles(paths, (/** @type {any} */ filePath) => filePath.endsWith(".db-schema-snapshot.json"));
   const prismaFiles = selectPreferredImportFiles(paths, allPrismaFiles, "prisma");
-  const schemaSqlFiles = allSqlFiles.filter((filePath) => !/migration/i.test(path.basename(filePath)));
-  const migrationSqlFiles = allSqlFiles.filter((filePath) => /migration/i.test(path.basename(filePath)));
+  const schemaSqlFiles = allSqlFiles.filter((/** @type {any} */ filePath) => !/migration/i.test(path.basename(filePath)));
+  const migrationSqlFiles = allSqlFiles.filter((/** @type {any} */ filePath) => /migration/i.test(path.basename(filePath)));
   const sqlFiles =
     prismaFiles.length > 0
       ? []
@@ -283,8 +301,11 @@ export function discoverDbSources(paths) {
   return { prismaFiles, sqlFiles, snapshotFiles };
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function collectDbImport(paths) {
+  /** @type {any[]} */
   const findings = [];
+  /** @type {WorkflowRecord} */
   const candidates = {
     entities: [],
     enums: [],
@@ -305,7 +326,7 @@ export function collectDbImport(paths) {
       enum_count: parsed.enums.length
     });
     candidates.entities.push(
-      ...parsed.entities.map((entity) =>
+      ...parsed.entities.map((/** @type {any} */ entity) =>
         makeCandidateRecord({
           kind: "entity",
           idHint: `entity_${slugify(entity.name)}`,
@@ -319,7 +340,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.enums.push(
-      ...parsed.enums.map((entry) =>
+      ...parsed.enums.map((/** @type {any} */ entry) =>
         makeCandidateRecord({
           kind: "enum",
           idHint: idHintify(entry.name),
@@ -332,7 +353,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.relations.push(
-      ...parsed.relations.map((relation) =>
+      ...parsed.relations.map((/** @type {any} */ relation) =>
         makeCandidateRecord({
           kind: "relation",
           idHint: slugify(`${relation.from_entity}_${relation.relation_field}_${relation.to_entity}`),
@@ -345,7 +366,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.indexes.push(
-      ...parsed.indexes.map((index) =>
+      ...parsed.indexes.map((/** @type {any} */ index) =>
         makeCandidateRecord({
           kind: "index",
           idHint: index.id_hint,
@@ -372,7 +393,7 @@ export function collectDbImport(paths) {
       enum_count: parsed.enums.length
     });
     candidates.entities.push(
-      ...parsed.entities.map((entity) =>
+      ...parsed.entities.map((/** @type {any} */ entity) =>
         makeCandidateRecord({
           kind: "entity",
           idHint: `entity_${slugify(entity.name)}`,
@@ -386,7 +407,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.enums.push(
-      ...parsed.enums.map((entry) =>
+      ...parsed.enums.map((/** @type {any} */ entry) =>
         makeCandidateRecord({
           kind: "enum",
           idHint: idHintify(entry.name),
@@ -399,7 +420,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.relations.push(
-      ...parsed.relations.map((relation) =>
+      ...parsed.relations.map((/** @type {any} */ relation) =>
         makeCandidateRecord({
           kind: "relation",
           idHint: slugify(`${relation.from_entity}_${relation.relation_field}_${relation.to_entity}`),
@@ -412,7 +433,7 @@ export function collectDbImport(paths) {
       )
     );
     candidates.indexes.push(
-      ...parsed.indexes.map((index) =>
+      ...parsed.indexes.map((/** @type {any} */ index) =>
         makeCandidateRecord({
           kind: "index",
           idHint: index.id_hint,
@@ -443,7 +464,7 @@ export function collectDbImport(paths) {
         enum_count: parsed.enums.length
       });
       candidates.entities.push(
-        ...parsed.entities.map((entity) =>
+        ...parsed.entities.map((/** @type {any} */ entity) =>
           makeCandidateRecord({
             kind: "entity",
             idHint: `entity_${slugify(entity.name)}`,
@@ -457,7 +478,7 @@ export function collectDbImport(paths) {
         )
       );
       candidates.enums.push(
-        ...parsed.enums.map((entry) =>
+        ...parsed.enums.map((/** @type {any} */ entry) =>
           makeCandidateRecord({
             kind: "enum",
             idHint: idHintify(entry.name),
@@ -470,7 +491,7 @@ export function collectDbImport(paths) {
         )
       );
       candidates.relations.push(
-        ...parsed.relations.map((relation) =>
+        ...parsed.relations.map((/** @type {any} */ relation) =>
           makeCandidateRecord({
             kind: "relation",
             idHint: slugify(`${relation.from_entity}_${relation.relation_field}_${relation.to_entity}`),
@@ -483,7 +504,7 @@ export function collectDbImport(paths) {
         )
       );
       candidates.indexes.push(
-        ...parsed.indexes.map((index) =>
+        ...parsed.indexes.map((/** @type {any} */ index) =>
           makeCandidateRecord({
             kind: "index",
             idHint: index.id_hint,
@@ -508,10 +529,10 @@ export function collectDbImport(paths) {
     }
   }
 
-  candidates.entities = dedupeCandidateRecords(candidates.entities, (record) => record.id_hint);
-  candidates.enums = dedupeCandidateRecords(candidates.enums, (record) => record.id_hint);
-  candidates.relations = dedupeCandidateRecords(candidates.relations, (record) => record.id_hint);
-  candidates.indexes = dedupeCandidateRecords(candidates.indexes, (record) => record.id_hint);
+  candidates.entities = dedupeCandidateRecords(candidates.entities, (/** @type {any} */ record) => record.id_hint);
+  candidates.enums = dedupeCandidateRecords(candidates.enums, (/** @type {any} */ record) => record.id_hint);
+  candidates.relations = dedupeCandidateRecords(candidates.relations, (/** @type {any} */ record) => record.id_hint);
+  candidates.indexes = dedupeCandidateRecords(candidates.indexes, (/** @type {any} */ record) => record.id_hint);
 
   return { findings, candidates };
 }

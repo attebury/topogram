@@ -1,24 +1,33 @@
-// @ts-nocheck
-import { buildAuthHintClosureSummary } from "./auth.js";
+// @ts-check
+import {
+  buildAuthHintClosureSummary,
+  inferBundleAuthClaimHints,
+  inferBundleAuthOwnershipHints,
+  inferBundleAuthPermissionHints,
+  inferBundleAuthRoleGuidance
+} from "./auth.js";
 import { primaryEntityIdForBundle } from "./bundle-shared.js";
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function summarizeBundleParticipants(bundle) {
-  const actors = [...new Set((bundle.actors || []).map((entry) => entry.id_hint))];
-  const roles = [...new Set((bundle.roles || []).map((entry) => entry.id_hint))];
+  const actors = [...new Set((bundle.actors || []).map((/** @type {any} */ entry) => entry.id_hint))];
+  const roles = [...new Set((bundle.roles || []).map((/** @type {any} */ entry) => entry.id_hint))];
   return {
     actors,
     roles,
     label: [...actors, ...roles].length
-      ? [...actors, ...roles].map((item) => `\`${item}\``).join(", ")
+      ? [...actors, ...roles].map((/** @type {any} */ item) => `\`${item}\``).join(", ")
       : "_none_"
   };
 }
 
+/** @param {CandidateBundle} bundle @param {any[]} values @param {string} empty @returns {any} */
 export function summarizeBundleSurface(bundle, values, empty = "_none_") {
   const list = Array.isArray(values) ? values : [];
-  return list.length ? list.map((item) => `\`${item}\``).join(", ") : empty;
+  return list.length ? list.map((/** @type {any} */ item) => `\`${item}\``).join(", ") : empty;
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function buildBundleOperatorSummary(bundle) {
   const primaryEntityId = primaryEntityIdForBundle(bundle);
   const primaryConcept =
@@ -29,11 +38,11 @@ export function buildBundleOperatorSummary(bundle) {
     bundle.enums?.[0]?.id_hint ||
     bundle.id;
   const participants = summarizeBundleParticipants(bundle);
-  const capabilityIds = [...new Set((bundle.capabilities || []).map((entry) => entry.id_hint))].slice(0, 4);
-  const widgetIds = [...new Set((bundle.widgets || []).map((entry) => entry.id_hint))].slice(0, 4);
-  const screenIds = [...new Set((bundle.screens || []).map((entry) => entry.id_hint))].slice(0, 4);
-  const routePaths = [...new Set((bundle.uiRoutes || []).map((entry) => entry.path).filter(Boolean))].slice(0, 4);
-  const workflowIds = [...new Set((bundle.workflows || []).map((entry) => entry.id_hint))].slice(0, 4);
+  const capabilityIds = [...new Set((bundle.capabilities || []).map((/** @type {any} */ entry) => entry.id_hint))].slice(0, 4);
+  const widgetIds = [...new Set((bundle.widgets || []).map((/** @type {any} */ entry) => entry.id_hint))].slice(0, 4);
+  const screenIds = [...new Set((bundle.screens || []).map((/** @type {any} */ entry) => entry.id_hint))].slice(0, 4);
+  const routePaths = [...new Set((bundle.uiRoutes || []).map((/** @type {any} */ entry) => entry.path).filter(Boolean))].slice(0, 4);
+  const workflowIds = [...new Set((bundle.workflows || []).map((/** @type {any} */ entry) => entry.id_hint))].slice(0, 4);
   const authPermissionHints = bundle.authPermissionHints || inferBundleAuthPermissionHints(bundle);
   const authClaimHints = bundle.authClaimHints || inferBundleAuthClaimHints(bundle);
   const authOwnershipHints = bundle.authOwnershipHints || inferBundleAuthOwnershipHints(bundle);

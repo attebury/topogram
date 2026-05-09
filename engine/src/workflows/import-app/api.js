@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
@@ -6,26 +6,30 @@ import { relativeTo } from "../../path-helpers.js";
 import { canonicalCandidateTerm, idHintify, slugify, titleCase } from "../../text-helpers.js";
 import { listFilesRecursive, readTextIfExists } from "../shared.js";
 import { inferReactRoutes, inferSvelteRoutes, routeSegments } from "./ui.js";
-import { dedupeCandidateRecords, findImportFiles, makeCandidateRecord, normalizeOpenApiPath, selectPreferredImportFiles } from "./shared.js";
+import { dedupeCandidateRecords, findImportFiles, inferCapabilityEntityId, makeCandidateRecord, normalizeOpenApiPath, selectPreferredImportFiles } from "./shared.js";
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function discoverApiSources(paths) {
   const allOpenApiFiles = findImportFiles(
     paths,
-    (filePath) =>
+    (/** @type {any} */ filePath) =>
       /(openapi|swagger)\.(json|ya?ml)$/i.test(path.basename(filePath))
   );
   const openApiFiles = selectPreferredImportFiles(paths, allOpenApiFiles, "openapi");
   const routeFiles = findImportFiles(
     paths,
-    (filePath) =>
+    (/** @type {any} */ filePath) =>
       /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath) &&
       /(server|api|routes|src)/i.test(filePath)
   );
   return { openApiFiles, routeFiles };
 }
 
+/** @param {WorkflowRecord} document @param {any} provenance @param {string} sourceKind @returns {any} */
 function parseOpenApiDocument(document, provenance, sourceKind = "openapi") {
+  /** @type {any[]} */
   const capabilities = [];
+  /** @type {any[]} */
   const routes = [];
   const pathsObject = document.paths || {};
   for (const [endpointPath, operations] of Object.entries(pathsObject)) {
@@ -36,7 +40,7 @@ function parseOpenApiDocument(document, provenance, sourceKind = "openapi") {
         operation.requestBody?.content?.["application/json"]?.schema?.$ref ||
         operation.requestBody?.content?.["application/json"]?.schema?.type ||
         null;
-      const successResponse = Object.entries(operation.responses || {}).find(([status]) => /^2/.test(status));
+      const successResponse = Object.entries(operation.responses || {}).find((/** @type {any} */ [status]) => /^2/.test(status));
       const responseSchema =
         successResponse?.[1]?.content?.["application/json"]?.schema?.$ref ||
         successResponse?.[1]?.content?.["application/json"]?.schema?.type ||
@@ -79,6 +83,7 @@ function parseOpenApiDocument(document, provenance, sourceKind = "openapi") {
   return { capabilities, routes };
 }
 
+/** @param {string} ref @returns {any} */
 function openApiRefName(ref) {
   if (!ref || typeof ref !== "string") {
     return null;
@@ -86,6 +91,7 @@ function openApiRefName(ref) {
   return ref.split("/").pop() || null;
 }
 
+/** @param {WorkflowRecord} document @param {WorkflowRecord} schema @param {Set<any>} seen @returns {any} */
 function resolveOpenApiSchema(document, schema, seen = new Set()) {
   if (!schema || typeof schema !== "object") {
     return null;
@@ -111,6 +117,7 @@ function resolveOpenApiSchema(document, schema, seen = new Set()) {
   return schema;
 }
 
+/** @param {WorkflowRecord} document @param {WorkflowRecord} schema @param {Set<any>} fields @param {Set<any>} seen @returns {any} */
 function collectOpenApiObjectFields(document, schema, fields = new Set(), seen = new Set()) {
   const resolved = resolveOpenApiSchema(document, schema, seen);
   if (!resolved || typeof resolved !== "object") {
@@ -135,6 +142,7 @@ function collectOpenApiObjectFields(document, schema, fields = new Set(), seen =
   return fields;
 }
 
+/** @param {WorkflowRecord} document @param {WorkflowRecord} schema @returns {any} */
 function extractOpenApiSchemaFieldHints(document, schema) {
   const fieldNames = [...collectOpenApiObjectFields(document, schema)].sort();
   return {
@@ -143,8 +151,9 @@ function extractOpenApiSchemaFieldHints(document, schema) {
   };
 }
 
+/** @param {string} endpointPath @param {WorkflowRecord} operation @returns {any} */
 function collectOpenApiParameters(endpointPath, operation) {
-  const pathParams = [...String(endpointPath || "").matchAll(/\{([^}]+)\}/g)].map((match) => ({
+  const pathParams = [...String(endpointPath || "").matchAll(/\{([^}]+)\}/g)].map((/** @type {any} */ match) => ({
     name: match[1],
     in: "path",
     required: true
@@ -152,7 +161,9 @@ function collectOpenApiParameters(endpointPath, operation) {
   return [...pathParams, ...((operation.parameters || []).filter(Boolean))];
 }
 
+/** @param {WorkflowRecord} document @param {string} endpointPath @param {WorkflowRecord} operation @returns {any} */
 function extractOpenApiParameterHints(document, endpointPath, operation) {
+  /** @type {WorkflowRecord} */
   const grouped = {
     path: [],
     query: [],
@@ -168,11 +179,12 @@ function extractOpenApiParameterHints(document, endpointPath, operation) {
     });
   }
   for (const key of Object.keys(grouped)) {
-    grouped[key] = grouped[key].sort((a, b) => a.name.localeCompare(b.name));
+    grouped[key] = grouped[key].sort((/** @type {any} */ a, /** @type {any} */ b) => a.name.localeCompare(b.name));
   }
   return grouped;
 }
 
+/** @param {WorkflowRecord} document @param {WorkflowRecord} operation @returns {any} */
 function extractOpenApiSecuritySchemes(document, operation) {
   const securityEntries = [...(operation.security || []), ...(document.security || [])];
   const schemes = new Set();
@@ -184,7 +196,9 @@ function extractOpenApiSecuritySchemes(document, operation) {
   return [...schemes].sort();
 }
 
+/** @param {string} text @returns {any} */
 function parseOpenApiYaml(text) {
+  /** @type {WorkflowRecord} */
   const doc = { paths: {} };
   let currentPath = null;
   let currentMethod = null;
@@ -264,20 +278,22 @@ function parseOpenApiYaml(text) {
   return doc;
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 function inferServerRoutes(paths) {
+  /** @type {any[]} */
   const routes = [];
   const routeFiles = findImportFiles(
     paths,
-    (filePath) =>
+    (/** @type {any} */ filePath) =>
       /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath) &&
       /(server|api|routes|src)/i.test(filePath)
   );
   for (const filePath of routeFiles) {
     const text = readTextIfExists(filePath) || "";
     for (const match of text.matchAll(/\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]\s*,([\s\S]*?)\)\s*;?/gi)) {
-      const handlerTokens = [...match[3].matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\b/g)].map((entry) => entry[1]);
+      const handlerTokens = [...match[3].matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\b/g)].map((/** @type {any} */ entry) => entry[1]);
       const handlerHint = handlerTokens.length > 0 ? handlerTokens[handlerTokens.length - 1] : null;
-      const pathParams = [...normalizeOpenApiPath(match[2]).matchAll(/\{([^}]+)\}/g)].map((entry) => entry[1]);
+      const pathParams = [...normalizeOpenApiPath(match[2]).matchAll(/\{([^}]+)\}/g)].map((/** @type {any} */ entry) => entry[1]);
       const handlerContext = handlerHint ? extractHandlerContext(text, handlerHint) : "";
       const queryParams = inferRouteQueryParams(handlerContext);
       const authHint = inferRouteAuthHint(match[3], handlerContext);
@@ -295,6 +311,7 @@ function inferServerRoutes(paths) {
   return routes;
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 function inferNextApiRoutes(paths) {
   const apiRoot = path.join(paths.workspaceRoot, "app", "api");
   if (!fs.existsSync(apiRoot)) {
@@ -302,15 +319,16 @@ function inferNextApiRoutes(paths) {
   }
   const routeFiles = listFilesRecursive(
     apiRoot,
-    (child) => /\/route\.(tsx|ts|jsx|js)$/.test(child) || /^route\.(tsx|ts|jsx|js)$/.test(path.basename(child))
+    (/** @type {any} */ child) => /\/route\.(tsx|ts|jsx|js)$/.test(child) || /^route\.(tsx|ts|jsx|js)$/.test(path.basename(child))
   );
+  /** @type {any[]} */
   const routes = [];
   for (const filePath of routeFiles) {
     const text = readTextIfExists(filePath) || "";
     const relative = relativeTo(apiRoot, filePath);
     const routePath = `/${relative}`
       .replace(/\/route\.(tsx|ts|jsx|js)$/, "")
-      .replace(/\[(\.\.\.)?([^\]]+)\]/g, (_match, catchAll, name) => catchAll ? `:${name}*` : `:${name}`);
+      .replace(/\[(\.\.\.)?([^\]]+)\]/g, (/** @type {any} */ _match, /** @type {any} */ catchAll, /** @type {any} */ name) => catchAll ? `:${name}*` : `:${name}`);
     for (const match of text.matchAll(/export\s+async\s+function\s+(GET|POST|PUT|PATCH|DELETE)\s*\(([^)]*)\)/g)) {
       const method = match[1].toUpperCase();
       const handlerContext = extractNamedExportBlock(text, match[1]) || "";
@@ -322,7 +340,7 @@ function inferNextApiRoutes(paths) {
         method,
         path: routePath === "" ? "/" : routePath,
         handler_hint: match[1].toLowerCase(),
-        path_params: [...normalizeOpenApiPath(routePath).matchAll(/\{([^}]+)\}/g)].map((entry) => entry[1]),
+        path_params: [...normalizeOpenApiPath(routePath).matchAll(/\{([^}]+)\}/g)].map((/** @type {any} */ entry) => entry[1]),
         query_params: queryParams,
         output_fields: outputFields,
         auth_hint: authHint,
@@ -333,16 +351,18 @@ function inferNextApiRoutes(paths) {
   return routes;
 }
 
+/** @param {any} appRoot @param {string} filePath @returns {any} */
 function nextAppRoutePathFromFile(appRoot, filePath) {
   const relative = relativeTo(appRoot, filePath);
   return `/${relative}`
     .replace(/\/actions\.(tsx|ts|jsx|js)$/, "")
     .replace(/\/page\.(tsx|ts|jsx|js|mdx)$/, "")
-    .replace(/\[(\.\.\.)?([^\]]+)\]/g, (_match, catchAll, name) => catchAll ? `:${name}*` : `:${name}`)
+    .replace(/\[(\.\.\.)?([^\]]+)\]/g, (/** @type {any} */ _match, /** @type {any} */ catchAll, /** @type {any} */ name) => catchAll ? `:${name}*` : `:${name}`)
     .replace(/\/index$/, "")
     .replace(/^\/$/, "/") || "/";
 }
 
+/** @param {string} text @returns {any} */
 function inferFormDataFields(text) {
   const fields = new Set();
   for (const match of String(text || "").matchAll(/formData\.get\(\s*["'`]([^"'`]+)["'`]\s*\)/g)) {
@@ -351,6 +371,7 @@ function inferFormDataFields(text) {
   return [...fields].sort();
 }
 
+/** @param {string} text @returns {any} */
 function inferInputNames(text) {
   const fields = new Set();
   for (const match of String(text || "").matchAll(/\bname=["'`]([^"'`]+)["'`]/g)) {
@@ -359,6 +380,7 @@ function inferInputNames(text) {
   return [...fields].sort();
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 function inferNextAuthCapabilities(paths) {
   const authConfigPath = path.join(paths.workspaceRoot, "auth.ts");
   const authConfigText = readTextIfExists(authConfigPath) || "";
@@ -382,6 +404,7 @@ function inferNextAuthCapabilities(paths) {
       target_state: createsUserOnAuthorize ? "registered" : "created"
     }
   ];
+  /** @type {any[]} */
   const capabilities = [];
   for (const page of pages) {
     const text = readTextIfExists(page.file) || "";
@@ -409,9 +432,10 @@ function inferNextAuthCapabilities(paths) {
       source_kind: "route_code"
     });
   }
-  return capabilities.sort((a, b) => a.id_hint.localeCompare(b.id_hint));
+  return capabilities.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint));
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 function inferNextServerActionCapabilities(paths) {
   const appRoot = path.join(paths.workspaceRoot, "app");
   if (!fs.existsSync(appRoot)) {
@@ -419,11 +443,12 @@ function inferNextServerActionCapabilities(paths) {
   }
   const actionFiles = listFilesRecursive(
     appRoot,
-    (child) =>
+    (/** @type {any} */ child) =>
       /\/actions\.(tsx|ts|jsx|js)$/.test(child) ||
       /\/page\.(tsx|ts|jsx|js|mdx)$/.test(child) ||
       /^page\.(tsx|ts|jsx|js|mdx)$/.test(path.basename(child))
   );
+  /** @type {any[]} */
   const capabilities = [];
   for (const filePath of actionFiles) {
     const text = readTextIfExists(filePath) || "";
@@ -439,6 +464,7 @@ function inferNextServerActionCapabilities(paths) {
       if (!isServerAction) {
         continue;
       }
+      /** @type {WorkflowRecord} */
       const routeLike = {
         file: filePath,
         method: "POST",
@@ -454,22 +480,24 @@ function inferNextServerActionCapabilities(paths) {
         id_hint: inferRouteCapabilityId(routeLike),
         input_fields: inferFormDataFields(body),
         output_fields: [],
-        path_params: [...normalizeOpenApiPath(routePath).matchAll(/\{([^}]+)\}/g)].map((entry) => entry[1]),
+        path_params: [...normalizeOpenApiPath(routePath).matchAll(/\{([^}]+)\}/g)].map((/** @type {any} */ entry) => entry[1]),
         auth_hint: routeLike.auth_hint,
         entity_id: inferCapabilityEntityId({ endpoint: { path: routePath }, id_hint: inferRouteCapabilityId(routeLike) }),
         source_kind: "route_code"
       });
     }
   }
-  return capabilities.sort((a, b) => a.id_hint.localeCompare(b.id_hint) || a.path.localeCompare(b.path));
+  return capabilities.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint) || a.path.localeCompare(b.path));
 }
 
+/** @param {string} text @param {string} exportName @returns {any} */
 function extractNamedExportBlock(text, exportName) {
   const escapedName = exportName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = text.match(new RegExp(`export\\s+async\\s+function\\s+${escapedName}\\s*\\([^)]*\\)\\s*\\{([\\s\\S]{0,2000}?)\\n\\}`, "m"));
   return match ? match[1] : "";
 }
 
+/** @param {string} text @returns {any} */
 function inferNextRequestSearchParams(text) {
   const params = new Set();
   for (const match of String(text || "").matchAll(/searchParams\.get\(\s*["'`]([^"'`]+)["'`]\s*\)/g)) {
@@ -478,6 +506,7 @@ function inferNextRequestSearchParams(text) {
   return [...params].sort();
 }
 
+/** @param {string} text @returns {any} */
 function inferNextJsonFields(text) {
   const fields = new Set();
   for (const match of String(text || "").matchAll(/NextResponse\.json\(\s*\{([\s\S]{0,400}?)\}\s*\)/g)) {
@@ -488,6 +517,7 @@ function inferNextJsonFields(text) {
   return [...fields].sort();
 }
 
+/** @param {string} text @param {any} handlerName @returns {any} */
 function extractHandlerContext(text, handlerName) {
   if (!handlerName) {
     return "";
@@ -506,6 +536,7 @@ function extractHandlerContext(text, handlerName) {
   return "";
 }
 
+/** @param {string} text @returns {any} */
 function inferRouteQueryParams(text) {
   const params = new Set();
   for (const match of String(text || "").matchAll(/\bquery\s*\(\s*["'`]([^"'`]+)["'`]\s*\)/g)) {
@@ -517,6 +548,7 @@ function inferRouteQueryParams(text) {
   return [...params].sort();
 }
 
+/** @param {any[]} routeArguments @param {any} handlerContext @returns {any} */
 function inferRouteAuthHint(routeArguments, handlerContext) {
   const combined = `${routeArguments || ""}\n${handlerContext || ""}`.toLowerCase();
   return /\b(auth|session|permission|guard|protected|require_auth|requireauth|ensureauth)\b/.test(combined)
@@ -524,6 +556,7 @@ function inferRouteAuthHint(routeArguments, handlerContext) {
     : "unknown";
 }
 
+/** @param {WorkflowRecord} route @returns {any} */
 function inferRouteCapabilityId(route) {
   if (route.handler_hint) {
     const genericHttpHandler = /^(get|post|put|patch|delete)$/i.test(route.handler_hint);
@@ -535,7 +568,7 @@ function inferRouteCapabilityId(route) {
         .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
         .split(/[^A-Za-z0-9]+/)
         .filter(Boolean)
-        .map((token) => token.toLowerCase());
+        .map((/** @type {any} */ token) => token.toLowerCase());
       if (handlerTokens.length > 0) {
         return `cap_${handlerTokens.join("_")}`;
       }
@@ -562,8 +595,11 @@ function inferRouteCapabilityId(route) {
   return `candidate_${route.method.toLowerCase()}_${slugify(route.path)}`;
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function collectApiImport(paths) {
+  /** @type {any[]} */
   const findings = [];
+  /** @type {WorkflowRecord} */
   const candidates = {
     capabilities: [],
     routes: [],
@@ -571,7 +607,6 @@ export function collectApiImport(paths) {
   };
   const { openApiFiles } = discoverApiSources(paths);
   let usedOpenApi = false;
-
   for (const filePath of openApiFiles) {
     const provenance = relativeTo(paths.repoRoot, filePath);
     const text = readTextIfExists(filePath) || "";
@@ -584,7 +619,7 @@ export function collectApiImport(paths) {
       capability_count: parsed.capabilities.length
     });
     candidates.capabilities.push(...parsed.capabilities);
-    candidates.routes.push(...parsed.routes.map((route) => ({
+    candidates.routes.push(...parsed.routes.map((/** @type {any} */ route) => ({
       path: route.path,
       method: route.method,
       confidence: "high",
@@ -592,7 +627,6 @@ export function collectApiImport(paths) {
       provenance: route.provenance
     })));
   }
-
   if (!usedOpenApi) {
     const inferredRoutes = [
       ...inferNextApiRoutes(paths),
@@ -603,11 +637,11 @@ export function collectApiImport(paths) {
     if (inferredRoutes.length > 0) {
       findings.push({
         kind: "route_inventory",
-        files: [...new Set(inferredRoutes.map((route) => relativeTo(paths.repoRoot, route.file)))],
+        files: [...new Set(inferredRoutes.map((/** @type {any} */ route) => relativeTo(paths.repoRoot, route.file)))],
         route_count: inferredRoutes.length
       });
       candidates.capabilities.push(
-        ...inferredRoutes.map((route) =>
+        ...inferredRoutes.map((/** @type {any} */ route) =>
           makeCandidateRecord({
             kind: "capability",
             idHint: inferRouteCapabilityId(route),
@@ -619,8 +653,8 @@ export function collectApiImport(paths) {
               method: route.method,
               path: normalizeOpenApiPath(route.path)
             },
-            path_params: (route.path_params || []).map((name) => ({ name, required: true, type: null })),
-            query_params: (route.query_params || []).map((name) => ({ name, required: false, type: null })),
+            path_params: (route.path_params || []).map((/** @type {any} */ name) => ({ name, required: true, type: null })),
+            query_params: (route.query_params || []).map((/** @type {any} */ name) => ({ name, required: false, type: null })),
             header_params: [],
             input_fields: [],
             output_fields: route.output_fields || [],
@@ -629,7 +663,7 @@ export function collectApiImport(paths) {
         )
       );
       candidates.routes.push(
-        ...inferredRoutes.map((route) => ({
+        ...inferredRoutes.map((/** @type {any} */ route) => ({
           path: normalizeOpenApiPath(route.path),
           method: route.method,
           confidence: "medium",
@@ -641,11 +675,11 @@ export function collectApiImport(paths) {
     if (inferredServerActions.length > 0) {
       findings.push({
         kind: "next_server_actions",
-        files: [...new Set(inferredServerActions.map((action) => relativeTo(paths.repoRoot, action.file)))],
+        files: [...new Set(inferredServerActions.map((/** @type {any} */ action) => relativeTo(paths.repoRoot, action.file)))],
         action_count: inferredServerActions.length
       });
       candidates.capabilities.push(
-        ...inferredServerActions.map((action) =>
+        ...inferredServerActions.map((/** @type {any} */ action) =>
           makeCandidateRecord({
             kind: "capability",
             idHint: action.id_hint,
@@ -657,7 +691,7 @@ export function collectApiImport(paths) {
               method: action.method,
               path: normalizeOpenApiPath(action.path)
             },
-            path_params: (action.path_params || []).map((name) => ({ name, required: true, type: null })),
+            path_params: (action.path_params || []).map((/** @type {any} */ name) => ({ name, required: true, type: null })),
             query_params: [],
             header_params: [],
             input_fields: action.input_fields || [],
@@ -667,7 +701,7 @@ export function collectApiImport(paths) {
         )
       );
       candidates.routes.push(
-        ...inferredServerActions.map((action) => ({
+        ...inferredServerActions.map((/** @type {any} */ action) => ({
           path: normalizeOpenApiPath(action.path),
           method: action.method,
           confidence: "medium",
@@ -679,11 +713,11 @@ export function collectApiImport(paths) {
     if (inferredAuthCapabilities.length > 0) {
       findings.push({
         kind: "next_auth_flows",
-        files: [...new Set(inferredAuthCapabilities.flatMap((capability) => capability.provenance || []))],
+        files: [...new Set(inferredAuthCapabilities.flatMap((/** @type {any} */ capability) => capability.provenance || []))],
         capability_count: inferredAuthCapabilities.length
       });
       candidates.capabilities.push(
-        ...inferredAuthCapabilities.map((capability) =>
+        ...inferredAuthCapabilities.map((/** @type {any} */ capability) =>
           makeCandidateRecord({
             kind: "capability",
             idHint: capability.id_hint,
@@ -707,7 +741,7 @@ export function collectApiImport(paths) {
         )
       );
       candidates.routes.push(
-        ...inferredAuthCapabilities.map((capability) => ({
+        ...inferredAuthCapabilities.map((/** @type {any} */ capability) => ({
           path: normalizeOpenApiPath(capability.path),
           method: capability.method,
           confidence: "medium",
@@ -717,7 +751,6 @@ export function collectApiImport(paths) {
       );
     }
   }
-
   const reactRoutes = inferReactRoutes(path.join(paths.workspaceRoot, "apps", "web"));
   if (reactRoutes.length > 0) {
     findings.push({
@@ -725,7 +758,7 @@ export function collectApiImport(paths) {
       file: relativeTo(paths.repoRoot, path.join(paths.workspaceRoot, "apps", "web", "src", "App.tsx")),
       routes: reactRoutes
     });
-    candidates.routes.push(...reactRoutes.map((route) => ({
+    candidates.routes.push(...reactRoutes.map((/** @type {any} */ route) => ({
       path: route,
       method: "GET",
       confidence: "medium",
@@ -734,7 +767,6 @@ export function collectApiImport(paths) {
     })));
     candidates.stacks.push("react_web");
   }
-
   const svelteRoutes = inferSvelteRoutes(path.join(paths.workspaceRoot, "apps", "web-sveltekit"));
   if (svelteRoutes.length > 0) {
     findings.push({
@@ -742,7 +774,7 @@ export function collectApiImport(paths) {
       file: relativeTo(paths.repoRoot, path.join(paths.workspaceRoot, "apps", "web-sveltekit", "src", "routes")),
       routes: svelteRoutes
     });
-    candidates.routes.push(...svelteRoutes.map((route) => ({
+    candidates.routes.push(...svelteRoutes.map((/** @type {any} */ route) => ({
       path: route,
       method: "GET",
       confidence: "medium",
@@ -751,15 +783,17 @@ export function collectApiImport(paths) {
     })));
     candidates.stacks.push("sveltekit_web");
   }
-
-  candidates.capabilities = dedupeCandidateRecords(candidates.capabilities, (record) => record.id_hint);
+  candidates.capabilities = dedupeCandidateRecords(candidates.capabilities, (/** @type {any} */ record) => record.id_hint);
   candidates.routes = dedupeCandidateRecords(
-    candidates.routes.map((route) => ({
+    candidates.routes.map((/** @type {any} */ route) => ({
       ...route,
       id_hint: route.id_hint || `${route.method}_${route.path}`
     })),
-    (record) => `${record.method}:${record.path}:${record.source_kind}`
-  ).map(({ id_hint, ...route }) => route);
+    (/** @type {any} */ record) => `${record.method}:${record.path}:${record.source_kind}`
+  ).map((/** @type {any} */ record) => {
+    const { id_hint, ...route } = record;
+    return route;
+  });
 
   return { findings, candidates };
 }

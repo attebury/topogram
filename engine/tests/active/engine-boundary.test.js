@@ -683,3 +683,16 @@ test("workflow implementation modules stay focused after split", () => {
 
   assert.deepEqual(offenders, []);
 });
+
+test("workflow implementation modules stay in the active type-check lane", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "workflows")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes("@ts-nocheck")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});

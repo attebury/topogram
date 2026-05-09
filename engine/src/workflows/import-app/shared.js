@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
@@ -21,32 +21,36 @@ export const SCALAR_FIELD_TYPES = new Set([
   "uuid"
 ]);
 
+/** @param {any} fromValue @returns {any} */
 export function parseImportTracks(fromValue) {
   if (!fromValue) {
     return ["db", "api"];
   }
   const tracks = String(fromValue)
     .split(",")
-    .map((track) => track.trim().toLowerCase())
+    .map((/** @type {any} */ track) => track.trim().toLowerCase())
     .filter(Boolean);
   if (tracks.length === 0) {
     throw new Error("Expected --from to include at least one import track");
   }
-  const invalid = tracks.filter((track) => !IMPORT_TRACKS.has(track));
+  const invalid = tracks.filter((/** @type {any} */ track) => !IMPORT_TRACKS.has(track));
   if (invalid.length > 0) {
     throw new Error(`Unsupported import track(s): ${invalid.join(", ")}`);
   }
   return [...new Set(tracks)];
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function importSearchRoots(paths) {
   return [...new Set([paths.workspaceRoot, paths.topogramRoot].filter(Boolean))];
 }
 
+/** @param {WorkspacePaths} paths @param {string} filePath @returns {any} */
 export function normalizeImportRelativePath(paths, filePath) {
   return relativeTo(paths.repoRoot, filePath);
 }
 
+/** @param {WorkspacePaths} paths @param {string} filePath @param {string} kind @returns {any} */
 export function canonicalSourceRank(paths, filePath, kind) {
   const relativePath = normalizeImportRelativePath(paths, filePath);
   const normalizedPath = relativePath.replaceAll(path.sep, "/");
@@ -92,21 +96,23 @@ export function canonicalSourceRank(paths, filePath, kind) {
   return rank;
 }
 
+/** @param {WorkspacePaths} paths @param {any[]} files @param {string} kind @returns {any} */
 export function selectPreferredImportFiles(paths, files, kind) {
   if (files.length === 0) {
     return [];
   }
-  const rankedFiles = files.map((filePath) => ({
+  const rankedFiles = files.map((/** @type {any} */ filePath) => ({
     filePath,
     rank: canonicalSourceRank(paths, filePath, kind)
   }));
-  const bestRank = Math.min(...rankedFiles.map((entry) => entry.rank));
+  const bestRank = Math.min(...rankedFiles.map((/** @type {any} */ entry) => entry.rank));
   return rankedFiles
-    .filter((entry) => entry.rank === bestRank)
-    .map((entry) => entry.filePath)
+    .filter((/** @type {any} */ entry) => entry.rank === bestRank)
+    .map((/** @type {any} */ entry) => entry.filePath)
     .sort();
 }
 
+/** @param {WorkspacePaths} paths @param {any} predicate @returns {any} */
 export function findImportFiles(paths, predicate) {
   const files = new Set();
   for (const rootDir of importSearchRoots(paths)) {
@@ -124,6 +130,7 @@ export function findImportFiles(paths, predicate) {
   return [...files].sort();
 }
 
+/** @param {WorkflowRecord} input @returns {CandidateRecord} */
 export function makeCandidateRecord({
   kind,
   idHint,
@@ -155,6 +162,7 @@ export function makeCandidateRecord({
   };
 }
 
+/** @param {any[]} records @param {any} keyFn @returns {any} */
 export function dedupeCandidateRecords(records, keyFn) {
   const seen = new Map();
   for (const record of records) {
@@ -171,29 +179,32 @@ export function dedupeCandidateRecords(records, keyFn) {
   return [...seen.values()];
 }
 
+/** @param {string} pathValue @returns {any} */
 export function normalizeOpenApiPath(pathValue) {
   return String(pathValue || "")
     .replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}")
     .replace(/\/+$/, "") || "/";
 }
 
+/** @param {string} pathValue @returns {any} */
 export function normalizeEndpointPathForMatch(pathValue) {
   const normalizedPath = normalizeOpenApiPath(pathValue);
   const segments = normalizedPath
     .split("/")
     .filter(Boolean)
-    .map((segment) => {
+    .map((/** @type {any} */ segment) => {
       if (/^\{[^}]+\}$/.test(segment)) {
         return "{}";
       }
       return segment
         .split("-")
-        .map((part) => canonicalCandidateTerm(part))
+        .map((/** @type {any} */ part) => canonicalCandidateTerm(part))
         .join("-");
     });
   return `/${segments.join("/")}`.replace(/\/+$/, "") || "/";
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function inferCapabilityEntityId(record) {
   if (record.entity_id) {
     return record.entity_id;
@@ -201,7 +212,7 @@ export function inferCapabilityEntityId(record) {
   const pathSegments = normalizeEndpointPathForMatch(record.endpoint?.path || "")
     .split("/")
     .filter(Boolean)
-    .filter((segment) => segment !== "{}");
+    .filter((/** @type {any} */ segment) => segment !== "{}");
   const resourceSegment = pathSegments[0] || record.id_hint.replace(/^cap_(create|update|delete|get|list)_/, "");
   return `entity_${idHintify(canonicalCandidateTerm(resourceSegment))}`;
 }

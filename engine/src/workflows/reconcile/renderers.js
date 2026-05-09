@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import { normalizeEndpointPathForMatch, SCALAR_FIELD_TYPES } from "../import-app/index.js";
 import { canonicalCandidateTerm, ensureTrailingNewline, idHintify, titleCase } from "../../text-helpers.js";
 import { renderMarkdownDoc } from "../shared.js";
@@ -11,6 +11,7 @@ import {
   formatAuthPermissionHintInline
 } from "./auth.js";
 
+/** @param {string} fieldType @param {Set<any>} knownEnums @returns {any} */
 export function normalizeCandidateFieldType(fieldType, knownEnums = new Set()) {
   const normalized = idHintify(fieldType);
   if (SCALAR_FIELD_TYPES.has(normalized)) {
@@ -22,6 +23,7 @@ export function normalizeCandidateFieldType(fieldType, knownEnums = new Set()) {
   return normalized || "string";
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function renderCandidateMetadataComments(record) {
   const lines = [
     `# imported confidence: ${record.confidence || "unknown"}`,
@@ -39,11 +41,12 @@ export function renderCandidateMetadataComments(record) {
   return lines.join("\n");
 }
 
+/** @param {WorkflowRecord} record @param {Set<any>} knownEnums @returns {any} */
 export function renderCandidateEntity(record, knownEnums = new Set()) {
   const fields = record.fields || [];
-  const primaryKeys = fields.filter((field) => field.primary_key).map((field) => field.name);
-  const uniqueKeys = fields.filter((field) => field.unique && !field.primary_key).map((field) => field.name);
-  const fieldLines = fields.map((field) => {
+  const primaryKeys = fields.filter((/** @type {any} */ field) => field.primary_key).map((/** @type {any} */ field) => field.name);
+  const uniqueKeys = fields.filter((/** @type {any} */ field) => field.unique && !field.primary_key).map((/** @type {any} */ field) => field.name);
+  const fieldLines = fields.map((/** @type {any} */ field) => {
     const fieldType = normalizeCandidateFieldType(field.field_type, knownEnums);
     const requiredness = field.required ? "required" : "optional";
     return `    ${field.name} ${fieldType} ${requiredness}`;
@@ -71,6 +74,7 @@ export function renderCandidateEntity(record, knownEnums = new Set()) {
   return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function renderCandidateEnum(record) {
   return ensureTrailingNewline(
     `${renderCandidateMetadataComments(record)}\n${[
@@ -81,6 +85,7 @@ export function renderCandidateEnum(record) {
   );
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function inferCapabilityVerb(record) {
   const id = record.id_hint || "";
   if (id.startsWith("cap_create_")) return "creates";
@@ -89,6 +94,7 @@ export function inferCapabilityVerb(record) {
   return "reads";
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function inferCapabilityEntityId(record) {
   if (record.entity_id) {
     return record.entity_id;
@@ -96,16 +102,18 @@ export function inferCapabilityEntityId(record) {
   const pathSegments = normalizeEndpointPathForMatch(record.endpoint?.path || "")
     .split("/")
     .filter(Boolean)
-    .filter((segment) => segment !== "{}");
+    .filter((/** @type {any} */ segment) => segment !== "{}");
   const resourceSegment = pathSegments[0] || record.id_hint.replace(/^cap_(create|update|delete|get|list)_/, "");
   return `entity_${idHintify(canonicalCandidateTerm(resourceSegment))}`;
 }
 
+/** @param {WorkflowRecord} record @param {string} direction @returns {any} */
 export function shapeIdForCapability(record, direction) {
   const stem = record.id_hint.replace(/^cap_/, "");
   return direction === "input" ? `shape_input_${stem}` : `shape_output_${stem}`;
 }
 
+/** @param {string} shapeId @param {string} label @param {any[]} fields @returns {any} */
 export function renderCandidateShape(shapeId, label, fields) {
   const lines = [
     `shape ${shapeId} {`,
@@ -121,6 +129,7 @@ export function renderCandidateShape(shapeId, label, fields) {
   return ensureTrailingNewline(lines.join("\n"));
 }
 
+/** @param {WorkflowRecord} record @param {any} inputShapeId @param {any} outputShapeId @returns {any} */
 export function renderCandidateCapability(record, inputShapeId, outputShapeId) {
   const operationKind = inferCapabilityVerb(record);
   const entityId = inferCapabilityEntityId(record);
@@ -144,11 +153,12 @@ export function renderCandidateCapability(record, inputShapeId, outputShapeId) {
   return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
 }
 
+/** @param {WorkflowRecord} record @param {any[]} scenarios @returns {any} */
 export function renderCandidateVerification(record, scenarios = []) {
   const validates = [...new Set(record.related_capabilities || [])];
   const scenarioSymbols = scenarios.length > 0
-    ? scenarios.map((entry) => entry.id_hint)
-    : (record.scenario_ids || []).map((entry) => idHintify(entry));
+    ? scenarios.map((/** @type {any} */ entry) => entry.id_hint)
+    : (record.scenario_ids || []).map((/** @type {any} */ entry) => idHintify(entry));
   const lines = [
     `verification ${record.id_hint} {`,
     `  name "${record.label}"`,
@@ -165,12 +175,13 @@ export function renderCandidateVerification(record, scenarios = []) {
   return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
 }
 
+/** @param {WorkflowRecord} record @param {any[]} states @param {any[]} transitions @returns {any} */
 export function renderCandidateWorkflowDecision(record, states, transitions) {
   const context = [
-    ...states.map((state) => state.state_id),
-    ...transitions.map((transition) => transition.capability_id).filter(Boolean)
+    ...states.map((/** @type {any} */ state) => state.state_id),
+    ...transitions.map((/** @type {any} */ transition) => transition.capability_id).filter(Boolean)
   ].filter(Boolean);
-  const consequences = transitions.map((transition) => transition.to_state).filter(Boolean);
+  const consequences = transitions.map((/** @type {any} */ transition) => transition.to_state).filter(Boolean);
   return ensureTrailingNewline(
     `${renderCandidateMetadataComments(record)}\n${[
       `decision dec_${record.id_hint.replace(/^workflow_/, "")} {`,
@@ -186,7 +197,9 @@ export function renderCandidateWorkflowDecision(record, states, transitions) {
   );
 }
 
+/** @param {WorkflowRecord} record @param {any[]} states @param {any[]} transitions @returns {any} */
 export function renderCandidateWorkflowDoc(record, states, transitions) {
+  /** @type {WorkflowRecord} */
   const metadata = {
     id: record.id_hint,
     kind: "workflow",
@@ -204,15 +217,17 @@ export function renderCandidateWorkflowDoc(record, states, transitions) {
     "Candidate workflow imported from brownfield evidence.",
     "",
     `Entity: \`${record.entity_id}\``,
-    `States: ${states.length ? states.map((state) => `\`${state.state_id}\``).join(", ") : "_none_"}`,
-    `Transitions: ${transitions.length ? transitions.map((transition) => `\`${transition.capability_id || transition.id_hint}\` -> \`${transition.to_state}\``).join(", ") : "_none_"}`,
+    `States: ${states.length ? states.map((/** @type {any} */ state) => `\`${state.state_id}\``).join(", ") : "_none_"}`,
+    `Transitions: ${transitions.length ? transitions.map((/** @type {any} */ transition) => `\`${transition.capability_id || transition.id_hint}\` -> \`${transition.to_state}\``).join(", ") : "_none_"}`,
     "",
     "Review this workflow before promoting it as canonical."
   ].join("\n");
   return renderMarkdownDoc(metadata, body);
 }
 
+/** @param {WorkflowRecord} screen @param {any[]} routes @param {any[]} actions @returns {any} */
 export function renderCandidateUiReportDoc(screen, routes, actions) {
+  /** @type {WorkflowRecord} */
   const metadata = {
     id: `ui_${screen.id_hint}`,
     kind: "report",
@@ -229,14 +244,15 @@ export function renderCandidateUiReportDoc(screen, routes, actions) {
     "Candidate UI surface imported from brownfield route evidence.",
     "",
     `Screen: \`${screen.id_hint}\` (${screen.screen_kind})`,
-    `Routes: ${routes.length ? routes.map((route) => `\`${route.path}\``).join(", ") : "_none_"}`,
-    `Actions: ${actions.length ? actions.map((action) => `\`${action.capability_hint}\``).join(", ") : "_none_"}`,
+    `Routes: ${routes.length ? routes.map((/** @type {any} */ route) => `\`${route.path}\``).join(", ") : "_none_"}`,
+    `Actions: ${actions.length ? actions.map((/** @type {any} */ action) => `\`${action.capability_hint}\``).join(", ") : "_none_"}`,
     "",
     "Review this UI surface before promoting it into canonical docs or projections."
   ].join("\n");
   return renderMarkdownDoc(metadata, body);
 }
 
+/** @param {WorkflowRecord} widget @returns {any} */
 export function renderCandidateWidget(widget) {
   const propName = widget.data_prop || "rows";
   const pattern = widget.pattern || "search_results";
@@ -258,6 +274,7 @@ export function renderCandidateWidget(widget) {
   );
 }
 
+/** @param {WorkflowRecord} patch @returns {any} */
 export function renderProjectionPatchDoc(patch) {
   const lines = [
     `# ${patch.projection_id} Patch Candidate`,
@@ -313,7 +330,7 @@ export function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_permissions || []).length > 0) {
     lines.push("## Inferred Permission Rules", "");
     for (const entry of patch.missing_auth_permissions) {
-      lines.push(`- ${formatAuthPermissionHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthPermissionHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((/** @type {any} */ item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthPermissionReviewGuidance(entry)}`);
     }
@@ -323,7 +340,7 @@ export function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_claims || []).length > 0) {
     lines.push("## Inferred Auth Claim Rules", "");
     for (const entry of patch.missing_auth_claims) {
-      lines.push(`- ${formatAuthClaimHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthClaimHintInline(entry)} on ${entry.projection_surface === "visibility_rules" ? "`visibility_rules`" : "`authorization`"} for ${entry.related_capabilities.length ? entry.related_capabilities.map((/** @type {any} */ item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthClaimReviewGuidance(entry)}`);
     }
@@ -333,7 +350,7 @@ export function renderProjectionPatchDoc(patch) {
   if ((patch.missing_auth_ownerships || []).length > 0) {
     lines.push("## Inferred Ownership Rules", "");
     for (const entry of patch.missing_auth_ownerships) {
-      lines.push(`- ${formatAuthOwnershipHintInline(entry)} on \`authorization\` for ${entry.related_capabilities.length ? entry.related_capabilities.map((item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
+      lines.push(`- ${formatAuthOwnershipHintInline(entry)} on \`authorization\` for ${entry.related_capabilities.length ? entry.related_capabilities.map((/** @type {any} */ item) => `\`${item}\``).join(", ") : "_no direct capability match_"}`);
       lines.push(`  - why inferred: ${entry.why_inferred || entry.explanation}`);
       lines.push(`  - review next: ${entry.review_guidance || buildAuthOwnershipReviewGuidance(entry)}`);
     }
@@ -344,7 +361,9 @@ export function renderProjectionPatchDoc(patch) {
   return ensureTrailingNewline(lines.join("\n"));
 }
 
+/** @param {WorkflowRecord} patch @returns {any} */
 export function renderDocLinkPatchDoc(patch) {
+  /** @type {WorkflowRecord} */
   const metadata = {
     id: `doc-link-${patch.doc_id}`,
     kind: "report",
@@ -405,7 +424,9 @@ export function renderDocLinkPatchDoc(patch) {
   return renderMarkdownDoc(metadata, lines.join("\n"));
 }
 
+/** @param {WorkflowRecord} patch @returns {any} */
 export function renderDocMetadataPatchDoc(patch) {
+  /** @type {WorkflowRecord} */
   const metadata = {
     id: `doc-metadata-${patch.doc_id}`,
     kind: "report",

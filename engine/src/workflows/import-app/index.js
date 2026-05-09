@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import { runImportAppWorkflow } from "../../import/index.js";
 import { scanDocsWorkflow } from "../docs.js";
 
@@ -21,6 +21,7 @@ export {
 export { collectUiImport } from "./ui.js";
 export { collectWorkflowImport } from "./workflow.js";
 
+/** @param {string} inputPath @param {WorkflowOptions} options @returns {any} */
 export function importAppWorkflow(inputPath, options = {}) {
   return runImportAppWorkflow(inputPath, {
     ...options,

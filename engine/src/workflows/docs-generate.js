@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
@@ -10,6 +10,7 @@ import { relativeTo } from "../path-helpers.js";
 import { ensureTrailingNewline, titleCase } from "../text-helpers.js";
 import { listFilesRecursive, markdownTitle, normalizeWorkspacePaths, renderMarkdownDoc } from "./shared.js";
 
+/** @param {string} kind @returns {any} */
 export function docDirForKind(kind) {
   if (kind === "glossary") {
     return "glossary";
@@ -23,10 +24,14 @@ export function docDirForKind(kind) {
   return "reports";
 }
 
+/** @param {ResolvedGraph} graph @returns {any} */
 export function generateDocsBundleFromGraph(graph) {
+  /** @type {WorkflowFiles} */
+  /** @type {WorkflowFiles} */
   const files = {};
   for (const entity of graph.byKind.entity || []) {
     const id = entity.id.replace(/^entity_/, "");
+    /** @type {WorkflowRecord} */
     const metadata = {
       id,
       kind: "glossary",
@@ -43,7 +48,7 @@ export function generateDocsBundleFromGraph(graph) {
       entity.description || `Canonical entity \`${entity.id}\`.`,
       "",
       "Fields:",
-      ...(entity.fields || []).map((field) => `- \`${field.name}\` (${field.fieldType}) ${field.required ? "required" : "optional"}`)
+      ...(entity.fields || []).map((/** @type {any} */ field) => `- \`${field.name}\` (${field.fieldType}) ${field.required ? "required" : "optional"}`)
     ].join("\n");
     files[`glossary/${id}.md`] = renderMarkdownDoc(metadata, body);
   }
@@ -54,7 +59,7 @@ export function generateDocsBundleFromGraph(graph) {
       continue;
     }
     const id = capability.id.replace(/^cap_/, "");
-    const relatedEntities = [...new Set(writes.map((entry) => entry.id).filter(Boolean))];
+    const relatedEntities = [...new Set(writes.map((/** @type {any} */ entry) => entry.id).filter(Boolean))];
     const metadata = {
       id,
       kind: "workflow",
@@ -71,10 +76,10 @@ export function generateDocsBundleFromGraph(graph) {
     const body = [
       capability.description || `Canonical workflow surface for \`${capability.id}\`.`,
       "",
-      `Actors: ${(capability.actors || []).map((actor) => `\`${actor.id}\``).join(", ") || "_none_"}`,
-      `Creates: ${(capability.creates || []).map((ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
-      `Updates: ${(capability.updates || []).map((ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
-      `Deletes: ${(capability.deletes || []).map((ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
+      `Actors: ${(capability.actors || []).map((/** @type {any} */ actor) => `\`${actor.id}\``).join(", ") || "_none_"}`,
+      `Creates: ${(capability.creates || []).map((/** @type {any} */ ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
+      `Updates: ${(capability.updates || []).map((/** @type {any} */ ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
+      `Deletes: ${(capability.deletes || []).map((/** @type {any} */ ref) => `\`${ref.id}\``).join(", ") || "_none_"}`,
       `Input: ${capability.input?.id ? `\`${capability.input.id}\`` : "_none_"}`,
       `Output: ${capability.output?.id ? `\`${capability.output.id}\`` : "_none_"}`
     ].join("\n\n");
@@ -111,17 +116,19 @@ export function generateDocsBundleFromGraph(graph) {
   return files;
 }
 
+/** @param {string} inputPath @returns {any} */
 export function loadResolvedGraph(inputPath) {
   const ast = parsePath(inputPath);
   const resolved = resolveWorkspace(ast);
   if (!resolved.ok) {
-    const error = new Error("Workspace validation failed");
+    const error = /** @type {Error & { validation?: any }} */ (new Error("Workspace validation failed"));
     error.validation = resolved.validation;
     throw error;
   }
   return resolved.graph;
 }
 
+/** @param {string} inputPath @returns {any} */
 export function tryLoadResolvedGraph(inputPath) {
   try {
     return loadResolvedGraph(inputPath);
@@ -130,12 +137,14 @@ export function tryLoadResolvedGraph(inputPath) {
   }
 }
 
+/** @param {string} inputPath @returns {any} */
 export function refreshDocsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = loadResolvedGraph(paths.topogramRoot);
   const generated = generateDocsBundleFromGraph(graph);
   const canonicalRoot = path.join(paths.topogramRoot, "docs");
   const generatedRoot = path.join(paths.topogramRoot, "candidates", "docs", "refreshed");
+  /** @type {WorkflowRecord} */
   const report = {
     type: "refresh_docs",
     workspace: paths.topogramRoot,
@@ -158,17 +167,19 @@ export function refreshDocsWorkflow(inputPath) {
     }
   }
 
-  for (const filePath of listFilesRecursive(canonicalRoot, (child) => child.endsWith(".md"))) {
+  for (const filePath of listFilesRecursive(canonicalRoot, (/** @type {any} */ child) => child.endsWith(".md"))) {
     const relativePath = relativeTo(canonicalRoot, filePath);
     if (!generated[relativePath]) {
       report.orphaned.push(relativePath);
     }
   }
 
+  /** @type {WorkflowFiles} */
+
   const files = {
     "candidates/docs/refreshed/report.json": `${stableStringify(report)}\n`,
     "candidates/docs/refreshed/report.md": ensureTrailingNewline(
-      `# Docs Refresh Report\n\n## Missing\n\n${report.missing.length ? report.missing.map((item) => `- \`${item}\``).join("\n") : "- None"}\n\n## Stale\n\n${report.stale.length ? report.stale.map((item) => `- \`${item}\``).join("\n") : "- None"}\n\n## Orphaned\n\n${report.orphaned.length ? report.orphaned.map((item) => `- \`${item}\``).join("\n") : "- None"}\n`
+      `# Docs Refresh Report\n\n## Missing\n\n${report.missing.length ? report.missing.map((/** @type {any} */ item) => `- \`${item}\``).join("\n") : "- None"}\n\n## Stale\n\n${report.stale.length ? report.stale.map((/** @type {any} */ item) => `- \`${item}\``).join("\n") : "- None"}\n\n## Orphaned\n\n${report.orphaned.length ? report.orphaned.map((/** @type {any} */ item) => `- \`${item}\``).join("\n") : "- None"}\n`
     )
   };
 
@@ -183,6 +194,7 @@ export function refreshDocsWorkflow(inputPath) {
   };
 }
 
+/** @param {string} inputPath @returns {any} */
 export function generateDocsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = loadResolvedGraph(paths.topogramRoot);
@@ -199,24 +211,28 @@ export function generateDocsWorkflow(inputPath) {
   };
 }
 
+/** @param {string} inputPath @returns {any} */
 export function generateJourneyDraftsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = loadResolvedGraph(paths.topogramRoot);
-  const canonicalJourneys = (graph.docs || []).filter((doc) => doc.kind === "journey");
+  const canonicalJourneys = (graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey");
   const { drafts, skippedEntities } = buildJourneyDraftsReconcile(graph);
+  /** @type {WorkflowFiles} */
+  /** @type {WorkflowFiles} */
   const files = {};
 
   for (const draft of drafts) {
     files[draft.path] = renderMarkdownDoc(draft.metadata, draft.body);
   }
 
+  /** @type {WorkflowRecord} */
   const summary = {
     type: "generate_journeys",
     workspace: paths.topogramRoot,
     bootstrapped_topogram_root: paths.bootstrappedTopogramRoot,
     canonical_journey_count: canonicalJourneys.length,
     generated_draft_count: drafts.length,
-    draft_journeys: drafts.map((draft) => ({
+    draft_journeys: drafts.map((/** @type {any} */ draft) => ({
       id: draft.id,
       title: draft.title,
       entity_id: draft.entity_id,
@@ -233,9 +249,9 @@ export function generateJourneyDraftsWorkflow(inputPath) {
       `Canonical journeys: ${canonicalJourneys.length}\n\n` +
       `Generated drafts: ${drafts.length}\n\n` +
       `## Draft Journeys\n\n` +
-      `${drafts.length === 0 ? "- None" : drafts.map((draft) => `- \`${draft.id}\` -> \`${draft.path}\``).join("\n")}\n\n` +
+      `${drafts.length === 0 ? "- None" : drafts.map((/** @type {any} */ draft) => `- \`${draft.id}\` -> \`${draft.path}\``).join("\n")}\n\n` +
       `## Skipped Entities\n\n` +
-      `${skippedEntities.length === 0 ? "- None" : skippedEntities.map((entry) => `- \`${entry.entity_id}\` (${entry.reason})`).join("\n")}\n`
+      `${skippedEntities.length === 0 ? "- None" : skippedEntities.map((/** @type {any} */ entry) => `- \`${entry.entity_id}\` (${entry.reason})`).join("\n")}\n`
   );
 
   return {

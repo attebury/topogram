@@ -1,33 +1,41 @@
-// @ts-nocheck
+// @ts-check
 import { confidenceRank } from "../docs.js";
-import { normalizeOpenApiPath } from "../import-app/index.js";
+import { inferCapabilityEntityId, normalizeOpenApiPath } from "../import-app/index.js";
 import { idHintify } from "../../text-helpers.js";
 
+/** @param {string} text @param {any[]} patterns @returns {any} */
 export function authClaimPatternMatches(text, patterns = []) {
-  return patterns.some((pattern) => pattern.test(text));
+  return patterns.some((/** @type {any} */ pattern) => pattern.test(text));
 }
 
+/** @param {any[]} entries @param {any[]} patterns @param {any} toText @returns {any} */
 export function collectAuthClaimSignalMatches(entries, patterns, toText) {
-  return (entries || []).filter((entry) => authClaimPatternMatches(toText(entry), patterns));
+  return (entries || []).filter((/** @type {any} */ entry) => authClaimPatternMatches(toText(entry), patterns));
 }
 
+/** @param {string} value @returns {any} */
 export function formatAuthClaimValueInline(value) {
   return value == null ? "_dynamic_" : `\`${value}\``;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function formatAuthClaimHintInline(hint) {
   return `claim \`${hint.claim}\` = ${formatAuthClaimValueInline(hint.claim_value)} (${hint.confidence})`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function formatAuthPermissionHintInline(hint) {
   return `permission \`${hint.permission}\` (${hint.confidence})`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function formatAuthOwnershipHintInline(hint) {
   return `ownership \`${hint.ownership}\` field \`${hint.ownership_field}\` (${hint.confidence})`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function describeAuthPermissionWhyInferred(hint) {
+  /** @type {any[]} */
   const signals = [];
   if (hint?.evidence?.capability_hits) {
     signals.push(`${hint.evidence.capability_hits} secured capability match${hint.evidence.capability_hits === 1 ? "" : "es"}`);
@@ -47,11 +55,14 @@ export function describeAuthPermissionWhyInferred(hint) {
   return `${hint?.explanation || "Imported auth evidence suggests a permission rule may gate this surface."} This inference is based on ${signals.join(", ")}.`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function buildAuthPermissionReviewGuidance(hint) {
   return `Confirm whether permission \`${hint.permission}\` should gate the related auth-sensitive capabilities before promoting this bundle into canonical auth rules or UI visibility.`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function describeAuthClaimWhyInferred(hint) {
+  /** @type {any[]} */
   const signals = [];
   if (hint?.evidence?.capability_hits) {
     signals.push(`${hint.evidence.capability_hits} secured capability match${hint.evidence.capability_hits === 1 ? "" : "es"}`);
@@ -71,12 +82,15 @@ export function describeAuthClaimWhyInferred(hint) {
   return `${hint?.explanation || "Imported auth-related evidence suggests this claim may matter here."} This inference is based on ${signals.join(", ")}.`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function buildAuthClaimReviewGuidance(hint) {
   const claimTarget = `claim \`${hint.claim}\` = ${formatAuthClaimValueInline(hint.claim_value)}`;
   return `Confirm whether ${claimTarget} should gate the related auth-sensitive capabilities before promoting this bundle into canonical auth rules or UI visibility.`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function describeAuthOwnershipWhyInferred(hint) {
+  /** @type {any[]} */
   const signals = [];
   if (hint?.evidence?.field_hits) {
     signals.push(`${hint.evidence.field_hits} ownership-style field match${hint.evidence.field_hits === 1 ? "" : "es"}`);
@@ -93,54 +107,59 @@ export function describeAuthOwnershipWhyInferred(hint) {
   return `${hint?.explanation || "Imported field and auth evidence suggests ownership-based access control may matter here."} This inference is based on ${signals.join(", ")}.`;
 }
 
+/** @param {WorkflowRecord} hint @returns {any} */
 export function buildAuthOwnershipReviewGuidance(hint) {
   return `Confirm whether field \`${hint.ownership_field}\` should drive \`${hint.ownership}\` access for the related auth-sensitive capabilities before promoting this bundle into canonical auth rules or UI visibility.`;
 }
 
+/** @param {WorkflowRecord} entry @returns {any} */
 export function formatAuthRoleGuidanceInline(entry) {
   return `role \`${entry.role_id}\` (${entry.confidence})`;
 }
 
+/** @param {WorkflowRecord} entry @returns {any} */
 export function buildAuthRoleReviewGuidance(entry) {
   if (entry.followup_action === "promote_role") {
     return `Promote role \`${entry.role_id}\` first, then confirm it remains the primary participant for the related auth-sensitive capabilities before promoting linked auth changes from this bundle.`;
   }
   if (entry.followup_action === "link_role_to_docs") {
     const docList = (entry.followup_doc_ids || []).length
-      ? ` docs ${(entry.followup_doc_ids || []).map((item) => `\`${item}\``).join(", ")}`
+      ? ` docs ${(entry.followup_doc_ids || []).map((/** @type {any} */ item) => `\`${item}\``).join(", ")}`
       : " the existing canonical docs";
     return `Link role \`${entry.role_id}\` into${docList} before promoting more auth-sensitive changes from this bundle.`;
   }
   return `Confirm whether role \`${entry.role_id}\` should remain the primary participant for the related auth-sensitive capabilities before promoting role or auth changes from this bundle.`;
 }
 
+/** @param {WorkflowRecord} entry @returns {any} */
 export function formatAuthRoleFollowupInline(entry) {
   if (entry.followup_action === "promote_role") {
     return "promote role";
   }
   if (entry.followup_action === "link_role_to_docs") {
     return entry.followup_doc_ids?.length
-      ? `link role to docs ${(entry.followup_doc_ids || []).map((item) => `\`${item}\``).join(", ")}`
+      ? `link role to docs ${(entry.followup_doc_ids || []).map((/** @type {any} */ item) => `\`${item}\``).join(", ")}`
       : "link role to docs";
   }
   return "review only";
 }
 
+/** @param {any[]} items @returns {any} */
 export function summarizeHintClosureState(items) {
-  const statuses = (items || []).map((item) => item.status).filter(Boolean);
+  const statuses = (items || []).map((/** @type {any} */ item) => item.status).filter(Boolean);
   if (statuses.length === 0) {
     return {
       closure_state: "unresolved",
       closure_reason: "No reviewed projection patch has been applied for this inferred auth hint yet."
     };
   }
-  if (statuses.every((status) => status === "applied")) {
+  if (statuses.every((/** @type {any} */ status) => status === "applied")) {
     return {
       closure_state: "adopted",
       closure_reason: "All matching projection patch actions for this inferred auth hint have been applied."
     };
   }
-  if (statuses.every((status) => ["applied", "approved", "skipped"].includes(status))) {
+  if (statuses.every((/** @type {any} */ status) => ["applied", "approved", "skipped"].includes(status))) {
     return {
       closure_state: "deferred",
       closure_reason: "This inferred auth hint has been reviewed or intentionally held back, but not every matching projection patch has been applied yet."
@@ -152,26 +171,27 @@ export function summarizeHintClosureState(items) {
   };
 }
 
+/** @param {WorkflowRecord} bundle @param {any[]} planItems @returns {any} */
 export function annotateBundleAuthHintClosures(bundle, planItems) {
-  const bundleItems = (planItems || []).filter((item) => item.bundle === bundle.slug);
-  const annotatedPermissions = (bundle.authPermissionHints || []).map((hint) => ({
+  const bundleItems = (planItems || []).filter((/** @type {any} */ item) => item.bundle === bundle.slug);
+  const annotatedPermissions = (bundle.authPermissionHints || []).map((/** @type {any} */ hint) => ({
     ...hint,
-    ...summarizeHintClosureState(bundleItems.filter((item) =>
+    ...summarizeHintClosureState(bundleItems.filter((/** @type {any} */ item) =>
       item.suggested_action === "apply_projection_permission_patch" &&
       item.permission === hint.permission
     ))
   }));
-  const annotatedClaims = (bundle.authClaimHints || []).map((hint) => ({
+  const annotatedClaims = (bundle.authClaimHints || []).map((/** @type {any} */ hint) => ({
     ...hint,
-    ...summarizeHintClosureState(bundleItems.filter((item) =>
+    ...summarizeHintClosureState(bundleItems.filter((/** @type {any} */ item) =>
       item.suggested_action === "apply_projection_auth_patch" &&
       item.claim === hint.claim &&
       item.claim_value === (Object.prototype.hasOwnProperty.call(hint, "claim_value") ? hint.claim_value : null)
     ))
   }));
-  const annotatedOwnerships = (bundle.authOwnershipHints || []).map((hint) => ({
+  const annotatedOwnerships = (bundle.authOwnershipHints || []).map((/** @type {any} */ hint) => ({
     ...hint,
-    ...summarizeHintClosureState(bundleItems.filter((item) =>
+    ...summarizeHintClosureState(bundleItems.filter((/** @type {any} */ item) =>
       item.suggested_action === "apply_projection_ownership_patch" &&
       item.ownership === hint.ownership &&
       item.ownership_field === hint.ownership_field
@@ -185,6 +205,7 @@ export function annotateBundleAuthHintClosures(bundle, planItems) {
   };
 }
 
+/** @param {WorkflowRecord} bundle @returns {any} */
 export function buildAuthHintClosureSummary(bundle) {
   const hints = [
     ...(bundle.authPermissionHints || []),
@@ -192,7 +213,7 @@ export function buildAuthHintClosureSummary(bundle) {
     ...(bundle.authOwnershipHints || [])
   ];
   const counts = hints.reduce(
-    (acc, hint) => {
+    (/** @type {any} */ acc, /** @type {any} */ hint) => {
       const state = hint.closure_state || "unresolved";
       if (state === "adopted") {
         acc.adopted += 1;
@@ -237,25 +258,26 @@ export function buildAuthHintClosureSummary(bundle) {
   };
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function inferBundleAuthRoleGuidance(bundle) {
   const roles = bundle.roles || [];
   if (roles.length === 0) {
     return [];
   }
   const authSensitiveCapabilities = new Set([
-    ...(bundle.authPermissionHints || []).flatMap((hint) => hint.related_capabilities || []),
-    ...(bundle.authClaimHints || []).flatMap((hint) => hint.related_capabilities || []),
-    ...(bundle.authOwnershipHints || []).flatMap((hint) => hint.related_capabilities || [])
+    ...(bundle.authPermissionHints || []).flatMap((/** @type {any} */ hint) => hint.related_capabilities || []),
+    ...(bundle.authClaimHints || []).flatMap((/** @type {any} */ hint) => hint.related_capabilities || []),
+    ...(bundle.authOwnershipHints || []).flatMap((/** @type {any} */ hint) => hint.related_capabilities || [])
   ]);
   const claimPreferredRoles = new Set(
-    (bundle.authClaimHints || []).flatMap((hint) => {
+    (bundle.authClaimHints || []).flatMap((/** @type {any} */ hint) => {
       if (hint.claim === "reviewer") return ["role_reviewer"];
       if (hint.claim === "tenant") return ["role_admin", "role_manager"];
       return [];
     })
   );
   const ownershipPreferredRoles = new Set(
-    (bundle.authOwnershipHints || []).flatMap((hint) => {
+    (bundle.authOwnershipHints || []).flatMap((/** @type {any} */ hint) => {
       if (hint.ownership_field === "owner_id") return ["role_owner"];
       if (hint.ownership_field === "assignee_id") return ["role_assignee"];
       return [];
@@ -263,12 +285,13 @@ export function inferBundleAuthRoleGuidance(bundle) {
   );
 
   return roles
-    .map((role) => {
-      const relatedCapabilities = [...new Set((role.related_capabilities || []).filter((capabilityId) => authSensitiveCapabilities.has(capabilityId)))];
+    .map((/** @type {any} */ role) => {
+      const relatedCapabilities = [...new Set((role.related_capabilities || []).filter((/** @type {any} */ capabilityId) => authSensitiveCapabilities.has(capabilityId)))];
       const directRoleMatch = claimPreferredRoles.has(role.id_hint) || ownershipPreferredRoles.has(role.id_hint);
       if (!directRoleMatch && relatedCapabilities.length === 0) {
         return null;
       }
+      /** @type {any[]} */
       const reasonParts = [];
       if (directRoleMatch) {
         reasonParts.push("role naming lines up with inferred auth semantics");
@@ -286,21 +309,22 @@ export function inferBundleAuthRoleGuidance(bundle) {
       };
     })
     .filter(Boolean)
-    .sort((a, b) =>
+    .sort((/** @type {any} */ a, /** @type {any} */ b) =>
       confidenceRank(b.confidence) - confidenceRank(a.confidence) ||
       (b.related_capabilities.length - a.related_capabilities.length) ||
       a.role_id.localeCompare(b.role_id)
     );
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function classifyBundleAuthRoleGuidance(bundle) {
-  return (bundle.authRoleGuidance || []).map((entry) => {
+  return (bundle.authRoleGuidance || []).map((/** @type {any} */ entry) => {
     const matchingDocLinks = (bundle.docLinkSuggestions || [])
-      .filter((item) => (item.add_related_roles || []).includes(entry.role_id));
+      .filter((/** @type {any} */ item) => (item.add_related_roles || []).includes(entry.role_id));
     const hasRolePromotion = (bundle.adoptionPlan || [])
-      .some((step) => step.action === "promote_role" && step.item === entry.role_id);
-    const followupDocIds = matchingDocLinks.map((item) => item.doc_id).sort();
-    const followupPatchPaths = matchingDocLinks.map((item) => item.patch_rel_path).filter(Boolean).sort();
+      .some((/** @type {any} */ step) => step.action === "promote_role" && step.item === entry.role_id);
+    const followupDocIds = matchingDocLinks.map((/** @type {any} */ item) => item.doc_id).sort();
+    const followupPatchPaths = matchingDocLinks.map((/** @type {any} */ item) => item.patch_rel_path).filter(Boolean).sort();
     let followupAction = "review_only";
     let followupReason = "Role evidence is still thin enough that this should stay review-only until the participant story is clearer.";
     if (matchingDocLinks.length > 0 && entry.related_capabilities.length === 0) {
@@ -332,13 +356,14 @@ export function classifyBundleAuthRoleGuidance(bundle) {
   });
 }
 
+/** @param {any[]} docLinkSuggestions @param {any} authRoleGuidance @returns {any} */
 export function annotateDocLinkSuggestionsWithAuthRoleGuidance(docLinkSuggestions, authRoleGuidance) {
-  const authRoleMap = new Map((authRoleGuidance || []).map((entry) => [entry.role_id, entry]));
-  return (docLinkSuggestions || []).map((item) => {
+  const authRoleMap = new Map((authRoleGuidance || []).map((/** @type {any} */ entry) => [entry.role_id, entry]));
+  return (docLinkSuggestions || []).map((/** @type {any} */ item) => {
     const authRoleFollowups = [...new Set(item.add_related_roles || [])]
-      .map((roleId) => authRoleMap.get(roleId))
+      .map((/** @type {any} */ roleId) => authRoleMap.get(roleId))
       .filter(Boolean)
-      .map((entry) => ({
+      .map((/** @type {any} */ entry) => ({
         role_id: entry.role_id,
         followup_action: entry.followup_action,
         followup_label: entry.followup_label
@@ -349,12 +374,13 @@ export function annotateDocLinkSuggestionsWithAuthRoleGuidance(docLinkSuggestion
   });
 }
 
+/** @param {WorkflowRecord} capability @returns {any} */
 export function permissionResourceStemForCapability(capability) {
   const endpointPath = normalizeOpenApiPath(capability?.endpoint?.path || "");
   const pathSegments = endpointPath
     .split("/")
     .filter(Boolean)
-    .filter((segment) => segment !== "{}");
+    .filter((/** @type {any} */ segment) => segment !== "{}");
   const firstPathSegment = idHintify(pathSegments[0] || "");
   if (firstPathSegment) {
     return firstPathSegment;
@@ -366,10 +392,12 @@ export function permissionResourceStemForCapability(capability) {
   return entityId.endsWith("s") ? entityId : `${entityId}s`;
 }
 
+/** @param {string} resource @returns {any} */
 export function singularizePermissionResource(resource) {
   return String(resource || "").endsWith("s") ? String(resource).slice(0, -1) : String(resource || "");
 }
 
+/** @param {WorkflowRecord} capability @param {string} resourceStem @returns {any} */
 export function inferPermissionActionForCapability(capability, resourceStem) {
   const capabilityId = String(capability?.id_hint || "");
   const capabilityMatch = capabilityId.match(/^cap_([^_]+)_(.+)$/);
@@ -407,8 +435,9 @@ export function inferPermissionActionForCapability(capability, resourceStem) {
   return ["create", "update", "delete"].includes(verb) ? verb : `${verb}${suffix ? `_${suffix}` : ""}`;
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function inferBundleAuthPermissionHints(bundle) {
-  const securedCapabilities = (bundle.capabilities || []).filter((entry) => entry.auth_hint === "secured");
+  const securedCapabilities = (bundle.capabilities || []).filter((/** @type {any} */ entry) => entry.auth_hint === "secured");
   if (securedCapabilities.length === 0) {
     return [];
   }
@@ -430,7 +459,7 @@ export function inferBundleAuthPermissionHints(bundle) {
     const docMatches = collectAuthClaimSignalMatches(
       docEntries,
       docPatterns,
-      (entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
+      (/** @type {any} */ entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
     );
     const provenanceText = [capability.id_hint, capability.label, capability.endpoint?.path, ...(capability.provenance || [])]
       .filter(Boolean)
@@ -462,17 +491,18 @@ export function inferBundleAuthPermissionHints(bundle) {
   }
 
   return [...grouped.values()]
-    .map((entry) => ({
+    .map((/** @type {any} */ entry) => ({
       ...entry,
       related_capabilities: [...new Set(entry.related_capabilities)].sort(),
       why_inferred: describeAuthPermissionWhyInferred(entry),
       review_guidance: buildAuthPermissionReviewGuidance(entry)
     }))
-    .sort((a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.permission.localeCompare(b.permission));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.permission.localeCompare(b.permission));
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function inferBundleAuthClaimHints(bundle) {
-  const securedCapabilities = (bundle.capabilities || []).filter((entry) => entry.auth_hint === "secured");
+  const securedCapabilities = (bundle.capabilities || []).filter((/** @type {any} */ entry) => entry.auth_hint === "secured");
   if (securedCapabilities.length === 0) {
     return [];
   }
@@ -505,26 +535,26 @@ export function inferBundleAuthClaimHints(bundle) {
   const docEntries = bundle.docs || [];
 
   return candidates
-    .map((candidate) => {
+    .map((/** @type {any} */ candidate) => {
       const capabilityMatches = collectAuthClaimSignalMatches(
         securedCapabilities,
         candidate.capabilityPatterns,
-        (entry) => [entry.id_hint, entry.label, entry.endpoint?.path, ...(entry.provenance || [])].filter(Boolean).join(" ")
+        (/** @type {any} */ entry) => [entry.id_hint, entry.label, entry.endpoint?.path, ...(entry.provenance || [])].filter(Boolean).join(" ")
       );
       const routeMatches = collectAuthClaimSignalMatches(
         routeEntries,
         candidate.routePatterns,
-        (entry) => [entry.path, entry.route_path, entry.id_hint, entry.label, ...(entry.provenance || [])].filter(Boolean).join(" ")
+        (/** @type {any} */ entry) => [entry.path, entry.route_path, entry.id_hint, entry.label, ...(entry.provenance || [])].filter(Boolean).join(" ")
       );
       const participantMatches = collectAuthClaimSignalMatches(
         participantEntries,
         candidate.participantPatterns,
-        (entry) => [entry.id_hint, entry.label, ...(entry.provenance || [])].filter(Boolean).join(" ")
+        (/** @type {any} */ entry) => [entry.id_hint, entry.label, ...(entry.provenance || [])].filter(Boolean).join(" ")
       );
       const docMatches = collectAuthClaimSignalMatches(
         docEntries,
         candidate.docPatterns,
-        (entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
+        (/** @type {any} */ entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
       );
       const signalCount = [
         capabilityMatches.length > 0,
@@ -550,7 +580,7 @@ export function inferBundleAuthClaimHints(bundle) {
         claim_value: candidate.claim_value,
         confidence,
         review_required: true,
-        related_capabilities: [...new Set(capabilityMatches.map((entry) => entry.id_hint))].sort(),
+        related_capabilities: [...new Set(capabilityMatches.map((/** @type {any} */ entry) => entry.id_hint))].sort(),
         evidence: {
           capability_hits: capabilityMatches.length,
           route_hits: routeMatches.length,
@@ -576,23 +606,24 @@ export function inferBundleAuthClaimHints(bundle) {
       };
     })
     .filter(Boolean)
-    .sort((a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.claim.localeCompare(b.claim));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.claim.localeCompare(b.claim));
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function inferBundleAuthOwnershipHints(bundle) {
-  const securedCapabilities = (bundle.capabilities || []).filter((entry) => entry.auth_hint === "secured");
+  const securedCapabilities = (bundle.capabilities || []).filter((/** @type {any} */ entry) => entry.auth_hint === "secured");
   if (securedCapabilities.length === 0) {
     return [];
   }
 
-  const entityFieldEntries = ((bundle.importedFieldEvidence || []).length > 0 ? bundle.importedFieldEvidence : (bundle.entities || []).flatMap((entity) => (entity.fields || []).map((field) => ({
+  const entityFieldEntries = ((bundle.importedFieldEvidence || []).length > 0 ? bundle.importedFieldEvidence : (bundle.entities || []).flatMap((/** @type {any} */ entity) => (entity.fields || []).map((/** @type {any} */ field) => ({
     entity_id: entity.id_hint,
     name: field.name,
     field_type: field.field_type,
     required: field.required
   }))));
   const docEntries = bundle.docs || [];
-  const ownershipScopedCapabilities = securedCapabilities.filter((entry) =>
+  const ownershipScopedCapabilities = securedCapabilities.filter((/** @type {any} */ entry) =>
     /^cap_(get|update|close|complete|archive|delete|submit|request|approve|reject)_/.test(entry.id_hint || "")
   );
   if (entityFieldEntries.length === 0 || ownershipScopedCapabilities.length === 0) {
@@ -619,17 +650,17 @@ export function inferBundleAuthOwnershipHints(bundle) {
   ];
 
   return candidates
-    .map((candidate) => {
-      const fieldMatches = entityFieldEntries.filter((entry) => candidate.fieldPatterns.some((pattern) => pattern.test(entry.name || "")));
+    .map((/** @type {any} */ candidate) => {
+      const fieldMatches = entityFieldEntries.filter((/** @type {any} */ entry) => candidate.fieldPatterns.some((/** @type {any} */ pattern) => pattern.test(entry.name || "")));
       const docMatches = collectAuthClaimSignalMatches(
         docEntries,
         candidate.docPatterns,
-        (entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
+        (/** @type {any} */ entry) => [entry.id, entry.title, ...(entry.provenance || []), entry.body || ""].filter(Boolean).join(" ")
       );
       if (fieldMatches.length === 0) {
         return null;
       }
-      const relatedCapabilities = ownershipScopedCapabilities.map((entry) => entry.id_hint).sort();
+      const relatedCapabilities = ownershipScopedCapabilities.map((/** @type {any} */ entry) => entry.id_hint).sort();
       const evidence = {
         field_hits: fieldMatches.length,
         capability_hits: relatedCapabilities.length,
@@ -641,7 +672,7 @@ export function inferBundleAuthOwnershipHints(bundle) {
         confidence: candidate.confidenceFloor,
         review_required: true,
         related_capabilities: relatedCapabilities,
-        related_entities: [...new Set(fieldMatches.map((entry) => entry.entity_id))].sort(),
+        related_entities: [...new Set(fieldMatches.map((/** @type {any} */ entry) => entry.entity_id))].sort(),
         evidence,
         explanation: candidate.explanation,
         why_inferred: describeAuthOwnershipWhyInferred({
@@ -657,5 +688,5 @@ export function inferBundleAuthOwnershipHints(bundle) {
       };
     })
     .filter(Boolean)
-    .sort((a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.ownership_field.localeCompare(b.ownership_field));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => confidenceRank(b.confidence) - confidenceRank(a.confidence) || a.ownership_field.localeCompare(b.ownership_field));
 }

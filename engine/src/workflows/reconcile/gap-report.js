@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import path from "node:path";
 
 import { stableStringify } from "../../format.js";
@@ -17,6 +17,7 @@ import {
   summarizeGapCandidates
 } from "./canonical-surface.js";
 
+/** @param {WorkspacePaths} paths @param {string} inputPath @returns {any} */
 export function loadImportArtifacts(paths, inputPath) {
   const dbCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "db", "candidates.json"));
   const apiCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "api", "candidates.json"));
@@ -48,6 +49,7 @@ export function loadImportArtifacts(paths, inputPath) {
   return imported;
 }
 
+/** @param {string} inputPath @returns {any} */
 export function reportGapsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = tryLoadResolvedGraph(paths.topogramRoot);
@@ -62,6 +64,7 @@ export function reportGapsWorkflow(inputPath) {
   const importedRoles = appImport.candidates.roles || [];
 
   if (!graph) {
+    /** @type {WorkflowRecord} */
     const report = {
       type: "gap_report",
       workspace: paths.workspaceRoot,
@@ -91,6 +94,7 @@ export function reportGapsWorkflow(inputPath) {
         }
       }
     };
+    /** @type {WorkflowFiles} */
     const files = {
       "candidates/reports/gap-report.json": `${stableStringify(report)}\n`,
       "candidates/reports/gap-report.md": ensureTrailingNewline(
@@ -104,26 +108,29 @@ export function reportGapsWorkflow(inputPath) {
     };
   }
 
-  const glossaryDocs = new Set((graph.docs || []).filter((doc) => doc.kind === "glossary").map((doc) => doc.id));
-  const workflowDocs = (graph.docs || []).filter((doc) => doc.kind === "workflow");
+  const glossaryDocs = new Set((graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "glossary").map((/** @type {any} */ doc) => doc.id));
+  const workflowDocs = (graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "workflow");
   const canonicalUi = collectCanonicalUiSurface(graph);
   const canonicalWorkflow = collectCanonicalWorkflowSurface(graph);
   const canonicalActorRole = collectCanonicalActorRoleSurface(graph);
-  const entityMap = new Map((graph.byKind.entity || []).map((entity) => [entity.id.replace(/^entity_/, ""), entity]));
-  const enumMap = new Map((graph.byKind.enum || []).map((entry) => [entry.id, entry]));
+  const entityMap = new Map((graph.byKind.entity || []).map((/** @type {any} */ entity) => [entity.id.replace(/^entity_/, ""), entity]));
+  const enumMap = new Map((graph.byKind.enum || []).map((/** @type {any} */ entry) => [entry.id, entry]));
   const topogramApiCapabilities = buildTopogramApiCapabilityIndex(graph);
-  const capabilityIds = new Set(topogramApiCapabilities.map((capability) => capability.id));
+  const capabilityIds = new Set(topogramApiCapabilities.map((/** @type {any} */ capability) => capability.id));
   const canonicalActorIds = new Set(canonicalActorRole.actor_ids);
   const canonicalRoleIds = new Set(canonicalActorRole.role_ids);
-  const capabilityById = new Map((graph.byKind.capability || []).map((entry) => [entry.id, entry]));
+  const capabilityById = new Map((graph.byKind.capability || []).map((/** @type {any} */ entry) => [entry.id, entry]));
 
-  const missingGlossary = [...entityMap.keys()].filter((id) => !glossaryDocs.has(id));
+  const missingGlossary = [...entityMap.keys()].filter((/** @type {any} */ id) => !glossaryDocs.has(id));
   const missingWorkflowDocs = (graph.byKind.capability || [])
-    .filter((capability) => [...capability.creates, ...capability.updates, ...capability.deletes].length > 0)
-    .filter((capability) => !workflowDocs.some((doc) => doc.relatedCapabilities.includes(capability.id)))
-    .map((capability) => capability.id);
+    .filter((/** @type {any} */ capability) => [...capability.creates, ...capability.updates, ...capability.deletes].length > 0)
+    .filter((/** @type {any} */ capability) => !workflowDocs.some((/** @type {any} */ doc) => doc.relatedCapabilities.includes(capability.id)))
+    .map((/** @type {any} */ capability) => capability.id);
+
+  /** @type {any[]} */
 
   const dbEntitiesMissing = [];
+  /** @type {any[]} */
   const dbFieldMismatches = [];
   for (const candidate of importedDb.entities || []) {
     const canonicalId = candidate.id_hint.replace(/^entity_/, "");
@@ -143,7 +150,10 @@ export function reportGapsWorkflow(inputPath) {
     }
   }
 
+  /** @type {any[]} */
+
   const dbEnumsMissing = [];
+  /** @type {any[]} */
   const dbEnumValueMismatches = [];
   for (const candidate of importedDb.enums || []) {
     const graphEnum = enumMap.get(candidate.id_hint);
@@ -151,8 +161,8 @@ export function reportGapsWorkflow(inputPath) {
       dbEnumsMissing.push(candidate.id_hint);
       continue;
     }
-    const graphValues = new Set((graphEnum.values || []).map((value) => value.id || value));
-    const missingValues = (candidate.values || []).filter((value) => !graphValues.has(value));
+    const graphValues = new Set((graphEnum.values || []).map((/** @type {any} */ value) => value.id || value));
+    const missingValues = (candidate.values || []).filter((/** @type {any} */ value) => !graphValues.has(value));
     if (missingValues.length > 0) {
       dbEnumValueMismatches.push({
         enum: candidate.id_hint,
@@ -161,8 +171,12 @@ export function reportGapsWorkflow(inputPath) {
     }
   }
 
+  /** @type {any[]} */
+
   const importedCapabilitiesMissing = [];
+  /** @type {any[]} */
   const importedEndpointsWithoutMatchingCapabilities = [];
+  /** @type {any[]} */
   const apiFieldMismatches = [];
   const matchedTopogramCapabilities = new Set();
   for (const entry of importedApi.capabilities || []) {
@@ -194,38 +208,39 @@ export function reportGapsWorkflow(inputPath) {
     }
   }
   const topogramCapabilitiesWithoutImportedEndpointEvidence = topogramApiCapabilities
-    .filter((capability) => !matchedTopogramCapabilities.has(capability.id))
-    .map((capability) => capability.id);
+    .filter((/** @type {any} */ capability) => !matchedTopogramCapabilities.has(capability.id))
+    .map((/** @type {any} */ capability) => capability.id);
 
   const scannedTermsMissingInGlossary = (scan.candidate_docs || [])
-    .filter((doc) => doc.kind === "glossary")
-    .map((doc) => doc.id)
-    .filter((id) => entityMap.has(id) && !glossaryDocs.has(id));
+    .filter((/** @type {any} */ doc) => doc.kind === "glossary")
+    .map((/** @type {any} */ doc) => doc.id)
+    .filter((/** @type {any} */ id) => entityMap.has(id) && !glossaryDocs.has(id));
 
   const importedScreensMissing = (importedUi.screens || [])
-    .map((screen) => screen.id_hint)
-    .filter((id) => !canonicalUi.screens.includes(id));
+    .map((/** @type {any} */ screen) => screen.id_hint)
+    .filter((/** @type {any} */ id) => !canonicalUi.screens.includes(id));
   const importedUiRoutesMissing = (importedUi.routes || [])
-    .map((route) => route.path)
-    .filter((route) => !canonicalUi.routes.includes(route));
+    .map((/** @type {any} */ route) => route.path)
+    .filter((/** @type {any} */ route) => !canonicalUi.routes.includes(route));
 
   const importedWorkflowsMissing = (importedWorkflows.workflows || [])
-    .map((workflow) => workflow.id_hint)
-    .filter((id) => !canonicalWorkflow.workflow_docs.includes(id));
-  const importedWorkflowTransitionsMissing = (importedWorkflows.workflow_transitions || []).map((transition) => ({
+    .map((/** @type {any} */ workflow) => workflow.id_hint)
+    .filter((/** @type {any} */ id) => !canonicalWorkflow.workflow_docs.includes(id));
+  const importedWorkflowTransitionsMissing = (importedWorkflows.workflow_transitions || []).map((/** @type {any} */ transition) => ({
     workflow: transition.workflow_id,
     capability: transition.capability_id,
     to_state: transition.to_state
   }));
 
-  const actorGapCandidates = summarizeGapCandidates(importedActors.filter((entry) => !canonicalActorIds.has(entry.id_hint)));
-  const roleGapCandidates = summarizeGapCandidates(importedRoles.filter((entry) => !canonicalRoleIds.has(entry.id_hint)));
+  const actorGapCandidates = summarizeGapCandidates(importedActors.filter((/** @type {any} */ entry) => !canonicalActorIds.has(entry.id_hint)));
+  const roleGapCandidates = summarizeGapCandidates(importedRoles.filter((/** @type {any} */ entry) => !canonicalRoleIds.has(entry.id_hint)));
   const importedActorsMissing = importedActors
-    .map((entry) => entry.id_hint)
-    .filter((id) => !canonicalActorIds.has(id));
+    .map((/** @type {any} */ entry) => entry.id_hint)
+    .filter((/** @type {any} */ id) => !canonicalActorIds.has(id));
   const importedRolesMissing = importedRoles
-    .map((entry) => entry.id_hint)
-    .filter((id) => !canonicalRoleIds.has(id));
+    .map((/** @type {any} */ entry) => entry.id_hint)
+    .filter((/** @type {any} */ id) => !canonicalRoleIds.has(id));
+  /** @type {any[]} */
   const securedCapabilitiesWithoutCanonicalRoles = [];
   for (const entry of importedApi.capabilities || []) {
     if (entry.auth_hint !== "secured") {
@@ -242,21 +257,21 @@ export function reportGapsWorkflow(inputPath) {
     securedCapabilitiesWithoutCanonicalRoles.push(match.id);
   }
   const journeyDocsMissingActorLinks = canonicalActorRole.journey_docs
-    .filter((doc) => (doc.relatedActors || []).length === 0)
-    .filter((doc) => importedActors.some((entry) => (entry.related_docs || []).includes(doc.id)))
-    .map((doc) => doc.id);
+    .filter((/** @type {any} */ doc) => (doc.relatedActors || []).length === 0)
+    .filter((/** @type {any} */ doc) => importedActors.some((/** @type {any} */ entry) => (entry.related_docs || []).includes(doc.id)))
+    .map((/** @type {any} */ doc) => doc.id);
   const journeyDocsMissingRoleLinks = canonicalActorRole.journey_docs
-    .filter((doc) => (doc.relatedRoles || []).length === 0)
-    .filter((doc) => importedRoles.some((entry) => (entry.related_docs || []).includes(doc.id)))
-    .map((doc) => doc.id);
+    .filter((/** @type {any} */ doc) => (doc.relatedRoles || []).length === 0)
+    .filter((/** @type {any} */ doc) => importedRoles.some((/** @type {any} */ entry) => (entry.related_docs || []).includes(doc.id)))
+    .map((/** @type {any} */ doc) => doc.id);
   const workflowDocsMissingActorLinks = canonicalActorRole.workflow_docs
-    .filter((doc) => (doc.relatedActors || []).length === 0)
-    .filter((doc) => importedActors.some((entry) => (entry.related_docs || []).includes(doc.id)))
-    .map((doc) => doc.id);
+    .filter((/** @type {any} */ doc) => (doc.relatedActors || []).length === 0)
+    .filter((/** @type {any} */ doc) => importedActors.some((/** @type {any} */ entry) => (entry.related_docs || []).includes(doc.id)))
+    .map((/** @type {any} */ doc) => doc.id);
   const workflowDocsMissingRoleLinks = canonicalActorRole.workflow_docs
-    .filter((doc) => (doc.relatedRoles || []).length === 0)
-    .filter((doc) => importedRoles.some((entry) => (entry.related_docs || []).includes(doc.id)))
-    .map((doc) => doc.id);
+    .filter((/** @type {any} */ doc) => (doc.relatedRoles || []).length === 0)
+    .filter((/** @type {any} */ doc) => importedRoles.some((/** @type {any} */ entry) => (entry.related_docs || []).includes(doc.id)))
+    .map((/** @type {any} */ doc) => doc.id);
 
   const report = {
     type: "gap_report",
@@ -301,10 +316,12 @@ export function reportGapsWorkflow(inputPath) {
     }
   };
 
+  /** @type {WorkflowFiles} */
+
   const files = {
     "candidates/reports/gap-report.json": `${stableStringify(report)}\n`,
     "candidates/reports/gap-report.md": ensureTrailingNewline(
-      `# Gap Report\n\n## Docs vs Topogram\n\n- Missing glossary docs: ${missingGlossary.length}\n- Missing workflow docs: ${missingWorkflowDocs.length}\n- Scanned terms not in glossary: ${scannedTermsMissingInGlossary.length}\n\n## DB vs Topogram\n\n- Imported entities missing in Topogram: ${dbEntitiesMissing.length}\n- Imported field mismatches: ${dbFieldMismatches.length}\n- Imported enums missing in Topogram: ${dbEnumsMissing.length}\n- Imported enum value mismatches: ${dbEnumValueMismatches.length}\n\n## API vs Topogram\n\n- Imported capabilities missing in Topogram: ${importedCapabilitiesMissing.length}\n- Imported endpoints without matching capabilities: ${importedEndpointsWithoutMatchingCapabilities.length}\n- Topogram capabilities without imported endpoint evidence: ${topogramCapabilitiesWithoutImportedEndpointEvidence.length}\n\n## UI vs Topogram\n\n- Imported screens missing in Topogram: ${importedScreensMissing.length}\n- Imported routes missing in Topogram: ${importedUiRoutesMissing.length}\n\n## Workflows vs Topogram\n\n- Imported workflows missing in Topogram: ${importedWorkflowsMissing.length}\n- Imported transitions without canonical workflow representation: ${importedWorkflowTransitionsMissing.length}\n\n## Actors/Roles vs Topogram\n\n- Imported actors missing in Topogram: ${importedActorsMissing.length}\n- Imported roles missing in Topogram: ${importedRolesMissing.length}\n- Secured capabilities without canonical roles: ${securedCapabilitiesWithoutCanonicalRoles.length}\n- Journey docs missing actor links: ${journeyDocsMissingActorLinks.length}\n- Journey docs missing role links: ${journeyDocsMissingRoleLinks.length}\n- Workflow docs missing actor links: ${workflowDocsMissingActorLinks.length}\n- Workflow docs missing role links: ${workflowDocsMissingRoleLinks.length}\n\n### Ranked Missing Actors\n\n${actorGapCandidates.length ? actorGapCandidates.map((entry) => `- \`${entry.id}\` (${entry.confidence})${entry.inference ? ` ${entry.inference}` : ""}`).join("\n") : "- None"}\n\n### Ranked Missing Roles\n\n${roleGapCandidates.length ? roleGapCandidates.map((entry) => `- \`${entry.id}\` (${entry.confidence})${entry.inference ? ` ${entry.inference}` : ""}`).join("\n") : "- None"}\n`
+      `# Gap Report\n\n## Docs vs Topogram\n\n- Missing glossary docs: ${missingGlossary.length}\n- Missing workflow docs: ${missingWorkflowDocs.length}\n- Scanned terms not in glossary: ${scannedTermsMissingInGlossary.length}\n\n## DB vs Topogram\n\n- Imported entities missing in Topogram: ${dbEntitiesMissing.length}\n- Imported field mismatches: ${dbFieldMismatches.length}\n- Imported enums missing in Topogram: ${dbEnumsMissing.length}\n- Imported enum value mismatches: ${dbEnumValueMismatches.length}\n\n## API vs Topogram\n\n- Imported capabilities missing in Topogram: ${importedCapabilitiesMissing.length}\n- Imported endpoints without matching capabilities: ${importedEndpointsWithoutMatchingCapabilities.length}\n- Topogram capabilities without imported endpoint evidence: ${topogramCapabilitiesWithoutImportedEndpointEvidence.length}\n\n## UI vs Topogram\n\n- Imported screens missing in Topogram: ${importedScreensMissing.length}\n- Imported routes missing in Topogram: ${importedUiRoutesMissing.length}\n\n## Workflows vs Topogram\n\n- Imported workflows missing in Topogram: ${importedWorkflowsMissing.length}\n- Imported transitions without canonical workflow representation: ${importedWorkflowTransitionsMissing.length}\n\n## Actors/Roles vs Topogram\n\n- Imported actors missing in Topogram: ${importedActorsMissing.length}\n- Imported roles missing in Topogram: ${importedRolesMissing.length}\n- Secured capabilities without canonical roles: ${securedCapabilitiesWithoutCanonicalRoles.length}\n- Journey docs missing actor links: ${journeyDocsMissingActorLinks.length}\n- Journey docs missing role links: ${journeyDocsMissingRoleLinks.length}\n- Workflow docs missing actor links: ${workflowDocsMissingActorLinks.length}\n- Workflow docs missing role links: ${workflowDocsMissingRoleLinks.length}\n\n### Ranked Missing Actors\n\n${actorGapCandidates.length ? actorGapCandidates.map((/** @type {any} */ entry) => `- \`${entry.id}\` (${entry.confidence})${entry.inference ? ` ${entry.inference}` : ""}`).join("\n") : "- None"}\n\n### Ranked Missing Roles\n\n${roleGapCandidates.length ? roleGapCandidates.map((/** @type {any} */ entry) => `- \`${entry.id}\` (${entry.confidence})${entry.inference ? ` ${entry.inference}` : ""}`).join("\n") : "- None"}\n`
     )
   };
 

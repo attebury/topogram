@@ -1,20 +1,23 @@
-// @ts-nocheck
+// @ts-check
 import { idHintify, titleCase } from "../../text-helpers.js";
 import { scanDocsWorkflow } from "../docs.js";
 import { collectApiImport } from "./api.js";
 import { collectDbImport } from "./db.js";
 import { dedupeCandidateRecords, inferCapabilityEntityId, makeCandidateRecord } from "./shared.js";
 
+/** @param {WorkflowRecord} capability @returns {any} */
 function workflowEntityIdForCapability(capability) {
   return inferCapabilityEntityId(capability);
 }
 
+/** @param {WorkflowRecord} entity @param {any} enumCandidatesById @returns {any} */
 function findEntityStatusFields(entity, enumCandidatesById) {
-  return (entity?.fields || []).filter((field) =>
+  return (entity?.fields || []).filter((/** @type {any} */ field) =>
     ["status", "state"].includes(field.name) && enumCandidatesById.has(idHintify(field.field_type))
   );
 }
 
+/** @param {WorkflowRecord} capability @param {any[]} knownStates @returns {any} */
 function targetStateForCapability(capability, knownStates) {
   if (capability.target_state) {
     const explicitState = idHintify(capability.target_state);
@@ -39,7 +42,7 @@ function targetStateForCapability(capability, knownStates) {
     ["archive", "archived"],
     ["delete", "deleted"],
     [method === "POST" && id.startsWith("cap_create_") ? "create" : "", knownStates[0] || "created"]
-  ].filter(([needle]) => needle);
+  ].filter((/** @type {any} */ [needle]) => needle);
   for (const [needle, state] of candidates) {
     if (id.includes(needle) && state) {
       const canonicalState = idHintify(state);
@@ -51,8 +54,11 @@ function targetStateForCapability(capability, knownStates) {
   return null;
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function collectWorkflowImport(paths) {
+  /** @type {any[]} */
   const findings = [];
+  /** @type {WorkflowRecord} */
   const candidates = {
     workflows: [],
     workflow_states: [],
@@ -61,9 +67,9 @@ export function collectWorkflowImport(paths) {
   const dbImport = collectDbImport(paths);
   const apiImport = collectApiImport(paths);
   const docScan = scanDocsWorkflow(paths.topogramRoot).summary;
-  const enumCandidatesById = new Map((dbImport.candidates.enums || []).map((entry) => [entry.id_hint, entry]));
-  const entityCandidatesById = new Map((dbImport.candidates.entities || []).map((entry) => [entry.id_hint, entry]));
-  const workflowDocs = (docScan.candidate_docs || []).filter((doc) => doc.kind === "workflow");
+  const enumCandidatesById = new Map((dbImport.candidates.enums || []).map((/** @type {any} */ entry) => [entry.id_hint, entry]));
+  const entityCandidatesById = new Map((dbImport.candidates.entities || []).map((/** @type {any} */ entry) => [entry.id_hint, entry]));
+  const workflowDocs = (docScan.candidate_docs || []).filter((/** @type {any} */ doc) => doc.kind === "workflow");
   const workflows = new Map();
 
   for (const capability of apiImport.candidates.capabilities || []) {
@@ -76,7 +82,7 @@ export function collectWorkflowImport(paths) {
     if (!workflows.has(workflowId)) {
       const entity = entityCandidatesById.get(entityId);
       const statusFields = findEntityStatusFields(entity, enumCandidatesById);
-      const states = statusFields.flatMap((field) => enumCandidatesById.get(idHintify(field.field_type))?.values || []).map(idHintify);
+      const states = statusFields.flatMap((/** @type {any} */ field) => enumCandidatesById.get(idHintify(field.field_type))?.values || []).map(idHintify);
       workflows.set(workflowId, {
         workflow: makeCandidateRecord({
           kind: "workflow",
@@ -90,7 +96,7 @@ export function collectWorkflowImport(paths) {
           actor_hints: capabilityActors,
           related_capabilities: []
         }),
-        states: states.map((state) =>
+        states: states.map((/** @type {any} */ state) =>
           makeCandidateRecord({
             kind: "workflow_state",
             idHint: `${workflowId}_${state}`,
@@ -110,7 +116,7 @@ export function collectWorkflowImport(paths) {
     const workflow = workflows.get(workflowId);
     workflow.workflow.related_capabilities.push(capability.id_hint);
     workflow.workflow.actor_hints = [...new Set([...(workflow.workflow.actor_hints || []), ...capabilityActors])].sort();
-    const knownStates = workflow.states.map((entry) => entry.state_id);
+    const knownStates = workflow.states.map((/** @type {any} */ entry) => entry.state_id);
     const targetState = targetStateForCapability(capability, knownStates);
     if (targetState) {
       workflow.transitions.push(
@@ -142,12 +148,12 @@ export function collectWorkflowImport(paths) {
   findings.push({
     kind: "workflow_inference",
     workflow_count: candidates.workflows.length,
-    workflow_doc_signals: workflowDocs.map((doc) => doc.id)
+    workflow_doc_signals: workflowDocs.map((/** @type {any} */ doc) => doc.id)
   });
 
-  candidates.workflows = dedupeCandidateRecords(candidates.workflows, (record) => record.id_hint);
-  candidates.workflow_states = dedupeCandidateRecords(candidates.workflow_states, (record) => record.id_hint);
-  candidates.workflow_transitions = dedupeCandidateRecords(candidates.workflow_transitions, (record) => record.id_hint);
+  candidates.workflows = dedupeCandidateRecords(candidates.workflows, (/** @type {any} */ record) => record.id_hint);
+  candidates.workflow_states = dedupeCandidateRecords(candidates.workflow_states, (/** @type {any} */ record) => record.id_hint);
+  candidates.workflow_transitions = dedupeCandidateRecords(candidates.workflow_transitions, (/** @type {any} */ record) => record.id_hint);
 
   return { findings, candidates };
 }

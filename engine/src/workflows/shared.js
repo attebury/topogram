@@ -1,9 +1,10 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
 import { ensureTrailingNewline, titleCase } from "../text-helpers.js";
 
+/** @param {string} startDir @returns {any} */
 export function findNearestGitRoot(startDir) {
   let current = path.resolve(startDir);
   while (true) {
@@ -18,6 +19,7 @@ export function findNearestGitRoot(startDir) {
   }
 }
 
+/** @param {string} inputPath @returns {any} */
 export function normalizeWorkspacePaths(inputPath) {
   const absolute = path.resolve(inputPath);
   const inputExists = fs.existsSync(absolute);
@@ -41,19 +43,23 @@ export function normalizeWorkspacePaths(inputPath) {
   };
 }
 
+/** @param {string} markdown @returns {any} */
 export function firstHeading(markdown) {
   const match = markdown.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : null;
 }
 
+/** @param {string} filePath @param {string} markdown @returns {any} */
 export function markdownTitle(filePath, markdown) {
   return firstHeading(markdown) || titleCase(path.basename(filePath, path.extname(filePath)));
 }
 
+/** @param {string} filePath @returns {any} */
 export function readTextIfExists(filePath) {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
 }
 
+/** @param {string} filePath @returns {any} */
 export function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) {
     return null;
@@ -73,13 +79,15 @@ export const DEFAULT_IGNORED_DIRS = new Set([
   "tmp"
 ]);
 
+/** @param {string} rootDir @param {any} predicate @param {WorkflowOptions} options @returns {any} */
 export function listFilesRecursive(rootDir, predicate = () => true, options = {}) {
   if (!fs.existsSync(rootDir)) {
     return [];
   }
   const ignoredDirs = options.ignoredDirs || DEFAULT_IGNORED_DIRS;
+  /** @type {any[]} */
   const files = [];
-  const walk = (currentDir) => {
+  const walk = (/** @type {any} */ currentDir) => {
     for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
       const childPath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) {
@@ -98,6 +106,7 @@ export function listFilesRecursive(rootDir, predicate = () => true, options = {}
   return files.sort();
 }
 
+/** @param {WorkflowRecord} metadata @returns {any} */
 export function buildFrontmatter(metadata) {
   const lines = ["---"];
   for (const [key, value] of Object.entries(metadata)) {
@@ -121,10 +130,12 @@ export function buildFrontmatter(metadata) {
   return lines.join("\n");
 }
 
+/** @param {WorkflowRecord} metadata @param {string} body @returns {any} */
 export function renderMarkdownDoc(metadata, body) {
   return ensureTrailingNewline(`${buildFrontmatter(metadata)}\n\n${body.trim()}\n`);
 }
 
+/** @param {string} source @returns {any} */
 export function parseMarkdownFrontmatter(source) {
   const normalized = String(source || "").replace(/\r\n/g, "\n");
   const lines = normalized.split("\n");
@@ -141,6 +152,7 @@ export function parseMarkdownFrontmatter(source) {
   if (closingIndex === -1) {
     return null;
   }
+  /** @type {WorkflowRecord} */
   const metadata = {};
   for (let index = 1; index < closingIndex; index += 1) {
     const line = lines[index];
@@ -153,6 +165,7 @@ export function parseMarkdownFrontmatter(source) {
     }
     const [, key, rawValue] = match;
     if (rawValue.trim() === "") {
+      /** @type {any[]} */
       const items = [];
       let cursor = index + 1;
       while (cursor < closingIndex) {

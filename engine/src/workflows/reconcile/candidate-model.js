@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import { buildBundleDocDriftSummaries as buildBundleDocDriftSummariesReconcile, buildBundleDocMetadataPatches as buildBundleDocMetadataPatchesReconcile } from "../../reconcile/docs.js";
 import { canonicalCandidateTerm, idHintify, titleCase } from "../../text-helpers.js";
 import { confidenceRank, docDirForKind, renderCandidateActor, renderCandidateRole } from "../docs.js";
@@ -32,11 +32,12 @@ import {
   shapeIdForCapability
 } from "./renderers.js";
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function bundleNoiseSuppressionReason(bundle) {
   if ((bundle.actors || []).length > 0 || (bundle.roles || []).length > 0 || (bundle.capabilities || []).length > 0 || (bundle.workflows || []).length > 0 || (bundle.docs || []).length > 0 || (bundle.screens || []).length > 0) {
     return null;
   }
-  const noiseEntities = (bundle.entities || []).filter((entry) => entry.noise_candidate);
+  const noiseEntities = (bundle.entities || []).filter((/** @type {any} */ entry) => entry.noise_candidate);
   if (noiseEntities.length === 0) {
     return null;
   }
@@ -46,6 +47,7 @@ export function bundleNoiseSuppressionReason(bundle) {
   return null;
 }
 
+/** @param {Map<string, CandidateBundle>} bundles @param {WorkflowRecord} candidate @returns {any} */
 export function bestContextBundleForCandidate(bundles, candidate) {
   const candidateProvenance = new Set(provenanceList(candidate.provenance));
   const relatedDocs = new Set(candidate.related_docs || []);
@@ -57,13 +59,13 @@ export function bestContextBundleForCandidate(bundles, candidate) {
       continue;
     }
     const provenanceOverlap = candidateProvenance.size > 0
-      ? [...candidateProvenance].filter((item) => collectBundleProvenance(bundle).has(item)).length
+      ? [...candidateProvenance].filter((/** @type {any} */ item) => collectBundleProvenance(bundle).has(item)).length
       : 0;
     const docLinkOverlap = relatedDocs.size > 0
-      ? [...relatedDocs].filter((item) => collectBundleDocIds(bundle).has(item)).length
+      ? [...relatedDocs].filter((/** @type {any} */ item) => collectBundleDocIds(bundle).has(item)).length
       : 0;
     const capabilityLinkOverlap = relatedCapabilities.size > 0
-      ? [...relatedCapabilities].filter((item) => collectBundleCapabilityIds(bundle).has(item)).length
+      ? [...relatedCapabilities].filter((/** @type {any} */ item) => collectBundleCapabilityIds(bundle).has(item)).length
       : 0;
     if (provenanceOverlap === 0 && docLinkOverlap === 0 && capabilityLinkOverlap === 0) {
       continue;
@@ -76,6 +78,7 @@ export function bestContextBundleForCandidate(bundles, candidate) {
   return best?.bundle || null;
 }
 
+/** @param {ResolvedGraph} graph @param {ImportArtifacts} appImport @param {any} topogramRoot @returns {any} */
 export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const dbCandidates = appImport.candidates.db || { entities: [], enums: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
@@ -86,12 +89,12 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const docCandidates = appImport.candidates.docs || [];
   const actorCandidates = appImport.candidates.actors || [];
   const roleCandidates = appImport.candidates.roles || [];
-  const knownEnums = new Set((dbCandidates.enums || []).map((entry) => entry.id_hint));
-  const canonicalActorIds = new Set((graph?.byKind.actor || []).map((entry) => entry.id));
-  const canonicalRoleIds = new Set((graph?.byKind.role || []).map((entry) => entry.id));
-  const canonicalEntityIds = new Set((graph?.byKind.entity || []).map((entry) => entry.id));
-  const canonicalEnumIds = new Set((graph?.byKind.enum || []).map((entry) => entry.id));
-  const canonicalWidgetIds = new Set((graph?.byKind.widget || []).map((entry) => entry.id));
+  const knownEnums = new Set((dbCandidates.enums || []).map((/** @type {any} */ entry) => entry.id_hint));
+  const canonicalActorIds = new Set((graph?.byKind.actor || []).map((/** @type {any} */ entry) => entry.id));
+  const canonicalRoleIds = new Set((graph?.byKind.role || []).map((/** @type {any} */ entry) => entry.id));
+  const canonicalEntityIds = new Set((graph?.byKind.entity || []).map((/** @type {any} */ entry) => entry.id));
+  const canonicalEnumIds = new Set((graph?.byKind.enum || []).map((/** @type {any} */ entry) => entry.id));
+  const canonicalWidgetIds = new Set((graph?.byKind.widget || []).map((/** @type {any} */ entry) => entry.id));
   const canonicalUi = collectCanonicalUiSurface(graph || { byKind: { projection: [] } });
   const canonicalWorkflow = collectCanonicalWorkflowSurface(graph || { byKind: { decision: [] }, docs: [] });
   const canonicalDocsByKind = new Map();
@@ -103,10 +106,10 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   }
   const topogramApiCapabilities = graph ? buildTopogramApiCapabilityIndex(graph) : [];
   const canonicalShapeIndex = buildCanonicalShapeIndex(graph);
-  const canonicalVerificationIds = new Set((graph?.byKind.verification || []).map((entry) => entry.id));
+  const canonicalVerificationIds = new Set((graph?.byKind.verification || []).map((/** @type {any} */ entry) => entry.id));
   const projectionIndex = buildProjectionEntityIndex(graph);
   const bundles = new Map();
-  const enumCandidatesById = new Map((dbCandidates.enums || []).map((entry) => [entry.id_hint, entry]));
+  const enumCandidatesById = new Map((dbCandidates.enums || []).map((/** @type {any} */ entry) => [entry.id_hint, entry]));
   const verificationScenariosByVerificationId = new Map();
   for (const scenario of verificationCandidates.scenarios || []) {
     const bucket = verificationScenariosByVerificationId.get(scenario.verification_id) || [];
@@ -122,7 +125,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     const bundle = getOrCreateCandidateBundle(bundles, entry.id_hint, entry.label);
     bundle.importedFieldEvidence = [
       ...(bundle.importedFieldEvidence || []),
-      ...((entry.fields || []).map((field) => ({
+      ...((entry.fields || []).map((/** @type {any} */ field) => ({
         entity_id: entry.id_hint,
         name: field.name,
         field_type: field.field_type,
@@ -138,7 +141,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       if (!enumEntry || canonicalEnumIds.has(enumId)) {
         continue;
       }
-      if (!bundle.enums.some((candidate) => candidate.id_hint === enumId)) {
+      if (!bundle.enums.some((/** @type {any} */ candidate) => candidate.id_hint === enumId)) {
         bundle.enums.push(enumEntry);
       }
       bundles.delete(`enum_${enumId}`);
@@ -190,6 +193,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
     bundle.uiActions.push(entry);
   }
+  /** @param {WorkflowRecord} entry @returns {any} */
   function widgetConceptId(entry) {
     if (entry.entity_id || entry.concept_id) {
       return entry.entity_id || entry.concept_id;
@@ -235,7 +239,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     }
     const relatedCapabilityId =
       entry.related_capabilities?.[0] ||
-      verificationScenariosByVerificationId.get(entry.id_hint)?.flatMap((scenario) => scenario.related_capabilities || [])[0] ||
+      verificationScenariosByVerificationId.get(entry.id_hint)?.flatMap((/** @type {any} */ scenario) => scenario.related_capabilities || [])[0] ||
       null;
     const conceptId = relatedCapabilityId
       ? inferCapabilityEntityId({
@@ -284,9 +288,11 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
 
   addBundleJourneyDrafts(bundles, graph);
 
+  /** @type {any[]} */
+
   const suppressedNoiseBundles = [];
   const finalizedBundles = [...bundles.values()]
-    .filter((bundle) =>
+    .filter((/** @type {any} */ bundle) =>
       bundle.actors.length > 0 ||
       bundle.roles.length > 0 ||
       bundle.entities.length > 0 ||
@@ -302,24 +308,24 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.workflowStates.length > 0 ||
       bundle.workflowTransitions.length > 0
     )
-    .map((bundle) => {
+    .map((/** @type {any} */ bundle) => {
       const sortedBundle = {
         ...bundle,
-        actors: bundle.actors.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        roles: bundle.roles.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        entities: bundle.entities.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        enums: bundle.enums.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        capabilities: bundle.capabilities.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        shapes: bundle.shapes.sort((a, b) => a.id.localeCompare(b.id)),
-        widgets: bundle.widgets.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        screens: bundle.screens.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        uiRoutes: bundle.uiRoutes.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        uiActions: bundle.uiActions.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        workflows: bundle.workflows.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        verifications: bundle.verifications.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        workflowStates: bundle.workflowStates.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        workflowTransitions: bundle.workflowTransitions.sort((a, b) => a.id_hint.localeCompare(b.id_hint)),
-        docs: bundle.docs.sort((a, b) => a.id.localeCompare(b.id))
+        actors: bundle.actors.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        roles: bundle.roles.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        entities: bundle.entities.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        enums: bundle.enums.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        capabilities: bundle.capabilities.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        shapes: bundle.shapes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id.localeCompare(b.id)),
+        widgets: bundle.widgets.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        screens: bundle.screens.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        uiRoutes: bundle.uiRoutes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        uiActions: bundle.uiActions.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        workflows: bundle.workflows.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        verifications: bundle.verifications.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        workflowStates: bundle.workflowStates.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        workflowTransitions: bundle.workflowTransitions.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        docs: bundle.docs.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id.localeCompare(b.id))
       };
       const mergeHints = buildBundleMergeHints(sortedBundle, canonicalEntityIds);
       const projectionImpacts = buildProjectionImpacts({ ...sortedBundle, mergeHints }, projectionIndex);
@@ -360,11 +366,11 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         adoptionPlan
       };
     })
-    .map((bundle) => ({
+    .map((/** @type {any} */ bundle) => ({
       ...bundle,
       docMetadataPatches: buildBundleDocMetadataPatchesReconcile(bundle, confidenceRank)
     }))
-    .filter((bundle) => {
+    .filter((/** @type {any} */ bundle) => {
       const reason = bundleNoiseSuppressionReason(bundle);
       if (!reason) {
         return true;
@@ -376,15 +382,18 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       });
       return false;
     })
-    .sort((a, b) => a.slug.localeCompare(b.slug));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.slug.localeCompare(b.slug));
   return { bundles: finalizedBundles, suppressedNoiseBundles };
 }
 
+/** @param {ResolvedGraph} graph @param {ImportArtifacts} appImport @param {any} topogramRoot @returns {any} */
 export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
+  /** @type {WorkflowFiles} */
+  /** @type {WorkflowFiles} */
   const files = {};
   const { bundles, suppressedNoiseBundles } = buildCandidateModelBundles(graph, appImport, topogramRoot);
   const knownEnums = new Set(
-    bundles.flatMap((bundle) => bundle.enums.map((entry) => entry.id_hint))
+    bundles.flatMap((/** @type {any} */ bundle) => bundle.enums.map((/** @type {any} */ entry) => entry.id_hint))
   );
 
   for (const bundle of bundles) {
@@ -406,8 +415,8 @@ export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
       files[`${bundleRoot}/shapes/${shape.id}.tg`] = renderCandidateShape(shape.id, shape.label, shape.fields);
     }
     for (const entry of bundle.capabilities) {
-      const inputShapeId = bundle.shapes.find((shape) => shape.id === shapeIdForCapability(entry, "input")) ? shapeIdForCapability(entry, "input") : null;
-      const outputShapeId = bundle.shapes.find((shape) => shape.id === shapeIdForCapability(entry, "output")) ? shapeIdForCapability(entry, "output") : null;
+      const inputShapeId = bundle.shapes.find((/** @type {any} */ shape) => shape.id === shapeIdForCapability(entry, "input")) ? shapeIdForCapability(entry, "input") : null;
+      const outputShapeId = bundle.shapes.find((/** @type {any} */ shape) => shape.id === shapeIdForCapability(entry, "output")) ? shapeIdForCapability(entry, "output") : null;
       files[`${bundleRoot}/capabilities/${entry.id_hint}.tg`] = renderCandidateCapability(entry, inputShapeId, outputShapeId);
     }
     for (const entry of bundle.verifications || []) {
@@ -443,14 +452,14 @@ export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
       );
     }
     for (const entry of bundle.workflows) {
-      const states = bundle.workflowStates.filter((state) => state.workflow_id === entry.id_hint);
-      const transitions = bundle.workflowTransitions.filter((transition) => transition.workflow_id === entry.id_hint);
+      const states = bundle.workflowStates.filter((/** @type {any} */ state) => state.workflow_id === entry.id_hint);
+      const transitions = bundle.workflowTransitions.filter((/** @type {any} */ transition) => transition.workflow_id === entry.id_hint);
       files[`${bundleRoot}/docs/workflows/${entry.id_hint}.md`] = renderCandidateWorkflowDoc(entry, states, transitions);
       files[`${bundleRoot}/decisions/dec_${entry.id_hint.replace(/^workflow_/, "")}.tg`] = renderCandidateWorkflowDecision(entry, states, transitions);
     }
     for (const screen of bundle.screens) {
-      const routes = bundle.uiRoutes.filter((route) => route.screen_id === screen.id_hint);
-      const actions = bundle.uiActions.filter((action) => action.screen_id === screen.id_hint);
+      const routes = bundle.uiRoutes.filter((/** @type {any} */ route) => route.screen_id === screen.id_hint);
+      const actions = bundle.uiActions.filter((/** @type {any} */ action) => action.screen_id === screen.id_hint);
       files[`${bundleRoot}/docs/reports/ui-${screen.id_hint}.md`] = renderCandidateUiReportDoc(screen, routes, actions);
     }
     for (const patch of bundle.projectionPatches || []) {

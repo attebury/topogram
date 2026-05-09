@@ -1,15 +1,18 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
 import { stableStringify } from "../format.js";
+import { relativeTo } from "../path-helpers.js";
 import { canonicalCandidateTerm, ensureTrailingNewline, extractRankedTerms, idHintify, slugify, titleCase } from "../text-helpers.js";
-import { listFilesRecursive, normalizeWorkspacePaths, readTextIfExists } from "./shared.js";
+import { listFilesRecursive, markdownTitle, normalizeWorkspacePaths, readTextIfExists, renderMarkdownDoc } from "./shared.js";
 import { tryLoadResolvedGraph } from "./docs-generate.js";
+import { renderCandidateMetadataComments } from "./reconcile/renderers.js";
 
+/** @param {WorkspacePaths} paths @returns {any} */
 function discoverDocSources(paths) {
   const candidates = new Set();
-  const pushIfExists = (filePath) => {
+  const pushIfExists = (/** @type {any} */ filePath) => {
     if (filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       candidates.add(filePath);
     }
@@ -20,22 +23,25 @@ function discoverDocSources(paths) {
   pushIfExists(path.join(paths.exampleRoot, "artifacts", "README.md"));
   pushIfExists(path.join(paths.exampleRoot, "implementation", "README.md"));
 
-  for (const filePath of listFilesRecursive(path.join(paths.exampleRoot, "artifacts", "docs"), (child) => child.endsWith(".md"))) {
+  for (const filePath of listFilesRecursive(path.join(paths.exampleRoot, "artifacts", "docs"), (/** @type {any} */ child) => child.endsWith(".md"))) {
     candidates.add(filePath);
   }
-  for (const filePath of listFilesRecursive(path.join(paths.exampleRoot, "apps"), (child) => path.basename(child).toLowerCase().startsWith("readme"))) {
+  for (const filePath of listFilesRecursive(path.join(paths.exampleRoot, "apps"), (/** @type {any} */ child) => path.basename(child).toLowerCase().startsWith("readme"))) {
     candidates.add(filePath);
   }
 
   return [...candidates].sort();
 }
 
+/** @param {string} markdown @returns {any} */
 function extractTerms(markdown) {
   return extractRankedTerms(markdown, { technicalStopwords: true });
 }
 
+/** @param {string} markdown @returns {any} */
 function extractWorkflowSignals(markdown) {
   const text = markdown.toLowerCase();
+  /** @type {any[]} */
   const signals = [];
   if (/(workflow|review|approve|reject|revision|resubmit)/.test(text)) {
     signals.push("review_workflow");
@@ -46,6 +52,7 @@ function extractWorkflowSignals(markdown) {
   return [...new Set(signals)];
 }
 
+/** @param {string} capabilityId @returns {any} */
 function tokenizeCapabilityId(capabilityId) {
   return capabilityId
     .replace(/^cap_/, "")
@@ -53,6 +60,7 @@ function tokenizeCapabilityId(capabilityId) {
     .filter(Boolean);
 }
 
+/** @param {string} token @returns {any} */
 function expandTokenVariants(token) {
   const variants = new Set([token]);
   if (token.endsWith("y")) {
@@ -104,15 +112,17 @@ function expandTokenVariants(token) {
   return [...variants];
 }
 
+/** @param {string} markdown @param {string} token @returns {any} */
 function includesAnyVariant(markdown, token) {
   const text = markdown.toLowerCase();
-  return expandTokenVariants(token).some((variant) => includesTerm(text, variant));
+  return expandTokenVariants(token).some((/** @type {any} */ variant) => includesTerm(text, variant));
 }
 
+/** @param {ResolvedGraph} graph @returns {any} */
 function buildCapabilityWorkflowHints(graph) {
   const capabilities = graph?.byKind.capability || [];
   return capabilities
-    .filter((capability) => {
+    .filter((/** @type {any} */ capability) => {
       const id = capability.id.replace(/^cap_/, "");
       const tokens = tokenizeCapabilityId(capability.id);
       if (tokens[0] === "get" || tokens[0] === "list") {
@@ -125,11 +135,11 @@ function buildCapabilityWorkflowHints(graph) {
         /(close|complete|export|download|approve|reject|request|revision)/.test(id)
       );
     })
-    .map((capability) => {
+    .map((/** @type {any} */ capability) => {
       const id = capability.id.replace(/^cap_/, "");
       const tokens = tokenizeCapabilityId(capability.id);
-      const actionTokens = tokens.filter((token) => !["task", "tasks", "issue", "issues", "user", "users", "project", "projects", "article", "articles", "board", "boards"].includes(token));
-      const nounTokens = tokens.filter((token) => !actionTokens.includes(token));
+      const actionTokens = tokens.filter((/** @type {any} */ token) => !["task", "tasks", "issue", "issues", "user", "users", "project", "projects", "article", "articles", "board", "boards"].includes(token));
+      const nounTokens = tokens.filter((/** @type {any} */ token) => !actionTokens.includes(token));
       return {
         id,
         capabilityId: capability.id,
@@ -140,11 +150,13 @@ function buildCapabilityWorkflowHints(graph) {
     });
 }
 
+/** @param {string} markdown @param {any[]} workflowHints @returns {any} */
 function inferCapabilityWorkflowSignals(markdown, workflowHints) {
+  /** @type {any[]} */
   const matches = [];
   for (const hint of workflowHints) {
-    const actionMatched = hint.actionTokens.length === 0 || hint.actionTokens.some((token) => includesAnyVariant(markdown, token));
-    const nounMatched = hint.nounTokens.length === 0 || hint.nounTokens.some((token) => includesAnyVariant(markdown, token));
+    const actionMatched = hint.actionTokens.length === 0 || hint.actionTokens.some((/** @type {any} */ token) => includesAnyVariant(markdown, token));
+    const nounMatched = hint.nounTokens.length === 0 || hint.nounTokens.some((/** @type {any} */ token) => includesAnyVariant(markdown, token));
     if (actionMatched && nounMatched) {
       matches.push(hint);
     }
@@ -152,6 +164,7 @@ function inferCapabilityWorkflowSignals(markdown, workflowHints) {
   return matches;
 }
 
+/** @param {any} signal @returns {any} */
 function workflowPriority(signal) {
   if (/export|download/.test(signal)) {
     return 7;
@@ -180,6 +193,7 @@ function workflowPriority(signal) {
   return 0;
 }
 
+/** @param {string} markdown @param {string} term @returns {any} */
 function includesTerm(markdown, term) {
   if (!markdown || !term) {
     return false;
@@ -260,6 +274,7 @@ const DOC_ROLE_HINTS = [
   }
 ];
 
+/** @param {string} markdown @param {any} phrase @returns {any} */
 function countPhrase(markdown, phrase) {
   if (!markdown || !phrase) {
     return 0;
@@ -268,10 +283,12 @@ function countPhrase(markdown, phrase) {
   return markdown.match(pattern)?.length || 0;
 }
 
+/** @param {string} markdown @param {any[]} patterns @returns {any} */
 function countPatternMatches(markdown, patterns = []) {
-  return patterns.reduce((total, pattern) => total + (markdown.match(new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`))?.length || 0), 0);
+  return patterns.reduce((/** @type {any} */ total, /** @type {any} */ pattern) => total + (markdown.match(new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`))?.length || 0), 0);
 }
 
+/** @param {string} value @returns {any} */
 export function confidenceRank(value) {
   if (value === "high") {
     return 3;
@@ -282,15 +299,18 @@ export function confidenceRank(value) {
   return 1;
 }
 
+/** @param {any} a @param {any} b @returns {any} */
 function maxConfidence(a, b) {
   return confidenceRank(a) >= confidenceRank(b) ? a : b;
 }
 
+/** @param {string} markdown @returns {any} */
 function inferRoleSignals(markdown) {
+  /** @type {any[]} */
   const hits = [];
   for (const hint of DOC_ROLE_HINTS) {
-    const explicitRolePatternCount = countPatternMatches(markdown, hint.exactPatterns.filter((pattern) => pattern.source.includes("role[")));
-    const restrictivePatternCount = countPatternMatches(markdown, hint.exactPatterns.filter((pattern) => pattern.source.includes("only\\s+")));
+    const explicitRolePatternCount = countPatternMatches(markdown, hint.exactPatterns.filter((/** @type {any} */ pattern) => pattern.source.includes("role[")));
+    const restrictivePatternCount = countPatternMatches(markdown, hint.exactPatterns.filter((/** @type {any} */ pattern) => pattern.source.includes("only\\s+")));
     const permissionPatternCount = countPatternMatches(markdown, hint.exactPatterns);
     if (permissionPatternCount === 0) {
       continue;
@@ -308,11 +328,13 @@ function inferRoleSignals(markdown) {
   return hits;
 }
 
+/** @param {string} markdown @param {any[]} roleSignals @returns {any} */
 function inferActorSignals(markdown, roleSignals = []) {
+  /** @type {any[]} */
   const hits = [];
-  const roleSignalsByTitle = new Map(roleSignals.map((signal) => [signal.title.toLowerCase(), signal]));
+  const roleSignalsByTitle = new Map(roleSignals.map((/** @type {any} */ signal) => [signal.title.toLowerCase(), signal]));
   for (const hint of DOC_ACTOR_HINTS) {
-    const genericPhraseCount = hint.phrases.reduce((total, phrase) => total + countPhrase(markdown, phrase), 0);
+    const genericPhraseCount = hint.phrases.reduce((/** @type {any} */ total, /** @type {any} */ phrase) => total + countPhrase(markdown, phrase), 0);
     const participantPatternCount = countPatternMatches(markdown, hint.participantPatterns || []);
     if (genericPhraseCount === 0 && participantPatternCount === 0) {
       continue;
@@ -335,6 +357,7 @@ function inferActorSignals(markdown, roleSignals = []) {
   return hits;
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function renderCandidateActor(record) {
   const metadataLines = [renderCandidateMetadataComments(record)];
   for (const docId of (record.related_docs || []).slice(0, 3)) {
@@ -353,6 +376,7 @@ export function renderCandidateActor(record) {
   );
 }
 
+/** @param {WorkflowRecord} record @returns {any} */
 export function renderCandidateRole(record) {
   const metadataLines = [renderCandidateMetadataComments(record)];
   for (const docId of (record.related_docs || []).slice(0, 3)) {
@@ -371,10 +395,12 @@ export function renderCandidateRole(record) {
   );
 }
 
+/** @param {string} inputPath @returns {any} */
 export function scanDocsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = tryLoadResolvedGraph(paths.topogramRoot);
   const sources = discoverDocSources(paths);
+  /** @type {any[]} */
   const findings = [];
   const glossaryCandidates = new Map();
   const workflowCandidates = new Map();
@@ -385,11 +411,11 @@ export function scanDocsWorkflow(inputPath) {
     exampleName
       .split(/[^a-z0-9]+/)
       .filter(Boolean)
-      .flatMap((term) => [term, canonicalCandidateTerm(term)])
+      .flatMap((/** @type {any} */ term) => [term, canonicalCandidateTerm(term)])
   );
   const preferredTerms = new Set([
-    ...((graph?.byKind.entity || []).map((entity) => entity.id.replace(/^entity_/, ""))),
-    ...((graph?.byKind.term || []).map((term) => term.id))
+    ...((graph?.byKind.entity || []).map((/** @type {any} */ entity) => entity.id.replace(/^entity_/, ""))),
+    ...((graph?.byKind.term || []).map((/** @type {any} */ term) => term.id))
   ]);
   const workflowHints = buildCapabilityWorkflowHints(graph);
 
@@ -399,11 +425,11 @@ export function scanDocsWorkflow(inputPath) {
     const terms = extractTerms(markdown).slice(0, 8);
     const workflowSignals = [
       ...extractWorkflowSignals(markdown),
-      ...inferCapabilityWorkflowSignals(markdown, workflowHints).map((hint) => hint.id)
+      ...inferCapabilityWorkflowSignals(markdown, workflowHints).map((/** @type {any} */ hint) => hint.id)
     ];
     const workflowHintsForFile = inferCapabilityWorkflowSignals(markdown, workflowHints);
-    const relatedDocIdsForFile = [...new Set(workflowSignals.map((signal) => slugify(signal)))];
-    const relatedCapabilityIdsForFile = [...new Set(workflowHintsForFile.map((hint) => hint.capabilityId).filter(Boolean))];
+    const relatedDocIdsForFile = [...new Set(workflowSignals.map((/** @type {any} */ signal) => slugify(signal)))];
+    const relatedCapabilityIdsForFile = [...new Set(workflowHintsForFile.map((/** @type {any} */ hint) => hint.capabilityId).filter(Boolean))];
     const roleSignals = inferRoleSignals(markdown);
     const actorSignals = inferActorSignals(markdown, roleSignals);
     findings.push({
@@ -412,8 +438,8 @@ export function scanDocsWorkflow(inputPath) {
       title,
       term_candidates: terms,
       workflow_signals: workflowSignals,
-      actor_signals: actorSignals.map((signal) => signal.id),
-      role_signals: roleSignals.map((signal) => signal.id)
+      actor_signals: actorSignals.map((/** @type {any} */ signal) => signal.id),
+      role_signals: roleSignals.map((/** @type {any} */ signal) => signal.id)
     });
 
     for (const term of terms) {
@@ -496,11 +522,16 @@ export function scanDocsWorkflow(inputPath) {
     }
   }
 
+  /** @type {WorkflowFiles} */
+
+  /** @type {WorkflowFiles} */
+
   const files = {};
+  /** @type {any[]} */
   const candidateDocs = [];
   const orderedGlossaryCandidates = [...glossaryCandidates.entries()]
-    .filter(([term]) => preferredTerms.has(term) || (!exampleTerms.has(term) && !exampleTerms.has(canonicalCandidateTerm(term))))
-    .sort((a, b) => {
+    .filter((/** @type {any} */ [term]) => preferredTerms.has(term) || (!exampleTerms.has(term) && !exampleTerms.has(canonicalCandidateTerm(term))))
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => {
     const aPreferred = preferredTerms.has(a[0]) ? 1 : 0;
     const bPreferred = preferredTerms.has(b[0]) ? 1 : 0;
     if (aPreferred !== bPreferred) {
@@ -511,8 +542,8 @@ export function scanDocsWorkflow(inputPath) {
     }
     return a[0].localeCompare(b[0]);
   });
-  const preferredGlossaryCandidates = orderedGlossaryCandidates.filter(([term]) => preferredTerms.has(term));
-  const fallbackGlossaryCandidates = orderedGlossaryCandidates.filter(([term]) => !preferredTerms.has(term));
+  const preferredGlossaryCandidates = orderedGlossaryCandidates.filter((/** @type {any} */ [term]) => preferredTerms.has(term));
+  const fallbackGlossaryCandidates = orderedGlossaryCandidates.filter((/** @type {any} */ [term]) => !preferredTerms.has(term));
   const seenCanonicalTerms = new Set();
   for (const [term, provenance] of [...preferredGlossaryCandidates, ...fallbackGlossaryCandidates]) {
     const canonicalTerm = canonicalCandidateTerm(term);
@@ -520,6 +551,7 @@ export function scanDocsWorkflow(inputPath) {
       continue;
     }
     seenCanonicalTerms.add(canonicalTerm);
+    /** @type {WorkflowRecord} */
     const metadata = {
       id: slugify(term),
       kind: "glossary",
@@ -545,13 +577,13 @@ export function scanDocsWorkflow(inputPath) {
       related_capabilities: metadata.related_capabilities || [],
       source_of_truth: metadata.source_of_truth
     });
-    if (candidateDocs.filter((doc) => doc.kind === "glossary").length >= 6) {
+    if (candidateDocs.filter((/** @type {any} */ doc) => doc.kind === "glossary").length >= 6) {
       break;
     }
   }
 
   const genericWorkflowSignals = new Set(["review_workflow", "lifecycle_flow"]);
-  const orderedWorkflowCandidates = [...workflowCandidates.entries()].sort((a, b) => {
+  const orderedWorkflowCandidates = [...workflowCandidates.entries()].sort((/** @type {any} */ a, /** @type {any} */ b) => {
     const aGeneric = genericWorkflowSignals.has(a[0]) ? 1 : 0;
     const bGeneric = genericWorkflowSignals.has(b[0]) ? 1 : 0;
     if (aGeneric !== bGeneric) {
@@ -570,7 +602,7 @@ export function scanDocsWorkflow(inputPath) {
   let specificWorkflowCount = 0;
   let genericWorkflowCount = 0;
   for (const [signal, provenance] of orderedWorkflowCandidates) {
-    const workflowHint = workflowHints.find((hint) => hint.id === signal);
+    const workflowHint = workflowHints.find((/** @type {any} */ hint) => hint.id === signal);
     const isGeneric = genericWorkflowSignals.has(signal);
     if (isGeneric && genericWorkflowCount >= 2) {
       continue;
@@ -579,6 +611,7 @@ export function scanDocsWorkflow(inputPath) {
       continue;
     }
     const title = workflowHint?.title || (signal === "review_workflow" ? "Review Workflow" : "Lifecycle Flow");
+    /** @type {WorkflowRecord} */
     const metadata = {
       id: slugify(signal),
       kind: "workflow",
@@ -615,14 +648,14 @@ export function scanDocsWorkflow(inputPath) {
   }
 
   const candidateActors = [...actorCandidates.values()]
-    .map((record) => ({
+    .map((/** @type {any} */ record) => ({
       ...record,
       provenance: [...new Set(record.provenance)].sort(),
       related_docs: [...new Set(record.related_docs || [])].sort(),
       related_capabilities: [...new Set(record.related_capabilities || [])].sort(),
-      inference_summary: `phrases=${(record.evidence || []).reduce((total, item) => total + (item?.phrase_count || 0), 0)}, participant_hits=${(record.evidence || []).reduce((total, item) => total + (item?.participant_pattern_count || 0), 0)}, permission_overlap=${(record.evidence || []).reduce((total, item) => total + (item?.permission_overlap_count || 0), 0)}`
+      inference_summary: `phrases=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.phrase_count || 0), 0)}, participant_hits=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.participant_pattern_count || 0), 0)}, permission_overlap=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.permission_overlap_count || 0), 0)}`
     }))
-    .sort((a, b) => a.id_hint.localeCompare(b.id_hint))
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint))
     .slice(0, 6);
   for (const record of candidateActors) {
     const relativePath = `candidates/docs/actors/${record.id_hint.replace(/^actor_/, "").replaceAll("_", "-")}.tg`;
@@ -630,26 +663,27 @@ export function scanDocsWorkflow(inputPath) {
   }
 
   const candidateRoles = [...roleCandidates.values()]
-    .map((record) => ({
+    .map((/** @type {any} */ record) => ({
       ...record,
       provenance: [...new Set(record.provenance)].sort(),
       related_docs: [...new Set(record.related_docs || [])].sort(),
       related_capabilities: [...new Set(record.related_capabilities || [])].sort(),
-      inference_summary: `permission_hits=${(record.evidence || []).reduce((total, item) => total + (item?.permission_pattern_count || 0), 0)}, restrictive_hits=${(record.evidence || []).reduce((total, item) => total + (item?.restrictive_pattern_count || 0), 0)}, explicit_role_hits=${(record.evidence || []).reduce((total, item) => total + (item?.explicit_role_pattern_count || 0), 0)}`
+      inference_summary: `permission_hits=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.permission_pattern_count || 0), 0)}, restrictive_hits=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.restrictive_pattern_count || 0), 0)}, explicit_role_hits=${(record.evidence || []).reduce((/** @type {any} */ total, /** @type {any} */ item) => total + (item?.explicit_role_pattern_count || 0), 0)}`
     }))
-    .sort((a, b) => a.id_hint.localeCompare(b.id_hint))
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint))
     .slice(0, 6);
   for (const record of candidateRoles) {
     const relativePath = `candidates/docs/roles/${record.id_hint.replace(/^role_/, "").replaceAll("_", "-")}.tg`;
     files[relativePath] = renderCandidateRole(record);
   }
 
+  /** @type {WorkflowRecord} */
   const report = {
     type: "scan_docs_report",
     workspace: paths.topogramRoot,
     bootstrapped_topogram_root: paths.bootstrappedTopogramRoot,
     source_count: sources.length,
-    sources: sources.map((filePath) => relativeTo(paths.repoRoot, filePath)),
+    sources: sources.map((/** @type {any} */ filePath) => relativeTo(paths.repoRoot, filePath)),
     findings,
     candidate_docs: candidateDocs,
     candidate_actors: candidateActors,
@@ -658,7 +692,7 @@ export function scanDocsWorkflow(inputPath) {
   files["candidates/docs/findings.json"] = `${stableStringify(findings)}\n`;
   files["candidates/docs/import-report.json"] = `${stableStringify(report)}\n`;
   files["candidates/docs/import-report.md"] = ensureTrailingNewline(
-    `# Docs Import Report\n\nScanned ${sources.length} source document(s).\n\n## Candidate Docs\n\n${candidateDocs.length === 0 ? "- None" : candidateDocs.map((doc) => `- \`${doc.kind}\` ${doc.title}`).join("\n")}\n\n## Candidate Actors\n\n${candidateActors.length === 0 ? "- None" : candidateActors.map((actor) => `- \`${actor.id_hint}\` (${actor.confidence})`).join("\n")}\n\n## Candidate Roles\n\n${candidateRoles.length === 0 ? "- None" : candidateRoles.map((role) => `- \`${role.id_hint}\` (${role.confidence})`).join("\n")}\n`
+    `# Docs Import Report\n\nScanned ${sources.length} source document(s).\n\n## Candidate Docs\n\n${candidateDocs.length === 0 ? "- None" : candidateDocs.map((/** @type {any} */ doc) => `- \`${doc.kind}\` ${doc.title}`).join("\n")}\n\n## Candidate Actors\n\n${candidateActors.length === 0 ? "- None" : candidateActors.map((/** @type {any} */ actor) => `- \`${actor.id_hint}\` (${actor.confidence})`).join("\n")}\n\n## Candidate Roles\n\n${candidateRoles.length === 0 ? "- None" : candidateRoles.map((/** @type {any} */ role) => `- \`${role.id_hint}\` (${role.confidence})`).join("\n")}\n`
   );
 
   return {

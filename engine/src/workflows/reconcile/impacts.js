@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import { stableStringify } from "../../format.js";
 import { docDirForKind } from "../docs.js";
 import { dashedTopogramId } from "./ids.js";
@@ -6,19 +6,24 @@ import {
   buildAuthClaimReviewGuidance,
   buildAuthOwnershipReviewGuidance,
   buildAuthPermissionReviewGuidance,
+  describeAuthClaimWhyInferred,
+  describeAuthOwnershipWhyInferred,
+  describeAuthPermissionWhyInferred,
   formatAuthClaimHintInline,
   formatAuthOwnershipHintInline,
   formatAuthPermissionHintInline
 } from "./auth.js";
 
+/** @param {any[]} fields @returns {any} */
 export function shapeFieldSignature(fields) {
   return [...new Set((fields || []).filter(Boolean))].sort().join("|");
 }
 
+/** @param {ResolvedGraph} graph @returns {any} */
 export function buildCanonicalShapeIndex(graph) {
   const bySignature = new Map();
   for (const shape of graph?.byKind.shape || []) {
-    const fields = (shape.projectedFields || shape.fields || []).map((field) => field.name).filter(Boolean);
+    const fields = (shape.projectedFields || shape.fields || []).map((/** @type {any} */ field) => field.name).filter(Boolean);
     const signature = shapeFieldSignature(fields);
     if (!signature) {
       continue;
@@ -31,6 +36,7 @@ export function buildCanonicalShapeIndex(graph) {
   return bySignature;
 }
 
+/** @param {WorkflowRecord} capability @returns {any} */
 export function capabilityEntityTargets(capability) {
   return [
     ...(capability.creates || []),
@@ -38,10 +44,11 @@ export function capabilityEntityTargets(capability) {
     ...(capability.deletes || []),
     ...(capability.reads || [])
   ]
-    .map((ref) => ref?.id || ref?.target?.id || null)
-    .filter((id) => typeof id === "string" && id.startsWith("entity_"));
+    .map((/** @type {any} */ ref) => ref?.id || ref?.target?.id || null)
+    .filter((/** @type {any} */ id) => typeof id === "string" && id.startsWith("entity_"));
 }
 
+/** @param {WorkflowRecord} projection @returns {any} */
 export function projectionKindForImpact(projection) {
   if ((projection.http || []).length > 0 || projection.type === "api_contract") {
     return "api";
@@ -61,12 +68,14 @@ export function projectionKindForImpact(projection) {
   return "other";
 }
 
+/** @param {ResolvedGraph} graph @returns {any} */
 export function buildProjectionEntityIndex(graph) {
   const projections = graph?.byKind.projection || [];
-  const capabilities = new Map((graph?.byKind.capability || []).map((capability) => [capability.id, capability]));
-  const projectionsById = new Map(projections.map((projection) => [projection.id, projection]));
+  const capabilities = new Map((graph?.byKind.capability || []).map((/** @type {any} */ capability) => [capability.id, capability]));
+  const projectionsById = new Map(projections.map((/** @type {any} */ projection) => [projection.id, projection]));
   const memo = new Map();
 
+  /** @param {string} projectionId @param {any} stack @returns {any} */
   function collectEntities(projectionId, stack = new Set()) {
     if (memo.has(projectionId)) {
       return memo.get(projectionId);
@@ -96,16 +105,18 @@ export function buildProjectionEntityIndex(graph) {
     return entities;
   }
 
-  return projections.map((projection) => ({
+  return projections.map((/** @type {any} */ projection) => ({
     id: projection.id,
     projection_type: projection.type || null,
     kind: projectionKindForImpact(projection),
-    realizes: (projection.realizes || []).map((entry) => entry.id),
+    realizes: (projection.realizes || []).map((/** @type {any} */ entry) => entry.id),
     entityIds: [...collectEntities(projection.id)].sort()
   }));
 }
 
+/** @param {CandidateBundle} bundle @param {any} canonicalShapeIndex @returns {any} */
 export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
+  /** @type {any[]} */
   const steps = [];
   for (const entry of bundle.actors) {
     steps.push({
@@ -291,21 +302,22 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
   return steps;
 }
 
+/** @param {CandidateBundle} bundle @param {any} projectionIndex @returns {any} */
 export function buildProjectionImpacts(bundle, projectionIndex) {
   const bundleEntityIds = new Set([
     bundle.mergeHints?.canonicalEntityTarget || null,
-    ...bundle.entities.map((entry) => entry.id_hint)
+    ...bundle.entities.map((/** @type {any} */ entry) => entry.id_hint)
   ].filter(Boolean));
   if (bundle.capabilities.length === 0 || bundleEntityIds.size === 0) {
     return [];
   }
   return projectionIndex
-    .filter((projection) => projection.kind === "api" || projection.kind === "ui")
-    .filter((projection) => projection.entityIds.some((entityId) => bundleEntityIds.has(entityId)))
-    .map((projection) => {
+    .filter((/** @type {any} */ projection) => projection.kind === "api" || projection.kind === "ui")
+    .filter((/** @type {any} */ projection) => projection.entityIds.some((/** @type {any} */ entityId) => bundleEntityIds.has(entityId)))
+    .map((/** @type {any} */ projection) => {
       const missingCapabilities = bundle.capabilities
-        .map((entry) => entry.id_hint)
-        .filter((id) => !projection.realizes.includes(id));
+        .map((/** @type {any} */ entry) => entry.id_hint)
+        .filter((/** @type {any} */ id) => !projection.realizes.includes(id));
       if (missingCapabilities.length === 0) {
         return null;
       }
@@ -318,19 +330,20 @@ export function buildProjectionImpacts(bundle, projectionIndex) {
       };
     })
     .filter(Boolean)
-    .sort((a, b) => a.projection_id.localeCompare(b.projection_id));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.projection_id.localeCompare(b.projection_id));
 }
 
+/** @param {CandidateBundle} bundle @param {ResolvedGraph} graph @returns {any} */
 export function buildUiImpacts(bundle, graph) {
   if ((bundle.screens || []).length === 0) {
     return [];
   }
-  const uiProjections = (graph?.byKind.projection || []).filter((projection) => ["ui_contract", "web_surface"].includes(projection.type));
-  const bundleScreenIds = bundle.screens.map((screen) => screen.id_hint);
+  const uiProjections = (graph?.byKind.projection || []).filter((/** @type {any} */ projection) => ["ui_contract", "web_surface"].includes(projection.type));
+  const bundleScreenIds = bundle.screens.map((/** @type {any} */ screen) => screen.id_hint);
   return uiProjections
-    .map((projection) => {
-      const projectionScreens = new Set((projection.uiScreens || []).map((screen) => screen.id));
-      const missingScreens = bundleScreenIds.filter((screenId) => !projectionScreens.has(screenId));
+    .map((/** @type {any} */ projection) => {
+      const projectionScreens = new Set((projection.uiScreens || []).map((/** @type {any} */ screen) => screen.id));
+      const missingScreens = bundleScreenIds.filter((/** @type {any} */ screenId) => !projectionScreens.has(screenId));
       if (missingScreens.length === 0) {
         return null;
       }
@@ -343,17 +356,18 @@ export function buildUiImpacts(bundle, graph) {
       };
     })
     .filter(Boolean)
-    .sort((a, b) => a.projection_id.localeCompare(b.projection_id));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.projection_id.localeCompare(b.projection_id));
 }
 
+/** @param {CandidateBundle} bundle @param {ResolvedGraph} graph @returns {any} */
 export function buildWorkflowImpacts(bundle, graph) {
   if ((bundle.workflows || []).length === 0) {
     return [];
   }
-  const canonicalWorkflowDocs = new Set((graph?.docs || []).filter((doc) => doc.kind === "workflow").map((doc) => doc.id));
+  const canonicalWorkflowDocs = new Set((graph?.docs || []).filter((/** @type {any} */ doc) => doc.kind === "workflow").map((/** @type {any} */ doc) => doc.id));
   const impacted = bundle.workflows
-    .map((workflow) => workflow.id_hint)
-    .filter((id) => !canonicalWorkflowDocs.has(id));
+    .map((/** @type {any} */ workflow) => workflow.id_hint)
+    .filter((/** @type {any} */ id) => !canonicalWorkflowDocs.has(id));
   if (impacted.length === 0) {
     return [];
   }
@@ -367,8 +381,9 @@ export function buildWorkflowImpacts(bundle, graph) {
   ];
 }
 
+/** @param {CandidateBundle} bundle @returns {any} */
 export function buildProjectionPatchCandidates(bundle) {
-  const capabilityById = new Map((bundle.capabilities || []).map((entry) => [entry.id_hint, entry]));
+  const capabilityById = new Map((bundle.capabilities || []).map((/** @type {any} */ entry) => [entry.id_hint, entry]));
   const routesByScreen = new Map();
   for (const route of bundle.uiRoutes || []) {
     const screenId = route.screen_id || route.id_hint;
@@ -386,14 +401,16 @@ export function buildProjectionPatchCandidates(bundle) {
     actionsByScreen.get(screenId).push(action);
   }
 
+  /** @type {any[]} */
+
   const patches = [];
   for (const impact of bundle.projectionImpacts || []) {
     const missingRealizes = [...(impact.missing_capabilities || [])];
     const missingHttp = impact.kind === "api"
       ? missingRealizes
-          .map((capabilityId) => capabilityById.get(capabilityId))
+          .map((/** @type {any} */ capabilityId) => capabilityById.get(capabilityId))
           .filter(Boolean)
-          .map((entry) => ({
+          .map((/** @type {any} */ entry) => ({
             capability_id: entry.id_hint,
             method: entry.endpoint?.method || "GET",
             path: entry.endpoint?.path || "/"
@@ -413,13 +430,13 @@ export function buildProjectionPatchCandidates(bundle) {
   }
 
   for (const impact of bundle.uiImpacts || []) {
-    const existing = patches.find((patch) => patch.projection_id === impact.projection_id);
+    const existing = patches.find((/** @type {any} */ patch) => patch.projection_id === impact.projection_id);
     const missingScreens = [...(impact.missing_screens || [])];
-    const missingRoutes = missingScreens.flatMap((screenId) => routesByScreen.get(screenId) || []).map((route) => ({
+    const missingRoutes = missingScreens.flatMap((/** @type {any} */ screenId) => routesByScreen.get(screenId) || []).map((/** @type {any} */ route) => ({
       screen_id: route.screen_id,
       path: route.path
     }));
-    const missingActions = missingScreens.flatMap((screenId) => actionsByScreen.get(screenId) || []).map((action) => ({
+    const missingActions = missingScreens.flatMap((/** @type {any} */ screenId) => actionsByScreen.get(screenId) || []).map((/** @type {any} */ action) => ({
       screen_id: action.screen_id,
       capability_hint: action.capability_hint
     }));
@@ -444,7 +461,7 @@ export function buildProjectionPatchCandidates(bundle) {
 
   for (const hint of bundle.authClaimHints || []) {
     for (const impact of bundle.projectionImpacts || []) {
-      const relatedCapabilities = (impact.missing_capabilities || []).filter((capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
+      const relatedCapabilities = (impact.missing_capabilities || []).filter((/** @type {any} */ capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
       if (relatedCapabilities.length === 0) {
         continue;
       }
@@ -461,10 +478,10 @@ export function buildProjectionPatchCandidates(bundle) {
         projection_surface: projectionSurface,
         evidence: hint.evidence || {}
       };
-      const existing = patches.find((patch) => patch.projection_id === impact.projection_id);
+      const existing = patches.find((/** @type {any} */ patch) => patch.projection_id === impact.projection_id);
       if (existing) {
         existing.missing_auth_claims = existing.missing_auth_claims || [];
-        const duplicate = existing.missing_auth_claims.some((candidate) =>
+        const duplicate = existing.missing_auth_claims.some((/** @type {any} */ candidate) =>
           candidate.claim === entry.claim &&
           String(candidate.claim_value || "") === String(entry.claim_value || "") &&
           candidate.projection_surface === entry.projection_surface &&
@@ -492,7 +509,7 @@ export function buildProjectionPatchCandidates(bundle) {
 
   for (const hint of bundle.authPermissionHints || []) {
     for (const impact of bundle.projectionImpacts || []) {
-      const relatedCapabilities = (impact.missing_capabilities || []).filter((capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
+      const relatedCapabilities = (impact.missing_capabilities || []).filter((/** @type {any} */ capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
       if (relatedCapabilities.length === 0) {
         continue;
       }
@@ -508,10 +525,10 @@ export function buildProjectionPatchCandidates(bundle) {
         projection_surface: projectionSurface,
         evidence: hint.evidence || {}
       };
-      const existing = patches.find((patch) => patch.projection_id === impact.projection_id);
+      const existing = patches.find((/** @type {any} */ patch) => patch.projection_id === impact.projection_id);
       if (existing) {
         existing.missing_auth_permissions = existing.missing_auth_permissions || [];
-        const duplicate = existing.missing_auth_permissions.some((candidate) =>
+        const duplicate = existing.missing_auth_permissions.some((/** @type {any} */ candidate) =>
           candidate.permission === entry.permission &&
           candidate.projection_surface === entry.projection_surface &&
           stableStringify(candidate.related_capabilities || []) === stableStringify(entry.related_capabilities || [])
@@ -541,7 +558,7 @@ export function buildProjectionPatchCandidates(bundle) {
       if (impact.kind !== "api") {
         continue;
       }
-      const relatedCapabilities = (impact.missing_capabilities || []).filter((capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
+      const relatedCapabilities = (impact.missing_capabilities || []).filter((/** @type {any} */ capabilityId) => (hint.related_capabilities || []).includes(capabilityId));
       if (relatedCapabilities.length === 0) {
         continue;
       }
@@ -557,10 +574,10 @@ export function buildProjectionPatchCandidates(bundle) {
         related_entities: hint.related_entities || [],
         evidence: hint.evidence || {}
       };
-      const existing = patches.find((patch) => patch.projection_id === impact.projection_id);
+      const existing = patches.find((/** @type {any} */ patch) => patch.projection_id === impact.projection_id);
       if (existing) {
         existing.missing_auth_ownerships = existing.missing_auth_ownerships || [];
-        const duplicate = existing.missing_auth_ownerships.some((candidate) =>
+        const duplicate = existing.missing_auth_ownerships.some((/** @type {any} */ candidate) =>
           candidate.ownership === entry.ownership &&
           candidate.ownership_field === entry.ownership_field &&
           stableStringify(candidate.related_capabilities || []) === stableStringify(entry.related_capabilities || [])
@@ -586,23 +603,23 @@ export function buildProjectionPatchCandidates(bundle) {
   }
 
   return patches
-    .map((patch) => ({
+    .map((/** @type {any} */ patch) => ({
       ...patch,
-      missing_auth_permissions: (patch.missing_auth_permissions || []).sort((a, b) =>
+      missing_auth_permissions: (patch.missing_auth_permissions || []).sort((/** @type {any} */ a, /** @type {any} */ b) =>
         (a.projection_surface || "").localeCompare(b.projection_surface || "") ||
         (a.permission || "").localeCompare(b.permission || "") ||
         stableStringify(a.related_capabilities || []).localeCompare(stableStringify(b.related_capabilities || []))
       ),
-      missing_auth_claims: (patch.missing_auth_claims || []).sort((a, b) =>
+      missing_auth_claims: (patch.missing_auth_claims || []).sort((/** @type {any} */ a, /** @type {any} */ b) =>
         (a.projection_surface || "").localeCompare(b.projection_surface || "") ||
         (a.claim || "").localeCompare(b.claim || "") ||
         stableStringify(a.related_capabilities || []).localeCompare(stableStringify(b.related_capabilities || []))
       ),
-      missing_auth_ownerships: (patch.missing_auth_ownerships || []).sort((a, b) =>
+      missing_auth_ownerships: (patch.missing_auth_ownerships || []).sort((/** @type {any} */ a, /** @type {any} */ b) =>
         (a.ownership_field || "").localeCompare(b.ownership_field || "") ||
         stableStringify(a.related_capabilities || []).localeCompare(stableStringify(b.related_capabilities || []))
       ),
       patch_rel_path: `projection-patches/${patch.projection_id}.md`
     }))
-    .sort((a, b) => a.projection_id.localeCompare(b.projection_id));
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => a.projection_id.localeCompare(b.projection_id));
 }

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,12 +7,13 @@ import { canonicalCandidateTerm, idHintify, titleCase } from "../../text-helpers
 import { listFilesRecursive, readTextIfExists } from "../shared.js";
 import { dedupeCandidateRecords, makeCandidateRecord } from "./shared.js";
 
+/** @param {string} rootDir @returns {any} */
 export function inferSvelteRoutes(rootDir) {
   const routesRoot = path.join(rootDir, "src", "routes");
   if (!fs.existsSync(routesRoot)) {
     return [];
   }
-  const files = listFilesRecursive(routesRoot, (child) => child.endsWith("+page.svelte") || child.endsWith("+page.ts") || child.endsWith("+page.server.ts"));
+  const files = listFilesRecursive(routesRoot, (/** @type {any} */ child) => child.endsWith("+page.svelte") || child.endsWith("+page.ts") || child.endsWith("+page.server.ts"));
   const routes = new Set();
   for (const filePath of files) {
     const relative = relativeTo(routesRoot, filePath)
@@ -24,6 +25,7 @@ export function inferSvelteRoutes(rootDir) {
   return [...routes].sort();
 }
 
+/** @param {string} rootDir @returns {any} */
 export function inferReactRoutes(rootDir) {
   const appPath = path.join(rootDir, "src", "App.tsx");
   const text = readTextIfExists(appPath);
@@ -40,6 +42,7 @@ export function inferReactRoutes(rootDir) {
   return [...routes].sort();
 }
 
+/** @param {string} rootDir @returns {any} */
 export function inferNextAppRoutes(rootDir) {
   const appDir = path.join(rootDir, "app");
   if (!fs.existsSync(appDir)) {
@@ -47,10 +50,11 @@ export function inferNextAppRoutes(rootDir) {
   }
   const routeFiles = listFilesRecursive(
     appDir,
-    (child) =>
+    (/** @type {any} */ child) =>
       /\/page\.(tsx|ts|jsx|js|mdx)$/.test(child) ||
       /\/route\.(tsx|ts|jsx|js)$/.test(child)
   );
+  /** @type {any[]} */
   const routes = [];
   for (const filePath of routeFiles) {
     const relative = relativeTo(appDir, filePath);
@@ -58,7 +62,7 @@ export function inferNextAppRoutes(rootDir) {
     const normalizedPath = `/${relative}`
       .replace(/\/page\.(tsx|ts|jsx|js|mdx)$/, "")
       .replace(/\/route\.(tsx|ts|jsx|js)$/, "")
-      .replace(/\[(\.\.\.)?([^\]]+)\]/g, (_match, catchAll, name) => catchAll ? `:${name}*` : `:${name}`)
+      .replace(/\[(\.\.\.)?([^\]]+)\]/g, (/** @type {any} */ _match, /** @type {any} */ catchAll, /** @type {any} */ name) => catchAll ? `:${name}*` : `:${name}`)
       .replace(/\/index$/, "")
       .replace(/^\/$/, "/");
     routes.push({
@@ -67,9 +71,10 @@ export function inferNextAppRoutes(rootDir) {
       file: filePath
     });
   }
-  return routes.sort((a, b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
+  return routes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.path.localeCompare(b.path) || a.kind.localeCompare(b.kind));
 }
 
+/** @param {string} routePath @returns {any} */
 export function nextScreenKindForRoute(routePath) {
   const normalized = String(routePath || "");
   if (/\/(login|register|setup)$/.test(normalized)) {
@@ -78,6 +83,7 @@ export function nextScreenKindForRoute(routePath) {
   return screenKindForRoute(routePath);
 }
 
+/** @param {string} routePath @returns {any} */
 export function nextScreenIdForRoute(routePath) {
   const normalized = String(routePath || "");
   if (normalized === "/") {
@@ -95,6 +101,7 @@ export function nextScreenIdForRoute(routePath) {
   return screenIdForRoute(routePath);
 }
 
+/** @param {string} routePath @returns {any} */
 export function entityIdForNextRoute(routePath) {
   const normalized = String(routePath || "");
   if (/^\/posts(\/|$)/.test(normalized)) {
@@ -106,6 +113,7 @@ export function entityIdForNextRoute(routePath) {
   return null;
 }
 
+/** @param {string} routePath @returns {any} */
 export function conceptIdForNextRoute(routePath) {
   const normalized = String(routePath || "");
   if (normalized === "/") {
@@ -123,6 +131,7 @@ export function conceptIdForNextRoute(routePath) {
   return entityIdForNextRoute(routePath) || entityIdForRoute(routePath);
 }
 
+/** @param {string} routePath @returns {any} */
 export function uiCapabilityHintsForNextRoute(routePath) {
   const normalized = String(routePath || "");
   if (normalized === "/") {
@@ -152,13 +161,15 @@ export function uiCapabilityHintsForNextRoute(routePath) {
   return uiCapabilityHintsForRoute(routePath);
 }
 
+/** @param {string} routePath @returns {any} */
 export function routeSegments(routePath) {
   return String(routePath || "")
     .split("/")
     .filter(Boolean)
-    .map((segment) => segment.replace(/^:/, ""));
+    .map((/** @type {any} */ segment) => segment.replace(/^:/, ""));
 }
 
+/** @param {string} routePath @returns {any} */
 export function screenKindForRoute(routePath) {
   const normalized = String(routePath || "");
   const segments = routeSegments(normalized);
@@ -174,6 +185,7 @@ export function screenKindForRoute(routePath) {
   return "list";
 }
 
+/** @param {string} routePath @returns {any} */
 export function screenIdForRoute(routePath) {
   const segments = routeSegments(routePath);
   const resource = canonicalCandidateTerm(segments[0] || "home");
@@ -190,6 +202,7 @@ export function screenIdForRoute(routePath) {
   return `${resource}_list`;
 }
 
+/** @param {string} routePath @returns {any} */
 export function uiCapabilityHintsForRoute(routePath) {
   const segments = routeSegments(routePath);
   const resource = canonicalCandidateTerm(segments[0] || "item");
@@ -206,13 +219,17 @@ export function uiCapabilityHintsForRoute(routePath) {
   return { load: `cap_list_${resource}s`, submit: null, primary_action: `cap_create_${resource}` };
 }
 
+/** @param {string} routePath @returns {any} */
 export function entityIdForRoute(routePath) {
   const segments = routeSegments(routePath);
   return `entity_${canonicalCandidateTerm(segments[0] || "item")}`;
 }
 
+/** @param {WorkspacePaths} paths @returns {any} */
 export function collectUiImport(paths) {
+  /** @type {any[]} */
   const findings = [];
+  /** @type {WorkflowRecord} */
   const candidates = {
     screens: [],
     routes: [],
@@ -352,7 +369,7 @@ export function collectUiImport(paths) {
     findings.push({
       kind: "next_app_routes",
       file: provenanceRoot,
-      routes: routes.map((route) => route.path)
+      routes: routes.map((/** @type {any} */ route) => route.path)
     });
     candidates.stacks.push("next_app_router");
     for (const route of routes) {
@@ -417,9 +434,9 @@ export function collectUiImport(paths) {
     }
   }
 
-  candidates.screens = dedupeCandidateRecords(candidates.screens, (record) => record.id_hint);
-  candidates.routes = dedupeCandidateRecords(candidates.routes, (record) => record.id_hint);
-  candidates.actions = dedupeCandidateRecords(candidates.actions, (record) => record.id_hint);
+  candidates.screens = dedupeCandidateRecords(candidates.screens, (/** @type {any} */ record) => record.id_hint);
+  candidates.routes = dedupeCandidateRecords(candidates.routes, (/** @type {any} */ record) => record.id_hint);
+  candidates.actions = dedupeCandidateRecords(candidates.actions, (/** @type {any} */ record) => record.id_hint);
   candidates.stacks = [...new Set(candidates.stacks)].sort();
 
   return { findings, candidates };

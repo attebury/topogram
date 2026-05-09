@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-check
 import {
   buildAdoptionStatusFiles as buildAdoptionStatusFilesReport,
   buildAdoptionStatusSummary as buildAdoptionStatusSummaryReport
@@ -12,6 +12,7 @@ import {
 } from "../reconcile/index.js";
 import { normalizeWorkspacePaths } from "../shared.js";
 
+/** @param {string} inputPath @returns {any} */
 export function adoptionStatusWorkflow(inputPath) {
   const reconcile = reconcileWorkflow(inputPath);
   const report = reconcile.summary;
