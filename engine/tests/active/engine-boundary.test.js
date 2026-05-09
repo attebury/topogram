@@ -167,6 +167,16 @@ const legacyRuntimeAliasAllowedFiles = new Set([
   "engine/tests/active/engine-boundary.test.js",
   "engine/tests/active/project-config.test.js"
 ]);
+const npmUserconfigAllowedFiles = new Set([
+  "engine/src/npm-safety.js",
+  "engine/tests/active/engine-boundary.test.js",
+  "engine/tests/active/hardening-safety.test.js"
+]);
+const generatedHtmlAllowedFiles = new Set([
+  "engine/src/generator/surfaces/web/html-escape.js",
+  "engine/tests/active/engine-boundary.test.js",
+  "engine/tests/active/hardening-safety.test.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -306,6 +316,49 @@ test("legacy generator runtime aliases stay isolated to adapter compatibility", 
       if (references.length > 0) {
         offenders.push({ file: relative, references });
       }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("catalog URL reads do not shell out to curl", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes('spawnSync("curl"') || contents.includes("spawnSync('curl'")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("local npm userconfig is controlled only by npm safety helper", () => {
+  const offenders = [];
+  for (const root of [path.join(repoRoot, "engine", "src"), path.join(repoRoot, "engine", "tests", "active")]) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      if (npmUserconfigAllowedFiles.has(relative)) continue;
+      const contents = fs.readFileSync(file, "utf8");
+      if (contents.includes("NPM_CONFIG_USERCONFIG")) {
+        offenders.push(relative);
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("web generator HTML interpolation uses shared escaping helpers", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "surfaces", "web"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    if (generatedHtmlAllowedFiles.has(relative)) continue;
+    const contents = fs.readFileSync(file, "utf8");
+    if ((contents.includes("<!doctype html>") || contents.includes("<html")) && !contents.includes("escapeHtml")) {
+      offenders.push(relative);
     }
   }
 

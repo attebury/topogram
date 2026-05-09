@@ -357,7 +357,8 @@ function packageNameFromSpec(spec) {
   return versionIndex >= 0 ? spec.slice(0, versionIndex) : spec;
 }
 if (args[0] === "view") {
-  if (process.env.FAKE_NPM_VIEW_FAIL_SPEC && args[1].includes(process.env.FAKE_NPM_VIEW_FAIL_SPEC)) {
+  const viewSpec = args.find((arg) => arg.startsWith("@") || /^[a-z0-9._-]+@/.test(arg) || arg.endsWith(".tgz")) || "";
+  if (process.env.FAKE_NPM_VIEW_FAIL_SPEC && viewSpec.includes(process.env.FAKE_NPM_VIEW_FAIL_SPEC)) {
     process.stderr.write(process.env.FAKE_NPM_VIEW_FAIL_OUTPUT || "npm ERR! 403 Forbidden\\n");
     process.exit(1);
   }

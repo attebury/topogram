@@ -11,6 +11,46 @@ export const DEFAULT_CATALOG_SOURCE = "https://raw.githubusercontent.com/attebur
 export const CATALOG_FILE_NAME = "topograms.catalog.json";
 export const TOPOGRAM_SOURCE_FILE = ".topogram-source.json";
 const KNOWN_CATALOG_SURFACES = new Set(["web", "api", "database", "native"]);
+const GITHUB_TOKEN_HOSTS = new Set([
+  "github.com",
+  "api.github.com",
+  "raw.githubusercontent.com"
+]);
+const FETCH_URL_SCRIPT = `
+const source = process.argv[1];
+const token = process.env.TOPOGRAM_FETCH_TOKEN || "";
+const tokenHosts = new Set(["github.com", "api.github.com", "raw.githubusercontent.com"]);
+function tokenAllowed(url) {
+  const hostname = new URL(url).hostname.toLowerCase();
+  return tokenHosts.has(hostname) || hostname.endsWith(".github.com");
+}
+async function readUrl(url, redirects = 0) {
+  if (redirects > 5) {
+    throw new Error("Too many redirects.");
+  }
+  const headers = {};
+  if (token && tokenAllowed(url)) {
+    headers.authorization = "Bearer " + token;
+  }
+  const response = await fetch(url, { headers, redirect: "manual" });
+  if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
+    const next = new URL(response.headers.get("location"), url).toString();
+    return readUrl(next, redirects + 1);
+  }
+  const text = await response.text();
+  if (!response.ok) {
+    const preview = text.trim().slice(0, 400);
+    throw new Error(String(response.status) + " " + response.statusText + (preview ? "\\n" + preview : ""));
+  }
+  return text;
+}
+try {
+  process.stdout.write(await readUrl(source));
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+`;
 
 /**
  * @typedef {Object} CatalogTrust
@@ -463,15 +503,15 @@ function formatGithubCatalogError(source, result) {
  * @returns {string}
  */
 function readUrlText(source) {
-  const args = ["-fsSL", source];
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
-  if (token && source.includes("github.com")) {
-    args.unshift("-H", `Authorization: Bearer ${token}`);
-  }
-  const result = childProcess.spawnSync("curl", args, {
+  const tokenEnv = token && githubTokenAllowedForCatalogUrl(source)
+    ? { TOPOGRAM_FETCH_TOKEN: token }
+    : {};
+  const result = childProcess.spawnSync(process.execPath, ["--input-type=module", "-e", FETCH_URL_SCRIPT, source], {
     encoding: "utf8",
     env: {
       ...process.env,
+      ...tokenEnv,
       PATH: process.env.PATH || ""
     }
   });
@@ -480,6 +520,19 @@ function readUrlText(source) {
     throw new Error(`Failed to read catalog URL '${source}'.\n${reason}`.trim());
   }
   return result.stdout;
+}
+
+/**
+ * @param {string} source
+ * @returns {boolean}
+ */
+function githubTokenAllowedForCatalogUrl(source) {
+  try {
+    const hostname = new URL(source).hostname.toLowerCase();
+    return GITHUB_TOKEN_HOSTS.has(hostname) || hostname.endsWith(".github.com");
+  } catch {
+    return false;
+  }
 }
 
 /**

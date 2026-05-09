@@ -5,6 +5,7 @@ import {
   renderReactWidgetRegion
 } from "./react-widgets.js";
 import { buildDesignIntentCoverage, renderDesignIntentCss } from "./design-intent.js";
+import { escapeAttr, escapeHtml } from "./html-escape.js";
 import { renderApiClientModule, renderLookupModule, renderVisibilityModule } from "./shared.js";
 
 function componentNameForScreen(screenId) {
@@ -309,25 +310,26 @@ function assertGenerationCoverage(coverage) {
 function buildAppTsx(contract, webReference) {
   const navLinks = resolveNavLinks(contract, webReference);
   const brandName = contract.appShell?.brand || webReference.brandName;
+  const safeBrandName = escapeHtml(brandName);
   const footerEnabled = contract.appShell?.footer && contract.appShell.footer !== "none";
   const shellMode = contract.appShell?.shell || "topbar";
   const windowingMode = contract.appShell?.windowing || "single_window";
   const navigationPatterns = (contract.navigation?.patterns || []).join(" ");
   const hasCommandPalette = (contract.navigation?.patterns || []).includes("command_palette");
-  const navItems = navLinks.map((link) => `            <Link to="${link.route}">${link.label}</Link>`).join("\n");
+  const navItems = navLinks.map((link) => `            <Link to="${escapeAttr(link.route)}">${escapeHtml(link.label)}</Link>`).join("\n");
   const routeScreens = contract.screens.filter((screen) => screen.route && componentNameForScreen(screen.id) !== "EditorialSettingsPage");
   const importLines = routeScreens
     .map((screen) => `import { ${componentNameForScreen(screen.id)} } from "./pages/${componentNameForScreen(screen.id)}";`)
     .join("\n");
   const routeLines = routeScreens
-    .map((screen) => `            <Route path="${screen.route}" element={<${componentNameForScreen(screen.id)} />} />`)
+    .map((screen) => `            <Route path="${escapeAttr(screen.route)}" element={<${componentNameForScreen(screen.id)} />} />`)
     .join("\n");
 
   const shellFrame =
     shellMode === "split_view"
       ? `        <div className="app-workspace">
           <aside className="app-sidebar">
-            <Link className="brand" to="/">${brandName}</Link>
+            <Link className="brand" to="/">${safeBrandName}</Link>
             <nav className="app-nav-links">
 ${navItems}
             </nav>
@@ -335,7 +337,7 @@ ${hasCommandPalette ? `            <button className="command-palette-button" ty
           </aside>
           <div className="app-main-shell">
             <header className="app-nav compact">
-              <div className="brand-mark">${brandName}</div>
+              <div className="brand-mark">${safeBrandName}</div>
 ${hasCommandPalette ? `              <button className="command-palette-button" type="button">Command Palette</button>` : ""}
             </header>
             <main>
@@ -348,7 +350,7 @@ ${routeLines}
         </div>`
       : shellMode === "bottom_tabs"
         ? `        <header className="app-nav">
-          <Link className="brand" to="/">${brandName}</Link>
+          <Link className="brand" to="/">${safeBrandName}</Link>
 ${hasCommandPalette ? `          <button className="command-palette-button" type="button">Command Palette</button>` : ""}
         </header>
         <main>
@@ -361,7 +363,7 @@ ${routeLines}
 ${navItems}
         </nav>`
         : `        <header className="app-nav${shellMode === "menu_bar" ? " menu-bar" : ""}">
-          <Link className="brand" to="/">${brandName}</Link>
+          <Link className="brand" to="/">${safeBrandName}</Link>
           <nav className="app-nav-links">
 ${navItems}
           </nav>
@@ -381,7 +383,7 @@ ${importLines}
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="app-shell" data-shell="${shellMode}" data-windowing="${windowingMode}" data-navigation-patterns="${navigationPatterns}">
+      <div className="app-shell" data-shell="${escapeAttr(shellMode)}" data-windowing="${escapeAttr(windowingMode)}" data-navigation-patterns="${escapeAttr(navigationPatterns)}">
 ${shellFrame}
 ${footerEnabled ? `        <footer className="app-footer">
           <span>Generated from Topogram</span>
@@ -463,7 +465,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${webReference.brandName}</title>
+    <title>${escapeHtml(webReference.brandName)}</title>
   </head>
   <body>
     <div id="root"></div>

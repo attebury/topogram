@@ -2,6 +2,7 @@
 
 import { buildWebRealization } from "../../../realization/ui/index.js";
 import { buildDesignIntentCoverage, renderDesignIntentCss } from "./design-intent.js";
+import { escapeAttr, escapeHtml } from "./html-escape.js";
 
 function slugify(value) {
   return String(value || "page")
@@ -26,19 +27,20 @@ function routeFileName(routePath) {
 }
 
 function renderHtml({ title, nav, body }) {
+  const safeTitle = escapeHtml(title);
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${title}</title>
+    <title>${safeTitle}</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="app-header">
       <a class="brand" href="./index.html">Topogram Hello</a>
       <nav>
-${nav.map((item) => `        <a href="./${item.file}">${item.title}</a>`).join("\n")}
+${nav.map((item) => `        <a href="./${escapeAttr(item.file)}">${escapeHtml(item.title)}</a>`).join("\n")}
       </nav>
     </header>
     <main>
@@ -285,13 +287,15 @@ export function generateVanillaWebApp(graph, options = {}) {
   };
 
   routes.forEach((route, index) => {
+    const safeTitle = escapeHtml(route.title);
+    const safeProjectionId = escapeHtml(contract.projection.id);
     files[route.file] = renderHtml({
       title: route.title,
       nav,
       body: `      <section class="panel">
         <p class="muted">Page ${index + 1} of ${routes.length}</p>
-        <h1>${route.title}</h1>
-        <p>This page was generated from the <code>${contract.projection.id}</code> Topogram web projection.</p>
+        <h1>${safeTitle}</h1>
+        <p>This page was generated from the <code>${safeProjectionId}</code> Topogram web projection.</p>
         <p class="muted">Generated timestamp: <span data-generated-at>pending</span></p>
       </section>`
     });

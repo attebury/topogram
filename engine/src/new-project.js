@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { defaultGeneratorPolicy, writeGeneratorPolicy } from "./generator-policy.js";
+import { assertSafeNpmSpec, localNpmrcEnv } from "./npm-safety.js";
 import { writeTemplateTrustRecord } from "./template-trust.js";
 
 const CLI_PACKAGE_NAME = "@topogram/cli";
@@ -464,12 +465,9 @@ function summarizeTemplateTopology(templateRoot) {
  * @returns {string}
  */
 export function installPackageSpec(templateSpec) {
+  assertSafeNpmSpec(templateSpec);
   const installRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-"));
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-  const localNpmConfig = path.join(process.cwd(), ".npmrc");
-  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
-    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
-    : {};
   const result = childProcess.spawnSync(
     npmBin,
     [
@@ -480,13 +478,14 @@ export function installPackageSpec(templateSpec) {
       "--no-audit",
       "--no-fund",
       "--package-lock=false",
+      "--",
       templateSpec
     ],
     {
       encoding: "utf8",
       env: {
         ...process.env,
-        ...npmConfigEnv,
+        ...localNpmrcEnv(process.cwd()),
         PATH: process.env.PATH || ""
       }
     }
@@ -509,7 +508,7 @@ export function installPackageSpec(templateSpec) {
 function formatPackageInstallError(templateSpec, result) {
   const output = [result.error?.message, result.stderr, result.stdout].filter(Boolean).join("\n").trim();
   const normalized = output.toLowerCase();
-  const npmrcHint = "Ensure npm can access the registry required by this template package.";
+  const npmrcHint = "Ensure npm can access the registry required by this template package. Topogram ignores project .npmrc files unless TOPOGRAM_ALLOW_LOCAL_NPMRC=1 or --allow-local-npmrc is used.";
   const packageAccessHint = "For private package registries, configure a token with package read access.";
   const authHint = "For private template packages, configure npm auth for the package registry before installing.";
   const doctorHint = "Run `topogram doctor` to check Node.js, npm, package, and catalog access.";

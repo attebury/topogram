@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { assertSupportedNode } from "./runtime-support.js";
 import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
@@ -118,6 +119,14 @@ import {
   formatAgentBrief,
   normalizeAgentTopogramPath
 } from "./agent-brief.js";
+import { assertSafeNpmSpec, LOCAL_NPMRC_ENV, localNpmrcEnv, localNpmrcStatus } from "./npm-safety.js";
+
+try {
+  assertSupportedNode();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
 
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
@@ -208,6 +217,7 @@ function printUsage(options = {}) {
   const { all = false } = options;
   console.log("Usage: topogram version [--json]");
   console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram doctor --allow-local-npmrc");
   console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
   console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
@@ -258,6 +268,7 @@ function printUsage(options = {}) {
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
+  console.log("   or: topogram new <path> --template <package> --allow-local-npmrc");
   console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
   console.log("");
   console.log("Common commands:");
@@ -2375,16 +2386,13 @@ function packageNameFromPackageSpec(spec) {
  * @returns {string}
  */
 function latestVersionForPackage(packageName) {
+  assertSafeNpmSpec(packageName);
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-  const localNpmConfig = path.join(process.cwd(), ".npmrc");
-  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
-    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
-    : {};
-  const result = childProcess.spawnSync(npmBin, ["view", packageName, "version", "--json"], {
+  const result = childProcess.spawnSync(npmBin, ["view", "--json", "--", packageName, "version"], {
     encoding: "utf8",
     env: {
       ...process.env,
-      ...npmConfigEnv,
+      ...localNpmrcEnv(process.cwd()),
       PATH: process.env.PATH || ""
     }
   });
@@ -2448,7 +2456,9 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   }
   const exactSpec = `${CLI_PACKAGE_NAME}@${version}`;
   const dependencySpec = `${CLI_PACKAGE_NAME}@^${version}`;
-  const view = runNpmForPackageUpdate(["view", exactSpec, "version", `--registry=${NPMJS_REGISTRY}`], cwd);
+  assertSafeNpmSpec(exactSpec);
+  assertSafeNpmSpec(dependencySpec);
+  const view = runNpmForPackageUpdate(["view", `--registry=${NPMJS_REGISTRY}`, "--", exactSpec, "version"], cwd);
   let checkedVersion = null;
   let packageCheckSource = "npm";
   if (view.status !== 0) {
@@ -2462,7 +2472,7 @@ function buildPackageUpdateCliPayload(requested, options = {}) {
   const lockfileSanitized = sanitizeTopogramLockForPackageUpdate(cwd, version);
   let dependencyUpdatedBy = "npm-install";
   if (packageCheckSource === "npm") {
-    const install = runNpmForPackageUpdate(["install", "--save-dev", dependencySpec, `--registry=${NPMJS_REGISTRY}`], cwd);
+    const install = runNpmForPackageUpdate(["install", "--save-dev", `--registry=${NPMJS_REGISTRY}`, "--", dependencySpec], cwd);
     if (install.status !== 0) {
       throw new Error(formatPackageUpdateNpmError(dependencySpec, "install", install));
     }
@@ -3741,7 +3751,7 @@ function summarizeConsumerCi(consumers) {
 
 /**
  * @param {string|null} source
- * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, packageRegistry: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
+ * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, localNpmrc: ReturnType<typeof localNpmrcStatus>, packageRegistry: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
  */
 function buildDoctorPayload(source) {
   const projectCliDependency = readProjectCliDependencySpec(process.cwd());
@@ -3796,6 +3806,7 @@ function buildDoctorPayload(source) {
     ok: errors.length === 0,
     node,
     npm,
+    localNpmrc: localNpmrcStatus(process.cwd()),
     packageRegistry: {
       required: packageRegistryRequired,
       reason: packageRegistryRequired ? null : `Project uses local CLI dependency '${projectCliDependency}'.`,
@@ -4134,6 +4145,7 @@ function printDoctorSetupGuidance(payload) {
     console.log("- Catalog auth: the default catalog is public; private catalogs can use GITHUB_TOKEN, GH_TOKEN, or `gh auth login`.");
   }
   console.log("- Template package auth: private template packages may need registry-specific npm auth during npm install.");
+  console.log(`- Local .npmrc: ignored by default. Use --allow-local-npmrc or ${LOCAL_NPMRC_ENV}=1 only after reviewing the file.`);
   console.log("- Catalog disabled mode: TOPOGRAM_CATALOG_SOURCE=none skips catalog aliases, including the default hello-web starter.");
 }
 
@@ -4145,6 +4157,10 @@ function printDoctor(payload) {
   console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
   console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
   console.log(`npm: ${payload.npm.available ? `${payload.npm.version || "available"} (ok)` : "not found"}`);
+  console.log(`local .npmrc: ${payload.localNpmrc.exists ? (payload.localNpmrc.enabled ? "enabled" : "ignored") : "not found"}`);
+  if (payload.localNpmrc.exists) {
+    console.log(`local .npmrc reason: ${payload.localNpmrc.reason}`);
+  }
   console.log(`npm registry: ${payload.packageRegistry.required ? (payload.packageRegistry.registryConfigured ? "ok" : "misconfigured") : "not required"}`);
   if (payload.packageRegistry.reason) {
     console.log(`npm registry reason: ${payload.packageRegistry.reason}`);
@@ -4186,16 +4202,12 @@ function printDoctor(payload) {
  */
 function runNpmForPackageUpdate(args, cwd) {
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-  const localNpmConfig = path.join(cwd, ".npmrc");
-  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
-    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
-    : {};
   return childProcess.spawnSync(npmBin, args, {
     cwd,
     encoding: "utf8",
     env: {
       ...process.env,
-      ...npmConfigEnv,
+      ...localNpmrcEnv(cwd),
       PATH: process.env.PATH || ""
     }
   });
@@ -4206,7 +4218,7 @@ function runNpmForPackageUpdate(args, cwd) {
  * @returns {string}
  */
 function latestTopogramCliVersion(cwd) {
-  const result = runNpmForPackageUpdate(["view", CLI_PACKAGE_NAME, "version", "--json", `--registry=${NPMJS_REGISTRY}`], cwd);
+  const result = runNpmForPackageUpdate(["view", "--json", `--registry=${NPMJS_REGISTRY}`, "--", CLI_PACKAGE_NAME, "version"], cwd);
   if (result.status !== 0) {
     throw new Error(formatPackageUpdateNpmError(`${CLI_PACKAGE_NAME}@latest`, "inspect", result));
   }
@@ -5545,16 +5557,13 @@ function checkCatalogDoctorPackage(entry) {
  * @returns {{ status: number|null, stdout: string, stderr: string, error?: Error }}
  */
 function runNpmViewPackageSpec(packageSpec) {
+  assertSafeNpmSpec(packageSpec);
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-  const localNpmConfig = path.join(process.cwd(), ".npmrc");
-  const npmConfigEnv = !process.env.NPM_CONFIG_USERCONFIG && fs.existsSync(localNpmConfig)
-    ? { NPM_CONFIG_USERCONFIG: localNpmConfig }
-    : {};
-  return childProcess.spawnSync(npmBin, ["view", packageSpec, "version", "--json"], {
+  return childProcess.spawnSync(npmBin, ["view", "--json", "--", packageSpec, "version"], {
     encoding: "utf8",
     env: {
       ...process.env,
-      ...npmConfigEnv,
+      ...localNpmrcEnv(process.cwd()),
       PATH: process.env.PATH || ""
     }
   });
@@ -8508,6 +8517,9 @@ function importAdoptOnlyRequested({
 }
 
 const args = process.argv.slice(2);
+if (args.includes("--allow-local-npmrc") && !process.env[LOCAL_NPMRC_ENV]) {
+  process.env[LOCAL_NPMRC_ENV] = "1";
+}
 if (args[0] === "help" && args[1] && args[1] !== "all" && printCommandHelp(args[1])) {
   process.exit(0);
 }
