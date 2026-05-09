@@ -111,6 +111,39 @@ test("split command parser handles extracted command families", () => {
     widgetBehavior: true,
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "list", "--json"]), {
+    generatorCommand: "list",
+    inputPath: null
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "show", "@topogram/generator-react-web"]), {
+    generatorCommand: "show",
+    inputPath: "@topogram/generator-react-web"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "check", "./generator-package"]), {
+    generatorCommand: "check",
+    inputPath: "./generator-package"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "init", "./custom-topogram"]), {
+    generatorPolicyCommand: "init",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "status"]), {
+    generatorPolicyCommand: "status",
+    inputPath: "./topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "check", "./custom-topogram"]), {
+    generatorPolicyCommand: "check",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "explain", "./custom-topogram"]), {
+    generatorPolicyCommand: "explain",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "pin", "@topogram/generator-react-web@1", "./custom-topogram"]), {
+    generatorPolicyCommand: "pin",
+    generatorPolicyPinSpec: "@topogram/generator-react-web@1",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["source", "status", "./custom-topogram", "--local"]), {
     sourceCommand: "status",
     inputPath: "./custom-topogram"
@@ -228,5 +261,5 @@ test("split command parser handles extracted command families", () => {
 });
 
 test("split command parser leaves unsplit command families to the legacy parser", () => {
-  assert.equal(parseSplitCommandArgs(["generator", "list"]), null);
+  assert.equal(parseSplitCommandArgs(["template", "list"]), null);
 });

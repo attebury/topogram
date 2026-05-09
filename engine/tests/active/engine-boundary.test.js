@@ -534,10 +534,12 @@ test("split CLI command families stay out of the binary shim", () => {
     "function runLegacyWorkflowCommand(",
     "function printGeneratorHelp(",
     "function printGeneratorCheck(",
+    "function runGeneratorCommand(",
     "function buildGeneratorListPayload(",
     "function buildGeneratorShowPayload(",
     "function printGeneratorList(",
     "function printGeneratorShow(",
+    "function runGeneratorPolicyCommand(",
     "function buildGeneratorPolicyCheckPayload(",
     "function buildGeneratorPolicyExplainPayload(",
     "function buildGeneratorPolicyStatusPayload(",
@@ -597,7 +599,9 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { catalogCommand:",
     "commandArgs = { packageCommand:",
     "commandArgs = { sourceCommand:",
-    "commandArgs = { trustCommand:"
+    "commandArgs = { trustCommand:",
+    "commandArgs = { generatorCommand:",
+    "commandArgs = { generatorPolicyCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 

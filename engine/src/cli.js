@@ -27,24 +27,10 @@ import {
   printQueryList
 } from "./cli/commands/query.js";
 import {
-  buildGeneratorListPayload,
-  buildGeneratorShowPayload,
-  buildGeneratorPolicyCheckPayload,
-  buildGeneratorPolicyExplainPayload,
-  buildGeneratorPolicyInitPayload,
-  buildGeneratorPolicyPinPayload,
-  buildGeneratorPolicyStatusPayload,
-  checkGeneratorPack,
-  printGeneratorCheck,
   printGeneratorHelp,
-  printGeneratorList,
-  printGeneratorPolicyCheckPayload,
-  printGeneratorPolicyExplainPayload,
-  printGeneratorPolicyInitPayload,
-  printGeneratorPolicyPinPayload,
-  printGeneratorPolicyStatusPayload,
-  printGeneratorShow
+  runGeneratorCommand
 } from "./cli/commands/generator.js";
+import { runGeneratorPolicyCommand } from "./cli/commands/generator-policy.js";
 import {
   printCatalogHelp,
   runCatalogCommand
@@ -379,22 +365,6 @@ if (commandArgs?.emitHelp) {
 } else if (args[0] === "agent") {
   printAgentHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "generator" && args[1] === "list") {
-  commandArgs = { generatorList: true, inputPath: null };
-} else if (args[0] === "generator" && args[1] === "show") {
-  commandArgs = { generatorShow: true, inputPath: args[2] };
-} else if (args[0] === "generator" && args[1] === "check") {
-  commandArgs = { generatorCheck: true, inputPath: args[2] };
-} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "init") {
-  commandArgs = { generatorPolicyInit: true, inputPath: commandPath(3) };
-} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "status") {
-  commandArgs = { generatorPolicyStatus: true, inputPath: commandPath(3) };
-} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "check") {
-  commandArgs = { generatorPolicyCheck: true, inputPath: commandPath(3) };
-} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "explain") {
-  commandArgs = { generatorPolicyExplain: true, inputPath: commandPath(3) };
-} else if (args[0] === "generator" && args[1] === "policy" && args[2] === "pin") {
-  commandArgs = { generatorPolicyPin: true, generatorPolicyPinSpec: args[3] && !args[3].startsWith("-") ? args[3] : null, inputPath: commandPath(4) };
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
@@ -467,14 +437,6 @@ const shouldCheck = Boolean(commandArgs?.check);
 const shouldWidgetCheck = Boolean(commandArgs?.widgetCheck);
 const shouldWidgetBehavior = Boolean(commandArgs?.widgetBehavior);
 const shouldAgentBrief = Boolean(commandArgs?.agentBrief);
-const shouldGeneratorList = Boolean(commandArgs?.generatorList);
-const shouldGeneratorShow = Boolean(commandArgs?.generatorShow);
-const shouldGeneratorCheck = Boolean(commandArgs?.generatorCheck);
-const shouldGeneratorPolicyInit = Boolean(commandArgs?.generatorPolicyInit);
-const shouldGeneratorPolicyStatus = Boolean(commandArgs?.generatorPolicyStatus);
-const shouldGeneratorPolicyCheck = Boolean(commandArgs?.generatorPolicyCheck);
-const shouldGeneratorPolicyExplain = Boolean(commandArgs?.generatorPolicyExplain);
-const shouldGeneratorPolicyPin = Boolean(commandArgs?.generatorPolicyPin);
 const shouldForce = Boolean(commandArgs?.force) || args.includes("--force");
 const shouldQueryList = Boolean(commandArgs?.queryList);
 const shouldQueryShow = Boolean(commandArgs?.queryShow);
@@ -589,7 +551,7 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || commandArgs?.generatorPolicyCommand || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
@@ -637,7 +599,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || commandArgs?.trustCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || commandArgs?.generatorPolicyCommand || commandArgs?.trustCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -737,84 +699,17 @@ try {
     }));
   }
 
-  if (shouldGeneratorCheck) {
-    const payload = checkGeneratorPack(inputPath, { cwd: process.cwd() });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorCheck(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
+  if (commandArgs?.generatorCommand) {
+    process.exit(runGeneratorCommand({
+      commandArgs,
+      inputPath,
+      json: emitJson,
+      cwd: process.cwd()
+    }));
   }
 
-  if (shouldGeneratorList) {
-    const payload = buildGeneratorListPayload(process.cwd());
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorList(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldGeneratorShow) {
-    const payload = buildGeneratorShowPayload(inputPath, process.cwd());
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorShow(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldGeneratorPolicyInit) {
-    const payload = buildGeneratorPolicyInitPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorPolicyInitPayload(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldGeneratorPolicyStatus) {
-    const payload = buildGeneratorPolicyStatusPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorPolicyStatusPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldGeneratorPolicyCheck) {
-    const payload = buildGeneratorPolicyCheckPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorPolicyCheckPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldGeneratorPolicyExplain) {
-    const payload = buildGeneratorPolicyExplainPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorPolicyExplainPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldGeneratorPolicyPin) {
-    const payload = buildGeneratorPolicyPinPayload(inputPath, commandArgs?.generatorPolicyPinSpec);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printGeneratorPolicyPinPayload(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
+  if (commandArgs?.generatorPolicyCommand) {
+    process.exit(runGeneratorPolicyCommand({ commandArgs, inputPath, json: emitJson }));
   }
 
   if (commandArgs?.catalogCommand) {

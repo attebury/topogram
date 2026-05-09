@@ -52,6 +52,7 @@
     "./src/cli/commands/doctor.js",
     "./src/cli/commands/emit.js",
     "./src/cli/commands/generator.js",
+    "./src/cli/commands/generator-policy.js",
     "./src/cli/commands/generate.js",
     "./src/cli/commands/import.js",
     "./src/cli/commands/new.js",
