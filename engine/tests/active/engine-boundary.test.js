@@ -460,6 +460,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "function topogramInputPathForGeneration(",
     "function targetRequiresImplementationProvider(",
     "function runGenerateAppCommand(",
+    "function runEmitCommand(",
     "function printGenerateHelp(",
     "function printEmitHelp(",
     "function printWidgetHelp(",
@@ -576,6 +577,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { queryShow:",
     "commandArgs = { newProject:",
     'commandArgs = { generateTarget: "app-bundle"',
+    "commandArgs = { generateTarget: args[1]",
     "commandArgs = { agentBrief:",
     "commandArgs = { widgetCheck:",
     "commandArgs = { widgetBehavior:"

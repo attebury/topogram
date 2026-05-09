@@ -34,6 +34,20 @@ test("split command parser handles extracted command families", () => {
     inputPath: "./custom-topogram",
     defaultOutDir: "./app"
   });
+  assert.deepEqual(parseSplitCommandArgs(["emit", "ui-widget-contract"]), {
+    generateTarget: "ui-widget-contract",
+    inputPath: "./topogram",
+    emitArtifact: true
+  });
+  assert.deepEqual(parseSplitCommandArgs(["emit", "ui-widget-contract", "./custom-topogram"]), {
+    generateTarget: "ui-widget-contract",
+    inputPath: "./custom-topogram",
+    emitArtifact: true
+  });
+  assert.deepEqual(parseSplitCommandArgs(["emit"]), {
+    emitHelp: true,
+    inputPath: null
+  });
   assert.deepEqual(parseSplitCommandArgs(["version"]), { version: true, inputPath: null });
   assert.deepEqual(parseSplitCommandArgs(["--version"]), { version: true, inputPath: null });
   assert.deepEqual(parseSplitCommandArgs(["query", "list", "--json"]), { queryList: true, inputPath: null });

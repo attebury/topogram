@@ -38,6 +38,12 @@ export function parseSplitCommandArgs(args) {
   if (args[0] === "generate" && args[1] !== "journeys") {
     return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 1), defaultOutDir: "./app" };
   }
+  if (args[0] === "emit") {
+    if (!args[1] || args[1].startsWith("-")) {
+      return { emitHelp: true, inputPath: null };
+    }
+    return { generateTarget: args[1], inputPath: commandPath(args, 2), emitArtifact: true };
+  }
   if (args[0] === "version" || args[0] === "--version") {
     return { version: true, inputPath: null };
   }

@@ -123,17 +123,9 @@ import {
 import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
 import { generateWorkspace } from "./generator.js";
-import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
-import {
-  assertProjectOutputAllowsWrite,
-  assertSafeGeneratedOutputDir,
-  GENERATED_OUTPUT_SENTINEL,
-  generatedOutputSentinel,
-  runGenerateAppCommand,
-  targetRequiresImplementationProvider,
-  topogramInputPathForGeneration
-} from "./cli/commands/generate.js";
+import { runGenerateAppCommand } from "./cli/commands/generate.js";
+import { runEmitCommand } from "./cli/commands/emit.js";
 import { writeTemplatePolicyForProject } from "./new-project.js";
 import {
   TEMPLATE_TRUST_FILE,
@@ -476,7 +468,10 @@ function commandOperandFrom(index, fallback = ".") {
 let commandArgs = null;
 let inputPath = args[0];
 commandArgs = parseSplitCommandArgs(args);
-if (commandArgs) {
+if (commandArgs?.emitHelp) {
+  printEmitHelp();
+  process.exit(1);
+} else if (commandArgs) {
   // Parsed by split command modules.
 } else if (args[0] === "check") {
   commandArgs = { check: true, inputPath: commandPath(1) };
@@ -505,12 +500,6 @@ if (commandArgs) {
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "emit") {
-  if (!args[1] || args[1].startsWith("-")) {
-    printEmitHelp();
-    process.exit(1);
-  }
-  commandArgs = { generateTarget: args[1], inputPath: commandPath(2), emitArtifact: true };
 } else if (args[0] === "validate") {
   commandArgs = { validate: true, inputPath: args[1] };
 } else if (args[0] === "catalog" && args[1] === "list") {
@@ -3209,77 +3198,40 @@ try {
     }));
   }
 
-  const ast = parsePath(inputPath);
-
   if (generateTarget) {
-    const projectRoot = normalizeProjectRoot(inputPath);
-    const explicitProjectConfig = loadProjectConfig(projectRoot) || loadProjectConfig(inputPath);
-    const implementationOptionalTargets = new Set(["app-bundle-plan", "app-bundle", "environment-plan", "environment-bundle", "compile-check-plan", "compile-check-bundle"]);
-    const shouldLoadImplementation = targetRequiresImplementationProvider(generateTarget) &&
-      (!implementationOptionalTargets.has(generateTarget) || Boolean(explicitProjectConfig?.config?.implementation));
-    const implementation = shouldLoadImplementation
-      ? await loadImplementationProvider(explicitProjectConfig?.configDir || projectRoot)
-      : null;
-    const resolvedForConfig = targetRequiresImplementationProvider(generateTarget) || explicitProjectConfig
-      ? resolveWorkspace(ast)
-      : null;
-    if (resolvedForConfig && !resolvedForConfig.ok) {
-      console.error(formatValidationErrors(resolvedForConfig.validation));
-      process.exit(1);
-    }
-    const projectConfigInfo = resolvedForConfig
-      ? (explicitProjectConfig || projectConfigOrDefault(projectRoot, resolvedForConfig.graph, implementation))
-      : null;
-    const projectConfigValidation = projectConfigInfo
-      ? validateProjectConfig(projectConfigInfo.config, resolvedForConfig.graph, { configDir: projectConfigInfo.configDir })
-      : { ok: true, errors: [] };
-    if (!projectConfigValidation.ok) {
-      console.error(formatProjectConfigErrors(projectConfigValidation, projectConfigInfo?.configPath || "topogram.project.json"));
-      process.exit(1);
-    }
-    const result = generateWorkspace(ast, {
+    process.exit(await runEmitCommand({
+      inputPath,
+      projectRoot: normalizeProjectRoot(inputPath),
       target: generateTarget,
-      shapeId,
-      capabilityId,
-      workflowId,
-      projectionId,
-      widgetId: componentId,
-      componentId,
-      entityId,
-      journeyId,
-      surfaceId,
-      domainId,
-      taskId,
-      pitchId,
-      requirementId,
-      acceptanceId,
-      bugId,
-      documentId,
-      kind: sdlcKind,
-      appVersion: sdlcAppVersion,
-      sinceTag: sdlcSinceTag,
-      includeArchived: sdlcIncludeArchived,
-      modeId,
+      write: shouldWrite,
+      outDir: effectiveOutDir,
       profileId,
-      fromSnapshot: fromSnapshotPath ? JSON.parse(fs.readFileSync(fromSnapshotPath, "utf8")) : null,
       fromSnapshotPath,
       fromTopogramPath,
-      topogramInputPath: topogramInputPathForGeneration(inputPath),
-      implementation,
-      projectConfig: projectConfigInfo?.config || null,
-      configDir: projectConfigInfo?.configDir || projectRoot,
-      projectRoot: projectConfigInfo?.configDir || projectRoot
-    });
-    if (!result.ok) {
-      console.error(formatValidationErrors(result.validation));
-      process.exit(1);
-    }
-
-    if (shouldWrite) {
-      const resolvedOutDir = path.resolve(effectiveOutDir || "artifacts");
-      assertProjectOutputAllowsWrite(projectConfigInfo, resolvedOutDir);
-      assertSafeGeneratedOutputDir(resolvedOutDir, inputPath);
-      const outputFiles = buildOutputFiles(result, {
+      selectors: {
+        shapeId,
+        capabilityId,
+        workflowId,
+        projectionId,
+        widgetId: componentId,
+        componentId,
+        entityId,
+        journeyId,
+        surfaceId,
+        domainId,
+        taskId,
+        pitchId,
+        requirementId,
+        acceptanceId,
+        bugId,
+        documentId,
+        kind: sdlcKind,
+        appVersion: sdlcAppVersion,
+        sinceTag: sdlcSinceTag,
+        includeArchived: sdlcIncludeArchived,
+        modeId
+      },
+      outputSelectors: {
         shapeId,
         capabilityId,
         workflowId,
@@ -3289,29 +3241,11 @@ try {
         journeyId,
         taskId,
         modeId
-      });
-      outputFiles.unshift({
-        path: GENERATED_OUTPUT_SENTINEL,
-        contents: generatedOutputSentinel(generateTarget)
-      });
-      fs.rmSync(resolvedOutDir, { recursive: true, force: true });
-      fs.mkdirSync(resolvedOutDir, { recursive: true });
-
-      for (const file of outputFiles) {
-        const destination = path.join(resolvedOutDir, file.path);
-        fs.mkdirSync(path.dirname(destination), { recursive: true });
-        const contents =
-          typeof file.contents === "string" ? file.contents : `${stableStringify(file.contents)}\n`;
-        fs.writeFileSync(destination, contents, "utf8");
       }
-
-      console.log(`Wrote ${outputFiles.length} file(s) to ${resolvedOutDir}`);
-      process.exit(0);
-    }
-
-    console.log(typeof result.artifact === "string" ? result.artifact : stableStringify(result.artifact));
-    process.exit(0);
+    }));
   }
+
+  const ast = parsePath(inputPath);
 
   if (shouldResolve) {
     const result = resolveWorkspace(ast);
