@@ -3,14 +3,10 @@ import {
   dedupeCandidateRecords,
   findImportFiles,
   makeCandidateRecord,
+  pluralizeCandidateTerm,
   relativeTo,
   titleCase
 } from "../../core/shared.js";
-
-function pluralizeStem(stem) {
-  if (stem.endsWith("s")) return stem;
-  return `${stem}s`;
-}
 
 function stemFromRepoPath(filePath) {
   return canonicalCandidateTerm(filePath.match(/\/src\/([^/]+)\//)?.[1] || "item");
@@ -22,7 +18,7 @@ function capabilityIdFor(stem, methodName, httpMethod) {
     return `cap_get_${stem}`;
   }
   if (httpMethod === "GET") {
-    return `cap_list_${pluralizeStem(stem)}`;
+    return `cap_list_${pluralizeCandidateTerm(stem)}`;
   }
   if (httpMethod === "POST") {
     return `cap_create_${stem}`;
@@ -39,7 +35,7 @@ function capabilityIdFor(stem, methodName, httpMethod) {
 function parseRepositoryFile(text, provenance, filePath) {
   const stem = stemFromRepoPath(filePath);
   const baseUrlMatch = String(text || "").match(/baseUrl\s*=\s*["'`]([^"'`]+)["'`]/);
-  const basePath = baseUrlMatch?.[1] || `/${pluralizeStem(stem)}`;
+  const basePath = baseUrlMatch?.[1] || `/${pluralizeCandidateTerm(stem)}`;
   const capabilities = [];
   const methods = [...String(text || "").matchAll(/public\s+async\s+([A-Za-z_][A-Za-z0-9_]*)\(([\s\S]*?)\)\s*(?::\s*[\s\S]*?)?\s*\{/g)];
   for (let index = 0; index < methods.length; index += 1) {
@@ -59,7 +55,7 @@ function parseRepositoryFile(text, provenance, filePath) {
       ...[...String(body || "").matchAll(/payload\.([A-Za-z_][A-Za-z0-9_]*)/g)].map((entry) => entry[1])
     ])].filter((field) => field !== "id");
     const outputFields = httpMethod === "GET"
-      ? (/count/.test(body) ? [pluralizeStem(stem), "count"] : (/map\(/.test(body) ? [pluralizeStem(stem)] : ["id", "title", "body"]))
+      ? (/count/.test(body) ? [pluralizeCandidateTerm(stem), "count"] : (/map\(/.test(body) ? [pluralizeCandidateTerm(stem)] : ["id", "title", "body"]))
       : [];
     capabilities.push(makeCandidateRecord({
       kind: "capability",

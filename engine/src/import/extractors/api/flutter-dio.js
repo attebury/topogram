@@ -3,6 +3,7 @@ import {
   dedupeCandidateRecords,
   findImportFiles,
   makeCandidateRecord,
+  pluralizeCandidateTerm,
   relativeTo,
   titleCase
 } from "../../core/shared.js";
@@ -11,16 +12,11 @@ function featureStemFromPath(filePath) {
   return canonicalCandidateTerm(filePath.match(/\/features\/([^/]+)\//)?.[1] || "item");
 }
 
-function pluralizeStem(stem) {
-  if (stem.endsWith("s")) return stem;
-  return `${stem}s`;
-}
-
 function capabilityIdFor(featureStem, methodName, httpMethod) {
   const stem = canonicalCandidateTerm(featureStem);
   const normalizedMethod = String(methodName || "").toLowerCase();
   if (httpMethod === "GET") {
-    return `cap_list_${pluralizeStem(stem)}`;
+    return `cap_list_${pluralizeCandidateTerm(stem)}`;
   }
   if (httpMethod === "POST") {
     return `cap_create_${stem}`;
@@ -59,12 +55,12 @@ function parseDatasourceFile(text, provenance, filePath, apiConfigPaths) {
     const httpMethod = dioCall[1].toUpperCase();
     const callArgs = dioCall[2];
     const apiRef = callArgs.match(/ApiConfig\.([A-Za-z_][A-Za-z0-9_]*)/);
-    const basePath = apiConfigPaths.get(apiRef?.[1] || "") || `/${pluralizeStem(featureStem)}`;
+    const basePath = apiConfigPaths.get(apiRef?.[1] || "") || `/${pluralizeCandidateTerm(featureStem)}`;
     const dynamicPath = callArgs.match(/"\$\{ApiConfig\.[A-Za-z_][A-Za-z0-9_]*\}\/\$\{[^}]+\}"/);
     const path = dynamicPath ? `${basePath}/{id}` : basePath;
     const queryParams = [...body.matchAll(/'([^']+)'\s*:\s*[^,}]+/g)]
       .map((entry) => ({ name: entry[1], required: false, type: null }));
-    const outputFields = /^GET$/.test(httpMethod) ? [pluralizeStem(featureStem)] : [];
+    const outputFields = /^GET$/.test(httpMethod) ? [pluralizeCandidateTerm(featureStem)] : [];
     const inputFields = [...new Set([...callArgs.matchAll(/data:\s*([A-Za-z_][A-Za-z0-9_]*)/g)].map((entry) => entry[1]))];
     capabilities.push(makeCandidateRecord({
       kind: "capability",

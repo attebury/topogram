@@ -177,6 +177,11 @@ const generatedHtmlAllowedFiles = new Set([
   "engine/tests/active/engine-boundary.test.js",
   "engine/tests/active/hardening-safety.test.js"
 ]);
+const helperDefinitionAllowedFiles = new Set([
+  "engine/src/text-helpers.js",
+  "engine/src/path-helpers.js",
+  "engine/tests/active/engine-boundary.test.js"
+]);
 
 function visitFiles(root) {
   const files = [];
@@ -359,6 +364,27 @@ test("web generator HTML interpolation uses shared escaping helpers", () => {
     const contents = fs.readFileSync(file, "utf8");
     if ((contents.includes("<!doctype html>") || contents.includes("<html")) && !contents.includes("escapeHtml")) {
       offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("candidate naming and stopword helpers have one source of truth", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    if (helperDefinitionAllowedFiles.has(relative)) continue;
+    const contents = fs.readFileSync(file, "utf8");
+    const references = [
+      "function canonicalCandidateTerm",
+      "function pluralizeCandidateTerm",
+      "const STOPWORDS",
+      "const GENERIC_STOPWORDS",
+      "const TECHNICAL_STOPWORDS"
+    ].filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
     }
   }
 

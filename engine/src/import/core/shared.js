@@ -1,6 +1,26 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { relativeTo } from "../../path-helpers.js";
+import {
+  canonicalCandidateTerm,
+  ensureTrailingNewline,
+  idHintify,
+  pluralizeCandidateTerm,
+  slugify,
+  titleCase
+} from "../../text-helpers.js";
+
+export {
+  canonicalCandidateTerm,
+  ensureTrailingNewline,
+  idHintify,
+  pluralizeCandidateTerm,
+  relativeTo,
+  slugify,
+  titleCase
+};
+
 export const DEFAULT_IGNORED_DIRS = new Set([
   ".git",
   ".next",
@@ -12,64 +32,6 @@ export const DEFAULT_IGNORED_DIRS = new Set([
   "node_modules",
   "tmp"
 ]);
-
-export function ensureTrailingNewline(value) {
-  return value.endsWith("\n") ? value : `${value}\n`;
-}
-
-export function slugify(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "untitled";
-}
-
-export function idHintify(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "untitled";
-}
-
-export function canonicalCandidateTerm(value) {
-  const normalized = slugify(value);
-  if (normalized.endsWith("ies")) {
-    return `${normalized.slice(0, -3)}y`;
-  }
-  if (normalized === "status" || normalized === "stats") {
-    return normalized;
-  }
-  if (normalized.endsWith("s") && !normalized.endsWith("ss") && !normalized.endsWith("us") && !normalized.endsWith("is")) {
-    return normalized.slice(0, -1);
-  }
-  return normalized;
-}
-
-export function pluralizeCandidateTerm(value) {
-  const normalized = String(value || "");
-  if (!normalized) return "items";
-  const parts = normalized.split("_");
-  const last = parts.pop() || "item";
-  let plural = last;
-  if (last.endsWith("y") && !/[aeiou]y$/.test(last)) {
-    plural = `${last.slice(0, -1)}ies`;
-  } else if (/(s|x|z|ch|sh)$/.test(last)) {
-    plural = `${last}es`;
-  } else {
-    plural = `${last}s`;
-  }
-  return [...parts, plural].join("_");
-}
-
-export function titleCase(value) {
-  return String(value || "")
-    .split(/[_\-\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 export function readTextIfExists(filePath) {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
@@ -105,10 +67,6 @@ export function listFilesRecursive(rootDir, predicate = () => true, options = {}
   };
   walk(rootDir);
   return files.sort();
-}
-
-export function relativeTo(base, filePath) {
-  return path.relative(base, filePath).replaceAll(path.sep, "/");
 }
 
 export function importSearchRoots(paths) {

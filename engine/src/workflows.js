@@ -45,121 +45,15 @@ import {
 import { resolveWorkspace } from "./resolver.js";
 import { generateContextBundle } from "./generator/context/bundle.js";
 import { buildLocalMaintainedBoundaryArtifact } from "./generator/context/shared.js";
-
-const STOPWORDS = new Set([
-  "the",
-  "and",
-  "for",
-  "with",
-  "that",
-  "this",
-  "from",
-  "into",
-  "your",
-  "their",
-  "have",
-  "will",
-  "when",
-  "where",
-  "what",
-  "which",
-  "then",
-  "than",
-  "been",
-  "being",
-  "does",
-  "each",
-  "just",
-  "also",
-  "through",
-  "about",
-  "because",
-  "after",
-  "before",
-  "under",
-  "over",
-  "still",
-  "they",
-  "them",
-  "there",
-  "these",
-  "those",
-  "more",
-  "most",
-  "some",
-  "only",
-  "very",
-  "same",
-  "much",
-  "many",
-  "other",
-  "into",
-  "does",
-  "used",
-  "using",
-  "readme",
-  "docs",
-  "topogram",
-  "generated",
-  "example",
-  "examples",
-  "app",
-  "apps",
-  "agreement",
-  "api",
-  "artifacts",
-  "bash",
-  "bundle",
-  "bundles",
-  "commands",
-  "compile",
-  "deployment",
-  "deploy",
-  "engine",
-  "environment",
-  "fixtures",
-  "files",
-  "fly",
-  "getting",
-  "implementation",
-  "include",
-  "layout",
-  "local",
-  "migrations",
-  "model",
-  "notes",
-  "npm",
-  "package",
-  "proof",
-  "react",
-  "recommended",
-  "report",
-  "reports",
-  "runnable",
-  "run",
-  "runtime",
-  "scripts",
-  "server",
-  "smoke",
-  "snapshot",
-  "sqlite",
-  "stack",
-  "stages",
-  "started",
-  "state",
-  "sveltekit",
-  "current",
-  "check",
-  "checks",
-  "env",
-  "usage",
-  "web",
-  "workspace"
-]);
-
-function ensureTrailingNewline(value) {
-  return value.endsWith("\n") ? value : `${value}\n`;
-}
+import { relativeTo } from "./path-helpers.js";
+import {
+  canonicalCandidateTerm,
+  ensureTrailingNewline,
+  extractRankedTerms,
+  idHintify,
+  slugify,
+  titleCase
+} from "./text-helpers.js";
 
 function findNearestGitRoot(startDir) {
   let current = path.resolve(startDir);
@@ -196,41 +90,6 @@ function normalizeWorkspacePaths(inputPath) {
     repoRoot,
     bootstrappedTopogramRoot: !fs.existsSync(topogramRoot)
   };
-}
-
-function slugify(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "untitled";
-}
-
-function idHintify(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "untitled";
-}
-
-function canonicalCandidateTerm(value) {
-  const normalized = slugify(value);
-  if (normalized.endsWith("ies")) {
-    return `${normalized.slice(0, -3)}y`;
-  }
-  if (normalized.endsWith("s") && !normalized.endsWith("ss")) {
-    return normalized.slice(0, -1);
-  }
-  return normalized;
-}
-
-function titleCase(value) {
-  return String(value || "")
-    .split(/[_\-\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 function firstHeading(markdown) {
@@ -367,10 +226,6 @@ function parseMarkdownFrontmatter(source) {
   };
 }
 
-function relativeTo(base, filePath) {
-  return path.relative(base, filePath).replaceAll(path.sep, "/");
-}
-
 function discoverDocSources(paths) {
   const candidates = new Set();
   const pushIfExists = (filePath) => {
@@ -395,31 +250,7 @@ function discoverDocSources(paths) {
 }
 
 function extractTerms(markdown) {
-  const normalized = markdown
-    .replace(/\[[^\]]+\]\([^)]+\)/g, " ")
-    .replace(/\/Users\/[^\s)]+/g, " ")
-    .replace(/https?:\/\/[^\s)]+/g, " ")
-    .replace(/`([^`]+)`/g, " $1 ")
-    .replace(/[_/]/g, " ");
-  const frequency = new Map();
-  const headings = normalized.match(/^#+\s+(.+)$/gm) || [];
-  for (const heading of headings) {
-    for (const word of heading.toLowerCase().match(/\b[a-z][a-z0-9-]{2,}\b/g) || []) {
-      if (STOPWORDS.has(word)) {
-        continue;
-      }
-      frequency.set(word, (frequency.get(word) || 0) + 3);
-    }
-  }
-  for (const word of normalized.toLowerCase().match(/\b[a-z][a-z0-9-]{2,}\b/g) || []) {
-    if (STOPWORDS.has(word)) {
-      continue;
-    }
-    frequency.set(word, (frequency.get(word) || 0) + 1);
-  }
-  return [...frequency.entries()]
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-    .map(([term]) => term);
+  return extractRankedTerms(markdown, { technicalStopwords: true });
 }
 
 function extractWorkflowSignals(markdown) {
