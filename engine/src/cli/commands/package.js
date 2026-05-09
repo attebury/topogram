@@ -455,7 +455,7 @@ function compareSemver(left, right) {
  * @param {string} cwd
  * @returns {any}
  */
-function runNpmForPackageUpdate(args, cwd) {
+export function runNpmForPackageUpdate(args, cwd) {
   const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
   return childProcess.spawnSync(npmBin, args, {
     cwd,

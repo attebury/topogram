@@ -3,6 +3,7 @@
 import childProcess from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 import {
@@ -13,19 +14,43 @@ import {
   loadCatalog
 } from "../../catalog.js";
 import { stableStringify } from "../../format.js";
+import { parsePath } from "../../parser.js";
 import { assertSafeNpmSpec, localNpmrcEnv } from "../../npm-safety.js";
 import {
+  createNewProject,
+  buildTemplateUpdatePlan,
+  loadTemplatePolicy,
+  packageScopeFromSpec,
+  resolveTemplate,
+  templatePolicyDiagnosticsForTemplate,
+  writeTemplatePolicy,
+  writeTemplatePolicyForProject
+} from "../../new-project.js";
+import {
+  formatProjectConfigErrors,
+  loadProjectConfig,
+  validateProjectConfig,
+  validateProjectOutputOwnership
+} from "../../project-config.js";
+import { resolveWorkspace } from "../../resolver.js";
+import {
   getTemplateTrustStatus,
-  TEMPLATE_TRUST_FILE
+  implementationRequiresTrust,
+  TEMPLATE_TRUST_FILE,
+  templateTrustRecoveryGuidance,
+  validateProjectImplementationTrust
 } from "../../template-trust.js";
 import {
   buildCatalogShowPayload,
   catalogShowCommands,
   shellCommandArg
 } from "./catalog.js";
+import { runNpmForPackageUpdate } from "./package.js";
 
 const TEMPLATE_FILES_MANIFEST = ".topogram-template-files.json";
 const TEMPLATE_POLICY_FILE = "topogram.template-policy.json";
+const ENGINE_ROOT = decodeURIComponent(new URL("../../../", import.meta.url).pathname);
+const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
 
 /**
  * @returns {void}
@@ -60,6 +85,21 @@ export function printTemplateHelp() {
  */
 function messageFromError(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * @param  {...{ ok: boolean, errors?: any[] }|null|undefined} results
+ * @returns {{ ok: boolean, errors: any[] }}
+ */
+function combineProjectValidationResults(...results) {
+  const errors = [];
+  for (const result of results) {
+    errors.push(...(result?.errors || []));
+  }
+  return {
+    ok: errors.length === 0,
+    errors
+  };
 }
 
 /**
@@ -822,6 +862,855 @@ export function printTemplateDetachPayload(payload) {
     console.log(`${label}: ${diagnostic.message}`);
   }
   console.log("Next: run `topogram source status --local`, then `topogram check`.");
+}
+
+/**
+ * @typedef {Object} TemplateCheckDiagnostic
+ * @property {string} code
+ * @property {"error"|"warning"} severity
+ * @property {string} message
+ * @property {string|null} path
+ * @property {string|null} suggestedFix
+ * @property {string|null} step
+ */
+
+/**
+ * @param {Record<string, any>} input
+ * @returns {TemplateCheckDiagnostic}
+ */
+export function templateCheckDiagnostic(input) {
+  return {
+    code: String(input.code || "template_check_failed"),
+    severity: input.severity === "warning" ? "warning" : "error",
+    message: String(input.message || "Template check failed."),
+    path: typeof input.path === "string" ? input.path : null,
+    suggestedFix: typeof input.suggestedFix === "string" ? input.suggestedFix : null,
+    step: typeof input.step === "string" ? input.step : null
+  };
+}
+
+/**
+ * @param {string} templateSpec
+ * @param {string} relativePath
+ * @returns {string|null}
+ */
+function localTemplatePath(templateSpec, relativePath) {
+  if (
+    templateSpec === "." ||
+    templateSpec.startsWith("./") ||
+    templateSpec.startsWith("../") ||
+    path.isAbsolute(templateSpec)
+  ) {
+    return path.join(path.resolve(templateSpec), relativePath);
+  }
+  return null;
+}
+
+/**
+ * @param {string} message
+ * @param {string} templateSpec
+ * @param {string} step
+ * @returns {TemplateCheckDiagnostic}
+ */
+function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
+  if (message.includes("is missing topogram-template.json")) {
+    return templateCheckDiagnostic({
+      code: "template_manifest_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Add topogram-template.json with id, version, kind, and topogramVersion.",
+      step
+    });
+  }
+  if (message.includes("contains implementation/") && message.includes("includesExecutableImplementation: true")) {
+    return templateCheckDiagnostic({
+      code: "template_implementation_undeclared",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Set includesExecutableImplementation to true after reviewing implementation/, or remove implementation/.",
+      step
+    });
+  }
+  if (message.includes("is missing required string field") || message.includes("topogram-template.json")) {
+    return templateCheckDiagnostic({
+      code: "template_manifest_invalid",
+      message,
+      path: localTemplatePath(templateSpec, "topogram-template.json"),
+      suggestedFix: "Fix topogram-template.json so it matches the template manifest schema.",
+      step
+    });
+  }
+  if (message.includes("is missing topogram/")) {
+    return templateCheckDiagnostic({
+      code: "template_topogram_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram"),
+      suggestedFix: "Add a topogram/ directory with the reusable Topogram source files.",
+      step
+    });
+  }
+  if (message.includes("is missing topogram.project.json")) {
+    return templateCheckDiagnostic({
+      code: "template_project_config_missing",
+      message,
+      path: localTemplatePath(templateSpec, "topogram.project.json"),
+      suggestedFix: "Add topogram.project.json beside topogram/ with outputs and topology.runtimes.",
+      step
+    });
+  }
+  if (message.includes("is missing implementation/")) {
+    return templateCheckDiagnostic({
+      code: "template_implementation_missing",
+      message,
+      path: localTemplatePath(templateSpec, "implementation"),
+      suggestedFix: "Add implementation/ or set includesExecutableImplementation to false.",
+      step
+    });
+  }
+  if (message.includes("unsupported symlink")) {
+    return templateCheckDiagnostic({
+      code: "template_symlink_unsupported",
+      message,
+      path: path.isAbsolute(templateSpec) ? templateSpec : null,
+      suggestedFix: "Replace template symlinks with real files or directories, then rerun `topogram new` or `topogram template check`.",
+      step
+    });
+  }
+  return templateCheckDiagnostic({
+    code: "template_create_failed",
+    message,
+    path: path.isAbsolute(templateSpec) ? templateSpec : null,
+    suggestedFix: "Fix the template pack so topogram new can create a starter from it.",
+    step
+  });
+}
+
+/**
+ * @param {{ message: string, loc?: any }} error
+ * @param {string} step
+ * @param {string|null} configPath
+ * @returns {TemplateCheckDiagnostic}
+ */
+function diagnosticForStarterCheckFailure(error, step, configPath) {
+  const locFile = typeof error?.loc?.file === "string" ? error.loc.file : null;
+  const isTrust = error.message.includes(TEMPLATE_TRUST_FILE) ||
+    error.message.includes("unsupported symlink") ||
+    error.message.includes("must be under implementation/");
+  return templateCheckDiagnostic({
+    code: isTrust ? "template_trust_invalid" : "starter_check_failed",
+    message: error.message,
+    path: locFile || configPath,
+    suggestedFix: isTrust
+      ? templateTrustRecoveryGuidance(error.message)
+      : "Fix the generated Topogram source or topogram.project.json so topogram check passes.",
+    step
+  });
+}
+
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {Record<string, any>} [details]
+ * @param {TemplateCheckDiagnostic[]} [diagnostics]
+ * @returns {{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }}
+ */
+function templateCheckStep(name, ok, details = {}, diagnostics = []) {
+  return { name, ok, details, diagnostics };
+}
+
+/**
+ * @param {string} projectRoot
+ * @returns {string[]}
+ */
+function templateCheckGeneratorDependencies(projectRoot) {
+  const packagePath = path.join(projectRoot, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    return [];
+  }
+  const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  const dependencies = {
+    ...(pkg.dependencies || {}),
+    ...(pkg.devDependencies || {})
+  };
+  return Object.keys(dependencies).filter((name) =>
+    name.includes("topogram-generator") || name.startsWith("@topogram/generator-")
+  ).sort();
+}
+
+/**
+ * @param {string} projectRoot
+ * @param {string[]} dependencies
+ * @returns {TemplateCheckDiagnostic|null}
+ */
+function installTemplateCheckGeneratorDependencies(projectRoot, dependencies) {
+  if (dependencies.length === 0) {
+    return null;
+  }
+  const result = runNpmForPackageUpdate(["install", "--ignore-scripts"], projectRoot);
+  if (result.status === 0) {
+    return null;
+  }
+  const output = `${result.stdout || ""}\n${result.stderr || ""}`.trim();
+  return templateCheckDiagnostic({
+    code: "template_generator_dependencies_install_failed",
+    message: `Failed to install package-backed generator dependencies: ${dependencies.join(", ")}.`,
+    path: path.join(projectRoot, "package.json"),
+    suggestedFix: `Run npm install before checking this package-backed generator template.${output ? ` ${output.split(/\r?\n/).slice(-3).join(" ")}` : ""}`,
+    step: "generator-dependencies"
+  });
+}
+
+/**
+ * @param {string} templateSpec
+ * @returns {{ ok: boolean, templateSpec: string, projectRoot: string|null, steps: Array<{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+export function buildTemplateCheckPayload(templateSpec) {
+  if (!templateSpec) {
+    throw new Error("topogram template check requires <template-spec-or-path>.");
+  }
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-template-check-"));
+  const projectRoot = path.join(runRoot, "starter");
+  /** @type {Array<{ name: string, ok: boolean, details: Record<string, any>, diagnostics: TemplateCheckDiagnostic[] }>} */
+  const steps = [];
+  /** @type {TemplateCheckDiagnostic[]} */
+  const diagnostics = [];
+  try {
+    const callerPolicyInfo = loadTemplatePolicy(process.cwd());
+    if (callerPolicyInfo.exists) {
+      const resolvedTemplate = resolveTemplate(templateSpec, TEMPLATES_ROOT);
+      const policyDiagnostics = templatePolicyDiagnosticsForTemplate(callerPolicyInfo, resolvedTemplate, "template-check-policy");
+      if (policyDiagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+        const stepDiagnostics = policyDiagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+        diagnostics.push(...stepDiagnostics);
+        steps.push(templateCheckStep("template-policy", false, {
+          path: callerPolicyInfo.path
+        }, stepDiagnostics));
+        return {
+          ok: false,
+          templateSpec,
+          projectRoot: null,
+          steps,
+          diagnostics,
+          errors: diagnostics.map((diagnostic) => diagnostic.message)
+        };
+      }
+    }
+    const created = createNewProject({
+      targetPath: projectRoot,
+      templateName: templateSpec,
+      engineRoot: ENGINE_ROOT,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    steps.push(templateCheckStep("create-starter", true, {
+      template: created.templateName,
+      warnings: created.warnings.length
+    }));
+    const generatorDependencies = templateCheckGeneratorDependencies(projectRoot);
+    const installDiagnostic = installTemplateCheckGeneratorDependencies(projectRoot, generatorDependencies);
+    if (installDiagnostic) {
+      diagnostics.push(installDiagnostic);
+      steps.push(templateCheckStep("generator-dependencies", false, {
+        dependencies: generatorDependencies
+      }, [installDiagnostic]));
+      return {
+        ok: false,
+        templateSpec,
+        projectRoot,
+        steps,
+        diagnostics,
+        errors: diagnostics.map((diagnostic) => diagnostic.message)
+      };
+    }
+    if (generatorDependencies.length > 0) {
+      steps.push(templateCheckStep("generator-dependencies", true, {
+        dependencies: generatorDependencies
+      }));
+    }
+  } catch (error) {
+    const stepDiagnostics = [
+      diagnosticForTemplateCreateFailure(messageFromError(error), templateSpec, "create-starter")
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("create-starter", false, {}, stepDiagnostics));
+    return {
+      ok: false,
+      templateSpec,
+      projectRoot: null,
+      steps,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
+  }
+
+  const projectConfigInfo = loadProjectConfig(projectRoot);
+  if (!projectConfigInfo) {
+    const stepDiagnostics = [
+      templateCheckDiagnostic({
+        code: "starter_project_config_missing",
+        message: "Generated starter is missing topogram.project.json.",
+        path: path.join(projectRoot, "topogram.project.json"),
+        suggestedFix: "Ensure the template includes topogram.project.json at its root.",
+        step: "project-config"
+      })
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("project-config", false, {}, stepDiagnostics));
+    return {
+      ok: false,
+      templateSpec,
+      projectRoot,
+      steps,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
+  }
+  steps.push(templateCheckStep("project-config", true, {
+    path: projectConfigInfo.configPath,
+    template: projectConfigInfo.config.template?.id || null
+  }));
+
+  const ast = parsePath(path.join(projectRoot, "topogram"));
+  const resolved = resolveWorkspace(ast);
+  const projectValidation = combineProjectValidationResults(
+    validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),
+    validateProjectOutputOwnership(projectConfigInfo),
+    validateProjectImplementationTrust(projectConfigInfo)
+  );
+  const starterCheckOk = resolved.ok && projectValidation.ok;
+  const starterDiagnostics = [
+    ...(resolved.ok ? [] : resolved.validation.errors),
+    ...projectValidation.errors
+  ].map((error) => diagnosticForStarterCheckFailure(error, "starter-check", projectConfigInfo.configPath));
+  steps.push(templateCheckStep("starter-check", starterCheckOk, {
+    files: ast.files.length,
+    statements: ast.files.flatMap((/** @type {{ statements: any[] }} */ file) => file.statements).length
+  }, starterDiagnostics));
+  if (!starterCheckOk) {
+    diagnostics.push(...starterDiagnostics);
+  }
+
+  const implementationInfo = projectConfigInfo.config.implementation
+    ? {
+        config: projectConfigInfo.config.implementation,
+        configPath: projectConfigInfo.configPath,
+        configDir: projectConfigInfo.configDir
+      }
+    : null;
+  if (implementationInfo && implementationRequiresTrust(implementationInfo, projectConfigInfo.config)) {
+    const trustStatus = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
+    const trustDiagnostics = trustStatus.issues.map((issue) => templateCheckDiagnostic({
+      code: "template_trust_invalid",
+      message: issue,
+      path: trustStatus.trustPath,
+      suggestedFix: templateTrustRecoveryGuidance(issue),
+      step: "executable-implementation-trust"
+    }));
+    steps.push(templateCheckStep("executable-implementation-trust", trustStatus.ok, {
+      requiresTrust: true,
+      trustPath: trustStatus.trustPath,
+      trustedFiles: trustStatus.trustRecord?.content?.files?.length || 0
+    }, trustDiagnostics));
+    if (!trustStatus.ok) {
+      diagnostics.push(...trustDiagnostics);
+    }
+  } else {
+    steps.push(templateCheckStep("executable-implementation-trust", true, {
+      requiresTrust: false
+    }));
+  }
+
+  try {
+    const updatePlan = buildTemplateUpdatePlan({
+      projectRoot,
+      projectConfig: projectConfigInfo.config,
+      templateName: null,
+      templatesRoot: TEMPLATES_ROOT
+    });
+    steps.push(templateCheckStep("template-update-plan", updatePlan.ok, {
+      writes: updatePlan.writes,
+      added: updatePlan.summary.added,
+      changed: updatePlan.summary.changed,
+      currentOnly: updatePlan.summary.currentOnly
+    }));
+    if (!updatePlan.ok) {
+      const stepDiagnostics = updatePlan.issues.map((issue) => templateCheckDiagnostic({
+        code: "template_update_plan_failed",
+        message: issue,
+        path: projectConfigInfo.configPath,
+        suggestedFix: "Fix template metadata so a no-write update plan can be produced.",
+        step: "template-update-plan"
+      }));
+      steps[steps.length - 1].diagnostics.push(...stepDiagnostics);
+      diagnostics.push(...stepDiagnostics);
+    }
+  } catch (error) {
+    const stepDiagnostics = [
+      templateCheckDiagnostic({
+        code: "template_update_plan_failed",
+        message: messageFromError(error),
+        path: projectConfigInfo.configPath,
+        suggestedFix: "Fix template metadata so a no-write update plan can be produced.",
+        step: "template-update-plan"
+      })
+    ];
+    diagnostics.push(...stepDiagnostics);
+    steps.push(templateCheckStep("template-update-plan", false, {}, stepDiagnostics));
+  }
+
+  return {
+    ok: steps.every((step) => step.ok),
+    templateSpec,
+    projectRoot,
+    steps,
+    diagnostics,
+    errors: diagnostics.map((diagnostic) => diagnostic.message)
+  };
+}
+
+/**
+ * @param {ReturnType<typeof loadProjectConfig>} projectConfigInfo
+ * @returns {{ requested: string, root: string, manifest: { id: string, version: string, kind: string, topogramVersion: string, includesExecutableImplementation: boolean }, source: "local"|"package", packageSpec: string|null }}
+ */
+function currentPolicyTemplate(projectConfigInfo) {
+  const template = projectConfigInfo?.config.template || {};
+  const source = template.source === "local" || template.source === "package"
+    ? template.source
+    : "local";
+  return {
+    requested: typeof template.requested === "string" ? template.requested : String(template.id || "unknown"),
+    root: projectConfigInfo?.configDir || process.cwd(),
+    manifest: {
+      id: typeof template.id === "string" ? template.id : "unknown",
+      version: typeof template.version === "string" ? template.version : "unknown",
+      kind: "starter",
+      topogramVersion: "*",
+      includesExecutableImplementation: Boolean(template.includesExecutableImplementation)
+    },
+    source,
+    packageSpec: typeof template.sourceSpec === "string" ? template.sourceSpec : null
+  };
+}
+
+/**
+ * @param {string} projectPath
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+export function buildTemplatePolicyCheckPayload(projectPath) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_project_missing",
+      message: "Cannot check template policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), "topogram.template-policy.json"),
+      exists: false,
+      policy: null,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const policyInfo = loadTemplatePolicy(projectConfigInfo.configDir);
+  /** @type {TemplateCheckDiagnostic[]} */
+  const diagnostics = policyInfo.diagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+  if (!policyInfo.exists) {
+    diagnostics.push(templateCheckDiagnostic({
+      code: "template_policy_missing",
+      severity: "warning",
+      message: "No topogram.template-policy.json found. Template operations are permissive until a policy is defined.",
+      path: policyInfo.path,
+      suggestedFix: "Run `topogram template policy init` to create a project template policy.",
+      step: "policy"
+    }));
+  } else if (policyInfo.policy) {
+    const currentTemplate = currentPolicyTemplate(projectConfigInfo);
+    diagnostics.push(...templatePolicyDiagnosticsForTemplate(policyInfo, currentTemplate, "policy")
+      .map((diagnostic) => templateCheckDiagnostic(diagnostic)));
+  }
+  const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message);
+  return {
+    ok: errors.length === 0,
+    path: policyInfo.path,
+    exists: policyInfo.exists,
+    policy: policyInfo.policy,
+    diagnostics,
+    errors
+  };
+}
+
+/**
+ * @param {string} name
+ * @param {boolean} ok
+ * @param {string} actual
+ * @param {string} expected
+ * @param {string} message
+ * @param {string|null} fix
+ * @returns {{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }}
+ */
+function templatePolicyRule(name, ok, actual, expected, message, fix = null) {
+  return { name, ok, actual, expected, message, fix };
+}
+
+/**
+ * @param {string} name
+ * @returns {string}
+ */
+function templatePolicyRuleLabel(name) {
+  return ({
+    "policy-file": "Policy file",
+    "allowed-source": "Allowed source",
+    "allowed-template-id": "Allowed template id",
+    "allowed-package-scope": "Allowed package scope",
+    "pinned-version": "Pinned version",
+    "executable-implementation": "Executable implementation"
+  })[name] || name;
+}
+
+/**
+ * @param {string} projectPath
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, template: any, catalog: any, package: any, rules: Array<{ name: string, ok: boolean, actual: string, expected: string, message: string, fix: string|null }>, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+export function buildTemplatePolicyExplainPayload(projectPath) {
+  const check = buildTemplatePolicyCheckPayload(projectPath);
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    return {
+      ...check,
+      template: null,
+      catalog: null,
+      package: null,
+      rules: []
+    };
+  }
+  const templateMetadata = projectConfigInfo.config.template || {};
+  const currentTemplate = currentPolicyTemplate(projectConfigInfo);
+  const policy = check.policy;
+  const packageScope = currentTemplate.source === "package"
+    ? packageScopeFromSpec(currentTemplate.packageSpec || currentTemplate.requested)
+    : null;
+  const rules = [];
+  rules.push(templatePolicyRule(
+    "policy-file",
+    check.exists,
+    check.exists ? "present" : "missing",
+    "present",
+    check.exists
+      ? "Project has a template policy file."
+      : "Project has no template policy file; template operations are permissive until one is defined.",
+    check.exists ? null : "Run `topogram template policy init`."
+  ));
+  if (policy) {
+    rules.push(templatePolicyRule(
+      "allowed-source",
+      policy.allowedSources.length === 0 || policy.allowedSources.includes(currentTemplate.source),
+      currentTemplate.source,
+      policy.allowedSources.length > 0 ? policy.allowedSources.join(", ") : "(any)",
+      "Current template source must be allowed by allowedSources.",
+      `Add '${currentTemplate.source}' to allowedSources after review, or run \`topogram template policy init\`.`
+    ));
+    rules.push(templatePolicyRule(
+      "allowed-template-id",
+      policy.allowedTemplateIds.length === 0 || policy.allowedTemplateIds.includes(currentTemplate.manifest.id),
+      currentTemplate.manifest.id,
+      policy.allowedTemplateIds.length > 0 ? policy.allowedTemplateIds.join(", ") : "(any)",
+      "Current template id must be allowed by allowedTemplateIds.",
+      `Run \`topogram template policy pin ${currentTemplate.manifest.id}@${currentTemplate.manifest.version}\` after review.`
+    ));
+    if (currentTemplate.source === "package") {
+      rules.push(templatePolicyRule(
+        "allowed-package-scope",
+        !policy.allowedPackageScopes ||
+          policy.allowedPackageScopes.length === 0 ||
+          Boolean(packageScope && policy.allowedPackageScopes.includes(packageScope)),
+        packageScope || "(unscoped)",
+        policy.allowedPackageScopes && policy.allowedPackageScopes.length > 0 ? policy.allowedPackageScopes.join(", ") : "(any)",
+        "Package-backed template source must be in an allowed package scope.",
+        `Add '${packageScope || "(unscoped)"}' to allowedPackageScopes after review.`
+      ));
+    }
+    const pinnedVersion = policy.pinnedVersions?.[currentTemplate.manifest.id] || null;
+    rules.push(templatePolicyRule(
+      "pinned-version",
+      !pinnedVersion || pinnedVersion === currentTemplate.manifest.version,
+      currentTemplate.manifest.version,
+      pinnedVersion || "(unpinned)",
+      "Pinned version must match the current template version when a pin exists.",
+      `Run \`topogram template policy pin ${currentTemplate.manifest.id}@${currentTemplate.manifest.version}\` after review.`
+    ));
+    rules.push(templatePolicyRule(
+      "executable-implementation",
+      !currentTemplate.manifest.includesExecutableImplementation || policy.executableImplementation !== "deny",
+      currentTemplate.manifest.includesExecutableImplementation ? "yes" : "no",
+      policy.executableImplementation,
+      "Executable template implementation must be allowed when implementation/ is present.",
+      "Review implementation/, then set executableImplementation to 'allow' or choose a non-executable template."
+    ));
+  }
+  return {
+    ...check,
+    template: {
+      id: currentTemplate.manifest.id,
+      version: currentTemplate.manifest.version,
+      source: currentTemplate.source,
+      requested: currentTemplate.requested,
+      sourceSpec: currentTemplate.packageSpec,
+      includesExecutableImplementation: currentTemplate.manifest.includesExecutableImplementation
+    },
+    catalog: templateMetadata.catalog || null,
+    package: currentTemplate.source === "package" ? {
+      spec: currentTemplate.packageSpec,
+      scope: packageScope
+    } : null,
+    rules
+  };
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplatePolicyExplainPayload>} payload
+ * @returns {void}
+ */
+export function printTemplatePolicyExplainPayload(payload) {
+  console.log(payload.ok ? "Template policy: allowed" : "Template policy: denied");
+  console.log(payload.ok
+    ? "Decision: the current template is allowed by this project's template policy."
+    : "Decision: the current template is blocked by this project's template policy.");
+  console.log(`Policy file: ${payload.path}`);
+  console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
+  if (payload.template) {
+    console.log(`Template: ${payload.template.id}@${payload.template.version}`);
+    console.log(`Source: ${payload.template.source}`);
+    console.log(`Requested: ${payload.template.requested}`);
+    if (payload.template.sourceSpec) {
+      console.log(`Source spec: ${payload.template.sourceSpec}`);
+    }
+    console.log(`Executable implementation: ${payload.template.includesExecutableImplementation ? "yes" : "no"}`);
+  }
+  if (payload.catalog?.id) {
+    console.log(`Catalog: ${payload.catalog.id} from ${payload.catalog.source || "unknown"}`);
+    console.log(`Catalog package: ${payload.catalog.packageSpec || payload.catalog.package || "unknown"}`);
+  }
+  if (payload.package) {
+    console.log(`Package scope: ${payload.package.scope || "(unscoped)"}`);
+  }
+  if (payload.rules.length > 0) {
+    console.log("");
+    console.log("Policy checks:");
+  }
+  for (const rule of payload.rules) {
+    console.log(`${rule.ok ? "PASS" : "FAIL"} ${templatePolicyRuleLabel(rule.name)}: ${rule.message}`);
+    console.log(`  actual: ${rule.actual}`);
+    console.log(`  expected: ${rule.expected}`);
+    if (!rule.ok && rule.fix) {
+      console.log(`  fix: ${rule.fix}`);
+    }
+  }
+  for (const diagnostic of payload.diagnostics) {
+    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
+    console.log(`${label}: ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {{ ok: boolean, path: string, exists: boolean, policy: any, diagnostics: TemplateCheckDiagnostic[] }} payload
+ * @returns {void}
+ */
+export function printTemplatePolicyCheckPayload(payload) {
+  console.log(payload.ok ? "Template policy check passed" : "Template policy check failed");
+  console.log(`Policy: ${payload.path}`);
+  console.log(`Exists: ${payload.exists ? "yes" : "no"}`);
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {string|null|undefined} spec
+ * @returns {{ id: string, version: string }|null}
+ */
+function parseTemplateVersionPin(spec) {
+  if (!spec) {
+    return null;
+  }
+  const separator = spec.lastIndexOf("@");
+  if (separator <= 0 || separator === spec.length - 1) {
+    throw new Error("Template policy pin requires a template id and version, for example @scope/template@0.2.0.");
+  }
+  return {
+    id: spec.slice(0, separator),
+    version: spec.slice(separator + 1)
+  };
+}
+
+/**
+ * @param {string} projectPath
+ * @param {string|null|undefined} spec
+ * @returns {{ ok: boolean, path: string, policy: any, pinned: { id: string, version: string }, diagnostics: TemplateCheckDiagnostic[], errors: string[] }}
+ */
+export function buildTemplatePolicyPinPayload(projectPath, spec) {
+  const projectConfigInfo = loadProjectConfig(projectPath);
+  if (!projectConfigInfo) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_project_missing",
+      message: "Cannot pin template policy without topogram.project.json.",
+      path: path.resolve(projectPath),
+      suggestedFix: "Run this command in a Topogram project.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(path.resolve(projectPath), "topogram.template-policy.json"),
+      policy: null,
+      pinned: { id: "", version: "" },
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+  const parsed = parseTemplateVersionPin(spec);
+  const currentTemplate = projectConfigInfo.config.template || {};
+  const pin = parsed || {
+    id: typeof currentTemplate.id === "string" ? currentTemplate.id : "",
+    version: typeof currentTemplate.version === "string" ? currentTemplate.version : ""
+  };
+  if (!pin.id || !pin.version) {
+    const diagnostic = templateCheckDiagnostic({
+      code: "template_policy_pin_missing_version",
+      message: "Cannot pin a template version without a template id and version.",
+      path: projectConfigInfo.configPath,
+      suggestedFix: "Pass a pin such as @scope/template@0.2.0, or ensure topogram.project.json records template.id and template.version.",
+      step: "policy"
+    });
+    return {
+      ok: false,
+      path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
+      policy: null,
+      pinned: pin,
+      diagnostics: [diagnostic],
+      errors: [diagnostic.message]
+    };
+  }
+
+  const existing = loadTemplatePolicy(projectConfigInfo.configDir);
+  const diagnostics = existing.diagnostics.map((diagnostic) => templateCheckDiagnostic(diagnostic));
+  if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+    return {
+      ok: false,
+      path: existing.path,
+      policy: existing.policy,
+      pinned: pin,
+      diagnostics,
+      errors: diagnostics.map((diagnostic) => diagnostic.message)
+    };
+  }
+  const policy = existing.policy || writeTemplatePolicyForProject(projectConfigInfo.configDir, projectConfigInfo.config);
+  const allowedTemplateIds = policy.allowedTemplateIds.includes(pin.id)
+    ? policy.allowedTemplateIds
+    : [...policy.allowedTemplateIds, pin.id];
+  const allowedPackageScopes = [...(policy.allowedPackageScopes || [])];
+  if (pin.id.startsWith("@")) {
+    const scope = pin.id.split("/")[0];
+    if (scope && !allowedPackageScopes.includes(scope)) {
+      allowedPackageScopes.push(scope);
+    }
+  }
+  const nextPolicy = {
+    ...policy,
+    allowedTemplateIds,
+    allowedPackageScopes,
+    pinnedVersions: {
+      ...(policy.pinnedVersions || {}),
+      [pin.id]: pin.version
+    }
+  };
+  writeTemplatePolicy(projectConfigInfo.configDir, nextPolicy);
+  return {
+    ok: true,
+    path: path.join(projectConfigInfo.configDir, "topogram.template-policy.json"),
+    policy: nextPolicy,
+    pinned: pin,
+    diagnostics: [],
+    errors: []
+  };
+}
+
+/**
+ * @param {{ ok: boolean, path: string, pinned: { id: string, version: string }, diagnostics: TemplateCheckDiagnostic[] }} payload
+ * @returns {void}
+ */
+export function printTemplatePolicyPinPayload(payload) {
+  console.log(payload.ok ? "Template policy pin updated" : "Template policy pin failed");
+  console.log(`Policy: ${payload.path}`);
+  if (payload.pinned.id) {
+    console.log(`Pinned: ${payload.pinned.id}@${payload.pinned.version || "unknown"}`);
+  }
+  for (const diagnostic of payload.diagnostics) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
+}
+
+/**
+ * @param {Record<string, any>} details
+ * @returns {string[]}
+ */
+function formatTemplateCheckDetails(details) {
+  return Object.entries(details)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `  ${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`);
+}
+
+/**
+ * @param {ReturnType<typeof buildTemplateCheckPayload>} payload
+ * @returns {void}
+ */
+export function printTemplateCheckPayload(payload) {
+  console.log(payload.ok ? "Template check passed" : "Template check failed");
+  console.log(`Template spec: ${payload.templateSpec}`);
+  if (payload.projectRoot) {
+    console.log(`Temp starter: ${payload.projectRoot}`);
+  }
+  for (const step of payload.steps) {
+    console.log(`${step.ok ? "PASS" : "FAIL"} ${step.name}`);
+    for (const detail of formatTemplateCheckDetails(step.details)) {
+      console.log(detail);
+    }
+    for (const diagnostic of step.diagnostics) {
+      console.log(`  [${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+      if (diagnostic.path) {
+        console.log(`    path: ${diagnostic.path}`);
+      }
+      if (diagnostic.suggestedFix) {
+        console.log(`    fix: ${diagnostic.suggestedFix}`);
+      }
+    }
+  }
+  const stepDiagnostics = new Set(payload.steps.flatMap((step) => step.diagnostics));
+  for (const diagnostic of payload.diagnostics.filter((item) => !stepDiagnostics.has(item))) {
+    console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);
+    if (diagnostic.path) {
+      console.log(`  path: ${diagnostic.path}`);
+    }
+    if (diagnostic.suggestedFix) {
+      console.log(`  fix: ${diagnostic.suggestedFix}`);
+    }
+  }
 }
 
 /**

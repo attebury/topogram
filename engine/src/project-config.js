@@ -35,6 +35,7 @@ import { validateProjectGeneratorPolicy } from "./generator-policy.js";
  * @property {Record<string, { path: string, ownership: "generated"|"maintained" }>} outputs
  * @property {{ runtimes: RuntimeTopologyRuntime[] }} topology
  * @property {{ id?: string, module?: string, export?: string, implementation_module?: string, implementation_export?: string }} [implementation]
+ * @property {Record<string, any>} [template]
  */
 
 /**
