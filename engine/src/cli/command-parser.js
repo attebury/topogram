@@ -1,14 +1,21 @@
 // @ts-check
 
 /**
- * @typedef {{
- *   version?: boolean,
- *   queryList?: boolean,
- *   queryShow?: boolean,
- *   queryShowName?: string|null,
+ * @typedef {Record<string, any> & {
  *   inputPath: string|null
  * }} SplitCommandArgs
  */
+
+/**
+ * @param {string[]} args
+ * @param {number} index
+ * @param {string} [fallback]
+ * @returns {string}
+ */
+function commandPath(args, index, fallback = "./topogram") {
+  const value = args[index];
+  return value && !value.startsWith("-") ? value : fallback;
+}
 
 /**
  * Parses command families that have already been split out of the CLI shim.
@@ -28,6 +35,21 @@ export function parseSplitCommandArgs(args) {
   }
   if (args[0] === "query" && args[1] === "show") {
     return { queryShow: true, queryShowName: args[2] || null, inputPath: null };
+  }
+  if (args[0] === "doctor") {
+    return { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
+  }
+  if (args[0] === "source" && args[1] === "status") {
+    return { sourceStatus: true, inputPath: commandPath(args, 2, ".") };
+  }
+  if (args[0] === "trust" && args[1] === "template") {
+    return { trustTemplate: true, force: args.includes("--force"), inputPath: commandPath(args, 2) };
+  }
+  if (args[0] === "trust" && args[1] === "status") {
+    return { trustStatus: true, inputPath: commandPath(args, 2) };
+  }
+  if (args[0] === "trust" && args[1] === "diff") {
+    return { trustDiff: true, inputPath: commandPath(args, 2) };
   }
   return null;
 }

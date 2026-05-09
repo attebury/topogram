@@ -2,7 +2,6 @@
 
 import fs from "node:fs";
 import childProcess from "node:child_process";
-import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -40,7 +39,6 @@ import {
 import {
   buildCatalogCheckPayload,
   buildCatalogCopyPayload,
-  buildCatalogDoctorAuth,
   buildCatalogDoctorPayload,
   buildCatalogListPayload,
   buildCatalogShowPayload,
@@ -54,23 +52,12 @@ import {
 } from "./cli/commands/catalog.js";
 import {
   buildPackageUpdateCliPayload,
-  checkDoctorNode,
-  checkDoctorNpm,
-  checkDoctorPackageAccess,
-  checkTemplatePackageStatus,
   CLI_PACKAGE_NAME,
-  inspectTopogramCliLockfile,
-  isLocalCliDependencySpec,
   isPackageVersion,
   latestTopogramCliVersion,
-  localTemplatePackageStatus,
-  normalizeRegistryUrl,
-  NPMJS_REGISTRY,
-  npmConfigGet,
   printPackageHelp,
   printPackageUpdateCli,
-  readInstalledCliPackageVersion,
-  readProjectCliDependencySpec
+  readInstalledCliPackageVersion
 } from "./cli/commands/package.js";
 import {
   buildTemplateListPayload,
@@ -78,7 +65,6 @@ import {
   buildTemplateStatusPayload,
   buildTemplateExplainPayload,
   buildTemplateDetachPayload,
-  buildTemplateOwnedBaselineStatus,
   buildTemplateCheckPayload,
   buildTemplatePolicyCheckPayload,
   buildTemplatePolicyExplainPayload,
@@ -132,17 +118,11 @@ import { buildOutputFiles } from "./generator.js";
 import { loadImplementationProvider } from "./example-implementation.js";
 import {
   createNewProject,
-  writeTemplatePolicyForProject,
-  writeTemplateFilesManifest
+  writeTemplatePolicyForProject
 } from "./new-project.js";
 import {
-  getTemplateTrustDiff,
-  getTemplateTrustStatus,
-  implementationRequiresTrust,
   TEMPLATE_TRUST_FILE,
-  templateTrustRecoveryGuidance,
-  validateProjectImplementationTrust,
-  writeTemplateTrustRecord
+  validateProjectImplementationTrust
 } from "./template-trust.js";
 import { recommendedVerificationTargets } from "./generator/context/shared.js";
 import { GENERATOR_POLICY_FILE } from "./generator-policy.js";
@@ -178,11 +158,8 @@ import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors, validateWorkspace } from "./validator.js";
 import { runWorkflow } from "./workflows.js";
 import {
-  catalogSourceOrDefault,
-  buildTopogramSourceStatus,
   isCatalogSourceDisabled,
-  loadCatalog,
-  TOPOGRAM_SOURCE_FILE
+  loadCatalog
 } from "./catalog.js";
 import { resolveCatalogTemplateAlias } from "./cli/catalog-alias.js";
 import {
@@ -198,7 +175,23 @@ import {
   formatAgentBrief,
   normalizeAgentTopogramPath
 } from "./agent-brief.js";
-import { LOCAL_NPMRC_ENV, localNpmrcStatus } from "./npm-safety.js";
+import { LOCAL_NPMRC_ENV } from "./npm-safety.js";
+import {
+  buildDoctorPayload,
+  printDoctor,
+  printDoctorHelp
+} from "./cli/commands/doctor.js";
+import {
+  buildProjectSourceStatus,
+  printSourceHelp,
+  printTopogramSourceStatus
+} from "./cli/commands/source.js";
+import {
+  printTrustHelp,
+  runTrustDiffCommand,
+  runTrustStatusCommand,
+  runTrustTemplateCommand
+} from "./cli/commands/trust.js";
 import {
   latestWorkflowRun,
   workflowRunJobs
@@ -243,30 +236,6 @@ const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "native-parity-bundle"
 ]);
 
-function printDoctorHelp() {
-  console.log("Usage: topogram doctor [--json] [--catalog <path-or-source>]");
-  console.log("");
-  console.log("Checks local runtime, npm, public package access, CLI lockfile metadata, and catalog access.");
-  console.log("");
-  console.log("Fresh install check:");
-  console.log("  npm install --save-dev @topogram/cli");
-  console.log("  npx topogram doctor");
-  console.log("  npx topogram template list");
-  console.log("  npx topogram new ./my-app --template hello-web");
-  console.log("");
-  console.log("Related setup commands:");
-  console.log("  topogram setup package-auth");
-  console.log("  topogram setup catalog-auth");
-  console.log("");
-  console.log("Examples:");
-  console.log("  topogram doctor");
-  console.log("  topogram doctor --json");
-  console.log("  topogram doctor --catalog ./topograms.catalog.json");
-  console.log("  topogram catalog doctor");
-  console.log("");
-  console.log("Use `catalog doctor` when you only want catalog/package-access diagnostics. Use `doctor --catalog` for the full environment check plus catalog diagnostics.");
-}
-
 function printReleaseHelp() {
   console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
   console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
@@ -287,19 +256,6 @@ function printReleaseHelp() {
   console.log("  npm run release:check");
   console.log("  GitHub Actions: Publish CLI Package");
 }
-
-function printSourceHelp() {
-  console.log("Usage: topogram source status [path] [--local|--remote] [--json]");
-  console.log("");
-  console.log("Reports source provenance, template attachment state, and whether local edits affect template-owned files.");
-  console.log("");
-  console.log("Examples:");
-  console.log("  topogram source status");
-  console.log("  topogram source status --local");
-  console.log("  topogram source status --remote");
-  console.log("  topogram source status --json");
-}
-
 
 function printCheckHelp() {
   console.log("Usage: topogram check [path] [--json]");
@@ -382,6 +338,10 @@ function printCommandHelp(command) {
   }
   if (command === "source") {
     printSourceHelp();
+    return true;
+  }
+  if (command === "trust") {
+    printTrustHelp();
     return true;
   }
   if (command === "import") {
@@ -1879,198 +1839,6 @@ function summarizeConsumerCi(consumers) {
 }
 
 /**
- * @param {string|null} source
- * @returns {{ ok: boolean, node: { version: string, minimum: string, ok: boolean, diagnostics: any[] }, npm: { available: boolean, version: string|null, diagnostics: any[] }, localNpmrc: ReturnType<typeof localNpmrcStatus>, packageRegistry: { required: boolean, reason: string|null, registry: string, configuredRegistry: string|null, registryConfigured: boolean, nodeAuthTokenEnv: boolean, packageName: string, packageSpec: string|null, packageAccess: { ok: boolean, checkedVersion: string|null, diagnostics: any[] } }, lockfile: ReturnType<typeof inspectTopogramCliLockfile>, catalog: ReturnType<typeof buildCatalogDoctorPayload>, diagnostics: any[], errors: string[] }}
- */
-function buildDoctorPayload(source) {
-  const projectCliDependency = readProjectCliDependencySpec(process.cwd());
-  const packageRegistryRequired = !isLocalCliDependencySpec(projectCliDependency);
-  const node = checkDoctorNode();
-  const npm = checkDoctorNpm();
-  const configuredRegistry = npm.available ? npmConfigGet("@topogram:registry") : null;
-  const registryConfigured = !configuredRegistry ||
-    normalizeRegistryUrl(configuredRegistry) === normalizeRegistryUrl(NPMJS_REGISTRY);
-  const registryDiagnostics = [];
-  if (packageRegistryRequired && npm.available && !registryConfigured) {
-    registryDiagnostics.push({
-      code: "package_registry_registry_not_configured",
-      severity: "error",
-      message: `npm is configured to resolve @topogram packages from '${configuredRegistry}', not ${NPMJS_REGISTRY}.`,
-      path: ".npmrc",
-      suggestedFix: "Remove the custom @topogram registry config or set it to https://registry.npmjs.org, then rerun `topogram doctor`."
-    });
-  }
-  const packageSpec = packageRegistryRequired ? `${CLI_PACKAGE_NAME}@${readInstalledCliPackageVersion()}` : null;
-  const packageAccess = packageRegistryRequired && npm.available
-    ? checkDoctorPackageAccess(packageSpec)
-    : packageRegistryRequired ? {
-        ok: false,
-        checkedVersion: null,
-        diagnostics: [{
-          code: "npm_not_found",
-          severity: "error",
-          message: "npm is required to inspect the Topogram CLI package.",
-          path: null,
-          suggestedFix: "Install Node.js/npm, then rerun `topogram doctor`."
-        }]
-      } : {
-        ok: true,
-        checkedVersion: null,
-        diagnostics: []
-      };
-  const catalog = buildDoctorCatalogPayload(source);
-  const lockfile = inspectTopogramCliLockfile(process.cwd());
-  const diagnostics = [
-    ...node.diagnostics,
-    ...npm.diagnostics,
-    ...registryDiagnostics,
-    ...packageAccess.diagnostics,
-    ...lockfile.diagnostics,
-    ...catalog.diagnostics
-  ];
-  const errors = diagnostics
-    .filter((diagnostic) => diagnostic.severity === "error")
-    .map((diagnostic) => diagnostic.message);
-  return {
-    ok: errors.length === 0,
-    node,
-    npm,
-    localNpmrc: localNpmrcStatus(process.cwd()),
-    packageRegistry: {
-      required: packageRegistryRequired,
-      reason: packageRegistryRequired ? null : `Project uses local CLI dependency '${projectCliDependency}'.`,
-      registry: NPMJS_REGISTRY,
-      configuredRegistry,
-      registryConfigured,
-      nodeAuthTokenEnv: Boolean(process.env.NODE_AUTH_TOKEN),
-      packageName: CLI_PACKAGE_NAME,
-      packageSpec,
-      packageAccess
-    },
-    lockfile,
-    catalog,
-    diagnostics,
-    errors
-  };
-}
-
-/**
- * @param {string|null} source
- * @returns {ReturnType<typeof buildCatalogDoctorPayload>}
- */
-function buildDoctorCatalogPayload(source) {
-  const resolvedSource = resolveDoctorCatalogSource(source);
-  if (isCatalogSourceDisabled(resolvedSource)) {
-    return {
-      ok: true,
-      source: resolvedSource,
-      auth: buildCatalogDoctorAuth(resolvedSource),
-      catalog: {
-        reachable: false,
-        version: null,
-        entries: 0
-      },
-      packages: [],
-      diagnostics: [{
-        code: "catalog_check_skipped",
-        severity: "warning",
-        message: "Catalog access check was skipped for this project.",
-        path: null,
-        suggestedFix: "Pass --catalog <source> to check a catalog explicitly."
-      }],
-      errors: []
-    };
-  }
-  return buildCatalogDoctorPayload(resolvedSource);
-}
-
-/**
- * @param {string|null} source
- * @returns {string}
- */
-function resolveDoctorCatalogSource(source) {
-  if (source) {
-    return source;
-  }
-  const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(process.cwd()));
-  if (projectConfigInfo) {
-    const catalog = projectConfigInfo.config?.template?.catalog;
-    if (catalog && typeof catalog.source === "string" && catalog.source) {
-      return catalog.source;
-    }
-    return "none";
-  }
-  return catalogSourceOrDefault(null);
-}
-
-/**
- * @param {ReturnType<typeof buildDoctorPayload>} payload
- * @returns {void}
- */
-function printDoctorSetupGuidance(payload) {
-  console.log("Setup guidance:");
-  if (payload.packageRegistry.required) {
-    console.log(`- CLI package access: public @topogram packages should install from ${payload.packageRegistry.registry} without auth.`);
-  } else {
-    console.log("- CLI package auth: skipped because this project uses a local Topogram CLI dependency.");
-  }
-  if (isCatalogSourceDisabled(payload.catalog.source)) {
-    console.log("- Catalog auth: skipped because catalog discovery is disabled for this project.");
-  } else {
-    console.log("- Catalog auth: the default catalog is public; private catalogs should use GITHUB_TOKEN or GH_TOKEN. Local `gh auth login` is only a no-token fallback.");
-  }
-  console.log("- Template package auth: private template packages may need registry-specific npm auth during npm install.");
-  console.log(`- Local .npmrc: ignored by default. Use --allow-local-npmrc or ${LOCAL_NPMRC_ENV}=1 only after reviewing the file.`);
-  console.log("- Catalog disabled mode: TOPOGRAM_CATALOG_SOURCE=none skips catalog aliases, including the default hello-web starter.");
-}
-
-/**
- * @param {ReturnType<typeof buildDoctorPayload>} payload
- * @returns {void}
- */
-function printDoctor(payload) {
-  console.log(payload.ok ? "Topogram doctor passed." : "Topogram doctor found issues.");
-  console.log(`Node: ${payload.node.version} (${payload.node.ok ? "ok" : `requires ${payload.node.minimum}`})`);
-  console.log(`npm: ${payload.npm.available ? `${payload.npm.version || "available"} (ok)` : "not found"}`);
-  console.log(`local .npmrc: ${payload.localNpmrc.exists ? (payload.localNpmrc.enabled ? "enabled" : "ignored") : "not found"}`);
-  if (payload.localNpmrc.exists) {
-    console.log(`local .npmrc reason: ${payload.localNpmrc.reason}`);
-  }
-  console.log(`npm registry: ${payload.packageRegistry.required ? (payload.packageRegistry.registryConfigured ? "ok" : "misconfigured") : "not required"}`);
-  if (payload.packageRegistry.reason) {
-    console.log(`npm registry reason: ${payload.packageRegistry.reason}`);
-  }
-  if (payload.packageRegistry.configuredRegistry) {
-    console.log(`Configured @topogram registry: ${payload.packageRegistry.configuredRegistry}`);
-  }
-  console.log(`CLI package access: ${payload.packageRegistry.required ? (payload.packageRegistry.packageAccess.ok ? `${payload.packageRegistry.packageSpec} ok` : `${payload.packageRegistry.packageSpec} failed`) : "not checked"}`);
-  if (payload.lockfile.checked && payload.lockfile.packageVersion) {
-    console.log(`CLI lockfile: ${payload.lockfile.packageVersion}${payload.lockfile.refreshRecommended ? " (refresh recommended)" : " (ok)"}`);
-  }
-  console.log(`Catalog source: ${payload.catalog.source}`);
-  console.log(`Catalog reachable: ${payload.catalog.catalog.reachable ? "yes" : "no"}`);
-  if (payload.catalog.catalog.reachable) {
-    console.log(`Catalog entries: ${payload.catalog.catalog.entries}`);
-    const failedPackages = payload.catalog.packages.filter((item) => !item.ok).length;
-    console.log(`Catalog package access: ${failedPackages === 0 ? "ok" : `${failedPackages} failed`}`);
-  }
-  if (payload.catalog.source !== "none" || payload.catalog.catalog.reachable || payload.packageRegistry.required) {
-    console.log("Project provenance: run `topogram source status --local` for catalog, template, trust, and baseline details.");
-  }
-  printDoctorSetupGuidance(payload);
-  if (payload.diagnostics.length > 0) {
-    console.log("Diagnostics:");
-    for (const diagnostic of payload.diagnostics) {
-      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
-      console.log(`- ${label}: ${diagnostic.message}`);
-      if (diagnostic.suggestedFix) {
-        console.log(`  Fix: ${diagnostic.suggestedFix}`);
-      }
-    }
-  }
-}
-
-/**
  * @param {ReturnType<typeof createNewProject>} result
  * @param {string} cwd
  * @returns {string}
@@ -2128,219 +1896,6 @@ function printNewProjectResult(result, cwd) {
   console.log("  npm run verify");
 }
 
-
-/**
- * @param {string} filePath
- * @returns {{ sha256: string, size: number }}
- */
-function projectFileHash(filePath) {
-  const bytes = fs.readFileSync(filePath);
-  return {
-    sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
-    size: bytes.length
-  };
-}
-
-/**
- * @param {string} projectRoot
- * @param {{ local?: boolean }} [options]
- * @returns {ReturnType<typeof buildTopogramSourceStatus> & { project: Record<string, any> }}
- */
-function buildProjectSourceStatus(projectRoot, options = {}) {
-  const resolvedRoot = normalizeProjectRoot(projectRoot);
-  const sourceStatus = buildTopogramSourceStatus(resolvedRoot);
-  const projectConfigInfo = loadProjectConfig(normalizeTopogramPath(resolvedRoot));
-  const template = projectConfigInfo?.config?.template || null;
-  const baseline = buildTemplateOwnedBaselineStatus(resolvedRoot);
-  let trust = {
-    requiresTrust: false,
-    ok: true,
-    status: "not-required",
-    path: path.join(resolvedRoot, TEMPLATE_TRUST_FILE),
-    template: null,
-    implementation: null,
-    content: { trustedDigest: null, currentDigest: null, changed: [], added: [], removed: [] },
-    issues: []
-  };
-  if (projectConfigInfo?.config?.implementation) {
-    const trustStatus = getTemplateTrustStatus({
-      config: projectConfigInfo.config.implementation,
-      configPath: projectConfigInfo.configPath,
-      configDir: projectConfigInfo.configDir
-    }, projectConfigInfo.config);
-    trust = {
-      requiresTrust: trustStatus.requiresTrust,
-      ok: trustStatus.ok,
-      status: trustStatus.requiresTrust ? (trustStatus.ok ? "trusted" : "review-required") : "not-required",
-      path: trustStatus.trustPath,
-      template: trustStatus.template,
-      implementation: trustStatus.implementation,
-      content: trustStatus.content,
-      issues: trustStatus.issues
-    };
-  }
-  const packageStatus = template?.source === "package" && template.sourceSpec
-    ? (options.local ? localTemplatePackageStatus(template.sourceSpec) : checkTemplatePackageStatus(template.sourceSpec))
-    : null;
-  const projectDiagnostics = [];
-  if (!projectConfigInfo) {
-    projectDiagnostics.push({
-      code: "project_config_missing",
-      severity: "warning",
-      message: "topogram.project.json was not found.",
-      path: path.join(resolvedRoot, "topogram.project.json"),
-      suggestedFix: "Run `topogram check` from a Topogram project root."
-    });
-  }
-  return {
-    ...sourceStatus,
-    project: {
-      root: resolvedRoot,
-      config: projectConfigInfo
-        ? { exists: true, path: projectConfigInfo.configPath }
-        : { exists: false, path: path.join(resolvedRoot, "topogram.project.json") },
-      catalog: template?.catalog || sourceStatus.source?.catalog || null,
-      template: template
-        ? {
-            id: template.id || null,
-            version: template.version || null,
-            requested: template.requested || null,
-            source: template.source || null,
-            sourceSpec: template.sourceSpec || null,
-            includesExecutableImplementation: typeof template.includesExecutableImplementation === "boolean"
-              ? template.includesExecutableImplementation
-              : null
-          }
-        : null,
-      package: packageStatus,
-      packageChecks: {
-        mode: options.local ? "local" : "remote",
-        skipped: Boolean(options.local),
-        reason: options.local ? "Package registry checks were skipped because --local was used." : null
-      },
-      trust,
-      templateBaseline: baseline,
-      diagnostics: projectDiagnostics
-    },
-    diagnostics: [...sourceStatus.diagnostics, ...projectDiagnostics]
-  };
-}
-
-/**
- * @param {ReturnType<typeof buildProjectSourceStatus>} payload
- * @returns {void}
- */
-function printTopogramSourceStatus(payload) {
-  if (payload.project?.package && payload.project?.packageChecks?.mode === "remote") {
-    console.log("Package checks: remote. Use --local to skip registry access.");
-  } else if (payload.project?.package && payload.project?.packageChecks?.mode === "local") {
-    console.log("Package checks: local. Registry access skipped.");
-  }
-  if (!payload.exists) {
-    console.log("Topogram source status: no provenance");
-    console.log(`Expected: ${payload.path}`);
-    console.log(`${TOPOGRAM_SOURCE_FILE} was not found. This workspace may not have been copied from a catalog topogram entry.`);
-  } else {
-    console.log(`Topogram source status: ${payload.status}`);
-    console.log(`File: ${payload.path}`);
-    if (payload.source?.catalog?.id) {
-      console.log(`Catalog: ${payload.source.catalog.id}${payload.source.catalog.source ? ` from ${payload.source.catalog.source}` : ""}`);
-    }
-    if (payload.source?.package?.spec) {
-      console.log(`Package: ${payload.source.package.spec}`);
-    }
-  }
-  if (payload.project?.config?.exists) {
-    console.log(`Project config: ${payload.project.config.path}`);
-  }
-  if (payload.project?.catalog?.id) {
-    console.log(`Project catalog: ${payload.project.catalog.id}${payload.project.catalog.source ? ` from ${payload.project.catalog.source}` : ""}`);
-  }
-  if (payload.project?.template?.id) {
-    console.log("Template attachment: attached");
-    console.log(`Template: ${payload.project.template.id}@${payload.project.template.version || "unknown"}`);
-    console.log(`Template source: ${payload.project.template.sourceSpec || payload.project.template.source || "unknown"}`);
-    console.log(`Executable implementation: ${payload.project.template.includesExecutableImplementation ? "yes" : "no"}`);
-  } else if (payload.project?.config?.exists) {
-    console.log("Template attachment: detached");
-    console.log("Template ownership: project-owned");
-  }
-  if (payload.project?.package?.package) {
-    const packageStatus = payload.project.package;
-    if (packageStatus.checked === false) {
-      console.log(`Template package: ${packageStatus.packageSpec} (not checked, local mode)`);
-    } else {
-      const currentLabel = packageStatus.current === null ? "unknown" : (packageStatus.current ? "current" : "update available");
-      console.log(`Template package: ${packageStatus.packageSpec} (${packageStatus.ok ? "reachable" : "unreachable"}, ${currentLabel})`);
-      if (packageStatus.latestVersion) {
-        console.log(`Latest template package version: ${packageStatus.latestVersion}`);
-      }
-    }
-  }
-  if (payload.project?.trust) {
-    console.log(`Implementation trust: ${payload.project.trust.status}`);
-    if (payload.project.trust.content.trustedDigest) {
-      console.log(`Trusted digest: ${payload.project.trust.content.trustedDigest}`);
-    }
-    if (payload.project.trust.content.currentDigest) {
-      console.log(`Current digest: ${payload.project.trust.content.currentDigest}`);
-    }
-  }
-  if (payload.project?.templateBaseline) {
-    const baseline = payload.project.templateBaseline;
-    const blockLabel = baseline.blocksCheck || baseline.blocksGenerate
-      ? "may block workflow"
-      : "does not block check/generate";
-    console.log(`Template baseline: ${baseline.state} (${baseline.trustedFiles} file(s), ${blockLabel})`);
-    console.log(`Template baseline meaning: ${baseline.meaning}`);
-    if (baseline.localOwnership) {
-      console.log("Template baseline ownership: local project owns these changes");
-    }
-    console.log(`Template baseline changed: ${baseline.content.changed.length}`);
-    console.log(`Template baseline removed: ${baseline.content.removed.length}`);
-  }
-  for (const kind of ["changed", "added", "removed"]) {
-    const files = payload.content[kind] || [];
-    console.log(`${kind[0].toUpperCase()}${kind.slice(1)}: ${files.length}`);
-    for (const file of files) {
-      console.log(`- ${file}`);
-    }
-  }
-  for (const diagnostic of payload.diagnostics) {
-    const label = diagnostic.severity === "warning" ? "Warning" : "Error";
-    console.log(`${label}: ${diagnostic.message}`);
-  }
-  if (payload.project?.package?.diagnostics?.length) {
-    for (const diagnostic of payload.project.package.diagnostics) {
-      const label = diagnostic.severity === "warning" ? "Warning" : "Error";
-      console.log(`${label}: ${diagnostic.message}`);
-      if (diagnostic.suggestedFix) {
-        console.log(`Fix: ${diagnostic.suggestedFix}`);
-      }
-    }
-  }
-  if (payload.project?.trust?.issues?.length) {
-    for (const issue of payload.project.trust.issues) {
-      console.log(`Issue: ${issue}`);
-    }
-  }
-  console.log("");
-  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
-  console.log("Template attachment controls update tracking. Detaching makes the project fully owned by this workspace.");
-  console.log("Template baseline drift does not block `topogram check` or `topogram generate`.");
-  console.log("Implementation trust is separate and can block check/generate when review is required.");
-  if (payload.project?.trust?.status === "review-required") {
-    console.log("Next: review implementation changes, then run `topogram trust status` or `topogram trust template`.");
-  } else if (payload.exists && payload.status === "changed") {
-    console.log("Next: review the listed files, then run `topogram check` and `topogram generate` when ready.");
-  } else if (payload.project?.templateBaseline?.state === "diverged") {
-    console.log("Next: local template-derived changes are owned by this project. Run `topogram template update --check` only when reviewing upstream template changes.");
-  } else if (!payload.exists) {
-    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
-  } else {
-    console.log("Next: run `topogram check` or `topogram generate`.");
-  }
-}
 
 function workflowPresetSelectors({
   taskModeArtifact,
@@ -2504,8 +2059,6 @@ let inputPath = args[0];
 commandArgs = parseSplitCommandArgs(args);
 if (commandArgs) {
   // Parsed by split command modules.
-} else if (args[0] === "doctor") {
-  commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
 } else if (args[0] === "release" && args[1] === "status") {
   commandArgs = { releaseStatus: true, inputPath: null };
 } else if (args[0] === "release" && args[1] === "roll-consumers") {
@@ -2559,12 +2112,6 @@ if (commandArgs) {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(2), defaultOutDir: "./app" };
 } else if (args[0] === "generate" && args[1] !== "journeys") {
   commandArgs = { generateTarget: "app-bundle", write: true, inputPath: commandPath(1), defaultOutDir: "./app" };
-} else if (args[0] === "trust" && args[1] === "template") {
-  commandArgs = { trustTemplate: true, force: args.includes("--force"), inputPath: commandPath(2) };
-} else if (args[0] === "trust" && args[1] === "status") {
-  commandArgs = { trustStatus: true, inputPath: commandPath(2) };
-} else if (args[0] === "trust" && args[1] === "diff") {
-  commandArgs = { trustDiff: true, inputPath: commandPath(2) };
 } else if (args[0] === "catalog" && args[1] === "list") {
   commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
 } else if (args[0] === "catalog" && args[1] === "show") {
@@ -2577,8 +2124,6 @@ if (commandArgs) {
   commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
 } else if (args[0] === "package" && args[1] === "update-cli") {
   commandArgs = { packageUpdateCli: true, inputPath: args.includes("--latest") ? "latest" : args[2] };
-} else if (args[0] === "source" && args[1] === "status") {
-  commandArgs = { sourceStatus: true, inputPath: commandPath(2, ".") };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "show") {
@@ -3522,151 +3067,15 @@ try {
   }
 
   if (shouldTrustTemplate) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot trust template files without topogram.project.json.");
-    }
-    const templateManifestPath = path.join(projectConfigInfo.configDir, "topogram-template.json");
-    if (!projectConfigInfo.config.template && fs.existsSync(templateManifestPath) && !shouldForce) {
-      throw new Error("Cannot write consumer template trust metadata in a template source repo. Template source repos should not contain .topogram-template-files.json or .topogram-template-trust.json. Run this command in a generated project, or pass --force if you intentionally need local trust metadata here.");
-    }
-    if (!projectConfigInfo.config.template && fs.existsSync(templateManifestPath) && shouldForce) {
-      console.warn("Warning: writing consumer template trust metadata in a template source repo because --force was provided.");
-    }
-    const fileManifest = writeTemplateFilesManifest(projectConfigInfo.configDir, projectConfigInfo.config);
-    console.log(`Wrote .topogram-template-files.json with ${fileManifest.files.length} template-owned file hash(es).`);
-    if (projectConfigInfo.config.implementation) {
-      const implementationInfo = {
-        config: projectConfigInfo.config.implementation,
-        configPath: projectConfigInfo.configPath,
-        configDir: projectConfigInfo.configDir
-      };
-      if (implementationRequiresTrust(implementationInfo, projectConfigInfo.config)) {
-        const trustRecord = writeTemplateTrustRecord(projectConfigInfo.configDir, projectConfigInfo.config);
-        console.log(`Wrote ${TEMPLATE_TRUST_FILE} for ${trustRecord.implementation.module}.`);
-        if (trustRecord.template.id) {
-          console.log(`Trusted template: ${trustRecord.template.id}@${trustRecord.template.version || "unknown"}`);
-        }
-        console.log(`Trusted implementation digest: ${trustRecord.content.digest}`);
-        process.exit(0);
-      }
-    }
-    console.log("No local implementation trust record needed for this project.");
-    process.exit(0);
+    process.exit(runTrustTemplateCommand(inputPath, { force: shouldForce }));
   }
 
   if (shouldTrustStatus) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot inspect template trust without topogram.project.json.");
-    }
-    if (!projectConfigInfo.config.implementation) {
-      throw new Error("Cannot inspect template trust because topogram.project.json has no implementation config.");
-    }
-    const implementationInfo = {
-      config: projectConfigInfo.config.implementation,
-      configPath: projectConfigInfo.configPath,
-      configDir: projectConfigInfo.configDir
-    };
-    const status = getTemplateTrustStatus(implementationInfo, projectConfigInfo.config);
-    if (emitJson) {
-      console.log(stableStringify(status));
-    } else if (!status.requiresTrust) {
-      console.log("No local implementation trust record needed for this project.");
-    } else {
-      console.log(status.ok ? "Implementation trust status: trusted" : "Implementation trust status: review required");
-      if (status.template.id) {
-        console.log(`Template: ${status.template.id}@${status.template.version || "unknown"}`);
-      }
-      console.log(`Implementation: ${status.implementation.module}`);
-      if (status.content.trustedDigest) {
-        console.log(`Trusted digest: ${status.content.trustedDigest}`);
-      }
-      if (status.content.currentDigest) {
-        console.log(`Current digest: ${status.content.currentDigest}`);
-      }
-      for (const issue of status.issues) {
-        console.log(`Issue: ${issue}`);
-      }
-      for (const filePath of status.content.changed) {
-        console.log(`Changed: ${filePath}`);
-      }
-      for (const filePath of status.content.added) {
-        console.log(`Added: ${filePath}`);
-      }
-      for (const filePath of status.content.removed) {
-        console.log(`Removed: ${filePath}`);
-      }
-      if (!status.ok) {
-        const guidance = templateTrustRecoveryGuidance(status.issues);
-        if (guidance) {
-          console.log(guidance);
-        }
-      }
-    }
-    process.exit(status.ok ? 0 : 1);
+    process.exit(runTrustStatusCommand(inputPath, { json: emitJson }));
   }
 
   if (shouldTrustDiff) {
-    const projectConfigInfo = loadProjectConfig(inputPath);
-    if (!projectConfigInfo) {
-      throw new Error("Cannot inspect template trust diff without topogram.project.json.");
-    }
-    if (!projectConfigInfo.config.implementation) {
-      throw new Error("Cannot inspect template trust diff because topogram.project.json has no implementation config.");
-    }
-    const implementationInfo = {
-      config: projectConfigInfo.config.implementation,
-      configPath: projectConfigInfo.configPath,
-      configDir: projectConfigInfo.configDir
-    };
-    const diff = getTemplateTrustDiff(implementationInfo, projectConfigInfo.config);
-    if (emitJson) {
-      console.log(stableStringify(diff));
-    } else if (!diff.requiresTrust) {
-      console.log("No local implementation trust record needed for this project.");
-    } else if (diff.files.length === 0) {
-      console.log(diff.ok ? "Template trust diff: no implementation changes." : "Template trust diff: no file-level diff available.");
-      for (const issue of diff.status.issues) {
-        console.log(`Issue: ${issue}`);
-      }
-      if (!diff.ok) {
-        const guidance = templateTrustRecoveryGuidance(diff.status.issues);
-        if (guidance) {
-          console.log(guidance);
-        }
-      }
-    } else {
-      console.log(diff.ok ? "Template trust diff: no implementation changes." : "Template trust diff: review required");
-      for (const file of diff.files) {
-        console.log("");
-        console.log(`${file.kind.toUpperCase()}: implementation/${file.path}`);
-        if (file.trusted) {
-          console.log(`  trusted sha256: ${file.trusted.sha256}`);
-          console.log(`  trusted size: ${file.trusted.size}`);
-        }
-        if (file.current) {
-          console.log(`  current sha256: ${file.current.sha256}`);
-          console.log(`  current size: ${file.current.size}`);
-        }
-        if (file.binary) {
-          console.log("  diff: binary file");
-        } else if (file.diffOmitted && !file.unifiedDiff) {
-          console.log("  diff: hash-only");
-        }
-        if (file.unifiedDiff) {
-          console.log(file.unifiedDiff.trimEnd());
-        }
-      }
-      if (!diff.ok) {
-        console.log("");
-        const guidance = templateTrustRecoveryGuidance(diff.status.issues);
-        if (guidance) {
-          console.log(guidance);
-        }
-      }
-    }
-    process.exit(diff.ok ? 0 : 1);
+    process.exit(runTrustDiffCommand(inputPath, { json: emitJson }));
   }
 
   if (shouldCheck) {
