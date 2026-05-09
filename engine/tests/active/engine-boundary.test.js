@@ -476,6 +476,13 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printGeneratorPolicyExplainPayload(",
     "function printGeneratorPolicyInitPayload(",
     "function printGeneratorPolicyPinPayload(",
+    "function printTemplateHelp(",
+    "function buildTemplateListPayload(",
+    "function printTemplateList(",
+    "function buildTemplateShowPayload(",
+    "function printTemplateShow(",
+    "function templateListItemFromCatalogEntry(",
+    "function templateDecisionSummary(",
     "commandArgs = { version:",
     "commandArgs = { queryList:",
     "commandArgs = { queryShow:"
