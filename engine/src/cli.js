@@ -46,23 +46,12 @@ import {
   printGeneratorShow
 } from "./cli/commands/generator.js";
 import {
-  buildCatalogCheckPayload,
-  buildCatalogCopyPayload,
-  buildCatalogDoctorPayload,
-  buildCatalogListPayload,
-  buildCatalogShowPayload,
-  printCatalogCheck,
-  printCatalogCopy,
-  printCatalogDoctor,
   printCatalogHelp,
-  printCatalogList,
-  printCatalogShow,
-  shellCommandArg
+  runCatalogCommand
 } from "./cli/commands/catalog.js";
 import {
-  buildPackageUpdateCliPayload,
   printPackageHelp,
-  printPackageUpdateCli
+  runPackageCommand
 } from "./cli/commands/package.js";
 import {
   buildTemplateListPayload,
@@ -155,15 +144,12 @@ import {
   printDoctorHelp
 } from "./cli/commands/doctor.js";
 import {
-  buildProjectSourceStatus,
   printSourceHelp,
-  printTopogramSourceStatus
+  runSourceCommand
 } from "./cli/commands/source.js";
 import {
   printTrustHelp,
-  runTrustDiffCommand,
-  runTrustStatusCommand,
-  runTrustTemplateCommand
+  runTrustCommand
 } from "./cli/commands/trust.js";
 import {
   buildReleaseRollConsumersPayload,
@@ -412,18 +398,6 @@ if (commandArgs?.emitHelp) {
 } else if (args[0] === "generator") {
   printGeneratorHelp();
   process.exit(args[1] ? 1 : 0);
-} else if (args[0] === "catalog" && args[1] === "list") {
-  commandArgs = { catalogList: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
-} else if (args[0] === "catalog" && args[1] === "show") {
-  commandArgs = { catalogShow: true, inputPath: args[2] };
-} else if (args[0] === "catalog" && args[1] === "doctor") {
-  commandArgs = { catalogDoctor: true, inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
-} else if (args[0] === "catalog" && args[1] === "check") {
-  commandArgs = { catalogCheck: true, inputPath: args[2] };
-} else if (args[0] === "catalog" && args[1] === "copy") {
-  commandArgs = { catalogCopy: true, catalogId: args[2], inputPath: args[3] };
-} else if (args[0] === "package" && args[1] === "update-cli") {
-  commandArgs = { packageUpdateCli: true, inputPath: args.includes("--latest") ? "latest" : args[2] };
 } else if (args[0] === "template" && args[1] === "list") {
   commandArgs = { templateList: true, inputPath: null };
 } else if (args[0] === "template" && args[1] === "show") {
@@ -501,17 +475,7 @@ const shouldGeneratorPolicyStatus = Boolean(commandArgs?.generatorPolicyStatus);
 const shouldGeneratorPolicyCheck = Boolean(commandArgs?.generatorPolicyCheck);
 const shouldGeneratorPolicyExplain = Boolean(commandArgs?.generatorPolicyExplain);
 const shouldGeneratorPolicyPin = Boolean(commandArgs?.generatorPolicyPin);
-const shouldTrustTemplate = Boolean(commandArgs?.trustTemplate);
-const shouldTrustStatus = Boolean(commandArgs?.trustStatus);
-const shouldTrustDiff = Boolean(commandArgs?.trustDiff);
 const shouldForce = Boolean(commandArgs?.force) || args.includes("--force");
-const shouldCatalogList = Boolean(commandArgs?.catalogList);
-const shouldCatalogShow = Boolean(commandArgs?.catalogShow);
-const shouldCatalogDoctor = Boolean(commandArgs?.catalogDoctor);
-const shouldCatalogCheck = Boolean(commandArgs?.catalogCheck);
-const shouldCatalogCopy = Boolean(commandArgs?.catalogCopy);
-const shouldPackageUpdateCli = Boolean(commandArgs?.packageUpdateCli);
-const shouldSourceStatus = Boolean(commandArgs?.sourceStatus);
 const shouldQueryList = Boolean(commandArgs?.queryList);
 const shouldQueryShow = Boolean(commandArgs?.queryShow);
 const shouldTemplateList = Boolean(commandArgs?.templateList);
@@ -625,32 +589,14 @@ const outIndex = args.indexOf("--out");
 const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 const effectiveOutDir = outDir || outPath || commandArgs?.defaultOutDir || null;
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldSourceStatus || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldGeneratorCheck || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldValidate || commandArgs?.trustCommand || commandArgs?.sourceCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplateDetach || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateCheck || shouldTemplateUpdate || generateTarget === "app-bundle") && !inputPath) {
   console.error("Missing required <path>.");
   printUsage();
   process.exit(1);
 }
 
-if ((shouldCatalogShow || shouldTemplateShow) && !inputPath) {
+if (shouldTemplateShow && !inputPath) {
   console.error("Missing required <id>.");
-  printUsage();
-  process.exit(1);
-}
-
-if (shouldCatalogCheck && !inputPath) {
-  console.error("Missing required <path-or-url>.");
-  printUsage();
-  process.exit(1);
-}
-
-if (shouldCatalogCopy && (!commandArgs?.catalogId || !inputPath)) {
-  console.error("Missing required <id> or <target>.");
-  printUsage();
-  process.exit(1);
-}
-
-if (shouldPackageUpdateCli && !inputPath) {
-  console.error("Missing required <version>.");
   printUsage();
   process.exit(1);
 }
@@ -691,7 +637,7 @@ if (shouldQueryShow && !commandArgs?.queryShowName) {
   process.exit(1);
 }
 
-if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || shouldTrustTemplate || shouldTrustStatus || shouldTrustDiff || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
+if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || shouldGeneratorPolicyInit || shouldGeneratorPolicyStatus || shouldGeneratorPolicyCheck || shouldGeneratorPolicyExplain || shouldGeneratorPolicyPin || commandArgs?.trustCommand || shouldTemplateExplain || shouldTemplateStatus || shouldTemplatePolicyInit || shouldTemplatePolicyCheck || shouldTemplatePolicyExplain || shouldTemplatePolicyPin || shouldTemplateUpdate || generateTarget === "app-bundle") && inputPath) {
   inputPath = normalizeTopogramPath(inputPath);
 }
 
@@ -871,67 +817,18 @@ try {
     process.exit(payload.ok ? 0 : 1);
   }
 
-  if (shouldCatalogList) {
-    const payload = buildCatalogListPayload(catalogSource || inputPath || null);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printCatalogList(payload);
-    }
-    process.exit(0);
+  if (commandArgs?.catalogCommand) {
+    process.exit(runCatalogCommand({
+      commandArgs,
+      inputPath,
+      catalogSource,
+      requestedVersion,
+      json: emitJson
+    }));
   }
 
-  if (shouldCatalogShow) {
-    const payload = buildCatalogShowPayload(inputPath, catalogSource);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printCatalogShow(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldCatalogDoctor) {
-    const payload = buildCatalogDoctorPayload(catalogSource || inputPath || null);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printCatalogDoctor(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldCatalogCheck) {
-    const payload = buildCatalogCheckPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printCatalogCheck(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldCatalogCopy) {
-    const payload = buildCatalogCopyPayload(commandArgs.catalogId, inputPath, {
-      source: catalogSource,
-      version: requestedVersion
-    });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printCatalogCopy(payload);
-    }
-    process.exit(0);
-  }
-
-  if (shouldPackageUpdateCli) {
-    const payload = buildPackageUpdateCliPayload(inputPath);
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printPackageUpdateCli(payload);
-    }
-    process.exit(0);
+  if (commandArgs?.packageCommand) {
+    process.exit(runPackageCommand({ commandArgs, inputPath, json: emitJson }));
   }
 
   if (shouldImportWorkspace) {
@@ -1030,17 +927,8 @@ try {
     process.exit(payload.ok ? 0 : 1);
   }
 
-  if (shouldSourceStatus) {
-    const sourceStatusRemote = args.includes("--remote");
-    const payload = buildProjectSourceStatus(normalizeProjectRoot(inputPath), {
-      local: args.includes("--local") && !sourceStatusRemote
-    });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printTopogramSourceStatus(payload);
-    }
-    process.exit(0);
+  if (commandArgs?.sourceCommand) {
+    process.exit(runSourceCommand({ commandArgs, inputPath, args, json: emitJson }));
   }
 
   if (commandArgs?.newProject) {
@@ -1195,16 +1083,8 @@ try {
     process.exit(update.ok ? 0 : 1);
   }
 
-  if (shouldTrustTemplate) {
-    process.exit(runTrustTemplateCommand(inputPath, { force: shouldForce }));
-  }
-
-  if (shouldTrustStatus) {
-    process.exit(runTrustStatusCommand(inputPath, { json: emitJson }));
-  }
-
-  if (shouldTrustDiff) {
-    process.exit(runTrustDiffCommand(inputPath, { json: emitJson }));
+  if (commandArgs?.trustCommand) {
+    process.exit(runTrustCommand({ commandArgs, inputPath, json: emitJson }));
   }
 
   if (shouldCheck) {

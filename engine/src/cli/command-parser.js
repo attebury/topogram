@@ -119,22 +119,40 @@ export function parseSplitCommandArgs(args) {
     return { widgetBehavior: true, inputPath: commandPath(args, 2) };
   }
   if (args[0] === "source" && args[1] === "status") {
-    return { sourceStatus: true, inputPath: commandPath(args, 2, ".") };
+    return { sourceCommand: "status", inputPath: commandPath(args, 2, ".") };
   }
   if (args[0] === "trust" && args[1] === "template") {
-    return { trustTemplate: true, force: args.includes("--force"), inputPath: commandPath(args, 2) };
+    return { trustCommand: "template", force: args.includes("--force"), inputPath: commandPath(args, 2) };
   }
   if (args[0] === "trust" && args[1] === "status") {
-    return { trustStatus: true, inputPath: commandPath(args, 2) };
+    return { trustCommand: "status", inputPath: commandPath(args, 2) };
   }
   if (args[0] === "trust" && args[1] === "diff") {
-    return { trustDiff: true, inputPath: commandPath(args, 2) };
+    return { trustCommand: "diff", inputPath: commandPath(args, 2) };
   }
   if (args[0] === "release" && args[1] === "status") {
     return { releaseStatus: true, inputPath: null };
   }
   if (args[0] === "release" && args[1] === "roll-consumers") {
     return { releaseRollConsumers: true, releaseRollVersion: args[2], inputPath: null };
+  }
+  if (args[0] === "catalog" && args[1] === "list") {
+    return { catalogCommand: "list", inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+  }
+  if (args[0] === "catalog" && args[1] === "show") {
+    return { catalogCommand: "show", inputPath: args[2] };
+  }
+  if (args[0] === "catalog" && args[1] === "doctor") {
+    return { catalogCommand: "doctor", inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };
+  }
+  if (args[0] === "catalog" && args[1] === "check") {
+    return { catalogCommand: "check", inputPath: args[2] };
+  }
+  if (args[0] === "catalog" && args[1] === "copy") {
+    return { catalogCommand: "copy", catalogId: args[2], inputPath: args[3] };
+  }
+  if (args[0] === "package" && args[1] === "update-cli") {
+    return { packageCommand: "update-cli", inputPath: args.includes("--latest") ? "latest" : args[2] };
   }
   if (args[0] === "import" && args[1] === "app") {
     return { workflowName: "import-app", inputPath: args[2] };

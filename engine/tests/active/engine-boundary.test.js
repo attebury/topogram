@@ -495,6 +495,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "function buildCatalogShowPayload(",
     "function catalogShowCommands(",
     "function printCatalogShow(",
+    "function runCatalogCommand(",
     "function buildCatalogDoctorPayload(",
     "function runNpmViewPackageSpec(",
     "function catalogDoctorPackageDiagnostic(",
@@ -506,6 +507,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printPackageHelp(",
     "function buildPackageUpdateCliPayload(",
     "function printPackageUpdateCli(",
+    "function runPackageCommand(",
     "function readProjectCliDependencySpec(",
     "function isLocalCliDependencySpec(",
     "function checkDoctorNode(",
@@ -576,6 +578,8 @@ test("split CLI command families stay out of the binary shim", () => {
     "function buildTemplateUpdateCliPayload(",
     "function templateListItemFromCatalogEntry(",
     "function templateDecisionSummary(",
+    "function runSourceCommand(",
+    "function runTrustCommand(",
     "commandArgs = { version:",
     "commandArgs = { queryList:",
     "commandArgs = { queryShow:",
@@ -589,7 +593,11 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { widgetBehavior:",
     "commandArgs = { validate:",
     "commandArgs = { workflowName:",
-    "commandArgs = { sdlcCommand:"
+    "commandArgs = { sdlcCommand:",
+    "commandArgs = { catalogCommand:",
+    "commandArgs = { packageCommand:",
+    "commandArgs = { sourceCommand:",
+    "commandArgs = { trustCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 

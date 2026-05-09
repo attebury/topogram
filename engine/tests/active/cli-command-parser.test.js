@@ -111,6 +111,52 @@ test("split command parser handles extracted command families", () => {
     widgetBehavior: true,
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["source", "status", "./custom-topogram", "--local"]), {
+    sourceCommand: "status",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["trust", "template", "./custom-topogram", "--force"]), {
+    trustCommand: "template",
+    force: true,
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["trust", "status"]), {
+    trustCommand: "status",
+    inputPath: "./topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["trust", "diff", "./custom-topogram"]), {
+    trustCommand: "diff",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["catalog", "list", "--json"]), {
+    catalogCommand: "list",
+    inputPath: null
+  });
+  assert.deepEqual(parseSplitCommandArgs(["catalog", "show", "hello-web"]), {
+    catalogCommand: "show",
+    inputPath: "hello-web"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["catalog", "doctor", "./topograms.catalog.json"]), {
+    catalogCommand: "doctor",
+    inputPath: "./topograms.catalog.json"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["catalog", "check", "./topograms.catalog.json"]), {
+    catalogCommand: "check",
+    inputPath: "./topograms.catalog.json"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["catalog", "copy", "hello", "./target"]), {
+    catalogCommand: "copy",
+    catalogId: "hello",
+    inputPath: "./target"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["package", "update-cli", "0.3.63"]), {
+    packageCommand: "update-cli",
+    inputPath: "0.3.63"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["package", "update-cli", "--latest"]), {
+    packageCommand: "update-cli",
+    inputPath: "latest"
+  });
   assert.deepEqual(parseSplitCommandArgs(["import", "app", "./legacy-app"]), {
     workflowName: "import-app",
     inputPath: "./legacy-app"

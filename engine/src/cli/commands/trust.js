@@ -195,3 +195,25 @@ export function runTrustDiffCommand(inputPath, options = {}) {
   }
   return diff.ok ? 0 : 1;
 }
+
+/**
+ * @param {{
+ *   commandArgs: Record<string, any>,
+ *   inputPath: string|null|undefined,
+ *   json: boolean
+ * }} context
+ * @returns {number}
+ */
+export function runTrustCommand(context) {
+  const inputPath = context.inputPath || "./topogram";
+  if (context.commandArgs.trustCommand === "template") {
+    return runTrustTemplateCommand(inputPath, { force: Boolean(context.commandArgs.force) });
+  }
+  if (context.commandArgs.trustCommand === "status") {
+    return runTrustStatusCommand(inputPath, { json: context.json });
+  }
+  if (context.commandArgs.trustCommand === "diff") {
+    return runTrustDiffCommand(inputPath, { json: context.json });
+  }
+  throw new Error(`Unknown trust command '${context.commandArgs.trustCommand}'`);
+}

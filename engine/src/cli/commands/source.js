@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { stableStringify } from "../../format.js";
 import {
   buildTopogramSourceStatus,
   TOPOGRAM_SOURCE_FILE
@@ -262,4 +263,29 @@ export function printTopogramSourceStatus(payload) {
   } else {
     console.log("Next: run `topogram check` or `topogram generate`.");
   }
+}
+
+/**
+ * @param {{
+ *   commandArgs: Record<string, any>,
+ *   inputPath: string|null|undefined,
+ *   args: string[],
+ *   json: boolean
+ * }} context
+ * @returns {number}
+ */
+export function runSourceCommand(context) {
+  if (context.commandArgs.sourceCommand !== "status") {
+    throw new Error(`Unknown source command '${context.commandArgs.sourceCommand}'`);
+  }
+  const sourceStatusRemote = context.args.includes("--remote");
+  const payload = buildProjectSourceStatus(normalizeProjectRoot(context.inputPath || "."), {
+    local: context.args.includes("--local") && !sourceStatusRemote
+  });
+  if (context.json) {
+    console.log(stableStringify(payload));
+  } else {
+    printTopogramSourceStatus(payload);
+  }
+  return 0;
 }
