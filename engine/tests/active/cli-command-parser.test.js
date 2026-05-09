@@ -66,6 +66,22 @@ test("split command parser handles extracted command families", () => {
     queryShowName: "--json",
     inputPath: null
   });
+  assert.deepEqual(parseSplitCommandArgs(["query", "slice", "./custom-topogram"]), {
+    queryName: "slice",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["query", "change-plan", "./custom-topogram"]), {
+    queryName: "change-plan",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["query", "workflow-preset", "customize", "./custom-topogram"]), {
+    workflowPresetCommand: "customize",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["workflow-preset", "customize", "./custom-topogram"]), {
+    workflowPresetCommand: "customize",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["check"]), { check: true, inputPath: "./topogram" });
   assert.deepEqual(parseSplitCommandArgs(["check", "./custom-topogram"]), {
     check: true,
@@ -90,6 +106,5 @@ test("split command parser handles extracted command families", () => {
 });
 
 test("split command parser leaves unsplit command families to the legacy parser", () => {
-  assert.equal(parseSplitCommandArgs(["query", "slice", "./topogram"]), null);
   assert.equal(parseSplitCommandArgs(["generate", "journeys", "./topogram"]), null);
 });
