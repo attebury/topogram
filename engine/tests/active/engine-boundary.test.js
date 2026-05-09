@@ -459,7 +459,10 @@ test("split CLI command families stay out of the binary shim", () => {
     "function buildQueryShowPayload(",
     "function printQueryHelp(",
     "function printQueryDefinition(",
-    "function printQueryList("
+    "function printQueryList(",
+    "commandArgs = { version:",
+    "commandArgs = { queryList:",
+    "commandArgs = { queryShow:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 

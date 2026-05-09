@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { assertSupportedNode } from "./runtime-support.js";
+import { parseSplitCommandArgs } from "./cli/command-parser.js";
 import { handleSetupCommand, printSetupHelp } from "./cli/commands/setup.js";
 import { buildVersionPayload, printVersion } from "./cli/commands/version.js";
 import {
@@ -8043,8 +8044,9 @@ function commandOperandFrom(index, fallback = ".") {
 
 let commandArgs = null;
 let inputPath = args[0];
-if (args[0] === "version" || args[0] === "--version") {
-  commandArgs = { version: true, inputPath: null };
+commandArgs = parseSplitCommandArgs(args);
+if (commandArgs) {
+  // Parsed by split command modules.
 } else if (args[0] === "doctor") {
   commandArgs = { doctor: true, inputPath: args[1] && !args[1].startsWith("-") ? args[1] : null };
 } else if (args[0] === "release" && args[1] === "status") {
@@ -8177,10 +8179,6 @@ if (args[0] === "version" || args[0] === "--version") {
   commandArgs = { workflowName: "reconcile", inputPath: args[1] };
 } else if (args[0] === "adoption" && args[1] === "status") {
   commandArgs = { workflowName: "adoption-status", inputPath: args[2] };
-} else if (args[0] === "query" && args[1] === "list") {
-  commandArgs = { queryList: true, inputPath: null };
-} else if (args[0] === "query" && args[1] === "show") {
-  commandArgs = { queryShow: true, queryShowName: args[2] || null, inputPath: null };
 } else if (args[0] === "query" && args[1] === "task-mode") {
   commandArgs = { generateTarget: "context-task-mode", inputPath: args[2] };
 } else if (args[0] === "query" && args[1] === "adoption-plan") {

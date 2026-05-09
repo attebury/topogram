@@ -28,6 +28,7 @@
     "./src/npm-safety.js",
     "./src/github-client.js",
     "./src/topogram-config.js",
+    "./src/cli/command-parser.js",
     "./src/cli/commands/setup.js",
     "./src/cli/commands/version.js",
     "./src/cli/commands/query.js",
