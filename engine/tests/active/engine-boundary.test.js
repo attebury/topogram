@@ -470,6 +470,7 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printWidgetBehaviorReport(",
     "function runWidgetCheckCommand(",
     "function runWidgetBehaviorCommand(",
+    "function runCheckCommand(",
     "function printImportHelp(",
     "function buildBrownfieldImportWorkspacePayload(",
     "function printBrownfieldImportWorkspace(",
@@ -550,6 +551,9 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printGeneratorPolicyExplainPayload(",
     "function printGeneratorPolicyInitPayload(",
     "function printGeneratorPolicyPinPayload(",
+    "function runReleaseCommand(",
+    "function buildReleaseStatusPayload(",
+    "function buildReleaseRollConsumersPayload(",
     "function printTemplateHelp(",
     "function buildTemplateListPayload(",
     "function printTemplateList(",
@@ -605,7 +609,8 @@ test("split CLI command families stay out of the binary shim", () => {
     "commandArgs = { generatorCommand:",
     "commandArgs = { generatorPolicyCommand:",
     "commandArgs = { templateCommand:",
-    "commandArgs = { importCommand:"
+    "commandArgs = { importCommand:",
+    "commandArgs = { releaseCommand:"
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 

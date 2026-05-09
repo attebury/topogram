@@ -229,10 +229,10 @@ export function parseSplitCommandArgs(args) {
     return { trustCommand: "diff", inputPath: commandPath(args, 2) };
   }
   if (args[0] === "release" && args[1] === "status") {
-    return { releaseStatus: true, inputPath: null };
+    return { releaseCommand: "status", inputPath: null };
   }
   if (args[0] === "release" && args[1] === "roll-consumers") {
-    return { releaseRollConsumers: true, releaseRollVersion: args[2], inputPath: null };
+    return { releaseCommand: "roll-consumers", releaseRollVersion: args[2], inputPath: null };
   }
   if (args[0] === "catalog" && args[1] === "list") {
     return { catalogCommand: "list", inputPath: args[2] && !args[2].startsWith("-") ? args[2] : null };

@@ -1,5 +1,19 @@
 // @ts-check
 
+import fs from "node:fs";
+import path from "node:path";
+
+import { stableStringify } from "../../format.js";
+import {
+  buildReleaseRollConsumersPayload,
+  printReleaseRollConsumers
+} from "./release-rollout.js";
+import {
+  buildReleaseStatusPayload,
+  printReleaseStatus,
+  renderReleaseStatusMarkdown
+} from "./release-status.js";
+
 /**
  * @returns {void}
  */
@@ -27,9 +41,67 @@ export function printReleaseHelp() {
 export {
   buildReleaseRollConsumersPayload,
   printReleaseRollConsumers
-} from "./release-rollout.js";
+};
 export {
   buildReleaseStatusPayload,
   printReleaseStatus,
   renderReleaseStatusMarkdown
-} from "./release-status.js";
+};
+
+/**
+ * @param {{ commandArgs: Record<string, any>, args: string[], json?: boolean }} context
+ * @returns {number}
+ */
+export function runReleaseCommand(context) {
+  const { commandArgs, args, json = false } = context;
+  const command = commandArgs.releaseCommand;
+  const reportIndex = args.indexOf("--write-report");
+  const reportPath = reportIndex >= 0 &&
+    args[reportIndex + 1] &&
+    !args[reportIndex + 1].startsWith("-")
+    ? args[reportIndex + 1]
+    : null;
+  if (command === "status") {
+    if (args.includes("--write-report") && !reportPath) {
+      console.error("Missing required --write-report <path>.");
+      printReleaseHelp();
+      return 1;
+    }
+    const payload = buildReleaseStatusPayload({ strict: args.includes("--strict") });
+    if (reportPath) {
+      const target = path.resolve(reportPath);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, renderReleaseStatusMarkdown(payload), "utf8");
+    }
+    if (json) {
+      console.log(stableStringify(payload));
+    } else if (args.includes("--markdown")) {
+      console.log(renderReleaseStatusMarkdown(payload).trimEnd());
+    } else {
+      printReleaseStatus(payload);
+      if (reportPath) {
+        console.log(`Report: ${path.resolve(reportPath)}`);
+      }
+    }
+    return payload.ok ? 0 : 1;
+  }
+
+  if (command === "roll-consumers") {
+    const push = !args.includes("--no-push");
+    const watch = args.includes("--watch");
+    if (watch && !push) {
+      console.error("Use either --watch or --no-push, not both.");
+      printReleaseHelp();
+      return 1;
+    }
+    const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, { push, watch });
+    if (json) {
+      console.log(stableStringify(payload));
+    } else {
+      printReleaseRollConsumers(payload);
+    }
+    return payload.ok ? 0 : 1;
+  }
+
+  throw new Error(`Unknown release command '${command}'`);
+}

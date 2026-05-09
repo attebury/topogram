@@ -1,7 +1,25 @@
 // @ts-check
 
+import { loadImplementationProvider } from "../../example-implementation.js";
+import { stableStringify } from "../../format.js";
+import { parsePath } from "../../parser.js";
+import {
+  formatProjectConfigErrors,
+  loadProjectConfig,
+  projectConfigOrDefault,
+  validateProjectConfig,
+  validateProjectOutputOwnership
+} from "../../project-config.js";
+import { resolveWorkspace } from "../../resolver.js";
+import { validateProjectImplementationTrust } from "../../template-trust.js";
+import { formatValidationErrors } from "../../validator.js";
+
 /**
  * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @typedef {{ message: string, loc: any }} ValidationError
  */
 
 /**
@@ -195,10 +213,11 @@ export function checkSummaryPayload({ inputPath, ast, resolved, projectConfigInf
 }
 
 /**
- * @param {...AnyRecord|null|undefined} results
- * @returns {{ ok: boolean, errors: Array<AnyRecord> }}
+ * @param {...{ ok?: boolean, errors?: ValidationError[] }|null|undefined} results
+ * @returns {{ ok: boolean, errors: ValidationError[] }}
  */
 export function combineProjectValidationResults(...results) {
+  /** @type {ValidationError[]} */
   const errors = [];
   for (const result of results) {
     errors.push(...(result?.errors || []));
@@ -207,4 +226,43 @@ export function combineProjectValidationResults(...results) {
     ok: errors.length === 0,
     errors
   };
+}
+
+/**
+ * @param {string|null|undefined} inputPath
+ * @param {{ json?: boolean }} [options]
+ * @returns {Promise<number>}
+ */
+export async function runCheckCommand(inputPath, options = {}) {
+  const topogramPath = inputPath || "./topogram";
+  const ast = parsePath(topogramPath);
+  const resolved = resolveWorkspace(ast);
+  const implementation = await loadImplementationProvider(topogramPath).catch(() => null);
+  const explicitProjectConfig = loadProjectConfig(topogramPath);
+  const projectConfigInfo = explicitProjectConfig ||
+    (implementation ? projectConfigOrDefault(topogramPath, resolved.ok ? resolved.graph : null, implementation) : null);
+  const projectValidation = projectConfigInfo
+    ? combineProjectValidationResults(
+        validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),
+        validateProjectOutputOwnership(projectConfigInfo),
+        validateProjectImplementationTrust(projectConfigInfo)
+      )
+    : { ok: false, errors: [{ message: "Missing topogram.project.json or compatible topogram.implementation.json", loc: null }] };
+  const payload = checkSummaryPayload({ inputPath: topogramPath, ast, resolved, projectConfigInfo, projectValidation });
+  if (options.json) {
+    console.log(stableStringify(payload));
+  } else if (payload.ok) {
+    console.log(`Topogram check passed for ${topogramPath}.`);
+    console.log(`Validated ${payload.topogram.files} file(s) and ${payload.topogram.statements} statement(s).`);
+    console.log(`Project config: ${payload.project.configPath || "compatibility defaults"}`);
+    printTopologySummary(payload.project.resolvedTopology);
+  } else {
+    if (!resolved.ok) {
+      console.error(formatValidationErrors(resolved.validation));
+    }
+    if (!projectValidation.ok) {
+      console.error(formatProjectConfigErrors(projectValidation, projectConfigInfo?.configPath || "topogram.project.json"));
+    }
+  }
+  return payload.ok ? 0 : 1;
 }

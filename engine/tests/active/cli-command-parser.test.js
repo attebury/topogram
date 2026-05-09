@@ -235,6 +235,15 @@ test("split command parser handles extracted command families", () => {
     packageCommand: "update-cli",
     inputPath: "latest"
   });
+  assert.deepEqual(parseSplitCommandArgs(["release", "status", "--strict"]), {
+    releaseCommand: "status",
+    inputPath: null
+  });
+  assert.deepEqual(parseSplitCommandArgs(["release", "roll-consumers", "0.3.63", "--watch"]), {
+    releaseCommand: "roll-consumers",
+    releaseRollVersion: "0.3.63",
+    inputPath: null
+  });
   assert.deepEqual(parseSplitCommandArgs(["import", "app", "./legacy-app"]), {
     workflowName: "import-app",
     inputPath: "./legacy-app"

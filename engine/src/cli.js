@@ -14,10 +14,8 @@ import { runNewProjectCommand } from "./cli/commands/new.js";
 import { handleSetupCommand, printSetupHelp } from "./cli/commands/setup.js";
 import { buildVersionPayload, printVersion } from "./cli/commands/version.js";
 import {
-  checkSummaryPayload,
-  combineProjectValidationResults,
   printCheckHelp,
-  printTopologySummary
+  runCheckCommand
 } from "./cli/commands/check.js";
 import {
   buildQueryListPayload,
@@ -60,7 +58,6 @@ import {
 import { runImportCommand } from "./cli/commands/import-runner.js";
 import { parsePath } from "./parser.js";
 import { stableStringify } from "./format.js";
-import { loadImplementationProvider } from "./example-implementation.js";
 import { runGenerateAppCommand } from "./cli/commands/generate.js";
 import { runEmitCommand } from "./cli/commands/emit.js";
 import { runQueryCommand } from "./cli/commands/query.js";
@@ -69,16 +66,8 @@ import {
   runLegacyWorkflowCommand,
   runValidateCommand
 } from "./cli/commands/workflow.js";
-import { validateProjectImplementationTrust } from "./template-trust.js";
 import { resolveWorkspace } from "./resolver.js";
 import { formatValidationErrors } from "./validator.js";
-import {
-  formatProjectConfigErrors,
-  loadProjectConfig,
-  projectConfigOrDefault,
-  validateProjectConfig,
-  validateProjectOutputOwnership
-} from "./project-config.js";
 import { LOCAL_NPMRC_ENV } from "./npm-safety.js";
 import {
   buildDoctorPayload,
@@ -94,12 +83,8 @@ import {
   runTrustCommand
 } from "./cli/commands/trust.js";
 import {
-  buildReleaseRollConsumersPayload,
-  buildReleaseStatusPayload,
   printReleaseHelp,
-  printReleaseRollConsumers,
-  printReleaseStatus,
-  renderReleaseStatusMarkdown
+  runReleaseCommand
 } from "./cli/commands/release.js";
 
 try {
@@ -311,20 +296,8 @@ if (commandArgs && Object.prototype.hasOwnProperty.call(commandArgs, "inputPath"
   inputPath = commandArgs.inputPath;
 }
 const emitJson = args.includes("--json");
-const strictReleaseStatus = args.includes("--strict");
-const shouldPushReleaseConsumers = !args.includes("--no-push");
-const shouldWatchReleaseConsumers = args.includes("--watch");
-const shouldPrintReleaseMarkdown = args.includes("--markdown");
-const releaseReportIndex = args.indexOf("--write-report");
-const releaseReportPath = releaseReportIndex >= 0 &&
-  args[releaseReportIndex + 1] &&
-  !args[releaseReportIndex + 1].startsWith("-")
-  ? args[releaseReportIndex + 1]
-  : null;
 const shouldVersion = Boolean(commandArgs?.version);
 const shouldDoctor = Boolean(commandArgs?.doctor);
-const shouldReleaseStatus = Boolean(commandArgs?.releaseStatus);
-const shouldReleaseRollConsumers = Boolean(commandArgs?.releaseRollConsumers);
 const shouldCheck = Boolean(commandArgs?.check);
 const shouldWidgetCheck = Boolean(commandArgs?.widgetCheck);
 const shouldWidgetBehavior = Boolean(commandArgs?.widgetBehavior);
@@ -428,18 +401,6 @@ if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || commandArgs?.ge
   process.exit(1);
 }
 
-if (shouldReleaseStatus && args.includes("--write-report") && !releaseReportPath) {
-  console.error("Missing required --write-report <path>.");
-  printReleaseHelp();
-  process.exit(1);
-}
-
-if (shouldReleaseRollConsumers && shouldWatchReleaseConsumers && !shouldPushReleaseConsumers) {
-  console.error("Use either --watch or --no-push, not both.");
-  printReleaseHelp();
-  process.exit(1);
-}
-
 if (shouldQueryShow && !commandArgs?.queryShowName) {
   console.error("Missing required <name>.");
   printQueryHelp();
@@ -477,37 +438,8 @@ try {
     process.exit(runAgentBriefCommand(inputPath, { json: emitJson }));
   }
 
-  if (shouldReleaseStatus) {
-    const payload = buildReleaseStatusPayload({ strict: strictReleaseStatus });
-    if (releaseReportPath) {
-      const target = path.resolve(releaseReportPath);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, renderReleaseStatusMarkdown(payload), "utf8");
-    }
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else if (shouldPrintReleaseMarkdown) {
-      console.log(renderReleaseStatusMarkdown(payload).trimEnd());
-    } else {
-      printReleaseStatus(payload);
-      if (releaseReportPath) {
-        console.log(`Report: ${path.resolve(releaseReportPath)}`);
-      }
-    }
-    process.exit(payload.ok ? 0 : 1);
-  }
-
-  if (shouldReleaseRollConsumers) {
-    const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, {
-      push: shouldPushReleaseConsumers,
-      watch: shouldWatchReleaseConsumers
-    });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else {
-      printReleaseRollConsumers(payload);
-    }
-    process.exit(payload.ok ? 0 : 1);
+  if (commandArgs?.releaseCommand) {
+    process.exit(runReleaseCommand({ commandArgs, args, json: emitJson }));
   }
 
   if (shouldQueryList) {
@@ -613,36 +545,7 @@ try {
   }
 
   if (shouldCheck) {
-    const ast = parsePath(inputPath);
-    const resolved = resolveWorkspace(ast);
-    const implementation = await loadImplementationProvider(inputPath).catch(() => null);
-    const explicitProjectConfig = loadProjectConfig(inputPath);
-    const projectConfigInfo = explicitProjectConfig ||
-      (implementation ? projectConfigOrDefault(inputPath, resolved.ok ? resolved.graph : null, implementation) : null);
-    const projectValidation = projectConfigInfo
-      ? combineProjectValidationResults(
-          validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),
-          validateProjectOutputOwnership(projectConfigInfo),
-          validateProjectImplementationTrust(projectConfigInfo)
-        )
-      : { ok: false, errors: [{ message: "Missing topogram.project.json or compatible topogram.implementation.json", loc: null }] };
-    const payload = checkSummaryPayload({ inputPath, ast, resolved, projectConfigInfo, projectValidation });
-    if (emitJson) {
-      console.log(stableStringify(payload));
-    } else if (payload.ok) {
-      console.log(`Topogram check passed for ${inputPath}.`);
-      console.log(`Validated ${payload.topogram.files} file(s) and ${payload.topogram.statements} statement(s).`);
-      console.log(`Project config: ${payload.project.configPath || "compatibility defaults"}`);
-      printTopologySummary(payload.project.resolvedTopology);
-    } else {
-      if (!resolved.ok) {
-        console.error(formatValidationErrors(resolved.validation));
-      }
-      if (!projectValidation.ok) {
-        console.error(formatProjectConfigErrors(projectValidation, projectConfigInfo?.configPath || "topogram.project.json"));
-      }
-    }
-    process.exit(payload.ok ? 0 : 1);
+    process.exit(await runCheckCommand(inputPath, { json: emitJson }));
   }
 
   if (commandArgs?.queryName || commandArgs?.workflowPresetCommand) {
