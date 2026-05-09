@@ -150,6 +150,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
+  console.log("   or: node ./src/cli.js query work-packet <path> --mode import-adopt --lane <id>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--widget <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js emit <target> [path] [--json] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
@@ -184,7 +185,6 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query workflow-preset-diff <path> --provider <id> [--preset <id>]");
   console.log("   or: node ./src/cli.js query workflow-preset-customization <path> --provider <id> --preset <id>");
   console.log("   or: node ./src/cli.js workflow-preset customize <path> --provider <id> --preset <id> [--out <path>] [--write]");
-  console.log("   or: node ./src/cli.js query work-packet <path> --mode import-adopt --lane <id>");
   console.log("   or: node ./src/cli.js query lane-status <path> --mode import-adopt");
   console.log("   or: node ./src/cli.js query handoff-status <path> --mode import-adopt");
   console.log("   or: node ./src/cli.js query auth-hints <path>");
