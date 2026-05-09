@@ -149,6 +149,7 @@ const staleDslVocabulary = [
 const staleDslVocabularyAllowedFiles = new Set([
   "docs/components.md",
   "engine/src/cli.js",
+  "engine/src/cli/help.js",
   "engine/src/generator/registry.js",
   "engine/src/project-config.js",
   "engine/src/validator/index.js"
@@ -447,7 +448,12 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printPackageAuthSetup(",
     "function printCatalogAuthSetup(",
     "function buildVersionPayload(",
-    "function printVersion("
+    "function printVersion(",
+    "function printUsage(",
+    "function printNewHelp(",
+    "function printGenerateHelp(",
+    "function printEmitHelp(",
+    "function printWidgetHelp("
   ];
   const offenders = forbiddenDefinitions.filter((reference) => contents.includes(reference));
 
