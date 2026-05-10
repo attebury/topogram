@@ -761,6 +761,31 @@ test("package command implementation modules stay focused and type checked", () 
   });
 });
 
+test("generator policy command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "generator-policy.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "loadProjectConfig",
+    "packageInfoForGenerator",
+    "buildGeneratorPolicyCheckPayload("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 50, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/generator-policy\//);
+});
+
+test("generator policy command implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "cli", "commands", "generator-policy"),
+    entrypointImport: "../generator-policy.js"
+  });
+});
+
 test("import command entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "import.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
@@ -1140,6 +1165,31 @@ test("workflow implementation modules stay in the active type-check lane", () =>
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test("import app API workflow entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "workflows", "import-app", "api.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "parseOpenApiDocument",
+    "inferNextApiRoutes",
+    "collectApiImport("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 20, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/api\//);
+});
+
+test("import app API workflow implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "workflows", "import-app", "api"),
+    entrypointImport: "../api.js"
+  });
 });
 
 test("agent query builder entrypoint stays dispatch-only after split", () => {
