@@ -1078,6 +1078,31 @@ test("import core shared implementation modules stay focused and type checked", 
   });
 });
 
+test("import core runner entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "import", "core", "runner.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "createImportContext",
+    "getExtractorsForTrack",
+    "draftUiProjectionFiles("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/runner\//);
+});
+
+test("import core runner implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "import", "core", "runner"),
+    entrypointImport: "../runner.js"
+  });
+});
+
 test("import core shared modules use local structural typedefs for import concepts", () => {
   const offenders = [];
   const forbiddenBroadParams = [
