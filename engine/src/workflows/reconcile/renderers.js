@@ -250,7 +250,6 @@ export function renderCandidateUiReportDoc(screen, routes, actions) {
     source_of_truth: "imported",
     confidence: screen.confidence || "medium",
     review_required: true,
-    related_entities: [screen.entity_id].filter(Boolean),
     provenance: screen.provenance || [],
     tags: ["import", "ui"]
   };
@@ -258,11 +257,12 @@ export function renderCandidateUiReportDoc(screen, routes, actions) {
     "Candidate UI surface imported from brownfield route evidence.",
     "",
     `Screen: \`${screen.id_hint}\` (${screen.screen_kind})`,
+    screen.entity_id ? `Inferred entity: \`${screen.entity_id}\`` : null,
     `Routes: ${routes.length ? routes.map((/** @type {any} */ route) => `\`${route.path}\``).join(", ") : "_none_"}`,
     `Actions: ${actions.length ? actions.map((/** @type {any} */ action) => `\`${action.capability_hint}\``).join(", ") : "_none_"}`,
     "",
     "Review this UI surface before promoting it into canonical docs or projections."
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   return renderMarkdownDoc(metadata, body);
 }
 

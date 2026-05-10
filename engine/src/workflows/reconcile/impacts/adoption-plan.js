@@ -76,7 +76,10 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
     steps.push({
       action: "promote_shape",
       item: entry.id,
-      target: bundle.mergeHints?.canonicalEntityTarget || null
+      target: bundle.mergeHints?.canonicalEntityTarget || null,
+      source_kind: entry.source_kind || null,
+      widget_id: entry.widget_id || null,
+      event_name: entry.event_name || null
     });
   }
   for (const entry of bundle.docs) {

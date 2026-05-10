@@ -40,7 +40,15 @@ export const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
   },
   { selector: "workflows", kind: "track", label: "workflows", matches: (/** @type {AnyRecord} */ item) => item.track === "workflows" || item.kind === "decision" },
   { selector: "verification", kind: "kind", label: "verification", matches: (/** @type {AnyRecord} */ item) => item.kind === "verification" },
-  { selector: "ui", kind: "track", label: "UI reports and widgets", matches: (/** @type {AnyRecord} */ item) => item.track === "ui" }
+  {
+    selector: "ui",
+    kind: "track",
+    label: "UI reports, widgets, and event shapes",
+    matches: (/** @type {AnyRecord} */ item) =>
+      item.track === "ui" ||
+      item.kind === "widget" ||
+      item.source_kind === "ui_widget_event"
+  }
 ];
 
 /**

@@ -246,6 +246,9 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.equal(widgetSelector.itemCount, 1);
   assert.match(widgetSelector.previewCommand, /topogram import adopt widgets .* --dry-run/);
   assert.match(widgetSelector.writeCommand, /topogram import adopt widgets .* --write/);
+  const uiSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "ui");
+  assert.equal(uiSelector.itemCount, 6);
+  assert.match(uiSelector.label, /UI reports, widgets, and event shapes/);
 
   const humanSelectorList = runCli(["import", "adopt", "--list", targetRoot]);
   assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
@@ -268,6 +271,35 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const status = runCli(["import", "status", targetRoot, "--json"]);
   assert.equal(status.status, 0, status.stderr || status.stdout);
   assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 2);
+});
+
+test("brownfield UI broad selector promotes widgets and related event payload shapes", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-selector."));
+  const targetRoot = path.join(runRoot, "imported");
+  const result = runCli([
+    "import",
+    path.join(importFixtureRoot, "route-fallback"),
+    "--out",
+    targetRoot,
+    "--from",
+    "api,ui",
+    "--json"
+  ]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+
+  const adopt = runCli(["import", "adopt", "ui", targetRoot, "--write", "--json"]);
+  assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+  const adoptPayload = JSON.parse(adopt.stdout);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "shape" && item.item === "shape_event_task_row_select"), true);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "widget" && item.item === "widget_task_list_results"), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "shapes", "shape-event-task-row-select.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "widgets", "widget-task-list-results.tg")), true);
+
+  const check = runCli(["check", targetRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const status = runCli(["import", "status", targetRoot, "--json"]);
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 6);
 });
 
 test("legacy imported UI component candidates are read as widgets without rewriting public reports", () => {

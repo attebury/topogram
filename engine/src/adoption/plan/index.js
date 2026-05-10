@@ -360,7 +360,7 @@ export function selectorMatchesItem(selector, item) {
   if (selector === "journeys") return item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/");
   if (selector === "workflows") return item.track === "workflows" || item.kind === "decision";
   if (selector === "verification") return item.kind === "verification";
-  if (selector === "ui") return item.track === "ui";
+  if (selector === "ui") return item.track === "ui" || item.kind === "widget" || item.source_kind === "ui_widget_event";
   if (selector.startsWith("bundle:")) return item.bundle === selector.slice("bundle:".length);
   return false;
 }
@@ -661,6 +661,9 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       item: item.item,
       kind: item.kind,
       track: item.track || null,
+      source_kind: item.source_kind || null,
+      widget_id: item.widget_id || null,
+      event_name: item.event_name || null,
       source_path: item.source_path || null,
       canonical_rel_path: item.canonical_rel_path || null,
       related_shapes: [...new Set(item.related_shapes || [])].sort(),
