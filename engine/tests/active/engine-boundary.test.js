@@ -205,6 +205,38 @@ function visitFiles(root) {
   return files;
 }
 
+function typeCheckedFiles() {
+  const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
+  return new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));
+}
+
+function assertImplementationModules({ root, maxLines = 800, entrypointImport }) {
+  const tsconfigFiles = typeCheckedFiles();
+  const offenders = [];
+  const missingFromTypeCheck = [];
+  const facadeImportOffenders = [];
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const normalized = path.normalize(relative);
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (!tsconfigFiles.has(normalized)) {
+      missingFromTypeCheck.push(relative);
+    }
+    if (lineCount > maxLines || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+    if (entrypointImport && (contents.includes(`from "${entrypointImport}"`) || contents.includes(`from '${entrypointImport}'`))) {
+      facadeImportOffenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(missingFromTypeCheck, []);
+  assert.deepEqual(offenders, []);
+  assert.deepEqual(facadeImportOffenders, []);
+}
+
 test("engine tests do not reference generated demo workspaces", () => {
   const offenders = [];
   for (const file of visitFiles(testsRoot)) {
@@ -700,6 +732,81 @@ test("template command support modules do not import from template entrypoint", 
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test("import command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "import.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "runWorkflow(",
+    "resolveWorkspace",
+    "readImportHistory"
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 80, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/import\//);
+});
+
+test("import command implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "cli", "commands", "import"),
+    entrypointImport: "../import.js"
+  });
+});
+
+test("query command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "query.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "buildWorkflowContextQuery",
+    "agentQueryBuilders",
+    "resolveWorkspace"
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/query\//);
+});
+
+test("query command implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "cli", "commands", "query"),
+    entrypointImport: "../query.js"
+  });
+});
+
+test("context shared entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "generator", "context", "shared.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "parseDocFile",
+    "reviewBoundaryForMaintainedClassification",
+    "verificationIdsForTarget("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 120, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/shared\//);
+});
+
+test("context shared implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "generator", "context", "shared"),
+    entrypointImport: "../shared.js"
+  });
 });
 
 test("workflow entrypoint stays dispatch-only after workflow split", () => {
