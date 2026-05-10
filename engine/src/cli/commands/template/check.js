@@ -92,7 +92,7 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       step
     });
   }
-  if (message.includes("is missing topo/") || message.includes("is missing topogram/")) {
+  if (message.includes("is missing topo/")) {
     return templateCheckDiagnostic({
       code: "template_topogram_missing",
       message,

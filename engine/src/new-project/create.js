@@ -53,7 +53,7 @@ export function createNewProject({
   }
 
   ensureCreatableProjectRoot(projectRoot);
-  const workspaceCopy = copyTopogramWorkspace(template.root, projectRoot);
+  copyTopogramWorkspace(template.root, projectRoot);
   const projectConfig = writeProjectTemplateMetadata(projectRoot, template, templateProvenance);
   writeProjectPackage(projectRoot, engineRoot, template);
   writeExplainScript(projectRoot);
@@ -64,12 +64,6 @@ export function createNewProject({
   writeGeneratorPolicy(projectRoot, defaultGeneratorPolicy());
 
   const warnings = [];
-  if (workspaceCopy.legacyWorkspace) {
-    warnings.push(
-      `Template '${template.manifest.id}' still ships legacy topogram/ source. Copied it into this project as ${DEFAULT_TOPO_FOLDER_NAME}/. ` +
-        "This one-release package-ingress bridge will be removed after first-party packages migrate."
-    );
-  }
   if (template.manifest.includesExecutableImplementation) {
     writeTemplateTrustRecord(projectRoot, projectConfig);
     warnings.push(

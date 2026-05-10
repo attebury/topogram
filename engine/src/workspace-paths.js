@@ -313,16 +313,12 @@ export function resolveTopoRoot(inputPath = ".") {
 
 /**
  * @param {string} packageRoot
- * @returns {{ root: string, legacy: boolean }}
+ * @returns {{ root: string }}
  */
 export function resolvePackageWorkspace(packageRoot) {
   const topoRoot = path.join(packageRoot, DEFAULT_TOPO_FOLDER_NAME);
   if (isDirectory(topoRoot)) {
-    return { root: topoRoot, legacy: false };
-  }
-  const legacyRoot = path.join(packageRoot, LEGACY_TOPOGRAM_FOLDER_NAME);
-  if (isDirectory(legacyRoot)) {
-    return { root: legacyRoot, legacy: true };
+    return { root: topoRoot };
   }
   throw new Error(`Package is missing ${DEFAULT_TOPO_FOLDER_NAME}/.`);
 }

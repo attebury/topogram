@@ -4797,7 +4797,7 @@ test("topogram new supports packed npm template packs", () => {
   assert.equal(fs.existsSync(path.join(projectRoot, "implementation", "index.js")), true);
 });
 
-test("topogram new bridges legacy packed template topogram folder into topo workspace", () => {
+test("topogram new rejects legacy packed template topogram folders", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-packed-template-legacy-"));
   const templatePackageRoot = path.join(root, "template-package");
   const packRoot = path.join(root, "pack");
@@ -4822,11 +4822,10 @@ test("topogram new bridges legacy packed template topogram folder into topo work
   const create = runCli(["new", projectRoot, "--template", tarball], {
     env: { npm_config_cache: npmCacheRoot }
   });
-  assert.equal(create.status, 0, create.stderr || create.stdout);
-  assert.match(create.stderr, /still ships legacy topogram\/ source\. Copied it into this project as topo\//);
-  assert.equal(fs.existsSync(path.join(projectRoot, "topo", "entities", "entity-greeting.tg")), true);
+  assert.notEqual(create.status, 0, create.stdout);
+  assert.match(create.stderr, /Package is missing topo\//);
+  assert.equal(fs.existsSync(path.join(projectRoot, "topo")), false);
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram")), false);
-  assert.equal(readJson(path.join(projectRoot, "topogram.project.json")).workspace, "./topo");
 });
 
 test("topogram new reports invalid template manifests", () => {

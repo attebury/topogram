@@ -55,7 +55,7 @@ export function ensureCreatableProjectRoot(projectRoot) {
 /**
  * @param {string} templateRoot
  * @param {string} projectRoot
- * @returns {{ legacyWorkspace: boolean }}
+ * @returns {void}
  */
 export function copyTopogramWorkspace(templateRoot, projectRoot) {
   const templateWorkspace = resolvePackageWorkspace(templateRoot);
@@ -74,7 +74,6 @@ export function copyTopogramWorkspace(templateRoot, projectRoot) {
       { recursive: true }
     );
   }
-  return { legacyWorkspace: templateWorkspace.legacy };
 }
 
 /**
