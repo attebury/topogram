@@ -174,6 +174,7 @@
     "./src/agent-brief.d.ts",
     "./src/import/provenance.d.ts",
     "./src/project-config.js",
+    "./src/project-config/index.js",
     "./src/template-trust.js",
     "./src/template-trust/constants.js",
     "./src/template-trust/content.js",
@@ -317,6 +318,7 @@
     "./src/sdlc/transition.d.ts",
     "./src/ui/taxonomy.js",
     "./src/generator/registry.js",
+    "./src/generator/registry/index.js",
     "./src/generator/runtime/shared.js",
     "./src/generator/runtime/shared/index.js"
   ]

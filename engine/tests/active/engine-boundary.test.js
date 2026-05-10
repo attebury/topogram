@@ -150,8 +150,8 @@ const staleDslVocabularyAllowedFiles = new Set([
   "docs/components.md",
   "engine/src/cli/migration-guidance.js",
   "engine/src/cli/help.js",
-  "engine/src/generator/registry.js",
-  "engine/src/project-config.js",
+  "engine/src/generator/registry/index.js",
+  "engine/src/project-config/index.js",
   "engine/src/validator/common.js"
 ]);
 const legacyRuntimeAliasReferences = [
@@ -1053,6 +1053,54 @@ test("generator api modules use local structural typedefs for API graph contract
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test("project config entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "project-config.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "validateProjectConfig(",
+    "defaultProjectConfigForGraph("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/project-config\//);
+});
+
+test("project config implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "project-config"),
+    entrypointImport: "../project-config.js"
+  });
+});
+
+test("generator registry entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "generator", "registry.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "GENERATOR_MANIFESTS =",
+    "validateGeneratorManifest("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/registry\//);
+});
+
+test("generator registry implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "generator", "registry"),
+    entrypointImport: "../registry.js"
+  });
 });
 
 test("import core shared entrypoint stays an export surface after split", () => {
