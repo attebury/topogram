@@ -136,7 +136,9 @@ function detectParentDomainCycle(errors, statement, fieldMap, registry) {
   if (!field) return;
 
   const seen = new Set([statement.id]);
-  let cursor = registry.get(symbolValue(field.value));
+  const parentId = symbolValue(field.value);
+  if (!parentId) return;
+  let cursor = registry.get(parentId);
   while (cursor && cursor.kind === "domain") {
     if (seen.has(cursor.id)) {
       pushError(
@@ -149,7 +151,9 @@ function detectParentDomainCycle(errors, statement, fieldMap, registry) {
     seen.add(cursor.id);
     const parentField = cursor.fields.find((f) => f.key === "parent_domain");
     if (!parentField) break;
-    cursor = registry.get(symbolValue(parentField.value));
+    const nextParentId = symbolValue(parentField.value);
+    if (!nextParentId) break;
+    cursor = registry.get(nextParentId);
   }
 }
 

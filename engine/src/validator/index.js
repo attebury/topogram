@@ -1,12 +1,4 @@
 import {
-  DOC_ARRAY_FIELDS,
-  DOC_CONFIDENCE,
-  DOC_KINDS,
-  DOC_REFERENCE_FIELDS,
-  DOC_STATUSES
-} from "../workspace-docs.js";
-
-import {
   STATEMENT_KINDS,
   IDENTIFIER_PATTERN,
   DOMAIN_IDENTIFIER_PATTERN,
@@ -49,6 +41,20 @@ import {
   UI_DESIGN_ACCESSIBILITY_VALUES,
   FIELD_SPECS
 } from "./kinds.js";
+import { validateDocs } from "./docs.js";
+import { buildRegistry } from "./registry.js";
+import {
+  blockEntries,
+  collectFieldMap,
+  formatLoc,
+  getField,
+  getFieldValue,
+  pushError,
+  stringValue,
+  symbolValue,
+  symbolValues,
+  valueAsArray
+} from "./utils.js";
 import { validateWidget } from "./per-kind/widget.js";
 import { validateDomain, validateDomainTag } from "./per-kind/domain.js";
 import { validatePitch } from "./per-kind/pitch.js";
@@ -101,70 +107,23 @@ export {
   FIELD_SPECS
 } from "./kinds.js";
 
-export function pushError(errors, message, loc) {
-  errors.push({
-    message,
-    loc
-  });
-}
+export {
+  blockEntries,
+  collectFieldMap,
+  formatLoc,
+  getField,
+  getFieldValue,
+  pushError,
+  stringValue,
+  symbolValue,
+  symbolValues,
+  valueAsArray
+} from "./utils.js";
+
+export { buildRegistry } from "./registry.js";
 
 function renameDiagnostic(oldName, newName, example) {
   return `${oldName} was renamed to ${newName}. Example fix: ${example}`;
-}
-
-export function formatLoc(loc) {
-  const line = loc?.start?.line ?? 1;
-  const column = loc?.start?.column ?? 1;
-  const file = loc?.file ?? "<unknown>";
-  return `${file}:${line}:${column}`;
-}
-
-export function valueAsArray(value) {
-  if (!value) {
-    return [];
-  }
-  if (value.type === "list") {
-    return value.items;
-  }
-  if (value.type === "sequence") {
-    return value.items;
-  }
-  return [value];
-}
-
-export function symbolValues(value) {
-  return valueAsArray(value).filter((item) => item.type === "symbol").map((item) => item.value);
-}
-
-export function collectFieldMap(statement) {
-  const map = new Map();
-  for (const field of statement.fields) {
-    if (!map.has(field.key)) {
-      map.set(field.key, []);
-    }
-    map.get(field.key).push(field);
-  }
-  return map;
-}
-
-export function getField(statement, key) {
-  return collectFieldMap(statement).get(key)?.[0] || null;
-}
-
-export function getFieldValue(statement, key) {
-  return getField(statement, key)?.value || null;
-}
-
-export function stringValue(value) {
-  return value?.type === "string" ? value.value : null;
-}
-
-export function symbolValue(value) {
-  return value?.type === "symbol" ? value.value : null;
-}
-
-export function blockEntries(value) {
-  return value?.type === "block" ? value.entries : [];
 }
 
 function blockSymbolItems(entry) {
@@ -3411,185 +3370,6 @@ function validateProjectionDbLifecycle(errors, statement, fieldMap, registry) {
         if (fieldName && entityFieldNames.size > 0 && !entityFieldNames.has(fieldName)) {
           pushError(errors, `Projection ${statement.id} lifecycle references unknown field '${fieldName}' on ${entityId}`, entry.loc);
         }
-      }
-    }
-  }
-}
-
-export function buildRegistry(workspaceAst, errors) {
-  const registry = new Map();
-
-  for (const file of workspaceAst.files) {
-    for (const statement of file.statements) {
-      if (!STATEMENT_KINDS.has(statement.kind)) {
-        if (statement.kind === "component") {
-          pushError(errors, `Statement kind ${renameDiagnostic("'component'", "'widget'", "widget widget_data_grid { ... }")}`, statement.loc);
-        } else {
-          pushError(errors, `Unknown statement kind '${statement.kind}'`, statement.loc);
-        }
-      }
-
-      if (!IDENTIFIER_PATTERN.test(statement.id)) {
-        pushError(errors, `Invalid identifier '${statement.id}'`, statement.loc);
-      }
-
-      if (registry.has(statement.id)) {
-        pushError(errors, `Duplicate statement id '${statement.id}'`, statement.loc);
-        continue;
-      }
-
-      registry.set(statement.id, statement);
-    }
-  }
-
-  return registry;
-}
-
-function validateDocs(workspaceAst, registry, errors) {
-  const docs = workspaceAst.docs || [];
-  const docRegistry = new Map();
-
-  for (const doc of docs) {
-    if (doc.parseError) {
-      pushError(errors, doc.parseError.message, doc.parseError.loc);
-      continue;
-    }
-
-    const { metadata } = doc;
-    for (const required of ["id", "kind", "title", "status"]) {
-      if (!metadata[required]) {
-        pushError(errors, `Missing required doc metadata '${required}'`, doc.loc);
-      }
-    }
-
-    if (metadata.id && !IDENTIFIER_PATTERN.test(metadata.id)) {
-      pushError(errors, `Invalid doc identifier '${metadata.id}'`, doc.loc);
-    }
-
-    if (metadata.kind && !DOC_KINDS.has(metadata.kind)) {
-      pushError(errors, `Unsupported doc kind '${metadata.kind}'`, doc.loc);
-    }
-
-    if (metadata.status && !DOC_STATUSES.has(metadata.status)) {
-      pushError(errors, `Unsupported doc status '${metadata.status}'`, doc.loc);
-    }
-
-    if (metadata.confidence && !DOC_CONFIDENCE.has(metadata.confidence)) {
-      pushError(errors, `Unsupported doc confidence '${metadata.confidence}'`, doc.loc);
-    }
-
-    if (metadata.review_required != null && typeof metadata.review_required !== "boolean") {
-      pushError(errors, "Doc metadata 'review_required' must be a boolean", doc.loc);
-    }
-
-    for (const key of DOC_ARRAY_FIELDS) {
-      if (metadata[key] != null && !Array.isArray(metadata[key])) {
-        pushError(errors, `Doc metadata '${key}' must be a list`, doc.loc);
-      }
-    }
-
-    if (metadata.id) {
-      if (docRegistry.has(metadata.id)) {
-        pushError(errors, `Duplicate doc id '${metadata.id}'`, doc.loc);
-      } else {
-        docRegistry.set(metadata.id, doc);
-      }
-    }
-  }
-
-  for (const doc of docs) {
-    if (doc.parseError) {
-      continue;
-    }
-    const { metadata } = doc;
-
-    for (const entityId of metadata.related_entities || []) {
-      const statement = registry.get(entityId);
-      if (!statement || statement.kind !== "entity") {
-        pushError(errors, `Doc '${metadata.id}' references missing entity '${entityId}'`, doc.loc);
-      }
-    }
-
-    for (const capabilityId of metadata.related_capabilities || []) {
-      const statement = registry.get(capabilityId);
-      if (!statement || statement.kind !== "capability") {
-        pushError(errors, `Doc '${metadata.id}' references missing capability '${capabilityId}'`, doc.loc);
-      }
-    }
-
-    for (const actorId of metadata.related_actors || []) {
-      const statement = registry.get(actorId);
-      if (!statement || statement.kind !== "actor") {
-        pushError(errors, `Doc '${metadata.id}' references missing actor '${actorId}'`, doc.loc);
-      }
-    }
-
-    for (const roleId of metadata.related_roles || []) {
-      const statement = registry.get(roleId);
-      if (!statement || statement.kind !== "role") {
-        pushError(errors, `Doc '${metadata.id}' references missing role '${roleId}'`, doc.loc);
-      }
-    }
-
-    for (const ruleId of metadata.related_rules || []) {
-      const statement = registry.get(ruleId);
-      if (!statement || statement.kind !== "rule") {
-        pushError(errors, `Doc '${metadata.id}' references missing rule '${ruleId}'`, doc.loc);
-      }
-    }
-
-    for (const workflowDocId of metadata.related_workflows || []) {
-      const relatedDoc = docRegistry.get(workflowDocId);
-      if (!relatedDoc || relatedDoc.metadata.kind !== "workflow") {
-        pushError(errors, `Doc '${metadata.id}' references missing workflow doc '${workflowDocId}'`, doc.loc);
-      }
-    }
-
-    for (const decisionId of metadata.related_decisions || []) {
-      const statement = registry.get(decisionId);
-      if (!statement || statement.kind !== "decision") {
-        pushError(errors, `Doc '${metadata.id}' references missing decision '${decisionId}'`, doc.loc);
-      }
-    }
-
-    for (const shapeId of metadata.related_shapes || []) {
-      const statement = registry.get(shapeId);
-      if (!statement || statement.kind !== "shape") {
-        pushError(errors, `Doc '${metadata.id}' references missing shape '${shapeId}'`, doc.loc);
-      }
-    }
-
-    for (const projectionId of metadata.related_projections || []) {
-      const statement = registry.get(projectionId);
-      if (!statement || statement.kind !== "projection") {
-        pushError(errors, `Doc '${metadata.id}' references missing projection '${projectionId}'`, doc.loc);
-      }
-    }
-
-    for (const relatedDocId of metadata.related_docs || []) {
-      if (!docRegistry.has(relatedDocId)) {
-        pushError(errors, `Doc '${metadata.id}' references missing doc '${relatedDocId}'`, doc.loc);
-      }
-    }
-
-    for (const [fieldName, expectedKind] of Object.entries(DOC_REFERENCE_FIELDS)) {
-      const value = metadata[fieldName];
-      if (value == null) continue;
-      if (typeof value !== "string") {
-        pushError(errors, `Doc metadata '${fieldName}' must be a single id`, doc.loc);
-        continue;
-      }
-      const target = registry.get(value);
-      if (!target) {
-        pushError(errors, `Doc '${metadata.id}' references missing ${expectedKind} '${value}'`, doc.loc);
-        continue;
-      }
-      if (target.kind !== expectedKind) {
-        pushError(
-          errors,
-          `Doc '${metadata.id}' ${fieldName} must reference a ${expectedKind}, found ${target.kind} '${target.id}'`,
-          doc.loc
-        );
       }
     }
   }

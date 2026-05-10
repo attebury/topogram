@@ -42,6 +42,7 @@
     "./src/validator/kinds.js",
     "./src/validator/utils.js",
     "./src/validator/registry.js",
+    "./src/validator/docs.js",
     "./src/validator/expressions.js",
     "./src/validator/per-kind/acceptance-criterion.js",
     "./src/validator/per-kind/bug.js",

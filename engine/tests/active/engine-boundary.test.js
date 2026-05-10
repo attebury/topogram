@@ -703,6 +703,7 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/validator/kinds.js",
     "engine/src/validator/utils.js",
     "engine/src/validator/registry.js",
+    "engine/src/validator/docs.js",
     "engine/src/validator/expressions.js",
     "engine/src/validator/per-kind/acceptance-criterion.js",
     "engine/src/validator/per-kind/bug.js",
@@ -734,4 +735,22 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
 
   assert.deepEqual(missingFromTypeCheck, []);
   assert.deepEqual(nocheckOffenders, []);
+});
+
+test("validator support modules do not re-export from validator index", () => {
+  const checkedFiles = [
+    "engine/src/validator/utils.js",
+    "engine/src/validator/registry.js",
+    "engine/src/validator/docs.js"
+  ];
+  const offenders = [];
+
+  for (const relative of checkedFiles) {
+    const contents = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+    if (contents.includes('from "./index.js"') || contents.includes("from './index.js'")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
 });
