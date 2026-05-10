@@ -2,6 +2,7 @@
 import net from "node:net";
 
 const role = process.argv[2] || "stack";
+const targetId = process.argv[3] || "";
 const ports = [
   {
     "id": "app_api",
@@ -70,6 +71,9 @@ async function failForWebPort(port) {
 
 for (const entry of ports) {
   if (role !== "stack" && role !== entry.type) {
+    continue;
+  }
+  if (targetId && entry.id !== targetId) {
     continue;
   }
   const port = effectivePort(entry);

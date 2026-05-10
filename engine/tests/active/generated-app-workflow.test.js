@@ -3211,9 +3211,13 @@ test("multiple web runtime scripts keep secondary topology ports when WEB_PORT i
   const primaryScript = readText(path.join(projectRoot, "app", "apps", "scripts", "web", "app_react-dev.sh"));
   const secondaryScript = readText(path.join(projectRoot, "app", "apps", "scripts", "web", "app_react_secondary-dev.sh"));
   const guardScript = readText(path.join(projectRoot, "app", "apps", "scripts", "guard-ports.mjs"));
+  assert.match(primaryScript, /guard-ports\.mjs" web app_react/);
+  assert.match(secondaryScript, /guard-ports\.mjs" web app_react_secondary/);
   assert.match(primaryScript, /\$\{APP_REACT_PORT:-\$\{WEB_PORT:-5173\}\}/);
   assert.match(secondaryScript, /\$\{APP_REACT_SECONDARY_PORT:-5174\}/);
   assert.doesNotMatch(secondaryScript, /WEB_PORT:-5174/);
+  assert.match(guardScript, /const targetId = process\.argv\[3\] \|\| "";/);
+  assert.match(guardScript, /if \(targetId && entry\.id !== targetId\)/);
   assert.match(guardScript, /"id": "app_react"[\s\S]*"fallbackEnv": "WEB_PORT"/);
   assert.match(guardScript, /"id": "app_react_secondary"[\s\S]*"fallbackEnv": null/);
 });

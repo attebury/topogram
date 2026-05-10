@@ -396,7 +396,7 @@ function renderEnvironmentServerDevScript(plan, component = plan.runtimes.apis[0
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   const serverPortExpression = runtimePortExpression(plan, plan.runtimes.apis, component, "SERVER_PORT");
   return renderEnvAwareShellScript([
-    `node ${guardPortsScript} api`,
+    `node ${guardPortsScript} api ${component.id}`,
     "",
     ...apiDatabaseExportLines(component),
     `export PORT="${serverPortExpression}"`,
@@ -417,7 +417,7 @@ function renderEnvironmentWebDevScript(plan, component = plan.runtimes.webs[0], 
   const guardPortsScript = options.componentScript ? '"$ROOT_DIR/scripts/guard-ports.mjs"' : '"$SCRIPT_DIR/guard-ports.mjs"';
   const webPortExpression = runtimePortExpression(plan, plan.runtimes.webs, component, "WEB_PORT");
   return renderEnvAwareShellScript([
-    `node ${guardPortsScript} web`,
+    `node ${guardPortsScript} web ${component.id}`,
     "",
     ...(apiRuntime ? [`export PUBLIC_TOPOGRAM_API_BASE_URL="\${PUBLIC_TOPOGRAM_API_BASE_URL:-http://localhost:\${${apiRuntime.id.toUpperCase()}_PORT:-\${SERVER_PORT:-${apiRuntime.port}}}}"`] : []),
     `export TOPOGRAM_CORS_ORIGINS="\${TOPOGRAM_CORS_ORIGINS:-http://localhost:${webPortExpression},http://127.0.0.1:${webPortExpression}}"`,
@@ -478,6 +478,7 @@ function renderEnvironmentGuardPortsScript(plan) {
 import net from "node:net";
 
 const role = process.argv[2] || "stack";
+const targetId = process.argv[3] || "";
 const ports = ${JSON.stringify(ports, null, 2)};
 const expectedService = ${JSON.stringify(plan.runtimeReference.serviceName || "")};
 
@@ -531,6 +532,9 @@ async function failForWebPort(port) {
 
 for (const entry of ports) {
   if (role !== "stack" && role !== entry.type) {
+    continue;
+  }
+  if (targetId && entry.id !== targetId) {
     continue;
   }
   const port = effectivePort(entry);

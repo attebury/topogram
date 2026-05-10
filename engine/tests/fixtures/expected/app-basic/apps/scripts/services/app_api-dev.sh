@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "$ROOT_DIR/scripts/load-env.sh"
 
-node "$ROOT_DIR/scripts/guard-ports.mjs" api
+node "$ROOT_DIR/scripts/guard-ports.mjs" api app_api
 
 if [[ -n "${DATABASE_URL:-}" ]]; then export DATABASE_URL="${DATABASE_URL}"; fi
 if [[ -n "${DATABASE_ADMIN_URL:-}" ]]; then export DATABASE_ADMIN_URL="${DATABASE_ADMIN_URL}"; fi
