@@ -165,6 +165,7 @@ const legacyRuntimeAliasReferences = [
 const legacyRuntimeAliasAllowedFiles = new Set([
   "engine/src/generator/adapters.js",
   "engine/src/generator/runtime/shared.js",
+  "engine/src/generator/runtime/shared/index.js",
   "engine/tests/active/engine-boundary.test.js",
   "engine/tests/active/project-config.test.js"
 ]);

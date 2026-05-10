@@ -317,6 +317,7 @@
     "./src/sdlc/transition.d.ts",
     "./src/ui/taxonomy.js",
     "./src/generator/registry.js",
-    "./src/generator/runtime/shared.js"
+    "./src/generator/runtime/shared.js",
+    "./src/generator/runtime/shared/index.js"
   ]
 }
