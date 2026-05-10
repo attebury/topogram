@@ -58,6 +58,34 @@ function screenConceptStem(screenId) {
 }
 
 /**
+ * @param {string|null|undefined} screenId
+ * @param {string} eventName
+ * @returns {string}
+ */
+function eventPayloadShapeId(screenId, eventName) {
+  const stem = screenConceptStem(screenId) || idHintify(String(screenId || "widget"));
+  return `shape_event_${idHintify(`${stem}_${eventName}`)}`;
+}
+
+/**
+ * @param {string|null|undefined} routePath
+ * @returns {{ name: string, field_type: string, required: boolean }[]}
+ */
+function routeParamFields(routePath) {
+  const fields = [];
+  const pathText = String(routePath || "");
+  const routeParamPattern = /[:{]([A-Za-z_][A-Za-z0-9_]*)}?/g;
+  for (const match of pathText.matchAll(routeParamPattern)) {
+    fields.push({
+      name: idHintify(match[1]),
+      field_type: "string",
+      required: true
+    });
+  }
+  return fields.length > 0 ? fields : [{ name: "id", field_type: "string", required: true }];
+}
+
+/**
  * @param {any} sourceScreen
  * @param {any[]} screens
  * @returns {any|null}
@@ -89,10 +117,47 @@ function inferredEventsForWidgetScreen(screen, screens) {
     kind: "selection",
     action: "navigate",
     target_screen: detailScreen.id_hint,
+    payload_shape: eventPayloadShapeId(screen?.id_hint, "row_select"),
     confidence: "medium",
     evidence: detailScreen.provenance || [],
-    requires_payload_shape_decision: true
+    payload_fields: routeParamFields(detailScreen.route_path),
+    requires_payload_shape_review: true
   }];
+}
+
+/**
+ * @param {any[]} widgets
+ * @returns {any[]}
+ */
+function deriveUiWidgetEventShapeCandidates(widgets) {
+  return widgets.flatMap((widget) =>
+    (widget.inferred_events || [])
+      .filter((/** @type {any} */ event) => event.payload_shape)
+      .map((/** @type {any} */ event) => makeCandidateRecord({
+        kind: "shape",
+        idHint: event.payload_shape,
+        label: `${widget.label || widget.id_hint} ${event.name || "event"} payload`,
+        confidence: event.confidence || widget.confidence || "low",
+        sourceKind: "ui_widget_event",
+        sourceOfTruth: "candidate",
+        provenance: [
+          ...(widget.provenance || []),
+          ...(event.evidence || [])
+        ],
+        track: "ui",
+        widget_id: widget.id_hint,
+        event_name: event.name,
+        fields: event.payload_fields || [{ name: "id", field_type: "string", required: true }],
+        missing_decisions: [
+          "confirm selected row identity fields",
+          "confirm event payload shape name"
+        ],
+        notes: [
+          "Imported widget event payload shapes are review-only.",
+          "Adopt with the widget when the event binding is accepted."
+        ]
+      }))
+  );
 }
 
 /**
@@ -212,11 +277,14 @@ export function normalizeCandidatesForTrack(track, candidates) {
   if (track === "ui") {
     const explicitWidgets = uiWidgetCandidates(candidates);
     const derivedWidgets = deriveUiWidgetCandidates(candidates);
+    const widgets = dedupeCandidateRecords([...explicitWidgets, ...derivedWidgets], idHint);
+    const eventShapes = deriveUiWidgetEventShapeCandidates(widgets);
     return {
       screens: dedupeCandidateRecords(candidates.screens || [], idHint),
       routes: dedupeCandidateRecords(candidates.routes || [], idHint),
       actions: dedupeCandidateRecords(candidates.actions || [], idHint),
-      widgets: dedupeCandidateRecords([...explicitWidgets, ...derivedWidgets], idHint),
+      widgets,
+      shapes: dedupeCandidateRecords([...(candidates.shapes || []), ...eventShapes], idHint),
       stacks: [...new Set(candidates.stacks || [])].sort()
     };
   }

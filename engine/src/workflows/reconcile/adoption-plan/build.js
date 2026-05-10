@@ -84,6 +84,7 @@ export function buildAdoptionPlan(bundles) {
         inference_summary: step.inference_summary || null,
         related_docs: step.related_docs || [],
         related_capabilities: step.related_capabilities || [],
+        related_shapes: step.related_shapes || [],
         permission: step.permission || null,
         claim: step.claim || null,
         claim_value: Object.prototype.hasOwnProperty.call(step, "claim_value") ? step.claim_value : null,

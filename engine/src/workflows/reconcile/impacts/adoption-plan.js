@@ -65,7 +65,7 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
   for (const entry of bundle.shapes) {
     const signature = shapeFieldSignature(entry.fields || []);
     const duplicateTargets = canonicalShapeIndex.get(signature) || [];
-    if (duplicateTargets.length > 0) {
+    if (duplicateTargets.length > 0 && entry.source_kind !== "ui_widget_event") {
       steps.push({
         action: "skip_duplicate_shape",
         item: entry.id,
@@ -126,6 +126,7 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
       confidence: entry.confidence || "low",
       inference_summary: entry.inference_summary || null,
       related_capabilities: [entry.data_source].filter(Boolean),
+      related_shapes: [...new Set((entry.inferred_events || []).map((/** @type {any} */ event) => event.payload_shape).filter(Boolean))],
       source_path: `candidates/reconcile/model/bundles/${bundle.slug}/widgets/${entry.id_hint}.tg`,
       canonical_rel_path: `widgets/${dashedTopogramId(entry.id_hint)}.tg`
     });

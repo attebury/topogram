@@ -33,8 +33,18 @@ export function buildCanonicalAdoptionOutputs(paths, candidateFiles, planItems, 
       .filter((/** @type {any} */ item) => item?.kind === "capability")
       .map((/** @type {any} */ item) => item.bundle)
   );
+  const widgetShapeIdSet = new Set(
+    [...selectedSet]
+      .map((/** @type {any} */ key) => itemMap.get(key))
+      .filter((/** @type {any} */ item) => item?.kind === "widget")
+      .flatMap((/** @type {any} */ item) => item.related_shapes || [])
+  );
   for (const item of planItems) {
-    if (item.kind === "shape" && item.status !== "skipped" && capabilityBundleSet.has(item.bundle)) {
+    if (
+      item.kind === "shape" &&
+      item.status !== "skipped" &&
+      (capabilityBundleSet.has(item.bundle) || widgetShapeIdSet.has(item.item))
+    ) {
       selectedSet.add(adoptionItemKey(item));
     }
   }

@@ -130,6 +130,7 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.ok, true);
   assert.equal(payload.candidateCounts.uiWidgets, 1);
+  assert.equal(payload.candidateCounts.uiShapes, 1);
   assert.equal(Object.hasOwn(payload.candidateCounts, "uiComponents"), false);
 
   const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
@@ -147,38 +148,55 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
       kind: "selection",
       action: "navigate",
       target_screen: "task_detail",
+      payload_shape: "shape_event_task_row_select",
       confidence: "medium",
       evidence: [
         "engine/tests/fixtures/import/route-fallback/apps/web/src/App.tsx#/tasks/:id"
       ],
-      requires_payload_shape_decision: true
+      payload_fields: [
+        { name: "id", field_type: "string", required: true }
+      ],
+      requires_payload_shape_review: true
     }
+  ]);
+  assert.deepEqual(uiCandidates.shapes.map((shape) => shape.id_hint), ["shape_event_task_row_select"]);
+  assert.deepEqual(uiCandidates.shapes[0].fields, [
+    { name: "id", field_type: "string", required: true }
   ]);
   assert.equal(widgetCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
   assert.equal((widgetCandidate.evidence || []).length > 0, true);
 
   const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-contract.tg");
   const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "widgets", "widget-task-list-results.tg");
+  const shapeDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "shapes", "shape-event-task-row-select.tg");
   assert.equal(fs.existsSync(sharedDraftPath), true);
   assert.equal(fs.existsSync(componentDraftPath), true);
+  assert.equal(fs.existsSync(shapeDraftPath), true);
 
   const sharedDraft = fs.readFileSync(sharedDraftPath, "utf8");
   assert.match(sharedDraft, /type ui_contract/);
   assert.match(sharedDraft, /design_tokens \{/);
   assert.match(sharedDraft, /widget_bindings \{/);
-  assert.match(sharedDraft, /screen task_list region results widget widget_task_list_results data rows from cap_list_tasks/);
+  assert.match(sharedDraft, /screen task_list region results widget widget_task_list_results data rows from cap_list_tasks event row_select navigate task_detail/);
   assert.doesNotMatch(sharedDraft, /\[object Object\]/);
 
   const componentDraft = fs.readFileSync(componentDraftPath, "utf8");
   assert.match(componentDraft, /# Import metadata: confidence low; evidence \d+; inferred pattern search_results; inferred region results\./);
   assert.match(componentDraft, /# Missing decisions: confirm widget reuse boundary; confirm prop names and data source; confirm events and behavior; confirm supported regions and patterns\./);
-  assert.match(componentDraft, /# Inferred event: row_select navigate task_detail; requires payload shape review before adding an events block\./);
-  assert.match(componentDraft, /# Event declarations are intentionally omitted until payload shapes are reviewed\./);
+  assert.match(componentDraft, /# Inferred event: row_select navigate task_detail; review payload shape shape_event_task_row_select\./);
+  assert.match(componentDraft, /# Event declarations are draft bindings and require payload shape review before adoption\./);
   assert.match(componentDraft, /widget widget_task_list_results \{/);
+  assert.match(componentDraft, /events \{\n    row_select shape_event_task_row_select\n  \}/);
+  assert.match(componentDraft, /selection mode single emits row_select/);
   assert.match(componentDraft, /patterns \[search_results\]/);
   assert.match(componentDraft, /status proposed/);
 
+  const shapeDraft = fs.readFileSync(shapeDraftPath, "utf8");
+  assert.match(shapeDraft, /shape shape_event_task_row_select \{/);
+  assert.match(shapeDraft, /id string required/);
+
   const uiReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "report.md"), "utf8");
+  assert.match(uiReport, /Event payload shapes: 1/);
   assert.match(uiReport, /## Widget Candidates/);
   assert.match(uiReport, /`widget_task_list_results` confidence low pattern `search_results` region `results` events 1 evidence \d+ missing decisions 4/);
   assert.match(uiReport, /topogram widget check <path>/);
@@ -187,9 +205,10 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const plan = runCli(["import", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   const planPayload = JSON.parse(plan.stdout);
-  assert.equal(planPayload.summary.proposalItemCount, 9);
+  assert.equal(planPayload.summary.proposalItemCount, 10);
   assert.deepEqual(planPayload.bundles[0].kindCounts, {
     capability: 3,
+    shape: 1,
     widget: 1,
     doc: 1,
     ui: 4
@@ -197,10 +216,12 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
   const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
   assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
+  assert.deepEqual(widgetItems[0].related_shapes, ["shape_event_task_row_select"]);
   assert.equal(widgetItems[0].source_path, "candidates/reconcile/model/bundles/task/widgets/widget_task_list_results.tg");
   assert.equal(widgetItems[0].canonical_rel_path, "widgets/widget-task-list-results.tg");
   const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.json"), "utf8"));
   const taskBundle = reconcileReportJson.candidate_model_bundles.find((bundle) => bundle.slug === "task");
+  assert.deepEqual(taskBundle.shapes, ["shape_event_task_row_select"]);
   assert.deepEqual(taskBundle.widgets, ["widget_task_list_results"]);
   assert.equal(Object.hasOwn(taskBundle, "components"), false);
   assert.deepEqual(taskBundle.operator_summary.widgetIds, ["widget_task_list_results"]);
@@ -211,9 +232,12 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const bundleReadme = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
   assert.match(bundleReadme, /Widgets: 1/);
   assert.match(bundleReadme, /Main widgets: `widget_task_list_results`/);
+  const bundleShape = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "shapes", "shape_event_task_row_select.tg"), "utf8");
+  assert.match(bundleShape, /shape shape_event_task_row_select \{/);
+  assert.match(bundleShape, /id string required/);
   const bundleWidget = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "widgets", "widget_task_list_results.tg"), "utf8");
   assert.match(bundleWidget, /# Inferred event: row_select navigate task_detail\./);
-  assert.match(bundleWidget, /# Add an events block only after selecting a payload shape\./);
+  assert.match(bundleWidget, /events \{\n    row_select shape_event_task_row_select\n  \}/);
 
   const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
@@ -231,15 +255,19 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const adopt = runCli(["import", "adopt", "widgets", targetRoot, "--write", "--json"]);
   assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
   const adoptPayload = JSON.parse(adopt.stdout);
+  assert.equal(adoptPayload.promotedCanonicalItemCount, 2);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "shape" && item.item === "shape_event_task_row_select"), true);
   assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "widget" && item.item === "widget_task_list_results"), true);
+  assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "shapes/shape-event-task-row-select.tg" && item.sha256 && item.size > 0), true);
   assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "widgets/widget-task-list-results.tg" && item.sha256 && item.size > 0), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "shapes", "shape-event-task-row-select.tg")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "widgets", "widget-task-list-results.tg")), true);
 
   const check = runCli(["check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
   const status = runCli(["import", "status", targetRoot, "--json"]);
   assert.equal(status.status, 0, status.stderr || status.stdout);
-  assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 1);
+  assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 2);
 });
 
 test("legacy imported UI component candidates are read as widgets without rewriting public reports", () => {

@@ -50,26 +50,70 @@ function renderWidgetCandidate(widget) {
     "confirm events and behavior"
   ];
   const inferredEvents = Array.isArray(widget.inferred_events) ? widget.inferred_events : [];
+  const eventLines = inferredEvents
+    .filter((/** @type {any} */ event) => event.name && event.payload_shape)
+    .map((/** @type {any} */ event) => `    ${event.name} ${event.payload_shape}`);
+  const selectionEvent = inferredEvents.find((/** @type {any} */ event) => event.name);
   const inferredEventComments = inferredEvents.length > 0
     ? `${inferredEvents.map((/** @type {any} */ event) =>
-        `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}; requires payload shape review before adding an events block.`
+        `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}; review payload shape ${event.payload_shape || "before adding an events block"}.`
       ).join("\n")}\n`
+    : "";
+  const behaviorBlock = eventLines.length > 0
+    ? `  events {\n${eventLines.join("\n")}\n  }\n  behavior [selection]\n  behaviors {\n    selection mode single emits ${selectionEvent?.name || "row_select"}\n  }\n`
     : "";
   return `widget ${widget.id_hint} {
   # Import metadata: confidence ${widget.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${widget.pattern || widget.inferred_pattern || "search_results"}; inferred region ${widget.region || widget.inferred_region || "results"}.
   # Missing decisions: ${missingDecisions.join("; ")}.
-${inferredEventComments}  # Event declarations are intentionally omitted until payload shapes are reviewed.
+${inferredEventComments}  # Event declarations are draft bindings and require payload shape review before adoption.
   name "${widget.label || widget.id_hint}"
   description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
   category collection
   props {
     ${widget.data_prop || "rows"} array required
   }
-  patterns [${widget.pattern || "search_results"}]
+${behaviorBlock}  patterns [${widget.pattern || "search_results"}]
   regions [${widget.region || "results"}]
   status proposed
 }
 `;
+}
+
+/**
+ * @param {any} shape
+ * @returns {string}
+ */
+function renderShapeCandidate(shape) {
+  const fields = Array.isArray(shape.fields) && shape.fields.length > 0
+    ? shape.fields
+    : [{ name: "id", field_type: "string", required: true }];
+  return `shape ${shape.id_hint} {
+  # Import metadata: confidence ${shape.confidence || "unknown"}; source ${shape.source_kind || "unknown"}.
+  # Missing decisions: ${(shape.missing_decisions || ["confirm event payload fields"]).join("; ")}.
+  name "${shape.label || shape.id_hint}"
+  description "Candidate event payload shape inferred from imported UI interaction evidence."
+  fields {
+${fields.map((/** @type {any} */ field) => {
+    const fieldName = typeof field === "string" ? field : field.name;
+    const fieldType = typeof field === "string" ? "string" : (field.field_type || field.type || "string");
+    const requiredness = typeof field === "string" || field.required ? "required" : "optional";
+    return `    ${fieldName} ${fieldType} ${requiredness}`;
+  }).join("\n")}
+  }
+  status proposed
+}
+`;
+}
+
+/**
+ * @param {any} widget
+ * @returns {string}
+ */
+function widgetEventDirectives(widget) {
+  return (widget.inferred_events || [])
+    .filter((/** @type {any} */ event) => event.name && event.action && (event.target_screen || event.target) && event.payload_shape)
+    .map((/** @type {any} */ event) => ` event ${event.name} ${event.action} ${event.target_screen || event.target}`)
+    .join("");
 }
 
 /**
@@ -85,7 +129,7 @@ function uiWidgetLinesForCandidates(widgetCandidates, allCandidates) {
       const dataBinding = dataSource
         ? ` data ${widget.data_prop || "rows"} from ${dataSource}`
         : "";
-      return `    screen ${widget.screen_id} region ${widget.region} widget ${widget.id_hint}${dataBinding}`;
+      return `    screen ${widget.screen_id} region ${widget.region} widget ${widget.id_hint}${dataBinding}${widgetEventDirectives(widget)}`;
     });
 }
 
@@ -106,6 +150,7 @@ export function draftUiProjectionFiles(context, candidates, allCandidates = {}) 
   /** @type {any[]} */
   const actions = ui.actions || [];
   const widgetCandidates = [...uiWidgetCandidates(ui)].sort((a, b) => a.id_hint.localeCompare(b.id_hint));
+  const shapeCandidates = [...(ui.shapes || [])].sort((a, b) => String(a.id_hint || "").localeCompare(String(b.id_hint || "")));
   const shell = actions.find((entry) => entry.kind === "ui_shell")?.shell_kind || "topbar";
   const navigationPatterns = uniqueSorted(actions.filter((entry) => entry.kind === "navigation").map((entry) => entry.navigation_pattern));
   const presentations = uniqueSorted(actions.filter((entry) => entry.kind === "ui_presentation").map((entry) => entry.presentation));
@@ -315,6 +360,7 @@ ${uiWebLines.length > 0 ? `  web_hints {\n${uiWebLines.join("\n")}\n  }\n\n` : "
 - Draft UI contract projection: \`candidates/app/ui/drafts/proj-ui-contract.tg\`
 - Draft web surface projection: \`candidates/app/ui/drafts/proj-web-surface.tg\`
 - Draft widget candidates: ${widgetCandidates.length}
+- Draft event payload shape candidates: ${shapeCandidates.length}
 - Imported screens: ${screens.length}
 - Imported routes: ${(ui.routes || []).length}
 - Imported UI actions/presentations: ${actions.length}
@@ -337,6 +383,9 @@ ${uiWebLines.length > 0 ? `  web_hints {\n${uiWebLines.join("\n")}\n  }\n\n` : "
     "candidates/app/ui/drafts/proj-web-surface.tg": ensureTrailingNewline(uiWebDraft),
     "candidates/app/ui/drafts/README.md": ensureTrailingNewline(coverage)
   };
+  for (const shape of shapeCandidates) {
+    files[`candidates/app/ui/drafts/shapes/${widgetCandidateFileName(shape)}`] = ensureTrailingNewline(renderShapeCandidate(shape));
+  }
   for (const widget of widgetCandidates) {
     files[`candidates/app/ui/drafts/widgets/${widgetCandidateFileName(widget)}`] = ensureTrailingNewline(renderWidgetCandidate(widget));
   }

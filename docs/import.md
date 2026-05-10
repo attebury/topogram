@@ -121,11 +121,13 @@ before promotion; the generated `widget_bindings` bindings are starting evidence
 not a silent assertion that the imported app had a clean reusable widget
 model.
 
-Imported widget event candidates are review metadata until an event payload
-shape is selected. For example, import may infer that a list result widget has
-`row_select -> navigate task_detail`, but the draft widget will not write an
-`events { ... }` block until the payload shape decision is made. This keeps
-adopted widgets valid while still giving agents the interaction clue they need.
+Imported widget event candidates are backed by reviewable payload shape
+candidates when import can infer a target. For example, import may infer that a
+list result widget has `row_select -> navigate task_detail` and draft both
+`shape_event_task_row_select` and `events { row_select
+shape_event_task_row_select }`. Adopting `widgets` brings the related payload
+shape along so the canonical widget remains valid; humans and agents should
+still review the payload fields before treating the event contract as final.
 
 Adoption promotes widget candidates into canonical widget files and
 shared UI projection bindings. It does not write concrete `web_surface`

@@ -2,7 +2,11 @@
 
 /** @param {any[]} fields @returns {any} */
 export function shapeFieldSignature(fields) {
-  return [...new Set((fields || []).filter(Boolean))].sort().join("|");
+  return [...new Set((fields || [])
+    .map((field) => typeof field === "string" ? field : field?.name)
+    .filter(Boolean))]
+    .sort()
+    .join("|");
 }
 
 /** @param {ResolvedGraph} graph @returns {any} */

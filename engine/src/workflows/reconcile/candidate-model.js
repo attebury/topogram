@@ -82,8 +82,10 @@ export function bestContextBundleForCandidate(bundles, candidate) {
 export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const dbCandidates = appImport.candidates.db || { entities: [], enums: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
-  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], widgets: [] };
+  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], widgets: [], shapes: [] };
   const uiWidgetCandidates = uiCandidates.widgets || uiCandidates.components || [];
+  const uiShapeCandidates = uiCandidates.shapes || [];
+  const uiShapeCandidatesById = new Map(uiShapeCandidates.map((/** @type {any} */ shape) => [shape.id || shape.id_hint, shape]));
   const workflowCandidates = appImport.candidates.workflows || { workflows: [], workflow_states: [], workflow_transitions: [] };
   const verificationCandidates = appImport.candidates.verification || { verifications: [], scenarios: [], frameworks: [], scripts: [] };
   const docCandidates = appImport.candidates.docs || [];
@@ -210,6 +212,20 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     }
     const conceptId = widgetConceptId(entry);
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
+    for (const event of entry.inferred_events || []) {
+      const shapeId = event.payload_shape || null;
+      const shape = shapeId ? uiShapeCandidatesById.get(shapeId) : null;
+      if (shape && !bundle.shapes.some((/** @type {any} */ candidate) => candidate.id === shapeId)) {
+        bundle.shapes.push({
+          id: shapeId,
+          label: shape.label || `${entry.label || entry.id_hint} ${event.name || "event"} Payload`,
+          fields: shape.fields || event.payload_fields || ["id"],
+          source_kind: shape.source_kind || "ui_widget_event",
+          widget_id: entry.id_hint,
+          event_name: event.name || null
+        });
+      }
+    }
     bundle.widgets.push(entry);
   }
   for (const entry of workflowCandidates.workflows || []) {
@@ -412,7 +428,7 @@ export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
       files[`${bundleRoot}/entities/${entry.id_hint}.tg`] = renderCandidateEntity(entry, knownEnums);
     }
     for (const shape of bundle.shapes) {
-      files[`${bundleRoot}/shapes/${shape.id}.tg`] = renderCandidateShape(shape.id, shape.label, shape.fields);
+      files[`${bundleRoot}/shapes/${shape.id}.tg`] = renderCandidateShape(shape.id, shape.label, shape.fields, shape.source_kind || null);
     }
     for (const entry of bundle.capabilities) {
       const inputShapeId = bundle.shapes.find((/** @type {any} */ shape) => shape.id === shapeIdForCapability(entry, "input")) ? shapeIdForCapability(entry, "input") : null;

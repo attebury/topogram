@@ -113,17 +113,31 @@ export function shapeIdForCapability(record, direction) {
   return direction === "input" ? `shape_input_${stem}` : `shape_output_${stem}`;
 }
 
-/** @param {string} shapeId @param {string} label @param {any[]} fields @returns {any} */
-export function renderCandidateShape(shapeId, label, fields) {
+/** @param {string} shapeId @param {string} label @param {any[]} fields @param {string|null} [sourceKind] @returns {any} */
+export function renderCandidateShape(shapeId, label, fields, sourceKind = null) {
+  /** @param {any} field @returns {{ name: string, fieldType: string, requiredness: string }} */
+  function normalizeField(field) {
+    if (typeof field === "string") {
+      return { name: field, fieldType: "string", requiredness: "optional" };
+    }
+    return {
+      name: field?.name || "id",
+      fieldType: field?.field_type || field?.type || "string",
+      requiredness: field?.required ? "required" : "optional"
+    };
+  }
   const lines = [
     `shape ${shapeId} {`,
     `  name "${label}"`,
-    `  description "Candidate shape imported from brownfield API evidence"`,
+    sourceKind === "ui_widget_event"
+      ? `  description "Candidate event payload shape imported from brownfield UI interaction evidence"`
+      : `  description "Candidate shape imported from brownfield API evidence"`,
     "",
     "  fields {"
   ];
   for (const field of fields) {
-    lines.push(`    ${field} string optional`);
+    const normalized = normalizeField(field);
+    lines.push(`    ${normalized.name} ${normalized.fieldType} ${normalized.requiredness}`);
   }
   lines.push("  }", "", "  status active", "}");
   return ensureTrailingNewline(lines.join("\n"));
@@ -258,10 +272,24 @@ export function renderCandidateWidget(widget) {
   const pattern = widget.pattern || "search_results";
   const region = widget.region || "results";
   const inferredEvents = Array.isArray(widget.inferred_events) ? widget.inferred_events : [];
-  const eventComments = inferredEvents.flatMap((/** @type {any} */ event) => [
-    `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}.`,
-    "  # Add an events block only after selecting a payload shape."
-  ]);
+  const eventLines = inferredEvents
+    .filter((/** @type {any} */ event) => event.name && event.payload_shape)
+    .map((/** @type {any} */ event) => `    ${event.name} ${event.payload_shape}`);
+  const selectionEvent = inferredEvents.find((/** @type {any} */ event) => event.name);
+  const eventComments = inferredEvents.map((/** @type {any} */ event) =>
+    `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}.`
+  );
+  const behaviorLines = eventLines.length > 0
+    ? [
+        "  events {",
+        ...eventLines,
+        "  }",
+        "  behavior [selection]",
+        "  behaviors {",
+        `    selection mode single emits ${selectionEvent?.name || "row_select"}`,
+        "  }"
+      ]
+    : [];
   return ensureTrailingNewline(
     [
       `widget ${widget.id_hint} {`,
@@ -272,6 +300,7 @@ export function renderCandidateWidget(widget) {
       "  props {",
       `    ${propName} array required`,
       "  }",
+      ...behaviorLines,
       `  patterns [${pattern}]`,
       `  regions [${region}]`,
       "  status proposed",

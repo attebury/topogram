@@ -467,14 +467,21 @@ export function applyAdoptionSelector(adoptionPlan, selector, writeMode) {
 
   const expandSelectedItemsForDependentShapes = (keys) => {
     const expanded = new Set(keys);
-    const selectedCapabilityBundles = new Set(
-      [...expanded]
-        .map((key) => updatedItems.find((item) => adoptionItemKey(item) === key))
-        .filter((item) => item?.kind === "capability")
-        .map((item) => item.bundle)
-    );
+    const selectedItemsForExpansion = [...expanded]
+      .map((key) => updatedItems.find((item) => adoptionItemKey(item) === key))
+      .filter(Boolean);
+    const selectedCapabilityBundles = new Set(selectedItemsForExpansion
+      .filter((item) => item?.kind === "capability")
+      .map((item) => item.bundle));
+    const selectedWidgetShapeIds = new Set(selectedItemsForExpansion
+      .filter((item) => item?.kind === "widget")
+      .flatMap((item) => item.related_shapes || []));
     for (const item of updatedItems) {
-      if (item.kind === "shape" && item.status !== "skipped" && selectedCapabilityBundles.has(item.bundle)) {
+      if (
+        item.kind === "shape" &&
+        item.status !== "skipped" &&
+        (selectedCapabilityBundles.has(item.bundle) || selectedWidgetShapeIds.has(item.item))
+      ) {
         expanded.add(adoptionItemKey(item));
       }
     }
@@ -640,6 +647,7 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       requirements: {
         related_docs: [...new Set(item.related_docs || [])].sort(),
         related_capabilities: [...new Set(item.related_capabilities || [])].sort(),
+        related_shapes: [...new Set(item.related_shapes || [])].sort(),
         related_rules: [...new Set(item.related_rules || [])].sort(),
         related_workflows: [...new Set(item.related_workflows || [])].sort()
       },
@@ -655,6 +663,7 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       track: item.track || null,
       source_path: item.source_path || null,
       canonical_rel_path: item.canonical_rel_path || null,
+      related_shapes: [...new Set(item.related_shapes || [])].sort(),
       review_boundary: reviewBoundaryForImportProposal(item),
       current_state: currentState,
       recommended_state: inferRecommendedAdoptionState(item),
@@ -670,6 +679,7 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       requirements: {
         related_docs: [...new Set(item.related_docs || [])].sort(),
         related_capabilities: [...new Set(item.related_capabilities || [])].sort(),
+        related_shapes: [...new Set(item.related_shapes || [])].sort(),
         related_rules: [...new Set(item.related_rules || [])].sort(),
         related_workflows: [...new Set(item.related_workflows || [])].sort(),
         blocking_dependencies: [...(item.blocking_dependencies || [])]
