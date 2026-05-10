@@ -788,6 +788,66 @@ test("resolver support modules do not import from resolver index", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("new project entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "new-project.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:fs\"",
+    "from \"node:path\"",
+    "function createNewProject(",
+    "function buildTemplateUpdatePlan(",
+    "function writeProjectPackage(",
+    "function resolveTemplate("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/new-project\//);
+});
+
+test("new project implementation modules stay focused and type checked", () => {
+  const root = path.join(repoRoot, "engine", "src", "new-project");
+  const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
+  const tsconfigFiles = new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));
+  const offenders = [];
+  const missingFromTypeCheck = [];
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js") || item.endsWith(".d.ts"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const normalized = path.normalize(relative);
+    if (!tsconfigFiles.has(normalized)) {
+      missingFromTypeCheck.push(relative);
+    }
+    if (!file.endsWith(".js")) {
+      continue;
+    }
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (lineCount > 800 || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+  }
+
+  assert.deepEqual(missingFromTypeCheck, []);
+  assert.deepEqual(offenders, []);
+});
+
+test("new project support modules do not import from new project entrypoint", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "new-project");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes('from "../new-project.js"') || contents.includes("from '../new-project.js'")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("resolver and validator leaf modules stay in the active type-check lane", () => {
   const checkedFiles = [
     "engine/src/parser.js",
