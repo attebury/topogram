@@ -1,3 +1,4 @@
+// @ts-check
 import {
   DOMAIN_IDENTIFIER_PATTERN,
   DOMAIN_TAGGABLE_KINDS
@@ -11,6 +12,7 @@ import {
   valueAsArray
 } from "../utils.js";
 
+/** @param {TopogramToken} value @returns {boolean} */
 function isStringOrSymbolList(value) {
   for (const item of valueAsArray(value)) {
     if (item.type !== "string" && item.type !== "symbol") {
@@ -20,6 +22,7 @@ function isStringOrSymbolList(value) {
   return true;
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateDomainIdentifier(errors, statement) {
   if (statement.kind !== "domain") {
     return;
@@ -33,6 +36,7 @@ function validateDomainIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateScopeFields(errors, statement, fieldMap) {
   if (statement.kind !== "domain") {
     return;
@@ -50,6 +54,7 @@ function validateScopeFields(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateParentDomain(errors, statement, fieldMap, registry) {
   if (statement.kind !== "domain") {
     return;
@@ -94,6 +99,7 @@ function validateParentDomain(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateOwners(errors, statement, fieldMap, registry) {
   if (statement.kind !== "domain") {
     return;
@@ -121,6 +127,7 @@ function validateOwners(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function detectParentDomainCycle(errors, statement, fieldMap, registry) {
   if (statement.kind !== "domain") {
     return;
@@ -146,6 +153,7 @@ function detectParentDomainCycle(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateDomain(errors, statement, fieldMap, registry) {
   if (statement.kind !== "domain") {
     return;
@@ -160,6 +168,7 @@ export function validateDomain(errors, statement, fieldMap, registry) {
 // Cross-kind validator: when *any* statement carries a `domain` field, verify
 // it resolves to kind=domain. Skipped on the `domain` kind itself (its own
 // `parent_domain` field handles that case).
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateDomainTag(errors, statement, fieldMap, registry) {
   if (statement.kind === "domain") {
     return;

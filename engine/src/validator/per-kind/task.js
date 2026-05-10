@@ -1,3 +1,4 @@
+// @ts-check
 import {
   TASK_IDENTIFIER_PATTERN,
   PRIORITY_VALUES,
@@ -9,6 +10,7 @@ import {
   symbolValues
 } from "../utils.js";
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateTaskIdentifier(errors, statement) {
   if (!TASK_IDENTIFIER_PATTERN.test(statement.id)) {
     pushError(
@@ -19,6 +21,7 @@ function validateTaskIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validatePriority(errors, statement, fieldMap) {
   const field = fieldMap.get("priority")?.[0];
   if (!field) return;
@@ -35,6 +38,7 @@ function validatePriority(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateWorkType(errors, statement, fieldMap) {
   const field = fieldMap.get("work_type")?.[0];
   if (!field) return;
@@ -51,6 +55,7 @@ function validateWorkType(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateBlockingPair(errors, statement, fieldMap, registry) {
   // Self-block guard. Reciprocal `blocks` <-> `blocked_by` resolution is the
   // resolver's job; here we just guard against trivial cycles.
@@ -69,6 +74,7 @@ function validateBlockingPair(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateClaimedByPresence(errors, statement, fieldMap) {
   // claimed/in-progress/done all require a claimed_by; unclaimed/blocked do not.
   const statusField = fieldMap.get("status")?.[0];
@@ -84,6 +90,7 @@ function validateClaimedByPresence(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateTask(errors, statement, fieldMap, registry) {
   if (statement.kind !== "task") {
     return;

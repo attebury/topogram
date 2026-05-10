@@ -696,3 +696,37 @@ test("workflow implementation modules stay in the active type-check lane", () =>
 
   assert.deepEqual(offenders, []);
 });
+
+test("resolver and validator leaf modules stay in the active type-check lane", () => {
+  const checkedFiles = [
+    "engine/src/validator/per-kind/acceptance-criterion.js",
+    "engine/src/validator/per-kind/bug.js",
+    "engine/src/validator/per-kind/domain.js",
+    "engine/src/validator/per-kind/pitch.js",
+    "engine/src/validator/per-kind/requirement.js",
+    "engine/src/validator/per-kind/task.js",
+    "engine/src/validator/per-kind/widget.js",
+    "engine/src/resolver/enrich/acceptance-criterion.js",
+    "engine/src/resolver/enrich/bug.js",
+    "engine/src/resolver/enrich/pitch.js",
+    "engine/src/resolver/enrich/requirement.js",
+    "engine/src/resolver/enrich/task.js"
+  ];
+  const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
+  const tsconfigFiles = new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));
+  const missingFromTypeCheck = [];
+  const nocheckOffenders = [];
+
+  for (const relative of checkedFiles) {
+    if (!tsconfigFiles.has(path.normalize(relative))) {
+      missingFromTypeCheck.push(relative);
+    }
+    const contents = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+    if (contents.includes("@ts-nocheck")) {
+      nocheckOffenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(missingFromTypeCheck, []);
+  assert.deepEqual(nocheckOffenders, []);
+});

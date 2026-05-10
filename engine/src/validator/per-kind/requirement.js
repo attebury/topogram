@@ -1,3 +1,4 @@
+// @ts-check
 import {
   REQUIREMENT_IDENTIFIER_PATTERN,
   PRIORITY_VALUES
@@ -8,6 +9,7 @@ import {
   symbolValues
 } from "../utils.js";
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateRequirementIdentifier(errors, statement) {
   if (!REQUIREMENT_IDENTIFIER_PATTERN.test(statement.id)) {
     pushError(
@@ -18,6 +20,7 @@ function validateRequirementIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validatePriority(errors, statement, fieldMap) {
   const field = fieldMap.get("priority")?.[0];
   if (!field) return;
@@ -34,6 +37,7 @@ function validatePriority(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateSupersedes(errors, statement, fieldMap, registry) {
   const field = fieldMap.get("supersedes")?.[0];
   if (!field) return;
@@ -65,6 +69,7 @@ function validateSupersedes(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateRequirement(errors, statement, fieldMap, registry) {
   if (statement.kind !== "requirement") {
     return;

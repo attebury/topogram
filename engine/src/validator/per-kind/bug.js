@@ -1,3 +1,4 @@
+// @ts-check
 import {
   BUG_IDENTIFIER_PATTERN,
   PRIORITY_VALUES,
@@ -9,6 +10,7 @@ import {
   symbolValues
 } from "../utils.js";
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateBugIdentifier(errors, statement) {
   if (!BUG_IDENTIFIER_PATTERN.test(statement.id)) {
     pushError(
@@ -19,6 +21,7 @@ function validateBugIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validatePriority(errors, statement, fieldMap) {
   const field = fieldMap.get("priority")?.[0];
   if (!field) return;
@@ -35,6 +38,7 @@ function validatePriority(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateSeverity(errors, statement, fieldMap) {
   const field = fieldMap.get("severity")?.[0];
   if (!field) return;
@@ -51,6 +55,7 @@ function validateSeverity(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateFixedInVerificationOnVerified(errors, statement, fieldMap) {
   // A bug in `verified` status must point at the verification that proved
   // the fix; this lets release-notes assemble a closed-loop record.
@@ -66,6 +71,7 @@ function validateFixedInVerificationOnVerified(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateBug(errors, statement, fieldMap, registry) {
   if (statement.kind !== "bug") {
     return;

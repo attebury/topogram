@@ -1,3 +1,4 @@
+// @ts-check
 // Resolver enrichment for tasks.
 //
 // Back-link arrays:
@@ -8,6 +9,7 @@
 // `blocked_by` are reciprocal, because authors only write one side. The
 // resolver bridges them.
 
+/** @param {TopogramStatement} task @param {ResolverBacklinkIndex} index */
 export function enrichTask(task, index) {
   return {
     blockingMe: (index.tasksThatBlockTarget.get(task.id) || []).slice().sort(),

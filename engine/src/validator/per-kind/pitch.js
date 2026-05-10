@@ -1,3 +1,4 @@
+// @ts-check
 import {
   PITCH_IDENTIFIER_PATTERN,
   PRIORITY_VALUES
@@ -8,6 +9,7 @@ import {
   symbolValues
 } from "../utils.js";
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validatePitchIdentifier(errors, statement) {
   if (!PITCH_IDENTIFIER_PATTERN.test(statement.id)) {
     pushError(
@@ -18,6 +20,7 @@ function validatePitchIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validatePriority(errors, statement, fieldMap) {
   const field = fieldMap.get("priority")?.[0];
   if (!field) return;
@@ -34,6 +37,7 @@ function validatePriority(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateAppetite(errors, statement, fieldMap) {
   const field = fieldMap.get("appetite")?.[0];
   if (!field) return;
@@ -46,6 +50,7 @@ function validateAppetite(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateShapingFields(errors, statement, fieldMap) {
   // When a pitch enters status `shaped`, the appetite, rabbit_holes, and
   // no_go_areas sections must be filled. This mirrors the Forge pitch
@@ -66,6 +71,7 @@ function validateShapingFields(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateDecisionRefs(errors, statement, fieldMap, registry) {
   const field = fieldMap.get("decisions")?.[0];
   if (!field) return;
@@ -89,6 +95,7 @@ function validateDecisionRefs(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validatePitch(errors, statement, fieldMap, registry) {
   if (statement.kind !== "pitch") {
     return;

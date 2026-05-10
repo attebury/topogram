@@ -1,3 +1,4 @@
+// @ts-check
 import {
   ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN
 } from "../kinds.js";
@@ -7,6 +8,7 @@ import {
   symbolValues
 } from "../utils.js";
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateAcIdentifier(errors, statement) {
   if (!ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN.test(statement.id)) {
     pushError(
@@ -17,6 +19,7 @@ function validateAcIdentifier(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateRequirementRef(errors, statement, fieldMap, registry) {
   // Generic reference validator skips `requirement` (it's overloaded with
   // rule.requirement which is a string condition); validate the kind=requirement
@@ -50,6 +53,7 @@ function validateRequirementRef(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateSupersedes(errors, statement, fieldMap, registry) {
   const field = fieldMap.get("supersedes")?.[0];
   if (!field) return;
@@ -81,6 +85,7 @@ function validateSupersedes(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateAcceptanceCriterion(errors, statement, fieldMap, registry) {
   if (statement.kind !== "acceptance_criterion") {
     return;

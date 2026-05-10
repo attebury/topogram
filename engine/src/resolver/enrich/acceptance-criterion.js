@@ -1,3 +1,4 @@
+// @ts-check
 // Resolver enrichment for acceptance criteria.
 //
 // Back-link arrays:
@@ -5,6 +6,7 @@
 //   verifications  — verifications whose `acceptance_refs` includes this AC
 //   supersededBy   — ACs that supersede *this* one
 
+/** @param {TopogramStatement} ac @param {ResolverBacklinkIndex} index */
 export function enrichAcceptanceCriterion(ac, index) {
   return {
     tasks: (index.tasksByAcceptanceRef.get(ac.id) || []).slice().sort(),

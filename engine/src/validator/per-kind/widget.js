@@ -1,3 +1,4 @@
+// @ts-check
 import {
   UI_PATTERN_KINDS,
   UI_REGION_KINDS
@@ -36,6 +37,7 @@ const WIDGET_BEHAVIOR_KINDS = new Set([
   "keyboard_navigation"
 ]);
 
+/** @type {Record<string, Set<string>>} */
 const WIDGET_BEHAVIOR_DIRECTIVES = {
   selection: new Set(["mode", "state", "emits"]),
   sorting: new Set(["fields", "default"]),
@@ -51,10 +53,12 @@ const WIDGET_BEHAVIOR_DIRECTIVES = {
   keyboard_navigation: new Set(["scope", "shortcuts"])
 };
 
+/** @param {TopogramToken | null | undefined} token @returns {any} */
 function tokenValue(token) {
   return token?.value ?? null;
 }
 
+/** @param {TopogramToken | null | undefined} token @returns {any[]} */
 function tokenValues(token) {
   if (!token) {
     return [];
@@ -66,6 +70,7 @@ function tokenValues(token) {
   return value == null ? [] : [value];
 }
 
+/** @param {TopogramStatement} statement @returns {Set<any>} */
 function widgetPropNames(statement) {
   return new Set(blockEntries(getFieldValue(statement, "props"))
     .map((entry) => entry.items[0])
@@ -73,6 +78,7 @@ function widgetPropNames(statement) {
     .map((item) => item.value));
 }
 
+/** @param {TopogramStatement} statement @returns {Set<any>} */
 function widgetEventNames(statement) {
   return new Set(blockEntries(getFieldValue(statement, "events"))
     .map((entry) => entry.items[0])
@@ -80,6 +86,7 @@ function widgetEventNames(statement) {
     .map((item) => item.value));
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
 function validateWidgetCategory(errors, statement, fieldMap) {
   const field = fieldMap.get("category")?.[0];
   if (!field) {
@@ -96,6 +103,7 @@ function validateWidgetCategory(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateWidgetProps(errors, statement) {
   for (const entry of blockEntries(getFieldValue(statement, "props"))) {
     const [name, type, requiredness, ...rest] = entry.items;
@@ -127,6 +135,7 @@ function validateWidgetProps(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramRegistry} registry */
 function validateWidgetEvents(errors, statement, registry) {
   for (const entry of blockEntries(getFieldValue(statement, "events"))) {
     const [eventName, shapeRef] = entry.items;
@@ -151,6 +160,7 @@ function validateWidgetEvents(errors, statement, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement */
 function validateWidgetSlots(errors, statement) {
   for (const entry of blockEntries(getFieldValue(statement, "slots"))) {
     const [slotName, description] = entry.items;
@@ -165,6 +175,7 @@ function validateWidgetSlots(errors, statement) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {string} key @param {Set<string>} allowed @param {string} label */
 function validateSymbolList(errors, statement, fieldMap, key, allowed, label) {
   const field = fieldMap.get(key)?.[0];
   if (!field) {
@@ -178,6 +189,7 @@ function validateSymbolList(errors, statement, fieldMap, key, allowed, label) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramRegistry} registry @param {any} kind @param {any} directive @param {TopogramToken} valueToken @param {Set<any>} eventNames */
 function validateBehaviorActionReferences(errors, statement, registry, kind, directive, valueToken, eventNames) {
   for (const actionId of tokenValues(valueToken)) {
     if (eventNames.has(actionId)) {
@@ -195,6 +207,7 @@ function validateBehaviorActionReferences(errors, statement, registry, kind, dir
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateWidgetBehaviors(errors, statement, fieldMap, registry) {
   validateSymbolList(errors, statement, fieldMap, "behavior", WIDGET_BEHAVIOR_KINDS, "behavior");
 
@@ -259,6 +272,7 @@ function validateWidgetBehaviors(errors, statement, fieldMap, registry) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 export function validateWidget(errors, statement, fieldMap, registry) {
   if (statement.kind !== "widget") {
     return;

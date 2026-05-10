@@ -1,3 +1,4 @@
+// @ts-check
 // Resolver enrichment for requirements.
 //
 // Back-link arrays:
@@ -8,6 +9,7 @@
 //   documents           — docs whose `satisfies` frontmatter points here
 //   rules               — rules whose `from_requirement` is this requirement
 
+/** @param {TopogramStatement} requirement @param {ResolverBacklinkIndex} index */
 export function enrichRequirement(requirement, index) {
   return {
     acceptanceCriteria: (index.acsByRequirement.get(requirement.id) || []).slice().sort(),

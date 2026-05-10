@@ -1,3 +1,4 @@
+// @ts-check
 // Resolver enrichment for pitches.
 //
 // Builds back-link arrays so consumers can ask a pitch "who follows you?"
@@ -10,6 +11,7 @@
 //
 // Output is merged into the statement by `resolveWorkspace`.
 
+/** @param {TopogramStatement} pitch @param {ResolverBacklinkIndex} index */
 export function enrichPitch(pitch, index) {
   return {
     requirements: (index.requirementsByPitch.get(pitch.id) || []).slice().sort(),
