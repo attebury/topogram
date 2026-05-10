@@ -644,6 +644,64 @@ test("split command parser stays a command-family composition root", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("template command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "template.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "loadCatalog",
+    "createNewProject",
+    "buildTemplateUpdatePlan(",
+    "getTemplateTrustStatus("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 80, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/template\//);
+});
+
+test("template command implementation modules stay focused and type checked", () => {
+  const root = path.join(repoRoot, "engine", "src", "cli", "commands", "template");
+  const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
+  const tsconfigFiles = new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));
+  const offenders = [];
+  const missingFromTypeCheck = [];
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const normalized = path.normalize(relative);
+    if (!tsconfigFiles.has(normalized)) {
+      missingFromTypeCheck.push(relative);
+    }
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (lineCount > 800 || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+  }
+
+  assert.deepEqual(missingFromTypeCheck, []);
+  assert.deepEqual(offenders, []);
+});
+
+test("template command support modules do not import from template entrypoint", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "cli", "commands", "template");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes('from "../template.js"') || contents.includes("from '../template.js'")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("workflow entrypoint stays dispatch-only after workflow split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "workflows.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
