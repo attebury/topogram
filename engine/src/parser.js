@@ -1,31 +1,76 @@
+// @ts-check
+
 import fs from "node:fs";
 import path from "node:path";
 import { parseDocsPath } from "./workspace-docs.js";
 
+/**
+ * @typedef {{ line: number, column: number, offset: number }} ParserPosition
+ * @typedef {{ type: string, value: string, start: ParserPosition, end: ParserPosition }} LexerToken
+ * @typedef {{ file: string, start: ParserPosition, end: ParserPosition }} AstLocation
+ * @typedef {{ type: "string" | "symbol", value: string, loc: AstLocation }} AstScalar
+ * @typedef {{ type: "list", items: AstValue[], loc: AstLocation }} AstList
+ * @typedef {{ type: "sequence", items: AstValue[], loc: AstLocation }} AstSequence
+ * @typedef {{ type: "block", entries: AstBlockEntry[], loc: AstLocation }} AstBlock
+ * @typedef {AstScalar | AstList | AstSequence | AstBlock} AstValue
+ * @typedef {{ type: "block_entry", items: AstValue[], loc: AstLocation }} AstBlockEntry
+ * @typedef {{ type: "field", key: string, value: AstValue, loc: AstLocation }} AstField
+ * @typedef {{ type: "statement", kind: string, id: string, from: AstScalar | null, fields: AstField[], loc: AstLocation }} AstStatement
+ * @typedef {{ type: "document", file: string, statements: AstStatement[] }} AstDocument
+ * @typedef {{ type: "workspace", root: string, files: AstDocument[], docs: any[] }} WorkspaceAst
+ */
+
+/**
+ * @param {number} line
+ * @param {number} column
+ * @param {number} offset
+ * @returns {ParserPosition}
+ */
 function createPos(line, column, offset) {
   return { line, column, offset };
 }
 
+/**
+ * @param {string} type
+ * @param {string} value
+ * @param {ParserPosition} start
+ * @param {ParserPosition} end
+ * @returns {LexerToken}
+ */
 function createToken(type, value, start, end) {
   return { type, value, start, end };
 }
 
+/**
+ * @param {string} filePath
+ * @param {string} message
+ * @param {LexerToken | null | undefined} token
+ * @returns {Error}
+ */
 function createError(filePath, message, token) {
   const line = token?.start?.line ?? 1;
   const column = token?.start?.column ?? 1;
   return new Error(`${filePath}:${line}:${column} ${message}`);
 }
 
+/**
+ * @param {string} source
+ * @param {string} [filePath]
+ * @returns {LexerToken[]}
+ */
 export function lex(source, filePath = "<memory>") {
+  /** @type {LexerToken[]} */
   const tokens = [];
   let i = 0;
   let line = 1;
   let column = 1;
 
+  /** @returns {ParserPosition} */
   function pos() {
     return createPos(line, column, i);
   }
 
+  /** @param {string} char */
   function advanceChar(char) {
     i += 1;
     if (char === "\n") {
@@ -36,6 +81,12 @@ export function lex(source, filePath = "<memory>") {
     }
   }
 
+  /**
+   * @param {string} type
+   * @param {string} value
+   * @param {ParserPosition} start
+   * @param {ParserPosition} end
+   */
   function push(type, value, start, end) {
     tokens.push(createToken(type, value, start, end));
   }
@@ -166,31 +217,48 @@ export function lex(source, filePath = "<memory>") {
 }
 
 class Parser {
+  /**
+   * @param {LexerToken[]} tokens
+   * @param {string} filePath
+   */
   constructor(tokens, filePath) {
     this.tokens = tokens;
     this.filePath = filePath;
     this.index = 0;
   }
 
+  /** @returns {LexerToken} */
   current() {
     return this.tokens[this.index];
   }
 
+  /** @returns {LexerToken | undefined} */
   previous() {
     return this.tokens[this.index - 1];
   }
 
+  /** @returns {LexerToken} */
   advance() {
     const token = this.current();
     this.index += 1;
     return token;
   }
 
+  /**
+   * @param {string} type
+   * @param {string} [value]
+   * @returns {boolean}
+   */
   check(type, value) {
     const token = this.current();
     return token.type === type && (value === undefined || token.value === value);
   }
 
+  /**
+   * @param {string} type
+   * @param {string} [value]
+   * @returns {LexerToken | null}
+   */
   match(type, value) {
     if (!this.check(type, value)) {
       return null;
@@ -198,6 +266,12 @@ class Parser {
     return this.advance();
   }
 
+  /**
+   * @param {string} type
+   * @param {string | undefined} value
+   * @param {string} message
+   * @returns {LexerToken}
+   */
   expect(type, value, message) {
     const token = this.current();
     if (!this.check(type, value)) {
@@ -206,13 +280,16 @@ class Parser {
     return this.advance();
   }
 
+  /** @returns {void} */
   skipNewlines() {
     while (this.match("newline")) {
       // Skip layout-only line breaks between statements and fields.
     }
   }
 
+  /** @returns {AstDocument} */
   parseDocument() {
+    /** @type {AstStatement[]} */
     const statements = [];
     this.skipNewlines();
 
@@ -228,11 +305,13 @@ class Parser {
     };
   }
 
+  /** @returns {AstStatement} */
   parseStatement() {
     const kind = this.expect("word", undefined, "Expected statement kind");
     const id = this.expect("word", undefined, "Expected statement identifier");
     const start = kind.start;
 
+    /** @type {LexerToken | null} */
     let from = null;
     if (this.match("word", "from")) {
       from = this.expect("word", undefined, "Expected identifier after 'from'");
@@ -242,6 +321,7 @@ class Parser {
     this.expect("lbrace", undefined, "Expected '{' to start statement body");
     this.skipNewlines();
 
+    /** @type {AstField[]} */
     const fields = [];
     while (!this.check("rbrace")) {
       fields.push(this.parseField());
@@ -260,6 +340,7 @@ class Parser {
     };
   }
 
+  /** @returns {AstField} */
   parseField() {
     const key = this.expect("word", undefined, "Expected field name");
     const start = key.start;
@@ -287,9 +368,11 @@ class Parser {
     };
   }
 
+  /** @returns {AstBlock} */
   parseBlock() {
     const open = this.expect("lbrace", undefined, "Expected '{' to start block");
     this.skipNewlines();
+    /** @type {AstBlockEntry[]} */
     const entries = [];
 
     while (!this.check("rbrace")) {
@@ -313,7 +396,12 @@ class Parser {
     };
   }
 
+  /**
+   * @param {string[]} stopTypes
+   * @returns {AstValue[]}
+   */
   parseSequenceUntil(stopTypes) {
+    /** @type {AstValue[]} */
     const items = [];
 
     while (!stopTypes.includes(this.current().type) && !this.check("eof")) {
@@ -326,6 +414,7 @@ class Parser {
     return items;
   }
 
+  /** @returns {AstValue} */
   parseAtom() {
     const token = this.current();
 
@@ -354,8 +443,10 @@ class Parser {
     throw createError(this.filePath, `Unexpected token '${token.value || token.type}'`, token);
   }
 
+  /** @returns {AstList} */
   parseList() {
     const open = this.expect("lbracket", undefined, "Expected '[' to start list");
+    /** @type {AstValue[]} */
     const items = [];
 
     while (!this.check("rbracket")) {
@@ -373,6 +464,10 @@ class Parser {
     };
   }
 
+  /**
+   * @param {LexerToken} token
+   * @returns {AstScalar}
+   */
   nodeFromToken(token) {
     return {
       type: "symbol",
@@ -381,6 +476,11 @@ class Parser {
     };
   }
 
+  /**
+   * @param {ParserPosition} start
+   * @param {ParserPosition} end
+   * @returns {AstLocation}
+   */
   loc(start, end) {
     return {
       file: this.filePath,
@@ -390,17 +490,30 @@ class Parser {
   }
 }
 
+/**
+ * @param {string} source
+ * @param {string} [filePath]
+ * @returns {AstDocument}
+ */
 export function parseSource(source, filePath = "<memory>") {
   const tokens = lex(source, filePath);
   const parser = new Parser(tokens, filePath);
   return parser.parseDocument();
 }
 
+/**
+ * @param {string} filePath
+ * @returns {AstDocument}
+ */
 export function parseFile(filePath) {
   const source = fs.readFileSync(filePath, "utf8");
   return parseSource(source, filePath);
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {string[]}
+ */
 export function collectTopogramFiles(inputPath) {
   const absolutePath = path.resolve(inputPath);
   const stat = fs.statSync(absolutePath);
@@ -409,6 +522,7 @@ export function collectTopogramFiles(inputPath) {
     return absolutePath.endsWith(".tg") ? [absolutePath] : [];
   }
 
+  /** @type {string[]} */
   const files = [];
   for (const entry of fs.readdirSync(absolutePath, { withFileTypes: true })) {
     const childPath = path.join(absolutePath, entry.name);
@@ -427,6 +541,10 @@ export function collectTopogramFiles(inputPath) {
   return files.sort();
 }
 
+/**
+ * @param {string} inputPath
+ * @returns {WorkspaceAst}
+ */
 export function parsePath(inputPath) {
   const files = collectTopogramFiles(inputPath);
   const docs = parseDocsPath(inputPath);
