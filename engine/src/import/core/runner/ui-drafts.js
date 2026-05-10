@@ -49,9 +49,16 @@ function renderWidgetCandidate(widget) {
     "confirm prop names and data source",
     "confirm events and behavior"
   ];
+  const inferredEvents = Array.isArray(widget.inferred_events) ? widget.inferred_events : [];
+  const inferredEventComments = inferredEvents.length > 0
+    ? `${inferredEvents.map((/** @type {any} */ event) =>
+        `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}; requires payload shape review before adding an events block.`
+      ).join("\n")}\n`
+    : "";
   return `widget ${widget.id_hint} {
   # Import metadata: confidence ${widget.confidence || "unknown"}; evidence ${evidenceCount}; inferred pattern ${widget.pattern || widget.inferred_pattern || "search_results"}; inferred region ${widget.region || widget.inferred_region || "results"}.
   # Missing decisions: ${missingDecisions.join("; ")}.
+${inferredEventComments}  # Event declarations are intentionally omitted until payload shapes are reviewed.
   name "${widget.label || widget.id_hint}"
   description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."
   category collection

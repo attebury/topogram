@@ -257,12 +257,18 @@ export function renderCandidateWidget(widget) {
   const propName = widget.data_prop || "rows";
   const pattern = widget.pattern || "search_results";
   const region = widget.region || "results";
+  const inferredEvents = Array.isArray(widget.inferred_events) ? widget.inferred_events : [];
+  const eventComments = inferredEvents.flatMap((/** @type {any} */ event) => [
+    `  # Inferred event: ${event.name || "event"} ${event.action || "action"} ${event.target_screen || event.target || "target"}.`,
+    "  # Add an events block only after selecting a payload shape."
+  ]);
   return ensureTrailingNewline(
     [
       `widget ${widget.id_hint} {`,
       `  name "${widget.label || widget.id_hint}"`,
       '  description "Candidate reusable widget inferred from imported UI evidence. Review props, behavior, events, and reuse before adoption."',
       "  category collection",
+      ...eventComments,
       "  props {",
       `    ${propName} array required`,
       "  }",

@@ -22,7 +22,7 @@ export function reportMarkdown(track, candidates) {
   if (track === "ui") {
     const widgets = uiWidgetCandidates(candidates);
     const widgetLines = widgets.map((widget) =>
-      `- \`${widget.id_hint}\` confidence ${widget.confidence || "unknown"} pattern \`${widget.pattern || widget.inferred_pattern || "unknown"}\` region \`${widget.region || widget.inferred_region || "unknown"}\` evidence ${(widget.evidence || widget.provenance || []).length} missing decisions ${(widget.missing_decisions || []).length}`
+      `- \`${widget.id_hint}\` confidence ${widget.confidence || "unknown"} pattern \`${widget.pattern || widget.inferred_pattern || "unknown"}\` region \`${widget.region || widget.inferred_region || "unknown"}\` events ${(widget.inferred_events || []).length} evidence ${(widget.evidence || widget.provenance || []).length} missing decisions ${(widget.missing_decisions || []).length}`
     );
     return ensureTrailingNewline(
       `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Widgets: ${widgets.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Widget Candidates\n\n${widgetLines.length ? widgetLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review candidates under \`topogram/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`

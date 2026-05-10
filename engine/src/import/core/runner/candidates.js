@@ -48,6 +48,54 @@ export function capabilityHintsForScreen(screen) {
 }
 
 /**
+ * @param {string|null|undefined} screenId
+ * @returns {string}
+ */
+function screenConceptStem(screenId) {
+  return String(screenId || "")
+    .replace(/_(list|index|table|grid|results|detail|show|create|new|edit|form)$/, "")
+    .replace(/^(list|show|create|edit)_/, "");
+}
+
+/**
+ * @param {any} sourceScreen
+ * @param {any[]} screens
+ * @returns {any|null}
+ */
+function matchingDetailScreen(sourceScreen, screens) {
+  const sourceStem = screenConceptStem(sourceScreen?.id_hint);
+  if (!sourceStem) {
+    return null;
+  }
+  return screens.find((screen) =>
+    screen?.id_hint !== sourceScreen?.id_hint &&
+    screen?.screen_kind === "detail" &&
+    screenConceptStem(screen.id_hint) === sourceStem
+  ) || null;
+}
+
+/**
+ * @param {any} screen
+ * @param {any[]} screens
+ * @returns {any[]}
+ */
+function inferredEventsForWidgetScreen(screen, screens) {
+  const detailScreen = matchingDetailScreen(screen, screens);
+  if (!detailScreen) {
+    return [];
+  }
+  return [{
+    name: "row_select",
+    kind: "selection",
+    action: "navigate",
+    target_screen: detailScreen.id_hint,
+    confidence: "medium",
+    evidence: detailScreen.provenance || [],
+    requires_payload_shape_decision: true
+  }];
+}
+
+/**
  * @param {any} candidates
  * @returns {any[]}
  */
@@ -95,6 +143,7 @@ function deriveUiWidgetCandidates(candidates) {
     const pattern = collectionPatternFromPresentations(presentations);
     const widgetStem = idHintify(`${screen.id_hint}_results`);
     const loadCapability = loadCapabilityForScreen(screen);
+    const inferredEvents = inferredEventsForWidgetScreen(screen, screens);
     return makeCandidateRecord({
       kind: "widget",
       idHint: `widget_${widgetStem}`,
@@ -109,10 +158,13 @@ function deriveUiWidgetCandidates(candidates) {
       data_prop: "rows",
       data_source: loadCapability,
       inferred_props: [{ name: "rows", type: "array", required: true, source: loadCapability }],
-      inferred_events: [],
+      inferred_events: inferredEvents,
       inferred_region: "results",
       inferred_pattern: pattern,
-      evidence: screen.provenance || [],
+      evidence: [
+        ...(screen.provenance || []),
+        ...inferredEvents.flatMap((event) => event.evidence || [])
+      ],
       missing_decisions: [
         "confirm widget reuse boundary",
         "confirm prop names and data source",

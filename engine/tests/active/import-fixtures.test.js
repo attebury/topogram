@@ -141,7 +141,19 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.deepEqual(widgetCandidate.inferred_props, [
     { name: "rows", type: "array", required: true, source: "cap_list_tasks" }
   ]);
-  assert.deepEqual(widgetCandidate.inferred_events, []);
+  assert.deepEqual(widgetCandidate.inferred_events, [
+    {
+      name: "row_select",
+      kind: "selection",
+      action: "navigate",
+      target_screen: "task_detail",
+      confidence: "medium",
+      evidence: [
+        "engine/tests/fixtures/import/route-fallback/apps/web/src/App.tsx#/tasks/:id"
+      ],
+      requires_payload_shape_decision: true
+    }
+  ]);
   assert.equal(widgetCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
   assert.equal((widgetCandidate.evidence || []).length > 0, true);
 
@@ -160,13 +172,15 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const componentDraft = fs.readFileSync(componentDraftPath, "utf8");
   assert.match(componentDraft, /# Import metadata: confidence low; evidence \d+; inferred pattern search_results; inferred region results\./);
   assert.match(componentDraft, /# Missing decisions: confirm widget reuse boundary; confirm prop names and data source; confirm events and behavior; confirm supported regions and patterns\./);
+  assert.match(componentDraft, /# Inferred event: row_select navigate task_detail; requires payload shape review before adding an events block\./);
+  assert.match(componentDraft, /# Event declarations are intentionally omitted until payload shapes are reviewed\./);
   assert.match(componentDraft, /widget widget_task_list_results \{/);
   assert.match(componentDraft, /patterns \[search_results\]/);
   assert.match(componentDraft, /status proposed/);
 
   const uiReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "report.md"), "utf8");
   assert.match(uiReport, /## Widget Candidates/);
-  assert.match(uiReport, /`widget_task_list_results` confidence low pattern `search_results` region `results` evidence \d+ missing decisions 4/);
+  assert.match(uiReport, /`widget_task_list_results` confidence low pattern `search_results` region `results` events 1 evidence \d+ missing decisions 4/);
   assert.match(uiReport, /topogram widget check <path>/);
   assert.match(uiReport, /topogram widget behavior <path>/);
 
@@ -197,6 +211,9 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   const bundleReadme = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
   assert.match(bundleReadme, /Widgets: 1/);
   assert.match(bundleReadme, /Main widgets: `widget_task_list_results`/);
+  const bundleWidget = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "widgets", "widget_task_list_results.tg"), "utf8");
+  assert.match(bundleWidget, /# Inferred event: row_select navigate task_detail\./);
+  assert.match(bundleWidget, /# Add an events block only after selecting a payload shape\./);
 
   const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
