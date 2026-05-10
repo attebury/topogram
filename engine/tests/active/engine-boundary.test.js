@@ -734,6 +734,33 @@ test("template command support modules do not import from template entrypoint", 
   assert.deepEqual(offenders, []);
 });
 
+test("package command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "package.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "childProcess",
+    "fs.",
+    "path.",
+    "runNpmForPackageUpdate(",
+    "inspectTopogramCliLockfile("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 60, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/package\//);
+});
+
+test("package command implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "cli", "commands", "package"),
+    entrypointImport: "../package.js"
+  });
+});
+
 test("import command entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "import.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
