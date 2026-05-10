@@ -37,5 +37,5 @@ export const UI_DESIGN_RADIUS_SCALES: Set<string>;
 export const UI_DESIGN_COLOR_ROLES: Set<string>;
 export const UI_DESIGN_TYPOGRAPHY_ROLES: Set<string>;
 export const UI_DESIGN_ACTION_ROLES: Set<string>;
-export const UI_DESIGN_ACCESSIBILITY_VALUES: Set<string>;
+export const UI_DESIGN_ACCESSIBILITY_VALUES: Record<string, Set<string>>;
 export const FIELD_SPECS: Record<string, { required: string[]; allowed: string[] }>;

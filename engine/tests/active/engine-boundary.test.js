@@ -152,7 +152,7 @@ const staleDslVocabularyAllowedFiles = new Set([
   "engine/src/cli/help.js",
   "engine/src/generator/registry.js",
   "engine/src/project-config.js",
-  "engine/src/validator/index.js"
+  "engine/src/validator/common.js"
 ]);
 const legacyRuntimeAliasReferences = [
   "context.component",
@@ -702,9 +702,17 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/parser.js",
     "engine/src/validator/kinds.js",
     "engine/src/validator/utils.js",
+    "engine/src/validator/model-helpers.js",
+    "engine/src/validator/common.js",
+    "engine/src/validator/data-model.js",
     "engine/src/validator/registry.js",
     "engine/src/validator/docs.js",
     "engine/src/validator/expressions.js",
+    "engine/src/validator/projections/helpers.js",
+    "engine/src/validator/projections/api-http.js",
+    "engine/src/validator/projections/db.js",
+    "engine/src/validator/projections/generator-defaults.js",
+    "engine/src/validator/projections/ui.js",
     "engine/src/validator/per-kind/acceptance-criterion.js",
     "engine/src/validator/per-kind/bug.js",
     "engine/src/validator/per-kind/domain.js",
@@ -738,12 +746,9 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
 });
 
 test("validator support modules do not re-export from validator index", () => {
-  const checkedFiles = [
-    "engine/src/validator/utils.js",
-    "engine/src/validator/registry.js",
-    "engine/src/validator/docs.js",
-    "engine/src/validator/expressions.js"
-  ];
+  const checkedFiles = visitFiles(path.join(repoRoot, "engine", "src", "validator"))
+    .filter((item) => item.endsWith(".js"))
+    .map((file) => path.relative(repoRoot, file).replace(/\\/g, "/"));
   const offenders = [];
 
   for (const relative of checkedFiles) {
@@ -754,6 +759,32 @@ test("validator support modules do not re-export from validator index", () => {
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test("validator modules do not reintroduce ts-nocheck", () => {
+  const offenders = [];
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "validator")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes("@ts-nocheck")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("validator index stays an orchestrator after validation group split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "validator", "index.js"), "utf8");
+  const functionDeclarations = [...contents.matchAll(/^function /gm)].length;
+  const lines = contents.split(/\r?\n/);
+
+  assert.equal(functionDeclarations, 0);
+  assert.equal(lines.length <= 180, true);
+  assert.match(contents, /validateCoreStatement/);
+  assert.match(contents, /validateApiHttpProjection/);
+  assert.match(contents, /validateUiProjection/);
+  assert.match(contents, /validateDbProjection/);
 });
 
 test("validator expressions module owns expression validation", () => {
