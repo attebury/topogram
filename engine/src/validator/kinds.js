@@ -1,3 +1,5 @@
+// @ts-check
+
 export const STATEMENT_KINDS = new Set([
   "term",
   "actor",

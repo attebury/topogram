@@ -699,6 +699,10 @@ test("workflow implementation modules stay in the active type-check lane", () =>
 
 test("resolver and validator leaf modules stay in the active type-check lane", () => {
   const checkedFiles = [
+    "engine/src/validator/kinds.js",
+    "engine/src/validator/utils.js",
+    "engine/src/validator/registry.js",
+    "engine/src/validator/expressions.js",
     "engine/src/validator/per-kind/acceptance-criterion.js",
     "engine/src/validator/per-kind/bug.js",
     "engine/src/validator/per-kind/domain.js",
