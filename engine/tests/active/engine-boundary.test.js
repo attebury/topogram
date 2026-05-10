@@ -474,6 +474,22 @@ test("GitHub shell fallback stays isolated to the GitHub client", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("hardening completion ratchet keeps source files small and checked", () => {
+  const offenders = [];
+  const srcRoot = path.join(repoRoot, "engine", "src");
+
+  for (const file of visitFiles(srcRoot).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (lineCount > 800 || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("catalog entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "catalog.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
