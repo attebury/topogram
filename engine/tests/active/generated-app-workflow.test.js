@@ -4574,6 +4574,10 @@ test("topogram trust template records template-owned baseline for update apply",
   assert.match(trust.stdout, /Wrote \.topogram-template-files\.json/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".topogram-template-files.json")), true);
 
+  const sourceStatus = runCli(["source", "status", "--local", "--json"], { cwd: projectRoot });
+  assert.equal(sourceStatus.status, 0, sourceStatus.stderr || sourceStatus.stdout);
+  assert.equal(JSON.parse(sourceStatus.stdout).project.templateBaseline.status, "clean");
+
   const apply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
   assert.equal(apply.status, 0, apply.stderr || apply.stdout);
   assert.ok(JSON.parse(apply.stdout).applied.some((file) => file.path === "topo/entities/entity-greeting.tg"));

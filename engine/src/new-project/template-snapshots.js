@@ -237,6 +237,24 @@ export function fileHash(file) {
 }
 
 /**
+ * @param {string} relativePath
+ * @param {{ absolutePath: string|null, content: string|null }} file
+ * @returns {{ sha256: string, size: number }}
+ */
+function templateOwnedFileHash(relativePath, file) {
+  if (relativePath !== "topogram.project.json" || file.content !== null) {
+    return fileHash(file);
+  }
+  if (!file.absolutePath) {
+    return fileHash(file);
+  }
+  return fileHash({
+    absolutePath: null,
+    content: `${stableJsonStringify(JSON.parse(fs.readFileSync(file.absolutePath, "utf8")))}\n`
+  });
+}
+
+/**
  * @param {ResolvedTemplate} template
  * @param {Record<string, any>|null} [currentProjectConfig]
  * @returns {Map<string, { path: string, content: string|null, absolutePath: string|null }>}
@@ -335,7 +353,7 @@ export function includesTemplateImplementation(projectConfig) {
 export function currentTemplateOwnedFileHashes(projectRoot, projectConfig) {
   const files = currentTemplateOwnedFiles(projectRoot, includesTemplateImplementation(projectConfig), projectConfig);
   return new Map([...files.entries()].map(([relativePath, file]) => {
-    const hash = fileHash(file);
+    const hash = templateOwnedFileHash(relativePath, file);
     return [relativePath, { path: relativePath, ...hash }];
   }));
 }
