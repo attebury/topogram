@@ -736,6 +736,58 @@ test("agent query builder declarations do not use broad rest-any inputs", () => 
   assert.equal(contents.includes("...args: any[]"), false);
 });
 
+test("resolver entrypoint stays orchestration-focused after resolver split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "resolver", "index.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "function normalizeStatement(",
+    "function parseProjection",
+    "function normalizeComponent",
+    "function buildWidgetContract(",
+    "function parseKeyBlock(",
+    "function projectShapeFields(",
+    "function deriveShapeFields("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 500, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/normalize\.js"/);
+  assert.match(contents, /export \{ normalizeStatement \} from "\.\/normalize\.js"/);
+});
+
+test("resolver implementation modules stay focused after split", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "resolver");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (lineCount > 800 || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("resolver support modules do not import from resolver index", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "resolver");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    if (relative === "engine/src/resolver/index.js") continue;
+    const contents = fs.readFileSync(file, "utf8");
+    if (contents.includes('from "./index.js"') || contents.includes("from './index.js'")) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("resolver and validator leaf modules stay in the active type-check lane", () => {
   const checkedFiles = [
     "engine/src/parser.js",
