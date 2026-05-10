@@ -19,6 +19,7 @@ import {
   parseArchiveFile,
   rewriteArchiveFile
 } from "./jsonl.js";
+import { resolveTopoRoot } from "../workspace-paths.js";
 
 const REOPEN_STATUSES = {
   bug: "open",
@@ -83,7 +84,7 @@ export function unarchive(workspaceRoot, id, options = {}) {
 
   const { file, entries, entry } = found;
   const reopenStatus = options.status || REOPEN_STATUSES[entry.kind] || "draft";
-  const targetDir = options.targetDir || path.join(workspaceRoot, "topogram", `${entry.kind}s`);
+  const targetDir = options.targetDir || path.join(resolveTopoRoot(workspaceRoot), `${entry.kind}s`);
   if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
   const targetFile = path.join(targetDir, `${entry.id}.tg`);
 

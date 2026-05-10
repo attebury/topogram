@@ -6,6 +6,7 @@ import path from "node:path";
 import { generateWorkspace } from "../../../generator.js";
 import { formatValidationErrors } from "../../../validator.js";
 import { buildChangePlanPayload } from "../../../agent-ops/query-builders.js";
+import { resolveTopoRoot } from "../../../workspace-paths.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -16,12 +17,7 @@ import { buildChangePlanPayload } from "../../../agent-ops/query-builders.js";
  * @returns {string}
  */
 export function normalizeTopogramPath(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return absolute;
-  }
-  const candidate = path.join(absolute, "topogram");
-  return fs.existsSync(candidate) ? candidate : absolute;
+  return resolveTopoRoot(inputPath);
 }
 
 /**

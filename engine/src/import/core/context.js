@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { readJsonIfExists, readTextIfExists } from "./shared.js";
+import { resolveWorkspaceContext } from "../../workspace-paths.js";
 
 export function findNearestGitRoot(startDir) {
   let currentDir = path.resolve(startDir);
@@ -19,13 +20,10 @@ export function findNearestGitRoot(startDir) {
 }
 
 export function normalizeWorkspacePaths(inputPath) {
+  const context = resolveWorkspaceContext(inputPath);
   const absolute = path.resolve(inputPath);
-  const inputExists = fs.existsSync(absolute);
-  const topogramChild = path.join(absolute, "topogram");
-  const hasTopogramChild = fs.existsSync(topogramChild) && fs.statSync(topogramChild).isDirectory();
-  const isTopogramDir = path.basename(absolute) === "topogram" && inputExists;
-  const topogramRoot = isTopogramDir ? absolute : hasTopogramChild ? topogramChild : path.join(absolute, "topogram");
-  const workspaceRoot = isTopogramDir ? path.dirname(topogramRoot) : absolute;
+  const topogramRoot = context.topoRoot;
+  const workspaceRoot = context.projectRoot;
   const repoRoot = findNearestGitRoot(workspaceRoot);
   return {
     inputRoot: absolute,
@@ -33,7 +31,7 @@ export function normalizeWorkspacePaths(inputPath) {
     workspaceRoot,
     exampleRoot: workspaceRoot,
     repoRoot,
-    bootstrappedTopogramRoot: !fs.existsSync(topogramRoot)
+    bootstrappedTopogramRoot: context.bootstrappedTopoRoot
   };
 }
 

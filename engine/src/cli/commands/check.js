@@ -30,12 +30,12 @@ export function printCheckHelp() {
   console.log("");
   console.log("Validates Topogram files, project configuration, topology, generator compatibility, generator policy, output ownership, and template policy.");
   console.log("");
-  console.log("Defaults: path is ./topogram.");
+  console.log("Defaults: path is ./topo.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram check");
   console.log("  topogram check --json");
-  console.log("  topogram check ./topogram");
+  console.log("  topogram check ./topo");
 }
 
 /**
@@ -234,7 +234,7 @@ export function combineProjectValidationResults(...results) {
  * @returns {Promise<number>}
  */
 export async function runCheckCommand(inputPath, options = {}) {
-  const topogramPath = inputPath || "./topogram";
+  const topogramPath = inputPath || "./topo";
   const ast = parsePath(topogramPath);
   const resolved = resolveWorkspace(ast);
   const implementation = await loadImplementationProvider(topogramPath).catch(() => null);

@@ -99,7 +99,7 @@ export function buildAdoptionPlan(bundles) {
         canonical_path:
           step.action === "skip_duplicate_shape"
             ? (step.target ? canonicalDisplayPathForItem("shape", step.target) : null)
-            : (step.canonical_rel_path ? `topogram/${step.canonical_rel_path}` : canonicalDisplayPathForItem(itemKind, step.item)),
+            : (step.canonical_rel_path ? `topo/${step.canonical_rel_path}` : canonicalDisplayPathForItem(itemKind, step.item)),
         canonical_rel_path: step.canonical_rel_path || canonicalRelativePathForItem(itemKind, step.item),
         reason: reasonForAdoptionItem(step),
         recommendation: recommendationForAdoptionItem(step),
@@ -159,7 +159,7 @@ export function buildAdoptionPlan(bundles) {
         target: patch.doc_id,
         status: "pending",
         source_path: `candidates/reconcile/model/bundles/${bundle.slug}/${patch.patch_rel_path}`,
-        canonical_path: patch.canonical_rel_path ? `topogram/${patch.canonical_rel_path}` : null,
+        canonical_path: patch.canonical_rel_path ? `topo/${patch.canonical_rel_path}` : null,
         canonical_rel_path: patch.canonical_rel_path || null,
         reason: `Apply suggested related actor/role links to \`${patch.doc_id}\`.`,
         recommendation: recommendationForAdoptionItem({ action: "apply_doc_link_patch", target: patch.doc_id }),
@@ -186,7 +186,7 @@ export function buildAdoptionPlan(bundles) {
         status: "pending",
         confidence: patch.imported_confidence || "low",
         source_path: `candidates/reconcile/model/bundles/${bundle.slug}/${patch.patch_rel_path}`,
-        canonical_path: patch.canonical_rel_path ? `topogram/${patch.canonical_rel_path}` : null,
+        canonical_path: patch.canonical_rel_path ? `topo/${patch.canonical_rel_path}` : null,
         canonical_rel_path: patch.canonical_rel_path || null,
         reason: `Apply suggested safe metadata updates to \`${patch.doc_id}\`.`,
         recommendation: recommendationForAdoptionItem({ action: "apply_doc_metadata_patch", target: patch.doc_id }),

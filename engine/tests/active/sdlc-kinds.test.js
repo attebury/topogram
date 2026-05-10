@@ -204,7 +204,7 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
   const tempRoot = copyFixtureToTemp();
   try {
     const before = fs.readFileSync(
-      path.join(tempRoot, "topogram", "tasks", "implement-audit-writer.tg"),
+      path.join(tempRoot, "topo", "tasks", "implement-audit-writer.tg"),
       "utf8"
     );
     assert.ok(before.includes("status in-progress"));
@@ -218,14 +218,14 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
     assert.equal(result.to, "done");
 
     const after = fs.readFileSync(
-      path.join(tempRoot, "topogram", "tasks", "implement-audit-writer.tg"),
+      path.join(tempRoot, "topo", "tasks", "implement-audit-writer.tg"),
       "utf8"
     );
     assert.ok(after.includes("status done"));
     // Other lines unchanged
     assert.ok(after.includes("name \"Implement audit writer\""));
 
-    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topogram", ".topogram-sdlc-history.json"), "utf8"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
     assert.equal(history.task_implement_audit_writer.length, 1);
     assert.equal(history.task_implement_audit_writer[0].to, "done");
   } finally {
@@ -236,13 +236,13 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
 test("transitionStatement accepts an explicit topogram root without nested history", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    const topogramRoot = path.join(tempRoot, "topogram");
+    const topogramRoot = path.join(tempRoot, "topo");
     const result = transitionStatement(topogramRoot, "task_implement_audit_writer", "done", {
       actor: "agent-test"
     });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     assert.equal(fs.existsSync(path.join(topogramRoot, ".topogram-sdlc-history.json")), true);
-    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -280,7 +280,7 @@ test("archive bridge loads JSONL fixture entries", () => {
 test("resolver fails validation when archive JSONL is malformed", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    fs.writeFileSync(path.join(tempRoot, "topogram", "_archive", "bugs-2027.jsonl"), "{not-json}\n", "utf8");
+    fs.writeFileSync(path.join(tempRoot, "topo", "_archive", "bugs-2027.jsonl"), "{not-json}\n", "utf8");
     const resolved = resolveWorkspace(parsePath(tempRoot));
     assert.equal(resolved.ok, false);
     assert.ok(resolved.validation.errors.some((error) => error.message.includes("Invalid SDLC archive")));
@@ -319,11 +319,11 @@ test("archiveStatement moves a verified bug to year-bucketed JSONL", () => {
 test("archiveStatement accepts an explicit topogram root without nested archive", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    const topogramRoot = path.join(tempRoot, "topogram");
+    const topogramRoot = path.join(tempRoot, "topo");
     const result = archiveStatement(topogramRoot, "bug_audit_drops_silently", { by: "test" });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
-    assert.match(result.archiveFile, /topogram\/_archive\/bugs-\d{4}\.jsonl$/);
-    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+    assert.match(result.archiveFile, /topo\/_archive\/bugs-\d{4}\.jsonl$/);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -354,7 +354,7 @@ test("release dry-run reports release notes + planned doc/archive mutations", ()
     assert.equal(result.release_notes.app_version, "1.0.0");
     assert.ok(result.archive.candidates.includes("bug_audit_drops_silently"));
     // Dry run — nothing actually written
-    assert.equal(fs.existsSync(path.join(tempRoot, "topogram", "bugs", "audit-drops-silently.tg")), true);
+    assert.equal(fs.existsSync(path.join(tempRoot, "topo", "bugs", "audit-drops-silently.tg")), true);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -363,12 +363,12 @@ test("release dry-run reports release notes + planned doc/archive mutations", ()
 test("release accepts an explicit topogram root without nested archive", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    const topogramRoot = path.join(tempRoot, "topogram");
+    const topogramRoot = path.join(tempRoot, "topo");
     const result = runRelease(topogramRoot, { appVersion: "1.0.0", actor: "release-test" });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     assert.ok(result.archive.candidates.includes("bug_audit_drops_silently"));
     assert.equal(fs.existsSync(path.join(topogramRoot, "_archive")), true);
-    assert.equal(fs.existsSync(path.join(topogramRoot, "topogram")), false);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -377,7 +377,7 @@ test("release accepts an explicit topogram root without nested archive", () => {
 test("release stamps only missing or older comparable document app versions", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    const docsRoot = path.join(tempRoot, "topogram", "docs", "reference");
+    const docsRoot = path.join(tempRoot, "topo", "docs", "reference");
     fs.mkdirSync(docsRoot, { recursive: true });
     const writeDoc = (slug, appVersionLine) => {
       const appVersion = appVersionLine ? `${appVersionLine}\n` : "";
@@ -394,7 +394,7 @@ test("release stamps only missing or older comparable document app versions", ()
     writeDoc("newer", "app_version: v1.14.0");
     writeDoc("incomparable", "app_version: next-release");
 
-    const result = runRelease(path.join(tempRoot, "topogram"), { appVersion: "1.13.0", dryRun: true });
+    const result = runRelease(path.join(tempRoot, "topo"), { appVersion: "1.13.0", dryRun: true });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     const updated = result.document_app_version_updates
       .map((entry) => path.basename(entry.file, ".md"))

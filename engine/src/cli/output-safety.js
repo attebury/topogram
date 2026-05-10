@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { outputOwnershipForPath } from "../project-config.js";
+import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
 
 export const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 
@@ -103,5 +104,5 @@ export function topogramInputPathForGeneration(inputPath) {
   if (isSameOrInside(REPO_ROOT, absolute)) {
     return `./${path.relative(REPO_ROOT, absolute).replace(/\\/g, "/")}`;
   }
-  return path.basename(absolute) === "topogram" ? "./topogram" : ".";
+  return path.basename(absolute) === DEFAULT_TOPO_FOLDER_NAME ? `./${DEFAULT_TOPO_FOLDER_NAME}` : ".";
 }

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { ensureTrailingNewline, titleCase } from "../text-helpers.js";
+import { resolveWorkspaceContext } from "../workspace-paths.js";
 
 /** @param {string} startDir @returns {any} */
 export function findNearestGitRoot(startDir) {
@@ -21,17 +22,10 @@ export function findNearestGitRoot(startDir) {
 
 /** @param {string} inputPath @returns {any} */
 export function normalizeWorkspacePaths(inputPath) {
+  const context = resolveWorkspaceContext(inputPath);
   const absolute = path.resolve(inputPath);
-  const inputExists = fs.existsSync(absolute);
-  const hasTopogramChild = fs.existsSync(path.join(absolute, "topogram")) && fs.statSync(path.join(absolute, "topogram")).isDirectory();
-  const isTopogramDir = path.basename(absolute) === "topogram" && inputExists;
-  const bootstrapWorkspaceRoot = !isTopogramDir && !hasTopogramChild;
-  const topogramRoot = isTopogramDir
-    ? absolute
-    : hasTopogramChild
-      ? path.join(absolute, "topogram")
-      : path.join(absolute, "topogram");
-  const workspaceRoot = isTopogramDir ? path.dirname(topogramRoot) : absolute;
+  const topogramRoot = context.topoRoot;
+  const workspaceRoot = context.projectRoot;
   const repoRoot = findNearestGitRoot(workspaceRoot);
   return {
     inputRoot: absolute,
@@ -39,7 +33,7 @@ export function normalizeWorkspacePaths(inputPath) {
     workspaceRoot,
     exampleRoot: workspaceRoot,
     repoRoot,
-    bootstrappedTopogramRoot: !fs.existsSync(topogramRoot)
+    bootstrappedTopogramRoot: context.bootstrappedTopoRoot
   };
 }
 

@@ -127,7 +127,7 @@ test("domain-page emits a markdown artifact at the canonical path", () => {
     domainId: "dom_order_fulfillment"
   });
   assert.equal(result.ok, true);
-  assert.equal(result.artifact.output.path, "topogram/docs-generated/domains/dom_order_fulfillment.md");
+  assert.equal(result.artifact.output.path, "topo/docs-generated/domains/dom_order_fulfillment.md");
   assert.match(result.artifact.output.contents, /# Order Fulfillment/);
   assert.match(result.artifact.output.contents, /## In scope/);
   assert.match(result.artifact.output.contents, /## Per-type coverage/);

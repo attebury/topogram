@@ -10,6 +10,7 @@ import {
   writeTopogramImportRecord
 } from "../../../import/provenance.js";
 import { runWorkflow } from "../../../workflows.js";
+import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH } from "../../../workspace-paths.js";
 import { shellCommandArg } from "../catalog.js";
 
 /**
@@ -57,6 +58,7 @@ export function writeRelativeFiles(outDir, files) {
 function importedProjectConfig() {
   return {
     version: "0.1",
+    workspace: DEFAULT_WORKSPACE_PATH,
     outputs: {
       maintained_app: {
         path: "./app",
@@ -93,7 +95,7 @@ function importedWorkspaceReadme(sourceRoot, targetRoot, importSummary) {
     "```sh",
     "topogram import check",
     "topogram check",
-    "topogram query import-plan ./topogram",
+    `topogram query import-plan ./${DEFAULT_TOPO_FOLDER_NAME}`,
     "```",
     ""
   ].join("\n");
@@ -156,7 +158,7 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
   }
   ensureEmptyImportTarget(targetRoot);
 
-  const topogramRoot = path.join(targetRoot, "topogram");
+  const topogramRoot = path.join(targetRoot, DEFAULT_TOPO_FOLDER_NAME);
   fs.mkdirSync(topogramRoot, { recursive: true });
   const sourceFiles = collectImportSourceFileRecords(sourceRoot, { excludeRoots: [targetRoot] });
   const importResult = runWorkflow("import-app", sourceRoot, { from: options.from || null });
@@ -181,8 +183,8 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
     "README.md",
     "topogram.project.json",
     TOPOGRAM_IMPORT_FILE,
-    ...rawCandidateFiles.map((filePath) => `topogram/${filePath}`),
-    ...reconcileFiles.map((filePath) => `topogram/${filePath}`)
+    ...rawCandidateFiles.map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`),
+    ...reconcileFiles.map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`)
   ].sort((a, b) => a.localeCompare(b));
   return {
     ok: true,
@@ -203,7 +205,7 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
       "topogram import adopt bundle:task --dry-run",
       "topogram import status",
       "topogram check",
-      "topogram query import-plan ./topogram"
+      `topogram query import-plan ./${DEFAULT_TOPO_FOLDER_NAME}`
     ]
   };
 }

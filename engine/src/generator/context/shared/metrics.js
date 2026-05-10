@@ -34,7 +34,7 @@ export function percentOf(part, whole) {
  */
 export function buildDefaultWriteScope() {
   return {
-    safe_to_edit: ["topogram/**", "candidates/**"],
+    safe_to_edit: ["topo/**", "candidates/**"],
     generator_owned: ["artifacts/**", "apps/**"],
     human_owned_review_required: ["examples/maintained/proof-app/**"],
     out_of_bounds: [".git/**", "node_modules/**"]
@@ -54,7 +54,7 @@ export function buildMaintainedWriteScope(graph, maintainedFiles = []) {
       ...maintainedFiles,
       "examples/maintained/proof-app/**"
     ]),
-    out_of_bounds: ["topogram/**"]
+    out_of_bounds: ["topo/**"]
   };
 }
 

@@ -38,7 +38,7 @@ The parser accepts any `kind identifier { ... }` shape. The validator defines th
 | `task` | `name`, `description`, `status`, `priority`, `work_type` | Unit of agent or human work. Identifier prefix `task_`. Lifecycle: unclaimed → claimed → in-progress → done (\| blocked). |
 | `bug` | `name`, `description`, `status`, `severity`, `priority` | Defect linked to the rule it violates and the verification that proved the fix. Identifier prefix `bug_`. Lifecycle: open → in-progress → fixed → verified \| wont-fix. |
 
-`document` is markdown-only — see [docs/sdlc.md](sdlc.md) and [docs/lifecycles.md](lifecycles.md). Documents live in `topogram/docs/` with extended frontmatter (`app_version`, `audience`, `priority`, `affects`, `satisfies`, `domain`).
+`document` is markdown-only — see [docs/sdlc.md](sdlc.md) and [docs/lifecycles.md](lifecycles.md). Documents live in `topo/docs/` with extended frontmatter (`app_version`, `audience`, `priority`, `affects`, `satisfies`, `domain`).
 
 ## Optional `domain` field
 

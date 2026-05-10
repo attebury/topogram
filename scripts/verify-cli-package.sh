@@ -400,7 +400,7 @@ cp -R "$ENGINE_DIR/tests/fixtures/templates/web-api-db/." "$TEMPLATE_PACKAGE_DIR
       version: "0.1.0",
       private: true,
       type: "module",
-      files: ["topogram-template.json", "topogram", "topogram.project.json", "implementation"]
+      files: ["topogram-template.json", "topo", "topogram.project.json", "implementation"]
     };
     fs.writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
   '

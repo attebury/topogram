@@ -6,6 +6,7 @@
 
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot } from "../workspace-paths.js";
 
 const SDLC_FOLDERS = [
   "pitches",
@@ -17,7 +18,7 @@ const SDLC_FOLDERS = [
 ];
 
 function ensureFolder(root, name) {
-  const dir = path.join(root, "topogram", name);
+  const dir = path.join(resolveTopoRoot(root), name);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
     return { name, created: true };
@@ -29,8 +30,8 @@ function scanPressure(root) {
   // Pressure scan: count statements per kind so the operator knows the
   // workspace's current shape. We do not attempt to backfill — that's the
   // operator's job after they pick a starting point.
-  const tg = path.join(root, "topogram");
-  if (!existsSync(tg)) return { error: `No 'topogram/' directory found at ${root}` };
+  const tg = resolveTopoRoot(root);
+  if (!existsSync(tg)) return { error: `No '${DEFAULT_TOPO_FOLDER_NAME}/' workspace folder found at ${root}` };
   let totalFiles = 0;
   function walk(dir) {
     for (const entry of readdirSync(dir)) {
@@ -50,8 +51,8 @@ function scanPressure(root) {
 
 export function sdlcAdopt(workspaceRoot) {
   const root = path.resolve(workspaceRoot);
-  if (!existsSync(path.join(root, "topogram"))) {
-    return { ok: false, error: `No 'topogram/' directory at ${root}; run 'topogram new' first` };
+  if (!existsSync(resolveTopoRoot(root))) {
+    return { ok: false, error: `No '${DEFAULT_TOPO_FOLDER_NAME}/' workspace folder at ${root}; run 'topogram new' first` };
   }
   const folders = SDLC_FOLDERS.map((name) => ensureFolder(root, name));
   const pressure = scanPressure(root);

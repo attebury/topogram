@@ -343,7 +343,7 @@ export function applyTemplateUpdateFileAction(options) {
         code: "template_file_not_current",
         message: `Cannot accept current file '${relativePath}' because it is not a current template-owned file.`,
         path: path.join(options.projectRoot, relativePath),
-        suggestedFix: "Pass a file under topogram/, topogram.project.json, or trusted implementation/.",
+        suggestedFix: "Pass a file under topo/, topogram.project.json, or trusted implementation/.",
         step: "accept-current"
       }));
       return templateUpdateFileActionResult(diagnostics, null, options.action, relativePath, applied, accepted, deleted, conflicts, current);

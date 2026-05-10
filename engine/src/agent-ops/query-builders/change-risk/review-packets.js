@@ -21,7 +21,7 @@ export function buildCanonicalWritesPayloadForImportPlan(proposalSurfaces = []) 
         current_state: surface.current_state,
         recommended_state: surface.recommended_state,
         canonical_rel_path: surface.canonical_rel_path,
-        canonical_path: `topogram/${surface.canonical_rel_path}`
+        canonical_path: `topo/${surface.canonical_rel_path}`
       }))
   };
 }
@@ -55,7 +55,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
       .map((surface) => ({
         id: surface.id,
         canonical_rel_path: surface.canonical_rel_path,
-        canonical_path: `topogram/${surface.canonical_rel_path}`
+        canonical_path: `topo/${surface.canonical_rel_path}`
       })),
     review_groups: importPlan.review_groups || [],
     write_scope: importPlan.write_scope || null,

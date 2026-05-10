@@ -31,7 +31,7 @@ export const SURFACE_ORDER = new Map([
  * @returns {string}
  */
 export function unsupportedTemplateSymlinkMessage(templateId, relativePath) {
-  return `Template '${templateId}' contains unsupported symlink '${relativePath}'. Template packs must copy real files because Topogram records hashes for copied topogram/ and implementation/ content; symlinks can point outside the trusted template root. Replace the symlink with a real file or directory before running topogram new or topogram template check.`;
+  return `Template '${templateId}' contains unsupported symlink '${relativePath}'. Template packs must copy real files because Topogram records hashes for copied workspace and implementation/ content; symlinks can point outside the trusted template root. Replace the symlink with a real file or directory before running topogram new or topogram template check.`;
 }
 
 /**

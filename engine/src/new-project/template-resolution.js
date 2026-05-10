@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { assertSafeNpmSpec, localNpmrcEnv } from "../npm-safety.js";
+import { DEFAULT_TOPO_FOLDER_NAME, LEGACY_TOPOGRAM_FOLDER_NAME, resolvePackageWorkspace } from "../workspace-paths.js";
 import { GENERATOR_LABELS, SURFACE_ORDER, TEMPLATE_MANIFEST, unsupportedTemplateSymlinkMessage } from "./constants.js";
 import { isLocalTemplateSpec, packageNameFromSpec } from "./package-spec.js";
 
@@ -106,21 +107,22 @@ function assertTemplateTreeHasNoSymlinks(root, currentDir, label, templateId) {
  */
 export function validateTemplateRoot(templateRoot) {
   const manifest = readTemplateManifest(templateRoot);
-  const topogramRoot = path.join(templateRoot, "topogram");
+  const workspace = resolvePackageWorkspace(templateRoot);
+  const topogramRoot = workspace.root;
   const projectConfigPath = path.join(templateRoot, "topogram.project.json");
   if (fs.existsSync(topogramRoot) && fs.lstatSync(topogramRoot).isSymbolicLink()) {
-    throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, "topogram"));
+    throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, workspace.legacy ? LEGACY_TOPOGRAM_FOLDER_NAME : DEFAULT_TOPO_FOLDER_NAME));
   }
   if (fs.existsSync(projectConfigPath) && fs.lstatSync(projectConfigPath).isSymbolicLink()) {
     throw new Error(unsupportedTemplateSymlinkMessage(manifest.id, "topogram.project.json"));
   }
   if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
-    throw new Error(`Template '${manifest.id}' is missing topogram/.`);
+    throw new Error(`Template '${manifest.id}' is missing ${DEFAULT_TOPO_FOLDER_NAME}/.`);
   }
   if (!fs.existsSync(projectConfigPath) || !fs.statSync(projectConfigPath).isFile()) {
     throw new Error(`Template '${manifest.id}' is missing topogram.project.json.`);
   }
-  assertTemplateTreeHasNoSymlinks(templateRoot, topogramRoot, "topogram", manifest.id);
+  assertTemplateTreeHasNoSymlinks(templateRoot, topogramRoot, workspace.legacy ? LEGACY_TOPOGRAM_FOLDER_NAME : DEFAULT_TOPO_FOLDER_NAME, manifest.id);
   if (manifest.includesExecutableImplementation) {
     const implementationRoot = path.join(templateRoot, "implementation");
     if (fs.existsSync(implementationRoot) && fs.lstatSync(implementationRoot).isSymbolicLink()) {

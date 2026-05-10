@@ -28,7 +28,7 @@ export function canonicalTargetsForProposalSurfaces(proposalSurfaces = []) {
   return stableSortedStrings(
     proposalSurfaces
       .filter((surface) => surface.canonical_rel_path)
-      .map((surface) => `topogram/${surface.canonical_rel_path}`)
+      .map((surface) => `topo/${surface.canonical_rel_path}`)
   );
 }
 

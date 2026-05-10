@@ -81,7 +81,7 @@ test("vanilla web generator escapes semantic UI text in generated HTML", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-vanilla-escape-"));
   const templateRoot = path.join(root, "template");
   fs.cpSync(path.join(fixtureTemplatesRoot, "hello-web"), templateRoot, { recursive: true });
-  const projectionPath = path.join(templateRoot, "topogram", "projections", "proj-ui-contract.tg");
+  const projectionPath = path.join(templateRoot, "topo", "projections", "proj-ui-contract.tg");
   const original = fs.readFileSync(projectionPath, "utf8");
   const modified = original
     .replace('title "Hello Web"', 'title "Hello <script>alert(1)</script> & friends"')

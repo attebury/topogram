@@ -76,7 +76,7 @@ npm run app:runtime
 Edit the Topogram model here:
 
 ```text
-my-topogram-app/topogram/
+my-topogram-app/topo/
 ```
 
 Edit stack, topology, output ownership, ports, and generator bindings here:

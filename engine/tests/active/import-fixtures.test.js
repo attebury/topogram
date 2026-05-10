@@ -94,8 +94,8 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(payload.candidateCounts.apiCapabilities, 2);
   assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-import.json")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram.project.json")), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "candidates", "app", "report.md")), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "entities", "entity_task.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "app", "report.md")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "entities", "entity_task.tg")), true);
 
   const check = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -105,7 +105,7 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(checkPayload.topogram.ok, true);
 
   fs.appendFileSync(
-    path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"),
+    path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "README.md"),
     "\nLocal review note.\n"
   );
   const editedCheck = runCli(["import", "check", targetRoot, "--json"]);
@@ -133,7 +133,7 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.equal(payload.candidateCounts.uiShapes, 1);
   assert.equal(Object.hasOwn(payload.candidateCounts, "uiComponents"), false);
 
-  const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json"), "utf8"));
+  const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "ui", "candidates.json"), "utf8"));
   assert.equal(Object.hasOwn(uiCandidates, "components"), false);
   const widgetCandidate = uiCandidates.widgets[0];
   assert.equal(widgetCandidate.id_hint, "widget_task_list_results");
@@ -166,9 +166,9 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.equal(widgetCandidate.missing_decisions.includes("confirm supported regions and patterns"), true);
   assert.equal((widgetCandidate.evidence || []).length > 0, true);
 
-  const sharedDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "proj-ui-contract.tg");
-  const componentDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "widgets", "widget-task-list-results.tg");
-  const shapeDraftPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "drafts", "shapes", "shape-event-task-row-select.tg");
+  const sharedDraftPath = path.join(targetRoot, "topo", "candidates", "app", "ui", "drafts", "proj-ui-contract.tg");
+  const componentDraftPath = path.join(targetRoot, "topo", "candidates", "app", "ui", "drafts", "widgets", "widget-task-list-results.tg");
+  const shapeDraftPath = path.join(targetRoot, "topo", "candidates", "app", "ui", "drafts", "shapes", "shape-event-task-row-select.tg");
   assert.equal(fs.existsSync(sharedDraftPath), true);
   assert.equal(fs.existsSync(componentDraftPath), true);
   assert.equal(fs.existsSync(shapeDraftPath), true);
@@ -195,7 +195,7 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.match(shapeDraft, /shape shape_event_task_row_select \{/);
   assert.match(shapeDraft, /id string required/);
 
-  const uiReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "ui", "report.md"), "utf8");
+  const uiReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "ui", "report.md"), "utf8");
   assert.match(uiReport, /Event payload shapes: 1/);
   assert.match(uiReport, /## Widget Candidates/);
   assert.match(uiReport, /`widget_task_list_results` confidence low pattern `search_results` region `results` events 1 evidence \d+ missing decisions 4/);
@@ -219,23 +219,23 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.deepEqual(widgetItems[0].related_shapes, ["shape_event_task_row_select"]);
   assert.equal(widgetItems[0].source_path, "candidates/reconcile/model/bundles/task/widgets/widget_task_list_results.tg");
   assert.equal(widgetItems[0].canonical_rel_path, "widgets/widget-task-list-results.tg");
-  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.json"), "utf8"));
+  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "report.json"), "utf8"));
   const taskBundle = reconcileReportJson.candidate_model_bundles.find((bundle) => bundle.slug === "task");
   assert.deepEqual(taskBundle.shapes, ["shape_event_task_row_select"]);
   assert.deepEqual(taskBundle.widgets, ["widget_task_list_results"]);
   assert.equal(Object.hasOwn(taskBundle, "components"), false);
   assert.deepEqual(taskBundle.operator_summary.widgetIds, ["widget_task_list_results"]);
   assert.equal(Object.hasOwn(taskBundle.operator_summary, "componentIds"), false);
-  const reconcileReport = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.md"), "utf8");
+  const reconcileReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "report.md"), "utf8");
   assert.match(reconcileReport, /1 widgets/);
   assert.match(reconcileReport, /main widgets `widget_task_list_results`/);
-  const bundleReadme = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
+  const bundleReadme = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "README.md"), "utf8");
   assert.match(bundleReadme, /Widgets: 1/);
   assert.match(bundleReadme, /Main widgets: `widget_task_list_results`/);
-  const bundleShape = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "shapes", "shape_event_task_row_select.tg"), "utf8");
+  const bundleShape = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "shapes", "shape_event_task_row_select.tg"), "utf8");
   assert.match(bundleShape, /shape shape_event_task_row_select \{/);
   assert.match(bundleShape, /id string required/);
-  const bundleWidget = fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "model", "bundles", "task", "widgets", "widget_task_list_results.tg"), "utf8");
+  const bundleWidget = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "widgets", "widget_task_list_results.tg"), "utf8");
   assert.match(bundleWidget, /# Inferred event: row_select navigate task_detail\./);
   assert.match(bundleWidget, /events \{\n    row_select shape_event_task_row_select\n  \}/);
 
@@ -263,8 +263,8 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
   assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "widget" && item.item === "widget_task_list_results"), true);
   assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "shapes/shape-event-task-row-select.tg" && item.sha256 && item.size > 0), true);
   assert.equal(adoptPayload.receipt.writtenFileHashes.some((item) => item.path === "widgets/widget-task-list-results.tg" && item.sha256 && item.size > 0), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "shapes", "shape-event-task-row-select.tg")), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "widgets", "widget-task-list-results.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "shapes", "shape-event-task-row-select.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "widgets", "widget-task-list-results.tg")), true);
 
   const check = runCli(["check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -292,8 +292,8 @@ test("brownfield UI broad selector promotes widgets and related event payload sh
   const adoptPayload = JSON.parse(adopt.stdout);
   assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "shape" && item.item === "shape_event_task_row_select"), true);
   assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "widget" && item.item === "widget_task_list_results"), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "shapes", "shape-event-task-row-select.tg")), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "widgets", "widget-task-list-results.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "shapes", "shape-event-task-row-select.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "widgets", "widget-task-list-results.tg")), true);
 
   const check = runCli(["check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -316,7 +316,7 @@ test("legacy imported UI component candidates are read as widgets without rewrit
   ]);
   assert.equal(result.status, 0, result.stderr || result.stdout);
 
-  const uiCandidatesPath = path.join(targetRoot, "topogram", "candidates", "app", "ui", "candidates.json");
+  const uiCandidatesPath = path.join(targetRoot, "topo", "candidates", "app", "ui", "candidates.json");
   const uiCandidates = JSON.parse(fs.readFileSync(uiCandidatesPath, "utf8"));
   const legacyUiCandidates = {
     ...uiCandidates,
@@ -332,7 +332,7 @@ test("legacy imported UI component candidates are read as widgets without rewrit
   const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
   assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
 
-  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "reconcile", "report.json"), "utf8"));
+  const reconcileReportJson = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "report.json"), "utf8"));
   const taskBundle = reconcileReportJson.candidate_model_bundles.find((bundle) => bundle.slug === "task");
   assert.deepEqual(taskBundle.widgets, ["widget_task_list_results"]);
   assert.equal(Object.hasOwn(taskBundle, "components"), false);
@@ -349,7 +349,7 @@ test("brownfield import refresh updates candidates and provenance without overwr
 
   const write = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
   assert.equal(write.status, 0, write.stderr || write.stdout);
-  const journeyPath = path.join(targetRoot, "topogram", "docs", "journeys", "task_journey.md");
+  const journeyPath = path.join(targetRoot, "topo", "docs", "journeys", "task_journey.md");
   fs.appendFileSync(journeyPath, "\nLocal owner note.\n");
 
   fs.appendFileSync(
@@ -386,7 +386,7 @@ test("brownfield import refresh updates candidates and provenance without overwr
   assert.deepEqual(dryRunPayload.candidateCountDeltas.deltas.dbEntities, { previous: 2, next: 3, delta: 1 });
   const afterDryRunRecord = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-import.json"), "utf8"));
   assert.equal(afterDryRunRecord.refreshedAt, undefined);
-  const dryRunDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "db", "candidates.json"), "utf8"));
+  const dryRunDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
   assert.equal(candidateIds(dryRunDbCandidates.entities).includes("entity_label"), false);
 
   const refresh = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--json"]);
@@ -402,10 +402,10 @@ test("brownfield import refresh updates candidates and provenance without overwr
   assert.equal(refreshPayload.removedCandidateFiles.rawCandidateFiles > 0, true);
   assert.equal(refreshPayload.removedCandidateFiles.reconcileFiles > 0, true);
   assert.equal(refreshPayload.writtenFiles.includes(".topogram-import.json"), true);
-  assert.equal(refreshPayload.writtenFiles.includes("topogram/docs/journeys/task_journey.md"), false);
+  assert.equal(refreshPayload.writtenFiles.includes("topo/docs/journeys/task_journey.md"), false);
   assert.match(fs.readFileSync(journeyPath, "utf8"), /Local owner note/);
 
-  const refreshedDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram", "candidates", "app", "db", "candidates.json"), "utf8"));
+  const refreshedDbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
   assert.equal(candidateIds(refreshedDbCandidates.entities).includes("entity_label"), true);
   const refreshedRecord = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-import.json"), "utf8"));
   assert.equal(typeof refreshedRecord.refreshedAt, "string");
@@ -473,7 +473,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(previewPayload.write, false);
   assert.equal(previewPayload.promotedCanonicalItemCount, 5);
   assert.deepEqual(previewPayload.writtenFiles, []);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-task.tg")), false);
   assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-import-adoptions.jsonl")), false);
 
   const write = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
@@ -489,7 +489,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(writePayload.receipt.writtenFiles.includes("entities/entity-task.tg"), true);
   assert.equal(writePayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256 && item.size > 0), true);
   assert.equal(writePayload.receiptPath, path.join(targetRoot, ".topogram-import-adoptions.jsonl"));
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-task.tg")), true);
 
   const status = runCli(["import", "status", targetRoot, "--json"]);
   assert.equal(status.status, 0, status.stderr || status.stdout);
@@ -528,7 +528,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(cleanVerifyPayload.verification.summary.removedFileCount, 0);
   assert.equal(cleanVerifyPayload.verification.summary.matchedFileCount, writePayload.writtenFiles.length);
 
-  fs.appendFileSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg"), "\n");
+  fs.appendFileSync(path.join(targetRoot, "topo", "entities", "entity-task.tg"), "\n");
   const changedVerify = runCli(["import", "history", targetRoot, "--verify", "--json"]);
   assert.equal(changedVerify.status, 0, changedVerify.stderr || changedVerify.stdout);
   const changedVerifyPayload = JSON.parse(changedVerify.stdout);
@@ -540,7 +540,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(editedCheck.status, 0, editedCheck.stderr || editedCheck.stdout);
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
 
-  fs.rmSync(path.join(targetRoot, "topogram", "docs", "journeys", "task_journey.md"));
+  fs.rmSync(path.join(targetRoot, "topo", "docs", "journeys", "task_journey.md"));
   const removedVerify = runCli(["import", "history", targetRoot, "--verify", "--json"]);
   assert.equal(removedVerify.status, 0, removedVerify.stderr || removedVerify.stdout);
   const removedVerifyPayload = JSON.parse(removedVerify.stdout);
@@ -582,7 +582,7 @@ test("brownfield import check reports changed source evidence", () => {
   const refusedWrite = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--json"]);
   assert.equal(refusedWrite.status, 1);
   assert.match(refusedWrite.stderr, /Refusing to write import adoption because brownfield source provenance is changed/);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), false);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-task.tg")), false);
 
   const missingReason = runCli(["import", "adopt", "bundle:task", targetRoot, "--write", "--force", "--json"]);
   assert.equal(missingReason.status, 1);
@@ -600,7 +600,7 @@ test("brownfield import check reports changed source evidence", () => {
   assert.equal(forcedPayload.receipt.reason, "Reviewed source drift");
   assert.equal(forcedPayload.receipt.sourceProvenance.status, "changed");
   assert.equal(forcedPayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256), true);
-  assert.equal(fs.existsSync(path.join(targetRoot, "topogram", "entities", "entity-task.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-task.tg")), true);
 
   const history = runCli(["import", "history", targetRoot, "--json"]);
   assert.equal(history.status, 0, history.stderr || history.stdout);

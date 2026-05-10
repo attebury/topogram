@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { githubRepoSlug } from "../topogram-config.js";
+import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH, resolvePackageWorkspace } from "../workspace-paths.js";
 import { cliDependencyForProject, generatorDependenciesForTemplate, isSameOrInside, packageNameFromPath, writeProjectNpmConfig } from "./package-spec.js";
 
 /** @typedef {import("./types.js").CreateNewProjectOptions} CreateNewProjectOptions */
@@ -54,16 +55,17 @@ export function ensureCreatableProjectRoot(projectRoot) {
 /**
  * @param {string} templateRoot
  * @param {string} projectRoot
- * @returns {void}
+ * @returns {{ legacyWorkspace: boolean }}
  */
 export function copyTopogramWorkspace(templateRoot, projectRoot) {
-  const topogramRoot = path.join(projectRoot, "topogram");
-  fs.cpSync(path.join(templateRoot, "topogram"), topogramRoot, { recursive: true });
+  const templateWorkspace = resolvePackageWorkspace(templateRoot);
+  const topoRoot = path.join(projectRoot, DEFAULT_TOPO_FOLDER_NAME);
+  fs.cpSync(templateWorkspace.root, topoRoot, { recursive: true });
 
-  fs.cpSync(
-    path.join(templateRoot, "topogram.project.json"),
-    path.join(projectRoot, "topogram.project.json")
-  );
+  const projectConfigPath = path.join(templateRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  projectConfig.workspace = DEFAULT_WORKSPACE_PATH;
+  fs.writeFileSync(path.join(projectRoot, "topogram.project.json"), `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
   const implementationRoot = path.join(templateRoot, "implementation");
   if (fs.existsSync(implementationRoot)) {
     fs.cpSync(
@@ -72,6 +74,7 @@ export function copyTopogramWorkspace(templateRoot, projectRoot) {
       { recursive: true }
     );
   }
+  return { legacyWorkspace: templateWorkspace.legacy };
 }
 
 /**
@@ -148,7 +151,7 @@ export function writeExplainScript(projectRoot) {
 Topogram app workflow
 
 1. Edit:
-   topogram/
+   topo/
    topogram.project.json
 
 2. Start with project guidance:
@@ -179,8 +182,8 @@ Or run self-contained local runtime verification:
 Useful inspection:
    npm run agent:brief
    npm run check:json
-   topogram emit ui-widget-contract ./topogram --json
-   topogram emit widget-conformance-report ./topogram --json
+   topogram emit ui-widget-contract ./topo --json
+   topogram emit widget-conformance-report ./topo --json
    npm run doctor
    npm run source:status
    npm run source:status:remote
@@ -257,7 +260,7 @@ ${provenanceLines.join("\n")}
 ${workflowCommands.join("\n")}
 \`\`\`
 
-Edit \`topogram/\` and \`topogram.project.json\`, then regenerate with \`npm run generate\`.
+Edit the workspace folder \`${DEFAULT_TOPO_FOLDER_NAME}/\` and \`topogram.project.json\`, then regenerate with \`npm run generate\`.
 Generated app code is written to \`app/\`.
 Use \`topogram emit <target>\` to inspect contracts, reports, snapshots, and other artifacts without regenerating the app.
 Agents should start with \`AGENTS.md\` and \`npm run agent:brief\`. The direct \`topogram agent brief --json\` command is the canonical machine-readable first-run guidance.
@@ -315,7 +318,7 @@ npm run query:show -- widget-behavior
 
 ## Edit Rules
 
-- Edit \`topogram/**\` and \`topogram.project.json\` first.
+- Edit \`topo/**\` and \`topogram.project.json\` first.
 - Review policy files before editing \`topogram.template-policy.json\` or \`topogram.generator-policy.json\`.
 - Do not make lasting edits under generated-owned \`app/**\`; use \`npm run generate\` to replace generated output.
 - If an output is changed to maintained ownership, agents may edit that app code directly after reading focused query packets.

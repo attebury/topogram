@@ -7,6 +7,7 @@ import path from "node:path";
 import { stableStringify } from "../../../format.js";
 import { TOPOGRAM_IMPORT_FILE } from "../../../import/provenance.js";
 import { shellCommandArg } from "../catalog.js";
+import { resolveTopoRoot, resolveWorkspaceContext } from "../../../workspace-paths.js";
 
 export const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
 
@@ -19,12 +20,7 @@ export const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl"
  * @returns {string}
  */
 export function normalizeTopogramPath(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return absolute;
-  }
-  const candidate = path.join(absolute, "topogram");
-  return fs.existsSync(candidate) ? candidate : absolute;
+  return resolveTopoRoot(inputPath);
 }
 
 /**
@@ -32,11 +28,7 @@ export function normalizeTopogramPath(inputPath) {
  * @returns {string}
  */
 export function normalizeProjectRoot(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return path.dirname(absolute);
-  }
-  return absolute;
+  return resolveWorkspaceContext(inputPath).projectRoot;
 }
 
 /**

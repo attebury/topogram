@@ -1,11 +1,9 @@
-import path from "node:path";
+import { resolveTopoRoot, resolveWorkspaceContext } from "../workspace-paths.js";
 
 export function topogramRootForSdlc(inputPath) {
-  const absolute = path.resolve(inputPath);
-  return path.basename(absolute) === "topogram" ? absolute : path.join(absolute, "topogram");
+  return resolveTopoRoot(inputPath);
 }
 
 export function projectRootForSdlc(inputPath) {
-  const absolute = path.resolve(inputPath);
-  return path.basename(absolute) === "topogram" ? path.dirname(absolute) : absolute;
+  return resolveWorkspaceContext(inputPath).projectRoot;
 }

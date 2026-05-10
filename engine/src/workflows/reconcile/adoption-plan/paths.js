@@ -29,7 +29,7 @@ export function canonicalRelativePathForItem(kind, item) {
 /** @param {string} kind @param {string} item @returns {any} */
 export function canonicalDisplayPathForItem(kind, item) {
   const relativePath = canonicalRelativePathForItem(kind, item);
-  return relativePath ? `topogram/${relativePath}` : null;
+  return relativePath ? `topo/${relativePath}` : null;
 }
 
 /** @param {CandidateBundle} bundle @param {string} kind @param {WorkflowRecord} item @returns {any} */

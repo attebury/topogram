@@ -106,7 +106,7 @@ to `resolvedReferences`.
 ## Folder convention (engine-invisible)
 
 ```text
-topogram/
+topo/
   domains/
     dom-order-fulfillment.tg
     dom-billing.tg
@@ -128,19 +128,19 @@ targets, and `CODEOWNERS` entries only.
 # Slice the graph to one domain (capabilities, entities, rules,
 # verifications, orchestrations, operations, decisions, plus the
 # projections that realize any of its capabilities).
-topogram query slice ./topogram --domain dom_order_fulfillment
+topogram query slice ./topo --domain dom_order_fulfillment
 
 # Per-platform coverage matrix for a single domain.
-topogram query domain-coverage ./topogram --domain dom_order_fulfillment
+topogram query domain-coverage ./topo --domain dom_order_fulfillment
 
 # Navigation summary of all domains.
-topogram query domain-list ./topogram
+topogram query domain-list ./topo
 
 # --domain also slices the existing review-packet, change-plan, and
 # verification-targets queries.
-topogram query review-packet ./topogram --domain dom_order_fulfillment
-topogram query verification-targets ./topogram --domain dom_order_fulfillment
-topogram query change-plan ./topogram --domain dom_order_fulfillment
+topogram query review-packet ./topo --domain dom_order_fulfillment
+topogram query verification-targets ./topo --domain dom_order_fulfillment
+topogram query change-plan ./topo --domain dom_order_fulfillment
 ```
 
 Unknown domain ids hard-error (mirroring `--widget` behavior).
@@ -150,7 +150,7 @@ Unknown domain ids hard-error (mirroring `--widget` behavior).
 - `domain-coverage` — JSON realization matrix for one domain
   (capabilities × platforms).
 - `domain-page` — markdown summary at
-  `topogram/docs-generated/domains/{slug}.md` per domain (members,
+  `topo/docs-generated/domains/{slug}.md` per domain (members,
   in/out-of-scope, per-platform coverage table).
 
 Both run through the standard `generate` family with the

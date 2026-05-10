@@ -3,7 +3,7 @@
 The current greenfield workflow is:
 
 1. from outside `engine/`, run `topogram new ./my-app`
-2. edit `topogram/` and `topogram.project.json`
+2. edit `topo/` and `topogram.project.json`
 3. run `topogram check`
 4. run `topogram generate`
 5. compile or smoke-check the generated app

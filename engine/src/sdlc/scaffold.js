@@ -3,6 +3,7 @@
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { resolveTopoRoot } from "../workspace-paths.js";
 
 const TEMPLATES = {
   pitch: (slug) => `pitch pitch_${slug} {
@@ -73,7 +74,7 @@ export function scaffoldNew(workspaceRoot, kind, slug) {
   if (!slug || !/^[a-z][a-z0-9_]*$/.test(slug)) {
     return { ok: false, error: `Invalid slug '${slug}' — must match /^[a-z][a-z0-9_]*$/` };
   }
-  const targetDir = path.join(workspaceRoot, "topogram", `${kind === "acceptance_criterion" ? "acceptance_criteria" : kind + "s"}`);
+  const targetDir = path.join(resolveTopoRoot(workspaceRoot), `${kind === "acceptance_criterion" ? "acceptance_criteria" : kind + "s"}`);
   if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
   const targetFile = path.join(targetDir, `${slug}.tg`);
   if (existsSync(targetFile)) {

@@ -70,8 +70,8 @@ test("technical stopwords are separate so stack terms can survive where needed",
 
 test("relative path helpers normalize to posix paths", () => {
   assert.equal(toPosixPath("apps\\web\\src"), "apps/web/src");
-  const base = path.join("workspace", "topogram");
-  const file = path.join("workspace", "topogram", "domains", "orders", "entity.tg");
+  const base = path.join("workspace", "topo");
+  const file = path.join("workspace", "topo", "domains", "orders", "entity.tg");
   assert.equal(relativeTo(base, file), "domains/orders/entity.tg");
   assert.equal(importRelativeTo(base, file), "domains/orders/entity.tg");
 });

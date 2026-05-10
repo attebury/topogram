@@ -20,6 +20,7 @@ import {
   getTemplateTrustStatus,
   TEMPLATE_TRUST_FILE
 } from "./template-trust.js";
+import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot, resolveWorkspaceContext } from "./workspace-paths.js";
 
 /**
  * @typedef {{ path: string, reason: string, required: boolean, exists: boolean }} AgentBriefReadItem
@@ -36,12 +37,7 @@ import {
  * @returns {string}
  */
 export function normalizeAgentTopogramPath(inputPath) {
-  const resolved = path.resolve(inputPath || "./topogram");
-  if (path.basename(resolved) === "topogram") {
-    return resolved;
-  }
-  const nested = path.join(resolved, "topogram");
-  return fs.existsSync(nested) && fs.statSync(nested).isDirectory() ? nested : resolved;
+  return resolveTopoRoot(inputPath || ".");
 }
 
 /**
@@ -49,17 +45,7 @@ export function normalizeAgentTopogramPath(inputPath) {
  * @returns {string}
  */
 function normalizeProjectRoot(inputPath) {
-  const resolved = path.resolve(inputPath || ".");
-  if (path.basename(resolved) === "topogram") {
-    return path.dirname(resolved);
-  }
-  if (fs.existsSync(path.join(resolved, "topogram.project.json"))) {
-    return resolved;
-  }
-  if (fs.existsSync(path.join(resolved, "topogram"))) {
-    return resolved;
-  }
-  return path.dirname(normalizeAgentTopogramPath(inputPath));
+  return resolveWorkspaceContext(inputPath || ".").projectRoot;
 }
 
 /**
@@ -325,7 +311,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
   const generatorDiagnostics = generatorPolicyDiagnosticsForBindings(generatorPolicyInfo, generatorBindings, "agent-brief");
   const importSummary = readImportSummary(configDir);
 
-  const topogramReadPath = path.resolve(topogramRoot) === path.resolve(projectRoot) ? "." : "topogram/";
+  const topogramReadPath = path.resolve(topogramRoot) === path.resolve(projectRoot) ? "." : `${DEFAULT_TOPO_FOLDER_NAME}/`;
   const readOrder = [
     readItem(projectRoot, "AGENTS.md", "Human-readable first-run guidance generated with this project.", false),
     readItem(projectRoot, "README.md", "Project workflow and template provenance summary.", true),
@@ -394,7 +380,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     first_commands: firstCommands,
     edit_boundaries: {
       safe_paths: [
-        "topogram/**",
+        `${DEFAULT_TOPO_FOLDER_NAME}/**`,
         "topogram.project.json",
         "topogram.template-policy.json",
         GENERATOR_POLICY_FILE,
@@ -405,8 +391,8 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     },
     workflows: buildWorkflows(config, Boolean(importSummary)),
     file_organization: {
-      small: ["topogram/actors", "topogram/entities", "topogram/shapes", "topogram/capabilities", "topogram/widgets", "topogram/projections", "topogram/verifications"],
-      large: ["topogram/domains/<domain>", "topogram/shared", "topogram/domains/<domain>/widgets", "topogram/domains/<domain>/projections"],
+      small: [`${DEFAULT_TOPO_FOLDER_NAME}/actors`, `${DEFAULT_TOPO_FOLDER_NAME}/entities`, `${DEFAULT_TOPO_FOLDER_NAME}/shapes`, `${DEFAULT_TOPO_FOLDER_NAME}/capabilities`, `${DEFAULT_TOPO_FOLDER_NAME}/widgets`, `${DEFAULT_TOPO_FOLDER_NAME}/projections`, `${DEFAULT_TOPO_FOLDER_NAME}/verifications`],
+      large: [`${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>`, `${DEFAULT_TOPO_FOLDER_NAME}/shared`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/widgets`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/projections`],
       parserRule: "Folder layout is for humans and agents; Topogram flattens statements into one graph."
     },
     topology: {

@@ -10,6 +10,7 @@ import { runGenerateAppCommand } from "./commands/generate.js";
 import { runGeneratorCommand } from "./commands/generator.js";
 import { runGeneratorPolicyCommand } from "./commands/generator-policy.js";
 import { runImportCommand } from "./commands/import-runner.js";
+import { runMigrateCommand } from "./commands/migrate.js";
 import { runNewProjectCommand } from "./commands/new.js";
 import { runPackageCommand } from "./commands/package.js";
 import { runParseCommand, runResolveCommand } from "./commands/inspect.js";
@@ -145,7 +146,7 @@ export async function runCliDispatch(context) {
     return 1;
   }
 
-  if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || commandArgs?.generatorPolicyCommand || commandArgs?.trustCommand || generateTarget === "app-bundle") && inputPath) {
+  if ((shouldCheck || shouldWidgetCheck || shouldWidgetBehavior || shouldAgentBrief || shouldValidate || commandArgs?.generatorPolicyCommand || commandArgs?.trustCommand || commandArgs?.queryName || commandArgs?.workflowPresetCommand || generateTarget) && inputPath) {
     inputPath = normalizeTopogramPath(inputPath);
   }
   const effectiveInputPath = commandInputPath(inputPath);
@@ -239,6 +240,10 @@ export async function runCliDispatch(context) {
 
   if (commandArgs?.packageCommand) {
     return runPackageCommand({ commandArgs, inputPath, json: emitJson });
+  }
+
+  if (commandArgs?.migrateCommand) {
+    return runMigrateCommand(inputPath, { write: shouldWrite, json: emitJson });
   }
 
   if (commandArgs?.importCommand) {

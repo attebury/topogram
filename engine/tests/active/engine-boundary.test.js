@@ -192,6 +192,14 @@ const githubShellAllowedFiles = new Set([
   "engine/src/github-client.js",
   "engine/tests/active/engine-boundary.test.js"
 ]);
+const legacyWorkspaceFolderAllowedFiles = new Set([
+  "engine/src/workspace-paths.js",
+  "engine/src/new-project/create.js",
+  "engine/src/cli/commands/migrate.js",
+  "engine/src/cli/commands/template/check.js",
+  "engine/tests/active/engine-boundary.test.js"
+]);
+const workspaceFolderPathPattern = /(?:(?<!\.)\.\/topogram(?=[/`"'\s]|$)|\.\.\/baseline\/topogram(?=[/`"'\s]|$)|topogram\/(?:_archive|acceptance_criteria|actors|bugs|candidates|capabilities|docs|docs-generated|domains|entities|operations|pitches|projections|requirements|rules|shapes|tasks|terms|verifications|widgets|workflows)|path\.join\([^)]*["']topogram["'])/g;
 
 function visitFiles(root) {
   const files = [];
@@ -468,6 +476,23 @@ test("GitHub shell fallback stays isolated to the GitHub client", () => {
     ].filter((reference) => contents.includes(reference));
     if (references.length > 0) {
       offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("workspace folder paths use topo instead of legacy topogram", () => {
+  const offenders = [];
+  for (const root of [path.join(repoRoot, "docs"), path.join(repoRoot, "engine", "src"), path.join(repoRoot, "scripts")]) {
+    for (const file of visitFiles(root)) {
+      const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+      if (legacyWorkspaceFolderAllowedFiles.has(relative)) continue;
+      const contents = fs.readFileSync(file, "utf8");
+      const references = [...contents.matchAll(workspaceFolderPathPattern)].map((match) => match[0]);
+      if (references.length > 0) {
+        offenders.push({ file: relative, references });
+      }
     }
   }
 

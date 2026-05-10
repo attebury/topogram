@@ -47,7 +47,7 @@ export function generateSdlcDocPage(graph, options = {}) {
     type: "sdlc_doc_page",
     version: 1,
     document_id: doc.id,
-    output_path: `topogram/docs-generated/sdlc/${doc.id}.md`,
+    output_path: `topo/docs-generated/sdlc/${doc.id}.md`,
     markdown
   };
 }

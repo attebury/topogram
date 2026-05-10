@@ -35,5 +35,6 @@
         "uses_api": "app_api"
       }
     ]
-  }
+  },
+  "workspace": "./topo"
 }

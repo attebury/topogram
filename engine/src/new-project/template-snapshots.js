@@ -7,6 +7,7 @@ import path from "node:path";
 import { MAX_TEXT_DIFF_BYTES, TEMPLATE_FILES_MANIFEST } from "./constants.js";
 import { stableJsonStringify } from "./json.js";
 import { candidateProjectTemplateMetadata } from "./metadata.js";
+import { DEFAULT_TOPO_FOLDER_NAME, resolvePackageWorkspace } from "../workspace-paths.js";
 
 /** @typedef {import("./types.js").CreateNewProjectOptions} CreateNewProjectOptions */
 /** @typedef {import("./types.js").TemplateUpdatePlanOptions} TemplateUpdatePlanOptions */
@@ -242,14 +243,24 @@ export function fileHash(file) {
  */
 export function candidateTemplateFiles(template, currentProjectConfig = null) {
   const files = new Map();
-  for (const rootName of ["topogram", "implementation"]) {
-    const root = path.join(template.root, rootName);
-    if (!fs.existsSync(root)) {
-      continue;
-    }
+  const templateWorkspace = resolvePackageWorkspace(template.root);
+  /** @type {string[]} */
+  const workspaceFiles = [];
+  collectFiles(template.root, templateWorkspace.root, workspaceFiles);
+  for (const sourceRelativePath of workspaceFiles) {
+    const workspaceRelative = path.relative(templateWorkspace.root, path.join(template.root, sourceRelativePath)).replace(/\\/g, "/");
+    const targetRelativePath = path.posix.join(DEFAULT_TOPO_FOLDER_NAME, workspaceRelative);
+    files.set(targetRelativePath, {
+      path: targetRelativePath,
+      content: null,
+      absolutePath: path.join(template.root, sourceRelativePath)
+    });
+  }
+  const implementationRoot = path.join(template.root, "implementation");
+  if (fs.existsSync(implementationRoot)) {
     /** @type {string[]} */
     const relativeFiles = [];
-    collectFiles(template.root, root, relativeFiles);
+    collectFiles(template.root, implementationRoot, relativeFiles);
     for (const relativePath of relativeFiles) {
       files.set(relativePath, {
         path: relativePath,
@@ -259,6 +270,7 @@ export function candidateTemplateFiles(template, currentProjectConfig = null) {
     }
   }
   const candidateProjectConfig = JSON.parse(fs.readFileSync(path.join(template.root, "topogram.project.json"), "utf8"));
+  candidateProjectConfig.workspace = `./${DEFAULT_TOPO_FOLDER_NAME}`;
   candidateProjectConfig.template = candidateProjectTemplateMetadata(template, currentProjectConfig);
   files.set("topogram.project.json", {
     path: "topogram.project.json",
@@ -276,7 +288,7 @@ export function candidateTemplateFiles(template, currentProjectConfig = null) {
  */
 export function currentTemplateOwnedFiles(projectRoot, includeImplementation, projectConfig) {
   const files = new Map();
-  for (const rootName of includeImplementation ? ["topogram", "implementation"] : ["topogram"]) {
+  for (const rootName of includeImplementation ? [DEFAULT_TOPO_FOLDER_NAME, "implementation"] : [DEFAULT_TOPO_FOLDER_NAME]) {
     const root = path.join(projectRoot, rootName);
     if (!fs.existsSync(root)) {
       continue;

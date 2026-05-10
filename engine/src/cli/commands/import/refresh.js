@@ -12,6 +12,7 @@ import {
   writeTopogramImportRecord
 } from "../../../import/provenance.js";
 import { runWorkflow } from "../../../workflows.js";
+import { DEFAULT_TOPO_FOLDER_NAME } from "../../../workspace-paths.js";
 import {
   countByField,
   importProjectCommandPath,
@@ -240,7 +241,7 @@ export function buildRefreshPreviewReconcile(projectRoot, topogramRoot, importFi
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-refresh-preview."));
   try {
     const tempProjectRoot = path.join(tempRoot, "workspace");
-    const tempTopogramRoot = path.join(tempProjectRoot, "topogram");
+    const tempTopogramRoot = path.join(tempProjectRoot, DEFAULT_TOPO_FOLDER_NAME);
     fs.mkdirSync(tempProjectRoot, { recursive: true });
     fs.cpSync(topogramRoot, tempTopogramRoot, { recursive: true });
     const projectConfigPath = path.join(projectRoot, "topogram.project.json");
@@ -282,7 +283,7 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const topogramRoot = normalizeTopogramPath(projectRoot);
   if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
-    throw new Error(`No topogram directory found for imported workspace '${inputPath}'.`);
+    throw new Error(`No workspace folder found for imported workspace '${inputPath}'.`);
   }
 
   const { record: importRecord } = readTopogramImportRecord(projectRoot);
@@ -315,8 +316,8 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
   const receiptVerification = verifyImportAdoptionReceipts(projectRoot, readImportAdoptionReceipts(projectRoot));
   const plannedFiles = [
     TOPOGRAM_IMPORT_FILE,
-    ...Object.keys(importResult.files || {}).map((filePath) => `topogram/${filePath}`),
-    ...previewReconcile.reconcileFilePaths.map((/** @type {string} */ filePath) => `topogram/${filePath}`)
+    ...Object.keys(importResult.files || {}).map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`),
+    ...previewReconcile.reconcileFilePaths.map((/** @type {string} */ filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`)
   ].sort((a, b) => a.localeCompare(b));
   const analysis = /** @type {AnyRecord} */ ({
     projectRoot,
@@ -393,8 +394,8 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
     currentImportStatus = buildTopogramImportStatus(analysis.projectRoot).status;
     writtenFiles = [
       TOPOGRAM_IMPORT_FILE,
-      ...rawCandidateFiles.map((filePath) => `topogram/${filePath}`),
-      ...reconcileFiles.map((filePath) => `topogram/${filePath}`)
+      ...rawCandidateFiles.map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`),
+      ...reconcileFiles.map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`)
     ].sort((a, b) => a.localeCompare(b));
     analysis.removedCandidateFiles = removedCandidateFiles;
     analysis.rawCandidateFiles = rawCandidateFiles.length;

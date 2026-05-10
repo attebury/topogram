@@ -22,7 +22,7 @@ For per-status legal transitions, see [lifecycles.md](lifecycles.md).
 ## Folder layout
 
 ```
-topogram/
+topo/
   pitches/{slug}.tg
   requirements/{slug}.tg
   acceptance_criteria/{slug}.tg
@@ -77,12 +77,12 @@ graph. See `engine/src/resolver/enrich/` for the per-kind enrichment.
 Each SDLC kind has its own context slice:
 
 ```bash
-topogram query slice topogram/ --pitch pitch_audit_logging
-topogram query slice topogram/ --requirement req_audit_persistence
-topogram query slice topogram/ --acceptance ac_audit_log_visible
-topogram query slice topogram/ --task task_implement_audit_writer
-topogram query slice topogram/ --bug bug_audit_drops_silently
-topogram query slice topogram/ --document doc_audit_runbook
+topogram query slice topo/ --pitch pitch_audit_logging
+topogram query slice topo/ --requirement req_audit_persistence
+topogram query slice topo/ --acceptance ac_audit_log_visible
+topogram query slice topo/ --task task_implement_audit_writer
+topogram query slice topo/ --bug bug_audit_drops_silently
+topogram query slice topo/ --document doc_audit_runbook
 ```
 
 A slice returns the focus artifact, its dependencies, related summaries,
@@ -130,17 +130,17 @@ Terminal-status `task` (done), `bug` (verified|wont-fix), `pitch`
 ```bash
 topogram sdlc archive --status verified,wont-fix
 topogram sdlc unarchive bug_old_regression
-topogram sdlc compact topogram/_archive/tasks-2025.jsonl
+topogram sdlc compact topo/_archive/tasks-2025.jsonl
 ```
 
-Archived entries live as JSONL records under `topogram/_archive/`. They
+Archived entries live as JSONL records under `topo/_archive/`. They
 are auto-loaded by the resolver bridge so traceability and release notes
 still see them, but they are filtered out of the default board.
 
 ## Release flow
 
 ```bash
-topogram release topogram/ --app-version 1.13.0 --since-tag forge/maui/v1.12.0
+topogram release topo/ --app-version 1.13.0 --since-tag forge/maui/v1.12.0
 ```
 
 A release is one atomic operation:

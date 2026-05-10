@@ -141,7 +141,7 @@ export function buildPromotedCanonicalItems(planItems, selectedItems, writtenCan
       track: item.track || null,
       source_path: item.source_path || null,
       canonical_rel_path: String(item.canonical_rel_path).replaceAll(path.sep, "/"),
-      canonical_path: item.canonical_path || `topogram/${String(item.canonical_rel_path).replaceAll(path.sep, "/")}`,
+      canonical_path: item.canonical_path || `topo/${String(item.canonical_rel_path).replaceAll(path.sep, "/")}`,
       suggested_action: item.suggested_action || null
     }))
     .sort((/** @type {any} */ a, /** @type {any} */ b) =>

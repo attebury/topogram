@@ -40,7 +40,7 @@ export function queryDefinitions() {
       selectors: ["capability", "workflow", "projection", "widget", "entity", "journey", "domain"],
       args: ["[path]", "[selectors]", "[--json]"],
       output: "context_slice",
-      example: "topogram query slice ./topogram --widget widget_data_grid"
+      example: "topogram query slice ./topo --widget widget_data_grid"
     },
     {
       name: "verification-targets",
@@ -49,7 +49,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "verification_targets",
-      example: "topogram query verification-targets ./topogram --widget widget_data_grid"
+      example: "topogram query verification-targets ./topo --widget widget_data_grid"
     },
     {
       name: "widget-behavior",
@@ -58,7 +58,7 @@ export function queryDefinitions() {
       selectors: ["projection", "widget"],
       args: ["[path]", "[--projection <id>]", "[--widget <id>]", "[--json]"],
       output: "widget_behavior_report",
-      example: "topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json"
+      example: "topogram query widget-behavior ./topo --projection proj_web_surface --widget widget_data_grid --json"
     },
     {
       name: "change-plan",
@@ -67,7 +67,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "change_plan_query",
-      example: "topogram query change-plan ./topogram --widget widget_data_grid"
+      example: "topogram query change-plan ./topo --widget widget_data_grid"
     },
     {
       name: "review-packet",
@@ -76,7 +76,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "review_packet_query",
-      example: "topogram query review-packet ./topogram --widget widget_data_grid"
+      example: "topogram query review-packet ./topo --widget widget_data_grid"
     },
     {
       name: "resolved-workflow-context",
@@ -85,7 +85,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "resolved_workflow_context_query",
-      example: "topogram query resolved-workflow-context ./topogram --mode modeling --widget widget_data_grid --json"
+      example: "topogram query resolved-workflow-context ./topo --mode modeling --widget widget_data_grid --json"
     },
     {
       name: "single-agent-plan",
@@ -94,7 +94,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "single_agent_plan_query",
-      example: "topogram query single-agent-plan ./topogram --mode modeling --widget widget_data_grid --json"
+      example: "topogram query single-agent-plan ./topo --mode modeling --widget widget_data_grid --json"
     },
     {
       name: "risk-summary",
@@ -103,7 +103,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "risk_summary_query",
-      example: "topogram query risk-summary ./topogram --widget widget_data_grid"
+      example: "topogram query risk-summary ./topo --widget widget_data_grid"
     },
     {
       name: "proceed-decision",
@@ -112,7 +112,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "proceed_decision_query",
-      example: "topogram query proceed-decision ./topogram --mode verification"
+      example: "topogram query proceed-decision ./topo --mode verification"
     },
     {
       name: "write-scope",
@@ -121,7 +121,7 @@ export function queryDefinitions() {
       selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "write_scope_query",
-      example: "topogram query write-scope ./topogram --widget widget_data_grid"
+      example: "topogram query write-scope ./topo --widget widget_data_grid"
     }
   ];
 }

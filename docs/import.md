@@ -22,10 +22,10 @@ topogram check
 `topogram import` does not modify the brownfield app. It creates a new
 Topogram workspace containing:
 
-- `topogram/candidates/app/**` raw extractor findings and candidates
-- `topogram/candidates/app/ui/drafts/widgets/**` review-only UI widget
+- `topo/candidates/app/**` raw extractor findings and candidates
+- `topo/candidates/app/ui/drafts/widgets/**` review-only UI widget
   candidates when reusable screen regions can be inferred
-- `topogram/candidates/reconcile/**` reviewable proposal bundles
+- `topo/candidates/reconcile/**` reviewable proposal bundles
 - `topogram.project.json` with maintained output ownership and no generated
   stack binding
 - `.topogram-import.json` with hashes of the brownfield source files at import
@@ -58,9 +58,9 @@ topogram import refresh ./imported-topogram --dry-run --json
 topogram import refresh ./imported-topogram --json
 ```
 
-Refresh rewrites only `topogram/candidates/app/**`,
-`topogram/candidates/reconcile/**`, and `.topogram-import.json`. It does not
-overwrite adopted or canonical `topogram/**` files. The refreshed provenance
+Refresh rewrites only `topo/candidates/app/**`,
+`topo/candidates/reconcile/**`, and `.topogram-import.json`. It does not
+overwrite adopted or canonical `topo/**` files. The refreshed provenance
 hashes the source at the moment of refresh, so `topogram import check` returns
 to clean after the new source evidence is accepted. `topogram import diff` and
 `topogram import refresh --dry-run` preview the source diff, candidate count
@@ -89,10 +89,10 @@ topogram import history ./imported-topogram --verify --json
 
 `topogram import plan` summarizes the reconcile proposal bundles and suggests
 the next adoption command. `topogram import adopt` is preview-only by default;
-it does not write canonical `topogram/**` files unless `--write` is passed.
+it does not write canonical `topo/**` files unless `--write` is passed.
 Use `topogram import adopt --list` to discover valid bundle selectors. The
 `widgets` selector promotes reviewed widget candidates into
-`topogram/widgets/**`; broad bundle selectors also include widget
+`topo/widgets/**`; broad bundle selectors also include widget
 candidate files when the bundle contains them.
 The list output now includes both bundle selectors, such as `bundle:task`, and
 broad selectors, such as `widgets`, `ui`, `capabilities`, and `from-plan`.
@@ -113,7 +113,7 @@ from an older unverifiable receipt. This verification is audit-only:
 imported/adopted Topogram files are project-owned, and local edits remain valid.
 
 UI import also drafts shared projection wiring when widget candidates are
-found. The files under `topogram/candidates/app/ui/drafts/**` are not canonical
+found. The files under `topo/candidates/app/ui/drafts/**` are not canonical
 Topogram until a human or agent reviews and adopts them. Widget candidates
 include evidence, confidence, inferred pattern, inferred region, props, events,
 and missing decisions. Check props, behavior, events, regions, and patterns

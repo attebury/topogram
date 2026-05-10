@@ -8,6 +8,7 @@ import {
   stableOrderedUnion,
   stableSortedStrings
 } from "./common.js";
+import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot } from "../../workspace-paths.js";
 export function workflowPresetReviewClass(preset) {
   const categories = stableSortedStrings([
     ...(preset?.review_policy?.escalate_categories || []),
@@ -178,12 +179,12 @@ export function loadWorkflowPresetArtifacts(workspaceRoot) {
   if (!workspaceRoot) {
     return { provider_presets: [], team_presets: [], provider_manifests: [] };
   }
-  const topogramRoot = path.basename(workspaceRoot) === "topogram" ? workspaceRoot : path.join(workspaceRoot, "topogram");
+  const topogramRoot = resolveTopoRoot(workspaceRoot);
   const providerDir = path.join(topogramRoot, "candidates", "providers", "workflow-presets");
   const providerManifestDir = path.join(topogramRoot, "candidates", "providers", "manifests");
   const teamDirs = [
     path.join(topogramRoot, "workflow-presets"),
-    path.join(topogramRoot, "topogram", "workflow-presets")
+    path.join(topogramRoot, DEFAULT_TOPO_FOLDER_NAME, "workflow-presets")
   ];
 
   const providerPresets = readJsonArtifactsFromDir(providerDir)

@@ -43,5 +43,8 @@ export function parseProjectCommandArgs(args) {
   if (args[0] === "package" && args[1] === "update-cli") {
     return { packageCommand: "update-cli", inputPath: args.includes("--latest") ? "latest" : args[2] };
   }
+  if (args[0] === "migrate" && args[1] === "workspace-folder") {
+    return { migrateCommand: "workspace-folder", inputPath: commandPath(args, 2, ".") };
+  }
   return null;
 }

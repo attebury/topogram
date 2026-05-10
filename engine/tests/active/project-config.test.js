@@ -303,7 +303,7 @@ test("topogram generator check rejects generated paths outside the package outpu
 
 function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-project-"));
-  const topogramRoot = path.join(root, "topogram");
+  const topogramRoot = path.join(root, "topo");
   fs.cpSync(fixtureRoot, topogramRoot, { recursive: true });
   const implementationModule = path
     .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
@@ -411,6 +411,30 @@ test("topogram check supports legacy implementation compatibility fallback", () 
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.ok, true);
   assert.equal(payload.project.compatibility, true);
+});
+
+test("project config validation catches invalid workspace paths", () => {
+  const graph = appBasicGraph();
+  const absolute = appBasicProjectConfig();
+  absolute.workspace = "/tmp/topo";
+  const escaping = appBasicProjectConfig();
+  escaping.workspace = "../topo";
+  const empty = appBasicProjectConfig();
+  empty.workspace = "";
+  const unsupported = appBasicProjectConfig();
+  unsupported.workspaces = ["./topo"];
+
+  const messages = [
+    ...validateProjectConfig(absolute, graph).errors,
+    ...validateProjectConfig(escaping, graph).errors,
+    ...validateProjectConfig(empty, graph).errors,
+    ...validateProjectConfig(unsupported, graph).errors
+  ].map((error) => error.message).join("\n");
+
+  assert.match(messages, /workspace must be relative to the project root/);
+  assert.match(messages, /workspace must not escape the project root/);
+  assert.match(messages, /workspace must be a non-empty relative path/);
+  assert.match(messages, /workspaces\[\] is not supported yet/);
 });
 
 test("project config validation catches unknown generators, duplicate ports, and missing refs", () => {

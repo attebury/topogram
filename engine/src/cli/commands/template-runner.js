@@ -77,7 +77,7 @@ export function runTemplateCommand(context) {
   }
 
   if (command === "status") {
-    const projectConfigInfo = loadProjectConfig(inputPath || "./topogram");
+    const projectConfigInfo = loadProjectConfig(inputPath || "./topo");
     if (!projectConfigInfo) {
       throw new Error("Cannot inspect template status without topogram.project.json.");
     }
@@ -108,7 +108,7 @@ export function runTemplateCommand(context) {
   }
 
   if (command === "policy:init") {
-    const projectConfigInfo = loadProjectConfig(inputPath || "./topogram");
+    const projectConfigInfo = loadProjectConfig(inputPath || "./topo");
     if (!projectConfigInfo) {
       throw new Error("Cannot initialize template policy without topogram.project.json.");
     }
@@ -131,7 +131,7 @@ export function runTemplateCommand(context) {
   }
 
   if (command === "policy:check") {
-    const payload = buildTemplatePolicyCheckPayload(inputPath || "./topogram");
+    const payload = buildTemplatePolicyCheckPayload(inputPath || "./topo");
     if (json) {
       console.log(stableStringify(payload));
     } else {
@@ -141,7 +141,7 @@ export function runTemplateCommand(context) {
   }
 
   if (command === "policy:explain") {
-    const payload = buildTemplatePolicyExplainPayload(inputPath || "./topogram");
+    const payload = buildTemplatePolicyExplainPayload(inputPath || "./topo");
     if (json) {
       console.log(stableStringify(payload));
     } else {
@@ -151,7 +151,7 @@ export function runTemplateCommand(context) {
   }
 
   if (command === "policy:pin") {
-    const payload = buildTemplatePolicyPinPayload(inputPath || "./topogram", commandArgs.templatePolicyPinSpec);
+    const payload = buildTemplatePolicyPinPayload(inputPath || "./topo", commandArgs.templatePolicyPinSpec);
     if (json) {
       console.log(stableStringify(payload));
     } else {
@@ -178,7 +178,7 @@ export function runTemplateCommand(context) {
   if (command === "update") {
     const payload = buildTemplateUpdateCliPayload({
       args,
-      inputPath: inputPath || "./topogram",
+      inputPath: inputPath || "./topo",
       templateIndex: args.indexOf("--template"),
       templateName,
       useLatestTemplate: args.includes("--latest"),

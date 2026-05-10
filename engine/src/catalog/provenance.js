@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { TOPOGRAM_SOURCE_FILE } from "./constants.js";
 import { collectFiles, fileHash } from "./files.js";
+import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
 
 /**
  * @param {string} projectRoot
@@ -107,7 +108,7 @@ export function buildTopogramSourceStatus(projectRoot) {
 function collectSourceFileRecords(projectRoot) {
   /** @type {string[]} */
   const files = [];
-  for (const sourceRoot of ["topogram", "topogram.project.json", "README.md"]) {
+  for (const sourceRoot of [DEFAULT_TOPO_FOLDER_NAME, "topogram.project.json", "README.md"]) {
     const sourcePath = path.join(projectRoot, sourceRoot);
     if (fs.existsSync(sourcePath)) {
       collectFiles(sourcePath, sourceRoot, files);

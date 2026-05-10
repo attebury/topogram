@@ -99,7 +99,7 @@ function renderEmptySnapshotForProjection(projection) {
 
 function renderDbLifecycleEnvExample(projection, plan) {
   const engine = plan.engine || (dbProfileForProjection(projection).startsWith("sqlite") ? "sqlite" : "postgres");
-  const inputPath = "../../../../topogram";
+  const inputPath = "../../../../topo";
   if (engine === "sqlite") {
     return `DATABASE_URL=file:./var/${projection.id}.sqlite\nTOPOGRAM_INPUT_PATH=${inputPath}\n`;
   }

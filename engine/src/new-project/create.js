@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { defaultGeneratorPolicy, writeGeneratorPolicy } from "../generator-policy.js";
 import { writeTemplateTrustRecord } from "../template-trust.js";
+import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
 import { DEFAULT_TEMPLATE_NAME } from "./constants.js";
 import { writeProjectTemplateMetadata } from "./metadata.js";
 import { assertProjectOutsideEngine, copyTopogramWorkspace, ensureCreatableProjectRoot, writeAgentsGuide, writeExplainScript, writeProjectPackage, writeProjectReadme } from "./project-files.js";
@@ -52,7 +53,7 @@ export function createNewProject({
   }
 
   ensureCreatableProjectRoot(projectRoot);
-  copyTopogramWorkspace(template.root, projectRoot);
+  const workspaceCopy = copyTopogramWorkspace(template.root, projectRoot);
   const projectConfig = writeProjectTemplateMetadata(projectRoot, template, templateProvenance);
   writeProjectPackage(projectRoot, engineRoot, template);
   writeExplainScript(projectRoot);
@@ -63,6 +64,12 @@ export function createNewProject({
   writeGeneratorPolicy(projectRoot, defaultGeneratorPolicy());
 
   const warnings = [];
+  if (workspaceCopy.legacyWorkspace) {
+    warnings.push(
+      `Template '${template.manifest.id}' still ships legacy topogram/ source. Copied it into this project as ${DEFAULT_TOPO_FOLDER_NAME}/. ` +
+        "This one-release package-ingress bridge will be removed after first-party packages migrate."
+    );
+  }
   if (template.manifest.includesExecutableImplementation) {
     writeTemplateTrustRecord(projectRoot, projectConfig);
     warnings.push(
@@ -76,7 +83,7 @@ export function createNewProject({
     projectRoot,
     templateName: template.manifest.id,
     template: projectConfig.template,
-    topogramPath: path.join(projectRoot, "topogram"),
+    topogramPath: path.join(projectRoot, DEFAULT_TOPO_FOLDER_NAME),
     appPath: path.join(projectRoot, "app"),
     warnings
   };

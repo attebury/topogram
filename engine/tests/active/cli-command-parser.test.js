@@ -19,7 +19,7 @@ test("split command parser handles extracted command families", () => {
   assert.deepEqual(parseSplitCommandArgs(["generate"]), {
     generateTarget: "app-bundle",
     write: true,
-    inputPath: "./topogram",
+    inputPath: "./topo",
     defaultOutDir: "./app"
   });
   assert.deepEqual(parseSplitCommandArgs(["generate", "./custom-topogram"]), {
@@ -40,7 +40,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["emit", "ui-widget-contract"]), {
     generateTarget: "ui-widget-contract",
-    inputPath: "./topogram",
+    inputPath: "./topo",
     emitArtifact: true
   });
   assert.deepEqual(parseSplitCommandArgs(["emit", "ui-widget-contract", "./custom-topogram"]), {
@@ -86,7 +86,7 @@ test("split command parser handles extracted command families", () => {
     workflowPresetCommand: "customize",
     inputPath: "./custom-topogram"
   });
-  assert.deepEqual(parseSplitCommandArgs(["check"]), { check: true, inputPath: "./topogram" });
+  assert.deepEqual(parseSplitCommandArgs(["check"]), { check: true, inputPath: "./topo" });
   assert.deepEqual(parseSplitCommandArgs(["check", "./custom-topogram"]), {
     check: true,
     inputPath: "./custom-topogram"
@@ -97,7 +97,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["agent", "brief"]), {
     agentBrief: true,
-    inputPath: "./topogram"
+    inputPath: "./topo"
   });
   assert.deepEqual(parseSplitCommandArgs(["agent", "brief", "./custom-topogram", "--json"]), {
     agentBrief: true,
@@ -105,7 +105,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["widget", "check"]), {
     widgetCheck: true,
-    inputPath: "./topogram"
+    inputPath: "./topo"
   });
   assert.deepEqual(parseSplitCommandArgs(["widget", "behavior", "./custom-topogram", "--json"]), {
     widgetBehavior: true,
@@ -129,7 +129,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "status"]), {
     generatorPolicyCommand: "status",
-    inputPath: "./topogram"
+    inputPath: "./topo"
   });
   assert.deepEqual(parseSplitCommandArgs(["generator", "policy", "check", "./custom-topogram"]), {
     generatorPolicyCommand: "check",
@@ -158,7 +158,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["template", "status"]), {
     templateCommand: "status",
-    inputPath: "./topogram"
+    inputPath: "./topo"
   });
   assert.deepEqual(parseSplitCommandArgs(["template", "detach", "./custom-topogram", "--dry-run"]), {
     templateCommand: "detach",
@@ -200,7 +200,7 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["trust", "status"]), {
     trustCommand: "status",
-    inputPath: "./topogram"
+    inputPath: "./topo"
   });
   assert.deepEqual(parseSplitCommandArgs(["trust", "diff", "./custom-topogram"]), {
     trustCommand: "diff",
@@ -234,6 +234,10 @@ test("split command parser handles extracted command families", () => {
   assert.deepEqual(parseSplitCommandArgs(["package", "update-cli", "--latest"]), {
     packageCommand: "update-cli",
     inputPath: "latest"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["migrate", "workspace-folder", "./legacy-project", "--dry-run"]), {
+    migrateCommand: "workspace-folder",
+    inputPath: "./legacy-project"
   });
   assert.deepEqual(parseSplitCommandArgs(["release", "status", "--strict"]), {
     releaseCommand: "status",
@@ -331,9 +335,9 @@ test("split command parser handles extracted command families", () => {
     sdlcId: "bug_old",
     inputPath: "./custom-topogram"
   });
-  assert.deepEqual(parseSplitCommandArgs(["sdlc", "compact", "topogram/_archive/tasks.jsonl"]), {
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "compact", "topo/_archive/tasks.jsonl"]), {
     sdlcCommand: "compact",
-    sdlcArchiveFile: "topogram/_archive/tasks.jsonl",
+    sdlcArchiveFile: "topo/_archive/tasks.jsonl",
     inputPath: "."
   });
   assert.deepEqual(parseSplitCommandArgs(["sdlc", "new", "task", "extract-query", "./custom-topogram"]), {

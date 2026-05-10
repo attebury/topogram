@@ -14,12 +14,12 @@ export function printAgentHelp() {
   console.log("");
   console.log("Prints read-only first-run guidance for humans and agents working in a Topogram project.");
   console.log("");
-  console.log("Defaults: path is ./topogram. The command validates the Topogram and project config, but does not write files, generate apps, load generator adapters, or execute template implementation.");
+  console.log("Defaults: path is ./topo. The command validates the Topogram and project config, but does not write files, generate apps, load generator adapters, or execute template implementation.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram agent brief");
   console.log("  topogram agent brief --json");
-  console.log("  topogram agent brief ./topogram --json");
+  console.log("  topogram agent brief ./topo --json");
 }
 
 /**

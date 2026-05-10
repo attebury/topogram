@@ -17,7 +17,7 @@ const RENAMED_GENERATE_TARGETS = new Map([
  * @param {string} [fallback]
  * @returns {string}
  */
-function commandPath(args, index, fallback = "./topogram") {
+function commandPath(args, index, fallback = "./topo") {
   const value = args[index];
   return value && !value.startsWith("-") ? value : fallback;
 }

@@ -160,13 +160,13 @@ Bare unquoted symbols other than `true`, `false`, `null`, and numerics are passe
 Emit one widget contract:
 
 ```bash
-topogram emit ui-widget-contract ./topogram --widget widget_data_grid
+topogram emit ui-widget-contract ./topo --widget widget_data_grid
 ```
 
 Emit all widget contracts:
 
 ```bash
-topogram emit ui-widget-contract ./topogram
+topogram emit ui-widget-contract ./topo
 ```
 
 Passing `--widget <id>` for a missing id is now a hard error rather than a silent `null` artifact, so typos surface immediately.
@@ -180,19 +180,19 @@ tools.
 Emit a widget conformance report for one projection:
 
 ```bash
-topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json
+topogram emit widget-conformance-report ./topo --projection proj_web_surface --json
 ```
 
 For day-to-day validation, use the friendlier command alias:
 
 ```bash
-topogram widget check ./topogram --projection proj_web_surface
+topogram widget check ./topo --projection proj_web_surface
 ```
 
 Optionally narrow the report to one widget:
 
 ```bash
-topogram emit widget-conformance-report ./topogram --projection proj_web_surface --widget widget_data_grid --json
+topogram emit widget-conformance-report ./topo --projection proj_web_surface --widget widget_data_grid --json
 ```
 
 The report checks `projection.widget_bindings` usage against widget contracts,
@@ -217,15 +217,15 @@ Use the behavior report when an agent needs a focused packet for widget
 interactions rather than the full conformance report:
 
 ```bash
-topogram widget behavior ./topogram --projection proj_web_surface
-topogram widget behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json
-topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json
+topogram widget behavior ./topo --projection proj_web_surface
+topogram widget behavior ./topo --projection proj_web_surface --widget widget_data_grid --json
+topogram query widget-behavior ./topo --projection proj_web_surface --widget widget_data_grid --json
 ```
 
 The equivalent artifact target is:
 
 ```bash
-topogram emit widget-behavior-report ./topogram --projection proj_web_surface --json
+topogram emit widget-behavior-report ./topo --projection proj_web_surface --json
 ```
 
 The JSON artifact groups behavior realizations by widget, screen,
@@ -314,11 +314,11 @@ widget rendering is intentionally not implemented yet.
 `--widget <id>` is a first-class selector across the agent-facing query family. Examples:
 
 ```bash
-topogram query slice ./topogram --widget widget_data_grid
-topogram query verification-targets ./topogram --widget widget_data_grid
-topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json
-topogram query change-plan ./topogram --widget widget_data_grid
-topogram query review-packet ./topogram --widget widget_data_grid --from-topogram ../baseline/topogram
+topogram query slice ./topo --widget widget_data_grid
+topogram query verification-targets ./topo --widget widget_data_grid
+topogram query widget-behavior ./topo --projection proj_web_surface --widget widget_data_grid --json
+topogram query change-plan ./topo --widget widget_data_grid
+topogram query review-packet ./topo --widget widget_data_grid --from-topogram ../baseline/topo
 ```
 
 The slice returns a `context_slice` artifact with `focus.kind === "widget"`,
@@ -343,7 +343,7 @@ Widget packs are expected to use the existing pure Topogram catalog path describ
 ```text
 @scope/topogram-widget-data-grid/
   topogram-widget.json
-  topogram/
+  topo/
     widgets/widget-data-grid.tg
     shapes/shape-event-row-click.tg
 ```

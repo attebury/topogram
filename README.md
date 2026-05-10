@@ -111,7 +111,7 @@ npm run explain
 npm run doctor
 npm run check
 npm run generate
-topogram emit ui-widget-contract ./topogram
+topogram emit ui-widget-contract ./topo
 npm run verify
 ```
 
@@ -207,9 +207,9 @@ topogram template update --plan --template @topogram/template-todo@0.1.6
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
-topogram template update --accept-current topogram/entities/entity-greeting.tg
-topogram template update --accept-candidate topogram/entities/entity-greeting.tg --template ./next-template
-topogram template update --delete-current topogram/entities/old-resource.tg --template ./next-template
+topogram template update --accept-current topo/entities/entity-greeting.tg
+topogram template update --accept-candidate topo/entities/entity-greeting.tg --template ./next-template
+topogram template update --delete-current topo/entities/old-resource.tg --template ./next-template
 topogram template detach
 topogram template detach --dry-run --json
 ```

@@ -1,8 +1,5 @@
 // @ts-check
 
-import fs from "node:fs";
-import path from "node:path";
-
 import {
   catalogSourceOrDefault,
   isCatalogSourceDisabled
@@ -26,6 +23,7 @@ import {
   readInstalledCliPackageVersion,
   readProjectCliDependencySpec
 } from "./package.js";
+import { resolveTopoRoot } from "../../workspace-paths.js";
 
 /**
  * @returns {void}
@@ -67,12 +65,7 @@ function messageFromError(error) {
  * @returns {string}
  */
 function normalizeTopogramPath(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return absolute;
-  }
-  const candidate = path.join(absolute, "topogram");
-  return fs.existsSync(candidate) ? candidate : absolute;
+  return resolveTopoRoot(inputPath);
 }
 
 /**

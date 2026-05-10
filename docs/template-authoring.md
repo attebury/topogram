@@ -6,7 +6,7 @@ Topogram template packs are starter workspaces for `topogram new`.
 
 ```text
 topogram-template.json
-topogram/
+topo/
 topogram.project.json
 implementation/        # optional
 package.json           # required for npm packages
@@ -22,7 +22,7 @@ package.json           # required for npm packages
   "topogramVersion": "0.1",
   "includesExecutableImplementation": true,
   "starterScripts": {
-    "widget:behavior:query": "topogram query widget-behavior ./topogram --projection proj_web_surface --json"
+    "widget:behavior:query": "topogram query widget-behavior ./topo --projection proj_web_surface --json"
   }
 }
 ```
@@ -130,12 +130,12 @@ template package remains the source of versioned starter content. See
 
 ## Widget Contracts
 
-Templates may include reusable `widget` statements under `topogram/widgets/`.
+Templates may include reusable `widget` statements under `topo/widgets/`.
 These contracts are platform-neutral and can be generated independently:
 
 ```bash
-topogram emit ui-widget-contract ./topogram
-topogram emit ui-widget-contract ./topogram --widget widget_data_grid
+topogram emit ui-widget-contract ./topo
+topogram emit ui-widget-contract ./topo --widget widget_data_grid
 ```
 
 See [Widgets](./widgets.md) for the full grammar and pack roadmap.
@@ -244,7 +244,7 @@ module, and SHA-256 hashes for the copied `implementation/` files.
 human review. When run directly in a template source repo, it refuses to write
 consumer trust metadata unless `--force` is provided.
 
-Template packs must not contain symlinks under `topogram/`,
+Template packs must not contain symlinks under `topo/`,
 `topogram.project.json`, or `implementation/`. Topogram records hashes for the
 real files it copies; symlinks can point outside the reviewed template or
 generated project and are rejected by `topogram new`, `topogram template check`,
@@ -350,16 +350,16 @@ topogram template update --plan --template @scope/topogram-template-name@0.2.0
 topogram template update --plan --json
 topogram template update --status --out .topogram/template-update-report.json
 topogram template update --apply
-topogram template update --accept-current topogram/entities/entity-greeting.tg
-topogram template update --accept-candidate topogram/entities/entity-greeting.tg --template ./local-template
-topogram template update --delete-current topogram/entities/old-resource.tg --template ./local-template
+topogram template update --accept-current topo/entities/entity-greeting.tg
+topogram template update --accept-candidate topo/entities/entity-greeting.tg --template ./local-template
+topogram template update --delete-current topo/entities/old-resource.tg --template ./local-template
 ```
 
 Without `--template`, the command uses the recorded `sourceSpec` or `requested`
 template metadata from `topogram.project.json`. To compare against a newer
 package version, pass that version explicitly with `--template`.
 
-The plan compares template-owned project files (`topogram/`,
+The plan compares template-owned project files (`topo/`,
 `topogram.project.json`, and `implementation/` when present) with the candidate
 template. It reports added, changed, and current-only files with hashes and text
 diffs where practical. Plan mode never writes files and never executes template

@@ -347,7 +347,7 @@ export function buildPromotedCanonicalItems(planItems, selectedItems, writtenCan
       track: item.track || null,
       source_path: item.source_path || null,
       canonical_rel_path: normalizeReportPath(item.canonical_rel_path),
-      canonical_path: item.canonical_path || `topogram/${normalizeReportPath(item.canonical_rel_path)}`,
+      canonical_path: item.canonical_path || `topo/${normalizeReportPath(item.canonical_rel_path)}`,
       suggested_action: item.suggested_action || null,
       change_type: updatedSet.has(normalizeReportPath(item.canonical_rel_path)) ? "update" : "create"
     }))

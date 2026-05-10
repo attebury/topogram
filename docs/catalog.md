@@ -168,7 +168,7 @@ topogram source status ./hello-topogram --remote --json
 
 `catalog copy` writes `.topogram-source.json` in the target workspace. That
 file records the catalog id/source, package spec/version, copy time,
-non-executable trust metadata, and SHA-256 hashes for imported `topogram/`,
+non-executable trust metadata, and SHA-256 hashes for imported `topo/`,
 `topogram.project.json`, and `README.md` files. `topogram source status --local` compares
 the current files with that import baseline and reports changed, added, and
 removed paths.
@@ -268,7 +268,7 @@ so. `topogram new` copies that implementation code but does not execute it.
 loading copied implementation code.
 
 Catalog templates with executable implementation must copy real files. Symlinks
-under `topogram/`, `topogram.project.json`, or `implementation/` are rejected
+under `topo/`, `topogram.project.json`, or `implementation/` are rejected
 because trust records hash copied file content and symlinks can point outside
 the reviewed package or generated project. In generated, template-attached
 projects, executable implementation modules must remain under `implementation/`;
@@ -279,7 +279,7 @@ Topogram entries feed `topogram catalog copy`. A pure topogram package may
 contain:
 
 ```text
-topogram/
+topo/
 topogram.project.json  # optional
 README.md              # optional
 ```

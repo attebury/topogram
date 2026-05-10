@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { resolveWorkspaceContext } from "../../../workspace-paths.js";
 
 import { parseDocFile } from "../../../workspace-docs.js";
 import {
@@ -49,8 +50,7 @@ export function relativePathFromGraph(graph, targetPath) {
  * @returns {any}
  */
 function workspaceRootFromGraph(graph) {
-  const root = path.resolve(graph.root);
-  return path.basename(root) === "topogram" ? path.dirname(root) : root;
+  return resolveWorkspaceContext(graph.root).projectRoot;
 }
 
 /**

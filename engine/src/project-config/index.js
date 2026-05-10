@@ -9,6 +9,7 @@ import {
   validateGeneratorManifest
 } from "../generator/registry.js";
 import { validateProjectGeneratorPolicy } from "../generator-policy.js";
+import { DEFAULT_WORKSPACE_PATH, normalizeWorkspaceConfigPath } from "../workspace-paths.js";
 
 /**
  * @typedef {Object} GeneratorBinding
@@ -32,6 +33,7 @@ import { validateProjectGeneratorPolicy } from "../generator-policy.js";
 /**
  * @typedef {Object} ProjectConfig
  * @property {string} version
+ * @property {string} [workspace]
  * @property {Record<string, { path: string, ownership: "generated"|"maintained" }>} outputs
  * @property {{ runtimes: RuntimeTopologyRuntime[] }} topology
  * @property {{ id?: string, module?: string, export?: string, implementation_module?: string, implementation_export?: string }} [implementation]
@@ -206,6 +208,7 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
 
   return {
     version: "0.1",
+    workspace: DEFAULT_WORKSPACE_PATH,
     implementation: implementation?.exampleId
       ? {
           id: implementation.exampleId
@@ -221,6 +224,29 @@ export function defaultProjectConfigForGraph(graph, implementation = null) {
       runtimes
     }
   };
+}
+
+/**
+ * @param {ValidationError[]} errors
+ * @param {any} config
+ * @returns {void}
+ */
+function validateWorkspaceConfig(errors, config) {
+  if (Object.prototype.hasOwnProperty.call(config, "workspaces")) {
+    pushError(errors, "topogram.project.json workspaces[] is not supported yet; use workspace instead");
+  }
+  if (!Object.prototype.hasOwnProperty.call(config, "workspace")) {
+    return;
+  }
+  if (typeof config.workspace !== "string") {
+    pushError(errors, "topogram.project.json workspace must be a non-empty relative path");
+    return;
+  }
+  try {
+    normalizeWorkspaceConfigPath(config.workspace);
+  } catch (error) {
+    pushError(errors, error instanceof Error ? error.message : String(error));
+  }
 }
 
 /**
@@ -448,6 +474,7 @@ export function validateProjectConfig(config, graph = null, options = {}) {
   if (typeof config.version !== "string" || config.version.length === 0) {
     pushError(errors, "topogram.project.json version must be a non-empty string");
   }
+  validateWorkspaceConfig(errors, config);
   validateOutputConfig(errors, config);
   if (config.topology?.components != null) {
     pushError(errors, `topogram.project.json ${renameDiagnostic("'topology.components'", "'topology.runtimes'", `"topology": { "runtimes": [] }`)}`);

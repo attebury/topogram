@@ -1,7 +1,7 @@
 // Year-bucketed JSONL archive I/O.
 //
-// File layout: `<project-or-topogram-root>/topogram/_archive/{kind}s-{year}.jsonl`
-// or `<topogram-root>/_archive/{kind}s-{year}.jsonl`
+// File layout: `<project-root>/topo/_archive/{kind}s-{year}.jsonl`
+// or `<workspace-root>/_archive/{kind}s-{year}.jsonl`
 // (e.g. `tasks-2026.jsonl`, `bugs-2026.jsonl`).
 //
 // Each line is a self-contained archived statement. The format is JSONL so

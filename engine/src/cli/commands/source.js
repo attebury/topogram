@@ -1,6 +1,5 @@
 // @ts-check
 
-import fs from "node:fs";
 import path from "node:path";
 
 import { stableStringify } from "../../format.js";
@@ -18,6 +17,7 @@ import {
   localTemplatePackageStatus
 } from "./package.js";
 import { buildTemplateOwnedBaselineStatus } from "./template.js";
+import { resolveTopoRoot, resolveWorkspaceContext } from "../../workspace-paths.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -43,12 +43,7 @@ export function printSourceHelp() {
  * @returns {string}
  */
 function normalizeTopogramPath(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return absolute;
-  }
-  const candidate = path.join(absolute, "topogram");
-  return fs.existsSync(candidate) ? candidate : absolute;
+  return resolveTopoRoot(inputPath);
 }
 
 /**
@@ -56,11 +51,7 @@ function normalizeTopogramPath(inputPath) {
  * @returns {string}
  */
 export function normalizeProjectRoot(inputPath) {
-  const absolute = path.resolve(inputPath);
-  if (path.basename(absolute) === "topogram") {
-    return path.dirname(absolute);
-  }
-  return absolute;
+  return resolveWorkspaceContext(inputPath).projectRoot;
 }
 
 /**

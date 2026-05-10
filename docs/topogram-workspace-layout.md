@@ -28,7 +28,7 @@ Templates are copied by `topogram new`. Product starter templates live outside
 the engine in package repos such as `topogram-starters` and
 `topogram-template-todo`. The engine keeps only local template fixtures under
 `engine/tests/fixtures/templates/` for regression tests. Template packs use
-`topogram-template.json`, `topogram/`, `topogram.project.json`, and optional
+`topogram-template.json`, `topo/`, `topogram.project.json`, and optional
 trusted `implementation/` code. See `docs/template-authoring.md`.
 
 Use `topogram template list` for a quick stack/surface summary and
@@ -38,7 +38,7 @@ commands.
 ## Generated Workspace
 
 ```text
-my-topogram-app/topogram/
+my-topogram-app/topo/
 ```
 
 This is the editable Topogram model used for a generated app workflow.
@@ -49,7 +49,7 @@ my-topogram-app/topogram.project.json
 
 This project config declares the generated app output, API/web/database topology, ports, and generator bindings. New workspaces should prefer `topogram.project.json`; `topogram.implementation.json` is only a temporary compatibility adapter.
 
-From a generated project root, `topogram check` reads `./topogram` and reports the resolved topology. `topogram generate` regenerates the configured generated app output at `./app`.
+From a generated project root, `topogram check` reads `./topo` and reports the resolved topology. `topogram generate` regenerates the configured generated app output at `./app`.
 
 ## Generated Output
 
@@ -80,7 +80,7 @@ the slice they care about and feeds tools like `git blame` and
 `CODEOWNERS`:
 
 ```text
-topogram/
+topo/
   domains/
     dom-order-fulfillment.tg
     dom-billing.tg
@@ -106,7 +106,7 @@ the slicing explicit. See [Domains](./domains.md) for the full guide.
 ## Generated domain pages
 
 ```text
-topogram/docs-generated/domains/
+topo/docs-generated/domains/
   dom-order-fulfillment.md
   dom-billing.md
   ...
@@ -121,7 +121,7 @@ Phase 2 introduces six SDLC kinds (`pitch`, `requirement`,
 `acceptance_criterion`, `task`, `bug`, `document`). Recommended layout:
 
 ```text
-topogram/
+topo/
   pitches/{slug}.tg
   requirements/{slug}.tg
   acceptance_criteria/{slug}.tg

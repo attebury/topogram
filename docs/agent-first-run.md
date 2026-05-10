@@ -11,7 +11,7 @@ topogram agent brief
 topogram agent brief --json
 ```
 
-`topogram agent brief` defaults to `./topogram`. It validates the Topogram and
+`topogram agent brief` defaults to `./topo`. It validates the Topogram and
 project config, but it does not write files, generate apps, load generator
 adapters, or execute template implementation.
 
@@ -66,7 +66,7 @@ Do not refresh trust until `implementation/` has been reviewed.
 
 Safe default edits:
 
-- `topogram/**`
+- `topo/**`
 - `topogram.project.json`
 - policy files after review
 - `implementation/**` only after reviewing trust state
@@ -80,17 +80,17 @@ Small projects can keep the starter layout. Larger projects should organize
 source by convention:
 
 ```text
-topogram/domains/<domain>/
-topogram/shared/
-topogram/domains/<domain>/actors
-topogram/domains/<domain>/entities
-topogram/domains/<domain>/shapes
-topogram/domains/<domain>/capabilities
-topogram/domains/<domain>/rules
-topogram/domains/<domain>/workflows
-topogram/domains/<domain>/widgets
-topogram/domains/<domain>/projections
-topogram/domains/<domain>/verifications
+topo/domains/<domain>/
+topo/shared/
+topo/domains/<domain>/actors
+topo/domains/<domain>/entities
+topo/domains/<domain>/shapes
+topo/domains/<domain>/capabilities
+topo/domains/<domain>/rules
+topo/domains/<domain>/workflows
+topo/domains/<domain>/widgets
+topo/domains/<domain>/projections
+topo/domains/<domain>/verifications
 ```
 
 The parser still flattens statements into one graph. Folders are for humans and

@@ -205,7 +205,7 @@ export function runTrustDiffCommand(inputPath, options = {}) {
  * @returns {number}
  */
 export function runTrustCommand(context) {
-  const inputPath = context.inputPath || "./topogram";
+  const inputPath = context.inputPath || "./topo";
   if (context.commandArgs.trustCommand === "template") {
     return runTrustTemplateCommand(inputPath, { force: Boolean(context.commandArgs.force) });
   }

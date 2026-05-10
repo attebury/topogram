@@ -228,12 +228,12 @@ test("old generator manifest names fail with manifest rename examples", () => {
 test("documented widget command examples execute against the canonical fixture", () => {
   const docs = fs.readFileSync(path.join(repoRoot, "docs", "widgets.md"), "utf8");
   const documentedShapes = [
-    "topogram emit ui-widget-contract ./topogram --widget widget_data_grid",
-    "topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json",
-    "topogram widget check ./topogram --projection proj_web_surface",
-    "topogram widget behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json",
-    "topogram query widget-behavior ./topogram --projection proj_web_surface --widget widget_data_grid --json",
-    "topogram query slice ./topogram --widget widget_data_grid"
+    "topogram emit ui-widget-contract ./topo --widget widget_data_grid",
+    "topogram emit widget-conformance-report ./topo --projection proj_web_surface --json",
+    "topogram widget check ./topo --projection proj_web_surface",
+    "topogram widget behavior ./topo --projection proj_web_surface --widget widget_data_grid --json",
+    "topogram query widget-behavior ./topo --projection proj_web_surface --widget widget_data_grid --json",
+    "topogram query slice ./topo --widget widget_data_grid"
   ];
   for (const command of documentedShapes) {
     assert.equal(docs.includes(command), true, `docs/widgets.md should include ${command}`);

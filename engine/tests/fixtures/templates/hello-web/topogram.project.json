@@ -19,5 +19,6 @@
         "kind": "web_surface"
       }
     ]
-  }
+  },
+  "workspace": "./topo"
 }

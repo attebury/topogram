@@ -11,6 +11,7 @@ import {
   validateProjectConfig,
   validateProjectOutputOwnership
 } from "../../../project-config.js";
+import { resolveTopoRoot } from "../../../workspace-paths.js";
 import {
   buildTemplateUpdatePlan,
   createNewProject,
@@ -91,12 +92,12 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       step
     });
   }
-  if (message.includes("is missing topogram/")) {
+  if (message.includes("is missing topo/") || message.includes("is missing topogram/")) {
     return templateCheckDiagnostic({
       code: "template_topogram_missing",
       message,
-      path: localTemplatePath(templateSpec, "topogram"),
-      suggestedFix: "Add a topogram/ directory with the reusable Topogram source files.",
+      path: localTemplatePath(templateSpec, "topo"),
+      suggestedFix: "Add a topo/ directory with the reusable Topogram source files.",
       step
     });
   }
@@ -105,7 +106,7 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       code: "template_project_config_missing",
       message,
       path: localTemplatePath(templateSpec, "topogram.project.json"),
-      suggestedFix: "Add topogram.project.json beside topogram/ with outputs and topology.runtimes.",
+      suggestedFix: "Add topogram.project.json beside topo/ with outputs and topology.runtimes.",
       step
     });
   }
@@ -320,7 +321,7 @@ export function buildTemplateCheckPayload(templateSpec) {
     template: projectConfigInfo.config.template?.id || null
   }));
 
-  const ast = parsePath(path.join(projectRoot, "topogram"));
+  const ast = parsePath(resolveTopoRoot(projectRoot));
   const resolved = resolveWorkspace(ast);
   const projectValidation = combineProjectValidationResults(
     validateProjectConfig(projectConfigInfo.config, resolved.ok ? resolved.graph : null, { configDir: projectConfigInfo.configDir }),

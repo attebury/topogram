@@ -6,6 +6,7 @@ import path from "node:path";
 import { stableStringify } from "../../format.js";
 import { parsePath } from "../../parser.js";
 import { formatValidationErrors, validateWorkspace } from "../../validator.js";
+import { resolveTopoRoot } from "../../workspace-paths.js";
 import { runWorkflow } from "../../workflows.js";
 
 /**
@@ -13,7 +14,11 @@ import { runWorkflow } from "../../workflows.js";
  * @returns {number}
  */
 export function runValidateCommand(inputPath) {
-  const ast = parsePath(inputPath || ".");
+  const requestedPath = inputPath || ".";
+  const targetPath = fs.existsSync(requestedPath) && fs.statSync(requestedPath).isFile()
+    ? requestedPath
+    : resolveTopoRoot(requestedPath);
+  const ast = parsePath(targetPath);
   const result = validateWorkspace(ast);
   if (!result.ok) {
     console.error(formatValidationErrors(result));

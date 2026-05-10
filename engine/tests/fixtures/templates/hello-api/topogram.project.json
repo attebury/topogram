@@ -19,5 +19,6 @@
         "kind": "api_service"
       }
     ]
-  }
+  },
+  "workspace": "./topo"
 }

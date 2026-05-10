@@ -12,7 +12,7 @@
  * @param {string} [fallback]
  * @returns {string}
  */
-export function commandPath(args, index, fallback = "./topogram") {
+export function commandPath(args, index, fallback = "./topo") {
   const value = args[index];
   return value && !value.startsWith("-") ? value : fallback;
 }

@@ -28,7 +28,7 @@ function runCli(args, options = {}) {
 
 function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-review-"));
-  const topogramRoot = path.join(root, "topogram");
+  const topogramRoot = path.join(root, "topo");
   fs.cpSync(fixtureRoot, topogramRoot, { recursive: true });
   const implementationModule = path
     .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
@@ -51,7 +51,7 @@ function expectRefusedOutput(args, markerPath, options = {}) {
   assert.equal(fs.readFileSync(markerPath, "utf8"), "keep\n");
 }
 
-test("validate normalizes a demo root to its topogram child", () => {
+test("validate normalizes a demo root to its topo child", () => {
   const { root } = copyFixtureTopogram();
   fs.writeFileSync(path.join(root, "invalid-root.tg"), "this is not a topogram statement\n", "utf8");
 

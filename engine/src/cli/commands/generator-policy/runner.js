@@ -26,7 +26,7 @@ import {
  */
 export function runGeneratorPolicyCommand(context) {
   const { commandArgs, inputPath, json } = context;
-  const projectPath = inputPath || "./topogram";
+  const projectPath = inputPath || "./topo";
   if (commandArgs.generatorPolicyCommand === "init") {
     const payload = buildGeneratorPolicyInitPayload(projectPath);
     if (json) {

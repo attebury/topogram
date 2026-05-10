@@ -22,5 +22,5 @@ Configure the API base URL and optional auth token via scheme environment variab
 From `engine/`:
 
 ```bash
-topogram emit swiftui-app ./topogram --projection proj_ios_surface__swiftui --write --out-dir ./app/ios-swiftui
+topogram emit swiftui-app ./topo --projection proj_ios_surface__swiftui --write --out-dir ./app/ios-swiftui
 ```

@@ -28,6 +28,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram migrate workspace-folder [path] [--dry-run|--write] [--json]");
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
   console.log("   or: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
   console.log("   or: topogram import refresh [path] [--from <app-path>] [--dry-run] [--json]");
@@ -79,9 +80,9 @@ export function printUsage(options = {}) {
   console.log("  topogram agent brief --json");
   console.log("  topogram query list");
   console.log("  topogram query show widget-behavior");
-  console.log("  topogram query widget-behavior ./topogram --projection proj_web_surface --json");
+  console.log("  topogram query widget-behavior ./topo --projection proj_web_surface --json");
   console.log("  topogram emit ui-widget-contract --widget widget_data_grid --json");
-  console.log("  topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json");
+  console.log("  topogram emit widget-conformance-report ./topo --projection proj_web_surface --json");
   console.log("  topogram generator list");
   console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
@@ -136,7 +137,7 @@ export function printUsage(options = {}) {
   console.log("  topogram template update --check");
   console.log("  topogram template update --apply");
   console.log("");
-  console.log("Defaults: check/generate use ./topogram, and generate writes ./app.");
+  console.log("Defaults: check/generate use ./topo, and generate writes ./app.");
   console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help <command>` for command-specific help.");
@@ -231,13 +232,13 @@ export function printGenerateHelp() {
   console.log("Usage: topogram generate [path] [--out <path>]");
   console.log("   or: topogram generate app [path] [--out <path>]");
   console.log("");
-  console.log("Defaults: path is ./topogram and app generation writes ./app.");
+  console.log("Defaults: path is ./topo and app generation writes ./app.");
   console.log("Use `topogram emit <target>` for contracts, reports, snapshots, migration plans, and other artifacts.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram generate");
-  console.log("  topogram generate ./topogram --out ./app");
-  console.log("  topogram generate app ./topogram --out ./app");
+  console.log("  topogram generate ./topo --out ./app");
+  console.log("  topogram generate app ./topo --out ./app");
 }
 
 /**
@@ -249,7 +250,7 @@ export function printEmitHelp() {
   console.log("");
   console.log("Emits named contracts, reports, snapshots, migration plans, and other artifacts.");
   console.log("");
-  console.log("Defaults: path is ./topogram. Emit prints to stdout unless --write is passed. --write writes ./artifacts unless --out-dir is supplied.");
+  console.log("Defaults: path is ./topo. Emit prints to stdout unless --write is passed. --write writes ./artifacts unless --out-dir is supplied.");
   console.log("");
   console.log("Common artifact targets:");
   console.log("  ui-widget-contract");
@@ -268,10 +269,10 @@ export function printEmitHelp() {
   console.log("");
   console.log("Examples:");
   console.log("  topogram emit ui-widget-contract --widget widget_data_grid --json");
-  console.log("  topogram emit widget-conformance-report ./topogram --projection proj_web_surface --json");
-  console.log("  topogram emit widget-behavior-report ./topogram --projection proj_web_surface --json");
-  console.log("  topogram emit db-schema-snapshot ./topogram --projection proj_db_postgres --json");
-  console.log("  topogram emit sql-migration ./topogram --projection proj_db_postgres --from-snapshot ./state/current.json");
+  console.log("  topogram emit widget-conformance-report ./topo --projection proj_web_surface --json");
+  console.log("  topogram emit widget-behavior-report ./topo --projection proj_web_surface --json");
+  console.log("  topogram emit db-schema-snapshot ./topo --projection proj_db_postgres --json");
+  console.log("  topogram emit sql-migration ./topo --projection proj_db_postgres --from-snapshot ./state/current.json");
   console.log("  topogram emit ui-widget-contract --write --out-dir ./contracts");
 }
 
@@ -284,13 +285,13 @@ export function printWidgetHelp() {
   console.log("");
   console.log("Checks projection widget_bindings usage against reusable widget contracts and behavior realizations.");
   console.log("");
-  console.log("Defaults: path is ./topogram.");
+  console.log("Defaults: path is ./topo.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram widget check");
   console.log("  topogram widget check --projection proj_web_surface");
-  console.log("  topogram widget check ./topogram --widget widget_data_grid --json");
+  console.log("  topogram widget check ./topo --widget widget_data_grid --json");
   console.log("  topogram widget behavior");
   console.log("  topogram widget behavior --projection proj_web_surface");
-  console.log("  topogram widget behavior ./topogram --widget widget_data_grid --json");
+  console.log("  topogram widget behavior ./topo --widget widget_data_grid --json");
 }

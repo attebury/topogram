@@ -17,8 +17,8 @@ export function printImportHelp() {
   console.log("Creates an editable Topogram workspace from a brownfield app without modifying the app.");
   console.log("");
   console.log("Behavior:");
-  console.log("  - writes raw import candidates under topogram/candidates/app");
-  console.log("  - writes reconcile proposal bundles under topogram/candidates/reconcile");
+  console.log("  - writes raw import candidates under topo/candidates/app");
+  console.log("  - writes reconcile proposal bundles under topo/candidates/reconcile");
   console.log("  - writes topogram.project.json with maintained ownership and no generated stack binding");
   console.log(`  - writes ${TOPOGRAM_IMPORT_FILE} with source file hashes from import time`);
   console.log("  - imported Topogram artifacts are project-owned after creation");

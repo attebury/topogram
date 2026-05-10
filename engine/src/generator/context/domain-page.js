@@ -118,7 +118,7 @@ export function generateDomainPage(graph, options = {}) {
     version: 1,
     focus: { kind: "domain", id: domain.id },
     output: {
-      path: `topogram/docs-generated/domains/${domain.id}.md`,
+      path: `topo/docs-generated/domains/${domain.id}.md`,
       contents: lines.join("\n") + "\n"
     },
     summary

@@ -1,5 +1,5 @@
 export function canonicalWriteCandidatesFromWriteScope(writeScope) {
-  return (writeScope?.safe_to_edit || []).filter((entry) => entry === "topogram/**" || String(entry).startsWith("topogram/"));
+  return (writeScope?.safe_to_edit || []).filter((entry) => entry === "topo/**" || String(entry).startsWith("topo/"));
 }
 
 export function summarizeDiffArtifact(diffArtifact) {
@@ -91,7 +91,7 @@ export function componentBehaviorQueryCommand(target = {}) {
   if (target.target !== "widget-behavior-report") {
     return null;
   }
-  const parts = ["topogram", "query", "widget-behavior", "./topogram"];
+  const parts = ["topogram", "query", "widget-behavior", "./topo"];
   if (target.projection_id) {
     parts.push("--projection", target.projection_id);
   }
