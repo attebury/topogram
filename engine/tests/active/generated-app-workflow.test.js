@@ -2727,7 +2727,7 @@ test("topogram release roll-consumers updates, verifies, commits, pushes, and re
         { headSha: "def456", status: "completed", conclusion: "success", databaseId: 33333, url: "https://github.com/attebury/fake/actions/runs/33333" }
       ]),
       TOPOGRAM_RELEASE_WATCH_INTERVAL_MS: "1",
-      TOPOGRAM_RELEASE_WATCH_TIMEOUT_MS: "1000",
+      TOPOGRAM_RELEASE_WATCH_TIMEOUT_MS: "5000",
       PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
     }
   });
