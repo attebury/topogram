@@ -13,7 +13,7 @@ import {
 import { entityIdForRoute, screenIdForRoute, screenKindForRoute, uiCapabilityHintsForRoute } from "./ui-routes.js";
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @returns {any}
  */
 export function inferNextAppRoutes(rootDir) {
@@ -43,7 +43,7 @@ export function inferNextAppRoutes(rootDir) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function nextScreenKindForRoute(routePath) {
@@ -53,7 +53,7 @@ export function nextScreenKindForRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function nextScreenIdForRoute(routePath) {
@@ -66,7 +66,7 @@ export function nextScreenIdForRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function entityIdForNextRoute(routePath) {
@@ -77,7 +77,7 @@ export function entityIdForNextRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function conceptIdForNextRoute(routePath) {
@@ -90,7 +90,7 @@ export function conceptIdForNextRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function uiCapabilityHintsForNextRoute(routePath) {
@@ -107,7 +107,7 @@ export function uiCapabilityHintsForNextRoute(routePath) {
 }
 
 /**
- * @param {any} text
+ * @param {string} text
  * @returns {any}
  */
 export function inferRouteQueryParams(text) {
@@ -118,8 +118,8 @@ export function inferRouteQueryParams(text) {
 }
 
 /**
- * @param {any} routeArguments
- * @param {any} handlerContext
+ * @param {string} routeArguments
+ * @param {string} handlerContext
  * @returns {any}
  */
 export function inferRouteAuthHint(routeArguments, handlerContext) {
@@ -133,8 +133,8 @@ export function inferRouteAuthHint(routeArguments, handlerContext) {
 }
 
 /**
- * @param {any} text
- * @param {any} exportName
+ * @param {string} text
+ * @param {string} exportName
  * @returns {any}
  */
 export function extractNamedExportBlock(text, exportName) {
@@ -144,7 +144,7 @@ export function extractNamedExportBlock(text, exportName) {
 }
 
 /**
- * @param {any} text
+ * @param {string} text
  * @returns {any}
  */
 export function inferNextRequestSearchParams(text) {
@@ -156,7 +156,7 @@ export function inferNextRequestSearchParams(text) {
 }
 
 /**
- * @param {any} text
+ * @param {string} text
  * @returns {any}
  */
 export function inferNextJsonFields(text) {
@@ -170,8 +170,8 @@ export function inferNextJsonFields(text) {
 }
 
 /**
- * @param {any} text
- * @param {any} handlerName
+ * @param {string} text
+ * @param {string} handlerName
  * @returns {any}
  */
 export function extractHandlerContext(text, handlerName) {
@@ -189,8 +189,8 @@ export function extractHandlerContext(text, handlerName) {
 }
 
 /**
- * @param {any} appRoot
- * @param {any} filePath
+ * @param {string} appRoot
+ * @param {string} filePath
  * @returns {any}
  */
 export function nextAppRoutePathFromFile(appRoot, filePath) {
@@ -204,7 +204,7 @@ export function nextAppRoutePathFromFile(appRoot, filePath) {
 }
 
 /**
- * @param {any} text
+ * @param {string} text
  * @returns {any}
  */
 export function inferFormDataFields(text) {
@@ -216,7 +216,7 @@ export function inferFormDataFields(text) {
 }
 
 /**
- * @param {any} text
+ * @param {string} text
  * @returns {any}
  */
 export function inferInputNames(text) {
@@ -228,8 +228,8 @@ export function inferInputNames(text) {
 }
 
 /**
- * @param {any} workspaceRoot
- * @param {any} helpers
+ * @param {string} workspaceRoot
+ * @param {import("./types.d.ts").ImportReadHelpers} helpers
  * @returns {any}
  */
 export function inferNextApiRoutes(workspaceRoot, helpers = { readTextIfExists }) {
@@ -266,7 +266,7 @@ export function inferNextApiRoutes(workspaceRoot, helpers = { readTextIfExists }
 }
 
 /**
- * @param {any} record
+ * @param {import("./types.d.ts").ImportRouteRecord} record
  * @returns {any}
  */
 export function inferCapabilityEntityId(record) {
@@ -282,8 +282,8 @@ export function inferCapabilityEntityId(record) {
 }
 
 /**
- * @param {any} workspaceRoot
- * @param {any} helpers
+ * @param {string} workspaceRoot
+ * @param {import("./types.d.ts").ImportReadHelpers} helpers
  * @returns {any}
  */
 export function inferNextServerActionCapabilities(workspaceRoot, helpers = { readTextIfExists }) {
@@ -336,8 +336,8 @@ export function inferNextServerActionCapabilities(workspaceRoot, helpers = { rea
 }
 
 /**
- * @param {any} paths
- * @param {any} helpers
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {import("./types.d.ts").ImportReadHelpers} helpers
  * @returns {any}
  */
 export function inferNextAuthCapabilities(paths, helpers = { readTextIfExists }) {

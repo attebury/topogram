@@ -1,7 +1,7 @@
 import { canonicalCandidateTerm, idHintify, pluralizeCandidateTerm, slugify } from "./candidates.js";
 
 /**
- * @param {any} pathValue
+ * @param {string} pathValue
  * @returns {any}
  */
 export function normalizeOpenApiPath(pathValue) {
@@ -11,7 +11,7 @@ export function normalizeOpenApiPath(pathValue) {
 }
 
 /**
- * @param {any} pathValue
+ * @param {string} pathValue
  * @returns {any}
  */
 export function normalizeEndpointPathForMatch(pathValue) {
@@ -32,7 +32,7 @@ export function normalizeEndpointPathForMatch(pathValue) {
 }
 
 /**
- * @param {any} pathValue
+ * @param {string} pathValue
  * @returns {any}
  */
 export function nonParamEndpointSegments(pathValue) {
@@ -44,7 +44,7 @@ export function nonParamEndpointSegments(pathValue) {
 }
 
 /**
- * @param {any} pathValue
+ * @param {string} pathValue
  * @returns {any}
  */
 function trimmedApiSegments(pathValue) {
@@ -59,7 +59,7 @@ function trimmedApiSegments(pathValue) {
 }
 
 /**
- * @param {any} pathValue
+ * @param {string} pathValue
  * @param {any} options
  * @returns {any}
  */
@@ -181,7 +181,7 @@ export function inferApiCapabilityIdFromOperation(operation) {
 }
 
 /**
- * @param {any} route
+ * @param {import("./types.d.ts").ImportRouteRecord} route
  * @returns {any}
  */
 export function inferRouteCapabilityId(route) {
@@ -205,7 +205,7 @@ export function inferRouteCapabilityId(route) {
 }
 
 /**
- * @param {any} record
+ * @param {import("./types.d.ts").ImportRouteRecord} record
  * @returns {any}
  */
 export function inferCapabilityEntityId(record) {

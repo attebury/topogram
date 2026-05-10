@@ -2,7 +2,7 @@ import { generateApiContractGraph } from "./contracts.js";
 import { cloneSchema, generateShapeJsonSchema, indexStatements } from "./schema.js";
 
 /**
- * @param {any} shapeId
+ * @param {string} shapeId
  * @param {any} suffix
  * @returns {any}
  */
@@ -34,7 +34,7 @@ export function refSchema(name) {
 }
 
 /**
- * @param {any} field
+ * @param {import("./types.d.ts").ApiField} field
  * @param {any} location
  * @returns {any}
  */
@@ -48,7 +48,7 @@ export function openApiParameter(field, location) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @returns {any}
  */
 export function requestBodySchema(contract) {
@@ -70,7 +70,7 @@ export function requestBodySchema(contract) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @param {any} componentNames
  * @returns {any}
  */
@@ -93,7 +93,7 @@ export function responseSchemaForContract(contract, componentNames) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @returns {any}
  */
 export function successHeadersForContract(contract) {
@@ -112,7 +112,7 @@ export function successHeadersForContract(contract) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @returns {any}
  */
 export function asyncLinksForContract(contract) {
@@ -129,7 +129,7 @@ export function asyncLinksForContract(contract) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @returns {any}
  */
 export function statusLinksForContract(contract) {
@@ -146,7 +146,7 @@ export function statusLinksForContract(contract) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @returns {any}
  */
 export function authorizationExtension(contract) {
@@ -162,7 +162,7 @@ export function authorizationExtension(contract) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @param {any} callback
  * @returns {any}
  */
@@ -191,7 +191,7 @@ export function callbackRequestBodySchema(callback, componentNames) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @param {any} componentNames
  * @returns {any}
  */
@@ -221,7 +221,7 @@ export function callbacksObjectForContract(contract, componentNames) {
 }
 
 /**
- * @param {any} contract
+ * @param {import("./types.d.ts").ApiContract} contract
  * @param {any} componentNames
  * @returns {any}
  */
@@ -247,9 +247,9 @@ export function operationFromContract(contract, componentNames) {
 
   const requestFields = contract.requestContract?.transport || { path: [], query: [], header: [], body: [] };
   const parameters = [
-    ...requestFields.path.map(/** @param {any} field */ (field) => openApiParameter(field, "path")),
-    ...requestFields.query.map(/** @param {any} field */ (field) => openApiParameter(field, "query")),
-    ...requestFields.header.map(/** @param {any} field */ (field) => openApiParameter(field, "header")),
+    ...requestFields.path.map(/** @param {import("./types.d.ts").ApiField} field */ (field) => openApiParameter(field, "path")),
+    ...requestFields.query.map(/** @param {import("./types.d.ts").ApiField} field */ (field) => openApiParameter(field, "query")),
+    ...requestFields.header.map(/** @param {import("./types.d.ts").ApiField} field */ (field) => openApiParameter(field, "header")),
     ...(contract.endpoint.preconditions || []).map(/** @param {any} precondition */ (precondition) => ({
       name: precondition.header,
       in: "header",
@@ -279,7 +279,7 @@ export function operationFromContract(contract, componentNames) {
   if (requestFields.body.length > 0 && contract.requestContract) {
     const requestSchemaName = componentNames.request.get(contract.capability.id);
     operation.requestBody = {
-      required: requestFields.body.some(/** @param {any} field */ (field) => field.required),
+      required: requestFields.body.some(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.required),
       content: {
         "application/json": {
           schema: requestSchemaName ? refSchema(requestSchemaName) : { type: "object" }
@@ -394,8 +394,8 @@ export function groupedErrorsByStatus(errors) {
 }
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiOptions} options
  * @returns {any}
  */
 export function generateOpenApi(graph, options = {}) {
@@ -547,7 +547,7 @@ export function generateOpenApi(graph, options = {}) {
     document.paths[pathKey][contract.endpoint.method.toLowerCase()] = operationFromContract(contract, componentNames);
   }
 
-  const needsSecurity = contracts.some(/** @param {any} contract */ (contract) => contract.endpoint.auth && contract.endpoint.auth !== "none");
+  const needsSecurity = contracts.some(/** @param {import("./types.d.ts").ApiContract} contract */ (contract) => contract.endpoint.auth && contract.endpoint.auth !== "none");
   if (!needsSecurity) {
     delete document.components.securitySchemes;
     if (Object.keys(document.components.schemas || {}).length === 0) delete document.components.schemas;

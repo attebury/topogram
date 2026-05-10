@@ -6,7 +6,7 @@ import { canonicalCandidateTerm } from "./candidates.js";
 import { listFilesRecursive, readTextIfExists } from "./files.js";
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function routeSegments(routePath) {
@@ -17,7 +17,7 @@ export function routeSegments(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function screenKindForRoute(routePath) {
@@ -30,7 +30,7 @@ export function screenKindForRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function screenIdForRoute(routePath) {
@@ -44,7 +44,7 @@ export function screenIdForRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function uiCapabilityHintsForRoute(routePath) {
@@ -64,7 +64,7 @@ export function uiCapabilityHintsForRoute(routePath) {
 }
 
 /**
- * @param {any} routePath
+ * @param {string} routePath
  * @returns {any}
  */
 export function entityIdForRoute(routePath) {
@@ -73,7 +73,7 @@ export function entityIdForRoute(routePath) {
 }
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @returns {any}
  */
 export function inferReactRoutes(rootDir) {
@@ -87,7 +87,7 @@ export function inferReactRoutes(rootDir) {
 }
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @returns {any}
  */
 export function inferSvelteRoutes(rootDir) {
@@ -106,7 +106,7 @@ export function inferSvelteRoutes(rootDir) {
 }
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @param {any} options
  * @returns {any}
  */
@@ -160,7 +160,7 @@ export function inferNavigationStructure(rootDir, options = {}) {
 }
 
 /**
- * @param {any} navigation
+ * @param {import("./types.d.ts").NavigationStructure} navigation
  * @returns {any}
  */
 export function shellKindFromNavigation(navigation) {
@@ -173,7 +173,7 @@ export function shellKindFromNavigation(navigation) {
 }
 
 /**
- * @param {any} navigation
+ * @param {import("./types.d.ts").NavigationStructure} navigation
  * @returns {any}
  */
 export function navigationPatternsFromStructure(navigation) {
@@ -190,7 +190,7 @@ export function navigationPatternsFromStructure(navigation) {
 }
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @returns {any}
  */
 export function detectUiPresentationFeatures(rootDir) {

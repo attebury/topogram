@@ -1,7 +1,7 @@
 export const JSON_SCHEMA_DRAFT = "https://json-schema.org/draft/2020-12/schema";
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ApiGraph} graph
  * @returns {any}
  */
 export function indexStatements(graph) {
@@ -44,7 +44,7 @@ export function scalarSchema(typeName, byId) {
 
 /**
  * @param {any} value
- * @param {any} schema
+ * @param {import("./types.d.ts").JsonSchema} schema
  * @returns {any}
  */
 export function coerceDefaultValue(value, schema) {
@@ -71,7 +71,7 @@ export function coerceDefaultValue(value, schema) {
 }
 
 /**
- * @param {any} field
+ * @param {import("./types.d.ts").ApiField} field
  * @param {any} byId
  * @returns {any}
  */
@@ -82,7 +82,7 @@ export function schemaForField(field, byId) {
 }
 
 /**
- * @param {any} shape
+ * @param {import("./types.d.ts").ApiShape} shape
  * @param {any} byId
  * @returns {any}
  */

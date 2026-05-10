@@ -3,8 +3,8 @@ import { apiMetadataForCapability } from "./metadata.js";
 import { cloneSchema, generateShapeJsonSchema, indexStatements, schemaForField } from "./schema.js";
 
 /**
- * @param {any} graph
- * @param {any} capabilityId
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {string} capabilityId
  * @returns {any}
  */
 export function getCapability(graph, capabilityId) {
@@ -17,8 +17,8 @@ export function getCapability(graph, capabilityId) {
 }
 
 /**
- * @param {any} contract
- * @param {any} apiMetadata
+ * @param {import("./types.d.ts").ApiContract} contract
+ * @param {import("./types.d.ts").ApiMetadata} apiMetadata
  * @param {any} direction
  * @returns {any}
  */
@@ -34,7 +34,7 @@ export function fieldTransportBindings(contract, apiMetadata, direction) {
     inferredBindings.set(apiMetadata.response.limit.field, { location: "query", wireName: "limit" });
   }
 
-  return contract.fields.map(/** @param {any} field */ (field) => {
+  return contract.fields.map(/** @param {import("./types.d.ts").ApiField} field */ (field) => {
     const binding = byField.get(field.name) || byField.get(field.sourceName) || inferredBindings.get(field.name);
     return {
       ...field,
@@ -47,20 +47,20 @@ export function fieldTransportBindings(contract, apiMetadata, direction) {
 }
 
 /**
- * @param {any} fields
+ * @param {import("./types.d.ts").ApiField[]} fields
  * @returns {any}
  */
 export function splitFieldsByLocation(fields) {
   return {
-    path: fields.filter(/** @param {any} field */ (field) => field.transport.location === "path"),
-    query: fields.filter(/** @param {any} field */ (field) => field.transport.location === "query"),
-    header: fields.filter(/** @param {any} field */ (field) => field.transport.location === "header"),
-    body: fields.filter(/** @param {any} field */ (field) => field.transport.location === "body")
+    path: fields.filter(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.transport.location === "path"),
+    query: fields.filter(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.transport.location === "query"),
+    header: fields.filter(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.transport.location === "header"),
+    body: fields.filter(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.transport.location === "body")
   };
 }
 
 /**
- * @param {any} field
+ * @param {import("./types.d.ts").ApiField} field
  * @param {any} byId
  * @returns {any}
  */
@@ -74,13 +74,13 @@ export function fieldContract(field, byId) {
 }
 
 /**
- * @param {any} shape
+ * @param {import("./types.d.ts").ApiShape} shape
  * @param {any} byId
  * @param {any} direction
  * @returns {any}
  */
 export function contractFromShape(shape, byId, direction) {
-  const fields = (shape.projectedFields || shape.fields || []).map(/** @param {any} field */ (field) => fieldContract(field, byId));
+  const fields = (shape.projectedFields || shape.fields || []).map(/** @param {import("./types.d.ts").ApiField} field */ (field) => fieldContract(field, byId));
   return {
     type: direction === "request" ? "api_request_contract" : "api_response_contract",
     shape: {
@@ -88,14 +88,14 @@ export function contractFromShape(shape, byId, direction) {
       name: shape.name || shape.id
     },
     fields,
-    required: fields.filter(/** @param {any} field */ (field) => field.required).map(/** @param {any} field */ (field) => field.name),
+    required: fields.filter(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.required).map(/** @param {import("./types.d.ts").ApiField} field */ (field) => field.name),
     jsonSchema: generateShapeJsonSchema(shape, byId)
   };
 }
 
 /**
- * @param {any} capability
- * @param {any} apiMetadata
+ * @param {import("./types.d.ts").ApiCapability} capability
+ * @param {import("./types.d.ts").ApiMetadata} apiMetadata
  * @returns {any}
  */
 export function isCollectionCapability(capability, apiMetadata) {
@@ -106,8 +106,8 @@ export function isCollectionCapability(capability, apiMetadata) {
 }
 
 /**
- * @param {any} graph
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @returns {any}
  */
 export function policyConstraintsForCapability(graph, capability) {
@@ -127,9 +127,9 @@ export function policyConstraintsForCapability(graph, capability) {
 }
 
 /**
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @param {any} policyConstraints
- * @param {any} apiMetadata
+ * @param {import("./types.d.ts").ApiMetadata} apiMetadata
  * @returns {any}
  */
 export function apiErrorCasesForCapability(capability, policyConstraints, apiMetadata) {
@@ -202,10 +202,10 @@ export function apiErrorCasesForCapability(capability, policyConstraints, apiMet
 }
 
 /**
- * @param {any} shape
+ * @param {import("./types.d.ts").ApiShape} shape
  * @param {any} byId
- * @param {any} capability
- * @param {any} apiMetadata
+ * @param {import("./types.d.ts").ApiCapability} capability
+ * @param {import("./types.d.ts").ApiMetadata} apiMetadata
  * @returns {any}
  */
 export function responseContractForCapability(shape, byId, capability, apiMetadata) {
@@ -282,8 +282,8 @@ export function responseContractForCapability(shape, byId, capability, apiMetada
 }
 
 /**
- * @param {any} graph
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @param {any} byId
  * @returns {any}
  */
@@ -342,8 +342,8 @@ export function buildApiContractForCapability(graph, capability, byId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiOptions} options
  * @returns {any}
  */
 export function generateApiContractGraph(graph, options = {}) {
@@ -362,8 +362,8 @@ export function generateApiContractGraph(graph, options = {}) {
 }
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiOptions} options
  * @returns {any}
  */
 export function generateApiContractDebug(graph, options = {}) {

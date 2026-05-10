@@ -15,22 +15,22 @@ import {
 } from "./projection-context.js";
 
 /**
- * @param {any} graph
- * @param {any} projection
- * @returns {any}
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetProjection} projection
+ * @returns {import("./types.d.ts").WidgetUsageEntry[]}
  */
 export function projectionUsageEntries(graph, projection) {
   const sharedProjection = sharedUiProjectionForWeb(graph, projection);
-  const entries = /** @type {any[]} */ ([]);
+  const entries = /** @type {import("./types.d.ts").WidgetUsageEntry[]} */ ([]);
   if (sharedProjection) {
-    entries.push(...(sharedProjection.widgetBindings || []).map(/** @param {any} usage @param {any} index */ (usage, index) => ({
+    entries.push(...(sharedProjection.widgetBindings || []).map(/** @param {import("./types.d.ts").WidgetUsage} usage @param {any} index */ (usage, index) => ({
       projection,
       sourceProjection: sharedProjection,
       usage,
       index
     })));
   }
-  entries.push(...(projection.widgetBindings || []).map(/** @param {any} usage @param {any} index */ (usage, index) => ({
+  entries.push(...(projection.widgetBindings || []).map(/** @param {import("./types.d.ts").WidgetUsage} usage @param {any} index */ (usage, index) => ({
     projection,
     sourceProjection: projection,
     usage,
@@ -40,16 +40,16 @@ export function projectionUsageEntries(graph, projection) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projectionId
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {string | null | undefined} projectionId
  * @returns {any}
  */
 export function candidateProjections(graph, projectionId) {
   if (projectionId) {
     return [getProjection(graph, projectionId)];
   }
-  const direct = uiProjectionCandidates(graph).filter(/** @param {any} projection */ (projection) => (projection.widgetBindings || []).length > 0);
-  const inherited = (graph.byKind.projection || []).filter(/** @param {any} projection */ (projection) => {
+  const direct = uiProjectionCandidates(graph).filter(/** @param {import("./types.d.ts").WidgetProjection} projection */ (projection) => (projection.widgetBindings || []).length > 0);
+  const inherited = (graph.byKind.projection || []).filter(/** @param {import("./types.d.ts").WidgetProjection} projection */ (projection) => {
     if ((projection.widgetBindings || []).length > 0) return false;
     return Boolean(sharedUiProjectionForWeb(graph, projection)?.widgetBindings?.length);
   });
@@ -57,9 +57,9 @@ export function candidateProjections(graph, projectionId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} widgetIds
- * @param {any} projectionIds
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {Iterable<string>} widgetIds
+ * @param {Iterable<string>} projectionIds
  * @returns {any}
  */
 export function relatedVerificationFiles(graph, widgetIds, projectionIds) {
@@ -70,8 +70,8 @@ export function relatedVerificationFiles(graph, widgetIds, projectionIds) {
 }
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetOptions} options
  * @returns {any}
  */
 export function generateWidgetConformanceReport(graph, options = {}) {
@@ -81,7 +81,7 @@ export function generateWidgetConformanceReport(graph, options = {}) {
     throw new Error(`No widget found with id '${selectedWidgetId}'`);
   }
 
-  const projectionUsageRecords = /** @type {any[]} */ ([]);
+  const projectionUsageRecords = /** @type {import("./types.d.ts").WidgetProjectionUsageRecord[]} */ ([]);
   const checks = /** @type {any[]} */ ([]);
   const referencedWidgetIds = /** @type {Set<string>} */ (new Set());
   const affectedProjectionIds = /** @type {Set<string>} */ (new Set());
@@ -125,7 +125,7 @@ export function generateWidgetConformanceReport(graph, options = {}) {
 
   const widgetFiles = stableUnique([...referencedWidgetIds].map(/** @param {any} id */ (id) => sourcePath(widgets.get(id))));
   const projectionFiles = stableUnique(
-    [...affectedProjectionIds].map(/** @param {any} id */ (id) => sourcePath((graph.byKind.projection || []).find(/** @param {any} projection */ (projection) => projection.id === id)))
+    [...affectedProjectionIds].map(/** @param {any} id */ (id) => sourcePath((graph.byKind.projection || []).find(/** @param {import("./types.d.ts").WidgetProjection} projection */ (projection) => projection.id === id)))
   );
   const verificationFiles = relatedVerificationFiles(graph, referencedWidgetIds, affectedProjectionIds);
   const errors = checks.filter(/** @param {any} check */ (check) => check.severity === "error");
@@ -139,9 +139,9 @@ export function generateWidgetConformanceReport(graph, options = {}) {
     },
     summary: {
       total_usages: projectionUsageRecords.length,
-      passed_usages: projectionUsageRecords.filter(/** @param {any} usage */ (usage) => usage.outcome === "pass").length,
-      warning_usages: projectionUsageRecords.filter(/** @param {any} usage */ (usage) => usage.outcome === "warning").length,
-      error_usages: projectionUsageRecords.filter(/** @param {any} usage */ (usage) => usage.outcome === "error").length,
+      passed_usages: projectionUsageRecords.filter(/** @param {import("./types.d.ts").WidgetProjectionUsageRecord} usage */ (usage) => usage.outcome === "pass").length,
+      warning_usages: projectionUsageRecords.filter(/** @param {import("./types.d.ts").WidgetProjectionUsageRecord} usage */ (usage) => usage.outcome === "warning").length,
+      error_usages: projectionUsageRecords.filter(/** @param {import("./types.d.ts").WidgetProjectionUsageRecord} usage */ (usage) => usage.outcome === "error").length,
       warnings: warnings.length,
       errors: errors.length,
       affected_projections: stableUnique([...affectedProjectionIds]),

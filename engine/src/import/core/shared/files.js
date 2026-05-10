@@ -16,7 +16,7 @@ export const DEFAULT_IGNORED_DIRS = new Set([
 ]);
 
 /**
- * @param {any} filePath
+ * @param {string} filePath
  * @returns {any}
  */
 export function readTextIfExists(filePath) {
@@ -24,7 +24,7 @@ export function readTextIfExists(filePath) {
 }
 
 /**
- * @param {any} filePath
+ * @param {string} filePath
  * @returns {any}
  */
 export function readJsonIfExists(filePath) {
@@ -35,7 +35,7 @@ export function readJsonIfExists(filePath) {
 }
 
 /**
- * @param {any} rootDir
+ * @param {string} rootDir
  * @param {(filePath: any) => boolean} predicate
  * @param {any} options
  * @returns {any[]}
@@ -66,7 +66,7 @@ export function listFilesRecursive(rootDir, predicate = () => true, options = {}
 }
 
 /**
- * @param {any} paths
+ * @param {import("./types.d.ts").ImportPaths} paths
  * @returns {any}
  */
 export function importSearchRoots(paths) {
@@ -74,8 +74,8 @@ export function importSearchRoots(paths) {
 }
 
 /**
- * @param {any} paths
- * @param {any} filePath
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {string} filePath
  * @returns {any}
  */
 export function normalizeImportRelativePath(paths, filePath) {
@@ -83,8 +83,8 @@ export function normalizeImportRelativePath(paths, filePath) {
 }
 
 /**
- * @param {any} paths
- * @param {any} filePath
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {string} filePath
  * @param {any} kind
  * @returns {any}
  */
@@ -134,7 +134,7 @@ export function canonicalSourceRank(paths, filePath, kind) {
 }
 
 /**
- * @param {any} paths
+ * @param {import("./types.d.ts").ImportPaths} paths
  * @param {any} files
  * @param {any} kind
  * @returns {any}
@@ -143,7 +143,7 @@ export function selectPreferredImportFiles(paths, files, kind) {
   if (files.length === 0) {
     return [];
   }
-  const rankedFiles = files.map(/** @param {any} filePath */ (filePath) => ({
+  const rankedFiles = files.map(/** @param {string} filePath */ (filePath) => ({
     filePath,
     rank: canonicalSourceRank(paths, filePath, kind)
   }));
@@ -155,7 +155,7 @@ export function selectPreferredImportFiles(paths, files, kind) {
 }
 
 /**
- * @param {any} paths
+ * @param {import("./types.d.ts").ImportPaths} paths
  * @param {any} predicate
  * @returns {any}
  */

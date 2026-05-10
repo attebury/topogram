@@ -17,7 +17,7 @@ export {
 };
 
 /**
- * @param {any} arg1
+ * @param {import("./types.d.ts").ImportCandidateRecord} arg1
  * @returns {any}
  */
 export function makeCandidateRecord(arg1) {
@@ -55,7 +55,7 @@ export function makeCandidateRecord(arg1) {
 }
 
 /**
- * @param {any} records
+ * @param {import("./types.d.ts").ImportCandidateRecord[]} records
  * @param {any} keyFn
  * @returns {any}
  */

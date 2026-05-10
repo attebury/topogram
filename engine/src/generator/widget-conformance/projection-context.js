@@ -27,7 +27,7 @@ export function sourcePath(entry) {
 }
 
 /**
- * @param {any} widget
+ * @param {import("./types.d.ts").WidgetStatement} widget
  * @returns {any}
  */
 export function widgetContract(widget) {
@@ -35,7 +35,7 @@ export function widgetContract(widget) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function summarizeProjection(projection) {
@@ -51,7 +51,7 @@ export function summarizeProjection(projection) {
 }
 
 /**
- * @param {any} widget
+ * @param {import("./types.d.ts").WidgetStatement} widget
  * @returns {any}
  */
 export function summarizeWidget(widget) {
@@ -68,7 +68,7 @@ export function summarizeWidget(widget) {
 }
 
 /**
- * @param {any} widget
+ * @param {import("./types.d.ts").WidgetStatement} widget
  * @returns {any}
  */
 export function summarizeWidgetContract(widget) {
@@ -91,7 +91,7 @@ export function summarizeWidgetContract(widget) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function projectionRealizesIds(projection) {
@@ -99,7 +99,7 @@ export function projectionRealizesIds(projection) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function ownProjectionScreenMap(projection) {
@@ -107,7 +107,7 @@ export function ownProjectionScreenMap(projection) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function ownProjectionRegionKeys(projection) {
@@ -115,7 +115,7 @@ export function ownProjectionRegionKeys(projection) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").WidgetGraph} graph
  * @returns {any}
  */
 export function projectionById(graph) {
@@ -123,8 +123,8 @@ export function projectionById(graph) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function projectionContext(graph, projection) {
@@ -155,8 +155,8 @@ export function projectionContext(graph, projection) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function projectionScreenMap(graph, projection) {
@@ -170,8 +170,8 @@ export function projectionScreenMap(graph, projection) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function projectionRegionKeys(graph, projection) {
@@ -185,8 +185,8 @@ export function projectionRegionKeys(graph, projection) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetProjection} projection
  * @returns {any}
  */
 export function projectionContextRealizesIds(graph, projection) {

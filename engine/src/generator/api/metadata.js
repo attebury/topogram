@@ -7,7 +7,7 @@ export function routeSegmentFromCapabilityId(id) {
 }
 
 /**
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @returns {any}
  */
 export function methodFromCapability(capability) {
@@ -18,7 +18,7 @@ export function methodFromCapability(capability) {
 }
 
 /**
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @returns {any}
  */
 export function pathFromCapability(capability) {
@@ -80,8 +80,8 @@ export function normalizeResponseMetadata(responseEntry) {
 }
 
 /**
- * @param {any} graph
- * @param {any} capability
+ * @param {import("./types.d.ts").ApiGraph} graph
+ * @param {import("./types.d.ts").ApiCapability} capability
  * @returns {any}
  */
 export function apiMetadataForCapability(graph, capability) {

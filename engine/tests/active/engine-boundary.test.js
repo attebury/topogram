@@ -857,6 +857,30 @@ test("generator api implementation modules stay focused and type checked", () =>
   });
 });
 
+test("generator api modules use local structural typedefs for API graph contracts", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} graph",
+    "@param {any} capability",
+    "@param {any} contract",
+    "@param {any} apiMetadata",
+    "@param {any} shape",
+    "@param {any} field",
+    "@param {any} fields"
+  ];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "api")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("import core shared entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "import", "core", "shared.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
@@ -879,6 +903,30 @@ test("import core shared implementation modules stay focused and type checked", 
     root: path.join(repoRoot, "engine", "src", "import", "core", "shared"),
     entrypointImport: "../shared.js"
   });
+});
+
+test("import core shared modules use local structural typedefs for import concepts", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} paths",
+    "@param {any} route",
+    "@param {any} record",
+    "@param {any} routePath",
+    "@param {any} rootDir",
+    "@param {any} workspaceRoot",
+    "@param {any} navigation"
+  ];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "import", "core", "shared")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
 });
 
 test("context slice entrypoint stays an export surface after split", () => {
@@ -927,6 +975,31 @@ test("widget conformance implementation modules stay focused and type checked", 
     root: path.join(repoRoot, "engine", "src", "generator", "widget-conformance"),
     entrypointImport: "../widget-conformance.js"
   });
+});
+
+test("widget conformance modules use local structural typedefs for widget concepts", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} graph",
+    "@param {any} projection",
+    "@param {any} widget",
+    "@param {any} usage",
+    "@param {any} sourceProjection",
+    "@param {any} behavior",
+    "@param {any} conformanceReport",
+    "@param {any} behaviorRows"
+  ];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "widget-conformance")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
 });
 
 test("workflow entrypoint stays dispatch-only after workflow split", () => {

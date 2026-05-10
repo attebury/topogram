@@ -4,8 +4,8 @@ import { stableUnique } from "./projection-context.js";
 import { generateWidgetConformanceReport } from "./report.js";
 
 /**
- * @param {any} usage
- * @param {any} behavior
+ * @param {import("./types.d.ts").WidgetUsageReport} usage
+ * @param {import("./types.d.ts").WidgetBehavior} behavior
  * @param {any} index
  * @returns {any}
  */
@@ -14,7 +14,7 @@ export function behaviorReportKey(usage, behavior, index) {
 }
 
 /**
- * @param {any} behavior
+ * @param {import("./types.d.ts").WidgetBehavior} behavior
  * @returns {any}
  */
 export function capabilityIdsFromBehavior(behavior) {
@@ -43,7 +43,7 @@ export function capabilityIdsFromBehavior(behavior) {
 }
 
 /**
- * @param {any} behavior
+ * @param {import("./types.d.ts").WidgetBehavior} behavior
  * @returns {any}
  */
 export function effectTypesFromBehavior(behavior) {
@@ -55,9 +55,9 @@ export function effectTypesFromBehavior(behavior) {
 }
 
 /**
- * @param {any} conformanceReport
- * @param {any} usage
- * @param {any} behavior
+ * @param {import("./types.d.ts").WidgetConformanceReport} conformanceReport
+ * @param {import("./types.d.ts").WidgetUsageReport} usage
+ * @param {import("./types.d.ts").WidgetBehavior} behavior
  * @returns {any}
  */
 export function checksForBehavior(conformanceReport, usage, behavior) {
@@ -81,7 +81,7 @@ export function checksForBehavior(conformanceReport, usage, behavior) {
 }
 
 /**
- * @param {any} behaviorRows
+ * @param {import("./types.d.ts").WidgetUsageReport[]} behaviorRows
  * @returns {any}
  */
 export function behaviorHighlights(behaviorRows) {
@@ -169,8 +169,8 @@ export function groupBehaviorRows(rows, keyFn, itemFn = null) {
 }
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("./types.d.ts").WidgetGraph} graph
+ * @param {import("./types.d.ts").WidgetOptions} options
  * @returns {any}
  */
 export function generateWidgetBehaviorReport(graph, options = {}) {

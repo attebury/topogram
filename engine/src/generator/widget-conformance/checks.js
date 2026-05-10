@@ -43,9 +43,9 @@ export function checkRecord(arg1) {
 }
 
 /**
- * @param {any} projection
- * @param {any} sourceProjection
- * @param {any} usage
+ * @param {import("./types.d.ts").WidgetProjection} projection
+ * @param {import("./types.d.ts").WidgetProjection} sourceProjection
+ * @param {import("./types.d.ts").WidgetUsage} usage
  * @param {any} index
  * @returns {any}
  */
