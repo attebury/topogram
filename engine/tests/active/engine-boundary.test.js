@@ -560,21 +560,6 @@ test("split CLI command families stay out of the binary shim", () => {
     "function printBrownfieldImportStatus(",
     "function buildBrownfieldImportHistoryPayload(",
     "function printBrownfieldImportHistory(",
-    "function printCatalogHelp(",
-    "function buildCatalogListPayload(",
-    "function printCatalogList(",
-    "function buildCatalogShowPayload(",
-    "function catalogShowCommands(",
-    "function printCatalogShow(",
-    "function runCatalogCommand(",
-    "function buildCatalogDoctorPayload(",
-    "function runNpmViewPackageSpec(",
-    "function catalogDoctorPackageDiagnostic(",
-    "function printCatalogDoctor(",
-    "function buildCatalogCheckPayload(",
-    "function printCatalogCheck(",
-    "function buildCatalogCopyPayload(",
-    "function printCatalogCopy(",
     "function printPackageHelp(",
     "function buildPackageUpdateCliPayload(",
     "function printPackageUpdateCli(",
@@ -777,6 +762,32 @@ test("package command entrypoint stays an export surface after split", () => {
   assert.equal(lines.length <= 60, true);
   assert.deepEqual(offenders, []);
   assert.match(contents, /from "\.\/package\//);
+});
+
+test("catalog command entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "catalog.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "loadCatalog",
+    "checkCatalogSource",
+    "copyCatalogTopogramEntry",
+    "runNpmViewPackageSpec("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 60, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/catalog\//);
+});
+
+test("catalog command implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "cli", "commands", "catalog"),
+    entrypointImport: "../catalog.js"
+  });
 });
 
 test("package command implementation modules stay focused and type checked", () => {
