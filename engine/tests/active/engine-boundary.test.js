@@ -816,12 +816,72 @@ test("context shared helpers use structural typedefs for core graph shapes", () 
     "@param {any} statement",
     "@param {any} doc",
     "@param {any} reference",
+    "@param {any} projection",
+    "@param {any} capability",
+    "@param {any} entity",
+    "@param {any} shape",
+    "@param {any} widget",
+    "@param {any} options",
+    "@param {any} targetIds",
     "@param {any} verificationTargets",
     "@param {any} seam",
     "@param {any} output"
   ];
 
   for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "context", "shared")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("context slice modules use structural typedefs for graph and selected surfaces", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} graph",
+    "@param {any} projection",
+    "@param {any} widget",
+    "@param {any} capabilityId",
+    "@param {any} workflowId",
+    "@param {any} projectionId",
+    "@param {any} entityId",
+    "@param {any} widgetId",
+    "@param {any} journeyId",
+    "@param {any} domainId",
+    "@param {any} taskId",
+    "@param {any} options"
+  ];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "context", "slice")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("reconcile surface helpers use workflow typedefs for import and projection surfaces", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} importedEntity",
+    "@param {any} graphEntity",
+    "@param {any} projectionIndex"
+  ];
+  const files = [
+    path.join(repoRoot, "engine", "src", "workflows", "reconcile", "canonical-surface.js"),
+    path.join(repoRoot, "engine", "src", "workflows", "reconcile", "impacts.js")
+  ];
+
+  for (const file of files) {
     const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
     const contents = fs.readFileSync(file, "utf8");
     const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));

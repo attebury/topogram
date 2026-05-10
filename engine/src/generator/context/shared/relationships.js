@@ -19,7 +19,7 @@ export function buildIndexes(graph) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} predicate
+ * @param {(doc: import("./types.d.ts").ContextDoc) => boolean} predicate
  * @returns {any}
  */
 export function relatedDocs(graph, predicate) {
@@ -28,7 +28,7 @@ export function relatedDocs(graph, predicate) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} predicate
+ * @param {(id: string) => boolean} predicate
  * @returns {any}
  */
 export function verificationsFor(graph, predicate) {
@@ -41,7 +41,7 @@ export function verificationsFor(graph, predicate) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} capabilityId
+ * @param {string} capabilityId
  * @returns {any}
  */
 export function relatedJourneysForCapability(graph, capabilityId) {
@@ -53,7 +53,7 @@ export function relatedJourneysForCapability(graph, capabilityId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} capabilityId
+ * @param {string} capabilityId
  * @returns {any}
  */
 export function relatedWorkflowDocsForCapability(graph, capabilityId) {
@@ -65,7 +65,7 @@ export function relatedWorkflowDocsForCapability(graph, capabilityId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} targetId
+ * @param {string} targetId
  * @returns {any}
  */
 export function relatedRulesForTarget(graph, targetId) {
@@ -78,68 +78,68 @@ export function relatedRulesForTarget(graph, targetId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} capabilityId
+ * @param {string} capabilityId
  * @returns {any}
  */
 export function relatedProjectionsForCapability(graph, capabilityId) {
   return stableSortedStrings(
     (graph.byKind.projection || [])
-      .filter(/** @param {any} projection */ (projection) => (projection.realizes || []).some(/** @param {any} target */ (target) => target.id === capabilityId))
-      .map(/** @param {any} projection */ (projection) => projection.id)
+      .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => (projection.realizes || []).some(/** @param {any} target */ (target) => target.id === capabilityId))
+      .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id)
   );
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} entityId
+ * @param {string} entityId
  * @returns {any}
  */
 export function relatedCapabilitiesForEntity(graph, entityId) {
   return stableSortedStrings(
     (graph.byKind.capability || [])
       .filter(
-        /** @param {any} capability */ (capability) =>
+        /** @param {import("./types.d.ts").ContextCapability} capability */ (capability) =>
           refIds(capability.reads).includes(entityId) ||
           refIds(capability.creates).includes(entityId) ||
           refIds(capability.updates).includes(entityId) ||
           refIds(capability.deletes).includes(entityId)
       )
-      .map(/** @param {any} capability */ (capability) => capability.id)
+      .map(/** @param {import("./types.d.ts").ContextCapability} capability */ (capability) => capability.id)
   );
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} entityId
+ * @param {string} entityId
  * @returns {any}
  */
 export function relatedShapesForEntity(graph, entityId) {
   return stableSortedStrings(
     (graph.byKind.shape || [])
-      .filter(/** @param {any} shape */ (shape) => refIds(shape.derivedFrom).includes(entityId))
-      .map(/** @param {any} shape */ (shape) => shape.id)
+      .filter(/** @param {import("./types.d.ts").ContextShape} shape */ (shape) => refIds(shape.derivedFrom).includes(entityId))
+      .map(/** @param {import("./types.d.ts").ContextShape} shape */ (shape) => shape.id)
   );
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} entityId
+ * @param {string} entityId
  * @returns {any}
  */
 export function relatedProjectionsForEntity(graph, entityId) {
   return stableSortedStrings(
     (graph.byKind.projection || [])
-      .filter(/** @param {any} projection */ (projection) => {
+      .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => {
         const dbMatches = (projection.dbTables || []).some(/** @param {any} entry */ (entry) => entry.entity?.id === entityId);
         const httpMatches = (projection.http || []).some(/** @param {any} entry */ (entry) => entry.entity?.id === entityId);
         return dbMatches || httpMatches;
       })
-      .map(/** @param {any} projection */ (projection) => projection.id)
+      .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id)
   );
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function relatedCapabilitiesForProjection(projection) {
@@ -154,7 +154,7 @@ export function relatedCapabilitiesForProjection(projection) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function relatedEntitiesForProjection(projection) {
@@ -168,7 +168,7 @@ export function relatedEntitiesForProjection(projection) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function relatedShapesForProjection(projection) {
@@ -184,40 +184,40 @@ export function relatedShapesForProjection(projection) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} shapeId
+ * @param {string} shapeId
  * @returns {any}
  */
 export function relatedProjectionsForShape(graph, shapeId) {
   const directProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
-    .filter(/** @param {any} projection */ (projection) => relatedShapesForProjection(projection).includes(shapeId))
-    .map(/** @param {any} projection */ (projection) => projection.id));
+    .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => relatedShapesForProjection(projection).includes(shapeId))
+    .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id));
   const viaCapabilities = stableSortedStrings((graph?.byKind?.capability || [])
-    .filter(/** @param {any} capability */ (capability) => [...(capability.input || []), ...(capability.output || [])].some(/** @param {any} item */ (item) => item.id === shapeId))
-    .flatMap(/** @param {any} capability */ (capability) => relatedProjectionsForCapability(graph, capability.id)));
+    .filter(/** @param {import("./types.d.ts").ContextCapability} capability */ (capability) => [...(capability.input || []), ...(capability.output || [])].some(/** @param {any} item */ (item) => item.id === shapeId))
+    .flatMap(/** @param {import("./types.d.ts").ContextCapability} capability */ (capability) => relatedProjectionsForCapability(graph, capability.id)));
 
   return stableSortedStrings([...directProjectionIds, ...viaCapabilities]);
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} widgetId
+ * @param {string} widgetId
  * @returns {any}
  */
 export function widgetById(graph, widgetId) {
-  return (graph?.byKind?.widget || []).find(/** @param {any} widget */ (widget) => widget.id === widgetId) || null;
+  return (graph?.byKind?.widget || []).find(/** @param {import("./types.d.ts").ContextWidget} widget */ (widget) => widget.id === widgetId) || null;
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} projectionId
+ * @param {string} projectionId
  * @returns {any}
  */
 export function projectionById(graph, projectionId) {
-  return (graph?.byKind?.projection || []).find(/** @param {any} projection */ (projection) => projection.id === projectionId) || null;
+  return (graph?.byKind?.projection || []).find(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id === projectionId) || null;
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function realizedProjectionIds(projection) {
@@ -228,7 +228,7 @@ export function realizedProjectionIds(projection) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} projectionIds
+ * @param {Iterable<string>} projectionIds
  * @returns {any}
  */
 export function downstreamProjectionIds(graph, projectionIds) {
@@ -253,20 +253,20 @@ export function downstreamProjectionIds(graph, projectionIds) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function relatedWidgetsForProjection(graph, projection) {
   const directIds = (projection?.widgetBindings || []).map(/** @param {any} entry */ (entry) => entry.widget?.id).filter(Boolean);
   const inheritedIds = realizedProjectionIds(projection)
-    .map(/** @param {any} projectionId */ (projectionId) => projectionById(graph, projectionId))
+    .map(/** @param {string} projectionId */ (projectionId) => projectionById(graph, projectionId))
     .filter(Boolean)
     .flatMap(/** @param {any} realizedProjection */ (realizedProjection) => relatedWidgetsForProjection(graph, realizedProjection));
   return stableSortedStrings([...directIds, ...inheritedIds]);
 }
 
 /**
- * @param {any} widget
+ * @param {import("./types.d.ts").ContextWidget} widget
  * @returns {any}
  */
 export function relatedShapesForWidget(widget) {
@@ -285,15 +285,15 @@ export function relatedShapesForWidget(widget) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} widgetId
+ * @param {string} widgetId
  * @returns {any}
  */
 export function relatedProjectionsForWidget(graph, widgetId) {
   const widget = widgetById(graph, widgetId);
   if (!widget) return [];
   const explicitProjectionIds = stableSortedStrings((graph?.byKind?.projection || [])
-    .filter(/** @param {any} projection */ (projection) => (projection.widgetBindings || []).some(/** @param {any} entry */ (entry) => entry.widget?.id === widgetId))
-    .map(/** @param {any} projection */ (projection) => projection.id));
+    .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => (projection.widgetBindings || []).some(/** @param {any} entry */ (entry) => entry.widget?.id === widgetId))
+    .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id));
   const dependencyProjectionIds = stableSortedStrings((widget.dependencies || []).flatMap(/** @param {any} dependency */ (dependency) => {
     const kind = referenceKind(dependency);
     if (kind === "projection") {
@@ -313,11 +313,11 @@ export function relatedProjectionsForWidget(graph, widgetId) {
   const widgetPatterns = new Set(widget.patterns || []);
   const widgetRegions = new Set(widget.regions || []);
   const viaUiRegions = stableSortedStrings((graph?.byKind?.projection || [])
-    .filter(/** @param {any} projection */ (projection) => (projection.uiScreenRegions || []).some(/** @param {any} region */ (region) =>
+    .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => (projection.uiScreenRegions || []).some(/** @param {any} region */ (region) =>
       (region.pattern && widgetPatterns.has(region.pattern)) ||
       (region.region && widgetRegions.has(region.region))
     ))
-    .map(/** @param {any} projection */ (projection) => projection.id));
+    .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id));
 
   return downstreamProjectionIds(graph, stableSortedStrings([...explicitProjectionIds, ...dependencyProjectionIds, ...viaUiRegions]));
 }
@@ -343,12 +343,12 @@ export function referenceKind(reference) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} targetIds
+ * @param {Iterable<string>} targetIds
  * @returns {any}
  */
 export function verificationIdsForTarget(graph, targetIds) {
   const set = new Set(targetIds || []);
-  return verificationsFor(graph, /** @param {any} targetId */ (targetId) => set.has(targetId));
+  return verificationsFor(graph, /** @param {string} targetId */ (targetId) => set.has(targetId));
 }
 
 /**
@@ -361,7 +361,7 @@ export function summarizeDoc(doc) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function summarizeById(graph, id) {
@@ -376,21 +376,21 @@ export function summarizeById(graph, id) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} ids
+ * @param {Iterable<string>} ids
  * @returns {any}
  */
 export function summarizeStatementsByIds(graph, ids) {
-  return stableSortedStrings(ids).map(/** @param {any} id */ (id) => summarizeById(graph, id)).filter(Boolean);
+  return stableSortedStrings(ids).map(/** @param {string} id */ (id) => summarizeById(graph, id)).filter(Boolean);
 }
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} ids
+ * @param {Iterable<string>} ids
  * @returns {any}
  */
 export function summarizeDocsByIds(graph, ids) {
   return stableSortedStrings(ids)
-    .map(/** @param {any} id */ (id) => (graph.docs || []).find(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id === id))
+    .map(/** @param {string} id */ (id) => (graph.docs || []).find(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id === id))
     .filter(Boolean)
     .map(summarizeDoc);
 }
@@ -419,7 +419,7 @@ export function workspaceInventory(graph) {
 }
 
 /**
- * @param {any} options
+ * @param {import("./types.d.ts").ContextSelectionOptions} options
  * @returns {any}
  */
 export function ensureContextSelection(options = {}) {

@@ -2,7 +2,7 @@ import { stableSortedStrings } from "./primitives.js";
 import { verificationIdsForTarget } from "./relationships.js";
 
 /**
- * @param {any} value
+ * @param {unknown} value
  * @returns {any}
  */
 export function jsonByteSize(value) {
@@ -10,7 +10,7 @@ export function jsonByteSize(value) {
 }
 
 /**
- * @param {any} value
+ * @param {unknown} value
  * @returns {any}
  */
 export function jsonLineCount(value) {
@@ -18,8 +18,8 @@ export function jsonLineCount(value) {
 }
 
 /**
- * @param {any} part
- * @param {any} whole
+ * @param {number} part
+ * @param {number} whole
  * @returns {any}
  */
 export function percentOf(part, whole) {
@@ -43,7 +43,7 @@ export function buildDefaultWriteScope() {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} maintainedFiles
+ * @param {Iterable<string>} maintainedFiles
  * @returns {any}
  */
 export function buildMaintainedWriteScope(graph, maintainedFiles = []) {
@@ -60,8 +60,8 @@ export function buildMaintainedWriteScope(graph, maintainedFiles = []) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} targetIds
- * @param {any} options
+ * @param {Iterable<string>} targetIds
+ * @param {import("./types.d.ts").VerificationTargetOptions} options
  * @returns {any}
  */
 export function recommendedVerificationTargets(graph, targetIds = [], options = {}) {

@@ -2,15 +2,15 @@ import { stableSortedStrings } from "./primitives.js";
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function domainById(graph, domainId) {
-  return (graph?.byKind?.domain || []).find(/** @param {any} domain */ (domain) => domain.id === domainId) || null;
+  return (graph?.byKind?.domain || []).find(/** @param {import("./types.d.ts").ContextStatement} domain */ (domain) => domain.id === domainId) || null;
 }
 
 /**
- * @param {any} domain
+ * @param {import("./types.d.ts").ContextStatement | null} domain
  * @returns {any}
  */
 export function summarizeDomain(domain) {
@@ -46,7 +46,7 @@ export function domainsByStatement(graph) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function relatedCapabilitiesForDomain(graph, domainId) {
@@ -57,7 +57,7 @@ export function relatedCapabilitiesForDomain(graph, domainId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function relatedEntitiesForDomain(graph, domainId) {
@@ -68,7 +68,7 @@ export function relatedEntitiesForDomain(graph, domainId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function relatedRulesForDomain(graph, domainId) {
@@ -79,7 +79,7 @@ export function relatedRulesForDomain(graph, domainId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function relatedVerificationsForDomain(graph, domainId) {
@@ -90,22 +90,22 @@ export function relatedVerificationsForDomain(graph, domainId) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} domainId
+ * @param {string} domainId
  * @returns {any}
  */
 export function relatedProjectionsForDomain(graph, domainId) {
   const capabilityIds = new Set(relatedCapabilitiesForDomain(graph, domainId));
   if (capabilityIds.size === 0) return [];
   const projectionIds = (graph?.byKind?.projection || [])
-    .filter(/** @param {any} projection */ (projection) => (projection.realizes || []).some(/** @param {any} entry */ (entry) => capabilityIds.has(entry.id)))
-    .map(/** @param {any} projection */ (projection) => projection.id);
+    .filter(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => (projection.realizes || []).some(/** @param {any} entry */ (entry) => capabilityIds.has(entry.id)))
+    .map(/** @param {import("./types.d.ts").ContextProjection} projection */ (projection) => projection.id);
   return stableSortedStrings(projectionIds);
 }
 
 // Phase 2 SDLC look-up helpers. Mirror the existing `*ById` pattern.
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function pitchById(graph, id) {
@@ -113,7 +113,7 @@ export function pitchById(graph, id) {
 }
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function requirementById(graph, id) {
@@ -121,7 +121,7 @@ export function requirementById(graph, id) {
 }
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function acceptanceCriterionById(graph, id) {
@@ -129,7 +129,7 @@ export function acceptanceCriterionById(graph, id) {
 }
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function taskById(graph, id) {
@@ -137,7 +137,7 @@ export function taskById(graph, id) {
 }
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function bugById(graph, id) {
@@ -145,7 +145,7 @@ export function bugById(graph, id) {
 }
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function documentById(graph, id) {
@@ -270,7 +270,7 @@ export function getJourneyDoc(graph, journeyId) {
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} kind
- * @param {any} id
+ * @param {string} id
  * @returns {any}
  */
 export function getStatement(graph, kind, id) {

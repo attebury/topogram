@@ -3,7 +3,7 @@ import { generateApiContractGraph } from "../../generator/api.js";
 import { confidenceRank } from "../docs.js";
 import { normalizeEndpointPathForMatch, normalizeOpenApiPath } from "../import-app/index.js";
 
-/** @param {any} importedEntity @param {any} graphEntity @returns {any} */
+/** @param {import("../types.d.ts").CandidateRecord} importedEntity @param {WorkflowRecord} graphEntity @returns {any} */
 export function compareEntityFields(importedEntity, graphEntity) {
   const graphFields = new Map((graphEntity.fields || []).map((/** @type {any} */ field) => [field.name, field]));
   /** @type {any[]} */

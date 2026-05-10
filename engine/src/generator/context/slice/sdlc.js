@@ -40,8 +40,8 @@ import {
 } from "../../../policy/review-boundaries.js";
 
 /**
- * @param {any} graph
- * @param {any} journeyId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} journeyId
  * @returns {any}
  */
 export function journeySlice(graph, journeyId) {
@@ -81,8 +81,8 @@ export function journeySlice(graph, journeyId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} domainId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} domainId
  * @returns {any}
  */
 export function domainSlice(graph, domainId) {
@@ -155,8 +155,8 @@ export function domainSlice(graph, domainId) {
 // re-walking the graph.
 
 /**
- * @param {any} graph
- * @param {any} pitchId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} pitchId
  * @returns {any}
  */
 export function pitchSlice(graph, pitchId) {
@@ -199,8 +199,8 @@ export function pitchSlice(graph, pitchId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} requirementId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} requirementId
  * @returns {any}
  */
 export function requirementSlice(graph, requirementId) {
@@ -250,8 +250,8 @@ export function requirementSlice(graph, requirementId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} acId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} acId
  * @returns {any}
  */
 export function acceptanceCriterionSlice(graph, acId) {
@@ -287,8 +287,8 @@ export function acceptanceCriterionSlice(graph, acId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} taskId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} taskId
  * @returns {any}
  */
 export function taskSlice(graph, taskId) {
@@ -332,8 +332,8 @@ export function taskSlice(graph, taskId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} bugId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} bugId
  * @returns {any}
  */
 export function bugSlice(graph, bugId) {
@@ -377,8 +377,8 @@ export function bugSlice(graph, bugId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} documentId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} documentId
  * @returns {any}
  */
 export function documentSlice(graph, documentId) {

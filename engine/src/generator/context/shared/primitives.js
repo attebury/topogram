@@ -1,13 +1,13 @@
 /**
- * @param {any} values
+ * @param {Iterable<unknown>} values
  * @returns {any}
  */
 export function stableSortedStrings(values) {
-  return [...new Set((values || []).filter(Boolean))].sort();
+  return [...new Set(Array.from(values || []).filter(Boolean))].sort();
 }
 
 /**
- * @param {any} value
+ * @param {unknown} value
  * @returns {any}
  */
 export function seamIdHint(value) {
@@ -19,14 +19,14 @@ export function seamIdHint(value) {
 }
 
 /**
- * @param {any} value
+ * @param {unknown} value
  * @returns {any}
  */
 export function titleCaseWords(value) {
   return String(value || "")
     .split(/[_\-\s]+/)
     .filter(Boolean)
-    .map(/** @param {any} part */ (part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map(/** @param {string} part */ (part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
 

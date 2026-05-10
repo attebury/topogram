@@ -37,7 +37,7 @@ export function repoRootFromGraph(graph) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
- * @param {any} targetPath
+ * @param {string} targetPath
  * @returns {any}
  */
 export function relativePathFromGraph(graph, targetPath) {
@@ -54,7 +54,7 @@ function workspaceRootFromGraph(graph) {
 }
 
 /**
- * @param {any} workspaceRoot
+ * @param {string} workspaceRoot
  * @returns {any}
  */
 function collectMaintainedProofDocPaths(workspaceRoot) {
@@ -79,7 +79,7 @@ function collectMaintainedProofDocPaths(workspaceRoot) {
 }
 
 /**
- * @param {any} workspaceRoot
+ * @param {string} workspaceRoot
  * @returns {any}
  */
 function readLocalMaintainedProofMetadataFromWorkspace(workspaceRoot) {
@@ -122,7 +122,7 @@ export function readLocalMaintainedProofMetadata(graph) {
 }
 
 /**
- * @param {any} arg1
+ * @param {import("./types.d.ts").MaintainedBoundaryOptions} arg1
  * @returns {any}
  */
 export function buildMaintainedBoundaryArtifact(arg1 = {}) {
@@ -178,7 +178,7 @@ export function buildMaintainedBoundaryArtifact(arg1 = {}) {
 }
 
 /**
- * @param {any} workspaceRoot
+ * @param {string} workspaceRoot
  * @param {import("./types.d.ts").ContextGraph | null} graph
  * @returns {any}
  */
@@ -502,7 +502,7 @@ function mergeMaintainedSeam(existing, next) {
 }
 
 /**
- * @param {any} proofStories
+ * @param {import("./types.d.ts").MaintainedProofStory[]} proofStories
  * @returns {any}
  */
 export function buildMaintainedSeams(proofStories = []) {
@@ -541,7 +541,7 @@ export function buildMaintainedSeams(proofStories = []) {
 }
 
 /**
- * @param {any} arg1
+ * @param {import("./types.d.ts").MaintainedBoundaryOptions} arg1
  * @returns {any}
  */
 export function buildMaintainedOutputs(arg1 = {}) {

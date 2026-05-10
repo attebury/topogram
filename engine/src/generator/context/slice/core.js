@@ -45,8 +45,8 @@ import {
 } from "./sdlc.js";
 
 /**
- * @param {any} graph
- * @param {any} capabilityId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} capabilityId
  * @returns {any}
  */
 function capabilitySlice(graph, capabilityId) {
@@ -100,14 +100,14 @@ function capabilitySlice(graph, capabilityId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} workflowId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} workflowId
  * @returns {any}
  */
 function workflowSlice(graph, workflowId) {
   const workflow = getWorkflowDoc(graph, workflowId);
   const capabilities = [...(workflow.relatedCapabilities || [])].sort();
-  const entities = [...new Set(capabilities.flatMap(/** @param {any} capabilityId */ (capabilityId) => {
+  const entities = [...new Set(capabilities.flatMap(/** @param {string} capabilityId */ (capabilityId) => {
     const capability = getStatement(graph, "capability", capabilityId);
     return [
       ...(capability.reads || []).map(/** @param {any} item */ (item) => item.id),
@@ -116,7 +116,7 @@ function workflowSlice(graph, workflowId) {
       ...(capability.deletes || []).map(/** @param {any} item */ (item) => item.id)
     ];
   }))].sort();
-  const rules = [...new Set(capabilities.flatMap(/** @param {any} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
+  const rules = [...new Set(capabilities.flatMap(/** @param {string} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
   const journeys = (graph.docs || [])
     .filter(/** @param {any} doc */ (doc) => doc.kind === "journey" && (doc.relatedWorkflows || []).includes(workflowId))
     .map(/** @param {any} doc */ (doc) => doc.id)
@@ -155,8 +155,8 @@ function workflowSlice(graph, workflowId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projectionId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} projectionId
  * @returns {any}
  */
 function projectionSlice(graph, projectionId) {
@@ -165,7 +165,7 @@ function projectionSlice(graph, projectionId) {
   const entities = relatedEntitiesForProjection(projection);
   const shapes = relatedShapesForProjection(projection);
   const widgets = relatedWidgetsForProjection(graph, projection);
-  const rules = [...new Set(capabilities.flatMap(/** @param {any} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
+  const rules = [...new Set(capabilities.flatMap(/** @param {string} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
   const verifications = verificationIdsForTarget(graph, [projectionId, ...capabilities, ...entities, ...shapes, ...widgets]);
 
   return {
@@ -206,8 +206,8 @@ function projectionSlice(graph, projectionId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} entityId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} entityId
  * @returns {any}
  */
 function entitySlice(graph, entityId) {
@@ -216,7 +216,7 @@ function entitySlice(graph, entityId) {
   const capabilities = relatedCapabilitiesForEntity(graph, entityId);
   const rules = [...new Set([
     ...relatedRulesForTarget(graph, entityId),
-    ...capabilities.flatMap(/** @param {any} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId))
+    ...capabilities.flatMap(/** @param {string} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId))
   ])].sort();
   const projections = relatedProjectionsForEntity(graph, entityId);
   const verifications = verificationIdsForTarget(graph, [entityId, ...shapes, ...capabilities, ...projections]);
@@ -253,8 +253,8 @@ function entitySlice(graph, entityId) {
 }
 
 /**
- * @param {any} graph
- * @param {any} widgetId
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} widgetId
  * @returns {any}
  */
 function widgetSlice(graph, widgetId) {
@@ -309,7 +309,7 @@ function widgetSlice(graph, widgetId) {
 }
 
 /**
- * @param {any} widget
+ * @param {import("../shared/types.d.ts").ContextWidget} widget
  * @returns {any}
  */
 function widgetDependencyIdsByKind(widget) {
@@ -323,7 +323,7 @@ function widgetDependencyIdsByKind(widget) {
 
   for (const dependency of widget.dependencies || []) {
     const kind = widgetDependencyKind(dependency);
-    if (kind && Object.hasOwn(ids, kind)) {
+    if (kind && dependency.id && Object.hasOwn(ids, kind)) {
       ids[kind].push(dependency.id);
     }
   }
@@ -334,7 +334,7 @@ function widgetDependencyIdsByKind(widget) {
 }
 
 /**
- * @param {any} dependency
+ * @param {import("../shared/types.d.ts").ContextReference} dependency
  * @returns {any}
  */
 function widgetDependencyKind(dependency) {
@@ -357,8 +357,8 @@ function widgetDependencyKind(dependency) {
 
 
 /**
- * @param {any} graph
- * @param {any} options
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {import("../shared/types.d.ts").ContextSelectionOptions} options
  * @returns {any}
  */
 export function generateContextSlice(graph, options = {}) {

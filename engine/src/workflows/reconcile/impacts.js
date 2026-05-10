@@ -302,7 +302,7 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
   return steps;
 }
 
-/** @param {CandidateBundle} bundle @param {any} projectionIndex @returns {any} */
+/** @param {CandidateBundle} bundle @param {ProjectionImpact[]} projectionIndex @returns {any} */
 export function buildProjectionImpacts(bundle, projectionIndex) {
   const bundleEntityIds = new Set([
     bundle.mergeHints?.canonicalEntityTarget || null,

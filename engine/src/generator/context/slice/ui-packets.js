@@ -1,8 +1,8 @@
 // @ts-check
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {import("../shared/types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function uiAgentPacketForProjection(graph, projection) {
@@ -37,16 +37,16 @@ export function uiAgentPacketForProjection(graph, projection) {
       screenId: route.screenId,
       path: route.path
     })),
-    widgets: (ownerProjection.widgetBindings || []).map(/** @param {any} usage */ (usage) => widgetUsagePacket(usage, ownerProjection)),
+    widgets: (ownerProjection.widgetBindings || []).map(/** @param {import("../shared/types.d.ts").ContextWidgetUsage} usage */ (usage) => widgetUsagePacket(usage, ownerProjection)),
     designTokens: designIntentPacket(ownerProjection),
     requiredGates: uiRequiredGates(projection.id)
   };
 }
 
 /**
- * @param {any} graph
- * @param {any} widget
- * @param {any} projectionIds
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {import("../shared/types.d.ts").ContextWidget} widget
+ * @param {Iterable<string>} projectionIds
  * @returns {any}
  */
 export function uiAgentPacketForWidget(graph, widget, projectionIds) {
@@ -94,8 +94,8 @@ export function uiAgentPacketForWidget(graph, widget, projectionIds) {
 }
 
 /**
- * @param {any} graph
- * @param {any} projection
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {import("../shared/types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 function sharedUiProjectionFor(graph, projection) {
@@ -109,8 +109,8 @@ function sharedUiProjectionFor(graph, projection) {
 }
 
 /**
- * @param {any} usage
- * @param {any} projection
+ * @param {import("../shared/types.d.ts").ContextWidgetUsage} usage
+ * @param {import("../shared/types.d.ts").ContextProjection | null} projection
  * @returns {any}
  */
 function widgetUsagePacket(usage, projection = null) {
@@ -152,7 +152,7 @@ function widgetUsagePacket(usage, projection = null) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("../shared/types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 function designIntentPacket(projection) {
@@ -164,8 +164,8 @@ function designIntentPacket(projection) {
 }
 
 /**
- * @param {any} projectionId
- * @param {any} widgetId
+ * @param {string | null} projectionId
+ * @param {string | null} widgetId
  * @returns {any}
  */
 function uiRequiredGates(projectionId = null, widgetId = null) {
@@ -181,4 +181,3 @@ function uiRequiredGates(projectionId = null, widgetId = null) {
     }
   ];
 }
-

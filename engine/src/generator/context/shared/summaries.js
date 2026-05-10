@@ -9,7 +9,7 @@ import {
 import { docIds, refIds, stableSortedStrings } from "./primitives.js";
 
 /**
- * @param {any} field
+ * @param {import("./types.d.ts").ContextField} field
  * @returns {any}
  */
 export function summarizeField(field) {
@@ -22,7 +22,7 @@ export function summarizeField(field) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function summarizeProjection(projection) {
@@ -44,7 +44,7 @@ export function summarizeProjection(projection) {
 }
 
 /**
- * @param {any} rule
+ * @param {import("./types.d.ts").ContextStatement} rule
  * @returns {any}
  */
 export function summarizeRule(rule) {
@@ -62,7 +62,7 @@ export function summarizeRule(rule) {
 }
 
 /**
- * @param {any} verification
+ * @param {import("./types.d.ts").ContextStatement} verification
  * @returns {any}
  */
 export function summarizeVerification(verification) {
@@ -227,7 +227,7 @@ export function summarizeStatement(statement) {
 }
 
 /**
- * @param {any} capability
+ * @param {import("./types.d.ts").ContextCapability} capability
  * @returns {any}
  */
 export function reviewBoundaryForCapability(capability) {
@@ -235,7 +235,7 @@ export function reviewBoundaryForCapability(capability) {
 }
 
 /**
- * @param {any} projection
+ * @param {import("./types.d.ts").ContextProjection} projection
  * @returns {any}
  */
 export function reviewBoundaryForProjection(projection) {
@@ -243,7 +243,7 @@ export function reviewBoundaryForProjection(projection) {
 }
 
 /**
- * @param {any} entity
+ * @param {import("./types.d.ts").ContextEntity} entity
  * @returns {any}
  */
 export function reviewBoundaryForEntity(entity) {
