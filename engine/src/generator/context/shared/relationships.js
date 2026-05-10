@@ -2,13 +2,13 @@ import { groupBy, refIds, stableSortedStrings } from "./primitives.js";
 import { summarizeJourneyDoc, summarizeStatement } from "./summaries.js";
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function buildIndexes(graph) {
-  const statementById = new Map((graph.statements || []).map(/** @param {any} statement */ (statement) => [statement.id, statement]));
-  const docsById = new Map((graph.docs || []).map(/** @param {any} doc */ (doc) => [doc.id, doc]));
-  const docsByKind = groupBy(graph.docs || [], /** @param {any} doc */ (doc) => doc.kind || "unknown");
+  const statementById = new Map((graph.statements || []).map(/** @param {import("./types.d.ts").ContextStatement} statement */ (statement) => [statement.id, statement]));
+  const docsById = new Map((graph.docs || []).map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => [doc.id, doc]));
+  const docsByKind = groupBy(graph.docs || [], /** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind || "unknown");
 
   return {
     statementById,
@@ -18,7 +18,7 @@ export function buildIndexes(graph) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} predicate
  * @returns {any}
  */
@@ -27,7 +27,7 @@ export function relatedDocs(graph, predicate) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} predicate
  * @returns {any}
  */
@@ -40,31 +40,31 @@ export function verificationsFor(graph, predicate) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} capabilityId
  * @returns {any}
  */
 export function relatedJourneysForCapability(graph, capabilityId) {
   return relatedDocs(
     graph,
-    /** @param {any} doc */ (doc) => doc.kind === "journey" && (doc.relatedCapabilities || []).includes(capabilityId)
+    /** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey" && (doc.relatedCapabilities || []).includes(capabilityId)
   );
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} capabilityId
  * @returns {any}
  */
 export function relatedWorkflowDocsForCapability(graph, capabilityId) {
   return relatedDocs(
     graph,
-    /** @param {any} doc */ (doc) => doc.kind === "workflow" && (doc.relatedCapabilities || []).includes(capabilityId)
+    /** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "workflow" && (doc.relatedCapabilities || []).includes(capabilityId)
   );
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} targetId
  * @returns {any}
  */
@@ -77,7 +77,7 @@ export function relatedRulesForTarget(graph, targetId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} capabilityId
  * @returns {any}
  */
@@ -90,7 +90,7 @@ export function relatedProjectionsForCapability(graph, capabilityId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} entityId
  * @returns {any}
  */
@@ -109,7 +109,7 @@ export function relatedCapabilitiesForEntity(graph, entityId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} entityId
  * @returns {any}
  */
@@ -122,7 +122,7 @@ export function relatedShapesForEntity(graph, entityId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} entityId
  * @returns {any}
  */
@@ -183,7 +183,7 @@ export function relatedShapesForProjection(projection) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} shapeId
  * @returns {any}
  */
@@ -199,7 +199,7 @@ export function relatedProjectionsForShape(graph, shapeId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} widgetId
  * @returns {any}
  */
@@ -208,7 +208,7 @@ export function widgetById(graph, widgetId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} projectionId
  * @returns {any}
  */
@@ -227,7 +227,7 @@ export function realizedProjectionIds(projection) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} projectionIds
  * @returns {any}
  */
@@ -252,7 +252,7 @@ export function downstreamProjectionIds(graph, projectionIds) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} projection
  * @returns {any}
  */
@@ -284,7 +284,7 @@ export function relatedShapesForWidget(widget) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} widgetId
  * @returns {any}
  */
@@ -323,7 +323,7 @@ export function relatedProjectionsForWidget(graph, widgetId) {
 }
 
 /**
- * @param {any} reference
+ * @param {import("./types.d.ts").ContextReference} reference
  * @returns {any}
  */
 export function referenceKind(reference) {
@@ -342,7 +342,7 @@ export function referenceKind(reference) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} targetIds
  * @returns {any}
  */
@@ -352,7 +352,7 @@ export function verificationIdsForTarget(graph, targetIds) {
 }
 
 /**
- * @param {any} doc
+ * @param {import("./types.d.ts").ContextDoc} doc
  * @returns {any}
  */
 export function summarizeDoc(doc) {
@@ -360,7 +360,7 @@ export function summarizeDoc(doc) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -375,7 +375,7 @@ export function summarizeById(graph, id) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} ids
  * @returns {any}
  */
@@ -384,26 +384,26 @@ export function summarizeStatementsByIds(graph, ids) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} ids
  * @returns {any}
  */
 export function summarizeDocsByIds(graph, ids) {
   return stableSortedStrings(ids)
-    .map(/** @param {any} id */ (id) => (graph.docs || []).find(/** @param {any} doc */ (doc) => doc.id === id))
+    .map(/** @param {any} id */ (id) => (graph.docs || []).find(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id === id))
     .filter(Boolean)
     .map(summarizeDoc);
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function workspaceInventory(graph) {
   return {
     capabilities: stableSortedStrings((graph.byKind.capability || []).map(/** @param {any} item */ (item) => item.id)),
-    workflows: stableSortedStrings((graph.docs || []).filter(/** @param {any} doc */ (doc) => doc.kind === "workflow").map(/** @param {any} doc */ (doc) => doc.id)),
-    journeys: stableSortedStrings((graph.docs || []).filter(/** @param {any} doc */ (doc) => doc.kind === "journey").map(/** @param {any} doc */ (doc) => doc.id)),
+    workflows: stableSortedStrings((graph.docs || []).filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "workflow").map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id)),
+    journeys: stableSortedStrings((graph.docs || []).filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey").map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id)),
     entities: stableSortedStrings((graph.byKind.entity || []).map(/** @param {any} item */ (item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map(/** @param {any} item */ (item) => item.id)),
     widgets: stableSortedStrings((graph.byKind.widget || []).map(/** @param {any} item */ (item) => item.id)),
@@ -414,7 +414,7 @@ export function workspaceInventory(graph) {
     acceptance_criteria: stableSortedStrings((graph.byKind.acceptance_criterion || []).map(/** @param {any} item */ (item) => item.id)),
     tasks: stableSortedStrings((graph.byKind.task || []).map(/** @param {any} item */ (item) => item.id)),
     bugs: stableSortedStrings((graph.byKind.bug || []).map(/** @param {any} item */ (item) => item.id)),
-    documents: stableSortedStrings((graph.docs || []).map(/** @param {any} doc */ (doc) => doc.id))
+    documents: stableSortedStrings((graph.docs || []).map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id))
   };
 }
 

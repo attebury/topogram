@@ -42,7 +42,7 @@ export function buildDefaultWriteScope() {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} maintainedFiles
  * @returns {any}
  */
@@ -59,7 +59,7 @@ export function buildMaintainedWriteScope(graph, maintainedFiles = []) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} targetIds
  * @param {any} options
  * @returns {any}

@@ -79,7 +79,7 @@ export function summarizeVerification(verification) {
 }
 
 /**
- * @param {any} doc
+ * @param {import("./types.d.ts").ContextDoc} doc
  * @returns {any}
  */
 export function summarizeJourneyDoc(doc) {
@@ -98,7 +98,7 @@ export function summarizeJourneyDoc(doc) {
 }
 
 /**
- * @param {any} statement
+ * @param {import("./types.d.ts").ContextStatement} statement
  * @returns {any}
  */
 export function summarizeComponent(statement) {
@@ -140,7 +140,7 @@ export function summarizeComponent(statement) {
 }
 
 /**
- * @param {any} statement
+ * @param {import("./types.d.ts").ContextStatement} statement
  * @returns {any}
  */
 export function summarizeStatement(statement) {
@@ -251,7 +251,7 @@ export function reviewBoundaryForEntity(entity) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function graphCounts(graph) {

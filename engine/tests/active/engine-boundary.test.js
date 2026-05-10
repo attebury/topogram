@@ -809,6 +809,126 @@ test("context shared implementation modules stay focused and type checked", () =
   });
 });
 
+test("context shared helpers use structural typedefs for core graph shapes", () => {
+  const offenders = [];
+  const forbiddenBroadParams = [
+    "@param {any} graph",
+    "@param {any} statement",
+    "@param {any} doc",
+    "@param {any} reference",
+    "@param {any} verificationTargets",
+    "@param {any} seam",
+    "@param {any} output"
+  ];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src", "generator", "context", "shared")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenBroadParams.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("generator api entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "generator", "api.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "generateShapeJsonSchema(",
+    "operationFromContract("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/api\//);
+});
+
+test("generator api implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "generator", "api"),
+    entrypointImport: "../api.js"
+  });
+});
+
+test("import core shared entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "import", "core", "shared.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "listFilesRecursive(",
+    "inferNextApiRoutes("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 100, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/shared\//);
+});
+
+test("import core shared implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "import", "core", "shared"),
+    entrypointImport: "../shared.js"
+  });
+});
+
+test("context slice entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "generator", "context", "slice.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "reviewBoundary",
+    "ensureContextSelection("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/slice\//);
+});
+
+test("context slice implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "generator", "context", "slice"),
+    entrypointImport: "../slice.js"
+  });
+});
+
+test("widget conformance entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "generator", "widget-conformance.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "collectUsageChecks(",
+    "buildWidgetBehaviorRealizations("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/widget-conformance\//);
+});
+
+test("widget conformance implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "generator", "widget-conformance"),
+    entrypointImport: "../widget-conformance.js"
+  });
+});
+
 test("workflow entrypoint stays dispatch-only after workflow split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "workflows.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);

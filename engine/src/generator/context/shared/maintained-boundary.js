@@ -12,7 +12,7 @@ import { buildMaintainedWriteScope, recommendedVerificationTargets } from "./met
 const bundledRepoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..", "..");
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function repoRootFromGraph(graph) {
@@ -36,7 +36,7 @@ export function repoRootFromGraph(graph) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} targetPath
  * @returns {any}
  */
@@ -45,7 +45,7 @@ export function relativePathFromGraph(graph, targetPath) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 function workspaceRootFromGraph(graph) {
@@ -85,8 +85,8 @@ function collectMaintainedProofDocPaths(workspaceRoot) {
 function readLocalMaintainedProofMetadataFromWorkspace(workspaceRoot) {
   return collectMaintainedProofDocPaths(workspaceRoot)
     .map(/** @param {any} filePath */ (filePath) => parseDocFile(filePath, workspaceRoot))
-    .filter(/** @param {any} doc */ (doc) => !doc.parseError)
-    .map(/** @param {any} doc */ (doc) => {
+    .filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => !doc.parseError)
+    .map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => {
       const classification = doc.metadata.classification || null;
       const maintainedFiles = stableSortedStrings(doc.metadata.maintained_files || []);
       const emittedDependencies = stableSortedStrings(doc.metadata.emitted_dependencies || []);
@@ -114,7 +114,7 @@ function readLocalMaintainedProofMetadataFromWorkspace(workspaceRoot) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function readLocalMaintainedProofMetadata(graph) {
@@ -179,7 +179,7 @@ export function buildMaintainedBoundaryArtifact(arg1 = {}) {
 
 /**
  * @param {any} workspaceRoot
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph | null} graph
  * @returns {any}
  */
 export function buildLocalMaintainedBoundaryArtifact(workspaceRoot, graph = null) {
@@ -204,7 +204,7 @@ export function buildLocalMaintainedBoundaryArtifact(workspaceRoot, graph = null
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function maintainedProofMetadata(graph) {
@@ -613,13 +613,13 @@ export function buildMaintainedOutputs(arg1 = {}) {
     outputs.set(outputId, existing);
   }
 
-  const verificationTargetsForOutput = /** @param {any} output @returns {any} */ (output) => {
+  const verificationTargetsForOutput = /** @param {import("./types.d.ts").MaintainedOutput} output @returns {any} */ (output) => {
     if (!graph) {
       return output.verification_targets || verificationTargets || null;
     }
 
     const emittedDependencies = stableSortedStrings([
-      ...output.seams.flatMap(/** @param {any} seam */ (seam) => seam.emitted_dependencies || []),
+      ...output.seams.flatMap(/** @param {import("./types.d.ts").MaintainedSeam} seam */ (seam) => seam.emitted_dependencies || []),
       ...output.proof_stories.flatMap(/** @param {any} story */ (story) => story.emittedDependencies || story.emitted_dependencies || [])
     ]);
     const verificationIds = stableSortedStrings(
@@ -654,7 +654,7 @@ export function buildMaintainedOutputs(arg1 = {}) {
   };
 
   return [...outputs.values()]
-    .map(/** @param {any} output */ (output) => ({
+    .map(/** @param {import("./types.d.ts").MaintainedOutput} output */ (output) => ({
       ...output,
       verification_targets: verificationTargetsForOutput(output),
       write_scope: graph ? buildMaintainedWriteScope(graph, output.maintained_files_in_scope) : null,

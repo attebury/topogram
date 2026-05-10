@@ -1,7 +1,7 @@
 import { stableSortedStrings } from "./primitives.js";
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -31,7 +31,7 @@ export function summarizeDomain(domain) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function domainsByStatement(graph) {
@@ -45,7 +45,7 @@ export function domainsByStatement(graph) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -56,7 +56,7 @@ export function relatedCapabilitiesForDomain(graph, domainId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -67,7 +67,7 @@ export function relatedEntitiesForDomain(graph, domainId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -78,7 +78,7 @@ export function relatedRulesForDomain(graph, domainId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -89,7 +89,7 @@ export function relatedVerificationsForDomain(graph, domainId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} domainId
  * @returns {any}
  */
@@ -104,7 +104,7 @@ export function relatedProjectionsForDomain(graph, domainId) {
 
 // Phase 2 SDLC look-up helpers. Mirror the existing `*ById` pattern.
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -112,7 +112,7 @@ export function pitchById(graph, id) {
   return (graph?.byKind?.pitch || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -120,7 +120,7 @@ export function requirementById(graph, id) {
   return (graph?.byKind?.requirement || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -128,7 +128,7 @@ export function acceptanceCriterionById(graph, id) {
   return (graph?.byKind?.acceptance_criterion || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -136,7 +136,7 @@ export function taskById(graph, id) {
   return (graph?.byKind?.task || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
@@ -144,12 +144,12 @@ export function bugById(graph, id) {
   return (graph?.byKind?.bug || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} id
  * @returns {any}
  */
 export function documentById(graph, id) {
-  return (graph?.docs || []).find(/** @param {any} doc */ (doc) => doc.id === id) || null;
+  return (graph?.docs || []).find(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id === id) || null;
 }
 
 /**
@@ -227,7 +227,7 @@ export function summarizeBug(bug) {
   };
 }
 /**
- * @param {any} doc
+ * @param {import("./types.d.ts").ContextDoc} doc
  * @returns {any}
  */
 export function summarizeDocument(doc) {
@@ -242,7 +242,7 @@ export function summarizeDocument(doc) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} workflowId
  * @returns {any}
  */
@@ -255,7 +255,7 @@ export function getWorkflowDoc(graph, workflowId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} journeyId
  * @returns {any}
  */
@@ -268,7 +268,7 @@ export function getJourneyDoc(graph, journeyId) {
 }
 
 /**
- * @param {any} graph
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @param {any} kind
  * @param {any} id
  * @returns {any}
