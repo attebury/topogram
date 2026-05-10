@@ -473,6 +473,31 @@ test("GitHub shell fallback stays isolated to the GitHub client", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("catalog entrypoint stays an export surface after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "catalog.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:",
+    "function ",
+    "const ",
+    "readCatalogText",
+    "writeTopogramSourceRecord",
+    "validateCatalog("
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 40, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/catalog\//);
+});
+
+test("catalog implementation modules stay focused and type checked", () => {
+  assertImplementationModules({
+    root: path.join(repoRoot, "engine", "src", "catalog"),
+    entrypointImport: "../catalog.js"
+  });
+});
+
 test("split CLI command families stay out of the binary shim", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli.js"), "utf8");
   const forbiddenDefinitions = [

@@ -7,4 +7,6 @@ export function copyCatalogTopogramEntry(entry: any, targetPath: string, options
 export function findCatalogEntry(catalog: any, id: string, kind?: "template" | "topogram" | null): any | null;
 export function isCatalogSourceDisabled(source: string | null | undefined): boolean;
 export function loadCatalog(sourceInput?: string | null): any;
+export function validateCatalog(value: unknown, source?: string): any;
+export const CATALOG_FILE_NAME: string;
 export const TOPOGRAM_SOURCE_FILE: string;
