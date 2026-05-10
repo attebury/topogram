@@ -741,7 +741,8 @@ test("validator support modules do not re-export from validator index", () => {
   const checkedFiles = [
     "engine/src/validator/utils.js",
     "engine/src/validator/registry.js",
-    "engine/src/validator/docs.js"
+    "engine/src/validator/docs.js",
+    "engine/src/validator/expressions.js"
   ];
   const offenders = [];
 
@@ -753,4 +754,12 @@ test("validator support modules do not re-export from validator index", () => {
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test("validator expressions module owns expression validation", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "validator", "expressions.js"), "utf8");
+
+  assert.match(contents, /export function validateExpressions/);
+  assert.match(contents, /function validateInvariantEntry/);
+  assert.doesNotMatch(contents, /Expression validation remains orchestrated from index\.js/);
 });

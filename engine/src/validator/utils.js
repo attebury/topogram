@@ -25,6 +25,14 @@ export function formatLoc(loc) {
 }
 
 /**
+ * @param {TopogramBlockEntry} entry
+ * @returns {TopogramToken[]}
+ */
+export function blockSymbolItems(entry) {
+  return entry.items.filter((item) => item.type === "symbol" || item.type === "string");
+}
+
+/**
  * @param {TopogramToken | null | undefined} value
  * @returns {TopogramToken[]}
  */

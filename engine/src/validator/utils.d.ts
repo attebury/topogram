@@ -8,6 +8,7 @@ import type {
 } from "../topogram-types.js";
 
 export function blockEntries(value: TopogramToken | null | undefined): TopogramBlockEntry[];
+export function blockSymbolItems(entry: TopogramBlockEntry): TopogramToken[];
 export function collectFieldMap(statement: TopogramStatement): TopogramFieldMap;
 export function formatLoc(loc: any): string;
 export function getField(statement: TopogramStatement, key: string): TopogramField | null;
