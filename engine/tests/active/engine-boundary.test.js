@@ -697,6 +697,45 @@ test("workflow implementation modules stay in the active type-check lane", () =>
   assert.deepEqual(offenders, []);
 });
 
+test("agent query builder entrypoint stays dispatch-only after split", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "agent-ops", "query-builders.js"), "utf8");
+  const lines = contents.split(/\r?\n/).filter(Boolean);
+  const forbiddenDetails = [
+    "from \"node:fs\"",
+    "from \"node:path\"",
+    "function build",
+    "function summarize",
+    "const WORKFLOW_QUERY_FAMILIES_BY_MODE"
+  ];
+  const offenders = forbiddenDetails.filter((reference) => contents.includes(reference));
+
+  assert.equal(lines.length <= 80, true);
+  assert.deepEqual(offenders, []);
+  assert.match(contents, /from "\.\/query-builders\//);
+});
+
+test("agent query builder modules stay focused after split", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "agent-ops", "query-builders");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const lineCount = contents.split(/\r?\n/).length;
+    if (lineCount > 800 || contents.includes("@ts-nocheck")) {
+      offenders.push({ file: relative, lineCount, nocheck: contents.includes("@ts-nocheck") });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("agent query builder declarations do not use broad rest-any inputs", () => {
+  const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "agent-ops", "query-builders.d.ts"), "utf8");
+
+  assert.equal(contents.includes("...args: any[]"), false);
+});
+
 test("resolver and validator leaf modules stay in the active type-check lane", () => {
   const checkedFiles = [
     "engine/src/parser.js",
