@@ -4464,6 +4464,19 @@ test("topogram template update applies reviewed template-owned changes", () => {
   assert.equal(trustStatus.status, 0, trustStatus.stderr || trustStatus.stdout);
   assert.equal(JSON.parse(trustStatus.stdout).ok, true);
 
+  const currentProjectConfig = readJson(path.join(projectRoot, "topogram.project.json"));
+  writeJson(path.join(projectRoot, "topogram.project.json"), {
+    version: currentProjectConfig.version,
+    workspace: currentProjectConfig.workspace,
+    template: currentProjectConfig.template,
+    outputs: currentProjectConfig.outputs,
+    topology: currentProjectConfig.topology,
+    implementation: currentProjectConfig.implementation
+  });
+  const reorderedPlan = runCli(["template", "update", "--plan", "--template", nextTemplateRoot, "--json"], { cwd: projectRoot });
+  assert.equal(reorderedPlan.status, 0, reorderedPlan.stderr || reorderedPlan.stdout);
+  assert.equal(JSON.parse(reorderedPlan.stdout).summary.changed, 0);
+
   const baselineBeforeNoop = fs.readFileSync(path.join(projectRoot, ".topogram-template-files.json"), "utf8");
   const trustBeforeNoop = fs.readFileSync(path.join(projectRoot, ".topogram-template-trust.json"), "utf8");
   const humanApply = runCli(["template", "update", "--apply", "--template", nextTemplateRoot], { cwd: projectRoot });

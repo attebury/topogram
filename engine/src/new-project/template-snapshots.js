@@ -326,8 +326,8 @@ export function currentTemplateOwnedFiles(projectRoot, includeImplementation, pr
   if (fs.existsSync(projectConfigPath)) {
     files.set("topogram.project.json", {
       path: "topogram.project.json",
-      absolutePath: projectConfigPath,
-      content: null
+      absolutePath: null,
+      content: `${stableJsonStringify(JSON.parse(fs.readFileSync(projectConfigPath, "utf8")))}\n`
     });
   }
   return files;
