@@ -710,9 +710,18 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/validator/expressions.js",
     "engine/src/validator/projections/helpers.js",
     "engine/src/validator/projections/api-http.js",
+    "engine/src/validator/projections/api-http-async.js",
+    "engine/src/validator/projections/api-http-authz.js",
+    "engine/src/validator/projections/api-http-core.js",
+    "engine/src/validator/projections/api-http-policies.js",
+    "engine/src/validator/projections/api-http-responses.js",
     "engine/src/validator/projections/db.js",
     "engine/src/validator/projections/generator-defaults.js",
     "engine/src/validator/projections/ui.js",
+    "engine/src/validator/projections/ui-helpers.js",
+    "engine/src/validator/projections/ui-navigation.js",
+    "engine/src/validator/projections/ui-structure.js",
+    "engine/src/validator/projections/ui-widgets.js",
     "engine/src/validator/per-kind/acceptance-criterion.js",
     "engine/src/validator/per-kind/bug.js",
     "engine/src/validator/per-kind/domain.js",
@@ -785,6 +794,21 @@ test("validator index stays an orchestrator after validation group split", () =>
   assert.match(contents, /validateApiHttpProjection/);
   assert.match(contents, /validateUiProjection/);
   assert.match(contents, /validateDbProjection/);
+});
+
+test("validator implementation modules stay focused after split", () => {
+  const offenders = [];
+  const root = path.join(repoRoot, "engine", "src", "validator");
+
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const lineCount = fs.readFileSync(file, "utf8").split(/\r?\n/).length;
+    if (lineCount > 800) {
+      offenders.push({ file: relative, lineCount });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
 });
 
 test("validator expressions module owns expression validation", () => {
