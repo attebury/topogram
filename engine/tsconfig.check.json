@@ -156,6 +156,7 @@
     "./src/workflows/reconcile/auth/inference.js",
     "./src/workflows/reconcile/auth/roles.js",
     "./src/workflows/reconcile/bundle-core.js",
+    "./src/workflows/reconcile/bundle-core/index.js",
     "./src/workflows/reconcile/bundle-shared.js",
     "./src/workflows/reconcile/candidate-model.js",
     "./src/workflows/reconcile/canonical-surface.js",
