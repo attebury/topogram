@@ -2795,7 +2795,7 @@ test("topogram release roll-consumers reports recovery state for already-current
   const fakeNpmBin = createFakeNpm(root);
   const fakeGitBin = createFakeGit(root, `topogram-v0.3.46`);
   const fakeGhBin = createFakeGh(root);
-  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json"], {
+  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json", "--no-watch"], {
     cwd: root,
     env: {
       FAKE_NPM_LATEST_VERSION: "0.3.46",
@@ -2812,7 +2812,16 @@ test("topogram release roll-consumers reports recovery state for already-current
   assert.equal(payload.consumers.every((consumer) => consumer.recoveredPush && consumer.pushed), true);
   assert.equal(payload.recovery.alreadyCurrent.length, knownCliConsumerRepos.length);
   assert.equal(payload.recovery.recoveredPushes.length, knownCliConsumerRepos.length);
+  assert.equal(payload.recovery.resumeCommand, "topogram release roll-consumers 0.3.46 --no-watch");
   assert.match(payload.recovery.watchGuidance, /release status --strict/);
+});
+
+test("topogram release roll-consumers rejects conflicting watch flags", () => {
+  const roll = runCli(["release", "roll-consumers", "0.3.46", "--watch", "--no-watch"], {
+    cwd: fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-roll-consumers-watch-conflict-"))
+  });
+  assert.equal(roll.status, 1, roll.stderr || roll.stdout);
+  assert.match(roll.stderr, /Use either --watch or --no-watch/);
 });
 
 test("topogram release roll-consumers --watch fails when current consumer workflow fails", () => {

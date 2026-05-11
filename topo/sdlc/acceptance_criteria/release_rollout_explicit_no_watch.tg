@@ -1,0 +1,6 @@
+acceptance_criterion ac_release_rollout_explicit_no_watch {
+  name "Release Rollout Explicit No Watch"
+  description "Given first-party consumer rollout commands, when a release manager wants asynchronous CI verification, then `--no-watch` is accepted, documented, reflected in recovery guidance, and rejected when combined with `--watch`."
+  requirement req_stateful_actions_use_cli
+  status approved
+}

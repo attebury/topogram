@@ -11,7 +11,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram doctor --allow-local-npmrc");
   console.log("Usage: topogram setup package-auth|catalog-auth");
   console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
-  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch|--no-watch]");
   console.log("Usage: topogram check [path] [--json]");
   console.log("   or: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");

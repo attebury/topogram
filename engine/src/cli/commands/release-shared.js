@@ -257,14 +257,14 @@ export function waitForConsumerCi(consumer, options = {}) {
         severity: "error",
         message: `${consumer.name} verification workflow did not complete on the current commit before the watch timeout.`,
         path: strictLatest.run?.url || consumerGithubRepoSlug(consumer),
-        suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status. If you only need to push and verify later, rerun roll-consumers without --watch."
+        suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status. If you only need to push and verify later, rerun roll-consumers with --no-watch."
       });
       strictLatest.ok = false;
       notify?.({
         consumer: consumer.name,
         step: "watch-ci",
         status: "error",
-        message: `${consumer.name}: verification watch timed out; rerun without --watch to continue asynchronously.`,
+        message: `${consumer.name}: verification watch timed out; rerun with --no-watch to continue asynchronously.`,
         elapsedMs: Date.now() - startedAt,
         headSha: strictLatest.headSha,
         expectedWorkflow: strictLatest.expectedWorkflow,

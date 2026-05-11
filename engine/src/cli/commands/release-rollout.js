@@ -88,7 +88,7 @@ function recordProgress(item, options, step, status, message, detail = {}) {
 
 /**
  * @param {Array<AnyRecord>} consumers
- * @param {{ version: string, push: boolean, watch: boolean }} options
+ * @param {{ version: string, push: boolean, watch: boolean, noWatch?: boolean }} options
  * @returns {AnyRecord}
  */
 function buildRecoverySummary(consumers, options) {
@@ -108,17 +108,17 @@ function buildRecoverySummary(consumers, options) {
     needsAttention: namesFor((consumer) => (
       /** @type {Array<AnyRecord>} */ (consumer.diagnostics || [])
     ).some((diagnostic) => diagnostic.severity === "error")),
-    resumeCommand: `topogram release roll-consumers ${options.version}${options.push ? "" : " --no-push"}${options.watch ? " --watch" : ""}`,
+    resumeCommand: `topogram release roll-consumers ${options.version}${options.push ? "" : " --no-push"}${options.watch ? " --watch" : options.noWatch ? " --no-watch" : ""}`,
     asyncVerificationCommand: "topogram release status --strict",
     watchGuidance: options.watch
-      ? "If CI waiting is too slow or interrupted, rerun roll-consumers without --watch, then verify with release status --strict."
+      ? "If CI waiting is too slow or interrupted, rerun roll-consumers with --no-watch, then verify with release status --strict."
       : "This rollout did not wait for CI. Verify consumers after workflows finish with release status --strict."
   };
 }
 
 /**
  * @param {string} requested
- * @param {{ cwd?: string, push?: boolean, watch?: boolean, onProgress?: ((event: ReleaseRollProgress) => void)|null, captureProgress?: boolean }} [options]
+ * @param {{ cwd?: string, push?: boolean, watch?: boolean, noWatch?: boolean, onProgress?: ((event: ReleaseRollProgress) => void)|null, captureProgress?: boolean }} [options]
  * @returns {{ ok: boolean, packageName: string, requestedVersion: string, requestedLatest: boolean, pushed: boolean, watched: boolean, consumers: Array<AnyRecord>, diagnostics: Array<AnyRecord>, errors: string[], recovery: AnyRecord|null }}
  */
 export function buildReleaseRollConsumersPayload(requested, options = {}) {
@@ -134,7 +134,7 @@ export function buildReleaseRollConsumersPayload(requested, options = {}) {
       severity: "error",
       message: "`topogram release roll-consumers --watch` requires pushing consumer commits.",
       path: "release roll-consumers",
-      suggestedFix: "Remove --no-push or run without --watch and verify consumer CI separately."
+      suggestedFix: "Remove --no-push or use --no-watch and verify consumer CI separately."
     });
     return {
       ok: false,
@@ -378,7 +378,7 @@ export function buildReleaseRollConsumersPayload(requested, options = {}) {
     consumers,
     diagnostics,
     errors,
-    recovery: buildRecoverySummary(consumers, { version, push, watch })
+    recovery: buildRecoverySummary(consumers, { version, push, watch, noWatch: options.noWatch === true })
   };
 }
 

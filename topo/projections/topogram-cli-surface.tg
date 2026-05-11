@@ -41,7 +41,7 @@ projection proj_topogram_cli {
     command generator capability cap_manage_generators usage "topogram generator list|show|check [id]" mode read_only
     command generator_policy capability cap_manage_generators usage "topogram generator policy check|status [path]" mode read_only
     command release_status capability cap_verify_release_status usage "topogram release:status [--strict] [--write-report <path>]" mode network
-    command release_roll_consumers capability cap_roll_consumer_packages usage "topogram release roll-consumers <version> [--push]" mode git
+    command release_roll_consumers capability cap_roll_consumer_packages usage "topogram release roll-consumers <version> [--watch|--no-watch]" mode git
   }
 
   command_options {
@@ -55,6 +55,8 @@ projection proj_topogram_cli {
     command import_adopt option dry_run type boolean flag --dry-run
     command release_status option strict type boolean flag --strict
     command release_status option write_report type string flag --write-report
+    command release_roll_consumers option watch type boolean flag --watch
+    command release_roll_consumers option no_watch type boolean flag --no-watch
   }
 
   command_outputs {

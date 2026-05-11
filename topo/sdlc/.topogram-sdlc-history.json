@@ -398,5 +398,21 @@
       "by": "actor_coding_agent",
       "note": "Release rollout progress and recovery hardening verified with focused rollout tests, verify-engine, and CLI package smoke."
     }
+  ],
+  "task_add_release_rollout_no_watch": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T16:28:14.153Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing explicit no-watch rollout flag."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T16:28:21.515Z",
+      "by": "actor_coding_agent",
+      "note": "Explicit no-watch rollout flag verified with focused rollout tests and topo checks."
+    }
   ]
 }

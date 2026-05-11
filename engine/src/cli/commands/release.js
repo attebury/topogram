@@ -20,11 +20,11 @@ import {
  */
 export function printReleaseHelp() {
   console.log("Usage: topogram release status [--json] [--strict] [--markdown|--write-report <path>]");
-  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch]");
+  console.log("   or: topogram release roll-consumers <version|--latest> [--json] [--no-push] [--watch|--no-watch]");
   console.log("");
   console.log("Checks the local CLI version, latest published package version, release tag, first-party consumer pins, and strict consumer CI state.");
   console.log("Rolls first-party consumers to a published CLI version, runs their checks, commits, pushes, and can wait for current workflow runs.");
-  console.log("Rollout progress prints to stderr in human mode; JSON output stays final-only. Omit --watch to push and verify later with release status --strict.");
+  console.log("Rollout progress prints to stderr in human mode; JSON output stays final-only. Use --no-watch to push and verify later with release status --strict.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram release status");
@@ -90,15 +90,22 @@ export function runReleaseCommand(context) {
 
   if (command === "roll-consumers") {
     const push = !args.includes("--no-push");
+    const noWatch = args.includes("--no-watch");
     const watch = args.includes("--watch");
+    if (watch && noWatch) {
+      console.error("Use either --watch or --no-watch, not both.");
+      printReleaseHelp();
+      return 1;
+    }
     if (watch && !push) {
-      console.error("Use either --watch or --no-push, not both.");
+      console.error("Use either --watch or --no-push, not both. Use --no-watch with --no-push when CI will be verified separately.");
       printReleaseHelp();
       return 1;
     }
     const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, {
       push,
       watch,
+      noWatch,
       onProgress: json ? null : printReleaseRollProgress
     });
     if (json) {

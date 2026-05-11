@@ -33,7 +33,8 @@ npm run release:status:strict -- --write-report ./docs/release-matrix.md
 checks, commits, pushes, and optionally watches CI. If a rollout is interrupted,
 rerun the same command; the report includes recovery state for consumers that are
 already pinned, already pushed, or still need attention. Omit `--watch` when you
-want to push consumer commits and verify later with `npm run release:status:strict`.
+want to push consumer commits and verify later with `npm run release:status:strict`;
+use `--no-watch` when you want that choice to be explicit in command logs.
 
 `docs/release-matrix.md` is generated release evidence, not first-run product
 documentation.
