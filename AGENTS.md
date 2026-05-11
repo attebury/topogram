@@ -17,7 +17,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 
 - Specs are the source of truth. Do not hardcode generated output behavior around a demo, fixture product, framework quirk, or test convenience.
 - Tests must prove consumer value. A test that only checks for a string or file exists is not enough when generated output can be installed, compiled, checked, or run.
-- Code must be maintainable over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, and seams easy to verify.
+- Code must be maintainable and security-focused over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, seams easy to verify, and unsafe inputs, trust boundaries, credentials, and generated output escaping explicit.
 - Docs must execute. Any documented command shape needs regression coverage or a clear reason it cannot be executed.
 - Generated and maintained ownership are different. Generated outputs can be replaced only through the generated-output sentinel; maintained paths are never overwritten.
 - Template implementation is executable code. Do not trust, refresh, or execute it without explicit trust checks and reviewable hashes.
