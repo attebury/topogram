@@ -430,5 +430,87 @@
       "by": "actor_coding_agent",
       "note": "Published @topogram/cli 0.3.74, fresh npm smoke passed, consumers rolled, strict release status green."
     }
+  ],
+  "task_improve_cli_import_precision": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T17:45:51.009Z",
+      "by": "actor_coding_agent",
+      "note": "Starting CLI import precision follow-up."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T17:45:54.825Z",
+      "by": "actor_coding_agent",
+      "note": "Inspecting CLI importer precision and fixtures."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T17:56:13.291Z",
+      "by": "actor_coding_agent",
+      "note": "Filtered generic CLI import to prefer authoritative help/bin sources and reject non-authoritative test and fixture command-like strings."
+    }
+  ],
+  "pitch_db_migration_ownership": [
+    {
+      "from": "draft",
+      "to": "shaped",
+      "at": "2026-05-11T18:26:31.511Z",
+      "by": "actor_coding_agent",
+      "note": "Initial problem and solution shape recorded for DB migration ownership."
+    }
+  ],
+  "req_db_migration_ownership_model": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-11T18:26:35.942Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement opened for modeling the DB migration ownership contract."
+    }
+  ],
+  "task_model_db_migration_ownership": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T18:26:45.761Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming the first modeling slice for DB migration ownership."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T18:26:49.952Z",
+      "by": "actor_coding_agent",
+      "note": "Starting with a focused modeling/query pass before code changes."
+    }
+  ],
+  "plan_db_migration_ownership_model#inspect_current_state": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T18:27:17.376Z",
+      "by": "actor_coding_agent",
+      "note": "Starting current-state inspection for DB migration ownership modeling."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T18:28:42.510Z",
+      "by": "actor_coding_agent",
+      "note": "Current DB emit/generate behavior summarized in topo/docs/reports/db-migration-ownership-model.md."
+    }
+  ],
+  "plan_db_migration_ownership_model#define_model_slice": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T18:28:48.222Z",
+      "by": "actor_coding_agent",
+      "note": "Using the report as the draft model slice for review."
+    }
   ]
 }

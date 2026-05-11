@@ -1,0 +1,13 @@
+pitch pitch_db_migration_ownership {
+  name "Database Migration Ownership"
+  description "Make database migration workflows explicit for generated database runtimes and maintained apps."
+  appetite "medium"
+  problem "Topogram can emit database snapshots, migration plans, SQL, Prisma schema, Drizzle schema, and lifecycle bundles, but the ownership boundary is not explicit enough when maintained apps need migration proposals without overwritten app schema or applied changes."
+  solution_sketch "Model database migration ownership on database runtimes so generated-owned DB surfaces can receive lifecycle bundles while maintained DB surfaces receive read-only snapshots, plans, SQL proposals, and ORM schema proposals."
+  rabbit_holes "Do not turn Topogram into a replacement for Prisma Migrate, Drizzle Kit, Flyway, Rails migrations, or production deployment tooling."
+  no_go_areas "Do not overwrite maintained app migration directories, apply migrations to maintained databases by default, or generate destructive data migrations from weak diffs."
+  affects [cap_generate_app_outputs, cap_emit_artifacts, cap_manage_generators]
+  domain dom_generator_runtime
+  priority medium
+  status shaped
+}

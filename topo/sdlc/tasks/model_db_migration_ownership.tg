@@ -1,0 +1,14 @@
+task task_model_db_migration_ownership {
+  name "Model Database Migration Ownership"
+  description "Define the first Topogram model slice for database migration ownership across generated and maintained database runtimes."
+  satisfies [req_db_migration_ownership_model]
+  acceptance_refs [ac_db_migration_ownership_model_defined]
+  verification_refs [verification_dogfood_topo_workspace]
+  affects [cap_validate_workspace, cap_generate_app_outputs, cap_emit_artifacts]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type design
+  claimed_by actor_coding_agent
+  status in-progress
+}

@@ -1,0 +1,11 @@
+requirement req_db_migration_ownership_model {
+  name "Database Migration Ownership Model"
+  description "Database runtimes should distinguish generated migration lifecycle ownership from maintained migration proposal workflows for SQL, Prisma, and Drizzle-backed apps."
+  pitch pitch_db_migration_ownership
+  affects [cap_validate_workspace, cap_generate_app_outputs, cap_emit_artifacts]
+  introduces_rules []
+  respects_rules [rule_generated_and_maintained_ownership_differ, rule_generators_own_stack_realization]
+  domain dom_generator_runtime
+  priority medium
+  status in-review
+}

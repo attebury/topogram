@@ -1,0 +1,13 @@
+pitch pitch_package_backed_generators {
+  name "Package-Backed Generators"
+  description "Make package-backed generators the durable extension model for stack realization from normalized Topogram contracts."
+  appetite "medium"
+  problem "Generators create concrete app/runtime files from contracts, but generator discovery, compatibility proof, package policy, and release alignment need to stay explicit as more stacks move outside the CLI."
+  solution_sketch "Keep Topogram core focused on contracts, topology, validation, and ownership while generator packages expose manifests, adapters, verification gates, and policy pins that prove each stack honors the same contracts."
+  rabbit_holes "Do not move Topogram contract semantics into generator packages or let stack-specific shortcuts become the source of truth."
+  no_go_areas "Do not dynamically install or execute unreviewed generator packages; packages must be installed, policy-checked, and verified before generation."
+  affects [cap_manage_generators, cap_generate_app_outputs, cap_run_engine_gates]
+  domain dom_generator_runtime
+  priority medium
+  status draft
+}
