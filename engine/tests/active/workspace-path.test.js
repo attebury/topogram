@@ -69,31 +69,36 @@ test("missing config-less workspace points at default topo bootstrap path", () =
   assert.equal(context.bootstrappedTopoRoot, true);
 });
 
-test("migrate workspace-folder dry-runs and writes legacy folder rename", () => {
+test("legacy topogram folders are not accepted as workspaces", () => {
   const root = tempRoot();
   writeTg(path.join(root, "topogram", "actors", "actor-user.tg"));
-  writeJson(path.join(root, "topogram.project.json"), { version: "0.1" });
 
-  const dryRun = runCli(["migrate", "workspace-folder", root, "--dry-run", "--json"]);
-  assert.equal(dryRun.status, 0, dryRun.stderr);
-  const dryRunPayload = JSON.parse(dryRun.stdout);
-  assert.equal(dryRunPayload.dryRun, true);
-  assert.equal(fs.existsSync(path.join(root, "topogram")), true);
-  assert.equal(fs.existsSync(path.join(root, "topo")), false);
-
-  const write = runCli(["migrate", "workspace-folder", root, "--write", "--json"]);
-  assert.equal(write.status, 0, write.stderr);
-  assert.equal(fs.existsSync(path.join(root, "topogram")), false);
-  assert.equal(fs.existsSync(path.join(root, "topo")), true);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root, "topogram.project.json"), "utf8")).workspace, "./topo");
+  const context = resolveWorkspaceContext(root);
+  assert.equal(context.topoRoot, path.join(root, "topo"));
+  assert.equal(context.bootstrappedTopoRoot, true);
+  assert.throws(
+    () => resolveTopoRoot(path.join(root, "topogram")),
+    /Legacy workspace folders are not supported/
+  );
 });
 
-test("migrate workspace-folder refuses conflicting folders", () => {
+test("project config rejects legacy workspace paths", () => {
+  const root = tempRoot();
+  writeJson(path.join(root, "topogram.project.json"), { version: "0.1", workspace: "./topogram" });
+  writeTg(path.join(root, "topogram", "actors", "actor-user.tg"));
+
+  assert.throws(
+    () => resolveTopoRoot(root),
+    /workspace must use \.\/topo/
+  );
+});
+
+test("migrate workspace-folder command is removed", () => {
   const root = tempRoot();
   writeTg(path.join(root, "topogram", "actors", "actor-user.tg"));
-  writeTg(path.join(root, "topo", "actors", "actor-other.tg"));
 
   const result = runCli(["migrate", "workspace-folder", root, "--write", "--json"]);
   assert.notEqual(result.status, 0);
-  assert.match(result.stdout, /both topogram\/ and topo\/ exist/);
+  assert.match(result.stderr, /migrate workspace-folder.*removed/);
+  assert.match(result.stderr, /topo\//);
 });

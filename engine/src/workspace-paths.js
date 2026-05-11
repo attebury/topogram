@@ -4,10 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const DEFAULT_TOPO_FOLDER_NAME = "topo";
-export const LEGACY_TOPOGRAM_FOLDER_NAME = "topogram";
 export const DEFAULT_WORKSPACE_PATH = `./${DEFAULT_TOPO_FOLDER_NAME}`;
 export const PROJECT_CONFIG_FILE = "topogram.project.json";
 
+const LEGACY_WORKSPACE_FOLDER_NAME = "topogram";
 const SIGNAL_SCAN_IGNORED_DIRS = new Set([
   ".git",
   ".next",
@@ -19,6 +19,7 @@ const SIGNAL_SCAN_IGNORED_DIRS = new Set([
   "coverage",
   "dist",
   "expected",
+  LEGACY_WORKSPACE_FOLDER_NAME,
   "node_modules",
   "tmp"
 ]);
@@ -128,6 +129,9 @@ export function normalizeWorkspaceConfigPath(workspacePath) {
   if (resolved === ".." || resolved.startsWith("../")) {
     throw new Error("topogram.project.json workspace must not escape the project root.");
   }
+  if (resolved === LEGACY_WORKSPACE_FOLDER_NAME || resolved.startsWith(`${LEGACY_WORKSPACE_FOLDER_NAME}/`)) {
+    throw new Error("topogram.project.json workspace must use ./topo or another non-legacy relative path.");
+  }
   return normalized;
 }
 
@@ -225,6 +229,9 @@ function signalWorkspaceCandidates(root) {
  */
 export function resolveWorkspaceContext(inputPath = ".") {
   const absolute = path.resolve(inputPath || ".");
+  if (isDirectory(absolute) && path.basename(absolute) === LEGACY_WORKSPACE_FOLDER_NAME && isWorkspaceSignalRoot(absolute)) {
+    throw new Error("Legacy workspace folders are not supported. Use topo/ or configure topogram.project.json workspace to a non-legacy relative path.");
+  }
   if (
     isDirectory(absolute) &&
     (

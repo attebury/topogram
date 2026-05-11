@@ -243,7 +243,6 @@
     "./src/cli/commands/import/workspace.js",
     "./src/cli/commands/import-runner.js",
     "./src/cli/commands/inspect.js",
-    "./src/cli/commands/migrate.js",
     "./src/cli/commands/new.js",
     "./src/cli/commands/package.js",
     "./src/cli/commands/package/constants.js",

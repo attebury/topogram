@@ -193,7 +193,6 @@ const githubShellAllowedFiles = new Set([
   "engine/tests/active/engine-boundary.test.js"
 ]);
 const legacyWorkspaceFolderAllowedFiles = new Set([
-  "engine/src/cli/commands/migrate.js",
   "engine/tests/active/engine-boundary.test.js"
 ]);
 const workspaceFolderPathPattern = /(?:(?<!\.)\.\/topogram(?=[/`"'\s]|$)|\.\.\/baseline\/topogram(?=[/`"'\s]|$)|topogram\/(?:_archive|acceptance_criteria|actors|bugs|candidates|capabilities|docs|docs-generated|domains|entities|operations|pitches|projections|requirements|rules|shapes|tasks|terms|verifications|widgets|workflows)|path\.join\([^)]*["']topogram["'])/g;

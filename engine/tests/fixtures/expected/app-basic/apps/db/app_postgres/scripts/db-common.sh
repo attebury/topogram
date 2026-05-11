@@ -64,8 +64,8 @@ discover_input_path() {
   )
   local candidate
   for candidate in "${candidates[@]}"; do
-    if resolved="$(resolve_path_candidate "$candidate" "$PWD")" && [[ -d "$resolved/topogram" ]]; then
-      printf '%s\n' "$resolved/topogram"
+    if resolved="$(resolve_path_candidate "$candidate" "$PWD")" && [[ -d "$resolved/topo" ]]; then
+      printf '%s\n' "$resolved/topo"
       return
     fi
   done

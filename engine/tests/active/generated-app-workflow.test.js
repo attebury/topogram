@@ -2833,6 +2833,8 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   const unsafePackageRoot = createPureTopogramPackage(root, "unsafe-topogram-package", { implementation: true });
   const missingTopogramPackageRoot = createPureTopogramPackage(root, "missing-topogram-package");
   fs.rmSync(path.join(missingTopogramPackageRoot, "topo"), { recursive: true });
+  const legacyTopogramPackageRoot = createPureTopogramPackage(root, "legacy-topogram-package");
+  fs.renameSync(path.join(legacyTopogramPackageRoot, "topo"), path.join(legacyTopogramPackageRoot, "topogram"));
   const catalogPath = createCatalog(root, [
     sampleTemplateCatalogEntry(),
     sampleTemplateCatalogEntry({
@@ -2870,6 +2872,18 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
         scope: "@scope",
         includesExecutableImplementation: false
       }
+    }),
+    sampleTemplateCatalogEntry({
+      id: "legacy-topogram",
+      kind: "topogram",
+      package: "@scope/topogram-legacy-topogram",
+      defaultVersion: "0.1.0",
+      description: "Legacy topogram package",
+      tags: ["legacy"],
+      trust: {
+        scope: "@scope",
+        includesExecutableImplementation: false
+      }
     })
   ]);
   const fakeNpmBin = createFakeNpm(root);
@@ -2877,7 +2891,8 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
     FAKE_NPM_PACKAGES: JSON.stringify({
       "@scope/topogram-hello@0.1.0": packageRoot,
       "@scope/topogram-unsafe-package@0.1.0": unsafePackageRoot,
-      "@scope/topogram-missing-topogram@0.1.0": missingTopogramPackageRoot
+      "@scope/topogram-missing-topogram@0.1.0": missingTopogramPackageRoot,
+      "@scope/topogram-legacy-topogram@0.1.0": legacyTopogramPackageRoot
     }),
     PATH: `${fakeNpmBin}${path.delimiter}${process.env.PATH || ""}`
   };
@@ -2983,6 +2998,12 @@ test("topogram catalog copy installs pure topogram packages and rejects implemen
   const missingTopogramCopy = runCli(["catalog", "copy", "missing-topogram", path.join(root, "missing-topogram-copy"), "--catalog", catalogPath], { env });
   assert.notEqual(missingTopogramCopy.status, 0, missingTopogramCopy.stdout);
   assert.match(missingTopogramCopy.stderr, /is missing topo\//);
+
+  const legacyTopogramCopy = runCli(["catalog", "copy", "legacy-topogram", path.join(root, "legacy-topogram-copy"), "--catalog", catalogPath], { env });
+  assert.notEqual(legacyTopogramCopy.status, 0, legacyTopogramCopy.stdout);
+  assert.match(legacyTopogramCopy.stderr, /is missing topo\//);
+  assert.equal(fs.existsSync(path.join(root, "legacy-topogram-copy", "topo")), false);
+  assert.equal(fs.existsSync(path.join(root, "legacy-topogram-copy", "topogram")), false);
 });
 
 test("public commands default to project workspace and app paths", () => {

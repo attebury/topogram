@@ -235,10 +235,6 @@ test("split command parser handles extracted command families", () => {
     packageCommand: "update-cli",
     inputPath: "latest"
   });
-  assert.deepEqual(parseSplitCommandArgs(["migrate", "workspace-folder", "./legacy-project", "--dry-run"]), {
-    migrateCommand: "workspace-folder",
-    inputPath: "./legacy-project"
-  });
   assert.deepEqual(parseSplitCommandArgs(["release", "status", "--strict"]), {
     releaseCommand: "status",
     inputPath: null

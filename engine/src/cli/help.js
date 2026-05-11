@@ -28,7 +28,6 @@ export function printUsage(options = {}) {
   console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
   console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
-  console.log("   or: topogram migrate workspace-folder [path] [--dry-run|--write] [--json]");
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
   console.log("   or: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
   console.log("   or: topogram import refresh [path] [--from <app-path>] [--dry-run] [--json]");
