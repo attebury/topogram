@@ -335,7 +335,8 @@ npm run query:show -- widget-behavior
 ${hasImplementation ? "- This project has executable `implementation/` code. `topogram new` did not execute it. Do not refresh trust until the implementation has been reviewed.\n" : "- This template does not declare executable implementation code.\n"}
 ## Import And Adoption
 
-- If \`.topogram-import.json\` exists, run \`topogram import check .\`, \`topogram import plan .\`, \`topogram import adopt --list .\`, and \`topogram import history . --verify\`.
+- If \`.topogram-import.json\` exists, agents should run \`topogram import check . --json\`, \`topogram import plan . --json\`, \`topogram import adopt --list . --json\`, \`topogram import status . --json\`, and \`topogram import history . --verify --json\`.
+- Import JSON payloads expose \`workspaceRoot\`; prefer it as the canonical project-owned workspace path.
 - Imported Topogram files are project-owned after adoption; source hashes record trusted import evidence at the time of import.
 
 ## Verification Gates

@@ -10,6 +10,7 @@ const engineRoot = path.join(repoRoot, "engine");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "app-basic");
 const invalidFixtureRoot = path.join(engineRoot, "tests", "fixtures", "invalid", "missing-reference");
 const executableTemplateRoot = path.join(engineRoot, "tests", "fixtures", "templates", "web-api-db");
+const importFixtureRoot = path.join(engineRoot, "tests", "fixtures", "import");
 
 function runCli(args, options = {}) {
   return childProcess.spawnSync(process.execPath, [path.join(engineRoot, "src", "cli.js"), ...args], {
@@ -81,6 +82,46 @@ test("agent brief reports executable template trust without importing implementa
   assert.equal(payload.trust.ok, false);
   assert.ok(payload.warnings.some((warning) => /implementation\/ exists/.test(warning)));
   assert.ok(payload.warnings.some((warning) => /\.topogram-template-trust\.json/.test(warning)));
+});
+
+test("agent brief gives JSON-first import guidance with workspaceRoot", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-agent-import-"));
+  const projectRoot = path.join(root, "imported");
+  const importResult = runCli([
+    "import",
+    path.join(importFixtureRoot, "route-fallback"),
+    "--out",
+    projectRoot,
+    "--from",
+    "api,ui",
+    "--json"
+  ]);
+  assert.equal(importResult.status, 0, importResult.stderr || importResult.stdout);
+
+  const result = runCli(["agent", "brief", projectRoot, "--json"]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.type, "agent_brief");
+  const expectedWorkspaceRoot = fs.realpathSync(path.join(projectRoot, "topo"));
+  assert.equal(payload.import.workspaceRoot, expectedWorkspaceRoot);
+  assert.ok(payload.first_commands.some((item) => item.command === "topogram import check . --json"));
+  assert.ok(payload.first_commands.some((item) => item.command === "topogram import status . --json"));
+  const importWorkflow = payload.workflows.find((workflow) => workflow.id === "brownfield-import");
+  assert.ok(importWorkflow);
+  assert.deepEqual(importWorkflow.commands, [
+    "topogram import check . --json",
+    "topogram import plan . --json",
+    "topogram import adopt --list . --json",
+    "topogram import status . --json",
+    "topogram import history . --verify --json"
+  ]);
+  assert.match(importWorkflow.rule, /workspaceRoot/);
+
+  const human = runCli(["agent", "brief", projectRoot]);
+  assert.equal(human.status, 0, human.stderr || human.stdout);
+  assert.match(human.stdout, /Import:/);
+  assert.match(human.stdout, /Workspace root: .*\/topo/);
+  assert.match(human.stdout, /JSON import commands expose workspaceRoot/);
 });
 
 test("agent help documents the briefing command", () => {

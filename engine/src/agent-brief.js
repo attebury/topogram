@@ -28,7 +28,7 @@ import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot, resolveWorkspaceContext } fr
  * @typedef {{ path: string, ownership: string, rule: string }} AgentBriefOutputBoundary
  * @typedef {{ id: string, title: string, commands: string[], rule: string }} AgentBriefWorkflow
  * @typedef {{ id: string, kind: string, projection: string|null, generator: string|null, uses_api: string|null, uses_database: string|null }} AgentBriefRuntime
- * @typedef {{ path: string, source: string|null, tracks: string[], candidateCounts: Record<string, any>, ownership: string|null }} AgentBriefImport
+ * @typedef {{ path: string, workspaceRoot: string, source: string|null, tracks: string[], candidateCounts: Record<string, any>, ownership: string|null }} AgentBriefImport
  * @typedef {{ ok: true, payload: Record<string, any> } | { ok: false, kind: "topogram", validation: any } | { ok: false, kind: "project", validation: any, configPath: string }} AgentBriefResult
  */
 
@@ -137,6 +137,7 @@ function readImportSummary(projectRoot) {
     const record = JSON.parse(fs.readFileSync(importPath, "utf8"));
     return {
       path: TOPOGRAM_IMPORT_FILE,
+      workspaceRoot: resolveTopoRoot(projectRoot),
       source: typeof record?.source?.path === "string" ? record.source.path : null,
       tracks: Array.isArray(record?.import?.tracks) ? record.import.tracks.map(String) : [],
       candidateCounts: record?.import?.candidateCounts && typeof record.import.candidateCounts === "object"
@@ -147,6 +148,7 @@ function readImportSummary(projectRoot) {
   } catch (error) {
     return {
       path: TOPOGRAM_IMPORT_FILE,
+      workspaceRoot: resolveTopoRoot(projectRoot),
       source: null,
       tracks: [],
       candidateCounts: {},
@@ -215,13 +217,13 @@ function buildWorkflows(config, hasImportRecord) {
       id: "brownfield-import",
       title: "Brownfield import adoption loop",
       commands: [
-        "topogram import check .",
-        "topogram import plan .",
-        "topogram import adopt --list .",
-        "topogram import status .",
-        "topogram import history . --verify"
+        "topogram import check . --json",
+        "topogram import plan . --json",
+        "topogram import adopt --list . --json",
+        "topogram import status . --json",
+        "topogram import history . --verify --json"
       ],
-      rule: "Imported Topogram files are editable after adoption; source hashes record trusted import evidence."
+      rule: "Imported Topogram files are editable after adoption; JSON automation should read workspaceRoot for the project-owned workspace path."
     });
   }
   return workflows;
@@ -338,10 +340,11 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     commandItem("npm run generate", "Write generated-owned runtime/app outputs after validation.", "write"),
     commandItem("npm run verify", "Run generated output verification.", "verify"),
     ...(importSummary ? [
-      commandItem("topogram import check .", "Validate imported workspace provenance.", "import"),
-      commandItem("topogram import plan .", "Review import adoption plan.", "import"),
-      commandItem("topogram import adopt --list .", "List reviewable adoption selectors.", "import"),
-      commandItem("topogram import history . --verify", "Verify import history evidence.", "import")
+      commandItem("topogram import check . --json", "Validate imported workspace provenance and read workspaceRoot.", "import"),
+      commandItem("topogram import plan . --json", "Review import adoption plan and workspaceRoot.", "import"),
+      commandItem("topogram import adopt --list . --json", "List reviewable adoption selectors.", "import"),
+      commandItem("topogram import status . --json", "Check import/adoption status.", "import"),
+      commandItem("topogram import history . --verify --json", "Verify import history evidence.", "import")
     ] : [])
   ];
 
@@ -460,6 +463,12 @@ export function formatAgentBrief(brief) {
   lines.push("Workflows:");
   for (const workflow of brief.workflows || []) {
     lines.push(`  - ${workflow.title}: ${workflow.rule}`);
+  }
+  if (brief.import?.workspaceRoot) {
+    lines.push("");
+    lines.push("Import:");
+    lines.push(`  - Workspace root: ${brief.import.workspaceRoot}`);
+    lines.push("  - JSON import commands expose workspaceRoot; prefer it over compatibility fields.");
   }
   lines.push("");
   lines.push("Verification gates:");

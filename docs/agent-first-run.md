@@ -115,12 +115,16 @@ topogram emit ui-widget-contract --json
 If `.topogram-import.json` exists, run:
 
 ```bash
-topogram import check .
-topogram import plan .
-topogram import adopt --list .
-topogram import status .
-topogram import history . --verify
+topogram import check . --json
+topogram import plan . --json
+topogram import adopt --list . --json
+topogram import status . --json
+topogram import history . --verify --json
 ```
+
+Import JSON payloads expose `workspaceRoot`. Agents should use that field as
+the canonical project-owned workspace path instead of inferring folder names or
+reading compatibility fields.
 
 Imported Topogram files are project-owned after adoption. Source hashes record
 the brownfield evidence trusted at import time.

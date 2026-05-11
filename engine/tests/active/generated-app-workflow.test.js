@@ -3436,6 +3436,8 @@ test("topogram new creates an executable web-api-db starter project", () => {
   const agentsGuide = fs.readFileSync(path.join(projectRoot, "AGENTS.md"), "utf8");
   assert.match(agentsGuide, /npm run agent:brief/);
   assert.match(agentsGuide, /topogram query/);
+  assert.match(agentsGuide, /topogram import check \. --json/);
+  assert.match(agentsGuide, /workspaceRoot/);
   assert.match(agentsGuide, /Do not make lasting edits under generated-owned `app\/\*\*`/);
   assert.doesNotMatch(agentsGuide, /edit generated `app\/\*\*`/i);
   const generatorPolicy = readJson(path.join(projectRoot, "topogram.generator-policy.json"));
