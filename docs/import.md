@@ -134,6 +134,45 @@ shared UI projection bindings. It does not write concrete `web_surface`
 widget placement; web/native projections inherit shared widget and
 semantic design intent through `realizes`.
 
+## JSON Output Contracts
+
+Use `--json` when an agent or script needs a stable import surface. Import
+commands may add fields over time, but the following fields are intended for
+automation:
+
+- `topogram import <source> --out <target> --json`: `ok`, `sourcePath`,
+  `targetPath`, `workspaceRoot`, `projectConfigPath`, `provenancePath`,
+  `tracks`, `candidateCounts`, `writtenFiles`, and `nextCommands`.
+- `topogram import check --json`: `ok`, `projectRoot`, `workspaceRoot`,
+  `import.status`, `import.content`, `topogram.ok`, and `errors`.
+- `topogram import diff --json`: `ok`, `projectRoot`, `workspaceRoot`,
+  `sourceDiff`, `candidateCountDeltas`, `adoptionPlanDeltas`,
+  `receiptVerification`, `plannedFiles`, and `nextCommands`.
+- `topogram import refresh --json`: `ok`, `dryRun`, `projectRoot`,
+  `workspaceRoot`, `previousImportStatus`, `currentImportStatus`,
+  `candidateCounts`, `candidateCountDeltas`, `adoptionPlanDeltas`,
+  `writtenFiles`, `plannedFiles`, `refreshMetadata`, and `nextCommands`.
+- `topogram import plan --json`: `ok`, `projectRoot`, `workspaceRoot`,
+  `artifacts`, `summary`, `bundles`, `risks`, `nextCommand`, and `commands`.
+- `topogram import adopt --list --json`: `ok`, `projectRoot`,
+  `workspaceRoot`, `selectors`, `broadSelectors`, and `nextCommand`.
+- `topogram import adopt <selector> --json`: `ok`, `projectRoot`,
+  `workspaceRoot`, `selector`, `dryRun`, `write`,
+  `promotedCanonicalItems`, `writtenFiles`, `receipt`, `receiptPath`,
+  `adoption`, `import`, `warnings`, and `nextCommands`.
+- `topogram import status --json`: `ok`, `projectRoot`, `workspaceRoot`,
+  `import`, `topogram`, `adoption`, and `errors`.
+- `topogram import history --json`: `ok`, `projectRoot`, `workspaceRoot`,
+  `path`, `exists`, `summary`, `receipts`, `entries`, and optional
+  `verification` when `--verify` is passed.
+
+`workspaceRoot` is the canonical path to the project-owned workspace folder,
+normally `topo/`. Some import payloads also include the older `topogramRoot`
+field for compatibility; new scripts should prefer `workspaceRoot`.
+`history.entries` is an alias for `history.receipts` so agents can process
+adoption history with the same list-shaped field name used by other command
+families.
+
 Adoption writes refuse to run when the original brownfield source evidence has
 changed since import:
 

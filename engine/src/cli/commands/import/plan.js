@@ -191,6 +191,7 @@ export function buildBrownfieldImportPlanPayload(inputPath) {
   return {
     ok: true,
     projectRoot: artifacts.projectRoot,
+    workspaceRoot: artifacts.topogramRoot,
     topogramRoot: artifacts.topogramRoot,
     artifacts: {
       adoptionPlan: artifacts.paths.adoptionPlanAgent,
@@ -254,6 +255,7 @@ export function buildBrownfieldImportAdoptListPayload(inputPath) {
   return {
     ok: true,
     projectRoot: plan.projectRoot,
+    workspaceRoot: plan.topogramRoot,
     topogramRoot: plan.topogramRoot,
     selectorCount: selectors.length,
     selectors,

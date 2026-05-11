@@ -31,6 +31,7 @@ export function buildBrownfieldImportStatusPayload(inputPath) {
   return {
     ok: importCheck.ok,
     projectRoot: artifacts.projectRoot,
+    workspaceRoot: artifacts.topogramRoot,
     topogramRoot: artifacts.topogramRoot,
     import: importCheck.import,
     topogram: importCheck.topogram,
@@ -144,6 +145,7 @@ export function verifyImportAdoptionReceipts(projectRoot, receipts) {
  */
 export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
+  const workspaceRoot = normalizeTopogramPath(projectRoot);
   const historyPath = importAdoptionsPath(projectRoot);
   const receipts = readImportAdoptionReceipts(projectRoot);
   const forcedWrites = receipts.filter((receipt) => receipt.forced);
@@ -151,6 +153,7 @@ export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
   return {
     ok: true,
     projectRoot,
+    workspaceRoot,
     path: historyPath,
     exists: fs.existsSync(historyPath),
     verified: Boolean(options.verify),
@@ -162,7 +165,8 @@ export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
       lastSelector: receipts[receipts.length - 1]?.selector || null
     },
     verification,
-    receipts
+    receipts,
+    entries: receipts
   };
 }
 

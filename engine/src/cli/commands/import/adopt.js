@@ -50,6 +50,7 @@ export function buildImportAdoptionReceipt({ artifacts, selector, options, impor
       version: readInstalledCliPackageVersion()
     },
     projectRoot: artifacts.projectRoot,
+    workspaceRoot: artifacts.topogramRoot,
     topogramRoot: artifacts.topogramRoot,
     selector,
     mode: "write",
@@ -114,6 +115,7 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
   return {
     ok: true,
     projectRoot: artifacts.projectRoot,
+    workspaceRoot: artifacts.topogramRoot,
     topogramRoot: artifacts.topogramRoot,
     selector,
     dryRun: !options.write,

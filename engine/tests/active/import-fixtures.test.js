@@ -302,6 +302,117 @@ test("brownfield UI broad selector promotes widgets and related event payload sh
   assert.equal(JSON.parse(status.stdout).adoption.summary.appliedItemCount, 6);
 });
 
+test("brownfield import workflow keeps project-owned files under topo workspace", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-topo-workflow."));
+  const targetRoot = path.join(runRoot, "imported");
+  const sourceRoot = path.join(importFixtureRoot, "route-fallback");
+  const topoRoot = path.join(targetRoot, "topo");
+
+  const result = runCli([
+    "import",
+    sourceRoot,
+    "--out",
+    targetRoot,
+    "--from",
+    "api,ui",
+    "--json"
+  ]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.workspaceRoot, topoRoot);
+  assert.equal(payload.topogramRoot, topoRoot);
+  assert.equal(fs.existsSync(path.join(topoRoot, "candidates", "app", "ui", "candidates.json")), true);
+  assert.equal(fs.existsSync(path.join(topoRoot, "candidates", "reconcile", "adoption-plan.agent.json")), true);
+  assertNoLegacyTopogramWorkspace(targetRoot);
+  assert.equal(payload.writtenFiles.every((filePath) => filePath === "topogram.project.json" || !filePath.startsWith("topogram/")), true);
+
+  const check = runCli(["import", "check", targetRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.workspaceRoot, topoRoot);
+  assert.equal(checkPayload.import.status, "clean");
+
+  const diff = runCli(["import", "diff", targetRoot, "--json"]);
+  assert.equal(diff.status, 0, diff.stderr || diff.stdout);
+  const diffPayload = JSON.parse(diff.stdout);
+  assert.equal(diffPayload.ok, true);
+  assert.equal(diffPayload.workspaceRoot, topoRoot);
+  assert.equal(diffPayload.topogramRoot, topoRoot);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.ok, true);
+  assert.equal(planPayload.workspaceRoot, topoRoot);
+  assert.equal(planPayload.topogramRoot, topoRoot);
+  assert.equal(planPayload.summary.proposalItemCount > 0, true);
+
+  const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  assert.equal(selectorPayload.workspaceRoot, topoRoot);
+  assert.equal(selectorPayload.topogramRoot, topoRoot);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "widgets"), true);
+
+  const preview = runCli(["import", "adopt", "widgets", targetRoot, "--dry-run", "--json"]);
+  assert.equal(preview.status, 0, preview.stderr || preview.stdout);
+  const previewPayload = JSON.parse(preview.stdout);
+  assert.equal(previewPayload.dryRun, true);
+  assert.equal(previewPayload.workspaceRoot, topoRoot);
+  assert.equal(previewPayload.topogramRoot, topoRoot);
+  assert.deepEqual(previewPayload.writtenFiles, []);
+  assert.equal(fs.existsSync(path.join(topoRoot, "widgets")), false);
+
+  const write = runCli(["import", "adopt", "widgets", targetRoot, "--write", "--json"]);
+  assert.equal(write.status, 0, write.stderr || write.stdout);
+  const writePayload = JSON.parse(write.stdout);
+  assert.equal(writePayload.workspaceRoot, topoRoot);
+  assert.equal(writePayload.topogramRoot, topoRoot);
+  assert.equal(writePayload.receipt.workspaceRoot, topoRoot);
+  assert.equal(writePayload.receipt.topogramRoot, topoRoot);
+  assert.equal(writePayload.receipt.selector, "widgets");
+  assert.equal(fs.existsSync(path.join(topoRoot, "widgets", "widget-task-list-results.tg")), true);
+  assert.equal(writePayload.writtenFiles.every((filePath) => !filePath.startsWith("topogram/")), true);
+  assertNoLegacyTopogramWorkspace(targetRoot);
+
+  const status = runCli(["import", "status", targetRoot, "--json"]);
+  assert.equal(status.status, 0, status.stderr || status.stdout);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.workspaceRoot, topoRoot);
+  assert.equal(statusPayload.topogramRoot, topoRoot);
+  assert.equal(statusPayload.import.status, "clean");
+  assert.equal(statusPayload.adoption.summary.appliedItemCount, 2);
+
+  const history = runCli(["import", "history", targetRoot, "--verify", "--json"]);
+  assert.equal(history.status, 0, history.stderr || history.stdout);
+  const historyPayload = JSON.parse(history.stdout);
+  assert.equal(historyPayload.workspaceRoot, topoRoot);
+  assert.equal(historyPayload.verified, true);
+  assert.equal(historyPayload.summary.receiptCount, 1);
+  assert.deepEqual(historyPayload.entries, historyPayload.receipts);
+  assert.equal(historyPayload.receipts[0].selector, "widgets");
+  assert.equal(historyPayload.verification.status, "matched");
+
+  const dryRefresh = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--dry-run", "--json"]);
+  assert.equal(dryRefresh.status, 0, dryRefresh.stderr || dryRefresh.stdout);
+  const dryRefreshPayload = JSON.parse(dryRefresh.stdout);
+  assert.equal(dryRefreshPayload.dryRun, true);
+  assert.equal(dryRefreshPayload.workspaceRoot, topoRoot);
+  assert.equal(dryRefreshPayload.topogramRoot, topoRoot);
+  assert.deepEqual(dryRefreshPayload.writtenFiles, []);
+
+  const refresh = runCli(["import", "refresh", "--from", sourceRoot, targetRoot, "--json"]);
+  assert.equal(refresh.status, 0, refresh.stderr || refresh.stdout);
+  const refreshPayload = JSON.parse(refresh.stdout);
+  assert.equal(refreshPayload.ok, true);
+  assert.equal(refreshPayload.workspaceRoot, topoRoot);
+  assert.equal(refreshPayload.topogramRoot, topoRoot);
+  assert.equal(refreshPayload.currentImportStatus, "clean");
+  assert.equal(refreshPayload.writtenFiles.every((filePath) => filePath === "topogram.project.json" || !filePath.startsWith("topogram/")), true);
+  assertNoLegacyTopogramWorkspace(targetRoot);
+});
+
 test("legacy imported UI component candidates are read as widgets without rewriting public reports", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-legacy-components."));
   const targetRoot = path.join(runRoot, "imported");
@@ -620,6 +731,10 @@ function detectionIds(summary) {
     .flat()
     .map((item) => item.extractor)
     .sort();
+}
+
+function assertNoLegacyTopogramWorkspace(projectRoot) {
+  assert.equal(fs.existsSync(path.join(projectRoot, "topogram")), false);
 }
 
 function runCli(args) {

@@ -12,7 +12,8 @@ import { buildTopogramImportStatus } from "../../../import/provenance.js";
 import {
   checkSummaryPayload,
   combineProjectValidationResults,
-  normalizeProjectRoot
+  normalizeProjectRoot,
+  normalizeTopogramPath
 } from "./paths.js";
 
 /**
@@ -39,7 +40,7 @@ export function buildTopogramCheckPayloadForPath(inputPath) {
 
 /**
  * @param {string} projectRoot
- * @returns {{ ok: boolean, projectRoot: string, import: ReturnType<typeof buildTopogramImportStatus>, topogram: ReturnType<typeof buildTopogramCheckPayloadForPath>, errors: any[] }}
+ * @returns {{ ok: boolean, projectRoot: string, workspaceRoot: string, import: ReturnType<typeof buildTopogramImportStatus>, topogram: ReturnType<typeof buildTopogramCheckPayloadForPath>, errors: any[] }}
  */
 export function buildBrownfieldImportCheckPayload(projectRoot) {
   const resolvedRoot = normalizeProjectRoot(projectRoot);
@@ -48,6 +49,7 @@ export function buildBrownfieldImportCheckPayload(projectRoot) {
   return {
     ok: importStatus.ok && topogramCheck.ok,
     projectRoot: resolvedRoot,
+    workspaceRoot: normalizeTopogramPath(resolvedRoot),
     import: importStatus,
     topogram: topogramCheck,
     errors: [

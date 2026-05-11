@@ -354,7 +354,7 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
 /**
  * @param {string} inputPath
  * @param {{ sourcePath?: string|null, dryRun?: boolean }} [options]
- * @returns {{ ok: boolean, dryRun: boolean, projectRoot: string, topogramRoot: string, sourcePath: string, provenancePath: string, previousImportStatus: string, currentImportStatus: string, tracks: string[], sourceFiles: number, sourceDiff: Record<string, any>, removedCandidateFiles: Record<string, number>, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], plannedFiles: string[], candidateCounts: Record<string, number>, candidateCountDeltas: Record<string, any>, adoptionPlanDeltas: Record<string, any>, receiptVerification: Record<string, any>, refreshMetadata: Record<string, any>|null, nextCommands: string[] }}
+ * @returns {{ ok: boolean, dryRun: boolean, projectRoot: string, workspaceRoot: string, topogramRoot: string, sourcePath: string, provenancePath: string, previousImportStatus: string, currentImportStatus: string, tracks: string[], sourceFiles: number, sourceDiff: Record<string, any>, removedCandidateFiles: Record<string, number>, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], plannedFiles: string[], candidateCounts: Record<string, number>, candidateCountDeltas: Record<string, any>, adoptionPlanDeltas: Record<string, any>, receiptVerification: Record<string, any>, refreshMetadata: Record<string, any>|null, nextCommands: string[] }}
  */
 export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
   const analysis = buildBrownfieldImportRefreshAnalysis(inputPath, options);
@@ -405,6 +405,7 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
     ok: dryRun || currentImportStatus === "clean",
     dryRun,
     projectRoot: analysis.projectRoot,
+    workspaceRoot: analysis.topogramRoot,
     topogramRoot: analysis.topogramRoot,
     sourcePath: analysis.sourcePath,
     provenancePath,

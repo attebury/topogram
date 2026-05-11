@@ -17,6 +17,7 @@ export function buildBrownfieldImportDiffPayload(inputPath, options = {}) {
   return {
     ok: true,
     projectRoot: analysis.projectRoot,
+    workspaceRoot: analysis.topogramRoot,
     topogramRoot: analysis.topogramRoot,
     sourcePath: analysis.sourcePath,
     provenancePath: analysis.provenancePath,

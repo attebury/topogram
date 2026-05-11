@@ -145,7 +145,7 @@ export function countFilesRecursive(rootPath) {
  * @param {string} sourcePath
  * @param {string} targetPath
  * @param {{ from?: string|null }} [options]
- * @returns {{ ok: boolean, sourcePath: string, targetPath: string, topogramRoot: string, projectConfigPath: string, provenancePath: string, tracks: string[], sourceFiles: number, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], candidateCounts: Record<string, number>, nextCommands: string[] }}
+ * @returns {{ ok: boolean, sourcePath: string, targetPath: string, workspaceRoot: string, topogramRoot: string, projectConfigPath: string, provenancePath: string, tracks: string[], sourceFiles: number, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], candidateCounts: Record<string, number>, nextCommands: string[] }}
  */
 export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, options = {}) {
   const sourceRoot = path.resolve(sourcePath);
@@ -190,6 +190,7 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
     ok: true,
     sourcePath: sourceRoot,
     targetPath: targetRoot,
+    workspaceRoot: topogramRoot,
     topogramRoot,
     projectConfigPath,
     provenancePath: provenance.path,
