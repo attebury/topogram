@@ -683,6 +683,13 @@
       "at": "2026-05-11T21:55:44.281Z",
       "by": "actor_coding_agent",
       "note": "Preparing @topogram/cli 0.3.76."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T22:23:11.388Z",
+      "by": "actor_coding_agent",
+      "note": "Published @topogram/cli 0.3.76, smoke-tested the npmjs package, rolled first-party consumers, and refreshed strict release evidence."
     }
   ]
 }

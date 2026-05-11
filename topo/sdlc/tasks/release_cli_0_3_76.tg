@@ -11,5 +11,5 @@ task task_release_cli_0_3_76 {
   disposition active
   priority high
   work_type implementation
-  status in-progress
+  status done
 }
