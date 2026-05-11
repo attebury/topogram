@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_76_release_published {
+  name "Cli 0 3 76 Release Published"
+  description "Given maintained DB seam inference is merged on main, when @topogram/cli 0.3.76 is prepared, published, smoke-tested, and release evidence is refreshed, then strict release status is green for the CLI and first-party consumers."
+  requirement req_stateful_actions_use_cli
+  status approved
+}

@@ -659,5 +659,30 @@
       "by": "actor_coding_agent",
       "note": "Implemented maintained DB seam inference and verified with focused import tests, verify-engine, and CLI package smoke."
     }
+  ],
+  "ac_cli_0_3_76_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T21:55:40.278Z",
+      "by": "actor_coding_agent",
+      "note": "Release acceptance defined for 0.3.76."
+    }
+  ],
+  "task_release_cli_0_3_76": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T21:55:40.289Z",
+      "by": "actor_coding_agent",
+      "note": "Claimed 0.3.76 release rollout."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T21:55:44.281Z",
+      "by": "actor_coding_agent",
+      "note": "Preparing @topogram/cli 0.3.76."
+    }
   ]
 }
