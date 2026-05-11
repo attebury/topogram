@@ -1,0 +1,10 @@
+requirement req_history_drift_review_required {
+  name "History Drift Review Required"
+  description "After the code-derived topo validates, topogram-project must be compared and every major drift item must be categorized explicitly."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_run_engine_gates]
+  introduces_rules [rule_docs_must_execute]
+  domain dom_engine_quality
+  priority high
+  status draft
+}

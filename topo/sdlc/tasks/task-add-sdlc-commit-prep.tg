@@ -1,0 +1,14 @@
+task task_add_sdlc_commit_prep {
+  name "Add SDLC Commit Prep"
+  description "Add task disposition and an sdlc prep commit command so unfinished branch-touched tasks are explicit before merge."
+  satisfies [req_sdlc_commit_prep_surfaces_open_tasks]
+  acceptance_refs [ac_commit_prep_classifies_open_tasks, ac_task_queries_work_before_done]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records, cap_query_context, cap_run_engine_gates]
+  introduces_decisions [decision_unfinished_tasks_need_commit_disposition]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type implementation
+  status done
+}

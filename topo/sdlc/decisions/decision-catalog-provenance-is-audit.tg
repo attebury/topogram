@@ -1,0 +1,9 @@
+decision decision_catalog_provenance_is_audit {
+  name "Catalog Provenance Is Audit"
+  description "Catalog-copy source hashes explain what was copied and when, but they do not make later local Topogram edits invalid or source-owned."
+  context ["topogram-project/project/program/catalog-semantics.md line 102 defines catalog copy provenance", "topogram-project/project/program/catalog-semantics.md line 109 says users and agents may edit copied topogram files after import"]
+  consequences ["source status should report clean, changed, added, or removed copied files without blocking local edits", "trust enforcement stays attached to executable template implementation, not pure catalog topogram packages"]
+  pitch pitch_catalog_source_health_maturity
+  domain dom_catalog_templates
+  status proposed
+}

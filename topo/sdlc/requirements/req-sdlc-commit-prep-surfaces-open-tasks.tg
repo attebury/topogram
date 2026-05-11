@@ -1,0 +1,10 @@
+requirement req_sdlc_commit_prep_surfaces_open_tasks {
+  name "SDLC Commit Prep Surfaces Open Tasks"
+  description "Before commit or merge, Topogram should reveal branch-touched tasks that are not done and require explicit disposition for unfinished work."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_query_context, cap_run_engine_gates]
+  respects_rules [rule_stateful_workflow_mutations_use_cli]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}

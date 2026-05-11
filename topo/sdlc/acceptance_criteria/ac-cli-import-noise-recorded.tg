@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_import_noise_recorded {
+  name "CLI Import Noise Recorded"
+  description "The dogfood import evidence report records both useful CLI candidates and observed false-positive importer noise."
+  requirement req_cli_import_precision_followup
+  status draft
+}

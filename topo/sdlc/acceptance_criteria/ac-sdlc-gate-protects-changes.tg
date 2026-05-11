@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_gate_protects_changes {
+  name "SDLC Gate Protects Changes"
+  description "Protected changes fail the SDLC gate without a valid SDLC item, topo SDLC record change, or allowed exemption."
+  requirement req_enforce_sdlc_operating_habit
+  status draft
+}

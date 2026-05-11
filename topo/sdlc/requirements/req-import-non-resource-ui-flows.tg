@@ -1,0 +1,9 @@
+requirement req_import_non_resource_ui_flows {
+  name "Import Non Resource UI Flows"
+  description "Brownfield UI import should recover non-resource UI flow typing conservatively and preserve flow recovery metadata for review. Evidence: topogram-project/project/topogram/deferred-docs/docs/slimmed-product-docs/brownfield-import-roadmap.md line 184."
+  pitch pitch_brownfield_import_maturity
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  domain dom_import_adoption
+  priority medium
+  status draft
+}

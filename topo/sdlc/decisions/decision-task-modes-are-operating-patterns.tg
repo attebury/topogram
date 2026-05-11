@@ -1,0 +1,9 @@
+decision decision_task_modes_are_operating_patterns {
+  name "Task Modes Are Operating Patterns"
+  description "Agent task modes such as modeling, maintained-app edit, import/adopt, diff review, and verification are operating patterns for how agents use Topogram context."
+  context ["topogram-project/project/topogram/deferred-docs/docs/slimmed-product-docs/agent-task-modes.md line 28 defines the mode set", "engine agent workflows already rely on --mode modeling"]
+  consequences ["agent-facing query and SDLC docs should keep mode names stable", "new modes should be deliberate workflow concepts rather than incidental flags"]
+  pitch pitch_agent_query_maturity
+  domain dom_sdlc_query_agent_context
+  status proposed
+}

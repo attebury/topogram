@@ -1,0 +1,14 @@
+pitch pitch_agent_query_maturity {
+  name "Agent Query Maturity"
+  description "Make agent-facing query packets stable enough for repeatable task modes, write scopes, verification targeting, and future MCP-style tools."
+  appetite "medium"
+  problem "Agents need small, focused, read-only packets that explain what to read, what is editable, what changed, and what verification proves the work."
+  solution_sketch "Keep query surfaces read-only, document task modes as operating patterns, and mature write-scope and verification-target payloads before adding broader agent tooling."
+  rabbit_holes "Do not build a second workflow engine when focused query packets and SDLC records already carry the operating model."
+  no_go_areas "Do not make query commands mutate workspace, generated, trust, release, or archive state."
+  affects [cap_query_context, cap_brief_agent, cap_manage_sdlc_records]
+  decisions [decision_task_modes_are_operating_patterns, decision_queries_are_read_only_context_packets]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

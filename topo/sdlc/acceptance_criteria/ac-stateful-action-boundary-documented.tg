@@ -1,0 +1,6 @@
+acceptance_criterion ac_stateful_action_boundary_documented {
+  name "Stateful Action Boundary Documented"
+  description "Repo guidance documents that declarative source can be edited directly while status, history, trust, provenance, generated, archive, release, and rollout state require Topogram commands."
+  requirement req_stateful_actions_use_cli
+  status approved
+}

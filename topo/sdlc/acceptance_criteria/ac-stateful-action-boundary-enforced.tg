@@ -1,0 +1,6 @@
+acceptance_criterion ac_stateful_action_boundary_enforced {
+  name "Stateful Action Boundary Enforced"
+  description "Important command-owned state surfaces have tests, commands, or boundary checks that make bypasses explicit instead of silent."
+  requirement req_stateful_actions_use_cli
+  status approved
+}

@@ -1,0 +1,10 @@
+requirement req_sdlc_plans_track_implementation_steps {
+  name "SDLC Plans Track Implementation Steps"
+  description "Topogram should let humans and agents save optional task implementation plans with nested local steps, approach notes, outcomes, focused slices, and command-owned step progress history."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_query_context, cap_brief_agent]
+  respects_rules [rule_stateful_workflow_mutations_use_cli]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}

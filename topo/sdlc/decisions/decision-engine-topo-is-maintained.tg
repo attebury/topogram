@@ -1,0 +1,8 @@
+decision decision_engine_topo_is_maintained {
+  name "Engine Topo Is Maintained"
+  description "The engine repository is treated as a maintained app; Topogram generation must not rewrite engine source."
+  context ["engine source is hand-maintained", "topogram generate targets generated app outputs"]
+  consequences ["topogram.project.json marks the repo output maintained", "dogfood topo guides agents and reviewers instead of generating engine code"]
+  domain dom_workspace_project_config
+  status accepted
+}

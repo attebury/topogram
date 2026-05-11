@@ -1,0 +1,6 @@
+acceptance_criterion ac_engine_dogfood_sdlc_records_are_grouped {
+  name "Engine Dogfood SDLC Records Are Grouped"
+  description "The engine dogfood topo stores pitches, requirements, acceptance criteria, tasks, bugs, plans, decisions, and SDLC archives under topo/sdlc while keeping non-SDLC graph records at top level."
+  requirement req_sdlc_records_use_dedicated_record_root
+  status draft
+}

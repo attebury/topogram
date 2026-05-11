@@ -12,17 +12,3 @@ pitch pitch_dogfood_engine_topo {
   priority high
   status draft
 }
-
-pitch pitch_improve_cli_import_precision {
-  name "Improve CLI Import Precision"
-  description "Reduce false positives from generic CLI import once the dogfood import evidence is reviewed."
-  appetite "small"
-  problem "The first Topogram self-import found the real CLI surface, but also treated many source literals as commands."
-  solution_sketch "Prefer package bin, help text, command parser definitions, and command modules over arbitrary source strings."
-  rabbit_holes "Do not hardcode Topogram-specific command names."
-  no_go_areas "Do not remove source evidence; lower confidence or quarantine noisy candidates instead."
-  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
-  domain dom_import_adoption
-  priority medium
-  status draft
-}

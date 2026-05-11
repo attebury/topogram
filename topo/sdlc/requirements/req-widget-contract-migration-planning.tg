@@ -1,0 +1,9 @@
+requirement req_widget_contract_migration_planning {
+  name "Widget Contract Migration Planning"
+  description "Topogram should plan widget contract changes across affected projections so humans and agents understand what needs migration. Evidence: topogram-project/project/program/component-semantics.md line 185."
+  pitch pitch_ui_contract_maturity
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  domain dom_generator_runtime
+  priority medium
+  status draft
+}

@@ -1,0 +1,9 @@
+decision decision_cli_internal_namespace_deferred {
+  name "CLI Internal Namespace Deferred"
+  description "The old topogram internal namespace proposal is not accepted as implementation work until the current command surface is reviewed against human and agent first-run workflows."
+  context ["topogram-project/plans/streamline_cli_commands_2a1c51cd.plan.md line 36 proposes a human/default and internal surface split", "current engine workflows expose query, agent, sdlc, import, widget, and emit as first-class agent and maintainer commands"]
+  consequences ["do not move query or SDLC commands under an internal namespace by default", "decide audience taxonomy before creating command-renaming tasks", "current command visibility remains valid until a focused review says otherwise"]
+  pitch pitch_cli_audience_taxonomy
+  domain dom_cli
+  status proposed
+}

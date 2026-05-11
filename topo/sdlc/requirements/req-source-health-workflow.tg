@@ -1,0 +1,9 @@
+requirement req_source_health_workflow {
+  name "Source Health Workflow"
+  description "The doctor, source, template, and check workflow should be represented as a current operating requirement because it is part of the engine's first-run and health-check behavior. Evidence: topogram-project/project/program/source-health-workflow.md line 1."
+  pitch pitch_catalog_source_health_maturity
+  affects [cap_brief_agent, cap_validate_workspace, cap_manage_templates, cap_manage_catalog]
+  domain dom_catalog_templates
+  priority medium
+  status draft
+}

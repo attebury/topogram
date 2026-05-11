@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_policy_is_explicit {
+  name "SDLC Policy Is Explicit"
+  description "The engine repo has topogram.sdlc-policy.json with status adopted and mode enforced."
+  requirement req_enforce_sdlc_operating_habit
+  status draft
+}

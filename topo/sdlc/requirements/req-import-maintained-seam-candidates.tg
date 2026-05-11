@@ -1,0 +1,9 @@
+requirement req_import_maintained_seam_candidates {
+  name "Import Maintained Seam Candidates"
+  description "Brownfield import should infer precision-first, review-only maintained seam mappings instead of silently asserting ownership boundaries. Evidence: topogram-project/project/topogram/deferred-docs/docs/slimmed-product-docs/maintained-app-boundary-mechanics.md line 328."
+  pitch pitch_brownfield_import_maturity
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  domain dom_import_adoption
+  priority medium
+  status draft
+}

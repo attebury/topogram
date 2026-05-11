@@ -1,0 +1,9 @@
+requirement req_widget_behavior_vocab_stability {
+  name "Widget Behavior Vocabulary Stability"
+  description "Widget behavior vocabulary should be stable enough for third-party template and generator packs before external authors depend on it. Evidence: topogram-project/project/program/component-semantics.md line 175."
+  pitch pitch_ui_contract_maturity
+  affects [cap_check_widget_contracts, cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

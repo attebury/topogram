@@ -1,0 +1,9 @@
+decision decision_workspace_hygiene_is_separate_gate {
+  name "Workspace Hygiene Is Separate Gate"
+  description "Topogram graph validity and workspace hygiene are separate gates; topogram check should stay focused on parser, resolver, project, topology, trust, and ownership validity."
+  context ["topogram-project/hello-starter-1.md line 128 keeps topogram check focused on graph validity", "topogram-project/hello-starter-1.md line 129 proposes a second workspace hygiene gate"]
+  consequences ["workspace hygiene can mature through a dedicated lint/structure/check-hygiene surface", "brownfield candidate trees can stay permissive until adoption", "agents should not treat graph-valid as structurally clean"]
+  pitch pitch_workspace_hygiene_gate
+  domain dom_workspace_project_config
+  status proposed
+}

@@ -1,0 +1,14 @@
+pitch pitch_cli_audience_taxonomy {
+  name "CLI Audience Taxonomy"
+  description "Decide whether Topogram needs a separate internal command namespace or whether the current explicit command families are already clearer."
+  appetite "medium"
+  problem "Old project plans propose moving query, workflow, and import/adoption commands under topogram internal, but current agent workflows rely on visible query, agent, sdlc, import, and widget commands."
+  solution_sketch "Review the current command surface from human and agent first-run perspectives before accepting or rejecting an internal namespace."
+  rabbit_holes "Do not hide agent-critical commands just because they are not first-use human commands."
+  no_go_areas "Do not add legacy aliases or a second binary for this decision."
+  affects [cap_brief_agent, cap_query_context, cap_import_brownfield_app, cap_manage_sdlc_records]
+  decisions [decision_cli_internal_namespace_deferred]
+  domain dom_cli
+  priority medium
+  status draft
+}

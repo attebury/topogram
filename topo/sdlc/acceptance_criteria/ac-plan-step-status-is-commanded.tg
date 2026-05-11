@@ -1,0 +1,6 @@
+acceptance_criterion ac_plan_step_status_is_commanded {
+  name "Plan Step Status Is Commanded"
+  description "Plan step status transitions use SDLC CLI commands, append history, and allow sdlc check to detect direct status drift."
+  requirement req_sdlc_plans_track_implementation_steps
+  status draft
+}

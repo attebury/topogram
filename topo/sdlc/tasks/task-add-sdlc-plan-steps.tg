@@ -1,0 +1,13 @@
+task task_add_sdlc_plan_steps {
+  name "Add SDLC Plan Steps"
+  description "Add optional plan statements with nested local steps, CLI-owned step progress, plan slices, archive support, and docs."
+  satisfies [req_sdlc_plans_track_implementation_steps]
+  acceptance_refs [ac_sdlc_plans_are_optional, ac_plan_step_status_is_commanded, ac_plan_slices_feed_agents]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records, cap_query_context, cap_brief_agent]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type implementation
+  status done
+}

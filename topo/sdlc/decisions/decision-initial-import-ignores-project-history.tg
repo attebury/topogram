@@ -1,0 +1,8 @@
+decision decision_initial_import_ignores_project_history {
+  name "Initial Import Ignores Project History"
+  description "The first engine topo is derived from current repo code, tests, docs, scripts, workflows, and CLI help before comparing against topogram-project."
+  context ["historical project notes can drift from current implementation", "code-derived model should expose actual behavior first"]
+  consequences ["topogram-project is mandatory only for the later history drift review", "historical claims must be classified explicitly before promotion"]
+  domain dom_engine_quality
+  status accepted
+}

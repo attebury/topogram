@@ -1,0 +1,13 @@
+pitch pitch_brownfield_import_maturity {
+  name "Brownfield Import Maturity"
+  description "Make brownfield import/adoption precise enough for real maintained apps without auto-promoting weak inference."
+  appetite "large"
+  problem "Import can recover useful evidence, but roadmap gaps remain around seam candidates, non-resource UI flows, docs noise, projection patches, auth hints, journey drafts, and real trial proof."
+  solution_sketch "Promote durable import requirements selectively, keep candidate output review-only, and prove precision on real positive and negative brownfield fixtures."
+  rabbit_holes "Do not optimize for recall by creating canonical meaning from weak evidence."
+  no_go_areas "Do not let import rewrite maintained code or canonical projections without explicit review and adoption."
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  domain dom_import_adoption
+  priority medium
+  status draft
+}

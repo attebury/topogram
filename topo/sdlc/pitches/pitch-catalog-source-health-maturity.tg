@@ -1,0 +1,14 @@
+pitch pitch_catalog_source_health_maturity {
+  name "Catalog Source Health Maturity"
+  description "Make catalog discovery, source provenance, source status, and template health checks obvious for humans and agents."
+  appetite "medium"
+  problem "Catalog, template, and copied-topogram workflows can look similar while carrying different provenance, trust, and update semantics."
+  solution_sketch "Represent the source-health workflow as a durable requirement and keep catalog identity/provenance decisions explicit."
+  rabbit_holes "Do not treat provenance hashes as ownership locks on user-edited Topogram source."
+  no_go_areas "Do not present ambiguous catalog entries as canonical examples before their identity is settled."
+  affects [cap_manage_catalog, cap_manage_templates, cap_create_project, cap_brief_agent]
+  decisions [decision_catalog_hello_identity, decision_catalog_provenance_is_audit]
+  domain dom_catalog_templates
+  priority medium
+  status draft
+}

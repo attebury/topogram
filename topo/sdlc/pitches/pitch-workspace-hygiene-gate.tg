@@ -1,0 +1,14 @@
+pitch pitch_workspace_hygiene_gate {
+  name "Workspace Hygiene Gate"
+  description "Add a second project hygiene gate for folder layout, stale starter names, stale references, and file naming after graph validity passes."
+  appetite "small"
+  problem "topogram check proves graph validity, but it does not prove that a workspace is organized, reviewable, or free of stale starter concepts."
+  solution_sketch "Keep topogram check focused on graph validity and introduce a separate hygiene gate or profile when the product is ready."
+  rabbit_holes "Do not overload topogram check with every style or structure preference."
+  no_go_areas "Do not make brownfield candidate trees invalid just because they are intentionally messy before adoption."
+  affects [cap_validate_workspace, cap_brief_agent, cap_query_context]
+  decisions [decision_workspace_hygiene_is_separate_gate]
+  domain dom_workspace_project_config
+  priority medium
+  status draft
+}

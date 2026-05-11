@@ -1,0 +1,6 @@
+acceptance_criterion ac_custom_sdlc_layouts_still_validate {
+  name "Custom SDLC Layouts Still Validate"
+  description "Existing and custom folder layouts still validate because folder placement remains a convention, not a parser or validator requirement."
+  requirement req_sdlc_records_use_dedicated_record_root
+  status draft
+}

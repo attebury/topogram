@@ -1,0 +1,9 @@
+decision decision_shapes_are_boundary_data {
+  name "Shapes Are Boundary Data"
+  description "Shapes are the boundary data primitive for API, UI, widget, event, import/export, lookup, and computed payloads, including objects that are not persisted."
+  context ["topogram-project/project/program/ui-contract-maturity-roadmap.md line 78 says import/adoption should preserve the entity/shape boundary", "topogram-project/project/program/dsl-vocabulary-decisions.md line 14 says data boundary names distinguish durable identity from boundary data contracts"]
+  consequences ["do not add transfer_object or model as a new DSL kind until shape proves insufficient", "front-end and API exposure should use shapes rather than leaking every entity field"]
+  pitch pitch_ui_contract_maturity
+  domain dom_sdlc_query_agent_context
+  status proposed
+}

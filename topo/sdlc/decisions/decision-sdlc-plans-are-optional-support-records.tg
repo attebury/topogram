@@ -1,0 +1,8 @@
+decision decision_sdlc_plans_are_optional_support_records {
+  name "SDLC Plans Are Optional Support Records"
+  description "Implementation plans are optional SDLC records with nested local steps; they support tasks without becoming mandatory task DoD."
+  context ["small tasks should not require ceremony", "multi-step work benefits from durable sequencing and lessons learned", "step status is workflow state"]
+  consequences ["plans may be authored directly as declarative topo source", "step status transitions and archive state use the CLI", "query slices surface linked plans when present"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

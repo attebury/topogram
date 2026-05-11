@@ -1,0 +1,9 @@
+decision decision_queries_are_read_only_context_packets {
+  name "Queries Are Read Only Context Packets"
+  description "Topogram query commands are read-only context packet surfaces for agents and reviewers, not mutation commands."
+  context ["topogram-project/project/program/agent-query-surface.md line 7 describes query surfaces", "topogram-project/project/topogram/deferred-docs/docs/slimmed-product-docs/agent-query-contract.md line 1 defines the query contract"]
+  consequences ["query commands should not write workspace, app, trust, provenance, archive, or release state", "mutation workflows should use explicit command families such as sdlc, import, trust, template, catalog, generate, and release"]
+  pitch pitch_agent_query_maturity
+  domain dom_sdlc_query_agent_context
+  status proposed
+}

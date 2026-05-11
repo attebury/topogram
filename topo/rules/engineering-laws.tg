@@ -87,3 +87,13 @@ rule rule_stateful_workflow_mutations_use_cli {
   domain dom_engine_quality
   status active
 }
+
+rule rule_sdlc_records_are_one_per_file {
+  name "SDLC Records Are One Per File"
+  description "Lifecycle-managed SDLC records should live one record per file so pitches, decisions, requirements, tasks, bugs, acceptance criteria, and plans can be reviewed, transitioned, archived, and queried independently. Batch files are temporary import or promotion staging only."
+  applies_to [cap_manage_sdlc_records, cap_brief_agent, cap_query_context]
+  severity warning
+  source_of_truth [decision_sdlc_records_use_dedicated_record_root]
+  domain dom_sdlc_query_agent_context
+  status active
+}

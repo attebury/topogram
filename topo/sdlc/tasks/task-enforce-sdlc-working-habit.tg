@@ -1,0 +1,13 @@
+task task_enforce_sdlc_working_habit {
+  name "Enforce SDLC Working Habit"
+  description "Add explicit SDLC adoption policy, PR/CI gate enforcement, stricter task Definition of Done, agent guidance, and ergonomic SDLC link/complete commands."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_sdlc_policy_is_explicit, ac_sdlc_gate_protects_changes, ac_done_tasks_have_verification]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records, cap_run_engine_gates, cap_brief_agent]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type implementation
+  status done
+}

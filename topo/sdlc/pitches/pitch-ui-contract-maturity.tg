@@ -1,0 +1,14 @@
+pitch pitch_ui_contract_maturity {
+  name "UI Contract Maturity"
+  description "Bring UI, widget, and native contract maturity closer to the backend/API/data side while preserving semantic rather than pixel-level normalization."
+  appetite "large"
+  problem "UI intent can drift or disappear across web/native/generator/import/agent surfaces unless the ownership and semantic contract decisions remain explicit."
+  solution_sketch "Keep ui_contract as the semantic owner, keep widgets as reusable UI contracts, stabilize behavior vocabulary, and require generator/import/query surfaces to preserve or diagnose UI intent."
+  rabbit_holes "Do not normalize framework trees, Tailwind classes, SwiftUI modifiers, or pixel-perfect layout into the DSL."
+  no_go_areas "Do not let concrete web/native surfaces become the source of truth for shared semantic UI intent."
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  decisions [decision_semantic_ui_intent_is_contract_owned, decision_shapes_are_boundary_data]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

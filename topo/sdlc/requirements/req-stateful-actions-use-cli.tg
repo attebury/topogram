@@ -1,0 +1,10 @@
+requirement req_stateful_actions_use_cli {
+  name "Stateful Actions Use CLI"
+  description "Topogram must make stateful workflow mutations explicit command operations so humans and agents do not hand-edit audit, trust, provenance, generated, archive, release, or rollout state."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_manage_templates, cap_import_brownfield_app, cap_generate_app_outputs, cap_verify_release_status, cap_roll_consumer_packages]
+  introduces_rules [rule_stateful_workflow_mutations_use_cli]
+  domain dom_engine_quality
+  priority high
+  status approved
+}

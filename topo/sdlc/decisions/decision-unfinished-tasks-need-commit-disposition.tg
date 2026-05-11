@@ -1,0 +1,8 @@
+decision decision_unfinished_tasks_need_commit_disposition {
+  name "Unfinished Tasks Need Commit Disposition"
+  description "Open tasks touched by a branch must be intentional at commit boundaries rather than silently carried in completed initiative files."
+  context ["task files are organizational containers only", "status and disposition communicate lifecycle intent", "agents need a pre-commit view of unfinished work"]
+  consequences ["unclaimed touched tasks require disposition before commit prep passes", "follow-up deferred and backlog tasks may remain open when explicit", "blocker disposition fails commit prep unless the work is intentionally incomplete"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

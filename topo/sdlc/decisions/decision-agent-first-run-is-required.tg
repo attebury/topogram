@@ -1,0 +1,8 @@
+decision decision_agent_first_run_is_required {
+  name "Agent First Run Is Required"
+  description "Agents should begin with agent brief and focused query packets before broad source edits."
+  context ["docs/agent-first-run.md is the current guidance", "query packets reduce unnecessary graph and source context"]
+  consequences ["dogfood tasks should be explainable through sdlc records", "agent-facing workflow should prefer focused context"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

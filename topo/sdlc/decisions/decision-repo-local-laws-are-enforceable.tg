@@ -1,0 +1,8 @@
+decision decision_repo_local_laws_are_enforceable {
+  name "Repo Local Laws Are Enforceable"
+  description "AGENTS.md and CONTRIBUTING.md define enforceable engineering laws for the maintained Topogram engine."
+  context ["repo-local laws are reviewed before changes", "boundary tests encode recurring laws"]
+  consequences ["topo rules mirror only evidenced repo-local laws", "new engine work should update rules when laws change"]
+  domain dom_engine_quality
+  status accepted
+}

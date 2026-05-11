@@ -1,0 +1,13 @@
+task task_add_cli_import_track {
+  name "Add CLI Import Track"
+  description "Infer CLI command candidates, options, outputs, effects, examples, surfaces, and adoption support from generic brownfield evidence."
+  satisfies [req_engine_topo_code_derived, req_cli_import_precision_followup]
+  acceptance_refs [ac_cli_import_noise_recorded]
+  verification_refs [verification_import_fixtures]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  claimed_by [actor_coding_agent]
+  domain dom_import_adoption
+  priority high
+  work_type implementation
+  status done
+}

@@ -1,0 +1,10 @@
+requirement req_enforce_sdlc_operating_habit {
+  name "Enforce SDLC Operating Habit"
+  description "The engine repo must explicitly adopt SDLC and reject protected changes unless they are linked to an SDLC item, update SDLC records, or state an allowed exemption."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_run_engine_gates, cap_brief_agent]
+  introduces_rules [rule_spec_is_source_of_truth]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}

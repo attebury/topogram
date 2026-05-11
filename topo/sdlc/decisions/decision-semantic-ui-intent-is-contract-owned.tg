@@ -1,0 +1,9 @@
+decision decision_semantic_ui_intent_is_contract_owned {
+  name "Semantic UI Intent Is Contract Owned"
+  description "ui_contract owns semantic UI intent, while web_surface, ios_surface, and future android_surface realize that intent through routes and platform hints."
+  context ["topogram-project/project/program/ui-contract-maturity-roadmap.md line 45 rejects shared semantic UI blocks on concrete surfaces", "topogram-project/project/program/ui-contract-maturity-roadmap.md line 51 requires concrete contracts to inherit shared screen and widget intent through realizes"]
+  consequences ["widgets, screens, regions, navigation, visibility, behavior realizations, and design_tokens remain shared semantic contracts", "CSS, framework trees, and native modifiers stay in generators, templates, or maintained app code"]
+  pitch pitch_ui_contract_maturity
+  domain dom_sdlc_query_agent_context
+  status proposed
+}

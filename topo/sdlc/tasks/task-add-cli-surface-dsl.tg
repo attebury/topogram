@@ -1,0 +1,13 @@
+task task_add_cli_surface_dsl {
+  name "Add CLI Surface DSL"
+  description "Add cli_surface projection blocks, validation, resolver output, docs, and fixture tests."
+  satisfies [req_engine_topo_code_derived]
+  acceptance_refs [ac_engine_topo_validates]
+  verification_refs [verification_cli_surface_dsl]
+  affects [cap_validate_workspace, cap_import_brownfield_app]
+  claimed_by [actor_coding_agent]
+  domain dom_cli
+  priority high
+  work_type implementation
+  status done
+}

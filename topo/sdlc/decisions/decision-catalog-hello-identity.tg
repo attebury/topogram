@@ -1,0 +1,9 @@
+decision decision_catalog_hello_identity {
+  name "Catalog Hello Identity"
+  description "The catalog hello identity is misleading enough that it should be renamed, replaced, or kept internal before it becomes a durable public concept."
+  context ["topogram-project/project/program/catalog-semantics.md line 61 says hello is misleading and must be renamed, replaced, or kept internal"]
+  consequences ["catalog hello naming needs an explicit resolution task", "starter and pure topogram catalog entries should not hide their purpose behind vague names"]
+  pitch pitch_catalog_source_health_maturity
+  domain dom_catalog_templates
+  status proposed
+}

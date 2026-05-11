@@ -1,0 +1,8 @@
+decision decision_stateful_workflow_mutations_use_cli {
+  name "Stateful Workflow Mutations Use CLI"
+  description "Derived state and audit state must be changed through canonical Topogram commands rather than hand-edited."
+  context ["declarative topo source can be edited directly", "status history trust hashes provenance generated sentinels archives and release state are audit surfaces"]
+  consequences ["stateful workflow mutations use the CLI so validation and history stay coherent", "manual edits are reserved for declarative source and reviewed policy changes"]
+  domain dom_engine_quality
+  status accepted
+}

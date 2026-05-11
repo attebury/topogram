@@ -1,0 +1,13 @@
+pitch pitch_coverage_ratchet {
+  name "Coverage Ratchet"
+  description "Add coverage instrumentation and a numeric ratchet only when it improves consumer-risk visibility beyond current behavior and boundary tests."
+  appetite "small"
+  problem "The hardening plan lists coverage instrumentation as future work, but numeric coverage can become noise if it rewards broad execution over consumer proof."
+  solution_sketch "Treat coverage as a future quality signal that must complement, not replace, consumer-value tests and boundary ratchets."
+  rabbit_holes "Do not chase coverage percentage at the expense of install, generate, compile, runtime, catalog, import, or source-status proof."
+  no_go_areas "Do not fail releases on a new numeric ratchet until the baseline and value are explicit."
+  affects [cap_run_engine_gates]
+  domain dom_engine_quality
+  priority low
+  status draft
+}

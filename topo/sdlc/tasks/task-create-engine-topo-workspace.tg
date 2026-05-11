@@ -1,0 +1,13 @@
+task task_create_engine_topo_workspace {
+  name "Create Engine Topo Workspace"
+  description "Create the maintained engine topo from current repo-local evidence and record the raw self-import evidence report."
+  satisfies [req_engine_topo_code_derived]
+  acceptance_refs [ac_engine_topo_validates, ac_agent_brief_reads_engine_topo, ac_cli_import_noise_recorded]
+  verification_refs [verification_dogfood_topo_workspace]
+  affects [cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type documentation
+  status done
+}

@@ -1,0 +1,10 @@
+requirement req_engine_topo_code_derived {
+  name "Engine Topo Is Code Derived"
+  description "The initial maintained engine topo must be derived from current repo code, tests, docs, scripts, workflows, package manifests, CLI help, AGENTS.md, and CONTRIBUTING.md."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_import_brownfield_app, cap_brief_agent, cap_query_context]
+  introduces_rules [rule_spec_is_source_of_truth]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}
