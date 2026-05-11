@@ -6,9 +6,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 ## Summary
 
-- Package: `@topogram/cli@0.3.72`
-- Latest published: `0.3.72` (current)
-- Release tag: `topogram-v0.3.72` (local=yes, remote=yes)
+- Package: `@topogram/cli@0.3.73`
+- Latest published: `0.3.73` (current)
+- Release tag: `topogram-v0.3.73` (local=yes, remote=yes)
 - Consumer pins: 13/13 matching
 - Consumer CI: 13/13 passing
 - Strict status: passed
@@ -17,9 +17,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.72` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
-| `attebury/topograms` catalog | `e0566d0` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.72 |
-| `topogram-demo-todo` | `0fd77b5` | Demo Verification: completed/success; pinned @topogram/cli@0.3.72 |
+| `@topogram/cli` | `0.3.73` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
+| `attebury/topograms` catalog | `14e3bbc` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.73 |
+| `topogram-demo-todo` | `20a55b0` | Demo Verification: completed/success; pinned @topogram/cli@0.3.73 |
 
 ## Catalog Entries
 
@@ -51,19 +51,19 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Repo | Pin | Workflow | Status | Run |
 | --- | --- | --- | --- | --- |
-| `topogram-generator-express-api` | `0.3.72` | Generator Verification | completed/success | [25648951181](https://github.com/attebury/topogram-generator-express-api/actions/runs/25648951181) |
-| `topogram-generator-hono-api` | `0.3.72` | Generator Verification | completed/success | [25648955038](https://github.com/attebury/topogram-generator-hono-api/actions/runs/25648955038) |
-| `topogram-generator-postgres-db` | `0.3.72` | Generator Verification | completed/success | [25648957515](https://github.com/attebury/topogram-generator-postgres-db/actions/runs/25648957515) |
-| `topogram-generator-react-web` | `0.3.72` | Generator Verification | completed/success | [25648964562](https://github.com/attebury/topogram-generator-react-web/actions/runs/25648964562) |
-| `topogram-generator-sqlite-db` | `0.3.72` | Generator Verification | completed/success | [25648966922](https://github.com/attebury/topogram-generator-sqlite-db/actions/runs/25648966922) |
-| `topogram-generator-sveltekit-web` | `0.3.72` | Generator Verification | completed/success | [25648974056](https://github.com/attebury/topogram-generator-sveltekit-web/actions/runs/25648974056) |
-| `topogram-generator-swiftui-native` | `0.3.72` | Generator Verification | completed/success | [25648979671](https://github.com/attebury/topogram-generator-swiftui-native/actions/runs/25648979671) |
-| `topogram-generator-vanilla-web` | `0.3.72` | Generator Verification | completed/success | [25648982560](https://github.com/attebury/topogram-generator-vanilla-web/actions/runs/25648982560) |
-| `topogram-starters` | `0.3.72` | Starter Verification | completed/success | [25649009071](https://github.com/attebury/topogram-starters/actions/runs/25649009071) |
-| `topogram-template-todo` | `0.3.72` | Template Verification | completed/success | [25649021240](https://github.com/attebury/topogram-template-todo/actions/runs/25649021240) |
-| `topogram-demo-todo` | `0.3.72` | Demo Verification | completed/success | [25649026412](https://github.com/attebury/topogram-demo-todo/actions/runs/25649026412) |
-| `topogram-hello` | `0.3.72` | Topogram Package Verification | completed/success | [25649028545](https://github.com/attebury/topogram-hello/actions/runs/25649028545) |
-| `topograms` | `0.3.72` | Catalog Verification | completed/success | [25649316137](https://github.com/attebury/topograms/actions/runs/25649316137) |
+| `topogram-generator-express-api` | `0.3.73` | Generator Verification | completed/success | [25679744807](https://github.com/attebury/topogram-generator-express-api/actions/runs/25679744807) |
+| `topogram-generator-hono-api` | `0.3.73` | Generator Verification | completed/success | [25679778443](https://github.com/attebury/topogram-generator-hono-api/actions/runs/25679778443) |
+| `topogram-generator-postgres-db` | `0.3.73` | Generator Verification | completed/success | [25679825453](https://github.com/attebury/topogram-generator-postgres-db/actions/runs/25679825453) |
+| `topogram-generator-react-web` | `0.3.73` | Generator Verification | completed/success | [25679872255](https://github.com/attebury/topogram-generator-react-web/actions/runs/25679872255) |
+| `topogram-generator-sqlite-db` | `0.3.73` | Generator Verification | completed/success | [25679916275](https://github.com/attebury/topogram-generator-sqlite-db/actions/runs/25679916275) |
+| `topogram-generator-sveltekit-web` | `0.3.73` | Generator Verification | completed/success | [25679966007](https://github.com/attebury/topogram-generator-sveltekit-web/actions/runs/25679966007) |
+| `topogram-generator-swiftui-native` | `0.3.73` | Generator Verification | completed/success | [25680022468](https://github.com/attebury/topogram-generator-swiftui-native/actions/runs/25680022468) |
+| `topogram-generator-vanilla-web` | `0.3.73` | Generator Verification | completed/success | [25680068113](https://github.com/attebury/topogram-generator-vanilla-web/actions/runs/25680068113) |
+| `topogram-starters` | `0.3.73` | Starter Verification | completed/success | [25680163549](https://github.com/attebury/topogram-starters/actions/runs/25680163549) |
+| `topogram-template-todo` | `0.3.73` | Template Verification | completed/success | [25680292464](https://github.com/attebury/topogram-template-todo/actions/runs/25680292464) |
+| `topogram-demo-todo` | `0.3.73` | Demo Verification | completed/success | [25680366436](https://github.com/attebury/topogram-demo-todo/actions/runs/25680366436) |
+| `topogram-hello` | `0.3.73` | Topogram Package Verification | completed/success | [25680478682](https://github.com/attebury/topogram-hello/actions/runs/25680478682) |
+| `topograms` | `0.3.73` | Catalog Verification | completed/success | [25680518685](https://github.com/attebury/topograms/actions/runs/25680518685) |
 
 ## Consumer Proofs
 
