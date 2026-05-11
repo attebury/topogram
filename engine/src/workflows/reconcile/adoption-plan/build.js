@@ -30,6 +30,7 @@ export function buildAdoptionPlan(bundles) {
         step.action === "apply_projection_permission_patch" ? "projection_permission_patch" :
         step.action === "apply_projection_auth_patch" ? "projection_auth_patch" :
         step.action === "apply_projection_ownership_patch" ? "projection_ownership_patch" :
+        step.action === "promote_cli_surface" ? "projection" :
         step.action.includes("doc") ? "doc" :
         step.action.includes("decision") ? "decision" :
         step.action.includes("verification") ? "verification" :
@@ -70,6 +71,7 @@ export function buildAdoptionPlan(bundles) {
         item: step.item,
         kind: itemKind,
         track:
+          step.track ? step.track :
           step.action.includes("workflow") ? "workflows" :
           step.action.includes("verification") ? "verification" :
           step.action.includes("ui_") ? "ui" :
@@ -209,4 +211,4 @@ export function buildAdoptionPlan(bundles) {
   );
 }
 
-export const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "ui"]);
+export const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "cli", "ui"]);

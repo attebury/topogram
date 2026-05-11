@@ -192,6 +192,7 @@ Limit import scope with tracks when useful:
 
 ```bash
 topogram import ./existing-app --out ./imported-topogram --from db,api,ui
+topogram import ./existing-cli --out ./imported-topogram --from cli
 ```
 
-Supported tracks are `db`, `api`, `ui`, `workflows`, and `verification`.
+Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and `verification`.

@@ -17,6 +17,8 @@ export function reasonForAdoptionItem(step) {
       return "Promote this imported capability into canonical Topogram.";
     case "promote_widget":
       return "Promote this imported reusable UI widget into canonical Topogram.";
+    case "promote_cli_surface":
+      return "Promote this imported CLI surface projection into canonical Topogram.";
     case "merge_capability_into_existing_entity":
       return `Adopt this capability while preserving the existing canonical entity ${step.target}.`;
     case "promote_doc":
@@ -65,6 +67,9 @@ export function recommendationForAdoptionItem(step) {
   }
   if (step.action === "promote_widget") {
     return "Promote this reviewed widget candidate before binding or reusing it from canonical projections.";
+  }
+  if (step.action === "promote_cli_surface") {
+    return "Promote this reviewed CLI surface candidate after confirming commands, options, outputs, and side effects.";
   }
   if (!["promote_actor", "promote_role"].includes(step.action)) {
     return null;

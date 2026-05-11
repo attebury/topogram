@@ -6,7 +6,7 @@ import { relativeTo } from "../../path-helpers.js";
 import { canonicalCandidateTerm, idHintify } from "../../text-helpers.js";
 import { listFilesRecursive } from "../shared.js";
 
-export const IMPORT_TRACKS = new Set(["db", "api", "ui", "workflows", "verification"]);
+export const IMPORT_TRACKS = new Set(["db", "api", "ui", "cli", "workflows", "verification"]);
 export const SCALAR_FIELD_TYPES = new Set([
   "bigint",
   "boolean",

@@ -134,6 +134,19 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
       canonical_rel_path: `widgets/${dashedTopogramId(entry.id_hint)}.tg`
     });
   }
+  for (const entry of bundle.cliSurfaces || []) {
+    steps.push({
+      action: "promote_cli_surface",
+      item: entry.id_hint,
+      target: null,
+      confidence: entry.confidence || "low",
+      inference_summary: entry.inference_summary || null,
+      related_capabilities: [...new Set((entry.command_records || []).map((/** @type {any} */ command) => command.capability_id).filter(Boolean))].sort(),
+      source_path: `candidates/reconcile/model/bundles/${bundle.slug}/projections/${entry.id_hint}.tg`,
+      canonical_rel_path: `projections/${dashedTopogramId(entry.id_hint)}.tg`,
+      track: "cli"
+    });
+  }
   for (const screen of bundle.screens) {
     steps.push({
       action: "promote_ui_report",

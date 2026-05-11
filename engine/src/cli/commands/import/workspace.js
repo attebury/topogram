@@ -116,6 +116,9 @@ export function importCandidateCounts(summary) {
     uiRoutes: candidates.ui?.routes?.length || 0,
     uiWidgets: candidates.ui?.widgets?.length || candidates.ui?.components?.length || 0,
     uiShapes: candidates.ui?.shapes?.length || 0,
+    cliCommands: candidates.cli?.commands?.length || 0,
+    cliCapabilities: candidates.cli?.capabilities?.length || 0,
+    cliSurfaces: candidates.cli?.surfaces?.length || 0,
     workflows: candidates.workflows?.workflows?.length || 0,
     verifications: candidates.verification?.verifications?.length || 0
   };

@@ -18,6 +18,7 @@ import { buildTopogramApiCapabilityIndex, buildBundleDocLinkSuggestions, collect
 import { buildBundleAdoptionPlan, buildCanonicalShapeIndex, buildProjectionEntityIndex, buildProjectionImpacts, buildProjectionPatchCandidates, buildUiImpacts, buildWorkflowImpacts } from "./impacts.js";
 import {
   renderCandidateCapability,
+  renderCandidateCliSurface,
   renderCandidateEntity,
   renderCandidateEnum,
   renderCandidateShape,
@@ -88,6 +89,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const uiShapeCandidatesById = new Map(uiShapeCandidates.map((/** @type {any} */ shape) => [shape.id || shape.id_hint, shape]));
   const workflowCandidates = appImport.candidates.workflows || { workflows: [], workflow_states: [], workflow_transitions: [] };
   const verificationCandidates = appImport.candidates.verification || { verifications: [], scenarios: [], frameworks: [], scripts: [] };
+  const cliCandidates = appImport.candidates.cli || { commands: [], capabilities: [], surfaces: [] };
   const docCandidates = appImport.candidates.docs || [];
   const actorCandidates = appImport.candidates.actors || [];
   const roleCandidates = appImport.candidates.roles || [];
@@ -173,6 +175,14 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         fields: outputFields
       });
     }
+  }
+  for (const entry of cliCandidates.capabilities || []) {
+    const bundle = getOrCreateCandidateBundle(bundles, "cli", "CLI");
+    bundle.capabilities.push(entry);
+  }
+  for (const entry of cliCandidates.surfaces || []) {
+    const bundle = getOrCreateCandidateBundle(bundles, "cli", "CLI");
+    bundle.cliSurfaces.push(entry);
   }
   for (const entry of uiCandidates.screens || []) {
     if (canonicalUi.screens.includes(entry.id_hint)) {
@@ -316,6 +326,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.capabilities.length > 0 ||
       bundle.shapes.length > 0 ||
       bundle.widgets.length > 0 ||
+      bundle.cliSurfaces.length > 0 ||
       bundle.screens.length > 0 ||
       bundle.uiRoutes.length > 0 ||
       bundle.uiActions.length > 0 ||
@@ -334,6 +345,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         capabilities: bundle.capabilities.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         shapes: bundle.shapes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id.localeCompare(b.id)),
         widgets: bundle.widgets.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        cliSurfaces: bundle.cliSurfaces.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         screens: bundle.screens.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         uiRoutes: bundle.uiRoutes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         uiActions: bundle.uiActions.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
@@ -440,6 +452,9 @@ export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
     }
     for (const entry of bundle.widgets || []) {
       files[`${bundleRoot}/widgets/${entry.id_hint}.tg`] = renderCandidateWidget(entry);
+    }
+    for (const entry of bundle.cliSurfaces || []) {
+      files[`${bundleRoot}/projections/${entry.id_hint}.tg`] = renderCandidateCliSurface(entry);
     }
     for (const entry of bundle.docs) {
       if (entry.existing_canonical) {

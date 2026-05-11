@@ -11,6 +11,7 @@ const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "
 const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "import");
 const cliPath = path.join(repoRoot, "engine", "src", "cli.js");
 const retainedImportFixtures = [
+  "cli-basic",
   "prisma-openapi",
   "route-fallback",
   "sql-openapi"
@@ -73,6 +74,28 @@ test("route fallback import fixture extracts API routes and React screens", () =
   assert.equal(Object.hasOwn(summary.candidates.ui, "components"), false);
 });
 
+test("CLI import fixture extracts command surface candidates", () => {
+  const summary = runImportAppWorkflow(path.join(importFixtureRoot, "cli-basic"), {
+    from: "cli"
+  }).summary;
+
+  assert.deepEqual(summary.tracks, ["cli"]);
+  assert.deepEqual(detectionIds(summary), ["cli.generic"]);
+  assert.deepEqual((summary.candidates.cli.commands || []).map((item) => item.command_id).sort(), ["check", "import"]);
+  assert.deepEqual(candidateIds(summary.candidates.cli.capabilities), ["cap_check", "cap_import"]);
+  assert.deepEqual(candidateIds(summary.candidates.cli.surfaces), ["proj_cli_surface"]);
+  const surface = summary.candidates.cli.surfaces[0];
+  assert.deepEqual(surface.commands, ["check", "import"]);
+  assert.deepEqual(
+    (surface.options || []).map((item) => `${item.command_id}:${item.name}`).sort(),
+    ["check:json", "import:from", "import:json", "import:out"]
+  );
+  assert.deepEqual(
+    (surface.effects || []).map((item) => `${item.command_id}:${item.effect}`).sort(),
+    ["check:read_only", "import:filesystem", "import:writes_workspace"]
+  );
+});
+
 test("brownfield import creates editable Topogram workspace with source provenance", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-workspace."));
   const targetRoot = path.join(runRoot, "imported");
@@ -111,6 +134,72 @@ test("brownfield import creates editable Topogram workspace with source provenan
   const editedCheck = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(editedCheck.status, 0, editedCheck.stderr || editedCheck.stdout);
   assert.equal(JSON.parse(editedCheck.stdout).import.status, "clean");
+});
+
+test("brownfield CLI import writes reviewable command surface and adopts canonical projection", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-cli."));
+  const targetRoot = path.join(runRoot, "imported");
+  const result = runCli([
+    "import",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "cli",
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.tracks, ["cli"]);
+  assert.equal(payload.candidateCounts.cliCommands, 2);
+  assert.equal(payload.candidateCounts.cliCapabilities, 2);
+  assert.equal(payload.candidateCounts.cliSurfaces, 1);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "app", "cli", "report.md")), true);
+
+  const candidateProjectionPath = path.join(
+    targetRoot,
+    "topo",
+    "candidates",
+    "reconcile",
+    "model",
+    "bundles",
+    "cli",
+    "projections",
+    "proj_cli_surface.tg"
+  );
+  assert.equal(fs.existsSync(candidateProjectionPath), true);
+  const candidateProjection = fs.readFileSync(candidateProjectionPath, "utf8");
+  assert.match(candidateProjection, /type cli_surface/);
+  assert.match(candidateProjection, /command check capability cap_check/);
+  assert.match(candidateProjection, /command import capability cap_import/);
+  assert.match(candidateProjection, /command import effect writes_workspace/);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.summary.proposalItemCount, 4);
+  assert.deepEqual(planPayload.bundles[0].kindCounts, {
+    capability: 2,
+    doc: 1,
+    projection: 1
+  });
+
+  const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  const cliSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "cli");
+  assert.equal(cliSelector.itemCount, 4);
+
+  const adopt = runCli(["import", "adopt", "cli", targetRoot, "--write", "--json"]);
+  assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+  const adoptPayload = JSON.parse(adopt.stdout);
+  assert.equal(adoptPayload.promotedCanonicalItems.some((item) => item.kind === "projection" && item.item === "proj_cli_surface"), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "projections", "proj-cli-surface.tg")), true);
+
+  const check = runCli(["check", targetRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
 });
 
 test("brownfield UI import writes reviewable widget candidates and shared bindings", () => {

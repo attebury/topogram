@@ -107,6 +107,7 @@
     "./src/import/core/shared/next-app.js",
     "./src/import/core/shared/types.d.ts",
     "./src/import/core/shared/ui-routes.js",
+    "./src/import/extractors/cli/generic.js",
     "./src/adoption/plan.d.ts",
     "./src/adoption/reporting.d.ts",
     "./src/adoption/review-groups.d.ts",

@@ -22,10 +22,11 @@ export function loadImportArtifacts(paths, inputPath) {
   const dbCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "db", "candidates.json"));
   const apiCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "api", "candidates.json"));
   const uiCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "ui", "candidates.json"));
+  const cliCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "cli", "candidates.json"));
   const workflowCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "workflows", "candidates.json"));
   const verificationCandidates = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "app", "verification", "candidates.json"));
   const docsReport = readJsonIfExists(path.join(paths.topogramRoot, "candidates", "docs", "import-report.json"));
-  if (dbCandidates || apiCandidates || uiCandidates || workflowCandidates || verificationCandidates || docsReport) {
+  if (dbCandidates || apiCandidates || uiCandidates || cliCandidates || workflowCandidates || verificationCandidates || docsReport) {
     return {
       type: "import_app_report",
       workspace: paths.workspaceRoot,
@@ -33,6 +34,7 @@ export function loadImportArtifacts(paths, inputPath) {
         db: dbCandidates || { entities: [], enums: [], relations: [], indexes: [] },
         api: apiCandidates || { capabilities: [], routes: [], stacks: [] },
         ui: uiCandidates || { screens: [], routes: [], actions: [], stacks: [] },
+        cli: cliCandidates || { commands: [], capabilities: [], surfaces: [] },
         workflows: workflowCandidates || { workflows: [], workflow_states: [], workflow_transitions: [] },
         verification: verificationCandidates || { verifications: [], scenarios: [], frameworks: [], scripts: [] },
         docs: docsReport?.candidate_docs || [],
@@ -41,7 +43,7 @@ export function loadImportArtifacts(paths, inputPath) {
       }
     };
   }
-  const imported = importAppWorkflow(inputPath, { from: "db,api,ui,workflows,verification" }).summary;
+  const imported = importAppWorkflow(inputPath, { from: "db,api,ui,cli,workflows,verification" }).summary;
   const docsSummary = scanDocsWorkflow(inputPath).summary;
   imported.candidates.docs = docsSummary.candidate_docs || [];
   imported.candidates.actors = docsSummary.candidate_actors || [];

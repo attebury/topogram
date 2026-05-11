@@ -104,6 +104,9 @@ function initialCandidatesForTrack(track) {
   if (track === "ui") {
     return { screens: [], routes: [], actions: [], stacks: [] };
   }
+  if (track === "cli") {
+    return { commands: [], capabilities: [], surfaces: [] };
+  }
   if (track === "verification") {
     return { verifications: [], scenarios: [], frameworks: [], scripts: [] };
   }

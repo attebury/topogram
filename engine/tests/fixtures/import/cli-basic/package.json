@@ -1,0 +1,10 @@
+{
+  "name": "fake-cli",
+  "version": "1.0.0",
+  "bin": {
+    "fakecli": "./src/cli.js"
+  },
+  "scripts": {
+    "cli:surface": "node ./src/cli.js --help"
+  }
+}

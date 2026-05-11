@@ -31,6 +31,7 @@ export function printImportHelp() {
   console.log("Examples:");
   console.log("  topogram import ./existing-app --out ./imported-topogram");
   console.log("  topogram import ./existing-app --out ./imported-topogram --from db,api,ui");
+  console.log("  topogram import ./existing-cli --out ./imported-topogram --from cli");
   console.log("  topogram import diff ./imported-topogram");
   console.log("  topogram import refresh ./imported-topogram --from ./existing-app --dry-run");
   console.log("  topogram import refresh ./imported-topogram --from ./existing-app");
