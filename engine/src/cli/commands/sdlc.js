@@ -6,6 +6,7 @@ import { stableStringify } from "../../format.js";
 import { parsePath } from "../../parser.js";
 import { resolveWorkspace } from "../../resolver.js";
 import { formatValidationErrors } from "../../validator.js";
+import { resolveTopoRoot } from "../../workspace-paths.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -56,7 +57,7 @@ function resolveSdlcWorkspace(sdlcRoot) {
  */
 export async function runSdlcCommand(context) {
   const { commandArgs, args } = context;
-  const sdlcRoot = path.resolve(context.inputPath || ".");
+  const sdlcRoot = resolveTopoRoot(context.inputPath || ".");
   const actor = flagValue(args, "--actor");
   const note = flagValue(args, "--note");
   const status = flagValue(args, "--status");

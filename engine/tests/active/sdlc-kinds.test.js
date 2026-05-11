@@ -6,6 +6,7 @@
 // rules, archive load/save, and release dry-run output.
 
 import assert from "node:assert/strict";
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -29,6 +30,7 @@ import { generateSdlcReleaseNotes } from "../../src/generator/sdlc/release-notes
 import { generateSdlcTraceabilityMatrix } from "../../src/generator/sdlc/traceability-matrix.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const cliPath = path.join(engineRoot, "src", "cli.js");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "sdlc-basic");
 
 function workspaceFromSource(source) {
@@ -255,6 +257,41 @@ test("sdlc check surfaces DoD warnings and ok when satisfied", () => {
   assert.ok(result);
   // The fixture is valid — no DoD errors
   assert.equal(result.errors.length, 0, JSON.stringify(result.errors, null, 2));
+});
+
+test("sdlc check defaults to configured topo workspace from project root", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    fs.writeFileSync(path.join(tempRoot, "topogram.project.json"), JSON.stringify({
+      version: "0.1",
+      workspace: "./topo",
+      outputs: {
+        app: {
+          path: ".",
+          ownership: "maintained"
+        }
+      },
+      topology: {
+        runtimes: []
+      }
+    }, null, 2));
+    const result = childProcess.spawnSync(process.execPath, [cliPath, "sdlc", "check", "--strict"], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        FORCE_COLOR: "0"
+      }
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      errors: [],
+      ok: true,
+      warnings: []
+    });
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test("sdlc explain returns next_action and respects DoD", () => {

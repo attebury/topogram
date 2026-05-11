@@ -19,6 +19,7 @@ import {
 } from "../../src/generator/adapters.js";
 import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
 import { resolveRuntimeTopology } from "../../src/generator/runtime/shared.js";
+import { resolveWorkspaceContext } from "../../src/workspace-paths.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
@@ -435,6 +436,43 @@ test("project config validation catches invalid workspace paths", () => {
   assert.match(messages, /workspace must not escape the project root/);
   assert.match(messages, /workspace must be a non-empty relative path/);
   assert.match(messages, /workspaces\[\] is not supported yet/);
+});
+
+test("workspace resolution keeps explicit nested topo projects inside repo checkouts", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-nested-workspace-"));
+  const nestedProject = path.join(root, "fixtures", "sample");
+  const nestedTopo = path.join(nestedProject, "topo");
+  fs.mkdirSync(nestedTopo, { recursive: true });
+  writeJson(path.join(root, "topogram.project.json"), {
+    version: "0.1",
+    workspace: "./topo",
+    outputs: {
+      app: {
+        path: ".",
+        ownership: "maintained"
+      }
+    },
+    topology: {
+      runtimes: []
+    }
+  });
+  fs.writeFileSync(path.join(nestedTopo, "domain.tg"), [
+    "domain dom_nested {",
+    "  name \"Nested\"",
+    "  description \"Nested workspace\"",
+    "  status active",
+    "}",
+    ""
+  ].join("\n"));
+
+  try {
+    const resolved = resolveWorkspaceContext(nestedProject);
+    assert.equal(resolved.projectRoot, nestedProject);
+    assert.equal(resolved.topoRoot, nestedTopo);
+    assert.equal(resolved.configPath, null);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("project config validation catches unknown generators, duplicate ports, and missing refs", () => {
