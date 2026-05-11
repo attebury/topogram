@@ -1,0 +1,15 @@
+task task_harden_release_rollout_progress {
+  name "Harden Release Rollout Progress"
+  description "Make release roll-consumers explicit about per-consumer progress, interrupted rollout recovery, CI watch waiting, and async verification guidance."
+  satisfies [req_stateful_actions_use_cli]
+  acceptance_refs [ac_release_rollout_progress_and_recovery]
+  verification_refs [verification_engine_gate]
+  affects [cap_roll_consumer_packages, cap_verify_release_status]
+  blocked_by []
+  claimed_by actor_coding_agent
+  domain dom_release_consumer_proof
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

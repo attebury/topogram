@@ -29,5 +29,11 @@ npm run release:status:strict
 npm run release:status:strict -- --write-report ./docs/release-matrix.md
 ```
 
+`release:roll-consumers` prints per-consumer progress to stderr while it updates,
+checks, commits, pushes, and optionally watches CI. If a rollout is interrupted,
+rerun the same command; the report includes recovery state for consumers that are
+already pinned, already pushed, or still need attention. Omit `--watch` when you
+want to push consumer commits and verify later with `npm run release:status:strict`.
+
 `docs/release-matrix.md` is generated release evidence, not first-run product
 documentation.

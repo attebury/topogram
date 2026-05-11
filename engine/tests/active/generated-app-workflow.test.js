@@ -488,13 +488,17 @@ if (args[0] === "rev-parse" && args[1] === "HEAD") {
   process.stdout.write((process.env.FAKE_GIT_HEAD || "abc123") + "\\n");
   process.exit(0);
 }
+if (args[0] === "rev-list" && args[1] === "--count" && args[2] === "@{u}..HEAD") {
+  process.stdout.write((process.env.FAKE_GIT_AHEAD || "0") + "\\n");
+  process.exit(0);
+}
 if (args[0] === "status" && args[1] === "--porcelain") {
   process.stdout.write(process.env.FAKE_GIT_STATUS || "");
   process.exit(0);
 }
 if (args[0] === "add") {
   const state = readState();
-  state.staged = true;
+  state.staged = process.env.FAKE_GIT_ADD_STAGES === "0" ? false : true;
   writeState(state);
   log(args.join(" "));
   process.exit(0);
@@ -2739,6 +2743,8 @@ test("topogram release roll-consumers updates, verifies, commits, pushes, and re
   assert.equal(payload.consumers.length, knownCliConsumerRepos.length);
   assert.equal(payload.consumers.every((consumer) => consumer.updated && consumer.committed && consumer.pushed), true);
   assert.equal(payload.consumers.every((consumer) => consumer.ci?.run?.url), true);
+  assert.equal(payload.recovery.resumeCommand, "topogram release roll-consumers 0.3.46 --watch");
+  assert.equal(payload.recovery.pushed.length, knownCliConsumerRepos.length);
   assert.equal(
     payload.diagnostics.some((diagnostic) => diagnostic.code === "release_consumer_ci_head_mismatch"),
     false
@@ -2758,6 +2764,55 @@ test("topogram release roll-consumers updates, verifies, commits, pushes, and re
   assert.match(human.stdout, /Topogram consumer rollout completed/);
   assert.match(human.stdout, literalPattern(`${externalTodoConsumerRepos[1]}: pushed`));
   assert.match(human.stdout, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
+  assert.match(human.stdout, /Recovery:/);
+  assert.match(human.stderr, /\[roll-consumers\].*updating @topogram\/cli to 0\.3\.46/);
+  assert.match(human.stderr, /\[roll-consumers\].*pushing rollout commit/);
+});
+
+test("topogram release roll-consumers reports recovery state for already-current unpushed consumers", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-roll-consumers-recovery-"));
+  for (const consumer of knownCliConsumerRepos) {
+    const consumerRoot = path.join(root, consumer);
+    fs.mkdirSync(consumerRoot, { recursive: true });
+    fs.writeFileSync(path.join(consumerRoot, "topogram-cli.version"), "0.3.46\n", "utf8");
+    writePackageJson(consumerRoot, {
+      name: consumer,
+      private: true,
+      scripts: {
+        "pack:check": "node -e true"
+      },
+      devDependencies: {
+        "@topogram/cli": "^0.3.46"
+      }
+    });
+    writeJson(path.join(consumerRoot, "package-lock.json"), {
+      name: consumer,
+      lockfileVersion: 3,
+      requires: true,
+      packages: {}
+    });
+  }
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v0.3.46`);
+  const fakeGhBin = createFakeGh(root);
+  const roll = runCli(["release", "roll-consumers", "0.3.46", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: "0.3.46",
+      FAKE_GIT_HEAD: "def456",
+      FAKE_GIT_ADD_STAGES: "0",
+      FAKE_GIT_AHEAD: "1",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(roll.status, 0, roll.stderr || roll.stdout);
+  const payload = JSON.parse(roll.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.consumers.every((consumer) => consumer.alreadyCurrent), true);
+  assert.equal(payload.consumers.every((consumer) => consumer.recoveredPush && consumer.pushed), true);
+  assert.equal(payload.recovery.alreadyCurrent.length, knownCliConsumerRepos.length);
+  assert.equal(payload.recovery.recoveredPushes.length, knownCliConsumerRepos.length);
+  assert.match(payload.recovery.watchGuidance, /release status --strict/);
 });
 
 test("topogram release roll-consumers --watch fails when current consumer workflow fails", () => {

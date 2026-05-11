@@ -19,6 +19,7 @@ const REPO_ROOT = decodeURIComponent(new URL("../../../../", import.meta.url).pa
 
 /**
  * @typedef {Record<string, any>} AnyRecord
+ * @typedef {{ consumer?: string, step?: string, status?: string, message: string, elapsedMs?: number, headSha?: string|null, expectedWorkflow?: string|null, run?: AnyRecord|null }} ReleaseProgressEvent
  */
 
 /**
@@ -158,6 +159,23 @@ export function currentGitHead(cwd) {
 }
 
 /**
+ * @param {string} cwd
+ * @returns {{ ok: boolean, ahead: number|null, result: ReturnType<typeof childProcess.spawnSync> }}
+ */
+export function inspectGitUpstreamAhead(cwd) {
+  const result = runGit(["rev-list", "--count", "@{u}..HEAD"], cwd);
+  if (result.status !== 0) {
+    return { ok: false, ahead: null, result };
+  }
+  const ahead = Number.parseInt(String(result.stdout || "").trim(), 10);
+  return {
+    ok: Number.isFinite(ahead),
+    ahead: Number.isFinite(ahead) ? ahead : null,
+    result
+  };
+}
+
+/**
  * @param {{ code: string, severity: "error"|"warning", message: string, path: string|null, suggestedFix: string, result: ReturnType<typeof childProcess.spawnSync> }} input
  * @returns {{ code: string, severity: "error"|"warning", message: string, path: string|null, suggestedFix: string }}
  */
@@ -205,7 +223,7 @@ function positiveIntegerEnv(name, fallback) {
 
 /**
  * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
- * @param {{ timeoutMs?: number, intervalMs?: number }} [options]
+ * @param {{ timeoutMs?: number, intervalMs?: number, onProgress?: ((event: ReleaseProgressEvent) => void)|null }} [options]
  * @returns {ReturnType<typeof inspectConsumerCi>}
  */
 export function waitForConsumerCi(consumer, options = {}) {
@@ -213,12 +231,23 @@ export function waitForConsumerCi(consumer, options = {}) {
   const intervalMs = options.intervalMs || positiveIntegerEnv("TOPOGRAM_RELEASE_WATCH_INTERVAL_MS", 5000);
   const startedAt = Date.now();
   let latest = inspectConsumerCi(consumer, { strict: false });
+  const notify = typeof options.onProgress === "function" ? options.onProgress : null;
   while (true) {
     const currentRun = latest.run &&
       latest.headSha &&
       latest.run?.headSha &&
       latest.run.headSha === latest.headSha;
     if (currentRun && latest.run?.status === "completed") {
+      notify?.({
+        consumer: consumer.name,
+        step: "watch-ci",
+        status: "ok",
+        message: `${consumer.name}: verification workflow completed on current commit.`,
+        elapsedMs: Date.now() - startedAt,
+        headSha: latest.headSha,
+        expectedWorkflow: latest.expectedWorkflow,
+        run: latest.run
+      });
       return inspectConsumerCi(consumer, { strict: true });
     }
     if (Date.now() - startedAt >= timeoutMs) {
@@ -228,11 +257,31 @@ export function waitForConsumerCi(consumer, options = {}) {
         severity: "error",
         message: `${consumer.name} verification workflow did not complete on the current commit before the watch timeout.`,
         path: strictLatest.run?.url || consumerGithubRepoSlug(consumer),
-        suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status."
+        suggestedFix: "Open the consumer workflow, fix failures if needed, then rerun release status. If you only need to push and verify later, rerun roll-consumers without --watch."
       });
       strictLatest.ok = false;
+      notify?.({
+        consumer: consumer.name,
+        step: "watch-ci",
+        status: "error",
+        message: `${consumer.name}: verification watch timed out; rerun without --watch to continue asynchronously.`,
+        elapsedMs: Date.now() - startedAt,
+        headSha: strictLatest.headSha,
+        expectedWorkflow: strictLatest.expectedWorkflow,
+        run: strictLatest.run
+      });
       return strictLatest;
     }
+    notify?.({
+      consumer: consumer.name,
+      step: "watch-ci",
+      status: "waiting",
+      message: `${consumer.name}: waiting for ${latest.expectedWorkflow || "verification workflow"} on ${latest.headSha || "HEAD"} (${Math.round((Date.now() - startedAt) / 1000)}s elapsed).`,
+      elapsedMs: Date.now() - startedAt,
+      headSha: latest.headSha,
+      expectedWorkflow: latest.expectedWorkflow,
+      run: latest.run
+    });
     sleepSync(intervalMs);
     latest = inspectConsumerCi(consumer, { strict: false });
   }

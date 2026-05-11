@@ -83,3 +83,9 @@ topogram release status --strict
 topogram release roll-consumers --latest
 topogram package update-cli --latest
 ```
+
+`topogram release roll-consumers --latest --watch` is the maintainer command for
+rolling first-party consumers after a CLI publish. Human output includes a
+recovery summary, and progress is printed to stderr so JSON output stays
+machine-readable. Omit `--watch` to push consumer commits without waiting for CI,
+then run `topogram release status --strict`.

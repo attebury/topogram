@@ -382,5 +382,21 @@
       "by": null,
       "note": null
     }
+  ],
+  "task_harden_release_rollout_progress": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T16:06:53.051Z",
+      "by": "actor_coding_agent",
+      "note": "Implementation and verification in progress."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T16:06:57.783Z",
+      "by": "actor_coding_agent",
+      "note": "Release rollout progress and recovery hardening verified with focused rollout tests, verify-engine, and CLI package smoke."
+    }
   ]
 }

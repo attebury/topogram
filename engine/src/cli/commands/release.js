@@ -6,6 +6,7 @@ import path from "node:path";
 import { stableStringify } from "../../format.js";
 import {
   buildReleaseRollConsumersPayload,
+  printReleaseRollProgress,
   printReleaseRollConsumers
 } from "./release-rollout.js";
 import {
@@ -23,6 +24,7 @@ export function printReleaseHelp() {
   console.log("");
   console.log("Checks the local CLI version, latest published package version, release tag, first-party consumer pins, and strict consumer CI state.");
   console.log("Rolls first-party consumers to a published CLI version, runs their checks, commits, pushes, and can wait for current workflow runs.");
+  console.log("Rollout progress prints to stderr in human mode; JSON output stays final-only. Omit --watch to push and verify later with release status --strict.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram release status");
@@ -94,7 +96,11 @@ export function runReleaseCommand(context) {
       printReleaseHelp();
       return 1;
     }
-    const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, { push, watch });
+    const payload = buildReleaseRollConsumersPayload(commandArgs.releaseRollVersion, {
+      push,
+      watch,
+      onProgress: json ? null : printReleaseRollProgress
+    });
     if (json) {
       console.log(stableStringify(payload));
     } else {

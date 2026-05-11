@@ -1,0 +1,6 @@
+acceptance_criterion ac_release_rollout_progress_and_recovery {
+  name "Release Rollout Progress And Recovery"
+  description "Given first-party consumer rollouts, when the release manager runs roll-consumers, then the command reports per-consumer progress, records recovery state for already-current or interrupted repos, and preserves JSON stdout for automation."
+  requirement req_stateful_actions_use_cli
+  status approved
+}
