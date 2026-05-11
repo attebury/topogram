@@ -23,6 +23,7 @@ import { transitionStatement } from "../../src/sdlc/transition.js";
 import { createPlan, explainPlan, transitionPlanStep } from "../../src/sdlc/plan.js";
 import { checkWorkspace } from "../../src/sdlc/check.js";
 import { explain } from "../../src/sdlc/explain.js";
+import { runSdlcCommitPrep } from "../../src/sdlc/prep.js";
 import { runRelease } from "../../src/sdlc/release.js";
 import { archiveStatement, archiveEligibleStatements } from "../../src/archive/archive.js";
 import { loadArchive } from "../../src/archive/resolver-bridge.js";
@@ -140,6 +141,7 @@ test("query slice --requirement / --task / --bug each return focused subgraphs",
   const taskResult = generateWorkspace(ast, { target: "context-slice", taskId: "task_implement_audit_writer" });
   assert.equal(taskResult.ok, true);
   assert.equal(taskResult.artifact.focus.kind, "task");
+  assert.equal(taskResult.artifact.summary.disposition, null);
   assert.ok(taskResult.artifact.depends_on.satisfies.includes("req_audit_persistence"));
   assert.ok(taskResult.artifact.depends_on.plans.includes("plan_implement_audit_writer"));
 
@@ -214,6 +216,86 @@ plan plan_example {
   assert.ok(invalid.errors.some((error) => error.message.includes("duplicate step")));
   assert.ok(invalid.errors.some((error) => error.message.includes("Invalid step status")));
   assert.ok(invalid.errors.some((error) => error.message.includes("requires all steps")));
+});
+
+test("task disposition validates unfinished task intent", () => {
+  const valid = validateWorkspace(workspaceFromSource(`
+task task_followup {
+  name "Follow-up"
+  description "Open follow-up task"
+  priority medium
+  work_type implementation
+  disposition follow_up
+  status unclaimed
+}
+`));
+  assert.equal(valid.ok, true, JSON.stringify(valid.errors, null, 2));
+
+  const invalid = validateWorkspace(workspaceFromSource(`
+task task_followup {
+  name "Follow-up"
+  description "Open follow-up task"
+  priority medium
+  work_type implementation
+  disposition maybe
+  status unclaimed
+}
+`));
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.errors.some((error) => error.message.includes("Invalid disposition")));
+});
+
+test("sdlc prep commit requires explicit disposition for open touched tasks", () => {
+  const tempRoot = copyFixtureToTemp();
+  const taskFile = path.join(tempRoot, "topo", "tasks", "followups.tg");
+  try {
+    fs.writeFileSync(taskFile, `task task_open_followup {
+  name "Open follow-up"
+  description "Open follow-up left by the branch."
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+`, "utf8");
+
+    const ambiguous = runSdlcCommitPrep(tempRoot, {
+      changedFiles: ["topo/tasks/followups.tg"]
+    });
+    assert.equal(ambiguous.ok, false);
+    assert.ok(ambiguous.errors.some((error) => error.includes("needs explicit disposition")));
+
+    fs.writeFileSync(taskFile, `task task_open_followup {
+  name "Open follow-up"
+  description "Open follow-up left by the branch."
+  priority medium
+  work_type implementation
+  disposition follow_up
+  status unclaimed
+}
+`, "utf8");
+    const classified = runSdlcCommitPrep(tempRoot, {
+      changedFiles: ["topo/tasks/followups.tg"]
+    });
+    assert.equal(classified.ok, true, JSON.stringify(classified, null, 2));
+    assert.equal(classified.openTasks[0].disposition, "follow_up");
+
+    fs.writeFileSync(taskFile, `task task_open_followup {
+  name "Open follow-up"
+  description "Open follow-up left by the branch."
+  priority medium
+  work_type implementation
+  disposition blocker
+  status unclaimed
+}
+`, "utf8");
+    const blocking = runSdlcCommitPrep(tempRoot, {
+      changedFiles: ["topo/tasks/followups.tg"]
+    });
+    assert.equal(blocking.ok, false);
+    assert.ok(blocking.errors.some((error) => error.includes("disposition blocker")));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test("sdlc-traceability-matrix walks pitch → req → AC → task → verification", () => {
@@ -396,6 +478,46 @@ test("sdlc check defaults to configured topo workspace from project root", () =>
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
+});
+
+test("documented task query commands work through the CLI", () => {
+  const slice = childProcess.spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "slice",
+    fixtureRoot,
+    "--task",
+    "task_implement_audit_writer",
+    "--json"
+  ], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      FORCE_COLOR: "0"
+    }
+  });
+  assert.equal(slice.status, 0, slice.stderr || slice.stdout);
+  assert.equal(JSON.parse(slice.stdout).focus.id, "task_implement_audit_writer");
+
+  const plan = childProcess.spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "single-agent-plan",
+    fixtureRoot,
+    "--mode",
+    "modeling",
+    "--task",
+    "task_implement_audit_writer",
+    "--json"
+  ], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      FORCE_COLOR: "0"
+    }
+  });
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  assert.equal(JSON.parse(plan.stdout).type, "single_agent_plan");
 });
 
 test("sdlc explain returns next_action and respects DoD", () => {

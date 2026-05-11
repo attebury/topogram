@@ -209,7 +209,14 @@ export function hasSelectors(options) {
     options.entityId ||
     options.journeyId ||
     options.surfaceId ||
-    options.domainId
+    options.domainId ||
+    options.pitchId ||
+    options.requirementId ||
+    options.acceptanceId ||
+    options.taskId ||
+    options.planId ||
+    options.bugId ||
+    options.documentId
   );
 }
 

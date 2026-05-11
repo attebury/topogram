@@ -21,6 +21,7 @@ export const PITCH_STATUSES: Set<string>;
 export const REQUIREMENT_STATUSES: Set<string>;
 export const ACCEPTANCE_CRITERION_STATUSES: Set<string>;
 export const TASK_STATUSES: Set<string>;
+export const TASK_DISPOSITIONS: Set<string>;
 export const PLAN_STATUSES: Set<string>;
 export const PLAN_STEP_STATUSES: Set<string>;
 export const BUG_STATUSES: Set<string>;

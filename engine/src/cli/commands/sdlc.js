@@ -72,6 +72,41 @@ function printPolicyExplain(payload) {
 }
 
 /**
+ * @param {Record<string, any>} payload
+ * @returns {void}
+ */
+function printCommitPrep(payload) {
+  console.log("Topogram SDLC commit prep");
+  console.log(`Status: ${payload.ok ? "ready" : "needs attention"}`);
+  console.log(`Changed task files: ${(payload.taskFiles || []).length}`);
+  if ((payload.openTasks || []).length > 0) {
+    console.log("Open changed tasks:");
+    for (const task of payload.openTasks) {
+      console.log(`  - ${task.id} (${task.status}, ${task.disposition || "unclassified"})`);
+      console.log(`    file: ${task.file}`);
+    }
+  }
+  if ((payload.errors || []).length > 0) {
+    console.log("Errors:");
+    for (const error of payload.errors) {
+      console.log(`  - ${error}`);
+    }
+  }
+  if ((payload.warnings || []).length > 0) {
+    console.log("Warnings:");
+    for (const warning of payload.warnings) {
+      console.log(`  - ${warning}`);
+    }
+  }
+  if ((payload.nextCommands || []).length > 0) {
+    console.log("Next commands:");
+    for (const command of payload.nextCommands) {
+      console.log(`  - ${command}`);
+    }
+  }
+}
+
+/**
  * @param {string} sdlcRoot
  * @returns {AnyRecord|null}
  */
@@ -168,6 +203,20 @@ export async function runSdlcCommand(context) {
       requireAdopted: args.includes("--require-adopted")
     });
     console.log(stableStringify(result));
+    return result.ok ? 0 : 1;
+  }
+
+  if (commandArgs.sdlcCommand === "prep:commit") {
+    const { runSdlcCommitPrep } = await import("../../sdlc/prep.js");
+    const result = runSdlcCommitPrep(context.inputPath || ".", {
+      base,
+      head
+    });
+    if (json) {
+      console.log(stableStringify(result));
+    } else {
+      printCommitPrep(result);
+    }
     return result.ok ? 0 : 1;
   }
 

@@ -27,6 +27,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 Run a focused test for the area you changed, then run the engine gate:
 
 ```bash
+node ./engine/src/cli.js sdlc prep commit . --base origin/main --head HEAD
 node ./engine/src/cli.js sdlc gate . --require-adopted
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh

@@ -13,6 +13,7 @@
     "release:status": "node ./engine/src/cli.js release status",
     "release:status:strict": "node ./engine/src/cli.js release status --strict",
     "release:roll-consumers": "node ./engine/src/cli.js release roll-consumers",
+    "sdlc:prep": "node ./engine/src/cli.js sdlc prep commit .",
     "sdlc:gate": "node ./engine/src/cli.js sdlc gate . --require-adopted",
     "sdlc:release-notes": "node ./engine/src/cli.js release . --app-version unreleased --dry-run",
     "check": "npm --prefix ./engine run check",

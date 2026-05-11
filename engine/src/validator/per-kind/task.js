@@ -1,6 +1,7 @@
 // @ts-check
 import {
   TASK_IDENTIFIER_PATTERN,
+  TASK_DISPOSITIONS,
   PRIORITY_VALUES,
   WORK_TYPES
 } from "../kinds.js";
@@ -55,6 +56,23 @@ function validateWorkType(errors, statement, fieldMap) {
   }
 }
 
+/** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap */
+function validateDisposition(errors, statement, fieldMap) {
+  const field = fieldMap.get("disposition")?.[0];
+  if (!field) return;
+  if (field.value.type !== "symbol") {
+    pushError(errors, `Field 'disposition' on task ${statement.id} must be a symbol`, field.loc);
+    return;
+  }
+  if (!TASK_DISPOSITIONS.has(field.value.value)) {
+    pushError(
+      errors,
+      `Invalid disposition '${field.value.value}' on task ${statement.id}`,
+      field.loc
+    );
+  }
+}
+
 /** @param {ValidationErrors} errors @param {TopogramStatement} statement @param {TopogramFieldMap} fieldMap @param {TopogramRegistry} registry */
 function validateBlockingPair(errors, statement, fieldMap, registry) {
   // Self-block guard. Reciprocal `blocks` <-> `blocked_by` resolution is the
@@ -98,6 +116,7 @@ export function validateTask(errors, statement, fieldMap, registry) {
   validateTaskIdentifier(errors, statement);
   validatePriority(errors, statement, fieldMap);
   validateWorkType(errors, statement, fieldMap);
+  validateDisposition(errors, statement, fieldMap);
   validateBlockingPair(errors, statement, fieldMap, registry);
   validateClaimedByPresence(errors, statement, fieldMap);
 }

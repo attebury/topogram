@@ -199,6 +199,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
   ensureSingleValueField(errors, statement, fieldMap, "category", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "priority", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "work_type", ["symbol"]);
+  ensureSingleValueField(errors, statement, fieldMap, "disposition", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "task", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "version", ["string"]);
   ensureSingleValueField(errors, statement, fieldMap, "updated", ["string"]);

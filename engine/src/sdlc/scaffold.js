@@ -44,6 +44,7 @@ const TEMPLATES = {
   verification_refs []
   affects []
   blocked_by []
+  disposition active
   priority medium
   work_type implementation
   status unclaimed

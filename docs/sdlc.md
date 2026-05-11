@@ -81,6 +81,7 @@ acceptance_criterion.requirement → requirement (single)
 task.satisfies                → requirement | acceptance_criterion
 task.acceptance_refs          → acceptance_criterion
 task.verification_refs        → verification
+task.disposition              → active | follow_up | deferred | backlog | blocker
 task.blocks / task.blocked_by → task (reciprocal)
 task.introduces_decisions     → decision
 task.affects                  → same set as pitch.affects
@@ -199,9 +200,18 @@ projects in `enforced` mode fail protected changes without a valid SDLC
 item, a `topo/**` SDLC record change, or an allowed exemption.
 
 ```bash
+topogram sdlc prep commit . --base origin/main --head HEAD --json
 topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json
 topogram sdlc gate . --sdlc-id task_implement_audit_writer --json
 ```
+
+`sdlc prep commit` is the pre-gate human/agent check for unfinished
+work. It looks at changed task files and reports open tasks that were
+added or edited by the branch. Unfinished tasks may remain open, but
+unclaimed or blocked touched tasks must state their intent with
+`disposition active`, `follow_up`, `deferred`, `backlog`, or `blocker`.
+`blocker` fails prep; `follow_up`, `deferred`, and `backlog` pass when
+explicit so open work is visible instead of accidental.
 
 ## Agent-loop pattern
 

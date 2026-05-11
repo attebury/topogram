@@ -95,7 +95,8 @@ topogram agent brief --json
 topogram query list --json
 topogram sdlc explain <task-id> --json
 topogram query slice ./topo --task <task-id> --json
-topogram query single-agent-plan . --mode implementation --capability <cap-id> --json
+topogram query single-agent-plan . --mode modeling --capability <cap-id> --json
+topogram sdlc prep commit . --base origin/main --head HEAD --json
 ```
 
 If `sdlc explain` returns linked plans, inspect the active plan before

@@ -324,6 +324,7 @@
     "./src/sdlc/link.js",
     "./src/sdlc/plan.js",
     "./src/sdlc/plan-steps.js",
+    "./src/sdlc/prep.js",
     "./src/sdlc/policy.js",
     "./src/sdlc/release.d.ts",
     "./src/sdlc/scaffold.d.ts",

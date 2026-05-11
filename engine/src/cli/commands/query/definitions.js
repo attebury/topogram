@@ -32,6 +32,7 @@
  * @returns {QueryDefinition[]}
  */
 export function queryDefinitions() {
+  const contextSelectors = ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "domain", "pitch", "requirement", "acceptance", "task", "plan", "bug", "document", "from-topogram"];
   return [
     {
       name: "slice",
@@ -46,7 +47,7 @@ export function queryDefinitions() {
       name: "verification-targets",
       purpose: "Map a selected change or mode to the smallest verification set worth running.",
       description: "Return the smallest verification target set for a mode, selector, or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
+      selectors: contextSelectors.filter((selector) => selector !== "surface" && selector !== "domain" && selector !== "pitch" && selector !== "requirement" && selector !== "acceptance" && selector !== "plan" && selector !== "bug" && selector !== "document"),
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "verification_targets",
       example: "topogram query verification-targets ./topo --widget widget_data_grid"
@@ -64,7 +65,7 @@ export function queryDefinitions() {
       name: "change-plan",
       purpose: "Summarize what a selected change affects before code or Topogram edits start.",
       description: "Return the semantic change plan, generator targets, risk, and alignment recommendations.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
+      selectors: contextSelectors,
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "change_plan_query",
       example: "topogram query change-plan ./topo --widget widget_data_grid"
@@ -73,7 +74,7 @@ export function queryDefinitions() {
       name: "review-packet",
       purpose: "Bundle the context a human or agent needs to review a selected semantic change.",
       description: "Return the review packet for a selected change or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
+      selectors: contextSelectors,
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "review_packet_query",
       example: "topogram query review-packet ./topo --widget widget_data_grid"
@@ -82,7 +83,7 @@ export function queryDefinitions() {
       name: "resolved-workflow-context",
       purpose: "Resolve workflow guidance and artifact load order for a selected mode or change.",
       description: "Return resolved workflow guidance, artifact load order, preset policy, and recommended artifact queries.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "provider", "preset", "from-topogram"],
+      selectors: [...contextSelectors.filter((selector) => selector !== "document"), "provider", "preset"],
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "resolved_workflow_context_query",
       example: "topogram query resolved-workflow-context ./topo --mode modeling --widget widget_data_grid --json"
@@ -91,7 +92,7 @@ export function queryDefinitions() {
       name: "single-agent-plan",
       purpose: "Give one coding agent a bounded plan, artifact set, and write guidance.",
       description: "Return a single-agent operating plan for a mode and optional selector.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
+      selectors: contextSelectors.filter((selector) => selector !== "document"),
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "single_agent_plan_query",
       example: "topogram query single-agent-plan ./topo --mode modeling --widget widget_data_grid --json"
@@ -100,7 +101,7 @@ export function queryDefinitions() {
       name: "risk-summary",
       purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
+      selectors: contextSelectors,
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "risk_summary_query",
       example: "topogram query risk-summary ./topo --widget widget_data_grid"
@@ -109,7 +110,7 @@ export function queryDefinitions() {
       name: "proceed-decision",
       purpose: "Tell a human or agent whether enough context and proof exist to proceed.",
       description: "Return a proceed/no-go decision for the current selected work.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "from-topogram"],
+      selectors: contextSelectors,
       args: ["[path]", "[--mode <id>]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "proceed_decision_query",
       example: "topogram query proceed-decision ./topo --mode verification"
@@ -118,7 +119,7 @@ export function queryDefinitions() {
       name: "write-scope",
       purpose: "Define where an agent may edit for a selected semantic surface.",
       description: "Return safe edit boundaries for a selected mode or semantic surface.",
-      selectors: ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "from-topogram"],
+      selectors: contextSelectors.filter((selector) => selector !== "surface" && selector !== "document"),
       args: ["[path]", "[selectors]", "[--from-topogram <path>]", "[--json]"],
       output: "write_scope_query",
       example: "topogram query write-scope ./topo --widget widget_data_grid"

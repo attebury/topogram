@@ -46,6 +46,7 @@ export const TASK_STATUSES = new Set(["unclaimed", "claimed", "in-progress", "do
 export const PLAN_STATUSES = new Set(["draft", "active", "complete", "superseded"]);
 export const PLAN_STEP_STATUSES = new Set(["pending", "in-progress", "blocked", "done", "skipped"]);
 export const BUG_STATUSES = new Set(["open", "in-progress", "fixed", "verified", "wont-fix"]);
+export const TASK_DISPOSITIONS = new Set(["active", "follow_up", "deferred", "backlog", "blocker"]);
 
 export const PRIORITY_VALUES = new Set(["critical", "high", "medium", "low"]);
 export const WORK_TYPES = new Set([
@@ -291,6 +292,7 @@ export const FIELD_SPECS = {
       "status",
       "priority",
       "work_type",
+      "disposition",
       "affects",
       "satisfies",
       "acceptance_refs",

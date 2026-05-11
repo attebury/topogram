@@ -325,6 +325,10 @@ test("split command parser handles extracted command families", () => {
     sdlcCommand: "gate",
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "prep", "commit", "./custom-topogram", "--base", "main", "--head", "HEAD"]), {
+    sdlcCommand: "prep:commit",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["sdlc", "link", "task_one", "verification_one", "./custom-topogram"]), {
     sdlcCommand: "link",
     sdlcFromId: "task_one",

@@ -215,6 +215,7 @@ export function summarizeTask(task) {
     status: task.status,
     priority: task.priority,
     work_type: task.workType,
+    disposition: task.disposition || null,
     claimed_by: (task.claimedBy || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean),
     domain: task.resolvedDomain ? task.resolvedDomain.id : null
   };

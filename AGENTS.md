@@ -46,6 +46,7 @@ Avoid touching external consumer repos from this workspace unless the user expli
 Use the narrowest meaningful test first, then the repo gate:
 
 ```bash
+node ./engine/src/cli.js sdlc prep commit . --base origin/main --head HEAD
 node ./engine/src/cli.js sdlc gate . --require-adopted
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh

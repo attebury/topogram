@@ -338,7 +338,7 @@ export async function runSdlcGate(inputPath = ".", options = {}) {
     errors,
     nextCommands: [
       "topogram sdlc explain <task-id> --json",
-      "topogram query single-agent-plan . --mode implementation --capability <cap-id> --json"
+      "topogram query single-agent-plan . --mode modeling --capability <cap-id> --json"
     ]
   };
 }

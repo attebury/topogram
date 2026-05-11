@@ -16,6 +16,9 @@ export function parseSdlcCommandArgs(args) {
   if (args[0] === "sdlc" && args[1] === "gate") {
     return { sdlcCommand: "gate", inputPath: commandPath(args, 2, ".") };
   }
+  if (args[0] === "sdlc" && args[1] === "prep" && args[2] === "commit") {
+    return { sdlcCommand: "prep:commit", inputPath: commandPath(args, 3, ".") };
+  }
   if (args[0] === "sdlc" && args[1] === "link") {
     return {
       sdlcCommand: "link",

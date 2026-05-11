@@ -209,5 +209,21 @@
       "by": "codex",
       "note": "Command-owned state boundary is documented and covered by regression tests."
     }
+  ],
+  "task_add_sdlc_commit_prep": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T09:33:09.841Z",
+      "by": "codex",
+      "note": "implementation complete; running verification"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T09:33:19.492Z",
+      "by": "codex",
+      "note": "focused SDLC and CLI query tests passed"
+    }
   ]
 }

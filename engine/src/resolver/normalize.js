@@ -356,6 +356,7 @@ export function normalizeStatement(statement, registry) {
         ...base,
         priority: symbolValue(getFieldValue(statement, "priority")),
         workType: symbolValue(getFieldValue(statement, "work_type")),
+        disposition: symbolValue(getFieldValue(statement, "disposition")),
         affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
         satisfies: resolveReferenceList(registry, getFieldValue(statement, "satisfies")),
         acceptanceRefs: resolveReferenceList(registry, getFieldValue(statement, "acceptance_refs")),

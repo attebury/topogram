@@ -79,13 +79,13 @@ function recommendedQueries(statement) {
   if (statement.kind === "task") {
     return [
       `topogram query slice ./topo --task ${statement.id} --json`,
-      `topogram query single-agent-plan ./topo --mode implementation --task ${statement.id} --json`
+      `topogram query single-agent-plan ./topo --mode modeling --task ${statement.id} --json`
     ];
   }
   if (statement.kind === "bug") {
     return [
       `topogram query slice ./topo --bug ${statement.id} --json`,
-      `topogram query single-agent-plan ./topo --mode implementation --bug ${statement.id} --json`
+      `topogram query single-agent-plan ./topo --mode modeling --bug ${statement.id} --json`
     ];
   }
   if (statement.kind === "plan") {
