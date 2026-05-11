@@ -470,6 +470,13 @@
       "at": "2026-05-11T18:26:35.942Z",
       "by": "actor_coding_agent",
       "note": "Requirement opened for modeling the DB migration ownership contract."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-11T20:54:02.702Z",
+      "by": "actor_coding_agent",
+      "note": "DB migration ownership model accepted after project config validation, lifecycle behavior, maintained proposal docs, and regression coverage."
     }
   ],
   "task_model_db_migration_ownership": [
@@ -580,6 +587,38 @@
       "at": "2026-05-11T19:08:32.088Z",
       "by": null,
       "note": null
+    }
+  ],
+  "task_db_migration_maintained_proposals": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T20:46:39.750Z",
+      "by": "actor_coding_agent",
+      "note": "Starting maintained DB proposal docs and regression coverage."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T20:46:44.195Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing docs and tests."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T20:54:06.649Z",
+      "by": "actor_coding_agent",
+      "note": "Pinned maintained DB proposal workflow with docs and CLI regression coverage."
+    }
+  ],
+  "ac_db_migration_ownership_model_defined": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T20:53:58.731Z",
+      "by": "actor_coding_agent",
+      "note": "Ownership model now has docs and regression coverage for generated and maintained DB migration behavior."
     }
   ]
 }

@@ -972,6 +972,74 @@ test("topogram emit honors explicit artifact targets", () => {
   assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
 });
 
+test("maintained database migrations emit proposals without overwriting maintained app files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-maintained-db-proposals-"));
+  const projectRoot = copyAppBasicFixture(root, "maintained-db");
+  const configPath = path.join(projectRoot, "topogram.project.json");
+  const config = readJson(configPath);
+  const dbRuntime = config.topology.runtimes.find((runtime) => runtime.id === "app_postgres");
+  assert.ok(dbRuntime);
+  dbRuntime.migration = {
+    ownership: "maintained",
+    tool: "prisma",
+    apply: "never",
+    snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+    schemaPath: "apps/services/app_api/prisma/schema.prisma",
+    migrationsPath: "apps/services/app_api/prisma/migrations"
+  };
+  writeJson(configPath, config);
+
+  const maintainedSchemaPath = path.join(projectRoot, dbRuntime.migration.schemaPath);
+  const maintainedMigrationPath = path.join(
+    projectRoot,
+    dbRuntime.migration.migrationsPath,
+    "0001_existing",
+    "migration.sql"
+  );
+  fs.mkdirSync(path.dirname(maintainedSchemaPath), { recursive: true });
+  fs.mkdirSync(path.dirname(maintainedMigrationPath), { recursive: true });
+  const originalSchema = "// maintained app schema\n";
+  const originalMigration = "-- maintained app migration\n";
+  fs.writeFileSync(maintainedSchemaPath, originalSchema, "utf8");
+  fs.writeFileSync(maintainedMigrationPath, originalMigration, "utf8");
+
+  const lifecycleOutDir = path.join(root, "db-proposals", "lifecycle");
+  const lifecycle = runCli([
+    "emit",
+    "db-lifecycle-bundle",
+    projectRoot,
+    "--projection",
+    "proj_db_postgres",
+    "--write",
+    "--out-dir",
+    lifecycleOutDir
+  ], { cwd: projectRoot });
+  assert.equal(lifecycle.status, 0, lifecycle.stderr || lifecycle.stdout);
+  assert.equal(readJson(path.join(lifecycleOutDir, ".topogram-generated.json")).target, "db-lifecycle-bundle");
+  assert.match(readText(path.join(lifecycleOutDir, "README.md")), /Maintained proposal mode/);
+  const migrateScript = readText(path.join(lifecycleOutDir, "scripts", "db-migrate.sh"));
+  assert.match(migrateScript, /No migration was applied/);
+  assert.doesNotMatch(migrateScript, /\bapply_sql\b/);
+
+  const schemaOutDir = path.join(root, "db-proposals", "prisma");
+  const schema = runCli([
+    "emit",
+    "prisma-schema",
+    projectRoot,
+    "--projection",
+    "proj_db_postgres",
+    "--write",
+    "--out-dir",
+    schemaOutDir
+  ], { cwd: projectRoot });
+  assert.equal(schema.status, 0, schema.stderr || schema.stdout);
+  assert.match(readText(path.join(schemaOutDir, "schema.prisma")), /model Collection/);
+
+  assert.equal(fs.readFileSync(maintainedSchemaPath, "utf8"), originalSchema);
+  assert.equal(fs.readFileSync(maintainedMigrationPath, "utf8"), originalMigration);
+  assert.equal(fs.existsSync(path.join(projectRoot, "app")), false);
+});
+
 test("removed generate --generate artifact form fails with emit guidance", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generate-deprecated-"));
   const selected = runCli([

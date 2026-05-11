@@ -2,5 +2,5 @@ acceptance_criterion ac_db_migration_ownership_model_defined {
   name "Database Migration Ownership Model Defined"
   description "Given a project with a database runtime, when humans or agents inspect the Topogram, then the DB migration ownership, tool strategy, apply policy, snapshot location, and maintained/generated behavior are unambiguous for SQL, Prisma, and Drizzle workflows."
   requirement req_db_migration_ownership_model
-  status draft
+  status approved
 }

@@ -9,6 +9,7 @@ These docs are organized by audience. Historical docs were archived to
 | --- | --- |
 | Generate a new app | [Greenfield Generate](./start/greenfield-generate.md) |
 | Import an existing app | [Brownfield Import](./start/brownfield-import.md) |
+| Maintain database migrations | [Database Migrations](./start/database-migrations.md) |
 | Work as an agent | [Agent First Run](./agent-first-run.md) |
 | Understand the model | [Topogram Model](./concepts/topogram-model.md) |
 | Understand `topo/` ownership | [Topo Workspace](./concepts/topo-workspace.md) |

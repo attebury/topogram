@@ -2,7 +2,7 @@
 id: db_migration_ownership_model
 kind: report
 title: Database Migration Ownership Model
-status: draft
+status: published
 source_of_truth: code-derived
 confidence: medium
 related_capabilities:
@@ -13,9 +13,9 @@ related_capabilities:
 
 # Database Migration Ownership Model
 
-This report starts `task_model_db_migration_ownership`. It describes the
-current engine behavior and the smallest useful model for generated and
-maintained database migration workflows.
+This report started `task_model_db_migration_ownership` and now records the
+implemented ownership model for generated and maintained database migration
+workflows.
 
 ## Current Behavior
 
@@ -32,13 +32,12 @@ Current DB generation is contract-first:
    represented as operations. Drops, type changes, foreign-key changes, and
    other destructive or ambiguous changes require manual intervention.
 
-The missing product model is not the diff algorithm. The gap is ownership:
-generated databases and maintained databases need different write and apply
-rules.
+The product model is ownership, not just the diff algorithm. Generated
+databases and maintained databases have different write and apply rules.
 
-## Proposed Ownership Split
+## Implemented Ownership Split
 
-Topogram should treat database migration work as one of two modes.
+Topogram treats database migration work as one of two modes.
 
 ### Generated DB Runtime
 
@@ -47,7 +46,7 @@ Topogram may write files under the generated DB runtime directory, including
 state files, SQL migrations, Prisma/Drizzle support files, and lifecycle
 scripts.
 
-Expected behavior:
+Behavior:
 
 - `topogram generate` writes the DB lifecycle bundle.
 - generated scripts may apply supported additive SQL migrations.
@@ -60,7 +59,7 @@ Expected behavior:
 Maintained database runtimes should never have application migration files
 overwritten by Topogram. Topogram should emit proposals only.
 
-Expected behavior:
+Behavior:
 
 - `topogram emit db-schema-snapshot` writes or prints desired state.
 - `topogram emit db-migration-plan` compares current and desired snapshots.
@@ -72,8 +71,8 @@ Expected behavior:
 
 ## Runtime Configuration Shape
 
-The first implementation slice should add a database runtime migration strategy
-to `topogram.project.json`. A likely shape:
+Database runtime migration strategy lives on the database runtime in
+`topogram.project.json`:
 
 ```json
 {
@@ -128,14 +127,19 @@ Straight SQL:
 
 ## Follow-Up Implementation Tasks
 
-Recommended next tasks:
+Completed:
 
-- Add `migration` validation to database topology runtimes.
-- Include migration ownership in `topogram check` diagnostics and agent brief.
-- Teach generated DB lifecycle output to read the runtime migration strategy.
-- Add maintained-mode DB proposal docs and command examples.
-- Add tests for generated DB lifecycle writes versus maintained DB proposal
-  emission.
+- `migration` validation exists for database topology runtimes.
+- `topogram check` reports migration ownership in resolved topology.
+- generated DB lifecycle output reads the runtime migration strategy.
+- maintained-mode docs and command examples are covered in
+  `docs/start/database-migrations.md`.
+- regression coverage pins generated DB lifecycle writes versus maintained DB
+  proposal emission.
 
-No engine behavior should change until the model is reviewed and the follow-up
-implementation task is accepted.
+Remaining follow-up work:
+
+- Brownfield import should infer maintained database seam candidates with
+  precision-first evidence.
+- Maintained migration proposals should become easier to compare against the
+  app's current Prisma, Drizzle, or SQL migration state.

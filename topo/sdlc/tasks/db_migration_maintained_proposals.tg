@@ -1,0 +1,14 @@
+task task_db_migration_maintained_proposals {
+  name "Db Migration Maintained Proposals"
+  description "Document and pin the maintained database migration proposal workflow so Topogram emits proposal artifacts without overwriting maintained app migration files."
+  satisfies [req_db_migration_ownership_model]
+  acceptance_refs [ac_db_migration_ownership_model_defined]
+  verification_refs [verification_engine_gate verification_cli_package_smoke]
+  affects [cap_validate_workspace, cap_generate_app_outputs, cap_emit_artifacts]
+  blocked_by [task_wire_db_migration_strategy_lifecycle]
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}
