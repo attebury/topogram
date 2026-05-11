@@ -288,6 +288,13 @@ export function normalizeCandidatesForTrack(track, candidates) {
       stacks: [...new Set(candidates.stacks || [])].sort()
     };
   }
+  if (track === "cli") {
+    return {
+      commands: dedupeCandidateRecords(candidates.commands || [], (/** @type {any} */ record) => record.command_id || record.id_hint),
+      capabilities: dedupeCandidateRecords(candidates.capabilities || [], idHint),
+      surfaces: dedupeCandidateRecords(candidates.surfaces || [], idHint)
+    };
+  }
   if (track === "verification") {
     return {
       verifications: dedupeCandidateRecords(candidates.verifications || [], idHint),

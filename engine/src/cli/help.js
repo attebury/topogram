@@ -16,6 +16,13 @@ export function printUsage(options = {}) {
   console.log("   or: topogram widget check [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram widget behavior [path] [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: topogram agent brief [path] [--json]");
+  console.log("   or: topogram sdlc policy init|check|explain [path] [--json]");
+  console.log("   or: topogram sdlc gate [path] --base <ref> --head <ref> [--sdlc-id <id>] [--exemption <text>] [--require-adopted] [--json]");
+  console.log("   or: topogram sdlc link <from-id> <to-id> [path] [--write]");
+  console.log("   or: topogram sdlc complete <task-id> [path] --verification <verification-id> [--dry-run|--write]");
+  console.log("   or: topogram sdlc plan create <task-id> <slug> [path] [--write]");
+  console.log("   or: topogram sdlc plan explain <plan-id> [path] [--json]");
+  console.log("   or: topogram sdlc plan step complete <plan-id> <step-id> [path] --actor <actor> [--write]");
   console.log("   or: topogram generate [path] [--out <path>]");
   console.log("   or: topogram emit <target> [path] [--json|--write --out-dir <path>]");
   console.log("   or: topogram query list [--json]");
@@ -77,6 +84,9 @@ export function printUsage(options = {}) {
   console.log("  topogram widget behavior --projection proj_web_surface");
   console.log("  topogram agent brief");
   console.log("  topogram agent brief --json");
+  console.log("  topogram sdlc policy explain");
+  console.log("  topogram sdlc gate . --require-adopted");
+  console.log("  topogram sdlc plan explain plan_example --json");
   console.log("  topogram query list");
   console.log("  topogram query show widget-behavior");
   console.log("  topogram query widget-behavior ./topo --projection proj_web_surface --json");
@@ -164,7 +174,7 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>] [--task <id>] [--plan <id>] [--bug <id>]");
   console.log("   or: node ./src/cli.js query domain-list <path>");
   console.log("   or: node ./src/cli.js query domain-coverage <path> --domain <id>");
   console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>]");
@@ -178,7 +188,7 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
+  console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--plan <id>] [--bug <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query multi-agent-plan <path> --mode import-adopt");
   console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-activation <path> --mode <id> [--provider <id>] [--preset <id>] [--from-topogram <path>]");

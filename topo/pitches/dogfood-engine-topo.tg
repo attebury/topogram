@@ -1,0 +1,28 @@
+pitch pitch_dogfood_engine_topo {
+  name "Dogfood Engine Topo"
+  description "Use Topogram itself to model the engine repo so future work can start from current code-derived contracts and SDLC records."
+  appetite "medium"
+  problem "Agents and humans currently infer engine workflow from scattered code, docs, tests, and project history, which makes drift hard to see."
+  solution_sketch "Create a maintained topo workspace for the engine, import CLI evidence, curate core domains and command contracts, then compare against topogram-project as an explicit drift review."
+  rabbit_holes "Do not model every source function or publish raw import output as canonical truth."
+  no_go_areas "Do not use topogram-project to seed the initial code-derived topo."
+  affects [cap_import_brownfield_app, cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
+  decisions [decision_engine_topo_is_maintained, decision_initial_import_ignores_project_history, decision_cli_surface_is_projection_type]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}
+
+pitch pitch_improve_cli_import_precision {
+  name "Improve CLI Import Precision"
+  description "Reduce false positives from generic CLI import once the dogfood import evidence is reviewed."
+  appetite "small"
+  problem "The first Topogram self-import found the real CLI surface, but also treated many source literals as commands."
+  solution_sketch "Prefer package bin, help text, command parser definitions, and command modules over arbitrary source strings."
+  rabbit_holes "Do not hardcode Topogram-specific command names."
+  no_go_areas "Do not remove source evidence; lower confidence or quarantine noisy candidates instead."
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
+  domain dom_import_adoption
+  priority medium
+  status draft
+}

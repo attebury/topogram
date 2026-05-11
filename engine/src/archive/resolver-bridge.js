@@ -36,11 +36,44 @@ export function loadArchive(workspaceRoot) {
         errors.push(`${file}: entry id='${raw.id}' has kind '${raw.kind}', expected '${expectedKind}'`);
         continue;
       }
+      const schemaErrors = validateArchivedEntry(file, raw, expectedKind);
+      if (schemaErrors.length > 0) {
+        errors.push(...schemaErrors);
+        continue;
+      }
       entries.push(normalizeArchivedEntry(raw));
     }
   }
   const byId = new Map(entries.map((e) => [e.id, e]));
   return { entries, byId, errors };
+}
+
+function validateArchivedEntry(file, raw, expectedKind) {
+  const errors = [];
+  const label = `${file}: archive entry`;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return [`${label} must be an object`];
+  }
+  for (const key of ["id", "kind", "status"]) {
+    if (typeof raw[key] !== "string" || raw[key].trim() === "") {
+      errors.push(`${label} must include string '${key}'`);
+    }
+  }
+  if (expectedKind && typeof raw.kind === "string" && raw.kind !== expectedKind) {
+    errors.push(`${label} id='${raw.id}' has kind '${raw.kind}', expected '${expectedKind}'`);
+  }
+  if (raw.fields !== undefined && (!raw.fields || typeof raw.fields !== "object" || Array.isArray(raw.fields))) {
+    errors.push(`${label} id='${raw.id}' field 'fields' must be an object when present`);
+  }
+  if (!Array.isArray(raw.transitions)) {
+    errors.push(`${label} id='${raw.id}' must include transitions array`);
+  }
+  if (!raw.archived || typeof raw.archived !== "object" || Array.isArray(raw.archived)) {
+    errors.push(`${label} id='${raw.id}' must include archived metadata object`);
+  } else if (typeof raw.archived.at !== "string" || raw.archived.at.trim() === "") {
+    errors.push(`${label} id='${raw.id}' archived metadata must include string 'at'`);
+  }
+  return errors;
 }
 
 function normalizeArchivedEntry(raw) {

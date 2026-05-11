@@ -36,6 +36,7 @@ The parser accepts any `kind identifier { ... }` shape. The validator defines th
 | `requirement` | `name`, `description`, `status`, `priority` | Specific commitment that follows from a pitch. Identifier prefix `req_`. Lifecycle: draft → in-review → approved → superseded. |
 | `acceptance_criterion` | `name`, `description`, `status`, `requirement` | Testable behavior an agent or human can verify against. Identifier prefix `ac_`. Lifecycle: draft → approved → superseded. |
 | `task` | `name`, `description`, `status`, `priority`, `work_type` | Unit of agent or human work. Identifier prefix `task_`. Lifecycle: unclaimed → claimed → in-progress → done (\| blocked). |
+| `plan` | `name`, `description`, `task`, `status`, `steps` | Optional implementation sequence and retained approach notes for a task. Identifier prefix `plan_`. Lifecycle: draft → active → complete \| superseded. |
 | `bug` | `name`, `description`, `status`, `severity`, `priority` | Defect linked to the rule it violates and the verification that proved the fix. Identifier prefix `bug_`. Lifecycle: open → in-progress → fixed → verified \| wont-fix. |
 
 `document` is markdown-only — see [docs/sdlc.md](sdlc.md) and [docs/lifecycles.md](lifecycles.md). Documents live in `topo/docs/` with extended frontmatter (`app_version`, `audience`, `priority`, `affects`, `satisfies`, `domain`).
@@ -57,7 +58,7 @@ capability cap_call_feed {
 
 Kinds that may carry `domain`: `capability`, `entity`, `rule`,
 `verification`, `orchestration`, `operation`, `decision`, `pitch`,
-`requirement`, `task`, `bug`. Cross-cutting kinds (`term`, `actor`, `role`,
+`requirement`, `task`, `plan`, `bug`. Cross-cutting kinds (`term`, `actor`, `role`,
 `enum`, `shape`, `widget`, `projection`, `acceptance_criterion`)
 cannot. The validator hard-errors on unknown ids and
 wrong-kind references.
@@ -150,3 +151,51 @@ framework modifiers, and pixel-level styling stay in generators, templates, or
 maintained application code.
 
 See [Widgets](./widgets.md) for generator output and roadmap details.
+
+## CLI Surfaces
+
+`cli_surface` projections model command-line entry points for maintained tools.
+They are concrete surface contracts, not generated runtimes. Commands stay as
+entries inside a projection so they can realize existing capabilities without
+becoming top-level domain statements:
+
+```text
+projection proj_cli_surface {
+  name "Topogram CLI"
+  description "Command-line surface for Topogram"
+  type cli_surface
+  realizes [cap_check_topogram, cap_import_brownfield_app]
+  outputs [maintained_engine]
+
+  commands {
+    command check capability cap_check_topogram usage "topogram check [path] [--json]" mode read_only
+    command import capability cap_import_brownfield_app usage "topogram import <app-path> --out <target>" mode writes_workspace
+  }
+
+  command_options {
+    command check option json type boolean flag --json description "Print JSON"
+    command import option from type enum values [db, api, ui, cli, workflows, verification]
+  }
+
+  command_outputs {
+    command check format json schema shape_check_result
+    command check format human
+  }
+
+  command_effects {
+    command check effect read_only target workspace
+    command import effect writes_workspace target workspace_candidates
+  }
+
+  command_examples {
+    command check example "topogram check --json"
+  }
+
+  status active
+}
+```
+
+Allowed command effects are `read_only`, `writes_workspace`, `writes_app`,
+`network`, `package_install`, `git`, and `filesystem`. `cli_surface` does not
+replace `api_contract`: HTTP endpoints remain API projections, while command
+usage, flags, output formats, and side effects belong to CLI surfaces.

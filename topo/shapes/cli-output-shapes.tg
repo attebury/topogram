@@ -1,0 +1,33 @@
+shape shape_cli_status_result {
+  name "CLI Status Result"
+  description "Common machine-readable result shape for read-only CLI status and validation commands."
+  fields {
+    ok boolean required
+    command string optional
+    summary string optional
+  }
+  status active
+}
+
+shape shape_import_result {
+  name "Import Result"
+  description "Machine-readable result from brownfield import commands."
+  fields {
+    ok boolean required
+    sourcePath string required
+    targetPath string required
+    workspaceRoot string required
+  }
+  status active
+}
+
+shape shape_release_status_result {
+  name "Release Status Result"
+  description "Machine-readable result for release status and consumer proof checks."
+  fields {
+    ok boolean required
+    currentVersion string optional
+    reportPath string optional
+  }
+  status active
+}

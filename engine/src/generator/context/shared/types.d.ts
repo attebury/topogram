@@ -143,6 +143,7 @@ export type ContextSelectionOptions = {
   requirementId?: string | null;
   acceptanceId?: string | null;
   taskId?: string | null;
+  planId?: string | null;
   bugId?: string | null;
   documentId?: string | null;
   [key: string]: any;

@@ -1,0 +1,47 @@
+domain dom_cli {
+  name "CLI"
+  description "Public Topogram command-line behavior observed in engine/src/cli and docs."
+  status active
+}
+
+domain dom_import_adoption {
+  name "Import and Adoption"
+  description "Brownfield import, candidate reconciliation, and canonical adoption behavior."
+  status active
+}
+
+domain dom_workspace_project_config {
+  name "Workspace and Project Config"
+  description "Workspace resolution, topo folder convention, project config, ownership, and policy boundaries."
+  status active
+}
+
+domain dom_generator_runtime {
+  name "Generator Runtime"
+  description "Generator manifests, package-backed adapters, normalized contracts, and app/runtime output ownership."
+  status active
+}
+
+domain dom_catalog_templates {
+  name "Catalog and Templates"
+  description "Template creation, catalog lookup, trust policy, package provenance, and starter experience."
+  status active
+}
+
+domain dom_sdlc_query_agent_context {
+  name "SDLC Query and Agent Context"
+  description "Agent brief, query packets, SDLC records, context slices, and workflow guidance."
+  status active
+}
+
+domain dom_release_consumer_proof {
+  name "Release and Consumer Proof"
+  description "Release commands, package rollout, consumer smoke tests, and CI gates."
+  status active
+}
+
+domain dom_engine_quality {
+  name "Engine Quality"
+  description "Engineering laws, boundary tests, type checks, fixture discipline, and maintainability hardening."
+  status active
+}

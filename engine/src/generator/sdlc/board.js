@@ -7,6 +7,7 @@
 
 import {
   summarizeBug,
+  summarizePlan,
   summarizePitch,
   summarizeRequirement,
   summarizeTask
@@ -20,6 +21,7 @@ const SUMMARIZERS = {
   pitch: summarizePitch,
   requirement: summarizeRequirement,
   task: summarizeTask,
+  plan: summarizePlan,
   bug: summarizeBug
 };
 

@@ -1,0 +1,15 @@
+plan plan_implement_audit_writer {
+  name "Implement audit writer plan"
+  description "Implementation sequence for audit writer work."
+  task task_implement_audit_writer
+  priority high
+  notes "Use this plan for sequencing and retained implementation notes."
+  outcome "Keep useful lessons here after the work completes."
+  steps {
+    step inspect_current_state status done description "Inspect the existing audit writer behavior."
+    step implement_writer status in-progress description "Write the audit persistence path."
+    step verify_runtime status pending description "Run runtime verification for persisted audit rows."
+  }
+  domain dom_app
+  status active
+}

@@ -197,9 +197,15 @@ function validateFieldShapes(errors, statement, fieldMap) {
   ensureSingleValueField(errors, statement, fieldMap, "method", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "severity", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "category", ["symbol"]);
+  ensureSingleValueField(errors, statement, fieldMap, "priority", ["symbol"]);
+  ensureSingleValueField(errors, statement, fieldMap, "work_type", ["symbol"]);
+  ensureSingleValueField(errors, statement, fieldMap, "task", ["symbol"]);
   ensureSingleValueField(errors, statement, fieldMap, "version", ["string"]);
+  ensureSingleValueField(errors, statement, fieldMap, "updated", ["string"]);
+  ensureSingleValueField(errors, statement, fieldMap, "notes", ["string"]);
+  ensureSingleValueField(errors, statement, fieldMap, "outcome", ["string"]);
 
-  for (const key of [
+  const listFields = [
     "aliases",
     "excludes",
     "uses_terms",
@@ -220,7 +226,6 @@ function validateFieldShapes(errors, statement, fieldMap) {
     "realizes",
     "outputs",
     "inputs",
-    "steps",
     "validates",
     "scenarios",
     "observes",
@@ -233,11 +238,19 @@ function validateFieldShapes(errors, statement, fieldMap) {
     "lookups",
     "dependencies",
     "approvals"
-  ]) {
+  ];
+  if (statement.kind === "orchestration") {
+    listFields.push("steps");
+  }
+  for (const key of listFields) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"]) {
+  const blockFields = ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "commands", "command_options", "command_outputs", "command_effects", "command_examples", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"];
+  if (statement.kind === "plan") {
+    blockFields.push("steps");
+  }
+  for (const key of blockFields) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -267,6 +280,11 @@ function validateFieldShapes(errors, statement, fieldMap) {
     validateBlockEntryLengths(errors, statement, fieldMap, "downloads", 7);
     validateBlockEntryLengths(errors, statement, fieldMap, "authorization", 3);
     validateBlockEntryLengths(errors, statement, fieldMap, "callbacks", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "commands", 2);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_options", 6);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_outputs", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_effects", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_examples", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "screens", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "collection_views", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "screen_actions", 6);
@@ -416,11 +434,13 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
     introduces_decisions: ["decision"],
     satisfies: ["requirement", "acceptance_criterion"],
     acceptance_refs: ["acceptance_criterion"],
+    verification_refs: ["verification"],
     requirement_refs: ["requirement"],
     fixes_bugs: ["bug"],
     blocks: ["task"],
     blocked_by: ["task"],
     claimed_by: ["actor", "role"],
+    task: ["task"],
     violates: ["rule"],
     surfaces_rule: ["rule"],
     introduced_in: ["task", "bug"],

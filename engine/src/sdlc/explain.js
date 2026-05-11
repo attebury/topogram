@@ -14,6 +14,7 @@ import { checkDoD } from "./dod/index.js";
 import { legalTransitionsFor, isTerminalStatus } from "./transitions/index.js";
 import { defaultActiveStatuses } from "./status-filter.js";
 import { readHistory, lastTransition, detectDriftedStatus } from "./history.js";
+import { planStepHistoryId } from "./plan-steps.js";
 
 function pickNextStatus(legal) {
   // Prefer the canonical forward path (skipping rollback options).
@@ -22,9 +23,9 @@ function pickNextStatus(legal) {
     "approved",
     "submitted",
     "shaped",
-    "claimed",
     "in-progress",
     "done",
+    "claimed",
     "fixed",
     "verified",
     "review",
@@ -46,6 +47,54 @@ function buildBlockers(statement, byId) {
       return target && target.status !== "done" ? id : null;
     })
     .filter(Boolean);
+}
+
+function summarizePlan(plan, history) {
+  const steps = (plan.steps || []).map((step) => ({
+    id: step.id,
+    status: step.status,
+    description: step.description,
+    notes: step.notes || null,
+    outcome: step.outcome || null,
+    last_transition: lastTransition(history, planStepHistoryId(plan.id, step.id))
+  }));
+  return {
+    id: plan.id,
+    status: plan.status,
+    task: plan.task?.id || null,
+    steps,
+    next_step: steps.find((step) => step.status !== "done" && step.status !== "skipped") || null
+  };
+}
+
+function plansForTask(graph, task, history) {
+  const planIds = task.kind === "task" ? task.plans || [] : [];
+  return planIds
+    .map((id) => graph.statements.find((statement) => statement.id === id && statement.kind === "plan" && !statement.archived))
+    .filter(Boolean)
+    .map((plan) => summarizePlan(plan, history));
+}
+
+function recommendedQueries(statement) {
+  if (statement.kind === "task") {
+    return [
+      `topogram query slice ./topo --task ${statement.id} --json`,
+      `topogram query single-agent-plan ./topo --mode implementation --task ${statement.id} --json`
+    ];
+  }
+  if (statement.kind === "bug") {
+    return [
+      `topogram query slice ./topo --bug ${statement.id} --json`,
+      `topogram query single-agent-plan ./topo --mode implementation --bug ${statement.id} --json`
+    ];
+  }
+  if (statement.kind === "plan") {
+    return [
+      `topogram sdlc plan explain ${statement.id} --json`,
+      `topogram query slice ./topo --plan ${statement.id} --json`
+    ];
+  }
+  return [`topogram query slice ./topo --${statement.kind} ${statement.id} --json`];
 }
 
 export function explain(workspaceRoot, resolved, id, options = {}) {
@@ -110,6 +159,9 @@ export function explain(workspaceRoot, resolved, id, options = {}) {
     last_transition: last,
     drift,
     blockers,
+    plans: statement.kind === "task" ? plansForTask(resolved.graph, statement, history) : undefined,
+    plan: statement.kind === "plan" ? summarizePlan(statement, history) : undefined,
+    recommended_queries: recommendedQueries(statement),
     next_action: nextAction,
     history: options.includeHistory ? history[id] || [] : undefined
   };

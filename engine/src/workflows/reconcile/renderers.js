@@ -11,6 +11,11 @@ import {
   formatAuthPermissionHintInline
 } from "./auth.js";
 
+/** @param {string|null|undefined} value @returns {string} */
+function quoteString(value) {
+  return String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 /** @param {string} fieldType @param {Set<any>} knownEnums @returns {any} */
 export function normalizeCandidateFieldType(fieldType, knownEnums = new Set()) {
   const normalized = idHintify(fieldType);
@@ -145,6 +150,18 @@ export function renderCandidateShape(shapeId, label, fields, sourceKind = null) 
 
 /** @param {WorkflowRecord} record @param {any} inputShapeId @param {any} outputShapeId @returns {any} */
 export function renderCandidateCapability(record, inputShapeId, outputShapeId) {
+  if (record.track === "cli" || record.source_kind === "cli_command") {
+    const lines = [
+      `capability ${record.id_hint} {`,
+      `  name "${record.label}"`,
+      `  description "Candidate capability imported from brownfield CLI command evidence"`,
+      "",
+      "  status active",
+      "}"
+    ];
+    return ensureTrailingNewline(`${renderCandidateMetadataComments(record)}\n${lines.join("\n")}`);
+  }
+
   const operationKind = inferCapabilityVerb(record);
   const entityId = inferCapabilityEntityId(record);
   const lines = [
@@ -306,6 +323,71 @@ export function renderCandidateWidget(widget) {
       "  status proposed",
       "}"
     ].join("\n")
+  );
+}
+
+/** @param {WorkflowRecord} surface @returns {any} */
+export function renderCandidateCliSurface(surface) {
+  const commandRecords = surface.command_records || [];
+  const commands = commandRecords.map((/** @type {any} */ command) =>
+    `    command ${command.command_id} capability ${command.capability_id} usage "${quoteString(command.usage)}" mode ${command.mode || "read_only"}`
+  );
+  const options = (surface.options || []).map((/** @type {any} */ option) => {
+    const parts = [
+      `    command ${option.command_id} option ${option.name}`,
+      `type ${option.type || "boolean"}`
+    ];
+    if (option.flag) parts.push(`flag ${option.flag}`);
+    if (option.description) parts.push(`description "${quoteString(option.description)}"`);
+    return parts.join(" ");
+  });
+  const outputs = (surface.outputs || []).map((/** @type {any} */ output) => {
+    const parts = [`    command ${output.command_id} format ${output.format || "human"}`];
+    if (output.schema_id) parts.push(`schema ${output.schema_id}`);
+    if (output.description) parts.push(`description "${quoteString(output.description)}"`);
+    return parts.join(" ");
+  });
+  const effects = (surface.effects || []).map((/** @type {any} */ effect) => {
+    const parts = [`    command ${effect.command_id} effect ${effect.effect || "read_only"}`];
+    if (effect.target) parts.push(`target ${effect.target}`);
+    return parts.join(" ");
+  });
+  const examples = (surface.examples || []).map((/** @type {any} */ example) =>
+    `    command ${example.command_id} example "${quoteString(example.example)}"`
+  );
+  const realizedCapabilities = [...new Set(commandRecords.map((/** @type {any} */ command) => command.capability_id).filter(Boolean))].sort();
+  return ensureTrailingNewline(
+    `${renderCandidateMetadataComments(surface)}\n${[
+      `projection ${surface.id_hint} {`,
+      `  name "${quoteString(surface.label || "CLI Surface")}"`,
+      '  description "Candidate CLI surface inferred from imported command usage. Review commands, options, outputs, and side effects before adoption."',
+      "  type cli_surface",
+      `  realizes [${realizedCapabilities.join(", ")}]`,
+      "  outputs [maintained_app]",
+      "",
+      "  commands {",
+      ...commands,
+      "  }",
+      "",
+      "  command_options {",
+      ...options,
+      "  }",
+      "",
+      "  command_outputs {",
+      ...outputs,
+      "  }",
+      "",
+      "  command_effects {",
+      ...effects,
+      "  }",
+      "",
+      "  command_examples {",
+      ...examples,
+      "  }",
+      "",
+      "  status proposed",
+      "}"
+    ].join("\n")}`
   );
 }
 

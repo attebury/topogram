@@ -30,11 +30,12 @@ tool needs pure JSON stdout through npm.
 1. `AGENTS.md`
 2. `README.md`
 3. `topogram.project.json`
-4. `topogram.template-policy.json`
-5. `topogram.generator-policy.json`
-6. `.topogram-template-trust.json`, when executable implementation exists
-7. `.topogram-import.json`, when the project came from brownfield import
-8. Focused `topogram query ...` output
+4. `topogram.sdlc-policy.json`, when present
+5. `topogram.template-policy.json`
+6. `topogram.generator-policy.json`
+7. `.topogram-template-trust.json`, when executable implementation exists
+8. `.topogram-import.json`, when the project came from brownfield import
+9. Focused `topogram query ...` output
 
 Agents should not read the entire graph by default. Use `topogram query list
 --json`, then `topogram query show <name> --json`, and then the focused packet
@@ -48,6 +49,9 @@ npm run doctor
 npm run source:status
 npm run template:explain
 npm run generator:policy:check
+topogram sdlc policy explain --json
+topogram sdlc gate . --require-adopted --json
+topogram sdlc explain <task-or-bug-id> --json
 npm run check
 npm run query:list
 npm run query:show -- widget-behavior
@@ -68,11 +72,42 @@ Safe default edits:
 
 - `topo/**`
 - `topogram.project.json`
+- `topogram.sdlc-policy.json`
 - policy files after review
 - `implementation/**` only after reviewing trust state
 
 Generated-owned outputs such as `app/**` are replaceable. Agents should not make
 lasting edits there unless the output ownership has been changed to maintained.
+
+## SDLC Adoption
+
+Projects opt into enforceable SDLC with `topogram.sdlc-policy.json`.
+Missing policy means `topogram sdlc gate` reports `not_adopted` and exits
+successfully unless `--require-adopted` is passed. Adopted projects can run in
+`advisory` mode to report gaps, or `enforced` mode to fail protected changes
+that lack a valid SDLC item, a `topo/**` SDLC record change, or an allowed
+exemption.
+
+For implementation work, agents should start with:
+
+```bash
+topogram agent brief --json
+topogram query list --json
+topogram sdlc explain <task-id> --json
+topogram query slice ./topo --task <task-id> --json
+topogram query single-agent-plan . --mode implementation --capability <cap-id> --json
+```
+
+If `sdlc explain` returns linked plans, inspect the active plan before
+editing. Plan text and step definitions are declarative source; step
+status changes should use `topogram sdlc plan step ... --write` so the
+history sidecar can detect drift.
+
+The same rule applies to other stateful workflow surfaces: use
+`topogram sdlc transition`, `topogram sdlc archive`, `topogram trust ...`,
+`topogram import ...`, `topogram generate`, `topogram emit --write`, and
+release commands instead of hand-editing history, archives, trust records,
+provenance, generated sentinels, or rollout evidence.
 
 ## File Organization
 

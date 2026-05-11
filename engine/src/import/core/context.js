@@ -20,7 +20,7 @@ export function findNearestGitRoot(startDir) {
 }
 
 export function normalizeWorkspacePaths(inputPath) {
-  const context = resolveWorkspaceContext(inputPath);
+  const context = resolveWorkspaceContext(inputPath, { ignoreAncestorConfig: true });
   const absolute = path.resolve(inputPath);
   const topogramRoot = context.topoRoot;
   const workspaceRoot = context.projectRoot;

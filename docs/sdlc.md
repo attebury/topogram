@@ -1,10 +1,11 @@
 # SDLC kinds in Topogram
 
-Topogram's six SDLC kinds turn the workspace into the system of record for
+Topogram's SDLC kinds turn the workspace into the system of record for
 shape-the-work activity (pitches), commitments (requirements + acceptance
-criteria), execution (tasks), defects (bugs), and rendered guidance
-(documents). They sit alongside the existing spec kinds (capability,
-entity, rule, projection, …) and reference them through dedicated fields.
+criteria), execution (tasks), implementation sequencing (plans), defects
+(bugs), and rendered guidance (documents). They sit alongside the
+existing spec kinds (capability, entity, rule, projection, …) and
+reference them through dedicated fields.
 
 ## Kinds
 
@@ -14,6 +15,7 @@ entity, rule, projection, …) and reference them through dedicated fields.
 | `requirement` | `req_` | `.tg` | draft → in-review → approved → superseded |
 | `acceptance_criterion` | `ac_` | `.tg` | draft → approved → superseded |
 | `task` | `task_` | `.tg` | unclaimed → claimed → in-progress → done (\| blocked) |
+| `plan` | `plan_` | `.tg` | draft → active → complete \| superseded |
 | `bug` | `bug_` | `.tg` | open → in-progress → fixed → verified \| wont-fix |
 | `document` | `doc_` | markdown frontmatter | draft → review → published → archived |
 
@@ -27,6 +29,7 @@ topo/
   requirements/{slug}.tg
   acceptance_criteria/{slug}.tg
   tasks/{slug}.tg
+  plans/{slug}.tg
   bugs/{slug}.tg
   docs/{kind}/{slug}.md            # markdown documents
   _archive/{kind}s-{year}.jsonl    # year-bucketed archives for terminal-status artifacts
@@ -38,6 +41,31 @@ The folder split is convention only — the parser flattens everything via
 bridge loads it at workspace-parse time so frozen entries participate in
 cross-references and the traceability matrix without showing up in the
 default board.
+
+## Command-owned state
+
+Humans and agents may edit declarative `.tg` source directly: names,
+descriptions, references, rules, requirements, tasks, plans, and plan
+step descriptions are normal source text. State that records workflow,
+trust, provenance, generated ownership, or release audit evidence is
+command-owned and should move through Topogram commands.
+
+| State surface | Do not hand-edit | Command path |
+|---|---|---|
+| SDLC status fields after work starts | `status` on pitch/requirement/AC/task/plan/bug/document records | `topogram sdlc transition ...` |
+| Plan step progress | `steps { step ... status ... }` after a plan is active | `topogram sdlc plan step start|complete|skip|transition ... --write` |
+| SDLC history | `topo/.topogram-sdlc-history.json` | transition and plan-step commands append it |
+| Archives | `topo/_archive/*.jsonl` | `topogram sdlc archive`, `unarchive`, and `compact` |
+| Template implementation trust | `.topogram-template-trust.json` | `topogram trust status`, `trust diff`, and `trust template` after review |
+| Template-owned file baseline | `.topogram-template-files.json` | `topogram trust template` and reviewed `topogram template update ...` commands |
+| Catalog-copy provenance | `.topogram-source.json` | `topogram catalog copy` and `topogram source status` |
+| Import adoption receipts | import history/provenance files under the imported workspace | `topogram import adopt`, `topogram import status`, and `topogram import history --verify` |
+| Generated ownership sentinel | `app/.topogram-generated.json` or artifact `.topogram-generated.json` | `topogram generate` or `topogram emit --write` |
+| Release and rollout state | release reports, consumer rollout commits, and workflow evidence | `topogram release:status`, `topogram release roll-consumers`, and CI workflows |
+
+Recovery edits to command-owned files are exceptional maintenance work:
+review the file, record the reason in the related SDLC item, and run
+`topogram check` plus `topogram sdlc check --strict` afterward.
 
 ## Cross-reference fields
 
@@ -52,9 +80,11 @@ requirement.supersedes        → requirement
 acceptance_criterion.requirement → requirement (single)
 task.satisfies                → requirement | acceptance_criterion
 task.acceptance_refs          → acceptance_criterion
+task.verification_refs        → verification
 task.blocks / task.blocked_by → task (reciprocal)
 task.introduces_decisions     → decision
 task.affects                  → same set as pitch.affects
+plan.task                     → task (single)
 bug.affects                   → same set as pitch.affects
 bug.violates                  → rule
 bug.surfaces_rule             → rule (the rule the bug uncovered, vs. one it violates)
@@ -81,6 +111,7 @@ topogram query slice topo/ --pitch pitch_audit_logging
 topogram query slice topo/ --requirement req_audit_persistence
 topogram query slice topo/ --acceptance ac_audit_log_visible
 topogram query slice topo/ --task task_implement_audit_writer
+topogram query slice topo/ --plan plan_implement_audit_writer
 topogram query slice topo/ --bug bug_audit_drops_silently
 topogram query slice topo/ --document doc_audit_runbook
 ```
@@ -88,6 +119,43 @@ topogram query slice topo/ --document doc_audit_runbook
 A slice returns the focus artifact, its dependencies, related summaries,
 verification targets, write scope, and review boundary — enough for an
 agent to start work without re-querying.
+
+## Plans and steps
+
+Plans are optional support records for implementation sequencing,
+approach notes, and retained lessons. A task or bug does not require a
+plan unless a project policy adds that rule later.
+
+```tg
+plan plan_implement_audit_writer {
+  name "Implement audit writer plan"
+  description "Implementation sequence for audit writer work."
+  task task_implement_audit_writer
+  priority high
+  notes "Record approach notes here."
+  outcome "Record what worked, what did not, and what to repeat later."
+  steps {
+    step inspect_current_state status done description "Inspect current behavior."
+    step implement_writer status in-progress description "Write the persistence path."
+    step verify_runtime status pending description "Run runtime verification."
+  }
+  status active
+}
+```
+
+Creating or editing plan text is declarative source work and may be done
+directly in `.tg`. Step status changes are workflow state and should use
+the CLI so history and drift detection remain useful:
+
+```bash
+topogram sdlc plan create task_implement_audit_writer audit_writer --write
+topogram sdlc plan explain plan_implement_audit_writer --json
+topogram sdlc plan step complete plan_implement_audit_writer implement_writer --actor agent-7 --write
+```
+
+Use nested steps for local sequencing. Promote a step to a real `task`
+when it needs separate ownership, blocking, acceptance criteria, or
+verification.
 
 ## State transitions
 
@@ -105,6 +173,35 @@ Each transition:
 4. Appends to `.topogram-sdlc-history.json`
 
 `--dry-run` prints the planned mutation without writing.
+
+Done tasks require `satisfies`, `acceptance_refs`, and
+`verification_refs`. Use the ergonomic helpers when closing work:
+
+```bash
+topogram sdlc link task_implement_audit_writer verification_audit_persists --write
+topogram sdlc complete task_implement_audit_writer --verification verification_audit_persists --write
+```
+
+## Adoption policy and PR gate
+
+Projects opt into SDLC enforcement with `topogram.sdlc-policy.json`.
+
+```bash
+topogram sdlc policy init
+topogram sdlc policy check --json
+topogram sdlc policy explain --json
+```
+
+Missing policy means `topogram sdlc gate` reports `not_adopted` and
+exits successfully unless `--require-adopted` is passed. Adopted
+projects in `advisory` mode report gaps without failing. Adopted
+projects in `enforced` mode fail protected changes without a valid SDLC
+item, a `topo/**` SDLC record change, or an allowed exemption.
+
+```bash
+topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json
+topogram sdlc gate . --sdlc-id task_implement_audit_writer --json
+```
 
 ## Agent-loop pattern
 
@@ -124,11 +221,13 @@ adds DoD details, history, and drift indicators.
 
 ## Archive flow
 
-Terminal-status `task` (done), `bug` (verified|wont-fix), `pitch`
-(rejected), and `document` (archived) artifacts are archive-eligible.
+Terminal-status `task` (done), `plan` (complete|superseded), `bug`
+(verified|wont-fix), `pitch` (rejected), and `document` (archived)
+artifacts are archive-eligible.
 
 ```bash
 topogram sdlc archive --status verified,wont-fix
+topogram sdlc archive --id plan_implement_audit_writer
 topogram sdlc unarchive bug_old_regression
 topogram sdlc compact topo/_archive/tasks-2025.jsonl
 ```

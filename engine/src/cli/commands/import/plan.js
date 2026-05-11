@@ -41,6 +41,15 @@ export const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
   { selector: "workflows", kind: "track", label: "workflows", matches: (/** @type {AnyRecord} */ item) => item.track === "workflows" || item.kind === "decision" },
   { selector: "verification", kind: "kind", label: "verification", matches: (/** @type {AnyRecord} */ item) => item.kind === "verification" },
   {
+    selector: "cli",
+    kind: "track",
+    label: "CLI surfaces",
+    matches: (/** @type {AnyRecord} */ item) =>
+      item.bundle === "cli" ||
+      item.track === "cli" ||
+      item.suggested_action === "promote_cli_surface"
+  },
+  {
     selector: "ui",
     kind: "track",
     label: "UI reports, widgets, and event shapes",

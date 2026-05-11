@@ -6,7 +6,7 @@ import {
   reviewBoundaryForImportProposal
 } from "../../policy/review-boundaries.js";
 
-const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "ui"]);
+const ADOPT_SELECTORS = new Set(["from-plan", "actors", "roles", "enums", "shapes", "entities", "capabilities", "widgets", "docs", "journeys", "workflows", "verification", "cli", "ui"]);
 
 function stableSortedStrings(values) {
   return [...new Set((values || []).filter(Boolean))].sort();
@@ -360,6 +360,7 @@ export function selectorMatchesItem(selector, item) {
   if (selector === "journeys") return item.track === "docs" && String(item.canonical_rel_path || "").startsWith("docs/journeys/");
   if (selector === "workflows") return item.track === "workflows" || item.kind === "decision";
   if (selector === "verification") return item.kind === "verification";
+  if (selector === "cli") return item.bundle === "cli" || item.track === "cli" || item.suggested_action === "promote_cli_surface";
   if (selector === "ui") return item.track === "ui" || item.kind === "widget" || item.source_kind === "ui_widget_event";
   if (selector.startsWith("bundle:")) return item.bundle === selector.slice("bundle:".length);
   return false;

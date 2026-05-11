@@ -259,6 +259,7 @@ export function reconcileWorkflow(inputPath, options = {}) {
       capabilities: bundle.capabilities.map((/** @type {any} */ entry) => entry.id_hint),
       shapes: bundle.shapes.map((/** @type {any} */ entry) => entry.id),
       widgets: bundle.widgets.map((/** @type {any} */ entry) => entry.id_hint),
+      cli_surfaces: (bundle.cliSurfaces || []).map((/** @type {any} */ entry) => entry.id_hint),
       screens: bundle.screens.map((/** @type {any} */ entry) => entry.id_hint),
       workflows: bundle.workflows.map((/** @type {any} */ entry) => entry.id_hint),
       docs: bundle.docs.map((/** @type {any} */ entry) => entry.id),
@@ -282,7 +283,7 @@ export function reconcileWorkflow(inputPath, options = {}) {
     : "## Promoted Canonical Items";
   files["candidates/reconcile/report.json"] = `${stableStringify(report)}\n`;
   const candidateModelBundlesMarkdown = report.candidate_model_bundles.length
-    ? report.candidate_model_bundles.map((/** @type {any} */ bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.widgets.length} widgets, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
+    ? report.candidate_model_bundles.map((/** @type {any} */ bundle) => `- \`${bundle.slug}\` (${bundle.actors.length} actors, ${bundle.roles.length} roles, ${bundle.entities.length} entities, ${bundle.enums.length} enums, ${bundle.capabilities.length} capabilities, ${bundle.shapes.length} shapes, ${bundle.widgets.length} widgets, ${bundle.cli_surfaces.length} CLI surfaces, ${bundle.screens.length} screens, ${bundle.workflows.length} workflows, ${bundle.docs.length} docs)
   - primary concept \`${bundle.operator_summary.primaryConcept}\`${bundle.operator_summary.primaryEntityId ? `, primary entity \`${bundle.operator_summary.primaryEntityId}\`` : ""}
   - participants ${bundle.operator_summary.participants.label}
   - main capabilities ${summarizeBundleSurface(bundle, bundle.operator_summary.capabilityIds)}

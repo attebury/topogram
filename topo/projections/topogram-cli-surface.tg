@@ -1,0 +1,91 @@
+projection proj_topogram_cli {
+  name "Topogram CLI Surface"
+  description "Curated command-line surface for the Topogram engine, derived from CLI help, command modules, docs, and package scripts."
+  type cli_surface
+  realizes [
+    cap_create_project,
+    cap_validate_workspace,
+    cap_generate_app_outputs,
+    cap_emit_artifacts,
+    cap_query_context,
+    cap_brief_agent,
+    cap_check_widget_contracts,
+    cap_manage_sdlc_records,
+    cap_import_brownfield_app,
+    cap_reconcile_import_candidates,
+    cap_adopt_import_candidates,
+    cap_manage_templates,
+    cap_manage_catalog,
+    cap_manage_generators,
+    cap_verify_release_status,
+    cap_roll_consumer_packages,
+    cap_run_engine_gates
+  ]
+  outputs [maintained_engine]
+
+  commands {
+    command new capability cap_create_project usage "topogram new <target> [--template <id-or-spec>]" mode writes_workspace
+    command check capability cap_validate_workspace usage "topogram check [path] [--json]" mode read_only
+    command generate capability cap_generate_app_outputs usage "topogram generate [path] [--out <path>]" mode writes_app
+    command emit capability cap_emit_artifacts usage "topogram emit <target> [path] [--json|--write]" mode read_only
+    command query capability cap_query_context usage "topogram query list|show <name> [path] --json" mode read_only
+    command agent_brief capability cap_brief_agent usage "topogram agent brief [path] [--json]" mode read_only
+    command widget_check capability cap_check_widget_contracts usage "topogram widget check [path] [--json]" mode read_only
+    command widget_behavior capability cap_check_widget_contracts usage "topogram widget behavior [path] [--json]" mode read_only
+    command sdlc capability cap_manage_sdlc_records usage "topogram sdlc check|explain|transition [path]" mode writes_workspace
+    command import capability cap_import_brownfield_app usage "topogram import <app-path> --out <target> --from <tracks>" mode writes_workspace
+    command import_plan capability cap_reconcile_import_candidates usage "topogram import plan [path] [--json]" mode read_only
+    command import_adopt capability cap_adopt_import_candidates usage "topogram import adopt <selector> [path] --dry-run|--write" mode writes_workspace
+    command template capability cap_manage_templates usage "topogram template list|show|check|status|update [path]" mode writes_workspace
+    command catalog capability cap_manage_catalog usage "topogram catalog list|show|check|copy [id] [target]" mode network
+    command generator capability cap_manage_generators usage "topogram generator list|show|check [id]" mode read_only
+    command generator_policy capability cap_manage_generators usage "topogram generator policy check|status [path]" mode read_only
+    command release_status capability cap_verify_release_status usage "topogram release:status [--strict] [--write-report <path>]" mode network
+    command release_roll_consumers capability cap_roll_consumer_packages usage "topogram release roll-consumers <version> [--push]" mode git
+  }
+
+  command_options {
+    command check option json type boolean flag --json
+    command generate option out type string flag --out
+    command emit option json type boolean flag --json
+    command emit option write type boolean flag --write
+    command import option out type string flag --out
+    command import option from type enum values [db, api, ui, cli, workflows, verification] flag --from
+    command import_adopt option write type boolean flag --write
+    command import_adopt option dry_run type boolean flag --dry-run
+    command release_status option strict type boolean flag --strict
+    command release_status option write_report type string flag --write-report
+  }
+
+  command_outputs {
+    command check format json schema shape_cli_status_result
+    command check format human
+    command import format json schema shape_import_result
+    command release_status format json schema shape_release_status_result
+    command release_status format human
+  }
+
+  command_effects {
+    command new effect writes_workspace target project_files
+    command check effect read_only target workspace
+    command generate effect writes_app target app_output
+    command emit effect read_only target artifacts
+    command emit effect filesystem target artifacts
+    command import effect writes_workspace target topo_candidates
+    command import_adopt effect writes_workspace target topo_canonical_files
+    command template effect filesystem target template_metadata
+    command catalog effect network target catalog_source
+    command release_roll_consumers effect git target consumer_repos
+    command release_roll_consumers effect package_install target consumer_packages
+  }
+
+  command_examples {
+    command check example "topogram check . --json"
+    command emit example "topogram emit ui-widget-contract . --widget widget_data_grid --json"
+    command import example "topogram import . --out /private/tmp/topogram-engine-cli-import --from cli --json"
+    command import_adopt example "topogram import adopt cli ./imported-topogram --write --json"
+    command release_status example "topogram release:status --strict --write-report ./docs/release-matrix.md"
+  }
+
+  status active
+}

@@ -1,0 +1,111 @@
+task task_add_cli_surface_dsl {
+  name "Add CLI Surface DSL"
+  description "Add cli_surface projection blocks, validation, resolver output, docs, and fixture tests."
+  satisfies [req_engine_topo_code_derived]
+  acceptance_refs [ac_engine_topo_validates]
+  verification_refs [verification_cli_surface_dsl]
+  affects [cap_validate_workspace, cap_import_brownfield_app]
+  claimed_by [actor_coding_agent]
+  domain dom_cli
+  priority high
+  work_type implementation
+  status done
+}
+
+task task_add_cli_import_track {
+  name "Add CLI Import Track"
+  description "Infer CLI command candidates, options, outputs, effects, examples, surfaces, and adoption support from generic brownfield evidence."
+  satisfies [req_engine_topo_code_derived, req_cli_import_precision_followup]
+  acceptance_refs [ac_cli_import_noise_recorded]
+  verification_refs [verification_import_fixtures]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  claimed_by [actor_coding_agent]
+  domain dom_import_adoption
+  priority high
+  work_type implementation
+  status done
+}
+
+task task_create_engine_topo_workspace {
+  name "Create Engine Topo Workspace"
+  description "Create the maintained engine topo from current repo-local evidence and record the raw self-import evidence report."
+  satisfies [req_engine_topo_code_derived]
+  acceptance_refs [ac_engine_topo_validates, ac_agent_brief_reads_engine_topo, ac_cli_import_noise_recorded]
+  verification_refs [verification_dogfood_topo_workspace]
+  affects [cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type documentation
+  status done
+}
+
+task task_history_drift_review {
+  name "History Drift Review"
+  description "Compare code-derived engine topo against topogram-project and classify major drift items before promoting historical claims."
+  satisfies [req_history_drift_review_required]
+  acceptance_refs [ac_history_drift_review_written]
+  verification_refs [verification_dogfood_topo_workspace]
+  affects [cap_manage_sdlc_records, cap_run_engine_gates]
+  claimed_by [actor_coding_agent]
+  blocked_by [task_create_engine_topo_workspace]
+  domain dom_engine_quality
+  priority high
+  work_type review
+  status done
+}
+
+task task_improve_cli_import_precision {
+  name "Improve CLI Import Precision"
+  description "Improve generic CLI import confidence so public command help and parser definitions outrank incidental source literals."
+  satisfies [req_cli_import_precision_followup]
+  acceptance_refs [ac_cli_import_noise_recorded]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
+  blocked_by [task_add_cli_import_track]
+  domain dom_import_adoption
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+
+task task_enforce_sdlc_working_habit {
+  name "Enforce SDLC Working Habit"
+  description "Add explicit SDLC adoption policy, PR/CI gate enforcement, stricter task Definition of Done, agent guidance, and ergonomic SDLC link/complete commands."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_sdlc_policy_is_explicit, ac_sdlc_gate_protects_changes, ac_done_tasks_have_verification]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records, cap_run_engine_gates, cap_brief_agent]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type implementation
+  status done
+}
+
+task task_enforce_cli_only_stateful_actions {
+  name "Enforce CLI-Only Stateful Actions"
+  description "Document and harden the boundary that stateful workflow mutations must run through Topogram commands instead of hand-edited audit or derived state."
+  satisfies [req_stateful_actions_use_cli]
+  acceptance_refs [ac_stateful_action_boundary_documented, ac_stateful_action_boundary_enforced]
+  affects [cap_manage_sdlc_records, cap_manage_templates, cap_import_brownfield_app, cap_generate_app_outputs, cap_verify_release_status, cap_roll_consumer_packages]
+  claimed_by [actor_coding_agent]
+  domain dom_engine_quality
+  priority high
+  work_type implementation
+  verification_refs [verification_sdlc_enforcement]
+  status done
+}
+
+task task_add_sdlc_plan_steps {
+  name "Add SDLC Plan Steps"
+  description "Add optional plan statements with nested local steps, CLI-owned step progress, plan slices, archive support, and docs."
+  satisfies [req_sdlc_plans_track_implementation_steps]
+  acceptance_refs [ac_sdlc_plans_are_optional, ac_plan_step_status_is_commanded, ac_plan_slices_feed_agents]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records, cap_query_context, cap_brief_agent]
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  priority high
+  work_type implementation
+  status done
+}

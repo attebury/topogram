@@ -74,6 +74,13 @@ export function importAdoptOnlyRequested(options = {}) {
     options.journeyId ||
     options.surfaceId ||
     options.domainId ||
+    options.pitchId ||
+    options.requirementId ||
+    options.acceptanceId ||
+    options.taskId ||
+    options.planId ||
+    options.bugId ||
+    options.documentId ||
     options.fromTopogramPath
   );
 }
@@ -228,7 +235,14 @@ export function selectorOptions(options) {
     entityId: options.entityId,
     journeyId: options.journeyId,
     surfaceId: options.surfaceId,
-    domainId: options.domainId
+    domainId: options.domainId,
+    pitchId: options.pitchId,
+    requirementId: options.requirementId,
+    acceptanceId: options.acceptanceId,
+    taskId: options.taskId,
+    planId: options.planId,
+    bugId: options.bugId,
+    documentId: options.documentId
   };
 }
 

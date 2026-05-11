@@ -41,6 +41,7 @@ const TEMPLATES = {
   description "What the agent or human will do."
   satisfies []
   acceptance_refs []
+  verification_refs []
   affects []
   blocked_by []
   priority medium

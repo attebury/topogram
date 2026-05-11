@@ -1,0 +1,70 @@
+capability cap_create_project {
+  name "Create Project"
+  description "Create a new Topogram project from a template or catalog alias."
+  actors [actor_consumer_developer, actor_coding_agent]
+  output [shape_cli_status_result]
+  domain dom_catalog_templates
+  status active
+}
+
+capability cap_validate_workspace {
+  name "Validate Workspace"
+  description "Run the canonical Topogram validity gate for parser, resolver, project config, topology, generator, trust, and ownership checks."
+  actors [actor_consumer_developer, actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_workspace_project_config
+  status active
+}
+
+capability cap_generate_app_outputs {
+  name "Generate App Outputs"
+  description "Write generated app/runtime outputs from topology runtimes and generator bindings."
+  actors [actor_consumer_developer, actor_coding_agent]
+  domain dom_generator_runtime
+  status active
+}
+
+capability cap_emit_artifacts {
+  name "Emit Artifacts"
+  description "Emit contracts, reports, snapshots, migration plans, and agent-readable artifacts without generating app outputs."
+  actors [actor_coding_agent, actor_consumer_developer, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+capability cap_query_context {
+  name "Query Focused Context"
+  description "List and show focused query packets so agents can work without loading the whole graph."
+  actors [actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+capability cap_brief_agent {
+  name "Brief Agent"
+  description "Provide first-run guidance for agents: read order, commands, edit boundaries, topology, policies, trust, and warnings."
+  actors [actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+capability cap_check_widget_contracts {
+  name "Check Widget Contracts"
+  description "Validate widget contracts, behavior realizations, and projection conformance."
+  actors [actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+capability cap_manage_sdlc_records {
+  name "Manage SDLC Records"
+  description "Check, explain, transition, archive, and release SDLC records in a Topogram workspace."
+  actors [actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_sdlc_query_agent_context
+  status active
+}

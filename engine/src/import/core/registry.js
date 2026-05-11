@@ -47,6 +47,7 @@ import { reactNativeScreensExtractor } from "../extractors/ui/react-native-scree
 import { reactRouterUiExtractor } from "../extractors/ui/react-router.js";
 import { svelteKitUiExtractor } from "../extractors/ui/sveltekit.js";
 import { backendOnlyUiExtractor } from "../extractors/ui/backend-only.js";
+import { genericCliExtractor } from "../extractors/cli/generic.js";
 import { genericWorkflowExtractor } from "../extractors/workflows/generic.js";
 import { genericVerificationExtractor } from "../extractors/verification/generic.js";
 import { authSessionEnricher } from "../enrichers/auth-session.js";
@@ -60,6 +61,7 @@ export const extractorRegistry = {
   db: [prismaExtractor, djangoModelsExtractor, efCoreExtractor, roomExtractor, swiftDataExtractor, dotnetModelsExtractor, flutterEntitiesExtractor, reactNativeEntitiesExtractor, railsSchemaExtractor, liquibaseExtractor, myBatisXmlExtractor, jpaExtractor, drizzleExtractor, sqlExtractor, snapshotExtractor],
   api: [openApiExtractor, openApiCodeExtractor, graphQlSdlExtractor, graphQlCodeFirstExtractor, trpcExtractor, aspNetCoreExtractor, retrofitExtractor, swiftWebApiExtractor, flutterDioExtractor, reactNativeRepositoryExtractor, fastifyExtractor, expressExtractor, djangoRoutesExtractor, railsRoutesExtractor, micronautExtractor, jaxRsExtractor, springWebExtractor, nextRouteExtractor, genericRouteFallbackExtractor, nextServerActionExtractor, nextAuthExtractor],
   ui: [nextAppRouterUiExtractor, nextPagesRouterUiExtractor, androidComposeUiExtractor, blazorUiExtractor, razorPagesUiExtractor, swiftUiExtractor, uiKitExtractor, mauiXamlUiExtractor, flutterScreensUiExtractor, reactNativeScreensExtractor, reactRouterUiExtractor, svelteKitUiExtractor, backendOnlyUiExtractor],
+  cli: [genericCliExtractor],
   workflows: [genericWorkflowExtractor],
   verification: [genericVerificationExtractor]
 };
@@ -68,6 +70,7 @@ export const enricherRegistry = {
   db: [railsModelEnricher],
   api: [djangoRestEnricher, railsControllerEnricher, authSessionEnricher],
   ui: [],
+  cli: [],
   workflows: [workflowTargetStateEnricher, docLinkingEnricher],
   verification: []
 };

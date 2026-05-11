@@ -6,6 +6,7 @@
 // rules, archive load/save, and release dry-run output.
 
 import assert from "node:assert/strict";
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -19,6 +20,7 @@ import { generateWorkspace } from "../../src/generator/index.js";
 import { validateTransition, legalTransitionsFor } from "../../src/sdlc/transitions/index.js";
 import { checkDoD } from "../../src/sdlc/dod/index.js";
 import { transitionStatement } from "../../src/sdlc/transition.js";
+import { createPlan, explainPlan, transitionPlanStep } from "../../src/sdlc/plan.js";
 import { checkWorkspace } from "../../src/sdlc/check.js";
 import { explain } from "../../src/sdlc/explain.js";
 import { runRelease } from "../../src/sdlc/release.js";
@@ -29,6 +31,7 @@ import { generateSdlcReleaseNotes } from "../../src/generator/sdlc/release-notes
 import { generateSdlcTraceabilityMatrix } from "../../src/generator/sdlc/traceability-matrix.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const cliPath = path.join(engineRoot, "src", "cli.js");
 const fixtureRoot = path.join(engineRoot, "tests", "fixtures", "workspaces", "sdlc-basic");
 
 function workspaceFromSource(source) {
@@ -79,6 +82,13 @@ test("resolver populates SDLC back-links", () => {
   assert.deepEqual(requirement.acceptanceCriteria, ["ac_audit_survives_restart"]);
   assert.deepEqual(requirement.tasks, ["task_implement_audit_writer"]);
 
+  const task = resolved.graph.byKind.task.find((t) => t.id === "task_implement_audit_writer");
+  assert.deepEqual(task.plans, ["plan_implement_audit_writer"]);
+
+  const plan = resolved.graph.byKind.plan.find((p) => p.id === "plan_implement_audit_writer");
+  assert.equal(plan.task.id, "task_implement_audit_writer");
+  assert.deepEqual(plan.steps.map((step) => step.id), ["inspect_current_state", "implement_writer", "verify_runtime"]);
+
   const ac = resolved.graph.byKind.acceptance_criterion.find((a) => a.id === "ac_audit_survives_restart");
   assert.deepEqual(ac.tasks, ["task_implement_audit_writer"]);
 
@@ -103,6 +113,7 @@ test("domain.members includes SDLC kinds", () => {
   assert.ok(dom.members.pitches.includes("pitch_audit_logging"));
   assert.ok(dom.members.requirements.includes("req_audit_persistence"));
   assert.ok(dom.members.tasks.includes("task_implement_audit_writer"));
+  assert.ok(dom.members.plans.includes("plan_implement_audit_writer"));
   assert.ok(dom.members.bugs.includes("bug_audit_drops_silently"));
 });
 
@@ -130,6 +141,13 @@ test("query slice --requirement / --task / --bug each return focused subgraphs",
   assert.equal(taskResult.ok, true);
   assert.equal(taskResult.artifact.focus.kind, "task");
   assert.ok(taskResult.artifact.depends_on.satisfies.includes("req_audit_persistence"));
+  assert.ok(taskResult.artifact.depends_on.plans.includes("plan_implement_audit_writer"));
+
+  const planResult = generateWorkspace(ast, { target: "context-slice", planId: "plan_implement_audit_writer" });
+  assert.equal(planResult.ok, true);
+  assert.equal(planResult.artifact.focus.kind, "plan");
+  assert.equal(planResult.artifact.depends_on.task, "task_implement_audit_writer");
+  assert.equal(planResult.artifact.steps.length, 3);
 
   const bugResult = generateWorkspace(ast, { target: "context-slice", bugId: "bug_audit_drops_silently" });
   assert.equal(bugResult.ok, true);
@@ -143,10 +161,59 @@ test("sdlc-board groups by status with SDLC summarizers", () => {
   const board = generateSdlcBoard(resolved.graph);
   assert.equal(board.type, "sdlc_board");
   assert.ok(board.board.task);
+  assert.ok(board.board.plan);
   assert.ok(board.board.pitch);
   // task is in-progress, so it appears in that lane
   assert.equal(board.board.task["in-progress"].length, 1);
+  assert.equal(board.board.plan.active.length, 1);
   assert.equal(board.board.bug.open.some((bug) => bug.id === "bug_legacy_audit_corruption"), false);
+});
+
+test("plans validate nested steps and complete DoD", () => {
+  const valid = validateWorkspace(workspaceFromSource(`
+task task_example {
+  name "Example"
+  description "Example task"
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+plan plan_example {
+  name "Example plan"
+  description "Example implementation plan"
+  task task_example
+  steps {
+    step inspect status done description "Inspect current state."
+    step verify status skipped description "Skipped with reason." outcome "No runtime surface."
+  }
+  status complete
+}
+`));
+  assert.equal(valid.ok, true, JSON.stringify(valid.errors, null, 2));
+
+  const invalid = validateWorkspace(workspaceFromSource(`
+task task_example {
+  name "Example"
+  description "Example task"
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+plan plan_example {
+  name "Example plan"
+  description "Example implementation plan"
+  task task_example
+  steps {
+    step inspect status pending description "Inspect current state."
+    step inspect status waiting description "Duplicate and invalid."
+  }
+  status complete
+}
+`));
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.errors.some((error) => error.message.includes("duplicate step")));
+  assert.ok(invalid.errors.some((error) => error.message.includes("Invalid step status")));
+  assert.ok(invalid.errors.some((error) => error.message.includes("requires all steps")));
 });
 
 test("sdlc-traceability-matrix walks pitch → req → AC → task → verification", () => {
@@ -161,6 +228,7 @@ test("sdlc-traceability-matrix walks pitch → req → AC → task → verificat
   assert.equal(row.acceptance_criterion.id, "ac_audit_survives_restart");
   assert.deepEqual(row.tasks.map((t) => t.id), ["task_implement_audit_writer"]);
   assert.deepEqual(row.bugs.map((b) => b.id), ["bug_audit_drops_silently"]);
+  assert.deepEqual(row.verifications.map((v) => v.id), ["verification_audit_persists"]);
 });
 
 test("sdlc-release-notes assembles approved pitches + done tasks + verified bugs", () => {
@@ -179,6 +247,7 @@ test("legal transitions: task can move unclaimed → claimed → in-progress →
   assert.equal(validateTransition("task", "claimed", "in-progress").ok, true);
   assert.equal(validateTransition("task", "claimed", "done").ok, false);
   assert.equal(validateTransition("pitch", "draft", "approved").ok, false);
+  assert.deepEqual(legalTransitionsFor("plan", "active"), ["complete", "superseded", "draft"]);
 });
 
 test("DoD: task in-progress fails when blocked_by has a non-done blocker", () => {
@@ -233,6 +302,43 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
   }
 });
 
+test("plan helpers create, explain, and transition nested steps with history", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const createdDryRun = createPlan(tempRoot, "task_implement_audit_writer", "audit_followup", {});
+    assert.equal(createdDryRun.ok, true, JSON.stringify(createdDryRun, null, 2));
+    assert.equal(createdDryRun.dryRun, true);
+    assert.ok(createdDryRun.content.includes("plan plan_audit_followup"));
+
+    const created = createPlan(tempRoot, "task_implement_audit_writer", "audit_followup", { write: true });
+    assert.equal(created.ok, true, JSON.stringify(created, null, 2));
+    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "plans", "audit_followup.tg")));
+
+    const explained = explainPlan(tempRoot, "plan_implement_audit_writer");
+    assert.equal(explained.ok, true, JSON.stringify(explained, null, 2));
+    assert.equal(explained.next_step.id, "implement_writer");
+
+    const dryRun = transitionPlanStep(tempRoot, "plan_implement_audit_writer", "implement_writer", "done", {
+      actor: "agent-test"
+    });
+    assert.equal(dryRun.ok, true, JSON.stringify(dryRun, null, 2));
+    assert.equal(dryRun.dryRun, true);
+
+    const result = transitionPlanStep(tempRoot, "plan_implement_audit_writer", "implement_writer", "done", {
+      write: true,
+      actor: "agent-test",
+      note: "step done"
+    });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    const planFile = fs.readFileSync(path.join(tempRoot, "topo", "plans", "implement-audit-writer.tg"), "utf8");
+    assert.ok(planFile.includes("step implement_writer status done"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
+    assert.equal(history["plan_implement_audit_writer#implement_writer"][0].to, "done");
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("transitionStatement accepts an explicit topogram root without nested history", () => {
   const tempRoot = copyFixtureToTemp();
   try {
@@ -257,6 +363,41 @@ test("sdlc check surfaces DoD warnings and ok when satisfied", () => {
   assert.equal(result.errors.length, 0, JSON.stringify(result.errors, null, 2));
 });
 
+test("sdlc check defaults to configured topo workspace from project root", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    fs.writeFileSync(path.join(tempRoot, "topogram.project.json"), JSON.stringify({
+      version: "0.1",
+      workspace: "./topo",
+      outputs: {
+        app: {
+          path: ".",
+          ownership: "maintained"
+        }
+      },
+      topology: {
+        runtimes: []
+      }
+    }, null, 2));
+    const result = childProcess.spawnSync(process.execPath, [cliPath, "sdlc", "check", "--strict"], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        FORCE_COLOR: "0"
+      }
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      errors: [],
+      ok: true,
+      warnings: []
+    });
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("sdlc explain returns next_action and respects DoD", () => {
   const ast = parsePath(fixtureRoot);
   const resolved = resolveWorkspace(ast);
@@ -265,7 +406,9 @@ test("sdlc explain returns next_action and respects DoD", () => {
   assert.equal(result.kind, "task");
   assert.equal(result.status, "in-progress");
   assert.ok(result.next_action);
-  assert.ok(["transition", "work", "wait", "review", "none"].includes(result.next_action.kind));
+  assert.equal(result.next_action.kind, "transition");
+  assert.equal(result.next_action.to, "done");
+  assert.equal(result.plans[0].id, "plan_implement_audit_writer");
 });
 
 test("archive bridge loads JSONL fixture entries", () => {
@@ -311,6 +454,28 @@ test("archiveStatement moves a verified bug to year-bucketed JSONL", () => {
     // Re-loading the workspace should still see the bug via the archive
     const archive = loadArchive(tempRoot);
     assert.ok(archive.entries.some((e) => e.id === "bug_audit_drops_silently"));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("archiveStatement moves a completed plan to year-bucketed JSONL", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    assert.equal(transitionPlanStep(tempRoot, "plan_implement_audit_writer", "implement_writer", "done", { write: true }).ok, true);
+    assert.equal(transitionPlanStep(tempRoot, "plan_implement_audit_writer", "verify_runtime", "done", { write: true }).ok, true);
+    const completed = transitionStatement(tempRoot, "plan_implement_audit_writer", "complete", {
+      actor: "agent-test"
+    });
+    assert.equal(completed.ok, true, JSON.stringify(completed, null, 2));
+
+    const result = archiveStatement(tempRoot, "plan_implement_audit_writer", { by: "test" });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.match(result.archiveFile, /plans-\d{4}\.jsonl$/);
+    assert.equal(fs.existsSync(result.file), false);
+
+    const archive = loadArchive(tempRoot);
+    assert.ok(archive.entries.some((entry) => entry.id === "plan_implement_audit_writer"));
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

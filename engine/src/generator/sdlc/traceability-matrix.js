@@ -19,7 +19,11 @@ export function generateSdlcTraceabilityMatrix(graph, options = {}) {
     const pitch = pitchId ? pitchesById.get(pitchId) : null;
 
     const taskIds = (ac.tasks || []).slice().sort();
-    const verificationIds = (ac.verifications || []).slice().sort();
+    const taskVerificationIds = taskIds.flatMap((id) => {
+      const task = tasksById.get(id);
+      return (task?.verificationRefs || []).map((ref) => typeof ref === "string" ? ref : ref?.id).filter(Boolean);
+    });
+    const verificationIds = [...new Set([...(ac.verifications || []), ...taskVerificationIds])].sort();
 
     const linkedBugIds = [];
     for (const bug of bugsById.values()) {

@@ -1,0 +1,16 @@
+plan plan_add_sdlc_plan_steps {
+  name "Add SDLC Plan Steps Plan"
+  description "Implementation plan for optional SDLC plans and nested steps."
+  task task_add_sdlc_plan_steps
+  priority high
+  notes "Keep plans optional; use nested steps for local sequencing and CLI-owned transitions for progress state."
+  outcome "Record follow-up lessons after validation."
+  steps {
+    step add_plan_dsl status done description "Add plan kind validation, normalization, DoD, transitions, and archive support."
+    step add_plan_cli status done description "Add plan create, explain, and step transition commands."
+    step integrate_agent_context status done description "Surface plans in task slices, plan slices, sdlc explain, agent brief, and docs."
+    step verify_plan_support status done description "Run focused SDLC/parser/type tests and engine gates."
+  }
+  domain dom_sdlc_query_agent_context
+  status complete
+}

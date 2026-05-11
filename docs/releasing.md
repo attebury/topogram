@@ -3,6 +3,11 @@
 The CLI package is `@topogram/cli`. Releases are manual and publish to npmjs.
 Run `topogram help release` for the CLI release-status command surface.
 
+Release status reports, consumer rollout commits, workflow evidence, and
+release-matrix updates are command-owned state. Use `topogram release:status`,
+`topogram release roll-consumers`, the documented npm scripts, and GitHub
+workflows; do not hand-edit release evidence to make status checks pass.
+
 ## Prepare
 
 From the repo root:

@@ -1,0 +1,62 @@
+decision decision_engine_topo_is_maintained {
+  name "Engine Topo Is Maintained"
+  description "The engine repository is treated as a maintained app; Topogram generation must not rewrite engine source."
+  context ["engine source is hand-maintained", "topogram generate targets generated app outputs"]
+  consequences ["topogram.project.json marks the repo output maintained", "dogfood topo guides agents and reviewers instead of generating engine code"]
+  domain dom_workspace_project_config
+  status accepted
+}
+
+decision decision_initial_import_ignores_project_history {
+  name "Initial Import Ignores Project History"
+  description "The first engine topo is derived from current repo code, tests, docs, scripts, workflows, and CLI help before comparing against topogram-project."
+  context ["historical project notes can drift from current implementation", "code-derived model should expose actual behavior first"]
+  consequences ["topogram-project is mandatory only for the later history drift review", "historical claims must be classified explicitly before promotion"]
+  domain dom_engine_quality
+  status accepted
+}
+
+decision decision_cli_surface_is_projection_type {
+  name "CLI Surface Is Projection Type"
+  description "Command-line behavior is modeled as entries inside a cli_surface projection rather than as top-level command statements."
+  context ["commands realize capabilities", "surface entries preserve options outputs effects and examples"]
+  consequences ["CLI importer emits candidate cli_surface projections", "command details remain surface-level contract data"]
+  domain dom_cli
+  status accepted
+}
+
+decision decision_repo_local_laws_are_enforceable {
+  name "Repo Local Laws Are Enforceable"
+  description "AGENTS.md and CONTRIBUTING.md define enforceable engineering laws for the maintained Topogram engine."
+  context ["repo-local laws are reviewed before changes", "boundary tests encode recurring laws"]
+  consequences ["topo rules mirror only evidenced repo-local laws", "new engine work should update rules when laws change"]
+  domain dom_engine_quality
+  status accepted
+}
+
+decision decision_agent_first_run_is_required {
+  name "Agent First Run Is Required"
+  description "Agents should begin with agent brief and focused query packets before broad source edits."
+  context ["docs/agent-first-run.md is the current guidance", "query packets reduce unnecessary graph and source context"]
+  consequences ["dogfood tasks should be explainable through sdlc records", "agent-facing workflow should prefer focused context"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}
+
+decision decision_stateful_workflow_mutations_use_cli {
+  name "Stateful Workflow Mutations Use CLI"
+  description "Derived state and audit state must be changed through canonical Topogram commands rather than hand-edited."
+  context ["declarative topo source can be edited directly", "status history trust hashes provenance generated sentinels archives and release state are audit surfaces"]
+  consequences ["stateful workflow mutations use the CLI so validation and history stay coherent", "manual edits are reserved for declarative source and reviewed policy changes"]
+  domain dom_engine_quality
+  status accepted
+}
+
+decision decision_sdlc_plans_are_optional_support_records {
+  name "SDLC Plans Are Optional Support Records"
+  description "Implementation plans are optional SDLC records with nested local steps; they support tasks without becoming mandatory task DoD."
+  context ["small tasks should not require ceremony", "multi-step work benefits from durable sequencing and lessons learned", "step status is workflow state"]
+  consequences ["plans may be authored directly as declarative topo source", "step status transitions and archive state use the CLI", "query slices surface linked plans when present"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

@@ -58,6 +58,11 @@ const WORKSPACE_SIGNAL_DIRS = new Set([
  */
 
 /**
+ * @typedef {Object} WorkspaceResolutionOptions
+ * @property {boolean} [ignoreAncestorConfig]
+ */
+
+/**
  * @param {string} candidatePath
  * @returns {boolean}
  */
@@ -225,9 +230,10 @@ function signalWorkspaceCandidates(root) {
 
 /**
  * @param {string} inputPath
+ * @param {WorkspaceResolutionOptions} [options]
  * @returns {WorkspaceResolution}
  */
-export function resolveWorkspaceContext(inputPath = ".") {
+export function resolveWorkspaceContext(inputPath = ".", options = {}) {
   const absolute = path.resolve(inputPath || ".");
   if (isDirectory(absolute) && path.basename(absolute) === LEGACY_WORKSPACE_FOLDER_NAME && isWorkspaceSignalRoot(absolute)) {
     throw new Error("Legacy workspace folders are not supported. Use topo/ or configure topogram.project.json workspace to a non-legacy relative path.");
@@ -250,7 +256,25 @@ export function resolveWorkspaceContext(inputPath = ".") {
     };
   }
 
-  const configInfo = findProjectRoot(absolute);
+  const directDefaultCandidate = path.join(absolute, DEFAULT_TOPO_FOLDER_NAME);
+  if (
+    isDirectory(absolute) &&
+    !fs.existsSync(path.join(absolute, PROJECT_CONFIG_FILE)) &&
+    isDirectory(directDefaultCandidate) &&
+    isWorkspaceSignalRoot(directDefaultCandidate)
+  ) {
+    return {
+      inputRoot: absolute,
+      topoRoot: directDefaultCandidate,
+      projectRoot: absolute,
+      configPath: null,
+      fromConfig: false,
+      fromSignal: false,
+      bootstrappedTopoRoot: false
+    };
+  }
+
+  const configInfo = options.ignoreAncestorConfig ? null : findProjectRoot(absolute);
   if (configInfo) {
     const topoRoot = resolveProjectWorkspace(configInfo.config, configInfo.configDir);
     return {

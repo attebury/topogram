@@ -20,6 +20,7 @@ export const STATEMENT_KINDS = new Set([
   "requirement",
   "acceptance_criterion",
   "task",
+  "plan",
   "bug"
 ]);
 
@@ -29,6 +30,7 @@ export const PITCH_IDENTIFIER_PATTERN = /^pitch_[a-z][a-z0-9_]*$/;
 export const REQUIREMENT_IDENTIFIER_PATTERN = /^req_[a-z][a-z0-9_]*$/;
 export const ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN = /^ac_[a-z][a-z0-9_]*$/;
 export const TASK_IDENTIFIER_PATTERN = /^task_[a-z][a-z0-9_]*$/;
+export const PLAN_IDENTIFIER_PATTERN = /^plan_[a-z][a-z0-9_]*$/;
 export const BUG_IDENTIFIER_PATTERN = /^bug_[a-z][a-z0-9_]*$/;
 export const DOCUMENT_IDENTIFIER_PATTERN = /^doc_[a-z][a-z0-9_]*$/;
 
@@ -41,6 +43,8 @@ export const PITCH_STATUSES = new Set(["draft", "shaped", "submitted", "approved
 export const REQUIREMENT_STATUSES = new Set(["draft", "in-review", "approved", "superseded"]);
 export const ACCEPTANCE_CRITERION_STATUSES = new Set(["draft", "approved", "superseded"]);
 export const TASK_STATUSES = new Set(["unclaimed", "claimed", "in-progress", "done", "blocked"]);
+export const PLAN_STATUSES = new Set(["draft", "active", "complete", "superseded"]);
+export const PLAN_STEP_STATUSES = new Set(["pending", "in-progress", "blocked", "done", "skipped"]);
 export const BUG_STATUSES = new Set(["open", "in-progress", "fixed", "verified", "wont-fix"]);
 
 export const PRIORITY_VALUES = new Set(["critical", "high", "medium", "low"]);
@@ -73,9 +77,13 @@ export const STATUS_SETS_BY_KIND = {
   requirement: REQUIREMENT_STATUSES,
   acceptance_criterion: ACCEPTANCE_CRITERION_STATUSES,
   task: TASK_STATUSES,
+  plan: PLAN_STATUSES,
   bug: BUG_STATUSES
 };
 export const VERIFICATION_METHODS = new Set(["smoke", "runtime", "contract", "journey", "manual"]);
+export const CLI_COMMAND_EFFECTS = new Set(["read_only", "writes_workspace", "writes_app", "network", "package_install", "git", "filesystem"]);
+export const CLI_COMMAND_OPTION_TYPES = new Set(["string", "boolean", "number", "integer", "enum", "path", "list"]);
+export const CLI_COMMAND_OUTPUT_FORMATS = new Set(["json", "human", "file", "exit_code"]);
 
 export {
   UI_APP_SHELL_KINDS,
@@ -114,6 +122,7 @@ export const DOMAIN_TAGGABLE_KINDS = new Set([
   "pitch",
   "requirement",
   "task",
+  "plan",
   "bug"
 ]);
 
@@ -179,6 +188,11 @@ export const FIELD_SPECS = {
       "downloads",
       "authorization",
       "callbacks",
+      "commands",
+      "command_options",
+      "command_outputs",
+      "command_effects",
+      "command_examples",
       "screens",
       "collection_views",
       "screen_actions",
@@ -280,6 +294,7 @@ export const FIELD_SPECS = {
       "affects",
       "satisfies",
       "acceptance_refs",
+      "verification_refs",
       "blocks",
       "blocked_by",
       "claimed_by",
@@ -287,6 +302,21 @@ export const FIELD_SPECS = {
       "modifies",
       "introduces",
       "removes",
+      "domain",
+      "updated"
+    ]
+  },
+  plan: {
+    required: ["name", "description", "task", "status", "steps"],
+    allowed: [
+      "name",
+      "description",
+      "task",
+      "status",
+      "priority",
+      "notes",
+      "outcome",
+      "steps",
       "domain",
       "updated"
     ]

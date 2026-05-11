@@ -36,6 +36,12 @@ Imported Topogram artifacts are project-owned immediately. Editing candidate
 invalid. The import provenance file records what brownfield source evidence was
 trusted at the moment of import.
 
+Import provenance and adoption receipts are command-owned state. Do not
+hand-edit `.topogram-import.json` or `.topogram-import-adoptions.jsonl`;
+use `topogram import refresh`, `topogram import status`,
+`topogram import history --verify`, and `topogram import adopt ... --write`
+so hashes, receipts, and source drift stay reviewable.
+
 Run `topogram import check` when you need to verify that provenance:
 
 ```bash
@@ -192,6 +198,7 @@ Limit import scope with tracks when useful:
 
 ```bash
 topogram import ./existing-app --out ./imported-topogram --from db,api,ui
+topogram import ./existing-cli --out ./imported-topogram --from cli
 ```
 
-Supported tracks are `db`, `api`, `ui`, `workflows`, and `verification`.
+Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and `verification`.

@@ -495,6 +495,18 @@ test("workspace folder paths use topo instead of legacy topogram", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("engine repo cannot silently un-adopt enforced SDLC", () => {
+  const policyPath = path.join(repoRoot, "topogram.sdlc-policy.json");
+  assert.equal(fs.existsSync(policyPath), true);
+  const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
+  assert.equal(policy.version, "1");
+  assert.equal(policy.status, "adopted");
+  assert.equal(policy.mode, "enforced");
+  assert.deepEqual(policy.requiredItemKinds, ["task", "bug", "requirement", "pitch"]);
+  assert.equal(policy.protectedPaths.includes("engine/**"), true);
+  assert.equal(policy.protectedPaths.includes("topo/**"), true);
+});
+
 test("hardening completion ratchet keeps source files small and checked", () => {
   const offenders = [];
   const srcRoot = path.join(repoRoot, "engine", "src");
@@ -1533,6 +1545,7 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/validator/projections/api-http-core.js",
     "engine/src/validator/projections/api-http-policies.js",
     "engine/src/validator/projections/api-http-responses.js",
+    "engine/src/validator/projections/cli.js",
     "engine/src/validator/projections/db.js",
     "engine/src/validator/projections/generator-defaults.js",
     "engine/src/validator/projections/ui.js",
@@ -1551,7 +1564,8 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/resolver/enrich/bug.js",
     "engine/src/resolver/enrich/pitch.js",
     "engine/src/resolver/enrich/requirement.js",
-    "engine/src/resolver/enrich/task.js"
+    "engine/src/resolver/enrich/task.js",
+    "engine/src/resolver/projections-cli.js"
   ];
   const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
   const tsconfigFiles = new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));

@@ -244,6 +244,12 @@ module, and SHA-256 hashes for the copied `implementation/` files.
 human review. When run directly in a template source repo, it refuses to write
 consumer trust metadata unless `--force` is provided.
 
+`.topogram-template-trust.json` and `.topogram-template-files.json` are
+command-owned state. Do not hand-edit them to make checks pass. Review the
+copied files and implementation code, then use `topogram trust status`,
+`topogram trust diff`, `topogram trust template`, or the reviewed
+`topogram template update ...` commands so hashes and baselines stay coherent.
+
 Template packs must not contain symlinks under `topo/`,
 `topogram.project.json`, or `implementation/`. Topogram records hashes for the
 real files it copies; symlinks can point outside the reviewed template or

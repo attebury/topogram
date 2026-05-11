@@ -40,6 +40,7 @@ import {
   domainSlice,
   journeySlice,
   pitchSlice,
+  planSlice,
   requirementSlice,
   taskSlice
 } from "./sdlc.js";
@@ -375,6 +376,7 @@ export function generateContextSlice(graph, options = {}) {
     requirementId: options.requirementId,
     acceptanceId: options.acceptanceId,
     taskId: options.taskId,
+    planId: options.planId,
     bugId: options.bugId,
     documentId: options.documentId
   });
@@ -390,6 +392,7 @@ export function generateContextSlice(graph, options = {}) {
   if (selection.kind === "requirement") return requirementSlice(graph, selection.id);
   if (selection.kind === "acceptance_criterion") return acceptanceCriterionSlice(graph, selection.id);
   if (selection.kind === "task") return taskSlice(graph, selection.id);
+  if (selection.kind === "plan") return planSlice(graph, selection.id);
   if (selection.kind === "bug") return bugSlice(graph, selection.id);
   if (selection.kind === "document") return documentSlice(graph, selection.id);
 

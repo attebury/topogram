@@ -1,0 +1,13 @@
+bug bug_sdlc_check_ignored_configured_workspace {
+  name "SDLC check ignored configured workspace"
+  description "Running topogram sdlc check from a project root with topogram.project.json parsed the repository root instead of the configured topo workspace."
+  reproduction "Create a project root with topogram.project.json workspace ./topo, then run topogram sdlc check --strict from the root."
+  affects [cap_manage_sdlc_records, cap_brief_agent]
+  violates [rule_spec_is_source_of_truth, rule_agents_start_with_focused_context]
+  fixed_in [task_create_engine_topo_workspace]
+  fixed_in_verification [verification_dogfood_topo_workspace]
+  domain dom_sdlc_query_agent_context
+  priority high
+  severity high
+  status verified
+}

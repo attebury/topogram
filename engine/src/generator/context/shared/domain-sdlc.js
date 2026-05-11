@@ -140,6 +140,14 @@ export function taskById(graph, id) {
  * @param {string} id
  * @returns {any}
  */
+export function planById(graph, id) {
+  return (graph?.byKind?.plan || []).find(/** @param {any} s */ (s) => s.id === id) || null;
+}
+/**
+ * @param {import("./types.d.ts").ContextGraph} graph
+ * @param {string} id
+ * @returns {any}
+ */
 export function bugById(graph, id) {
   return (graph?.byKind?.bug || []).find(/** @param {any} s */ (s) => s.id === id) || null;
 }
@@ -209,6 +217,24 @@ export function summarizeTask(task) {
     work_type: task.workType,
     claimed_by: (task.claimedBy || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean),
     domain: task.resolvedDomain ? task.resolvedDomain.id : null
+  };
+}
+/**
+ * @param {any} plan
+ * @returns {any}
+ */
+export function summarizePlan(plan) {
+  if (!plan) return null;
+  const steps = plan.steps || [];
+  return {
+    id: plan.id,
+    name: plan.name,
+    status: plan.status,
+    priority: plan.priority,
+    task: plan.task?.id || null,
+    step_count: steps.length,
+    incomplete_steps: steps.filter(/** @param {any} step */ (step) => step.status !== "done" && step.status !== "skipped").map(/** @param {any} step */ (step) => step.id),
+    domain: plan.resolvedDomain ? plan.resolvedDomain.id : null
   };
 }
 /**

@@ -27,11 +27,15 @@ export function checkDoD(task, targetStatus, graph) {
 
   if (targetStatus === "done") {
     if (!task.satisfies || task.satisfies.length === 0) {
-      warnings.push("done task without `satisfies` references is hard to trace");
+      errors.push("status 'done' requires field 'satisfies'");
     }
     const acs = task.acceptanceRefs || [];
-    if (acs.length === 0 && task.workType !== "documentation" && task.workType !== "review") {
-      warnings.push("done task without `acceptance_refs` cannot tie back to verification");
+    if (acs.length === 0) {
+      errors.push("status 'done' requires field 'acceptance_refs'");
+    }
+    const verifications = task.verificationRefs || [];
+    if (verifications.length === 0) {
+      errors.push("status 'done' requires field 'verification_refs'");
     }
   }
 

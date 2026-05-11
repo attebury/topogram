@@ -1,0 +1,213 @@
+{
+  "task_enforce_sdlc_working_habit": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T07:06:19.984Z",
+      "by": "codex",
+      "note": "Completed SDLC enforcement policy and gate implementation"
+    }
+  ],
+  "task_enforce_cli_only_stateful_actions": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T07:11:41.448Z",
+      "by": "codex",
+      "note": "Begin implementing CLI-only stateful action boundary"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T07:11:57.685Z",
+      "by": "codex",
+      "note": "Working on CLI-only stateful action enforcement"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T08:50:47.019Z",
+      "by": "codex",
+      "note": "Command-owned state boundary implemented, documented, and verified."
+    }
+  ],
+  "task_add_sdlc_plan_steps": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T08:13:05.916Z",
+      "by": "codex",
+      "note": "Begin SDLC plan support implementation"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T08:13:38.133Z",
+      "by": "codex",
+      "note": "Implementing SDLC plan support"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T08:22:16.909Z",
+      "by": "codex",
+      "note": "Implemented optional SDLC plans and nested steps."
+    }
+  ],
+  "plan_add_sdlc_plan_steps": [
+    {
+      "from": "draft",
+      "to": "active",
+      "at": "2026-05-11T08:13:48.260Z",
+      "by": "codex",
+      "note": "Use plan to track implementation steps"
+    },
+    {
+      "from": "active",
+      "to": "complete",
+      "at": "2026-05-11T08:21:59.433Z",
+      "by": "codex",
+      "note": "SDLC plan support implemented and verified."
+    }
+  ],
+  "plan_add_sdlc_plan_steps#add_plan_dsl": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:14:00.142Z",
+      "by": "codex",
+      "note": "DSL validation, normalization, DoD, transitions, and archive support added"
+    }
+  ],
+  "plan_add_sdlc_plan_steps#add_plan_cli": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:14:11.511Z",
+      "by": "codex",
+      "note": "Plan create, explain, and step transition commands added"
+    }
+  ],
+  "plan_add_sdlc_plan_steps#integrate_agent_context": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:14:24.100Z",
+      "by": "codex",
+      "note": "Slices, sdlc explain, agent brief, and docs integrated"
+    }
+  ],
+  "plan_add_sdlc_plan_steps#verify_plan_support": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:21:44.915Z",
+      "by": "codex",
+      "note": "Focused tests, full engine tests, verify-engine, and verify-cli-package passed."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions": [
+    {
+      "from": "draft",
+      "to": "active",
+      "at": "2026-05-11T08:34:09.669Z",
+      "by": "codex",
+      "note": "Starting command-owned state hardening plan."
+    },
+    {
+      "from": "active",
+      "to": "complete",
+      "at": "2026-05-11T08:50:35.769Z",
+      "by": "codex",
+      "note": "All planned stateful-action hardening steps are implemented and verified."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#define_boundary": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:42:32.712Z",
+      "by": "codex",
+      "note": "Documented command-owned state boundary in SDLC, agent, import, template, release, and generated guidance."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#harden_sdlc_history": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:42:44.781Z",
+      "by": "codex",
+      "note": "Validated SDLC history sidecar shape and added drift checks for statement and plan step status edits."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#harden_archive_state": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:42:55.272Z",
+      "by": "codex",
+      "note": "Archive JSONL loader now rejects incomplete manual archive entries."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#harden_trust_provenance_sentinels": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:43:07.461Z",
+      "by": "codex",
+      "note": "Docs and regression coverage now name trust, provenance, generated sentinel, template baseline, and release state command boundaries."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#add_consumer_regressions": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:43:17.549Z",
+      "by": "codex",
+      "note": "Added focused stateful-actions active tests for command-owned transitions, history, archives, and docs."
+    }
+  ],
+  "plan_enforce_cli_only_stateful_actions#verify_and_close": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T08:49:30.288Z",
+      "by": "codex",
+      "note": "npm test, verify-engine, verify-cli-package, check, and strict SDLC checks passed."
+    }
+  ],
+  "ac_stateful_action_boundary_enforced": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T08:49:43.982Z",
+      "by": "codex",
+      "note": "Stateful-action regression tests and stricter history/archive validation now enforce the boundary."
+    }
+  ],
+  "ac_stateful_action_boundary_documented": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T08:49:45.372Z",
+      "by": "codex",
+      "note": "Command-owned state boundary documented across repo guidance and public docs."
+    }
+  ],
+  "req_stateful_actions_use_cli": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-11T08:50:04.457Z",
+      "by": "codex",
+      "note": "Acceptance criteria and tests are ready for review."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-11T08:50:18.906Z",
+      "by": "codex",
+      "note": "Command-owned state boundary is documented and covered by regression tests."
+    }
+  ]
+}

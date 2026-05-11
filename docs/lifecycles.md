@@ -82,8 +82,30 @@ stateDiagram-v2
 DoD highlights:
 - `claimed`/`in-progress`/`done` require `claimed_by`
 - `in-progress` blocks if any `blocked_by` task isn't `done`
-- `done` warns if `satisfies` or `acceptance_refs` is empty (except for
-  `documentation` and `review` work types)
+- `done` requires `satisfies`, `acceptance_refs`, and `verification_refs`
+
+## Plan
+
+```mermaid
+stateDiagram-v2
+  [*] --> draft
+  draft --> active
+  draft --> superseded
+  active --> complete
+  active --> superseded
+  active --> draft
+```
+
+Plans are optional support artifacts attached to tasks. They preserve
+implementation sequencing, approach notes, and lessons learned without
+turning each local step into a top-level task.
+
+Both `complete` and `superseded` are archive-eligible.
+
+DoD highlights:
+- `complete` requires every nested step to be `done` or `skipped`
+- Step status changes should use `topogram sdlc plan step ...` so the
+  history sidecar can detect drift
 
 ## Bug
 
@@ -141,6 +163,7 @@ a warning in the report. `--strict` exits non-zero on warnings.
 The default board (`topogram generate sdlc-board`) hides:
 - `pitch.rejected`
 - `task.done` (archived)
+- `plan.complete`, `plan.superseded` (both archived)
 - `bug.verified`, `bug.wont-fix` (both archived)
 - `document.archived`
 

@@ -8,7 +8,7 @@
 //
 // Documents archive includes the body verbatim.
 
-const ALLOWED_KINDS = new Set(["pitch", "task", "bug", "document"]);
+const ALLOWED_KINDS = new Set(["pitch", "task", "plan", "bug", "document"]);
 
 export function isArchivableKind(kind) {
   return ALLOWED_KINDS.has(kind);

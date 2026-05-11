@@ -7,8 +7,14 @@ on:
       - "docs/**"
       - "product/**"
       - "scripts/**"
+      - "topo/**"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
       - "package.json"
       - "README.md"
+      - "topogram.project.json"
+      - "topogram.sdlc-policy.json"
+      - ".github/pull_request_template.md"
       - ".github/workflows/fast-verification.yml"
       - ".github/workflows/publish-cli-package.yml"
       - ".github/workflows/release-status.yml"
@@ -20,8 +26,14 @@ on:
       - "docs/**"
       - "product/**"
       - "scripts/**"
+      - "topo/**"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
       - "package.json"
       - "README.md"
+      - "topogram.project.json"
+      - "topogram.sdlc-policy.json"
+      - ".github/pull_request_template.md"
       - ".github/workflows/fast-verification.yml"
       - ".github/workflows/publish-cli-package.yml"
       - ".github/workflows/release-status.yml"
@@ -40,9 +52,18 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+      - name: Run SDLC check
+        run: |
+          node ./engine/src/cli.js check . --json
+          node ./engine/src/cli.js sdlc check --strict
+      - name: Run SDLC PR gate
+        if: github.event_name == 'pull_request'
+        run: node ./engine/src/cli.js sdlc gate . --base origin/${{ github.base_ref }} --head HEAD --require-adopted
       - name: Run engine verification
         run: bash ./scripts/verify-engine.sh
       - name: Run CLI package verification

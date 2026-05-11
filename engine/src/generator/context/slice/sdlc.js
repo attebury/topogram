@@ -8,6 +8,7 @@ import {
   domainById,
   getJourneyDoc,
   pitchById,
+  planById,
   recommendedVerificationTargets,
   relatedEntitiesForDomain,
   relatedProjectionsForDomain,
@@ -21,6 +22,7 @@ import {
   summarizeDocument,
   summarizeDomain,
   summarizePitch,
+  summarizePlan,
   summarizeRequirement,
   summarizeStatementsByIds,
   summarizeTask,
@@ -297,10 +299,12 @@ export function taskSlice(graph, taskId) {
 
   const satisfies = (task.satisfies || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort();
   const acRefs = (task.acceptanceRefs || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort();
+  const verificationRefs = (task.verificationRefs || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort();
   const blockedBy = (task.blockedBy || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort();
   const blocks = (task.blocks || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort();
   const affects = (task.affects || []).map(/** @param {any} a */ (a) => (typeof a === "string" ? a : a?.id)).filter(Boolean).sort();
-  const verifications = verificationIdsForTarget(graph, [taskId, ...affects, ...acRefs]);
+  const plans = (task.plans || []).slice().sort();
+  const verifications = [...new Set([...verificationRefs, ...verificationIdsForTarget(graph, [taskId, ...affects, ...acRefs])])].sort();
 
   return {
     type: "context_slice",
@@ -310,20 +314,72 @@ export function taskSlice(graph, taskId) {
     depends_on: {
       satisfies,
       acceptance_refs: acRefs,
+      verification_refs: verificationRefs,
       blocked_by: blockedBy,
       blocks,
+      plans,
       affects,
       verifications
     },
     related: {
       satisfies: summarizeStatementsByIds(graph, satisfies),
       acceptance_refs: summarizeStatementsByIds(graph, acRefs),
+      verification_refs: summarizeStatementsByIds(graph, verificationRefs),
       blocked_by: summarizeStatementsByIds(graph, blockedBy),
+      plans: summarizeStatementsByIds(graph, plans),
       affects: summarizeStatementsByIds(graph, affects)
     },
     verification: summarizeStatementsByIds(graph, verifications),
     verification_targets: recommendedVerificationTargets(graph, [taskId, ...affects, ...acRefs], {
       rationale: "Task slice points at verification covering the surfaces this task touches."
+    }),
+    write_scope: buildDefaultWriteScope(),
+    review_boundary: reviewBoundaryForTask(),
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} planId
+ * @returns {any}
+ */
+export function planSlice(graph, planId) {
+  const plan = planById(graph, planId);
+  if (!plan) throw new Error(`No plan found with id '${planId}'`);
+
+  const taskId = plan.task?.id || null;
+  const task = taskId ? taskById(graph, taskId) : null;
+  const satisfies = task ? (task.satisfies || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort() : [];
+  const acRefs = task ? (task.acceptanceRefs || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort() : [];
+  const verificationRefs = task ? (task.verificationRefs || []).map(/** @param {any} r */ (r) => (typeof r === "string" ? r : r?.id)).filter(Boolean).sort() : [];
+  const affects = task ? (task.affects || []).map(/** @param {any} a */ (a) => (typeof a === "string" ? a : a?.id)).filter(Boolean).sort() : [];
+  const verifications = [...new Set([...verificationRefs, ...verificationIdsForTarget(graph, [planId, ...(taskId ? [taskId] : []), ...affects, ...acRefs])])].sort();
+
+  return {
+    type: "context_slice",
+    version: 1,
+    focus: { kind: "plan", id: planId },
+    summary: summarizePlan(plan),
+    depends_on: {
+      task: taskId,
+      satisfies,
+      acceptance_refs: acRefs,
+      verification_refs: verificationRefs,
+      affects,
+      verifications
+    },
+    related: {
+      task: task ? [summarizeTask(task)] : [],
+      satisfies: summarizeStatementsByIds(graph, satisfies),
+      acceptance_refs: summarizeStatementsByIds(graph, acRefs),
+      verification_refs: summarizeStatementsByIds(graph, verificationRefs),
+      affects: summarizeStatementsByIds(graph, affects)
+    },
+    steps: plan.steps || [],
+    verification: summarizeStatementsByIds(graph, verifications),
+    verification_targets: recommendedVerificationTargets(graph, [planId, ...(taskId ? [taskId] : []), ...affects, ...acRefs], {
+      rationale: "Plan slice points at verification for the owning task and affected surfaces."
     }),
     write_scope: buildDefaultWriteScope(),
     review_boundary: reviewBoundaryForTask(),
@@ -414,4 +470,3 @@ export function documentSlice(graph, documentId) {
     ownership_boundary: defaultOwnershipBoundary()
   };
 }
-

@@ -1,0 +1,17 @@
+plan plan_enforce_cli_only_stateful_actions {
+  name "Enforce CLI-Only Stateful Actions"
+  description "Complete the command-owned state boundary for SDLC status/history, archives, trust, provenance, generated sentinels, template baselines, and release state."
+  task task_enforce_cli_only_stateful_actions
+  priority high
+  notes "Keep declarative topo source editable, but require Topogram commands for stateful or derived audit surfaces."
+  outcome "Record the final enforced boundary, tests added, and any follow-up state surfaces discovered during implementation."
+  steps {
+    step define_boundary status done description "Document the exact manual-edit versus command-owned state boundary."
+    step harden_sdlc_history status done description "Detect direct SDLC status and plan step status edits without command history."
+    step harden_archive_state status done description "Pin archive, unarchive, and compact behavior with malformed/manual edit tests."
+    step harden_trust_provenance_sentinels status done description "Add boundary tests for trust, provenance, generated sentinel, and template baseline state."
+    step add_consumer_regressions status done description "Add focused active tests proving command-owned state works from the CLI."
+    step verify_and_close status done description "Run engine gates, transition ACs/requirement if appropriate, and close the task."
+  }
+  status complete
+}

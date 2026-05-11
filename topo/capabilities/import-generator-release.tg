@@ -1,0 +1,79 @@
+capability cap_import_brownfield_app {
+  name "Import Brownfield App"
+  description "Create reviewable Topogram candidates from existing code, tests, docs, scripts, package manifests, and workflows."
+  actors [actor_maintainer, actor_coding_agent]
+  output [shape_import_result]
+  domain dom_import_adoption
+  status active
+}
+
+capability cap_reconcile_import_candidates {
+  name "Reconcile Import Candidates"
+  description "Build candidate bundles, adoption plans, reports, and canonical promotion options from imported evidence."
+  actors [actor_maintainer, actor_coding_agent]
+  output [shape_cli_status_result]
+  domain dom_import_adoption
+  status active
+}
+
+capability cap_adopt_import_candidates {
+  name "Adopt Import Candidates"
+  description "Promote reviewed candidates into canonical Topogram files only when explicitly requested."
+  actors [actor_maintainer, actor_coding_agent]
+  domain dom_import_adoption
+  status active
+}
+
+capability cap_manage_templates {
+  name "Manage Templates"
+  description "List, show, check, explain, update, and verify template package state and trust policy."
+  actors [actor_consumer_developer, actor_coding_agent, actor_generator_author]
+  roles [role_template_author]
+  output [shape_cli_status_result]
+  domain dom_catalog_templates
+  status active
+}
+
+capability cap_manage_catalog {
+  name "Manage Catalog"
+  description "List, check, show, doctor, and copy package-backed catalog entries."
+  actors [actor_consumer_developer, actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_catalog_templates
+  status active
+}
+
+capability cap_manage_generators {
+  name "Manage Generators"
+  description "List, show, check, and enforce generator manifest and policy bindings."
+  actors [actor_generator_author, actor_coding_agent, actor_maintainer]
+  output [shape_cli_status_result]
+  domain dom_generator_runtime
+  status active
+}
+
+capability cap_verify_release_status {
+  name "Verify Release Status"
+  description "Compare CLI, generator, starter, catalog, template, and demo package versions against release expectations."
+  actors [actor_release_manager, actor_maintainer, actor_coding_agent]
+  output [shape_release_status_result]
+  domain dom_release_consumer_proof
+  status active
+}
+
+capability cap_roll_consumer_packages {
+  name "Roll Consumer Packages"
+  description "Update first-party consumer packages after a CLI release while preserving consumer verification gates."
+  actors [actor_release_manager, actor_coding_agent]
+  domain dom_release_consumer_proof
+  status active
+}
+
+capability cap_run_engine_gates {
+  name "Run Engine Gates"
+  description "Run focused tests, engine verification, CLI package smoke, and consumer-style proof gates."
+  actors [actor_maintainer, actor_coding_agent, actor_release_manager]
+  output [shape_cli_status_result]
+  domain dom_engine_quality
+  status active
+}

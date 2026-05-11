@@ -117,8 +117,8 @@ The `domain-page` generator emits a markdown summary per domain
 
 ## SDLC layout
 
-Phase 2 introduces six SDLC kinds (`pitch`, `requirement`,
-`acceptance_criterion`, `task`, `bug`, `document`). Recommended layout:
+Phase 2 introduces SDLC kinds (`pitch`, `requirement`,
+`acceptance_criterion`, `task`, `plan`, `bug`, `document`). Recommended layout:
 
 ```text
 topo/
@@ -126,6 +126,7 @@ topo/
   requirements/{slug}.tg
   acceptance_criteria/{slug}.tg
   tasks/{slug}.tg
+  plans/{slug}.tg
   bugs/{slug}.tg
   docs/                          # markdown documents (with frontmatter)
     user-guide/
@@ -137,6 +138,7 @@ topo/
     development/
   _archive/
     tasks-2026.jsonl             # year-bucketed JSONL archives
+    plans-2026.jsonl
     bugs-2026.jsonl
     pitches-2026.jsonl
   .topogram-sdlc-history.json    # append-only transition history sidecar
