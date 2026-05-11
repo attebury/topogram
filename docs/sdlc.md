@@ -23,21 +23,27 @@ For per-status legal transitions, see [lifecycles.md](lifecycles.md).
 
 ## Folder layout
 
+The recommended layout groups opted-in SDLC records under `topo/sdlc/`.
+Folder placement remains a convention: the parser still flattens `.tg`
+files anywhere under `topo/`, so custom layouts validate when teams
+intentionally choose them.
+
 ```
 topo/
-  pitches/{slug}.tg
-  requirements/{slug}.tg
-  acceptance_criteria/{slug}.tg
-  tasks/{slug}.tg
-  plans/{slug}.tg
-  bugs/{slug}.tg
+  sdlc/
+    pitches/{slug}.tg
+    requirements/{slug}.tg
+    acceptance_criteria/{slug}.tg
+    tasks/{slug}.tg
+    plans/{slug}.tg
+    bugs/{slug}.tg
+    decisions/{slug}.tg
+    _archive/{kind}s-{year}.jsonl  # year-bucketed archives for terminal-status artifacts
+    .topogram-sdlc-history.json    # append-only transition history sidecar
   docs/{kind}/{slug}.md            # markdown documents
-  _archive/{kind}s-{year}.jsonl    # year-bucketed archives for terminal-status artifacts
-  .topogram-sdlc-history.json      # append-only transition history sidecar
 ```
 
-The folder split is convention only — the parser flattens everything via
-`collectTopogramFiles`. The `_archive/` folder is special: the resolver
+The `sdlc/_archive/` folder is special: the resolver
 bridge loads it at workspace-parse time so frozen entries participate in
 cross-references and the traceability matrix without showing up in the
 default board.
@@ -54,8 +60,8 @@ command-owned and should move through Topogram commands.
 |---|---|---|
 | SDLC status fields after work starts | `status` on pitch/requirement/AC/task/plan/bug/document records | `topogram sdlc transition ...` |
 | Plan step progress | `steps { step ... status ... }` after a plan is active | `topogram sdlc plan step start|complete|skip|transition ... --write` |
-| SDLC history | `topo/.topogram-sdlc-history.json` | transition and plan-step commands append it |
-| Archives | `topo/_archive/*.jsonl` | `topogram sdlc archive`, `unarchive`, and `compact` |
+| SDLC history | `topo/sdlc/.topogram-sdlc-history.json` | transition and plan-step commands append it |
+| Archives | `topo/sdlc/_archive/*.jsonl` | `topogram sdlc archive`, `unarchive`, and `compact` |
 | Template implementation trust | `.topogram-template-trust.json` | `topogram trust status`, `trust diff`, and `trust template` after review |
 | Template-owned file baseline | `.topogram-template-files.json` | `topogram trust template` and reviewed `topogram template update ...` commands |
 | Catalog-copy provenance | `.topogram-source.json` | `topogram catalog copy` and `topogram source status` |
@@ -171,7 +177,7 @@ Each transition:
    advise)
 3. Surgically rewrites the `status` field in the source `.tg` file
    (formatting and adjacent fields untouched)
-4. Appends to `.topogram-sdlc-history.json`
+4. Appends to `topo/sdlc/.topogram-sdlc-history.json`
 
 `--dry-run` prints the planned mutation without writing.
 
@@ -239,10 +245,10 @@ artifacts are archive-eligible.
 topogram sdlc archive --status verified,wont-fix
 topogram sdlc archive --id plan_implement_audit_writer
 topogram sdlc unarchive bug_old_regression
-topogram sdlc compact topo/_archive/tasks-2025.jsonl
+topogram sdlc compact topo/sdlc/_archive/tasks-2025.jsonl
 ```
 
-Archived entries live as JSONL records under `topo/_archive/`. They
+Archived entries live as JSONL records under `topo/sdlc/_archive/`. They
 are auto-loaded by the resolver bridge so traceability and release notes
 still see them, but they are filtered out of the default board.
 

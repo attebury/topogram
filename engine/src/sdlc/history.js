@@ -1,6 +1,6 @@
 // SDLC history sidecar.
 //
-// Stored at `<topogram-root>/.topogram-sdlc-history.json` as a
+// Stored at `<topogram-root>/sdlc/.topogram-sdlc-history.json` as a
 // JSON object keyed by statement id. Each entry is an append-only array of
 // transition records:
 //
@@ -15,18 +15,28 @@
 // CLI" warnings when an artifact's current status doesn't match the last
 // recorded transition.
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { topogramRootForSdlc } from "./paths.js";
+import { sdlcRootForSdlc, topogramRootForSdlc } from "./paths.js";
 
 const HISTORY_FILENAME = ".topogram-sdlc-history.json";
 
 export function historyPath(workspaceRoot) {
+  return path.join(sdlcRootForSdlc(workspaceRoot), HISTORY_FILENAME);
+}
+
+function legacyHistoryPath(workspaceRoot) {
   return path.join(topogramRootForSdlc(workspaceRoot), HISTORY_FILENAME);
 }
 
 export function readHistory(workspaceRoot) {
-  const file = historyPath(workspaceRoot);
+  let file = historyPath(workspaceRoot);
+  if (!existsSync(file)) {
+    const legacyFile = legacyHistoryPath(workspaceRoot);
+    if (existsSync(legacyFile)) {
+      file = legacyFile;
+    }
+  }
   if (!existsSync(file)) return {};
   try {
     return JSON.parse(readFileSync(file, "utf8"));
@@ -68,6 +78,10 @@ export function validateHistory(history) {
 
 export function writeHistory(workspaceRoot, history) {
   const file = historyPath(workspaceRoot);
+  const dir = path.dirname(file);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
   writeFileSync(file, JSON.stringify(history, null, 2) + "\n", "utf8");
 }
 

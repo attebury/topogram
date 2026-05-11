@@ -51,7 +51,7 @@ test("SDLC statement status changes are command-owned and direct edits are detec
     ]);
     assert.equal(transition.status, 0, transition.stderr || transition.stdout);
 
-    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
     assert.equal(history.task_implement_audit_writer.at(-1).to, "done");
 
     replaceInFile(
@@ -86,7 +86,7 @@ test("plan step status changes are command-owned and direct edits are detected",
     ]);
     assert.equal(transition.status, 0, transition.stderr || transition.stdout);
 
-    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
     assert.equal(history["plan_implement_audit_writer#implement_writer"].at(-1).to, "done");
 
     replaceInFile(
@@ -107,8 +107,9 @@ test("plan step status changes are command-owned and direct edits are detected",
 test("SDLC history sidecar shape is validated as command-owned audit state", () => {
   const tempRoot = copyFixtureToTemp();
   try {
+    fs.mkdirSync(path.join(tempRoot, "topo", "sdlc"), { recursive: true });
     fs.writeFileSync(
-      path.join(tempRoot, "topo", ".topogram-sdlc-history.json"),
+      path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"),
       JSON.stringify({ task_implement_audit_writer: { to: "done" } }, null, 2),
       "utf8"
     );
@@ -124,9 +125,9 @@ test("SDLC history sidecar shape is validated as command-owned audit state", () 
 test("archive JSONL entries require command-owned archive schema", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    fs.mkdirSync(path.join(tempRoot, "topo", "_archive"), { recursive: true });
+    fs.mkdirSync(path.join(tempRoot, "topo", "sdlc", "_archive"), { recursive: true });
     fs.writeFileSync(
-      path.join(tempRoot, "topo", "_archive", "tasks-2026.jsonl"),
+      path.join(tempRoot, "topo", "sdlc", "_archive", "tasks-2026.jsonl"),
       JSON.stringify({
         id: "task_manual_archive",
         kind: "task",
@@ -154,8 +155,8 @@ test("docs name command-owned state surfaces and their commands", () => {
   const releaseDocs = fs.readFileSync(path.join(repoRoot, "docs", "releasing.md"), "utf8");
 
   for (const required of [
-    "topo/.topogram-sdlc-history.json",
-    "topo/_archive/*.jsonl",
+    "topo/sdlc/.topogram-sdlc-history.json",
+    "topo/sdlc/_archive/*.jsonl",
     ".topogram-template-trust.json",
     ".topogram-template-files.json",
     ".topogram-source.json",

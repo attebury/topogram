@@ -4,7 +4,7 @@
 // Strategy:
 //   1. Validate the statement is in a status eligible for archiving.
 //   2. Build the archive entry (frozen snapshot + transitions).
-//   3. Append to `_archive/{kind}s-{year}.jsonl`.
+//   3. Append to `sdlc/_archive/{kind}s-{year}.jsonl`.
 //   4. Surgically remove the statement block from its source `.tg` file.
 //
 // `archiveBatch` is the bulk counterpart used by `release`.

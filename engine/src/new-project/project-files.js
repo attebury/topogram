@@ -321,7 +321,8 @@ npm run query:show -- widget-behavior
 ## Edit Rules
 
 - Edit \`topo/**\` and \`topogram.project.json\` first.
-- If \`topogram.sdlc-policy.json\` exists, protected changes need an SDLC item, a \`topo/**\` SDLC record update, or an allowed exemption.
+- If \`topogram.sdlc-policy.json\` exists, protected changes need an SDLC item, a \`topo/sdlc/**\` SDLC record update, or an allowed exemption.
+- Adopted SDLC records default to \`topo/sdlc/**\`; custom folders can still validate, but agents should look there first.
 - Status, history, archives, trust hashes, provenance, generated sentinels, and release/rollout state are command-owned. Use Topogram commands instead of hand-editing those sidecars.
 - Plans are optional support records. Agents may edit plan text directly, but should use \`topogram sdlc plan step ... --write\` for step status changes.
 - Review policy files before editing \`topogram.template-policy.json\` or \`topogram.generator-policy.json\`.

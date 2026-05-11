@@ -225,5 +225,98 @@
       "by": "codex",
       "note": "focused SDLC and CLI query tests passed"
     }
+  ],
+  "task_group_sdlc_records_under_sdlc_root": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T10:11:46.054Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T10:11:51.444Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T10:26:51.929Z",
+      "by": null,
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root": [
+    {
+      "from": "draft",
+      "to": "active",
+      "at": "2026-05-11T10:11:56.559Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "active",
+      "to": "complete",
+      "at": "2026-05-11T10:26:47.889Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#document_convention": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:16:41.204Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#update_sdlc_scaffolds": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:22:53.392Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#migrate_dogfood_records": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:22:58.625Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#update_agent_guidance": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:23:05.687Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#add_regression_tests": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:23:09.988Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_group_sdlc_records_under_sdlc_root#verify_gates": [
+    {
+      "from": "pending",
+      "to": "done",
+      "at": "2026-05-11T10:26:44.033Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

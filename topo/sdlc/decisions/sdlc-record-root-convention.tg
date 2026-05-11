@@ -1,0 +1,9 @@
+decision decision_sdlc_records_use_dedicated_record_root {
+  name "SDLC Records Use Dedicated Record Root"
+  description "Projects that adopt SDLC should use topo/sdlc as the default human-facing home for SDLC records while validation remains folder-agnostic."
+  context ["the parser flattens topo files regardless of folder layout", "SDLC adoption adds work-management records that can crowd the domain/spec graph", "agents need an obvious place to inspect and add opted-in SDLC records"]
+  consequences ["new SDLC scaffolds should default to topo/sdlc", "the engine dogfood topo should migrate its SDLC records under topo/sdlc", "custom layouts remain valid when teams intentionally choose them"]
+  pitch pitch_sdlc_record_root_convention
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

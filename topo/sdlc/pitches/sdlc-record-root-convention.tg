@@ -1,0 +1,14 @@
+pitch pitch_sdlc_record_root_convention {
+  name "SDLC Record Root Convention"
+  description "Group opted-in SDLC records under a dedicated record root so the project graph and work-management overlay stay easy to navigate."
+  appetite "small"
+  problem "The engine topo is starting to mix durable system/spec records with SDLC records at the top level, which makes the workspace harder for humans and agents to scan."
+  solution_sketch "Use topo/sdlc as the default folder convention for pitches, requirements, acceptance criteria, tasks, bugs, plans, decisions, and SDLC archives while keeping parsing folder-agnostic."
+  rabbit_holes "Do not make folder placement a hard validation rule in this pass."
+  no_go_areas "Do not move runtime/spec graph records such as capabilities, projections, widgets, rules, and verifications under the SDLC record root."
+  affects [cap_manage_sdlc_records, cap_brief_agent, cap_query_context]
+  decisions [decision_sdlc_records_use_dedicated_record_root]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}

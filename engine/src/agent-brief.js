@@ -266,7 +266,7 @@ function buildWarnings(projectRoot, config, trust, importSummary, generatorPolic
     warnings.push(`${GENERATOR_POLICY_FILE} has generator policy errors. Fix policy before generating.`);
   }
   if (sdlcPolicy?.status === "adopted" && sdlcPolicy?.mode === "enforced") {
-    warnings.push("SDLC is enforced. Protected changes need a valid SDLC item, a topo/*.tg record update, or an explicit allowed exemption.");
+    warnings.push("SDLC is enforced. Protected changes need a valid SDLC item, a topo/sdlc/*.tg record update, or an explicit allowed exemption.");
   }
   if (summarizeOutputBoundaries(config).some((output) => output.ownership === "generated")) {
     warnings.push("Generated-owned outputs are replaceable by Topogram; do not make lasting edits under generated output paths.");
@@ -434,6 +434,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     file_organization: {
       small: [`${DEFAULT_TOPO_FOLDER_NAME}/actors`, `${DEFAULT_TOPO_FOLDER_NAME}/entities`, `${DEFAULT_TOPO_FOLDER_NAME}/shapes`, `${DEFAULT_TOPO_FOLDER_NAME}/capabilities`, `${DEFAULT_TOPO_FOLDER_NAME}/widgets`, `${DEFAULT_TOPO_FOLDER_NAME}/projections`, `${DEFAULT_TOPO_FOLDER_NAME}/verifications`],
       large: [`${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>`, `${DEFAULT_TOPO_FOLDER_NAME}/shared`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/widgets`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/projections`],
+      sdlc: [`${DEFAULT_TOPO_FOLDER_NAME}/sdlc/pitches`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/requirements`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/acceptance_criteria`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/tasks`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/plans`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/bugs`, `${DEFAULT_TOPO_FOLDER_NAME}/sdlc/decisions`],
       parserRule: "Folder layout is for humans and agents; Topogram flattens statements into one graph."
     },
     sdlc_policy: sdlcPolicy,

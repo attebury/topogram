@@ -137,6 +137,14 @@ function isSdlcRecordChange(file) {
     return true;
   }
   return [
+    "topo/sdlc/pitches/",
+    "topo/sdlc/requirements/",
+    "topo/sdlc/acceptance_criteria/",
+    "topo/sdlc/tasks/",
+    "topo/sdlc/plans/",
+    "topo/sdlc/bugs/",
+    "topo/sdlc/decisions/",
+    "topo/sdlc/docs/",
     "topo/pitches/",
     "topo/requirements/",
     "topo/acceptance_criteria/",

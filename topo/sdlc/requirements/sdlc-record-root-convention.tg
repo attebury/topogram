@@ -1,0 +1,10 @@
+requirement req_sdlc_records_use_dedicated_record_root {
+  name "SDLC Records Use Dedicated Record Root"
+  description "Topogram should recommend and scaffold SDLC records under a dedicated topo/sdlc record root for adopted projects while continuing to accept custom folder layouts."
+  pitch pitch_sdlc_record_root_convention
+  affects [cap_manage_sdlc_records, cap_brief_agent, cap_query_context]
+  introduces_rules [rule_agents_start_with_focused_context]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}

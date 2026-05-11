@@ -25,6 +25,8 @@ import { checkWorkspace } from "../../src/sdlc/check.js";
 import { explain } from "../../src/sdlc/explain.js";
 import { runSdlcCommitPrep } from "../../src/sdlc/prep.js";
 import { runRelease } from "../../src/sdlc/release.js";
+import { scaffoldNew } from "../../src/sdlc/scaffold.js";
+import { sdlcAdopt } from "../../src/sdlc/adopt.js";
 import { archiveStatement, archiveEligibleStatements } from "../../src/archive/archive.js";
 import { loadArchive } from "../../src/archive/resolver-bridge.js";
 import { generateSdlcBoard } from "../../src/generator/sdlc/board.js";
@@ -245,10 +247,42 @@ task task_followup {
   assert.ok(invalid.errors.some((error) => error.message.includes("Invalid disposition")));
 });
 
+test("sdlc new and adopt use topo/sdlc while custom SDLC layouts remain valid", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const adoption = sdlcAdopt(tempRoot);
+    assert.equal(adoption.ok, true, JSON.stringify(adoption, null, 2));
+    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "tasks")));
+    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "plans")));
+    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "_archive")));
+
+    const created = scaffoldNew(tempRoot, "task", "root_convention");
+    assert.equal(created.ok, true, JSON.stringify(created, null, 2));
+    assert.equal(created.file, path.join(tempRoot, "topo", "sdlc", "tasks", "root_convention.tg"));
+    assert.ok(fs.existsSync(created.file));
+
+    const customLayoutFile = path.join(tempRoot, "topo", "tasks", "custom-layout.tg");
+    fs.writeFileSync(customLayoutFile, `task task_custom_layout {
+  name "Custom layout"
+  description "Custom task location remains valid."
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+`, "utf8");
+    const validation = validateWorkspace(parsePath(tempRoot));
+    assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("sdlc prep commit requires explicit disposition for open touched tasks", () => {
   const tempRoot = copyFixtureToTemp();
-  const taskFile = path.join(tempRoot, "topo", "tasks", "followups.tg");
+  const taskDir = path.join(tempRoot, "topo", "sdlc", "tasks");
+  const taskFile = path.join(taskDir, "followups.tg");
   try {
+    fs.mkdirSync(taskDir, { recursive: true });
     fs.writeFileSync(taskFile, `task task_open_followup {
   name "Open follow-up"
   description "Open follow-up left by the branch."
@@ -259,7 +293,7 @@ test("sdlc prep commit requires explicit disposition for open touched tasks", ()
 `, "utf8");
 
     const ambiguous = runSdlcCommitPrep(tempRoot, {
-      changedFiles: ["topo/tasks/followups.tg"]
+      changedFiles: ["topo/sdlc/tasks/followups.tg"]
     });
     assert.equal(ambiguous.ok, false);
     assert.ok(ambiguous.errors.some((error) => error.includes("needs explicit disposition")));
@@ -274,7 +308,7 @@ test("sdlc prep commit requires explicit disposition for open touched tasks", ()
 }
 `, "utf8");
     const classified = runSdlcCommitPrep(tempRoot, {
-      changedFiles: ["topo/tasks/followups.tg"]
+      changedFiles: ["topo/sdlc/tasks/followups.tg"]
     });
     assert.equal(classified.ok, true, JSON.stringify(classified, null, 2));
     assert.equal(classified.openTasks[0].disposition, "follow_up");
@@ -289,7 +323,7 @@ test("sdlc prep commit requires explicit disposition for open touched tasks", ()
 }
 `, "utf8");
     const blocking = runSdlcCommitPrep(tempRoot, {
-      changedFiles: ["topo/tasks/followups.tg"]
+      changedFiles: ["topo/sdlc/tasks/followups.tg"]
     });
     assert.equal(blocking.ok, false);
     assert.ok(blocking.errors.some((error) => error.includes("disposition blocker")));
@@ -376,7 +410,7 @@ test("transitionStatement rewrites .tg status surgically and appends history", (
     // Other lines unchanged
     assert.ok(after.includes("name \"Implement audit writer\""));
 
-    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
     assert.equal(history.task_implement_audit_writer.length, 1);
     assert.equal(history.task_implement_audit_writer[0].to, "done");
   } finally {
@@ -394,7 +428,7 @@ test("plan helpers create, explain, and transition nested steps with history", (
 
     const created = createPlan(tempRoot, "task_implement_audit_writer", "audit_followup", { write: true });
     assert.equal(created.ok, true, JSON.stringify(created, null, 2));
-    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "plans", "audit_followup.tg")));
+    assert.ok(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "plans", "audit_followup.tg")));
 
     const explained = explainPlan(tempRoot, "plan_implement_audit_writer");
     assert.equal(explained.ok, true, JSON.stringify(explained, null, 2));
@@ -414,7 +448,7 @@ test("plan helpers create, explain, and transition nested steps with history", (
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     const planFile = fs.readFileSync(path.join(tempRoot, "topo", "plans", "implement-audit-writer.tg"), "utf8");
     assert.ok(planFile.includes("step implement_writer status done"));
-    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", ".topogram-sdlc-history.json"), "utf8"));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
     assert.equal(history["plan_implement_audit_writer#implement_writer"][0].to, "done");
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -429,7 +463,7 @@ test("transitionStatement accepts an explicit topogram root without nested histo
       actor: "agent-test"
     });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
-    assert.equal(fs.existsSync(path.join(topogramRoot, ".topogram-sdlc-history.json")), true);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "sdlc", ".topogram-sdlc-history.json")), true);
     assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -545,7 +579,8 @@ test("archive bridge loads JSONL fixture entries", () => {
 test("resolver fails validation when archive JSONL is malformed", () => {
   const tempRoot = copyFixtureToTemp();
   try {
-    fs.writeFileSync(path.join(tempRoot, "topo", "_archive", "bugs-2027.jsonl"), "{not-json}\n", "utf8");
+    fs.mkdirSync(path.join(tempRoot, "topo", "sdlc", "_archive"), { recursive: true });
+    fs.writeFileSync(path.join(tempRoot, "topo", "sdlc", "_archive", "bugs-2027.jsonl"), "{not-json}\n", "utf8");
     const resolved = resolveWorkspace(parsePath(tempRoot));
     assert.equal(resolved.ok, false);
     assert.ok(resolved.validation.errors.some((error) => error.message.includes("Invalid SDLC archive")));
@@ -609,7 +644,7 @@ test("archiveStatement accepts an explicit topogram root without nested archive"
     const topogramRoot = path.join(tempRoot, "topo");
     const result = archiveStatement(topogramRoot, "bug_audit_drops_silently", { by: "test" });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
-    assert.match(result.archiveFile, /topo\/_archive\/bugs-\d{4}\.jsonl$/);
+    assert.match(result.archiveFile, /topo\/sdlc\/_archive\/bugs-\d{4}\.jsonl$/);
     assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -654,7 +689,7 @@ test("release accepts an explicit topogram root without nested archive", () => {
     const result = runRelease(topogramRoot, { appVersion: "1.0.0", actor: "release-test" });
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     assert.ok(result.archive.candidates.includes("bug_audit_drops_silently"));
-    assert.equal(fs.existsSync(path.join(topogramRoot, "_archive")), true);
+    assert.equal(fs.existsSync(path.join(topogramRoot, "sdlc", "_archive")), true);
     assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });

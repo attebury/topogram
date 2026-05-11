@@ -7,18 +7,21 @@
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot } from "../workspace-paths.js";
+import { sdlcRootForSdlc } from "./paths.js";
 
 const SDLC_FOLDERS = [
   "pitches",
   "requirements",
   "acceptance_criteria",
   "tasks",
+  "plans",
   "bugs",
+  "decisions",
   "_archive"
 ];
 
 function ensureFolder(root, name) {
-  const dir = path.join(resolveTopoRoot(root), name);
+  const dir = path.join(sdlcRootForSdlc(root), name);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
     return { name, created: true };

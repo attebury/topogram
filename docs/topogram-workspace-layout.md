@@ -118,16 +118,26 @@ The `domain-page` generator emits a markdown summary per domain
 ## SDLC layout
 
 Phase 2 introduces SDLC kinds (`pitch`, `requirement`,
-`acceptance_criterion`, `task`, `plan`, `bug`, `document`). Recommended layout:
+`acceptance_criterion`, `task`, `plan`, `bug`, `document`). Projects that
+adopt SDLC should group SDLC records under `topo/sdlc/` by default. This is a
+human and agent convention, not a parser rule; custom layouts remain valid.
 
 ```text
 topo/
-  pitches/{slug}.tg
-  requirements/{slug}.tg
-  acceptance_criteria/{slug}.tg
-  tasks/{slug}.tg
-  plans/{slug}.tg
-  bugs/{slug}.tg
+  sdlc/
+    pitches/{slug}.tg
+    requirements/{slug}.tg
+    acceptance_criteria/{slug}.tg
+    tasks/{slug}.tg
+    plans/{slug}.tg
+    bugs/{slug}.tg
+    decisions/{slug}.tg
+    _archive/
+      tasks-2026.jsonl           # year-bucketed JSONL archives
+      plans-2026.jsonl
+      bugs-2026.jsonl
+      pitches-2026.jsonl
+    .topogram-sdlc-history.json  # append-only transition history sidecar
   docs/                          # markdown documents (with frontmatter)
     user-guide/
     api/
@@ -136,15 +146,9 @@ topo/
     getting-started/
     reference/
     development/
-  _archive/
-    tasks-2026.jsonl             # year-bucketed JSONL archives
-    plans-2026.jsonl
-    bugs-2026.jsonl
-    pitches-2026.jsonl
-  .topogram-sdlc-history.json    # append-only transition history sidecar
 ```
 
-The `_archive/` folder is special: the resolver bridge auto-loads JSONL
+The `sdlc/_archive/` folder is special: the resolver bridge auto-loads JSONL
 files at workspace-parse time so frozen entries participate in
 cross-references and the traceability matrix without showing up in the
 default board. Use `topogram sdlc unarchive <id>` to restore one.

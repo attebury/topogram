@@ -1,7 +1,7 @@
 // Bridge between archived JSONL entries and the live resolver graph.
 //
 // At workspace load time the resolver bridge:
-//   1. Walks the workspace `_archive/*.jsonl`
+//   1. Walks the workspace `sdlc/_archive/*.jsonl`
 //   2. Builds a flat list of frozen entries (each with `archived: true`)
 //   3. Returns `{ entries, byId }` so the caller can merge them into the
 //      registry / graph

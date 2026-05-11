@@ -17,6 +17,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 
 - Specs are the source of truth. Do not hardcode generated output behavior around a demo, fixture product, framework quirk, or test convenience.
 - Enforced SDLC is the repo working habit. Non-trivial protected changes must start from or reference a `pitch`, `requirement`, `task`, or `bug` in `topo/`; PRs must cite the item or give an explicit allowed exemption.
+- Adopted SDLC records default to `topo/sdlc/**`. The parser remains folder-agnostic, but agents should look there first for pitches, requirements, acceptance criteria, tasks, bugs, plans, decisions, archives, and history.
 - Tests must prove consumer value. A test that only checks for a string or file exists is not enough when generated output can be installed, compiled, checked, or run.
 - Code must be maintainable and security-focused over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, seams easy to verify, and unsafe inputs, trust boundaries, credentials, and generated output escaping explicit.
 - Docs must execute. Any documented command shape needs regression coverage or a clear reason it cannot be executed.

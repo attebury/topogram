@@ -6,8 +6,8 @@ import path from "node:path";
 import { parsePath } from "../parser.js";
 import { resolveWorkspace } from "../resolver.js";
 import { PLAN_STEP_STATUSES } from "../validator/kinds.js";
-import { resolveTopoRoot } from "../workspace-paths.js";
 import { appendTransition, lastTransition, readHistory } from "./history.js";
+import { sdlcRootForSdlc } from "./paths.js";
 import { parsePlanStepEntry, planStepHistoryId } from "./plan-steps.js";
 
 /** @type {Record<string, string[]>} */
@@ -106,7 +106,7 @@ export function createPlan(workspaceRoot, taskId, slug, options = {}) {
     return { ok: false, error: `Statement '${planId}' already exists` };
   }
 
-  const targetDir = path.join(resolveTopoRoot(workspaceRoot), "plans");
+  const targetDir = path.join(sdlcRootForSdlc(workspaceRoot), "plans");
   const targetFile = path.join(targetDir, `${slug}.tg`);
   const content = `plan ${planId} {
   name "${humanize(slug)}"

@@ -1,0 +1,18 @@
+plan plan_group_sdlc_records_under_sdlc_root {
+  name "Group SDLC Records Under SDLC Root Plan"
+  description "Implementation plan for moving the default SDLC record convention to topo/sdlc while preserving folder-agnostic validation."
+  task task_group_sdlc_records_under_sdlc_root
+  priority high
+  notes "Use the new convention for this plan immediately, then migrate the older dogfood SDLC records as part of implementation."
+  outcome "Record whether topo/sdlc improves agent slice readability and whether any command-owned history paths need follow-up."
+  steps {
+    step document_convention status done description "Document topo/sdlc as the default SDLC record root and clarify that parser validation stays folder-agnostic."
+    step update_sdlc_scaffolds status done description "Update sdlc new and related scaffold helpers to write SDLC records under topo/sdlc by default."
+    step migrate_dogfood_records status done description "Move current engine dogfood SDLC records into topo/sdlc without changing statement ids or graph meaning."
+    step update_agent_guidance status done description "Update agent brief, docs, and examples so agents look under topo/sdlc for adopted SDLC records."
+    step add_regression_tests status done description "Add focused tests proving default scaffolds use topo/sdlc and custom layouts still validate."
+    step verify_gates status done description "Run topogram check, strict SDLC check, focused SDLC tests, and engine gates before completing the task."
+  }
+  domain dom_sdlc_query_agent_context
+  status complete
+}

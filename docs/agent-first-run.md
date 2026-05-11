@@ -104,6 +104,22 @@ editing. Plan text and step definitions are declarative source; step
 status changes should use `topogram sdlc plan step ... --write` so the
 history sidecar can detect drift.
 
+Adopted SDLC records live under `topo/sdlc/` by default:
+
+```text
+topo/sdlc/pitches/
+topo/sdlc/requirements/
+topo/sdlc/acceptance_criteria/
+topo/sdlc/tasks/
+topo/sdlc/plans/
+topo/sdlc/bugs/
+topo/sdlc/decisions/
+```
+
+Folder placement is still a convention. The parser flattens `.tg` files
+under `topo/`, so custom layouts remain valid, but agents should look in
+`topo/sdlc/` first for opted-in work records.
+
 The same rule applies to other stateful workflow surfaces: use
 `topogram sdlc transition`, `topogram sdlc archive`, `topogram trust ...`,
 `topogram import ...`, `topogram generate`, `topogram emit --write`, and
