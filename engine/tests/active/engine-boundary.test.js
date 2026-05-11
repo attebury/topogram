@@ -1533,6 +1533,7 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/validator/projections/api-http-core.js",
     "engine/src/validator/projections/api-http-policies.js",
     "engine/src/validator/projections/api-http-responses.js",
+    "engine/src/validator/projections/cli.js",
     "engine/src/validator/projections/db.js",
     "engine/src/validator/projections/generator-defaults.js",
     "engine/src/validator/projections/ui.js",
@@ -1551,7 +1552,8 @@ test("resolver and validator leaf modules stay in the active type-check lane", (
     "engine/src/resolver/enrich/bug.js",
     "engine/src/resolver/enrich/pitch.js",
     "engine/src/resolver/enrich/requirement.js",
-    "engine/src/resolver/enrich/task.js"
+    "engine/src/resolver/enrich/task.js",
+    "engine/src/resolver/projections-cli.js"
   ];
   const tsconfig = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "tsconfig.check.json"), "utf8"));
   const tsconfigFiles = new Set(tsconfig.files.map((file) => path.normalize(path.join("engine", file))));

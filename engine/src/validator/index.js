@@ -5,6 +5,7 @@ import { validateExpressions } from "./expressions.js";
 import { validateApiHttpProjection } from "./projections/api-http.js";
 import { validateDbProjection } from "./projections/db.js";
 import { validateProjectionGeneratorDefaults } from "./projections/generator-defaults.js";
+import { validateCliProjection } from "./projections/cli.js";
 import { validateUiProjection } from "./projections/ui.js";
 import { buildRegistry } from "./registry.js";
 import {
@@ -34,6 +35,9 @@ export {
   DECISION_STATUSES,
   RULE_SEVERITIES,
   VERIFICATION_METHODS,
+  CLI_COMMAND_EFFECTS,
+  CLI_COMMAND_OPTION_TYPES,
+  CLI_COMMAND_OUTPUT_FORMATS,
   STATUS_SETS_BY_KIND,
   PITCH_STATUSES,
   REQUIREMENT_STATUSES,
@@ -91,6 +95,7 @@ export function validateWorkspace(workspaceAst) {
       validateReferenceRules(errors, statement, fieldMap, registry);
       validateDataModelStatement(errors, statement, fieldMap, registry);
       validateApiHttpProjection(errors, statement, fieldMap, registry);
+      validateCliProjection(errors, statement, fieldMap, registry);
       validateUiProjection(errors, statement, fieldMap, registry);
       validateDbProjection(errors, statement, fieldMap, registry);
       validateProjectionGeneratorDefaults(errors, statement, fieldMap);

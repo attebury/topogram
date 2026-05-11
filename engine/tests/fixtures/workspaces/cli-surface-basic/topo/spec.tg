@@ -1,0 +1,72 @@
+domain dom_cli {
+  name "CLI"
+  description "Command-line behavior"
+  status active
+}
+
+actor actor_developer {
+  name "Developer"
+  description "Person running the CLI"
+  status active
+}
+
+shape shape_check_result {
+  name "Check Result"
+  description "Machine-readable check output"
+  fields {
+    ok boolean required
+    error_count integer required
+  }
+  status active
+}
+
+capability cap_check_topogram {
+  name "Check Topogram"
+  description "Validate a Topogram workspace"
+  actors [actor_developer]
+  output [shape_check_result]
+  domain dom_cli
+  status active
+}
+
+capability cap_import_brownfield_app {
+  name "Import Brownfield App"
+  description "Create reviewable Topogram candidates from existing source"
+  actors [actor_developer]
+  domain dom_cli
+  status active
+}
+
+projection proj_cli_surface {
+  name "Topogram CLI"
+  description "Command-line surface"
+  type cli_surface
+  realizes [cap_check_topogram, cap_import_brownfield_app]
+  outputs [maintained_engine]
+
+  commands {
+    command check capability cap_check_topogram usage "topogram check [path] [--json]" mode read_only
+    command import capability cap_import_brownfield_app usage "topogram import <app-path> --out <target> [--from <tracks>]" mode writes_workspace
+  }
+
+  command_options {
+    command check option json type boolean flag --json description "Print JSON"
+    command import option from type enum values [db, api, ui, cli, workflows, verification]
+  }
+
+  command_outputs {
+    command check format json schema shape_check_result
+    command check format human
+  }
+
+  command_effects {
+    command check effect read_only target workspace
+    command import effect writes_workspace target workspace_candidates
+  }
+
+  command_examples {
+    command check example "topogram check --json"
+  }
+
+  status active
+}

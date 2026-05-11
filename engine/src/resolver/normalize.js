@@ -44,6 +44,13 @@ import {
   parseProjectionHttpStatusBlock
 } from "./projections-api.js";
 import {
+  parseProjectionCliCommandsBlock,
+  parseProjectionCliEffectsBlock,
+  parseProjectionCliExamplesBlock,
+  parseProjectionCliOptionsBlock,
+  parseProjectionCliOutputsBlock
+} from "./projections-cli.js";
+import {
   parseProjectionUiActionsBlock,
   parseProjectionUiAppShellBlock,
   parseProjectionUiCollectionsBlock,
@@ -209,6 +216,11 @@ export function normalizeStatement(statement, registry) {
         httpDownload: parseProjectionHttpDownloadBlock(statement, registry),
         httpAuthz: parseProjectionHttpAuthzBlock(statement, registry),
         httpCallbacks: parseProjectionHttpCallbacksBlock(statement, registry),
+        commands: parseProjectionCliCommandsBlock(statement, registry),
+        commandOptions: parseProjectionCliOptionsBlock(statement),
+        commandOutputs: parseProjectionCliOutputsBlock(statement, registry),
+        commandEffects: parseProjectionCliEffectsBlock(statement),
+        commandExamples: parseProjectionCliExamplesBlock(statement),
         uiScreens: parseProjectionUiScreensBlock(statement, registry),
         screens: parseProjectionUiScreensBlock(statement, registry),
         uiCollections: parseProjectionUiCollectionsBlock(statement),

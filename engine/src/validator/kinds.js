@@ -76,6 +76,9 @@ export const STATUS_SETS_BY_KIND = {
   bug: BUG_STATUSES
 };
 export const VERIFICATION_METHODS = new Set(["smoke", "runtime", "contract", "journey", "manual"]);
+export const CLI_COMMAND_EFFECTS = new Set(["read_only", "writes_workspace", "writes_app", "network", "package_install", "git", "filesystem"]);
+export const CLI_COMMAND_OPTION_TYPES = new Set(["string", "boolean", "number", "integer", "enum", "path", "list"]);
+export const CLI_COMMAND_OUTPUT_FORMATS = new Set(["json", "human", "file", "exit_code"]);
 
 export {
   UI_APP_SHELL_KINDS,
@@ -179,6 +182,11 @@ export const FIELD_SPECS = {
       "downloads",
       "authorization",
       "callbacks",
+      "commands",
+      "command_options",
+      "command_outputs",
+      "command_effects",
+      "command_examples",
       "screens",
       "collection_views",
       "screen_actions",

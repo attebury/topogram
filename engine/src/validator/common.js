@@ -237,7 +237,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["list"]);
   }
 
-  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"]) {
+  for (const key of ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "commands", "command_options", "command_outputs", "command_effects", "command_examples", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"]) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
   }
 
@@ -267,6 +267,11 @@ function validateFieldShapes(errors, statement, fieldMap) {
     validateBlockEntryLengths(errors, statement, fieldMap, "downloads", 7);
     validateBlockEntryLengths(errors, statement, fieldMap, "authorization", 3);
     validateBlockEntryLengths(errors, statement, fieldMap, "callbacks", 11);
+    validateBlockEntryLengths(errors, statement, fieldMap, "commands", 2);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_options", 6);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_outputs", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_effects", 4);
+    validateBlockEntryLengths(errors, statement, fieldMap, "command_examples", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "screens", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "collection_views", 4);
     validateBlockEntryLengths(errors, statement, fieldMap, "screen_actions", 6);
