@@ -84,7 +84,7 @@ acceptance_criterion ac_plan_slices_feed_agents {
 
 acceptance_criterion ac_commit_prep_classifies_open_tasks {
   name "Commit Prep Classifies Open Tasks"
-  description "sdlc prep commit reports branch-touched open tasks, fails ambiguous unclaimed work, allows explicit follow-up/deferred/backlog disposition, and fails blocker disposition."
+  description "sdlc prep commit reports branch-touched open tasks, including untracked new task files, fails ambiguous unclaimed work, allows explicit follow-up/deferred/backlog disposition, and fails blocker disposition."
   requirement req_sdlc_commit_prep_surfaces_open_tasks
   status draft
 }

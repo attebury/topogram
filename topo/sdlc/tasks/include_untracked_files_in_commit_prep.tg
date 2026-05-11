@@ -1,0 +1,15 @@
+task task_include_untracked_files_in_commit_prep {
+  name "Include Untracked Files In Commit Prep"
+  description "Update sdlc prep commit so unstaged, untracked task files are treated as branch-touched work before commit."
+  satisfies [req_sdlc_commit_prep_surfaces_open_tasks]
+  acceptance_refs [ac_commit_prep_classifies_open_tasks]
+  verification_refs [verification_sdlc_enforcement]
+  affects [cap_manage_sdlc_records]
+  blocked_by []
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

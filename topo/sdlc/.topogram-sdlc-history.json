@@ -318,5 +318,51 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_include_untracked_files_in_commit_prep": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T13:06:12.454Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T13:06:18.433Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T13:07:25.333Z",
+      "by": null,
+      "note": null
+    }
+  ],
+  "bug_prep_commit_misses_untracked_tasks": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-11T13:06:21.904Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-11T13:07:29.365Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-11T13:07:33.024Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

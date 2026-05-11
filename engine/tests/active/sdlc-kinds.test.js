@@ -332,6 +332,44 @@ test("sdlc prep commit requires explicit disposition for open touched tasks", ()
   }
 });
 
+test("sdlc prep commit includes untracked task files before staging", () => {
+  const tempRoot = copyFixtureToTemp();
+  const taskDir = path.join(tempRoot, "topo", "sdlc", "tasks");
+  const untrackedTask = path.join(taskDir, "untracked-followup.tg");
+  try {
+    assert.equal(childProcess.spawnSync("git", ["init"], { cwd: tempRoot }).status, 0);
+    assert.equal(childProcess.spawnSync("git", ["add", "."], { cwd: tempRoot }).status, 0);
+    assert.equal(childProcess.spawnSync("git", [
+      "-c",
+      "user.name=Topogram Test",
+      "-c",
+      "user.email=test@example.com",
+      "commit",
+      "-m",
+      "baseline"
+    ], { cwd: tempRoot }).status, 0);
+
+    fs.mkdirSync(taskDir, { recursive: true });
+    fs.writeFileSync(untrackedTask, `task task_untracked_followup {
+  name "Untracked follow-up"
+  description "Untracked open task should still block commit prep."
+  priority medium
+  work_type implementation
+  status unclaimed
+}
+`, "utf8");
+
+    const result = runSdlcCommitPrep(tempRoot, {});
+    assert.equal(result.ok, false, JSON.stringify(result, null, 2));
+    assert.ok(result.changedFiles.includes("topo/sdlc/tasks/untracked-followup.tg"));
+    assert.deepEqual(result.taskFiles, ["topo/sdlc/tasks/untracked-followup.tg"]);
+    assert.equal(result.changedTasks[0].id, "task_untracked_followup");
+    assert.ok(result.errors.some((error) => error.includes("needs explicit disposition")));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("sdlc-traceability-matrix walks pitch → req → AC → task → verification", () => {
   const ast = parsePath(fixtureRoot);
   const resolved = resolveWorkspace(ast);

@@ -47,7 +47,8 @@ function gitFileList(projectRoot, args) {
 function changedFiles(projectRoot, base, head) {
   const localChanges = [
     ...gitFileList(projectRoot, ["diff", "--name-only", "--cached"]),
-    ...gitFileList(projectRoot, ["diff", "--name-only"])
+    ...gitFileList(projectRoot, ["diff", "--name-only"]),
+    ...gitFileList(projectRoot, ["ls-files", "--others", "--exclude-standard"])
   ];
   if (base && head) {
     return [...new Set([
