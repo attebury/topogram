@@ -620,5 +620,44 @@
       "by": "actor_coding_agent",
       "note": "Ownership model now has docs and regression coverage for generated and maintained DB migration behavior."
     }
+  ],
+  "req_import_maintained_seam_candidates": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-11T21:30:59.981Z",
+      "by": "actor_coding_agent",
+      "note": "Started maintained DB seam inference implementation."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-11T21:35:24.876Z",
+      "by": "actor_coding_agent",
+      "note": "Maintained DB seam candidates are inferred, reported, and carried through adoption review packets."
+    }
+  ],
+  "task_infer_maintained_db_seam_candidates": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T21:31:00.025Z",
+      "by": "actor_coding_agent",
+      "note": "Claimed maintained DB seam inference implementation."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T21:31:03.720Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing extractor/report/reconcile support."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T21:35:30.362Z",
+      "by": "actor_coding_agent",
+      "note": "Implemented maintained DB seam inference and verified with focused import tests, verify-engine, and CLI package smoke."
+    }
   ]
 }

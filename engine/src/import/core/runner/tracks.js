@@ -96,7 +96,7 @@ function selectDetectionsForTrack(track, detections) {
  */
 function initialCandidatesForTrack(track) {
   if (track === "db") {
-    return { entities: [], enums: [], relations: [], indexes: [] };
+    return { entities: [], enums: [], relations: [], indexes: [], maintained_seams: [] };
   }
   if (track === "api") {
     return { capabilities: [], routes: [], stacks: [] };

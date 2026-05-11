@@ -91,6 +91,7 @@ export function reconcileWorkflow(inputPath, options = {}) {
     type: "reconcile_adoption_plan",
     workspace: paths.topogramRoot,
     approved_review_groups: [...new Set(existingPlan?.approved_review_groups || [])],
+    imported_maintained_db_seams: appImport.candidates?.db?.maintained_seams || [],
     items: mergedPlanItems,
     projection_review_groups: buildProjectionReviewGroups(mergedPlanItems),
     ui_review_groups: buildUiReviewGroups(mergedPlanItems),

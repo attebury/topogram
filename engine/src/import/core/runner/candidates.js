@@ -261,7 +261,8 @@ export function normalizeCandidatesForTrack(track, candidates) {
       entities: dedupeCandidateRecords(candidates.entities || [], idHint),
       enums: dedupeCandidateRecords(candidates.enums || [], idHint),
       relations: dedupeCandidateRecords(candidates.relations || [], idHint),
-      indexes: dedupeCandidateRecords(candidates.indexes || [], idHint)
+      indexes: dedupeCandidateRecords(candidates.indexes || [], idHint),
+      maintained_seams: dedupeCandidateRecords(candidates.maintained_seams || [], idHint)
     };
   }
   if (track === "api") {

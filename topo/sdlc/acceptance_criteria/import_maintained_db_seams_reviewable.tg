@@ -1,0 +1,6 @@
+acceptance_criterion ac_import_maintained_db_seams_reviewable {
+  name "Import Maintained Db Seams Reviewable"
+  description "Given a brownfield app with Prisma, Drizzle, or SQL migration evidence, when import runs, then Topogram emits review-only maintained DB seam candidates with tool, paths, confidence, missing decisions, and proposed runtime migration without mutating project config or source files."
+  requirement req_import_maintained_seam_candidates
+  status approved
+}

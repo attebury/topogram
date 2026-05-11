@@ -8,8 +8,8 @@ Important fields:
   normally `topo/`.
 - `projectRoot`: target project root.
 - `candidateCounts`: number of imported candidate artifacts by surface,
-  including fields such as `apiCapabilities`, `apiRoutes`, `uiWidgets`,
-  `cliCommands`, and `cliSurfaces`.
+  including fields such as `apiCapabilities`, `apiRoutes`,
+  `dbMaintainedSeams`, `uiWidgets`, `cliCommands`, and `cliSurfaces`.
 - `writtenFiles`: files written by import or adoption.
 - `nextCommands`: recommended follow-up commands.
 - `receipt`: adoption receipt when an adoption command writes.
@@ -30,6 +30,9 @@ Review payloads:
 
 - `topogram import plan --json` returns `bundles`, `summary`,
   `workspaceRoot`, and a `nextCommand`.
+- Maintained DB migration seam proposals appear as `dbMaintainedSeams` in
+  import counts, `candidates.db.maintained_seams` in raw candidate files, and a
+  review-only `database` bundle in plan output.
 - `topogram import adopt --list --json` returns exact `selectors` such as
   `bundle:task` or `bundle:cli` and broad selectors such as `widgets`, `ui`,
   `cli`, `capabilities`, and `from-plan`.

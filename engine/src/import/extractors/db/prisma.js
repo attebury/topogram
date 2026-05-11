@@ -8,6 +8,7 @@ import {
   titleCase,
   idHintify
 } from "../../core/shared.js";
+import { inferPrismaMaintainedDbSeams } from "./maintained-seams.js";
 
 function parsePrismaSchema(schemaText) {
   const enums = [];
@@ -125,7 +126,7 @@ export const prismaExtractor = {
       "prisma"
     );
     const findings = [];
-    const candidates = { entities: [], enums: [], relations: [], indexes: [] };
+    const candidates = { entities: [], enums: [], relations: [], indexes: [], maintained_seams: [] };
     for (const filePath of prismaFiles) {
       const parsed = parsePrismaSchema(context.helpers.readTextIfExists(filePath) || "");
       const provenance = relativeTo(context.paths.repoRoot, filePath);
@@ -179,7 +180,7 @@ export const prismaExtractor = {
         track: "db"
       })));
     }
+    candidates.maintained_seams = inferPrismaMaintainedDbSeams(context, prismaFiles);
     return { findings, candidates };
   }
 };
-

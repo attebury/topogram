@@ -10,6 +10,7 @@ import {
   slugify,
   titleCase
 } from "../../core/shared.js";
+import { inferDrizzleMaintainedDbSeams } from "./maintained-seams.js";
 
 function splitTopLevelEntries(block) {
   const entries = [];
@@ -165,21 +166,50 @@ function parseDrizzleTables(schemaText) {
   };
 }
 
+function drizzleConfigFiles(context) {
+  return findImportFiles(context.paths, (filePath) => /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath)));
+}
+
+function configuredSchemaFiles(context, configFiles) {
+  const files = [];
+  for (const configFile of configFiles) {
+    const configText = context.helpers.readTextIfExists(configFile) || "";
+    for (const match of configText.matchAll(/\bschema\s*:\s*["'`]([^"'`*]+)["'`]/g)) {
+      const absoluteSchemaPath = path.resolve(path.dirname(configFile), match[1]);
+      if (context.helpers.readTextIfExists(absoluteSchemaPath) !== null) {
+        files.push(absoluteSchemaPath);
+      }
+    }
+  }
+  return files;
+}
+
+function findDrizzleSchemaFiles(context) {
+  const configFiles = drizzleConfigFiles(context);
+  const conventionalSchemaFiles = findImportFiles(context.paths, (filePath) =>
+    /(?:^|\/)(?:src\/db\/schema|src\/schema|db\/schema|schema)\.(ts|js|mjs|cjs)$/i.test(relativeTo(context.paths.workspaceRoot, filePath).replaceAll(path.sep, "/"))
+  );
+  return [...new Set([
+    ...configuredSchemaFiles(context, configFiles),
+    ...conventionalSchemaFiles
+  ])].sort();
+}
+
 export const drizzleExtractor = {
   id: "db.drizzle",
   track: "db",
   detect(context) {
-    const hasConfig = findImportFiles(context.paths, (filePath) => /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath))).length > 0;
-    const hasSchema = findImportFiles(context.paths, (filePath) => /src\/schema\.(ts|js|mjs|cjs)$/i.test(filePath)).length > 0;
+    const hasConfig = drizzleConfigFiles(context).length > 0;
+    const hasSchema = findDrizzleSchemaFiles(context).length > 0;
     return {
       score: hasConfig || hasSchema ? 95 : 0,
       reasons: hasConfig || hasSchema ? ["Found Drizzle config/schema source"] : []
     };
   },
   extract(context) {
-    const schemaFiles = findImportFiles(context.paths, (filePath) => /src\/schema\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const schemaFiles = findDrizzleSchemaFiles(context);
     const findings = [];
-    const candidates = { entities: [], enums: [], relations: [], indexes: [] };
+    const candidates = { entities: [], enums: [], relations: [], indexes: [], maintained_seams: [] };
     for (const filePath of schemaFiles) {
       const parsed = parseDrizzleTables(context.helpers.readTextIfExists(filePath) || "");
       const provenance = relativeTo(context.paths.repoRoot, filePath);
@@ -237,6 +267,7 @@ export const drizzleExtractor = {
     candidates.enums = dedupeCandidateRecords(candidates.enums, (record) => record.id_hint);
     candidates.relations = dedupeCandidateRecords(candidates.relations, (record) => record.id_hint);
     candidates.indexes = dedupeCandidateRecords(candidates.indexes, (record) => record.id_hint);
+    candidates.maintained_seams = inferDrizzleMaintainedDbSeams(context, schemaFiles);
     return { findings, candidates };
   }
 };

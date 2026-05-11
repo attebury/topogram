@@ -1,4 +1,5 @@
 import { canonicalCandidateTerm, findImportFiles, makeCandidateRecord, relativeTo, selectPreferredImportFiles, slugify, titleCase, idHintify } from "../../core/shared.js";
+import { inferSqlMaintainedDbSeams } from "./maintained-seams.js";
 
 function parseTableConstraint(line, tableName) {
   const normalized = line.replace(/,$/, "").trim();
@@ -119,7 +120,7 @@ export const sqlExtractor = {
         ? selectPreferredImportFiles(context.paths, schemaSqlFiles, "sql")
         : selectPreferredImportFiles(context.paths, migrationSqlFiles, "sql");
     const findings = [];
-    const candidates = { entities: [], enums: [], relations: [], indexes: [] };
+    const candidates = { entities: [], enums: [], relations: [], indexes: [], maintained_seams: [] };
     for (const filePath of sqlFiles) {
       const parsed = parseSqlSchema(context.helpers.readTextIfExists(filePath) || "");
       const provenance = relativeTo(context.paths.repoRoot, filePath);
@@ -175,6 +176,7 @@ export const sqlExtractor = {
         track: "db"
       })));
     }
+    candidates.maintained_seams = inferSqlMaintainedDbSeams(context, allSqlFiles, sqlFiles);
     return { findings, candidates };
   }
 };

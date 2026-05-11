@@ -80,6 +80,36 @@ The review loop is:
 5. Update the trusted snapshot after the app migration has been reviewed and
    applied.
 
+## Imported Maintained DB Seams
+
+Brownfield import can infer review-only migration seam candidates for Prisma,
+Drizzle, and SQL projects:
+
+```bash
+topogram import ./existing-app --out ./imported-topogram --from db
+cd ./imported-topogram
+topogram import plan --json
+```
+
+Review:
+
+- `candidateCounts.dbMaintainedSeams` in the import JSON output;
+- `topo/candidates/app/db/candidates.json` under `maintained_seams`;
+- `topo/candidates/app/db/report.md`;
+- the `database` bundle in `topo/candidates/reconcile/**`.
+
+Each candidate includes the inferred tool, schema path, migrations path,
+snapshot path, confidence, evidence, missing decisions, and a
+`proposed_runtime_migration` block. Treat that block as a proposal only. Import
+never patches `topogram.project.json` and never writes to maintained Prisma,
+Drizzle, or SQL migration files.
+
+When the candidate is correct, manually add a database runtime migration block
+to `topogram.project.json` with `ownership: "maintained"` and `apply: "never"`.
+If the candidate reports `missing_decisions`, resolve those first; for example,
+a Prisma schema without a migrations directory should not be treated as a
+complete migration seam.
+
 ## Tool Notes
 
 SQL:

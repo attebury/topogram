@@ -12,7 +12,9 @@ const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "im
 const cliPath = path.join(repoRoot, "engine", "src", "cli.js");
 const retainedImportFixtures = [
   "cli-basic",
+  "drizzle-basic",
   "prisma-openapi",
+  "prisma-schema-only",
   "route-fallback",
   "sql-openapi"
 ];
@@ -35,6 +37,24 @@ test("Prisma plus OpenAPI import fixture extracts DB and API candidates", () => 
   assert.deepEqual(detectionIds(summary), ["api.openapi", "db.prisma"]);
   assert.deepEqual(candidateIds(summary.candidates.db.entities), ["entity_task", "entity_user"]);
   assert.deepEqual(candidateIds(summary.candidates.db.enums), ["task_priority"]);
+  const seam = dbSeam(summary);
+  assert.equal(seam.kind, "maintained_db_migration_seam");
+  assert.equal(seam.tool, "prisma");
+  assert.equal(seam.ownership, "maintained");
+  assert.equal(seam.apply, "never");
+  assert.equal(seam.confidence, "high");
+  assert.equal(seam.schemaPath, "prisma/schema.prisma");
+  assert.equal(seam.migrationsPath, "prisma/migrations");
+  assert.equal(seam.snapshotPath, "topo/state/db/app_db/current.snapshot.json");
+  assert.deepEqual(seam.missing_decisions, []);
+  assert.deepEqual(seam.proposed_runtime_migration, {
+    ownership: "maintained",
+    tool: "prisma",
+    apply: "never",
+    snapshotPath: "topo/state/db/app_db/current.snapshot.json",
+    schemaPath: "prisma/schema.prisma",
+    migrationsPath: "prisma/migrations"
+  });
   assert.deepEqual(candidateIds(summary.candidates.api.capabilities), ["cap_create_task", "cap_update_task"]);
 });
 
@@ -47,7 +67,50 @@ test("SQL plus OpenAPI import fixture extracts DB and API candidates", () => {
   assert.deepEqual(detectionIds(summary), ["api.openapi", "db.sql"]);
   assert.deepEqual(candidateIds(summary.candidates.db.entities), ["entity_task", "entity_user"]);
   assert.deepEqual(candidateIds(summary.candidates.db.enums), ["task_priority"]);
+  const seam = dbSeam(summary);
+  assert.equal(seam.tool, "sql");
+  assert.equal(seam.confidence, "high");
+  assert.equal(seam.schemaPath, "db/schema.sql");
+  assert.equal(seam.migrationsPath, "db/migrations");
+  assert.equal(seam.proposed_runtime_migration.apply, "never");
   assert.deepEqual(candidateIds(summary.candidates.api.capabilities), ["cap_create_task", "cap_update_task"]);
+});
+
+test("Drizzle import fixture extracts maintained DB seam candidates", () => {
+  const summary = runImportAppWorkflow(path.join(importFixtureRoot, "drizzle-basic"), {
+    from: "db"
+  }).summary;
+
+  assert.deepEqual(summary.tracks, ["db"]);
+  assert.deepEqual(detectionIds(summary), ["db.drizzle"]);
+  assert.deepEqual(candidateIds(summary.candidates.db.entities), ["entity_task"]);
+  const seam = dbSeam(summary);
+  assert.equal(seam.tool, "drizzle");
+  assert.equal(seam.confidence, "high");
+  assert.equal(seam.schemaPath, "src/db/schema.ts");
+  assert.equal(seam.migrationsPath, "drizzle");
+  assert.deepEqual(seam.match_reasons, [
+    "found Drizzle schema source",
+    "found Drizzle config",
+    "found Drizzle migrations output"
+  ]);
+});
+
+test("Prisma schema-only import reports an incomplete maintained DB seam candidate", () => {
+  const summary = runImportAppWorkflow(path.join(importFixtureRoot, "prisma-schema-only"), {
+    from: "db"
+  }).summary;
+
+  assert.deepEqual(summary.tracks, ["db"]);
+  assert.deepEqual(detectionIds(summary), ["db.prisma"]);
+  assert.deepEqual(candidateIds(summary.candidates.db.entities), ["entity_task"]);
+  const seam = dbSeam(summary);
+  assert.equal(seam.tool, "prisma");
+  assert.equal(seam.confidence, "medium");
+  assert.equal(seam.schemaPath, "prisma/schema.prisma");
+  assert.equal(seam.migrationsPath, null);
+  assert.equal(seam.missing_decisions.includes("confirm Prisma migrationsPath before adding this strategy to topogram.project.json"), true);
+  assert.equal(Object.hasOwn(seam.proposed_runtime_migration, "migrationsPath"), false);
 });
 
 test("route fallback import fixture extracts API routes and React screens", () => {
@@ -114,11 +177,40 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(payload.ok, true);
   assert.deepEqual(payload.tracks, ["db", "api"]);
   assert.equal(payload.candidateCounts.dbEntities, 2);
+  assert.equal(payload.candidateCounts.dbMaintainedSeams, 1);
   assert.equal(payload.candidateCounts.apiCapabilities, 2);
   assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-import.json")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topogram.project.json")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "app", "report.md")), true);
+  const dbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
+  assert.equal(dbCandidates.maintained_seams.length, 1);
+  assert.equal(dbCandidates.maintained_seams[0].proposed_runtime_migration.tool, "sql");
+  assert.equal(dbCandidates.maintained_seams[0].apply, "never");
+  const dbReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "report.md"), "utf8");
+  assert.match(dbReport, /Maintained DB migration seams: 1/);
+  assert.match(dbReport, /seam_sql_db_migrations/);
+  const appReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "report.md"), "utf8");
+  assert.match(appReport, /Maintained DB migration seams: 1/);
+  const projectConfig = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram.project.json"), "utf8"));
+  assert.equal(JSON.stringify(projectConfig).includes("proposed_runtime_migration"), false);
+  assert.equal(JSON.stringify(projectConfig).includes("migrationsPath"), false);
   assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "task", "entities", "entity_task.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "database", "README.md")), true);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.bundles[0].bundle, "database");
+  assert.equal(planPayload.bundles[0].kindCounts.maintained_db_migration_seam, 1);
+  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  assert.equal(adoptionPlan.imported_maintained_db_seam_candidates.length, 1);
+  const dbSeamSurface = adoptionPlan.imported_proposal_surfaces.find((item) => item.kind === "maintained_db_migration_seam");
+  assert.equal(dbSeamSurface.bundle, "database");
+  assert.equal(dbSeamSurface.recommended_state, "customize");
+  assert.equal(dbSeamSurface.maintained_seam_candidates[0].tool, "sql");
+  const reconcileReport = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "report.json"), "utf8"));
+  const databaseBundle = reconcileReport.candidate_model_bundles.find((bundle) => bundle.slug === "database");
+  assert.equal(databaseBundle.maintained_seam_candidates[0].id, "seam_sql_db_migrations");
 
   const check = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -639,23 +731,26 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   const planPayload = JSON.parse(plan.stdout);
   assert.equal(planPayload.ok, true);
-  assert.deepEqual(planPayload.bundles.map((bundle) => bundle.bundle), ["task", "user"]);
-  assert.equal(planPayload.summary.proposalItemCount, 6);
-  assert.match(planPayload.nextCommand, /topogram import adopt bundle:task .* --dry-run/);
+  assert.deepEqual(planPayload.bundles.map((bundle) => bundle.bundle), ["database", "task", "user"]);
+  assert.equal(planPayload.bundles[0].kindCounts.maintained_db_migration_seam, 1);
+  assert.equal(planPayload.summary.proposalItemCount, 7);
+  assert.match(planPayload.nextCommand, /topogram import adopt bundle:database .* --dry-run/);
 
   const humanPlan = runCli(["import", "plan", targetRoot]);
   assert.equal(humanPlan.status, 0, humanPlan.stderr || humanPlan.stdout);
   assert.match(humanPlan.stdout, /Import adoption plan for/);
+  assert.match(humanPlan.stdout, /- database: 1 item\(s\), 1 pending, 0 applied/);
   assert.match(humanPlan.stdout, /- task: 5 item\(s\), 5 pending, 0 applied/);
-  assert.match(humanPlan.stdout, /Next: topogram import adopt bundle:task .* --dry-run/);
+  assert.match(humanPlan.stdout, /Next: topogram import adopt bundle:database .* --dry-run/);
 
   const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
   const selectorPayload = JSON.parse(selectorList.stdout);
-  assert.equal(selectorPayload.selectorCount, 2);
-  assert.deepEqual(selectorPayload.selectors.map((selector) => selector.selector), ["bundle:task", "bundle:user"]);
-  assert.match(selectorPayload.selectors[0].previewCommand, /topogram import adopt bundle:task .* --dry-run/);
-  assert.match(selectorPayload.selectors[0].writeCommand, /topogram import adopt bundle:task .* --write/);
+  assert.equal(selectorPayload.selectorCount, 3);
+  assert.deepEqual(selectorPayload.selectors.map((selector) => selector.selector), ["bundle:database", "bundle:task", "bundle:user"]);
+  const taskSelector = selectorPayload.selectors.find((selector) => selector.selector === "bundle:task");
+  assert.match(taskSelector.previewCommand, /topogram import adopt bundle:task .* --dry-run/);
+  assert.match(taskSelector.writeCommand, /topogram import adopt bundle:task .* --write/);
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "from-plan"), true);
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "capabilities"), true);
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "entities"), true);
@@ -698,7 +793,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(statusPayload.import.status, "clean");
   assert.equal(statusPayload.topogram.ok, true);
   assert.equal(statusPayload.adoption.summary.appliedItemCount, 5);
-  assert.equal(statusPayload.adoption.summary.pendingItemCount, 1);
+  assert.equal(statusPayload.adoption.summary.pendingItemCount, 2);
   assert.equal(statusPayload.adoption.bundles.find((bundle) => bundle.bundle === "task").complete, true);
   assert.equal(statusPayload.adoption.history.receiptCount, 1);
   assert.equal(statusPayload.adoption.history.forcedWriteCount, 0);
@@ -707,7 +802,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
   assert.match(humanStatus.stdout, /Import status: clean/);
   assert.match(humanStatus.stdout, /Topogram check: passed/);
-  assert.match(humanStatus.stdout, /Adoption: 5 applied, 1 pending, 0 blocked/);
+  assert.match(humanStatus.stdout, /Adoption: 5 applied, 2 pending, 0 blocked/);
 
   const history = runCli(["import", "history", targetRoot, "--json"]);
   assert.equal(history.status, 0, history.stderr || history.stdout);
@@ -813,6 +908,11 @@ test("brownfield import check reports changed source evidence", () => {
 
 function candidateIds(items) {
   return (items || []).map((item) => item.id_hint).sort();
+}
+
+function dbSeam(summary) {
+  assert.equal(summary.candidates.db.maintained_seams.length, 1);
+  return summary.candidates.db.maintained_seams[0];
 }
 
 function detectionIds(summary) {

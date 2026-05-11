@@ -637,6 +637,7 @@ function mappingSuggestionsForItem(item) {
 }
 
 export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact = null) {
+  const importedMaintainedDbSeams = [...(adoptionPlan?.imported_maintained_db_seams || [])];
   const items = (adoptionPlan?.items || []).map((item) => {
     const currentState = inferCurrentAdoptionState(item);
     const maintainedSeamCandidates = inferMaintainedSeamCandidates({
@@ -656,6 +657,9 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       ui_impacts: [...(item.ui_impacts || [])],
       workflow_impacts: [...(item.workflow_impacts || [])]
     }, maintainedBoundaryArtifact);
+    const importedDbSeamCandidates = ["entity", "enum", "index", "relation", "db"].includes(item.kind) || item.track === "db"
+      ? importedMaintainedDbSeams
+      : [];
     return {
       id: adoptionItemKey(item),
       bundle: item.bundle,
@@ -691,11 +695,57 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       projection_impacts: [...(item.projection_impacts || [])],
       ui_impacts: [...(item.ui_impacts || [])],
       workflow_impacts: [...(item.workflow_impacts || [])],
-      maintained_seam_candidates: maintainedSeamCandidates,
+      maintained_seam_candidates: [...maintainedSeamCandidates, ...importedDbSeamCandidates],
       mapping_suggestions: mappingSuggestionsForItem(item),
       available_actions: ADOPTION_STATE_VOCABULARY
     };
   });
+  const importedDbSeamSurfaces = importedMaintainedDbSeams.map((seam) => ({
+    id: seam.id_hint || seam.seam_id,
+    bundle: "database",
+    item: seam.id_hint || seam.seam_id,
+    kind: seam.kind || "maintained_db_migration_seam",
+    track: "db",
+    source_kind: seam.source_kind || "migration_strategy_inference",
+    source_path: "candidates/app/db/candidates.json",
+    canonical_rel_path: null,
+    related_shapes: [],
+    review_boundary: {
+      automation_class: "review_required",
+      reasons: [
+        "manual_project_config_review",
+        "proposal_only_maintained_db_migration_seam"
+      ]
+    },
+    current_state: "stage",
+    recommended_state: "customize",
+    supported_states: ADOPTION_STATE_VOCABULARY,
+    human_review_required: true,
+    provenance: {
+      bundle: "database",
+      source_path: "candidates/app/db/candidates.json",
+      canonical_rel_path: null
+    },
+    requirements: {
+      related_docs: [],
+      related_capabilities: [],
+      related_shapes: [],
+      related_rules: [],
+      related_workflows: [],
+      blocking_dependencies: []
+    },
+    projection_impacts: [],
+    ui_impacts: [],
+    workflow_impacts: [],
+    maintained_seam_candidates: [seam],
+    mapping_suggestions: [{
+      type: "manual_project_config_review",
+      id: seam.id_hint || seam.seam_id,
+      reason: "Review the inferred database migration strategy before editing topogram.project.json."
+    }],
+    available_actions: ADOPTION_STATE_VOCABULARY
+  }));
+  const proposalSurfaces = [...items, ...importedDbSeamSurfaces];
 
   return {
     type: "agent_adoption_plan",
@@ -708,10 +758,11 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
       non_canonical_adoption_state: "stage"
     },
     approved_review_groups: [...new Set(adoptionPlan?.approved_review_groups || [])].sort(),
-    imported_proposal_surfaces: items,
-    staged_items: items.filter((item) => item.current_state === "stage").map((item) => item.id),
-    accepted_items: items.filter((item) => item.current_state === "accept").map((item) => item.id),
-    rejected_items: items.filter((item) => item.current_state === "reject").map((item) => item.id),
-    requires_human_review: items.filter((item) => item.human_review_required).map((item) => item.id)
+    imported_maintained_db_seam_candidates: importedMaintainedDbSeams,
+    imported_proposal_surfaces: proposalSurfaces,
+    staged_items: proposalSurfaces.filter((item) => item.current_state === "stage").map((item) => item.id),
+    accepted_items: proposalSurfaces.filter((item) => item.current_state === "accept").map((item) => item.id),
+    rejected_items: proposalSurfaces.filter((item) => item.current_state === "reject").map((item) => item.id),
+    requires_human_review: proposalSurfaces.filter((item) => item.human_review_required).map((item) => item.id)
   };
 }

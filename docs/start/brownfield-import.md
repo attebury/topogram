@@ -43,12 +43,19 @@ Important JSON fields:
 
 - `workspaceRoot`: the project-owned workspace folder, normally `topo/`;
 - `candidateCounts`: counts by import surface such as `apiCapabilities`,
-  `uiWidgets`, `cliCommands`, and `cliSurfaces`;
+  `dbMaintainedSeams`, `uiWidgets`, `cliCommands`, and `cliSurfaces`;
 - `nextCommands`: the next review commands Topogram recommends.
 
 Imported Topogram files are project-owned after creation. Edit candidates and
 canonical files freely, but do not hand-edit import provenance or adoption
 receipts.
+
+DB imports may also emit maintained migration seam candidates under
+`topo/candidates/app/db/candidates.json` as `maintained_seams`. These are
+review-only proposals inferred from Prisma, Drizzle, or SQL schema/migration
+evidence. They are carried into `topogram import plan` as a `database` review
+bundle, but import does not edit `topogram.project.json`, schema files, or
+migration files for you.
 
 ## 3. Adopt deliberately
 
@@ -73,6 +80,10 @@ topogram import adopt cli --write
 `bundle:task` is common for API/UI imports. `widgets` promotes only widget
 candidate files and their related event shapes. `bundle:cli` and `cli` are
 common for CLI imports.
+
+For DB seam candidates, review `bundle:database` and manually copy the proposed
+runtime migration block into `topogram.project.json` only after confirming the
+tool, schema path, migration path, snapshot path, and `apply: "never"` policy.
 
 Adoption appends receipts to `.topogram-import-adoptions.jsonl`. Use history to
 audit them:

@@ -81,7 +81,7 @@ export function bestContextBundleForCandidate(bundles, candidate) {
 
 /** @param {ResolvedGraph} graph @param {ImportArtifacts} appImport @param {any} topogramRoot @returns {any} */
 export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
-  const dbCandidates = appImport.candidates.db || { entities: [], enums: [] };
+  const dbCandidates = appImport.candidates.db || { entities: [], enums: [], maintained_seams: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
   const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], widgets: [], shapes: [] };
   const uiWidgetCandidates = uiCandidates.widgets || uiCandidates.components || [];
@@ -150,6 +150,10 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       }
       bundles.delete(`enum_${enumId}`);
     }
+  }
+  for (const seam of dbCandidates.maintained_seams || []) {
+    const bundle = getOrCreateCandidateBundle(bundles, "database", "Database");
+    bundle.maintainedSeams = [...(bundle.maintainedSeams || []), seam];
   }
   for (const entry of apiCandidates.capabilities || []) {
     const matchedCapability = graph ? matchImportedApiCapability(entry, topogramApiCapabilities) : null;
@@ -333,7 +337,8 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.workflows.length > 0 ||
       bundle.verifications.length > 0 ||
       bundle.workflowStates.length > 0 ||
-      bundle.workflowTransitions.length > 0
+      bundle.workflowTransitions.length > 0 ||
+      (bundle.maintainedSeams || []).length > 0
     )
     .map((/** @type {any} */ bundle) => {
       const sortedBundle = {
@@ -353,6 +358,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         verifications: bundle.verifications.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         workflowStates: bundle.workflowStates.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         workflowTransitions: bundle.workflowTransitions.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        maintainedSeams: (bundle.maintainedSeams || []).sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         docs: bundle.docs.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id.localeCompare(b.id))
       };
       const mergeHints = buildBundleMergeHints(sortedBundle, canonicalEntityIds);

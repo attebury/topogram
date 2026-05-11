@@ -110,6 +110,7 @@ export function importCandidateCounts(summary) {
   return {
     dbEntities: candidates.db?.entities?.length || 0,
     dbEnums: candidates.db?.enums?.length || 0,
+    dbMaintainedSeams: candidates.db?.maintained_seams?.length || 0,
     apiCapabilities: candidates.api?.capabilities?.length || 0,
     apiRoutes: candidates.api?.routes?.length || 0,
     uiScreens: candidates.ui?.screens?.length || 0,

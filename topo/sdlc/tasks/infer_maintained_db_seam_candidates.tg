@@ -1,0 +1,14 @@
+task task_infer_maintained_db_seam_candidates {
+  name "Infer Maintained Db Seam Candidates"
+  description "Infer review-only maintained database migration seam candidates during brownfield import for Prisma, Drizzle, and SQL apps."
+  satisfies [req_import_maintained_seam_candidates]
+  acceptance_refs [ac_import_maintained_db_seams_reviewable]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}
