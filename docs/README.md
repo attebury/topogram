@@ -1,13 +1,38 @@
-# Docs
+# Topogram Docs
 
-These docs cover first use only.
+These docs are organized by audience. Historical docs were archived to
+`topogram-project` on 2026-05-11 and are not the current source of truth.
 
-- [Fresh Install](./fresh-install.md) - install from npmjs, create a starter, and compile the generated app
-- [Agent First Run](./agent-first-run.md) - what a new agent should read, run, and edit first
-- [Overview](./overview.md) - what Topogram does right now
-- [Product Workflow](./product-workflow.md) - the current author-generate-verify loop
-- [Brownfield Import](./import.md) - create editable Topogram candidates from an existing app
-- [Generator Packs](./generator-packs.md) - how contracts, manifests, topology, and stack generators fit together
-- [Testing Strategy](./testing-strategy.md) - engine, package, and consumer checks
-- [Known-Good Release Matrix](./release-matrix.md) - dated npmjs/catalog/demo compatibility audit
-- [Topogram Workspace Layout](./topogram-workspace-layout.md) - what is source, generated, or fixture
+## I Want To...
+
+| Goal | Start Here |
+| --- | --- |
+| Generate a new app | [Greenfield Generate](./start/greenfield-generate.md) |
+| Import an existing app | [Brownfield Import](./start/brownfield-import.md) |
+| Work as an agent | [Agent First Run](./agent-first-run.md) |
+| Understand the model | [Topogram Model](./concepts/topogram-model.md) |
+| Understand `topo/` ownership | [Topo Workspace](./concepts/topo-workspace.md) |
+| Choose between `generate` and `emit` | [Generate vs Emit](./concepts/generate-vs-emit.md) |
+| Author templates | [Template Authoring](./authoring/templates.md) |
+| Author generator packages | [Generator Packs](./authoring/generator-packs.md) |
+| Maintain this repo | [Engine Development](./maintainers/engine-development.md) |
+
+## Reference
+
+- [CLI Reference](./reference/cli.md)
+- [DSL Reference](./reference/dsl.md)
+- [Project Config](./reference/project-config.md)
+- [Import JSON](./reference/import-json.md)
+- [Widgets](./widgets.md)
+- [SDLC](./concepts/sdlc.md)
+
+## Current Terms
+
+- Workspace folder: `topo/`
+- Project config: `topogram.project.json`
+- Reusable UI contract: `widget`
+- App output command: `topogram generate`
+- Artifact command: `topogram emit`
+- Topology entries: `topology.runtimes`
+- Runtime kinds: `web_surface`, `api_service`, `database`, `ios_surface`,
+  `android_surface`

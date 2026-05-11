@@ -1,0 +1,6 @@
+acceptance_criterion ac_docs_reset_current_workflows {
+  name "Docs Reset Current Workflows"
+  description "The live docs should provide current-code workflow pages for greenfield generation, brownfield import, agent-first work, model concepts, CLI reference, DSL reference, template authoring, generator packs, and maintainer testing/release guidance."
+  requirement req_docs_are_current_and_audience_oriented
+  status draft
+}

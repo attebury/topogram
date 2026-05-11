@@ -364,5 +364,14 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_rewrite_current_docs": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T14:23:08.736Z",
+      "by": null,
+      "note": null
+    }
   ]
 }

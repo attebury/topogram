@@ -7,10 +7,10 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 1. `README.md`
 2. `docs/README.md`
 3. `docs/agent-first-run.md`
-4. `docs/generator-packs.md`
+4. `docs/concepts/topogram-model.md`
 5. `docs/widgets.md`
-6. `docs/testing-strategy.md`
-7. `docs/releasing.md`
+6. `docs/maintainers/testing.md`
+7. `docs/maintainers/releasing.md`
 8. `topogram-project/project/program/operating-laws.md` and `topogram-project/project/program/hardening-plan.md`
 
 ## Laws

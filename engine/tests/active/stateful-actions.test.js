@@ -167,7 +167,7 @@ test("docs name command-owned state surfaces and their commands", () => {
     "topogram import history --verify",
     "topogram generate",
     "topogram emit --write",
-    "topogram release:status"
+    "topogram release status"
   ]) {
     assert.match(sdlcDocs, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }

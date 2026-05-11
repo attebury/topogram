@@ -1,0 +1,8 @@
+requirement req_docs_are_current_and_audience_oriented {
+  name "Docs Are Current And Audience Oriented"
+  description "Topogram documentation should be rebuilt from current CLI and engine behavior, with separate paths for greenfield generation, brownfield import, agent-first work, authoring, and maintainer workflows."
+  affects [cap_brief_agent, cap_create_project, cap_import_brownfield_app, cap_generate_app_outputs, cap_query_context]
+  domain dom_engine_quality
+  priority high
+  status draft
+}

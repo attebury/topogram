@@ -67,3 +67,13 @@ verification verification_sdlc_enforcement {
   domain dom_sdlc_query_agent_context
   status active
 }
+
+verification verification_docs_current_workflow_review {
+  name "Current Documentation Workflow Review"
+  description "Confirms the rewritten docs are based on current CLI behavior, preserve agent/widget command coverage, and separate user, authoring, and maintainer audiences."
+  validates [cap_brief_agent, cap_create_project, cap_import_brownfield_app, cap_generate_app_outputs, cap_query_context]
+  method contract
+  scenarios [docs_rewrite_archive_and_current_workflow_review]
+  domain dom_engine_quality
+  status active
+}

@@ -1,0 +1,14 @@
+task task_rewrite_current_docs {
+  name "Rewrite Current Documentation"
+  description "Archive historical docs to topogram-project and replace live Topogram docs with current-code, audience-oriented documentation."
+  satisfies [req_docs_are_current_and_audience_oriented]
+  acceptance_refs [ac_docs_reset_current_workflows]
+  verification_refs [verification_docs_current_workflow_review]
+  affects [cap_brief_agent, cap_create_project, cap_import_brownfield_app, cap_generate_app_outputs, cap_query_context]
+  domain dom_engine_quality
+  priority high
+  work_type documentation
+  claimed_by actor_coding_agent
+  disposition active
+  status done
+}
