@@ -1,0 +1,41 @@
+actor actor_maintainer {
+  name "Maintainer"
+  description "Human responsible for shaping, reviewing, releasing, and maintaining Topogram."
+  status active
+}
+
+actor actor_coding_agent {
+  name "Coding Agent"
+  description "AI agent making scoped code, docs, import, and release changes under repo laws."
+  status active
+}
+
+actor actor_consumer_developer {
+  name "Consumer Developer"
+  description "Developer using Topogram CLI, templates, catalog, generators, and generated or maintained outputs."
+  status active
+}
+
+actor actor_generator_author {
+  name "Generator Author"
+  description "Developer publishing package-backed generator packs that consume normalized contracts."
+  status active
+}
+
+actor actor_release_manager {
+  name "Release Manager"
+  description "Human or agent coordinating npm package releases and first-party consumer rollout."
+  status active
+}
+
+role role_engine_reviewer {
+  name "Engine Reviewer"
+  description "Review role focused on consumer value, security, test quality, and maintainable boundaries."
+  status active
+}
+
+role role_template_author {
+  name "Template Author"
+  description "Authoring role for template packages that compose generators and optional implementation providers."
+  status active
+}

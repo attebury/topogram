@@ -1,0 +1,13 @@
+{
+  "version": "0.1",
+  "workspace": "./topo",
+  "outputs": {
+    "engine": {
+      "path": ".",
+      "ownership": "maintained"
+    }
+  },
+  "topology": {
+    "runtimes": []
+  }
+}

@@ -1,0 +1,79 @@
+rule rule_spec_is_source_of_truth {
+  name "Spec Is Source of Truth"
+  description "Engine behavior must not hardcode generated output around a demo, fixture product, framework quirk, or test convenience."
+  applies_to [cap_validate_workspace, cap_generate_app_outputs, cap_import_brownfield_app]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_engine_quality
+  status active
+}
+
+rule rule_tests_prove_consumer_value {
+  name "Tests Prove Consumer Value"
+  description "Tests must prove behavior a Topogram consumer or agent relies on; generated outputs should be installed, checked, compiled, or run where practical."
+  applies_to [cap_run_engine_gates, cap_generate_app_outputs, cap_manage_generators]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_engine_quality
+  status active
+}
+
+rule rule_maintainable_security_focused_code {
+  name "Maintainable Security Focused Code"
+  description "Code must be organized, maintainable, tested, testable, and explicit about unsafe inputs, trust boundaries, credentials, and generated output escaping."
+  applies_to [cap_run_engine_gates, cap_import_brownfield_app, cap_manage_templates, cap_manage_catalog]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_engine_quality
+  status active
+}
+
+rule rule_docs_must_execute {
+  name "Docs Must Execute"
+  description "Documented command shapes need regression coverage or a clear reason they cannot execute."
+  applies_to [cap_validate_workspace, cap_emit_artifacts, cap_manage_sdlc_records]
+  severity warning
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_engine_quality
+  status active
+}
+
+rule rule_generated_and_maintained_ownership_differ {
+  name "Generated and Maintained Ownership Differ"
+  description "Generated outputs can be replaced only through generated ownership; maintained paths are never overwritten by generators."
+  applies_to [cap_generate_app_outputs, cap_adopt_import_candidates]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_workspace_project_config
+  status active
+}
+
+rule rule_template_implementation_is_executable {
+  name "Template Implementation Is Executable"
+  description "Template implementation code requires explicit trust checks and reviewable hashes before generation can execute it."
+  applies_to [cap_create_project, cap_manage_templates]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_catalog_templates
+  status active
+}
+
+rule rule_generators_own_stack_realization {
+  name "Generators Own Stack Realization"
+  description "Topogram core owns contracts, topology, validation, trust, catalog/template lifecycle, and output ownership; generator packages own stack realization."
+  applies_to [cap_manage_generators, cap_generate_app_outputs]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  domain dom_generator_runtime
+  status active
+}
+
+rule rule_agents_start_with_focused_context {
+  name "Agents Start with Focused Context"
+  description "Agents start with agent brief and focused query packets before editing broad source surfaces."
+  applies_to [cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
+  severity warning
+  source_of_truth [decision_agent_first_run_is_required]
+  domain dom_sdlc_query_agent_context
+  status active
+}

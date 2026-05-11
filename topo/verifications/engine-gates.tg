@@ -1,0 +1,59 @@
+verification verification_cli_surface_dsl {
+  name "CLI Surface DSL Tests"
+  description "Validates cli_surface projection parsing, validation failures, and resolver exposure."
+  validates [cap_validate_workspace, cap_import_brownfield_app]
+  method contract
+  scenarios [engine_tests_active_cli_surface]
+  domain dom_cli
+  status active
+}
+
+verification verification_import_fixtures {
+  name "Import Fixture Tests"
+  description "Validates DB, API, UI, CLI, reconcile, adoption, refresh, provenance, and topo workspace import behavior."
+  validates [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  method contract
+  scenarios [engine_tests_active_import_fixtures]
+  domain dom_import_adoption
+  status active
+}
+
+verification verification_engine_gate {
+  name "Engine Verification Gate"
+  description "Runs the required engine verification script before release or broad changes."
+  validates [cap_run_engine_gates, cap_validate_workspace]
+  method runtime
+  scenarios [scripts_verify_engine]
+  domain dom_engine_quality
+  status active
+}
+
+verification verification_cli_package_smoke {
+  name "CLI Package Smoke"
+  description "Packs and installs the CLI as a consumer would, then runs new/check/generate package smoke."
+  validates [cap_create_project, cap_generate_app_outputs, cap_run_engine_gates]
+  method runtime
+  scenarios [scripts_verify_cli_package]
+  domain dom_release_consumer_proof
+  status active
+}
+
+verification verification_release_status_strict {
+  name "Release Status Strict"
+  description "Checks first-party packages, catalog, templates, generators, and release matrix before declaring a release current."
+  validates [cap_verify_release_status, cap_roll_consumer_packages]
+  method runtime
+  scenarios [release_status_strict]
+  domain dom_release_consumer_proof
+  status active
+}
+
+verification verification_dogfood_topo_workspace {
+  name "Dogfood Topo Workspace"
+  description "Validates this maintained engine Topogram, agent brief output, SDLC strict checks, and representative query packets."
+  validates [cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
+  method runtime
+  scenarios [topogram_check_agent_brief_sdlc_query]
+  domain dom_sdlc_query_agent_context
+  status active
+}

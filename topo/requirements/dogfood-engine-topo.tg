@@ -1,0 +1,31 @@
+requirement req_engine_topo_code_derived {
+  name "Engine Topo Is Code Derived"
+  description "The initial maintained engine topo must be derived from current repo code, tests, docs, scripts, workflows, package manifests, CLI help, AGENTS.md, and CONTRIBUTING.md."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_import_brownfield_app, cap_brief_agent, cap_query_context]
+  introduces_rules [rule_spec_is_source_of_truth]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status draft
+}
+
+requirement req_history_drift_review_required {
+  name "History Drift Review Required"
+  description "After the code-derived topo validates, topogram-project must be compared and every major drift item must be categorized explicitly."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records, cap_run_engine_gates]
+  introduces_rules [rule_docs_must_execute]
+  domain dom_engine_quality
+  priority high
+  status draft
+}
+
+requirement req_cli_import_precision_followup {
+  name "CLI Import Precision Follow-Up"
+  description "The CLI importer should distinguish public command help from incidental source strings before it is used for broad unattended adoption."
+  pitch pitch_improve_cli_import_precision
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
+  domain dom_import_adoption
+  priority medium
+  status draft
+}
