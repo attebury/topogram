@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_74_release_published {
+  name "Cli 0 3 74 Release Published"
+  description "Given release rollout UX changes on main, when the Topogram CLI 0.3.74 patch is prepared, published, smoke-tested, and rolled to first-party consumers, then strict release status is green and release evidence is refreshed."
+  requirement req_stateful_actions_use_cli
+  status approved
+}

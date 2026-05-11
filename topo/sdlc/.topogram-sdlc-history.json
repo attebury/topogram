@@ -414,5 +414,14 @@
       "by": "actor_coding_agent",
       "note": "Explicit no-watch rollout flag verified with focused rollout tests and topo checks."
     }
+  ],
+  "task_release_cli_0_3_74": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T16:41:03.654Z",
+      "by": "actor_coding_agent",
+      "note": "Preparing and publishing @topogram/cli 0.3.74."
+    }
   ]
 }
