@@ -7,9 +7,9 @@ plan plan_db_migration_ownership_model {
   outcome "Expected output is a concrete model recommendation and follow-up implementation tasks, not an immediate broad rewrite."
   steps {
     step inspect_current_state status done description "Inspect current DB emit/generate behavior, ownership rules, and lifecycle bundles."
-    step define_model_slice status in-progress description "Define the minimal topology/config and artifact model for generated and maintained DB migrations."
-    step identify_followups status pending description "Decide which engine/docs/tests should become implementation tasks after the model is accepted."
-    step verify_records status pending description "Run Topogram and SDLC checks for the new records and focused agent packet."
+    step define_model_slice status done description "Define the minimal topology/config and artifact model for generated and maintained DB migrations."
+    step identify_followups status done description "Decide which engine/docs/tests should become implementation tasks after the model is accepted."
+    step verify_records status done description "Run Topogram and SDLC checks for the new records and focused agent packet."
   }
   status draft
 }

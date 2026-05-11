@@ -50,3 +50,68 @@ References:
 - `uses_database` links API services to a database runtime.
 
 Each runtime can bind a package-backed or bundled generator.
+
+## Database Migrations
+
+Database runtimes can declare an optional `migration` strategy. This makes the
+database ownership boundary explicit without changing the stack-neutral
+`db_contract`.
+
+Generated database runtime:
+
+```json
+{
+  "id": "main_db",
+  "kind": "database",
+  "projection": "proj_db",
+  "generator": {
+    "id": "@topogram/generator-postgres-db",
+    "version": "1",
+    "package": "@topogram/generator-postgres-db"
+  },
+  "migration": {
+    "ownership": "generated",
+    "tool": "sql",
+    "statePath": "app/db/main_db/state",
+    "apply": "script"
+  }
+}
+```
+
+Maintained Prisma runtime:
+
+```json
+{
+  "id": "main_db",
+  "kind": "database",
+  "projection": "proj_db",
+  "generator": {
+    "id": "@topogram/generator-postgres-db",
+    "version": "1",
+    "package": "@topogram/generator-postgres-db"
+  },
+  "migration": {
+    "ownership": "maintained",
+    "tool": "prisma",
+    "schemaPath": "apps/api/prisma/schema.prisma",
+    "migrationsPath": "apps/api/prisma/migrations",
+    "snapshotPath": "topo/state/db/main_db/current.snapshot.json",
+    "apply": "never"
+  }
+}
+```
+
+Rules:
+
+- `ownership` is `generated` or `maintained`.
+- `tool` is `sql`, `prisma`, or `drizzle`.
+- generated migrations require `statePath` and `apply: "script"`.
+- maintained migrations require `snapshotPath` and `apply: "never"`.
+- maintained Prisma and Drizzle workflows require `schemaPath` and
+  `migrationsPath`.
+- maintained SQL workflows require `migrationsPath`.
+- paths are project-relative and cannot escape the project root.
+
+In maintained mode, Topogram emits snapshots, plans, SQL proposals, and
+Prisma/Drizzle schema proposals. The maintained app owns its schema files,
+migration directory, and migration runner.

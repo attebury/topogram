@@ -501,6 +501,94 @@ test("project config validation allows optional api database and web api referen
   assert.equal(result.ok, true);
 });
 
+test("project config validation supports database migration ownership strategies", () => {
+  const graph = appBasicGraph();
+  const maintained = appBasicProjectConfig();
+  maintained.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "maintained",
+    tool: "prisma",
+    schemaPath: "apps/api/prisma/schema.prisma",
+    migrationsPath: "apps/api/prisma/migrations",
+    snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+    apply: "never"
+  };
+
+  const generated = appBasicProjectConfig();
+  generated.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "generated",
+    tool: "sql",
+    statePath: "app/db/app_postgres/state",
+    apply: "script"
+  };
+
+  assert.equal(validateProjectConfig(maintained, graph).ok, true);
+  assert.equal(validateProjectConfig(generated, graph).ok, true);
+});
+
+test("project config validation rejects invalid database migration ownership strategies", () => {
+  const graph = appBasicGraph();
+  const nonDatabase = appBasicProjectConfig();
+  nonDatabase.topology.runtimes.find((runtime) => runtime.id === "app_api").migration = {
+    ownership: "generated",
+    tool: "sql",
+    statePath: "app/db/app_api/state",
+    apply: "script"
+  };
+
+  const invalid = appBasicProjectConfig();
+  invalid.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "maintained",
+    tool: "prisma",
+    schemaPath: "../schema.prisma",
+    apply: "script"
+  };
+
+  const nonDatabaseResult = validateProjectConfig(nonDatabase, graph);
+  const invalidResult = validateProjectConfig(invalid, graph);
+  const invalidMessages = invalidResult.errors.map((error) => error.message).join("\n");
+
+  assert.equal(nonDatabaseResult.ok, false);
+  assert.match(nonDatabaseResult.errors.map((error) => error.message).join("\n"), /migration is only supported on database runtimes/);
+  assert.equal(invalidResult.ok, false);
+  assert.match(invalidMessages, /maintained migration.apply must be never/);
+  assert.match(invalidMessages, /migration.schemaPath must be a non-empty relative path/);
+  assert.match(invalidMessages, /maintained migration requires snapshotPath/);
+  assert.match(invalidMessages, /maintained prisma migration requires migrationsPath/);
+});
+
+test("topogram check reports database migration strategy in JSON topology", () => {
+  const { root, topogramRoot } = copyFixtureTopogram();
+  try {
+    const projectConfigPath = path.join(topogramRoot, "topogram.project.json");
+    const config = readJson(projectConfigPath);
+    config.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+      ownership: "maintained",
+      tool: "drizzle",
+      schemaPath: "apps/api/src/db/schema.ts",
+      migrationsPath: "apps/api/drizzle",
+      snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+      apply: "never"
+    };
+    writeJson(projectConfigPath, config);
+
+    const result = runCli(["check", topogramRoot, "--json"]);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const payload = JSON.parse(result.stdout);
+    const runtime = payload.project.resolvedTopology.runtimes.find((entry) => entry.id === "app_postgres");
+    assert.deepEqual(runtime.migration, {
+      ownership: "maintained",
+      tool: "drizzle",
+      apply: "never",
+      statePath: null,
+      snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+      schemaPath: "apps/api/src/db/schema.ts",
+      migrationsPath: "apps/api/drizzle"
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("project config validation catches incompatible and planned generators", () => {
   const graph = appBasicGraph();
   const incompatible = appBasicProjectConfig();

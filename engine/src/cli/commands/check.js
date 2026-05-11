@@ -80,6 +80,17 @@ function summarizeProjectTopology(config) {
         version: component.generator?.version || null
       },
       port: topologyComponentPort(component),
+      migration: component.kind === "database" && component.migration
+        ? {
+            ownership: component.migration.ownership || null,
+            tool: component.migration.tool || null,
+            apply: component.migration.apply || null,
+            statePath: component.migration.statePath || null,
+            snapshotPath: component.migration.snapshotPath || null,
+            schemaPath: component.migration.schemaPath || null,
+            migrationsPath: component.migration.migrationsPath || null
+          }
+        : null,
       references: topologyComponentReferences(component)
     }))
     .sort((left, right) => left.id.localeCompare(right.id));
@@ -136,7 +147,10 @@ function formatTopologyComponent(component) {
     .filter(([, value]) => Boolean(value))
     .map(([key, value]) => `${key} ${value}`);
   const suffix = refs.length ? ` -> ${refs.join(", ")}` : "";
-  return `  - ${component.id}: ${component.kind} ${component.projection} via ${generator} (${port})${suffix}`;
+  const migration = component.migration
+    ? ` [migration ${component.migration.ownership}/${component.migration.tool}, apply=${component.migration.apply}]`
+    : "";
+  return `  - ${component.id}: ${component.kind} ${component.projection} via ${generator} (${port})${suffix}${migration}`;
 }
 
 /**

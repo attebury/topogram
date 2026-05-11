@@ -19,6 +19,17 @@ import { DEFAULT_WORKSPACE_PATH, normalizeWorkspaceConfigPath } from "../workspa
  */
 
 /**
+ * @typedef {Object} RuntimeMigrationStrategy
+ * @property {"generated"|"maintained"} ownership
+ * @property {"sql"|"prisma"|"drizzle"} tool
+ * @property {"never"|"script"} apply
+ * @property {string} [statePath]
+ * @property {string} [snapshotPath]
+ * @property {string} [schemaPath]
+ * @property {string} [migrationsPath]
+ */
+
+/**
  * @typedef {Object} RuntimeTopologyRuntime
  * @property {string} id
  * @property {"api_service"|"web_surface"|"ios_surface"|"android_surface"|"database"} kind
@@ -28,6 +39,7 @@ import { DEFAULT_WORKSPACE_PATH, normalizeWorkspaceConfigPath } from "../workspa
  * @property {string} [uses_api]
  * @property {string} [uses_database]
  * @property {Record<string, string>} [env]
+ * @property {RuntimeMigrationStrategy} [migration]
  */
 
 /**
@@ -58,6 +70,10 @@ const PROJECT_CONFIG_FILE = "topogram.project.json";
 const LEGACY_IMPLEMENTATION_FILE = "topogram.implementation.json";
 const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 const IDENTIFIER_PATTERN = /^[a-z][a-z0-9_]*$/;
+const MIGRATION_OWNERSHIPS = new Set(["generated", "maintained"]);
+const MIGRATION_TOOLS = new Set(["sql", "prisma", "drizzle"]);
+const MIGRATION_APPLY_MODES = new Set(["never", "script"]);
+const MIGRATION_PATH_FIELDS = ["statePath", "snapshotPath", "schemaPath", "migrationsPath"];
 
 /**
  * @param {string|null|undefined} root
@@ -250,6 +266,21 @@ function validateWorkspaceConfig(errors, config) {
 }
 
 /**
+ * @param {string} value
+ * @returns {boolean}
+ */
+function isProjectRelativePath(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return false;
+  }
+  if (path.isAbsolute(value)) {
+    return false;
+  }
+  const normalized = path.posix.normalize(value.replace(/\\/g, "/"));
+  return normalized !== ".." && !normalized.startsWith("../");
+}
+
+/**
  * @param {string} root
  * @returns {ProjectConfigInfo|null}
  */
@@ -388,7 +419,73 @@ function validateRuntimeShape(errors, runtime, seenIds) {
   if (runtime.port != null && (!Number.isInteger(runtime.port) || runtime.port <= 0 || runtime.port > 65535)) {
     pushError(errors, `${runtimeLabel(runtime)} port must be an integer from 1 to 65535`);
   }
+  validateRuntimeMigrationStrategy(errors, runtime);
   return true;
+}
+
+/**
+ * @param {ValidationError[]} errors
+ * @param {any} runtime
+ * @returns {void}
+ */
+function validateRuntimeMigrationStrategy(errors, runtime) {
+  if (runtime.migration == null) {
+    return;
+  }
+  if (runtime.kind !== "database") {
+    pushError(errors, `${runtimeLabel(runtime)} migration is only supported on database runtimes`);
+    return;
+  }
+  const migration = runtime.migration;
+  if (!migration || typeof migration !== "object" || Array.isArray(migration)) {
+    pushError(errors, `${runtimeLabel(runtime)} migration must be an object`);
+    return;
+  }
+  if (!MIGRATION_OWNERSHIPS.has(migration.ownership)) {
+    pushError(errors, `${runtimeLabel(runtime)} migration.ownership must be generated or maintained`);
+  }
+  if (!MIGRATION_TOOLS.has(migration.tool)) {
+    pushError(errors, `${runtimeLabel(runtime)} migration.tool must be sql, prisma, or drizzle`);
+  }
+  if (!MIGRATION_APPLY_MODES.has(migration.apply)) {
+    pushError(errors, `${runtimeLabel(runtime)} migration.apply must be never or script`);
+  }
+  if (migration.ownership === "maintained" && migration.apply !== "never") {
+    pushError(errors, `${runtimeLabel(runtime)} maintained migration.apply must be never`);
+  }
+  if (migration.ownership === "generated" && migration.apply !== "script") {
+    pushError(errors, `${runtimeLabel(runtime)} generated migration.apply must be script`);
+  }
+  for (const field of MIGRATION_PATH_FIELDS) {
+    if (migration[field] != null && !isProjectRelativePath(migration[field])) {
+      pushError(errors, `${runtimeLabel(runtime)} migration.${field} must be a non-empty relative path that stays inside the project root`);
+    }
+  }
+  if (migration.ownership === "generated" && typeof migration.statePath !== "string") {
+    pushError(errors, `${runtimeLabel(runtime)} generated migration requires statePath`);
+  }
+  if (migration.ownership === "maintained" && typeof migration.snapshotPath !== "string") {
+    pushError(errors, `${runtimeLabel(runtime)} maintained migration requires snapshotPath`);
+  }
+  if (migration.ownership === "maintained" && migration.tool === "prisma") {
+    if (typeof migration.schemaPath !== "string") {
+      pushError(errors, `${runtimeLabel(runtime)} maintained prisma migration requires schemaPath`);
+    }
+    if (typeof migration.migrationsPath !== "string") {
+      pushError(errors, `${runtimeLabel(runtime)} maintained prisma migration requires migrationsPath`);
+    }
+  }
+  if (migration.ownership === "maintained" && migration.tool === "drizzle") {
+    if (typeof migration.schemaPath !== "string") {
+      pushError(errors, `${runtimeLabel(runtime)} maintained drizzle migration requires schemaPath`);
+    }
+    if (typeof migration.migrationsPath !== "string") {
+      pushError(errors, `${runtimeLabel(runtime)} maintained drizzle migration requires migrationsPath`);
+    }
+  }
+  if (migration.ownership === "maintained" && migration.tool === "sql" && typeof migration.migrationsPath !== "string") {
+    pushError(errors, `${runtimeLabel(runtime)} maintained sql migration requires migrationsPath`);
+  }
 }
 
 /**

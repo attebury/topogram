@@ -1,0 +1,13 @@
+task task_wire_db_migration_strategy_lifecycle {
+  name "Wire Database Migration Strategy Into Lifecycle"
+  description "Use database runtime migration strategy to shape generated DB lifecycle plans and maintained proposal guidance."
+  satisfies [req_db_migration_ownership_model]
+  acceptance_refs [ac_db_migration_ownership_model_defined]
+  verification_refs [verification_cli_package_smoke, verification_engine_gate]
+  affects [cap_generate_app_outputs, cap_emit_artifacts, cap_manage_generators]
+  blocked_by [task_model_db_migration_ownership]
+  disposition follow_up
+  priority medium
+  work_type implementation
+  status unclaimed
+}

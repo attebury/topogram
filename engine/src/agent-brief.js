@@ -31,7 +31,8 @@ import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot, resolveWorkspaceContext } fr
  * @typedef {{ command: string, reason: string, phase: string }} AgentBriefCommand
  * @typedef {{ path: string, ownership: string, rule: string }} AgentBriefOutputBoundary
  * @typedef {{ id: string, title: string, commands: string[], rule: string }} AgentBriefWorkflow
- * @typedef {{ id: string, kind: string, projection: string|null, generator: string|null, uses_api: string|null, uses_database: string|null }} AgentBriefRuntime
+ * @typedef {{ ownership: string|null, tool: string|null, apply: string|null, statePath: string|null, snapshotPath: string|null, schemaPath: string|null, migrationsPath: string|null }} AgentBriefMigration
+ * @typedef {{ id: string, kind: string, projection: string|null, generator: string|null, uses_api: string|null, uses_database: string|null, migration: AgentBriefMigration|null }} AgentBriefRuntime
  * @typedef {{ path: string, workspaceRoot: string, source: string|null, tracks: string[], candidateCounts: Record<string, any>, ownership: string|null }} AgentBriefImport
  * @typedef {{ ok: true, payload: Record<string, any> } | { ok: false, kind: "topogram", validation: any } | { ok: false, kind: "project", validation: any, configPath: string }} AgentBriefResult
  */
@@ -103,7 +104,18 @@ function summarizeRuntimes(config) {
     projection: typeof runtime.projection === "string" ? runtime.projection : null,
     generator: typeof runtime.generator?.id === "string" ? runtime.generator.id : null,
     uses_api: typeof runtime.uses_api === "string" ? runtime.uses_api : null,
-    uses_database: typeof runtime.uses_database === "string" ? runtime.uses_database : null
+    uses_database: typeof runtime.uses_database === "string" ? runtime.uses_database : null,
+    migration: runtime.kind === "database" && runtime.migration
+      ? {
+          ownership: typeof runtime.migration.ownership === "string" ? runtime.migration.ownership : null,
+          tool: typeof runtime.migration.tool === "string" ? runtime.migration.tool : null,
+          apply: typeof runtime.migration.apply === "string" ? runtime.migration.apply : null,
+          statePath: typeof runtime.migration.statePath === "string" ? runtime.migration.statePath : null,
+          snapshotPath: typeof runtime.migration.snapshotPath === "string" ? runtime.migration.snapshotPath : null,
+          schemaPath: typeof runtime.migration.schemaPath === "string" ? runtime.migration.schemaPath : null,
+          migrationsPath: typeof runtime.migration.migrationsPath === "string" ? runtime.migration.migrationsPath : null
+        }
+      : null
   }));
 }
 
@@ -495,7 +507,10 @@ export function formatAgentBrief(brief) {
       runtime.uses_api ? `uses_api=${runtime.uses_api}` : null,
       runtime.uses_database ? `uses_database=${runtime.uses_database}` : null
     ].filter(Boolean).join(", ");
-    lines.push(`  - ${runtime.id}: ${runtime.kind}${runtime.projection ? ` -> ${runtime.projection}` : ""}${runtime.generator ? ` via ${runtime.generator}` : ""}${edges ? ` (${edges})` : ""}`);
+    const migration = runtime.migration
+      ? ` migration=${runtime.migration.ownership}/${runtime.migration.tool} apply=${runtime.migration.apply}`
+      : "";
+    lines.push(`  - ${runtime.id}: ${runtime.kind}${runtime.projection ? ` -> ${runtime.projection}` : ""}${runtime.generator ? ` via ${runtime.generator}` : ""}${edges ? ` (${edges})` : ""}${migration}`);
   }
   if ((brief.topology?.runtimes || []).length === 0) {
     lines.push("  - No topology runtimes configured.");
