@@ -16,6 +16,7 @@
     "sdlc:prep": "node ./engine/src/cli.js sdlc prep commit .",
     "sdlc:gate": "node ./engine/src/cli.js sdlc gate . --require-adopted",
     "sdlc:release-notes": "node ./engine/src/cli.js release . --app-version unreleased --dry-run",
+    "docs:check": "node ./scripts/verify-docs.mjs",
     "check": "npm --prefix ./engine run check",
     "test": "npm --prefix ./engine test",
     "engine:install": "npm --prefix ./engine install",

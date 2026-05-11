@@ -70,6 +70,7 @@ topogram trust status
 topogram trust diff
 topogram trust template
 topogram template policy check
+topogram generator list
 topogram generator policy check
 topogram sdlc policy explain
 ```

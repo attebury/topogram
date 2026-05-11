@@ -16,6 +16,7 @@ These docs are organized by audience. Historical docs were archived to
 | Author templates | [Template Authoring](./authoring/templates.md) |
 | Author generator packages | [Generator Packs](./authoring/generator-packs.md) |
 | Maintain this repo | [Engine Development](./maintainers/engine-development.md) |
+| Maintain docs | [Documentation Maintenance](./maintainers/docs.md) |
 
 ## Reference
 
