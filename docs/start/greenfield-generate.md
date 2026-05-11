@@ -29,6 +29,11 @@ npm run generator:policy:check
 npm run query:list
 ```
 
+`source:status` may report no pure Topogram source provenance for projects
+created from templates. For template-created projects, `template:explain`,
+`template:status`, and trust commands are the relevant template lifecycle
+surfaces.
+
 Read:
 
 1. `AGENTS.md`

@@ -29,6 +29,7 @@ topogram import check
 topogram import diff
 topogram import plan
 topogram import adopt --list
+topogram query import-plan ./topo --json
 ```
 
 Import writes:
@@ -37,6 +38,13 @@ Import writes:
 - `topo/candidates/reconcile/**` for proposal bundles;
 - `topogram.project.json` with maintained ownership;
 - `.topogram-import.json` with source hashes from import time.
+
+Important JSON fields:
+
+- `workspaceRoot`: the project-owned workspace folder, normally `topo/`;
+- `candidateCounts`: counts by import surface such as `apiCapabilities`,
+  `uiWidgets`, `cliCommands`, and `cliSurfaces`;
+- `nextCommands`: the next review commands Topogram recommends.
 
 Imported Topogram files are project-owned after creation. Edit candidates and
 canonical files freely, but do not hand-edit import provenance or adoption
@@ -49,6 +57,8 @@ Preview first:
 ```bash
 topogram import adopt bundle:task --dry-run
 topogram import adopt widgets --dry-run
+topogram import adopt bundle:cli --dry-run
+topogram import adopt cli --dry-run
 ```
 
 Write only after review:
@@ -56,7 +66,13 @@ Write only after review:
 ```bash
 topogram import adopt bundle:task --write
 topogram import adopt widgets --write
+topogram import adopt bundle:cli --write
+topogram import adopt cli --write
 ```
+
+`bundle:task` is common for API/UI imports. `widgets` promotes only widget
+candidate files and their related event shapes. `bundle:cli` and `cli` are
+common for CLI imports.
 
 Adoption appends receipts to `.topogram-import-adoptions.jsonl`. Use history to
 audit them:

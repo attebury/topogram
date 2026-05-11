@@ -26,6 +26,19 @@ package lifecycle scripts. If a template includes executable `implementation/`
 code, the generated project records trust metadata. Generation can be blocked
 until that implementation is reviewed and trusted.
 
+Template-created projects use template metadata, not pure Topogram source
+provenance. Use:
+
+```bash
+topogram template explain
+topogram template status
+topogram trust status
+```
+
+Generated projects may contain `.topogram-template-files.json` as the reviewed
+template baseline. They normally do not contain `.topogram-source.json`; that
+file belongs to pure Topogram catalog copies.
+
 ## Copy a pure Topogram
 
 ```bash
@@ -36,7 +49,9 @@ topogram check
 ```
 
 Pure Topogram packages contain source for editing. They do not contain
-executable `implementation/` code.
+executable `implementation/` code. `catalog copy` records `.topogram-source.json`
+so `topogram source status --local` can compare the copied files against their
+catalog package source.
 
 ## Health
 

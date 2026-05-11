@@ -1,0 +1,14 @@
+task task_harden_docs_walkthroughs {
+  name "Harden Docs Walkthroughs"
+  description "Tighten brownfield import, agent first-run, and template/catalog docs so public walkthroughs match current CLI behavior before publishing the next CLI package."
+  satisfies [req_docs_are_current_and_audience_oriented]
+  acceptance_refs [ac_docs_reset_current_workflows]
+  verification_refs [verification_docs_current_workflow_review]
+  affects [cap_brief_agent, cap_import_brownfield_app, cap_query_context]
+  domain dom_engine_quality
+  priority high
+  work_type documentation
+  claimed_by actor_coding_agent
+  disposition active
+  status done
+}

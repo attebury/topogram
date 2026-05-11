@@ -21,5 +21,8 @@ npm run docs:check
 ```
 
 The check validates local markdown links, verifies the greenfield first-run
-commands against a generated starter project, checks key command families
-against `topogram --help`, and rejects known stale command names.
+commands against a generated starter project, checks brownfield API/UI and CLI
+import walkthroughs against fixture imports, checks agent first-run guidance,
+checks template/catalog provenance wording against generated starter metadata,
+checks key command families against `topogram --help`, and rejects known stale
+command names.

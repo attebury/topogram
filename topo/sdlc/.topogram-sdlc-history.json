@@ -373,5 +373,14 @@
       "by": null,
       "note": null
     }
+  ],
+  "task_harden_docs_walkthroughs": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T15:10:55.065Z",
+      "by": null,
+      "note": null
+    }
   ]
 }

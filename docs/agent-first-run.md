@@ -106,8 +106,10 @@ When `.topogram-import.json` exists:
 
 ```bash
 topogram import check . --json
+topogram import diff . --json
 topogram import plan . --json
 topogram import adopt --list . --json
+topogram query import-plan ./topo --json
 topogram import status . --json
 topogram import history . --verify --json
 ```
