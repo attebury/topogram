@@ -422,6 +422,13 @@
       "at": "2026-05-11T16:41:03.654Z",
       "by": "actor_coding_agent",
       "note": "Preparing and publishing @topogram/cli 0.3.74."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T17:27:21.292Z",
+      "by": "actor_coding_agent",
+      "note": "Published @topogram/cli 0.3.74, fresh npm smoke passed, consumers rolled, strict release status green."
     }
   ]
 }
