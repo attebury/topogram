@@ -10,7 +10,7 @@
 // `--strict` mode.
 
 import { checkDoD } from "./dod/index.js";
-import { detectDriftedStatus, readHistory } from "./history.js";
+import { detectDriftedStatus, readHistory, validateHistory } from "./history.js";
 import { planStepHistoryId } from "./plan-steps.js";
 
 const SDLC_KINDS = new Set([
@@ -49,6 +49,10 @@ export function checkWorkspace(workspaceRoot, resolved) {
   const history = readHistory(workspaceRoot);
   if (history.__error) {
     warnings.push({ message: `cannot read SDLC history sidecar: ${history.__error}` });
+  } else {
+    for (const warning of validateHistory(history)) {
+      warnings.push(warning);
+    }
   }
 
   const byId = new Map(resolved.graph.statements.map((s) => [s.id, s]));
@@ -61,7 +65,7 @@ export function checkWorkspace(workspaceRoot, resolved) {
     if (drift) {
       warnings.push({
         id: statement.id,
-        message: `status drift: history records '${drift.historyStatus}' but current is '${drift.currentStatus}'`
+        message: `status drift: history records '${drift.historyStatus}' but current is '${drift.currentStatus}'. Use topogram sdlc transition so status and history stay aligned.`
       });
     }
 
@@ -75,7 +79,7 @@ export function checkWorkspace(workspaceRoot, resolved) {
         if (stepDrift) {
           warnings.push({
             id: statement.id,
-            message: `step status drift: history records '${stepDrift.historyStatus}' for ${step.id} but current is '${stepDrift.currentStatus}'`
+            message: `step status drift: history records '${stepDrift.historyStatus}' for ${step.id} but current is '${stepDrift.currentStatus}'. Use topogram sdlc plan step transition so step status and history stay aligned.`
           });
         }
       }

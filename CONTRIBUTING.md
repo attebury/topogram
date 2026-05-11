@@ -6,6 +6,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 
 - Read the relevant public docs under [docs/](./docs/).
 - Start from or reference an SDLC item in `topo/` for non-trivial protected changes. Use `topogram sdlc policy explain --json` to see current enforcement.
+- Use commands for stateful workflow mutations. Do not hand-edit SDLC status/history, plan step progress, archives, trust hashes, provenance, generated sentinels, release state, or rollout state.
 - Check `topogram-project/project/program/hardening-plan.md` for current execution order.
 - Prefer focused fixes with focused tests over broad cleanup.
 - Keep generated demo/product behavior out of engine tests and neutral fixtures.
@@ -16,6 +17,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 - Does it respect generated vs maintained ownership?
 - Does it keep stack-specific realization inside generator adapters/packages?
 - Does it avoid implicit trust in templates, package specs, local `.npmrc`, GitHub tokens, or generated HTML?
+- Does it keep command-owned state behind `topogram sdlc`, `topogram trust`, `topogram import`, `topogram generate`, `topogram emit`, or release commands?
 - Do docs and CLI help describe commands that are covered by tests?
 - Does every new test prove behavior a consumer or agent relies on?
 - Does the PR cite a valid SDLC item, update `topo/**`, or state an explicit exemption?

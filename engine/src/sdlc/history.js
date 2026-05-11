@@ -35,6 +35,37 @@ export function readHistory(workspaceRoot) {
   }
 }
 
+export function validateHistory(history) {
+  const warnings = [];
+  if (!history || typeof history !== "object" || Array.isArray(history)) {
+    return [{ message: "SDLC history sidecar must be a JSON object keyed by statement id" }];
+  }
+  for (const [id, entries] of Object.entries(history)) {
+    if (id === "__error") continue;
+    if (!Array.isArray(entries)) {
+      warnings.push({ id, message: `SDLC history entry '${id}' must be an array of transition records` });
+      continue;
+    }
+    entries.forEach((entry, index) => {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+        warnings.push({ id, message: `SDLC history entry '${id}' transition ${index + 1} must be an object` });
+        return;
+      }
+      for (const key of ["from", "to", "at"]) {
+        if (typeof entry[key] !== "string" || entry[key].trim() === "") {
+          warnings.push({ id, message: `SDLC history entry '${id}' transition ${index + 1} must include string '${key}'` });
+        }
+      }
+      for (const key of ["by", "note"]) {
+        if (entry[key] !== null && entry[key] !== undefined && typeof entry[key] !== "string") {
+          warnings.push({ id, message: `SDLC history entry '${id}' transition ${index + 1} field '${key}' must be a string or null` });
+        }
+      }
+    });
+  }
+  return warnings;
+}
+
 export function writeHistory(workspaceRoot, history) {
   const file = historyPath(workspaceRoot);
   writeFileSync(file, JSON.stringify(history, null, 2) + "\n", "utf8");
@@ -59,7 +90,7 @@ export function appendTransition(workspaceRoot, id, record) {
 
 export function lastTransition(history, id) {
   const entries = history[id];
-  if (!entries || entries.length === 0) return null;
+  if (!Array.isArray(entries) || entries.length === 0) return null;
   return entries[entries.length - 1];
 }
 

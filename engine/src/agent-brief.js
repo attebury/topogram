@@ -177,7 +177,7 @@ function buildWorkflows(config, hasImportRecord) {
         "topogram sdlc plan explain <plan-id> --json",
         "topogram sdlc plan step complete <plan-id> <step-id> --actor <actor> --write"
       ],
-      rule: "Plans are optional; edit plan text directly, but use CLI for step status changes and archive state."
+      rule: "Plans are optional; edit plan text directly, but use CLI for status, history, step progress, and archive state."
     },
     {
       id: "greenfield-generated",

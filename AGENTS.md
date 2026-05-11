@@ -21,6 +21,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Code must be maintainable and security-focused over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, seams easy to verify, and unsafe inputs, trust boundaries, credentials, and generated output escaping explicit.
 - Docs must execute. Any documented command shape needs regression coverage or a clear reason it cannot be executed.
 - Generated and maintained ownership are different. Generated outputs can be replaced only through the generated-output sentinel; maintained paths are never overwritten.
+- Stateful workflow mutations are command-owned. Edit declarative `topo/**/*.tg` source directly when needed, but use Topogram commands for SDLC status/history, plan step progress, archives, template trust, provenance, generated sentinels, release state, and rollout state.
 - Template implementation is executable code. Do not trust, refresh, or execute it without explicit trust checks and reviewable hashes.
 - Generator packages own stack realization. Topogram core owns contracts, topology/runtimes, validation, trust, catalog/template lifecycle, and output ownership.
 - UI intent is semantic. Topogram models contracts, surfaces, widgets, screen routes, behavior, and design tokens, not framework trees or raw CSS.
@@ -35,6 +36,8 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Repo scripts: `scripts/**`
 - Public docs: `README.md`, `docs/**`, `CONTRIBUTING.md`, `AGENTS.md`
 - Topogram workspace and policy: `topo/**`, `topogram.project.json`, `topogram.sdlc-policy.json`
+
+Within `topo/**`, status and audit state is still command-owned. Use `topogram sdlc transition`, `topogram sdlc plan step ... --write`, `topogram sdlc archive`, trust commands, import commands, and release commands instead of hand-editing `.topogram-*` sidecars or archive JSONL.
 
 Avoid touching external consumer repos from this workspace unless the user explicitly asks. When a change requires project-management docs, update `topogram-project` separately and mention it in the final status.
 

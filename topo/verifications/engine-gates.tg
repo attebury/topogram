@@ -60,10 +60,10 @@ verification verification_dogfood_topo_workspace {
 
 verification verification_sdlc_enforcement {
   name "SDLC Enforcement Tests"
-  description "Validates explicit SDLC policy, gate behavior, task DoD verification_refs, link/complete helpers, plan step support, and engine repo adoption boundaries."
+  description "Validates explicit SDLC policy, gate behavior, task DoD verification_refs, link/complete helpers, plan step support, command-owned state boundaries, and engine repo adoption boundaries."
   validates [cap_manage_sdlc_records, cap_run_engine_gates, cap_brief_agent]
   method contract
-  scenarios [engine_tests_active_sdlc_policy, engine_tests_active_sdlc_kinds]
+  scenarios [engine_tests_active_sdlc_policy, engine_tests_active_sdlc_kinds, engine_tests_active_stateful_actions]
   domain dom_sdlc_query_agent_context
   status active
 }

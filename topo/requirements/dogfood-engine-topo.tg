@@ -49,7 +49,7 @@ requirement req_stateful_actions_use_cli {
   introduces_rules [rule_stateful_workflow_mutations_use_cli]
   domain dom_engine_quality
   priority high
-  status draft
+  status approved
 }
 
 requirement req_sdlc_plans_track_implementation_steps {

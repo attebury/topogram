@@ -103,6 +103,12 @@ editing. Plan text and step definitions are declarative source; step
 status changes should use `topogram sdlc plan step ... --write` so the
 history sidecar can detect drift.
 
+The same rule applies to other stateful workflow surfaces: use
+`topogram sdlc transition`, `topogram sdlc archive`, `topogram trust ...`,
+`topogram import ...`, `topogram generate`, `topogram emit --write`, and
+release commands instead of hand-editing history, archives, trust records,
+provenance, generated sentinels, or rollout evidence.
+
 ## File Organization
 
 Small projects can keep the starter layout. Larger projects should organize

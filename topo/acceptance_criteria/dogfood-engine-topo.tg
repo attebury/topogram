@@ -51,14 +51,14 @@ acceptance_criterion ac_stateful_action_boundary_documented {
   name "Stateful Action Boundary Documented"
   description "Repo guidance documents that declarative source can be edited directly while status, history, trust, provenance, generated, archive, release, and rollout state require Topogram commands."
   requirement req_stateful_actions_use_cli
-  status draft
+  status approved
 }
 
 acceptance_criterion ac_stateful_action_boundary_enforced {
   name "Stateful Action Boundary Enforced"
   description "Important command-owned state surfaces have tests, commands, or boundary checks that make bypasses explicit instead of silent."
   requirement req_stateful_actions_use_cli
-  status draft
+  status approved
 }
 
 acceptance_criterion ac_sdlc_plans_are_optional {

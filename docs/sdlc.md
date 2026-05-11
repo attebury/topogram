@@ -42,6 +42,31 @@ bridge loads it at workspace-parse time so frozen entries participate in
 cross-references and the traceability matrix without showing up in the
 default board.
 
+## Command-owned state
+
+Humans and agents may edit declarative `.tg` source directly: names,
+descriptions, references, rules, requirements, tasks, plans, and plan
+step descriptions are normal source text. State that records workflow,
+trust, provenance, generated ownership, or release audit evidence is
+command-owned and should move through Topogram commands.
+
+| State surface | Do not hand-edit | Command path |
+|---|---|---|
+| SDLC status fields after work starts | `status` on pitch/requirement/AC/task/plan/bug/document records | `topogram sdlc transition ...` |
+| Plan step progress | `steps { step ... status ... }` after a plan is active | `topogram sdlc plan step start|complete|skip|transition ... --write` |
+| SDLC history | `topo/.topogram-sdlc-history.json` | transition and plan-step commands append it |
+| Archives | `topo/_archive/*.jsonl` | `topogram sdlc archive`, `unarchive`, and `compact` |
+| Template implementation trust | `.topogram-template-trust.json` | `topogram trust status`, `trust diff`, and `trust template` after review |
+| Template-owned file baseline | `.topogram-template-files.json` | `topogram trust template` and reviewed `topogram template update ...` commands |
+| Catalog-copy provenance | `.topogram-source.json` | `topogram catalog copy` and `topogram source status` |
+| Import adoption receipts | import history/provenance files under the imported workspace | `topogram import adopt`, `topogram import status`, and `topogram import history --verify` |
+| Generated ownership sentinel | `app/.topogram-generated.json` or artifact `.topogram-generated.json` | `topogram generate` or `topogram emit --write` |
+| Release and rollout state | release reports, consumer rollout commits, and workflow evidence | `topogram release:status`, `topogram release roll-consumers`, and CI workflows |
+
+Recovery edits to command-owned files are exceptional maintenance work:
+review the file, record the reason in the related SDLC item, and run
+`topogram check` plus `topogram sdlc check --strict` afterward.
+
 ## Cross-reference fields
 
 ```text

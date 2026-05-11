@@ -92,7 +92,8 @@ task task_enforce_cli_only_stateful_actions {
   domain dom_engine_quality
   priority high
   work_type implementation
-  status in-progress
+  verification_refs [verification_sdlc_enforcement]
+  status done
 }
 
 task task_add_sdlc_plan_steps {
