@@ -25,9 +25,13 @@ npx topogram new ./my-app --template hello-web
 cd ./my-app
 npm install
 npm run agent:brief
+npm run doctor
+npm run source:status
+npm run template:explain
 npm run check
+npm run generator:policy:check
 npm run generate
-npm --prefix app run compile
+npm run verify
 ```
 
 Start here when you want Topogram to create a new generated app from a template.

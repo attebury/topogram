@@ -22,6 +22,10 @@ API, database, or native runtimes.
 npm run agent:brief
 npm run explain
 npm run doctor
+npm run source:status
+npm run template:explain
+npm run generator:policy:status
+npm run generator:policy:check
 npm run query:list
 ```
 
@@ -45,13 +49,16 @@ maintained. Generated-owned outputs are replaceable.
 ```bash
 npm run check
 npm run generate
-npm --prefix app run compile
+npm run verify
 ```
 
-Use the generated project's strongest verification script when it exists:
+`npm run verify` is the generated project's strongest standard verification
+script. If a generated app exposes lower-level app scripts, they remain useful
+for focused debugging:
 
 ```bash
-npm run verify
+npm run app:compile
+npm run app:runtime
 ```
 
 ## 5. Inspect contracts when needed

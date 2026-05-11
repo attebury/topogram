@@ -37,9 +37,14 @@ template implementation code.
 topogram agent brief --json
 topogram query list --json
 topogram query show <name> --json
+topogram check --json
+```
+
+If the project has adopted SDLC and the work is tied to a task or bug, add:
+
+```bash
 topogram sdlc explain <task-id> --json
 topogram query slice ./topo --task <task-id> --json
-topogram check --json
 ```
 
 For implementation planning:
@@ -66,6 +71,21 @@ Safe default source edits:
 
 Generated-owned outputs such as `app/**` are replaceable. Do not make durable
 edits there unless the output ownership is maintained.
+
+## Generated project first-run commands
+
+Generated projects usually expose these local scripts:
+
+```bash
+npm run agent:brief
+npm run doctor
+npm run source:status
+npm run template:explain
+npm run generator:policy:check
+npm run check
+npm run generate
+npm run verify
+```
 
 ## UI and widgets
 
