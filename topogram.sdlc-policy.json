@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "status": "adopted",
+  "mode": "enforced",
+  "protectedPaths": [
+    "engine/**",
+    "docs/**",
+    "scripts/**",
+    ".github/**",
+    "topo/**",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "package.json"
+  ],
+  "requiredItemKinds": [
+    "task",
+    "bug",
+    "requirement",
+    "pitch"
+  ],
+  "allowExemptions": true,
+  "releaseNotes": true
+}

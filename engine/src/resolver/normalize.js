@@ -74,6 +74,7 @@ import {
   parseProjectionDbTablesBlock,
   parseProjectionGeneratorDefaultsBlock
 } from "./projections-db.js";
+import { parsePlanSteps } from "../sdlc/plan-steps.js";
 
 export function normalizeStatement(statement, registry) {
   const fieldMap = collectFieldMap(statement);
@@ -358,6 +359,7 @@ export function normalizeStatement(statement, registry) {
         affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),
         satisfies: resolveReferenceList(registry, getFieldValue(statement, "satisfies")),
         acceptanceRefs: resolveReferenceList(registry, getFieldValue(statement, "acceptance_refs")),
+        verificationRefs: resolveReferenceList(registry, getFieldValue(statement, "verification_refs")),
         blocks: resolveReferenceList(registry, getFieldValue(statement, "blocks")),
         blockedBy: resolveReferenceList(registry, getFieldValue(statement, "blocked_by")),
         claimedBy: resolveReferenceList(registry, getFieldValue(statement, "claimed_by")),
@@ -365,6 +367,22 @@ export function normalizeStatement(statement, registry) {
         modifies: resolveReferenceList(registry, getFieldValue(statement, "modifies")),
         introduces: resolveReferenceList(registry, getFieldValue(statement, "introduces")),
         removes: resolveReferenceList(registry, getFieldValue(statement, "removes")),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
+      };
+    case "plan":
+      return {
+        ...base,
+        task: getFieldValue(statement, "task")
+          ? {
+              id: symbolValue(getFieldValue(statement, "task")),
+              target: toRef(resolveReference(registry, symbolValue(getFieldValue(statement, "task"))))
+            }
+          : null,
+        priority: symbolValue(getFieldValue(statement, "priority")),
+        notes: stringValue(getFieldValue(statement, "notes")),
+        outcome: stringValue(getFieldValue(statement, "outcome")),
+        steps: parsePlanSteps(getFieldValue(statement, "steps")),
         updated: stringValue(getFieldValue(statement, "updated")),
         resolvedDomain: resolveDomainTag(statement, registry)
       };

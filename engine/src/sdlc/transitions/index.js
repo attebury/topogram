@@ -4,6 +4,7 @@ import * as pitch from "./pitch.js";
 import * as requirement from "./requirement.js";
 import * as acceptanceCriterion from "./acceptance-criterion.js";
 import * as task from "./task.js";
+import * as plan from "./plan.js";
 import * as bug from "./bug.js";
 import * as document from "./document.js";
 
@@ -12,6 +13,7 @@ const MODULES = {
   requirement,
   acceptance_criterion: acceptanceCriterion,
   task,
+  plan,
   bug,
   document
 };
@@ -51,6 +53,7 @@ export {
   requirement,
   acceptanceCriterion,
   task,
+  plan,
   bug,
   document
 };

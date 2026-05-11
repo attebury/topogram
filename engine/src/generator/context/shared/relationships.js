@@ -436,13 +436,14 @@ export function ensureContextSelection(options = {}) {
     options.requirementId ? ["requirement", options.requirementId] : null,
     options.acceptanceId ? ["acceptance_criterion", options.acceptanceId] : null,
     options.taskId ? ["task", options.taskId] : null,
+    options.planId ? ["plan", options.planId] : null,
     options.bugId ? ["bug", options.bugId] : null,
     options.documentId ? ["document", options.documentId] : null
   ].filter(Boolean));
 
   if (selectors.length !== 1) {
     throw new Error(
-      "Context selection requires exactly one of --capability, --workflow, --projection, --widget, --entity, --journey, --surface, --domain, --pitch, --requirement, --acceptance, --task, --bug, or --document"
+      "Context selection requires exactly one of --capability, --workflow, --projection, --widget, --entity, --journey, --surface, --domain, --pitch, --requirement, --acceptance, --task, --plan, --bug, or --document"
     );
   }
 

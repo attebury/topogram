@@ -114,6 +114,7 @@ export function resolveWorkspace(workspaceAst) {
         pitches: [],
         requirements: [],
         tasks: [],
+        plans: [],
         bugs: [],
         documents: []
       });
@@ -130,6 +131,7 @@ export function resolveWorkspace(workspaceAst) {
     pitch: "pitches",
     requirement: "requirements",
     task: "tasks",
+    plan: "plans",
     bug: "bugs"
   };
   for (const statement of resolvedStatements) {
@@ -175,6 +177,7 @@ export function resolveWorkspace(workspaceAst) {
     rulesByFromRequirement: new Map(),
     tasksThatBlockTarget: new Map(),
     tasksBlockedByTarget: new Map(),
+    plansByTask: new Map(),
     affectedByPitches: new Map(),
     affectedByRequirements: new Map(),
     affectedByTasks: new Map(),
@@ -226,6 +229,9 @@ export function resolveWorkspace(workspaceAst) {
         pushIndexFromList(sdlcIndex.decisionsIntroducedByTask, statement.introducesDecisions, statement.id);
         pushIndexFromList(sdlcIndex.tasksThatBlockTarget, statement.blocks, statement.id);
         pushIndexFromList(sdlcIndex.tasksBlockedByTarget, statement.blockedBy, statement.id);
+        break;
+      case "plan":
+        pushIndex(sdlcIndex.plansByTask, statement.task?.id, statement.id);
         break;
       case "bug":
         pushIndexFromList(sdlcIndex.affectedByBugs, statement.affects, statement.id);

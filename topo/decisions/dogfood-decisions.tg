@@ -42,3 +42,21 @@ decision decision_agent_first_run_is_required {
   domain dom_sdlc_query_agent_context
   status accepted
 }
+
+decision decision_stateful_workflow_mutations_use_cli {
+  name "Stateful Workflow Mutations Use CLI"
+  description "Derived state and audit state must be changed through canonical Topogram commands rather than hand-edited."
+  context ["declarative topo source can be edited directly", "status history trust hashes provenance generated sentinels archives and release state are audit surfaces"]
+  consequences ["stateful workflow mutations use the CLI so validation and history stay coherent", "manual edits are reserved for declarative source and reviewed policy changes"]
+  domain dom_engine_quality
+  status accepted
+}
+
+decision decision_sdlc_plans_are_optional_support_records {
+  name "SDLC Plans Are Optional Support Records"
+  description "Implementation plans are optional SDLC records with nested local steps; they support tasks without becoming mandatory task DoD."
+  context ["small tasks should not require ceremony", "multi-step work benefits from durable sequencing and lessons learned", "step status is workflow state"]
+  consequences ["plans may be authored directly as declarative topo source", "step status transitions and archive state use the CLI", "query slices surface linked plans when present"]
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

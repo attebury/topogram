@@ -30,6 +30,8 @@ export function defaultActiveStatuses(kind) {
       return new Set(["draft", "approved", "superseded"]);
     case "task":
       return new Set(["unclaimed", "claimed", "in-progress", "blocked"]);
+    case "plan":
+      return new Set(["draft", "active"]);
     case "bug":
       return new Set(["open", "in-progress", "fixed"]);
     case "document":

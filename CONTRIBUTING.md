@@ -5,6 +5,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 ## Before Changing Code
 
 - Read the relevant public docs under [docs/](./docs/).
+- Start from or reference an SDLC item in `topo/` for non-trivial protected changes. Use `topogram sdlc policy explain --json` to see current enforcement.
 - Check `topogram-project/project/program/hardening-plan.md` for current execution order.
 - Prefer focused fixes with focused tests over broad cleanup.
 - Keep generated demo/product behavior out of engine tests and neutral fixtures.
@@ -17,12 +18,14 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 - Does it avoid implicit trust in templates, package specs, local `.npmrc`, GitHub tokens, or generated HTML?
 - Do docs and CLI help describe commands that are covered by tests?
 - Does every new test prove behavior a consumer or agent relies on?
+- Does the PR cite a valid SDLC item, update `topo/**`, or state an explicit exemption?
 
 ## Verification
 
 Run a focused test for the area you changed, then run the engine gate:
 
 ```bash
+node ./engine/src/cli.js sdlc gate . --require-adopted
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh
 ```

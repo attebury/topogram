@@ -77,3 +77,13 @@ rule rule_agents_start_with_focused_context {
   domain dom_sdlc_query_agent_context
   status active
 }
+
+rule rule_stateful_workflow_mutations_use_cli {
+  name "Stateful Workflow Mutations Use CLI"
+  description "Humans and agents may edit declarative topo source directly, but status, history, trust, provenance, generated sentinels, archives, release state, and rollout state must be mutated through canonical Topogram commands."
+  applies_to [cap_manage_sdlc_records, cap_manage_templates, cap_import_brownfield_app, cap_generate_app_outputs, cap_verify_release_status, cap_roll_consumer_packages]
+  severity error
+  source_of_truth [decision_stateful_workflow_mutations_use_cli]
+  domain dom_engine_quality
+  status active
+}

@@ -18,6 +18,7 @@ import { validatePitch } from "./per-kind/pitch.js";
 import { validateRequirement } from "./per-kind/requirement.js";
 import { validateAcceptanceCriterion } from "./per-kind/acceptance-criterion.js";
 import { validateTask } from "./per-kind/task.js";
+import { validatePlan } from "./per-kind/plan.js";
 import { validateBug } from "./per-kind/bug.js";
 
 export {
@@ -29,6 +30,7 @@ export {
   REQUIREMENT_IDENTIFIER_PATTERN,
   ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN,
   TASK_IDENTIFIER_PATTERN,
+  PLAN_IDENTIFIER_PATTERN,
   BUG_IDENTIFIER_PATTERN,
   DOCUMENT_IDENTIFIER_PATTERN,
   GLOBAL_STATUSES,
@@ -43,6 +45,8 @@ export {
   REQUIREMENT_STATUSES,
   ACCEPTANCE_CRITERION_STATUSES,
   TASK_STATUSES,
+  PLAN_STATUSES,
+  PLAN_STEP_STATUSES,
   BUG_STATUSES,
   PRIORITY_VALUES,
   WORK_TYPES,
@@ -106,6 +110,7 @@ export function validateWorkspace(workspaceAst) {
       validateRequirement(errors, statement, fieldMap, registry);
       validateAcceptanceCriterion(errors, statement, fieldMap, registry);
       validateTask(errors, statement, fieldMap, registry);
+      validatePlan(errors, statement, fieldMap, registry);
       validateBug(errors, statement, fieldMap, registry);
       validateExpressions(errors, statement, fieldMap);
     }

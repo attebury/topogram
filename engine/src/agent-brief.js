@@ -20,6 +20,10 @@ import {
   getTemplateTrustStatus,
   TEMPLATE_TRUST_FILE
 } from "./template-trust.js";
+import {
+  loadSdlcPolicy,
+  SDLC_POLICY_FILE
+} from "./sdlc/policy.js";
 import { DEFAULT_TOPO_FOLDER_NAME, resolveTopoRoot, resolveWorkspaceContext } from "./workspace-paths.js";
 
 /**
@@ -165,6 +169,17 @@ function readImportSummary(projectRoot) {
 function buildWorkflows(config, hasImportRecord) {
   const workflows = [
     {
+      id: "sdlc-task-plan",
+      title: "SDLC task and plan loop",
+      commands: [
+        "topogram sdlc explain <task-or-bug-id> --json",
+        "topogram query slice ./topo --task <task-id> --json",
+        "topogram sdlc plan explain <plan-id> --json",
+        "topogram sdlc plan step complete <plan-id> <step-id> --actor <actor> --write"
+      ],
+      rule: "Plans are optional; edit plan text directly, but use CLI for step status changes and archive state."
+    },
+    {
       id: "greenfield-generated",
       title: "Generated project loop",
       commands: [
@@ -235,9 +250,10 @@ function buildWorkflows(config, hasImportRecord) {
  * @param {Record<string, any>} trust
  * @param {Record<string, any>|null} importSummary
  * @param {Record<string, any>} generatorPolicy
+ * @param {Record<string, any>} sdlcPolicy
  * @returns {string[]}
  */
-function buildWarnings(projectRoot, config, trust, importSummary, generatorPolicy) {
+function buildWarnings(projectRoot, config, trust, importSummary, generatorPolicy, sdlcPolicy) {
   /** @type {string[]} */
   const warnings = [];
   if (config?.implementation) {
@@ -248,6 +264,9 @@ function buildWarnings(projectRoot, config, trust, importSummary, generatorPolic
   }
   if (generatorPolicy?.diagnostics?.errors > 0) {
     warnings.push(`${GENERATOR_POLICY_FILE} has generator policy errors. Fix policy before generating.`);
+  }
+  if (sdlcPolicy?.status === "adopted" && sdlcPolicy?.mode === "enforced") {
+    warnings.push("SDLC is enforced. Protected changes need a valid SDLC item, a topo/*.tg record update, or an explicit allowed exemption.");
   }
   if (summarizeOutputBoundaries(config).some((output) => output.ownership === "generated")) {
     warnings.push("Generated-owned outputs are replaceable by Topogram; do not make lasting edits under generated output paths.");
@@ -312,12 +331,25 @@ export function buildAgentBrief(inputPath, workspaceAst) {
   const generatorBindings = packageBackedGeneratorBindings(config);
   const generatorDiagnostics = generatorPolicyDiagnosticsForBindings(generatorPolicyInfo, generatorBindings, "agent-brief");
   const importSummary = readImportSummary(configDir);
+  const sdlcPolicyInfo = loadSdlcPolicy(configDir);
+  const sdlcPolicy = {
+    exists: sdlcPolicyInfo.exists,
+    path: relativeProjectPath(projectRoot, sdlcPolicyInfo.path),
+    status: sdlcPolicyInfo.status,
+    mode: sdlcPolicyInfo.mode,
+    protectedPaths: sdlcPolicyInfo.policy?.protectedPaths || [],
+    requiredItemKinds: sdlcPolicyInfo.policy?.requiredItemKinds || [],
+    allowExemptions: sdlcPolicyInfo.policy?.allowExemptions ?? false,
+    gateCommand: "topogram sdlc gate . --require-adopted",
+    diagnostics: sdlcPolicyInfo.diagnostics
+  };
 
   const topogramReadPath = path.resolve(topogramRoot) === path.resolve(projectRoot) ? "." : `${DEFAULT_TOPO_FOLDER_NAME}/`;
   const readOrder = [
     readItem(projectRoot, "AGENTS.md", "Human-readable first-run guidance generated with this project.", false),
     readItem(projectRoot, "README.md", "Project workflow and template provenance summary.", true),
     readItem(projectRoot, "topogram.project.json", "Topology, outputs, template metadata, generator bindings, and implementation provider settings.", true),
+    readItem(projectRoot, SDLC_POLICY_FILE, "SDLC adoption, enforcement mode, protected paths, required item kinds, and exemption policy.", false),
     readItem(projectRoot, "topogram.template-policy.json", "Template trust/update policy for attached templates.", false),
     readItem(projectRoot, GENERATOR_POLICY_FILE, "Package-backed generator policy and allowed scopes.", false),
     readItem(projectRoot, TEMPLATE_TRUST_FILE, "Executable implementation trust record, if the template copied implementation code.", Boolean(config.implementation)),
@@ -331,6 +363,11 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     commandItem("npm run source:status", "See whether template-derived files diverged locally."),
     commandItem("npm run template:explain", "Understand whether the project is template-attached or detached."),
     commandItem("npm run generator:policy:check", "Validate package-backed generator policy before generation."),
+    ...(sdlcPolicy.status === "adopted" ? [
+      commandItem("topogram sdlc policy explain --json", "Read current SDLC enforcement mode and protected paths.", "sdlc"),
+      commandItem("topogram sdlc gate . --require-adopted --json", "Verify protected work has SDLC linkage before PR/CI.", "sdlc"),
+      commandItem("topogram sdlc explain <task-or-bug-id> --json", "Start SDLC-backed implementation from the current task or bug.", "sdlc")
+    ] : []),
     ...(config.implementation ? [
       commandItem("npm run trust:status", "Check executable implementation trust before generation.", "trust")
     ] : []),
@@ -385,6 +422,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
       safe_paths: [
         `${DEFAULT_TOPO_FOLDER_NAME}/**`,
         "topogram.project.json",
+        SDLC_POLICY_FILE,
         "topogram.template-policy.json",
         GENERATOR_POLICY_FILE,
         ...(config.implementation ? ["implementation/** after review and trust status"] : [])
@@ -398,6 +436,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
       large: [`${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>`, `${DEFAULT_TOPO_FOLDER_NAME}/shared`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/widgets`, `${DEFAULT_TOPO_FOLDER_NAME}/domains/<domain>/projections`],
       parserRule: "Folder layout is for humans and agents; Topogram flattens statements into one graph."
     },
+    sdlc_policy: sdlcPolicy,
     topology: {
       runtimes: summarizeRuntimes(config),
       outputs: summarizeOutputBoundaries(config)
@@ -415,7 +454,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     import: importSummary,
     warnings: []
   };
-  payload.warnings = buildWarnings(projectRoot, config, payload.trust, importSummary, generatorPolicy);
+  payload.warnings = buildWarnings(projectRoot, config, payload.trust, importSummary, generatorPolicy, sdlcPolicy);
   return { ok: true, payload };
 }
 
@@ -430,6 +469,7 @@ export function formatAgentBrief(brief) {
   lines.push(`Topogram: ${brief.project?.topogram || "unknown"}`);
   lines.push(`Template: ${brief.template?.id || "none"}${brief.template?.version ? `@${brief.template.version}` : ""}`);
   lines.push(`Implementation trust: ${brief.trust?.requiresTrust ? (brief.trust.ok ? "trusted" : "review required") : "not required"}`);
+  lines.push(`SDLC policy: ${brief.sdlc_policy?.status || "not_adopted"}${brief.sdlc_policy?.mode ? `/${brief.sdlc_policy.mode}` : ""}`);
   lines.push(`Package-backed generators: ${brief.generator_policy?.packageBackedGenerators || 0}`);
   lines.push("");
   lines.push("Read order:");
@@ -473,6 +513,9 @@ export function formatAgentBrief(brief) {
   lines.push("");
   lines.push("Verification gates:");
   lines.push("  - npm run check");
+  if (brief.sdlc_policy?.status === "adopted") {
+    lines.push(`  - ${brief.sdlc_policy.gateCommand || "topogram sdlc gate . --require-adopted"}`);
+  }
   lines.push("  - topogram widget check --json when UI/widget contracts change");
   lines.push("  - topogram widget behavior --json when widget behavior changes");
   lines.push("  - npm run generate");

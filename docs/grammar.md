@@ -36,6 +36,7 @@ The parser accepts any `kind identifier { ... }` shape. The validator defines th
 | `requirement` | `name`, `description`, `status`, `priority` | Specific commitment that follows from a pitch. Identifier prefix `req_`. Lifecycle: draft → in-review → approved → superseded. |
 | `acceptance_criterion` | `name`, `description`, `status`, `requirement` | Testable behavior an agent or human can verify against. Identifier prefix `ac_`. Lifecycle: draft → approved → superseded. |
 | `task` | `name`, `description`, `status`, `priority`, `work_type` | Unit of agent or human work. Identifier prefix `task_`. Lifecycle: unclaimed → claimed → in-progress → done (\| blocked). |
+| `plan` | `name`, `description`, `task`, `status`, `steps` | Optional implementation sequence and retained approach notes for a task. Identifier prefix `plan_`. Lifecycle: draft → active → complete \| superseded. |
 | `bug` | `name`, `description`, `status`, `severity`, `priority` | Defect linked to the rule it violates and the verification that proved the fix. Identifier prefix `bug_`. Lifecycle: open → in-progress → fixed → verified \| wont-fix. |
 
 `document` is markdown-only — see [docs/sdlc.md](sdlc.md) and [docs/lifecycles.md](lifecycles.md). Documents live in `topo/docs/` with extended frontmatter (`app_version`, `audience`, `priority`, `affects`, `satisfies`, `domain`).
@@ -57,7 +58,7 @@ capability cap_call_feed {
 
 Kinds that may carry `domain`: `capability`, `entity`, `rule`,
 `verification`, `orchestration`, `operation`, `decision`, `pitch`,
-`requirement`, `task`, `bug`. Cross-cutting kinds (`term`, `actor`, `role`,
+`requirement`, `task`, `plan`, `bug`. Cross-cutting kinds (`term`, `actor`, `role`,
 `enum`, `shape`, `widget`, `projection`, `acceptance_criterion`)
 cannot. The validator hard-errors on unknown ids and
 wrong-kind references.

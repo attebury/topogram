@@ -81,6 +81,7 @@ export function parseCliOptions(args, commandArgs) {
       domainId: optionValue(args, "--domain"),
       seamId: optionValue(args, "--seam"),
       taskId: optionValue(args, "--task"),
+      planId: optionValue(args, "--plan"),
       pitchId: optionValue(args, "--pitch"),
       requirementId: optionValue(args, "--requirement"),
       acceptanceId: optionValue(args, "--acceptance"),

@@ -16,6 +16,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 ## Laws
 
 - Specs are the source of truth. Do not hardcode generated output behavior around a demo, fixture product, framework quirk, or test convenience.
+- Enforced SDLC is the repo working habit. Non-trivial protected changes must start from or reference a `pitch`, `requirement`, `task`, or `bug` in `topo/`; PRs must cite the item or give an explicit allowed exemption.
 - Tests must prove consumer value. A test that only checks for a string or file exists is not enough when generated output can be installed, compiled, checked, or run.
 - Code must be maintainable and security-focused over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, seams easy to verify, and unsafe inputs, trust boundaries, credentials, and generated output escaping explicit.
 - Docs must execute. Any documented command shape needs regression coverage or a clear reason it cannot be executed.
@@ -33,6 +34,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Engine tests and fixtures: `engine/tests/**`
 - Repo scripts: `scripts/**`
 - Public docs: `README.md`, `docs/**`, `CONTRIBUTING.md`, `AGENTS.md`
+- Topogram workspace and policy: `topo/**`, `topogram.project.json`, `topogram.sdlc-policy.json`
 
 Avoid touching external consumer repos from this workspace unless the user explicitly asks. When a change requires project-management docs, update `topogram-project` separately and mention it in the final status.
 
@@ -41,6 +43,7 @@ Avoid touching external consumer repos from this workspace unless the user expli
 Use the narrowest meaningful test first, then the repo gate:
 
 ```bash
+node ./engine/src/cli.js sdlc gate . --require-adopted
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh
 bash ./scripts/verify-cli-package.sh

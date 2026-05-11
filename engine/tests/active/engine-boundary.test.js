@@ -495,6 +495,18 @@ test("workspace folder paths use topo instead of legacy topogram", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("engine repo cannot silently un-adopt enforced SDLC", () => {
+  const policyPath = path.join(repoRoot, "topogram.sdlc-policy.json");
+  assert.equal(fs.existsSync(policyPath), true);
+  const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
+  assert.equal(policy.version, "1");
+  assert.equal(policy.status, "adopted");
+  assert.equal(policy.mode, "enforced");
+  assert.deepEqual(policy.requiredItemKinds, ["task", "bug", "requirement", "pitch"]);
+  assert.equal(policy.protectedPaths.includes("engine/**"), true);
+  assert.equal(policy.protectedPaths.includes("topo/**"), true);
+});
+
 test("hardening completion ratchet keeps source files small and checked", () => {
   const offenders = [];
   const srcRoot = path.join(repoRoot, "engine", "src");

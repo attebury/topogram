@@ -317,6 +317,50 @@ test("split command parser handles extracted command families", () => {
     sdlcCommand: "check",
     inputPath: "."
   });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "policy", "explain", "./custom-topogram"]), {
+    sdlcCommand: "policy:explain",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "gate", "./custom-topogram", "--base", "main", "--head", "HEAD"]), {
+    sdlcCommand: "gate",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "link", "task_one", "verification_one", "./custom-topogram"]), {
+    sdlcCommand: "link",
+    sdlcFromId: "task_one",
+    sdlcToId: "verification_one",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "complete", "task_one", "./custom-topogram", "--verification", "verification_one"]), {
+    sdlcCommand: "complete",
+    sdlcId: "task_one",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "plan", "create", "task_one", "implement_one", "./custom-topogram"]), {
+    sdlcCommand: "plan:create",
+    sdlcId: "task_one",
+    sdlcSlug: "implement_one",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "plan", "explain", "plan_one", "./custom-topogram"]), {
+    sdlcCommand: "plan:explain",
+    sdlcId: "plan_one",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "plan", "step", "transition", "plan_one", "inspect", "done", "./custom-topogram"]), {
+    sdlcCommand: "plan:step:transition",
+    sdlcId: "plan_one",
+    sdlcStepId: "inspect",
+    sdlcTargetStatus: "done",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "plan", "step", "complete", "plan_one", "inspect", "./custom-topogram"]), {
+    sdlcCommand: "plan:step:complete",
+    sdlcId: "plan_one",
+    sdlcStepId: "inspect",
+    sdlcTargetStatus: "done",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["sdlc", "explain", "task_one", "--brief"]), {
     sdlcCommand: "explain",
     sdlcId: "task_one",

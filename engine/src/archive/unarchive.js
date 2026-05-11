@@ -8,6 +8,7 @@
 // Status is reset to a sensible "re-opened" value per kind:
 //   - bug: open
 //   - task: claimed (caller must set claimed_by)
+//   - plan: draft
 //   - pitch: draft
 //   - document: draft
 
@@ -24,6 +25,7 @@ import { resolveTopoRoot } from "../workspace-paths.js";
 const REOPEN_STATUSES = {
   bug: "open",
   task: "claimed",
+  plan: "draft",
   pitch: "draft",
   document: "draft"
 };
@@ -44,6 +46,30 @@ function renderStatement(entry, newStatus) {
   lines.push(`${entry.kind} ${entry.id} {`);
   if (entry.name) lines.push(`  name "${entry.name.replace(/"/g, "\\\"")}"`);
   if (entry.description) lines.push(`  description "${entry.description.replace(/"/g, "\\\"")}"`);
+  if (entry.kind === "plan") {
+    if (entry.fields?.task?.id) lines.push(`  task ${entry.fields.task.id}`);
+    if (entry.fields?.priority) lines.push(`  priority ${entry.fields.priority}`);
+    if (entry.fields?.notes) lines.push(`  notes "${String(entry.fields.notes).replace(/"/g, "\\\"")}"`);
+    if (entry.fields?.outcome) lines.push(`  outcome "${String(entry.fields.outcome).replace(/"/g, "\\\"")}"`);
+    lines.push("  steps {");
+    for (const step of entry.fields?.steps || []) {
+      const parts = [
+        "step",
+        step.id,
+        "status",
+        step.status,
+        "description",
+        `"${String(step.description || "").replace(/"/g, "\\\"")}"`
+      ];
+      if (step.notes) parts.push("notes", `"${String(step.notes).replace(/"/g, "\\\"")}"`);
+      if (step.outcome) parts.push("outcome", `"${String(step.outcome).replace(/"/g, "\\\"")}"`);
+      lines.push(`    ${parts.join(" ")}`);
+    }
+    lines.push("  }");
+    lines.push(`  status ${newStatus}`);
+    lines.push("}");
+    return lines.join("\n") + "\n";
+  }
   for (const [key, value] of Object.entries(entry.fields || {})) {
     if (value == null) continue;
     if (Array.isArray(value)) {

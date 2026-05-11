@@ -234,6 +234,13 @@ function selectedSurface(options = {}) {
   if (options.entityId) return { kind: "entity", id: options.entityId };
   if (options.journeyId) return { kind: "journey", id: options.journeyId };
   if (options.surfaceId) return { kind: "surface", id: options.surfaceId };
+  if (options.pitchId) return { kind: "pitch", id: options.pitchId };
+  if (options.requirementId) return { kind: "requirement", id: options.requirementId };
+  if (options.acceptanceId) return { kind: "acceptance_criterion", id: options.acceptanceId };
+  if (options.taskId) return { kind: "task", id: options.taskId };
+  if (options.planId) return { kind: "plan", id: options.planId };
+  if (options.bugId) return { kind: "bug", id: options.bugId };
+  if (options.documentId) return { kind: "document", id: options.documentId };
   return null;
 }
 

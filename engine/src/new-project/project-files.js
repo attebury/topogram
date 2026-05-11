@@ -285,9 +285,10 @@ Start here before editing this Topogram project.
 1. \`AGENTS.md\`
 2. \`README.md\`
 3. \`topogram.project.json\`
-4. \`topogram.template-policy.json\`
-5. \`topogram.generator-policy.json\`
-${hasImplementation ? "6. `.topogram-template-trust.json`\n7. `implementation/`\n8. Focused `topogram query ...` output\n" : "6. Focused `topogram query ...` output\n"}
+4. \`topogram.sdlc-policy.json\`, if this project has adopted SDLC enforcement
+5. \`topogram.template-policy.json\`
+6. \`topogram.generator-policy.json\`
+${hasImplementation ? "7. `.topogram-template-trust.json`\n8. `implementation/`\n9. Focused `topogram query ...` output\n" : "7. Focused `topogram query ...` output\n"}
 Machine-readable source:
 
 \`\`\`bash
@@ -310,6 +311,8 @@ npm run doctor
 npm run source:status
 npm run template:explain
 npm run generator:policy:check
+topogram sdlc policy explain --json
+topogram sdlc explain <task-or-bug-id> --json
 ${hasImplementation ? "npm run trust:status\n" : ""}npm run check
 npm run query:list
 npm run query:show -- widget-behavior
@@ -318,6 +321,8 @@ npm run query:show -- widget-behavior
 ## Edit Rules
 
 - Edit \`topo/**\` and \`topogram.project.json\` first.
+- If \`topogram.sdlc-policy.json\` exists, protected changes need an SDLC item, a \`topo/**\` SDLC record update, or an allowed exemption.
+- Plans are optional support records. Agents may edit plan text directly, but should use \`topogram sdlc plan step ... --write\` for step status changes.
 - Review policy files before editing \`topogram.template-policy.json\` or \`topogram.generator-policy.json\`.
 - Do not make lasting edits under generated-owned \`app/**\`; use \`npm run generate\` to replace generated output.
 - If an output is changed to maintained ownership, agents may edit that app code directly after reading focused query packets.
