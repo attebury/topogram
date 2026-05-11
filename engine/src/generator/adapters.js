@@ -177,7 +177,7 @@ function buildContractsForContext(context) {
   if (surface === "database") {
     return {
       db: generateDbContractGraph(context.graph, { ...(context.options || {}), projectionId }),
-      lifecyclePlan: generateDbLifecyclePlan(context.graph, { ...(context.options || {}), projectionId })
+      lifecyclePlan: generateDbLifecyclePlan(context.graph, { ...(context.options || {}), projectionId, runtime, component: runtime, topology: context.topology })
     };
   }
   if (surface === "native" || surface === "ios_surface" || surface === "android_surface") {

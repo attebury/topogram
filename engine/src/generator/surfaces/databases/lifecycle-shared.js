@@ -17,11 +17,65 @@ function defaultInputPathForGraph(graph, options = {}) {
   return ".";
 }
 
+function runtimeMigrationStrategyForProjection(projection, options = {}) {
+  const projectionId = projection?.id || options.projectionId || null;
+  const runtime = options.runtime || options.component || null;
+  if (runtime?.kind === "database" && runtime?.migration && (!projectionId || runtime.projection?.id === projectionId || runtime.projection === projectionId)) {
+    return runtime.migration;
+  }
+
+  const topologyRuntime = (options.topology?.dbRuntimes || options.topology?.runtimes || [])
+    .find((entry) => entry?.kind === "database" && entry?.migration && (entry.projection?.id === projectionId || entry.projection === projectionId));
+  if (topologyRuntime?.migration) {
+    return topologyRuntime.migration;
+  }
+
+  const configRuntime = (options.projectConfig?.topology?.runtimes || [])
+    .find((entry) => entry?.kind === "database" && entry?.migration && entry.projection === projectionId);
+  return configRuntime?.migration || null;
+}
+
+function normalizeMigrationStrategy(strategy) {
+  if (!strategy) {
+    return {
+      ownership: "generated",
+      tool: "sql",
+      apply: "script",
+      statePath: null,
+      snapshotPath: null,
+      schemaPath: null,
+      migrationsPath: null,
+      defaulted: true
+    };
+  }
+  return {
+    ownership: strategy.ownership || "generated",
+    tool: strategy.tool || "sql",
+    apply: strategy.apply || (strategy.ownership === "maintained" ? "never" : "script"),
+    statePath: strategy.statePath || null,
+    snapshotPath: strategy.snapshotPath || null,
+    schemaPath: strategy.schemaPath || null,
+    migrationsPath: strategy.migrationsPath || null,
+    defaulted: false
+  };
+}
+
+function pathJoinPosix(...parts) {
+  return parts.filter(Boolean).join("/").replace(/\/+/g, "/");
+}
+
 function dbLifecyclePlan(graph, projection, options = {}) {
   const contract = buildDbProjectionContract(graph, projection);
   const snapshot = normalizeDbSchemaSnapshot(contract);
   const engine = snapshot.engine;
   const ormProfiles = engine === "postgres" ? ["prisma", "drizzle"] : ["prisma"];
+  const migrationStrategy = normalizeMigrationStrategy(runtimeMigrationStrategyForProjection(projection, options));
+  const generatedStateRoot = migrationStrategy.statePath || "state";
+  const proposalStateRoot = "state";
+  const stateRoot = migrationStrategy.ownership === "generated" ? generatedStateRoot : proposalStateRoot;
+  const currentSnapshot = migrationStrategy.ownership === "maintained" && migrationStrategy.snapshotPath
+    ? migrationStrategy.snapshotPath
+    : pathJoinPosix(stateRoot, "current.snapshot.json");
 
   return {
     type: "db_lifecycle_plan",
@@ -31,19 +85,26 @@ function dbLifecyclePlan(graph, projection, options = {}) {
     ormProfiles,
     runtimeProfile: ormProfiles.includes("prisma") ? "prisma" : null,
     inputPath: defaultInputPathForGraph(graph, options),
+    migrationStrategy,
     state: {
-      currentSnapshot: "state/current.snapshot.json",
-      desiredSnapshot: "state/desired.snapshot.json",
-      migrationPlan: "state/migration.plan.json",
-      migrationSql: "state/migration.sql"
+      root: stateRoot,
+      currentSnapshot,
+      desiredSnapshot: pathJoinPosix(stateRoot, "desired.snapshot.json"),
+      migrationPlan: pathJoinPosix(stateRoot, "migration.plan.json"),
+      migrationSql: pathJoinPosix(stateRoot, "migration.sql")
     },
     bundle: {
       emptySnapshot: "snapshots/empty.snapshot.json",
       prismaSchema: ormProfiles.includes("prisma") ? "prisma/schema.prisma" : null,
       drizzleSchema: engine === "postgres" ? "drizzle/schema.ts" : null
     },
+    proposals: {
+      schemaPath: migrationStrategy.schemaPath,
+      migrationsPath: migrationStrategy.migrationsPath,
+      snapshotPath: migrationStrategy.snapshotPath
+    },
     environment: {
-      required: ["DATABASE_URL"],
+      required: migrationStrategy.ownership === "maintained" ? [] : ["DATABASE_URL"],
       optional:
         engine === "postgres"
           ? ["DATABASE_ADMIN_URL", "TOPOGRAM_BIN", "TOPOGRAM_INPUT_PATH", "TOPOGRAM_DB_STATE_DIR"]
@@ -75,6 +136,14 @@ function dbLifecyclePlan(graph, projection, options = {}) {
         "persist desired snapshot as current"
       ],
       safety: "manual migration required plans are never auto-applied"
+    },
+    behavior: {
+      ownership: migrationStrategy.ownership,
+      tool: migrationStrategy.tool,
+      apply: migrationStrategy.apply,
+      appliesMigrations: migrationStrategy.ownership === "generated" && migrationStrategy.apply === "script",
+      writesGeneratedState: migrationStrategy.ownership === "generated",
+      proposalOnly: migrationStrategy.ownership === "maintained"
     }
   };
 }
@@ -108,9 +177,27 @@ function renderDbLifecycleEnvExample(projection, plan) {
 }
 
 function renderDbLifecycleReadme(plan) {
+  const proposalLines = [
+    plan.proposals.snapshotPath ? `- Current snapshot source: \`${plan.proposals.snapshotPath}\`` : null,
+    plan.proposals.schemaPath ? `- Maintained schema path: \`${plan.proposals.schemaPath}\`` : null,
+    plan.proposals.migrationsPath ? `- Maintained migrations path: \`${plan.proposals.migrationsPath}\`` : null
+  ].filter(Boolean).join("\n");
+  const modeText = plan.behavior.proposalOnly
+    ? `Maintained proposal mode. Topogram emits desired snapshots, migration plans, SQL proposals, and schema proposals, but these scripts do not apply migrations to the database. A human or agent must adapt accepted proposals into the maintained migration system.`
+    : `Generated apply mode. Topogram owns this lifecycle bundle and scripts may apply supported generated SQL migrations. Unsupported or destructive migration plans stop for manual review.`;
   return `# ${plan.projection.name} Lifecycle
 
 This bundle gives agents a repeatable database workflow for projection \`${plan.projection.id}\`.
+
+## Migration Strategy
+
+- Ownership: \`${plan.migrationStrategy.ownership}\`
+- Tool: \`${plan.migrationStrategy.tool}\`
+- Apply: \`${plan.migrationStrategy.apply}\`
+- Defaulted: \`${plan.migrationStrategy.defaulted ? "yes" : "no"}\`
+
+${modeText}
+${proposalLines ? `\n${proposalLines}\n` : ""}
 
 ## Modes
 
@@ -143,6 +230,12 @@ ${plan.environment.optional.map((name) => `- \`${name}\``).join("\n")}
 
 function renderDbLifecycleCommonScript(plan) {
   const engine = plan.engine;
+  const configuredStatePath = plan.migrationStrategy.ownership === "generated" && plan.migrationStrategy.statePath
+    ? plan.migrationStrategy.statePath
+    : "";
+  const configuredSnapshotPath = plan.migrationStrategy.ownership === "maintained" && plan.migrationStrategy.snapshotPath
+    ? plan.migrationStrategy.snapshotPath
+    : "";
   return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -219,9 +312,24 @@ discover_input_path() {
 }
 TOPOGRAM_BIN="$(find_topogram_bin)"
 INPUT_PATH="$(discover_input_path)"
+if [[ -f "$INPUT_PATH/topogram.project.json" ]]; then
+  PROJECT_ROOT="$INPUT_PATH"
+else
+  PROJECT_ROOT="$(cd "$INPUT_PATH/.." && pwd)"
+fi
 PROJECTION_ID="${plan.projection.id}"
-STATE_DIR="\${TOPOGRAM_DB_STATE_DIR:-$BUNDLE_DIR/state}"
-CURRENT_SNAPSHOT="$STATE_DIR/current.snapshot.json"
+CONFIGURED_STATE_PATH=${JSON.stringify(configuredStatePath)}
+CONFIGURED_SNAPSHOT_PATH=${JSON.stringify(configuredSnapshotPath)}
+if [[ -n "$CONFIGURED_STATE_PATH" ]]; then
+  STATE_DIR="\${TOPOGRAM_DB_STATE_DIR:-$PROJECT_ROOT/$CONFIGURED_STATE_PATH}"
+else
+  STATE_DIR="\${TOPOGRAM_DB_STATE_DIR:-$BUNDLE_DIR/state}"
+fi
+if [[ -n "$CONFIGURED_SNAPSHOT_PATH" ]]; then
+  CURRENT_SNAPSHOT="$PROJECT_ROOT/$CONFIGURED_SNAPSHOT_PATH"
+else
+  CURRENT_SNAPSHOT="$STATE_DIR/current.snapshot.json"
+fi
 DESIRED_SNAPSHOT="$STATE_DIR/desired.snapshot.json"
 PLAN_JSON="$STATE_DIR/migration.plan.json"
 MIGRATION_SQL="$STATE_DIR/migration.sql"
@@ -429,7 +537,7 @@ ${engine === "sqlite" ? `  normalize_sqlite_database_url
 `;
 }
 
-function renderDbStatusScript() {
+function renderDbStatusScript(plan) {
   return `#!/usr/bin/env bash
 set -euo pipefail
 . "$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)/db-common.sh"
@@ -440,8 +548,23 @@ if [[ -f "$CURRENT_SNAPSHOT" ]]; then
   generate_migration_plan "$CURRENT_SNAPSHOT"
   cat "$PLAN_JSON"
 else
-  echo '{"mode":"greenfield","currentSnapshot":null}'
+  echo ${JSON.stringify(plan.behavior.proposalOnly ? '{"mode":"maintained_proposal","currentSnapshot":null}' : '{"mode":"greenfield","currentSnapshot":null}')}
 fi
+`;
+}
+
+function renderMaintainedDbBootstrapScript() {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+. "$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)/db-common.sh"
+
+generate_desired_snapshot
+generate_sql_migration "$EMPTY_SNAPSHOT"
+
+echo "Maintained database runtime: bootstrap is proposal-only."
+echo "Desired snapshot: $DESIRED_SNAPSHOT"
+echo "SQL proposal: $MIGRATION_SQL"
+echo "No migration was applied. Review and adapt the proposal into the maintained database migration system."
 `;
 }
 
@@ -489,6 +612,30 @@ echo "Greenfield bootstrap complete."
 `;
 }
 
+function renderMaintainedDbMigrateScript() {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+. "$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)/db-common.sh"
+
+generate_desired_snapshot
+
+if [[ ! -f "$CURRENT_SNAPSHOT" ]]; then
+  echo "Maintained database runtime: current snapshot not found at $CURRENT_SNAPSHOT." >&2
+  echo "Create the reviewed snapshot first, then rerun this proposal command." >&2
+  exit 1
+fi
+
+generate_migration_plan "$CURRENT_SNAPSHOT"
+ensure_supported_plan
+generate_sql_migration "$CURRENT_SNAPSHOT"
+
+echo "Maintained database runtime: migration proposal generated."
+echo "Migration plan: $PLAN_JSON"
+echo "SQL proposal: $MIGRATION_SQL"
+echo "No migration was applied. Review and adapt the proposal into the maintained database migration system."
+`;
+}
+
 function renderDbMigrateScript() {
   return `#!/usr/bin/env bash
 set -euo pipefail
@@ -521,6 +668,21 @@ apply_sql
 refresh_runtime_clients
 cp "$DESIRED_SNAPSHOT" "$CURRENT_SNAPSHOT"
 echo "Brownfield migration complete."
+`;
+}
+
+function renderMaintainedDbBootstrapOrMigrateScript() {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/db-common.sh"
+
+if [[ -f "$CURRENT_SNAPSHOT" ]]; then
+  exec bash "$SCRIPT_DIR/db-migrate.sh"
+fi
+
+exec bash "$SCRIPT_DIR/db-bootstrap.sh"
 `;
 }
 
@@ -571,10 +733,10 @@ function generateDbLifecycleBundle(graph, projection, options = {}) {
     "README.md": renderDbLifecycleReadme(plan),
     ".env.example": renderDbLifecycleEnvExample(projection, plan),
     "scripts/db-common.sh": renderDbLifecycleCommonScript(plan),
-    "scripts/db-status.sh": renderDbStatusScript(),
-    "scripts/db-bootstrap.sh": renderDbBootstrapScript(),
-    "scripts/db-migrate.sh": renderDbMigrateScript(),
-    "scripts/db-bootstrap-or-migrate.sh": renderDbBootstrapOrMigrateScript(),
+    "scripts/db-status.sh": renderDbStatusScript(plan),
+    "scripts/db-bootstrap.sh": plan.behavior.proposalOnly ? renderMaintainedDbBootstrapScript() : renderDbBootstrapScript(),
+    "scripts/db-migrate.sh": plan.behavior.proposalOnly ? renderMaintainedDbMigrateScript() : renderDbMigrateScript(),
+    "scripts/db-bootstrap-or-migrate.sh": plan.behavior.proposalOnly ? renderMaintainedDbBootstrapOrMigrateScript() : renderDbBootstrapOrMigrateScript(),
     "snapshots/empty.snapshot.json": `${JSON.stringify(renderEmptySnapshotForProjection(projection), null, 2)}\n`,
     "state/.gitkeep": ""
   };

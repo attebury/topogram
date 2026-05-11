@@ -27,6 +27,7 @@ import { defaultProjectConfigForGraph, validateProjectConfig } from "../../../pr
  * @property {string|null} [api]
  * @property {string|null} [database]
  * @property {Record<string, string>} [env]
+ * @property {import("../../../project-config.js").RuntimeMigrationStrategy} [migration]
  * @property {RuntimeComponent|null} [apiRuntime]
  * @property {RuntimeComponent|null} [databaseRuntime]
  * @property {RuntimeComponent|null} [apiComponent] Legacy adapter alias for apiRuntime.

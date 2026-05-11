@@ -48,7 +48,7 @@ function buildAppBundlePlan(graph, options = {}) {
   const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
-  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id, runtime: topology.primaryDb || undefined }) : null;
   const environmentProfile = options.profileId || "local_process";
   const deployProfile = options.deployProfileId || "fly_io";
   const smokeVerification = buildVerificationSummary(graph, ["smoke", "journey"]);
@@ -77,7 +77,8 @@ function buildAppBundlePlan(graph, options = {}) {
         generator: runtime.generator,
         port: runtime.port ?? null,
         uses_api: runtime.api || null,
-        uses_database: runtime.database || null
+        uses_database: runtime.database || null,
+        ...(runtime.kind === "database" && runtime.migration ? { migration: runtime.migration } : {})
       }))
     },
     runtimeReference,

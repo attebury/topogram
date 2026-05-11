@@ -115,3 +115,13 @@ Rules:
 In maintained mode, Topogram emits snapshots, plans, SQL proposals, and
 Prisma/Drizzle schema proposals. The maintained app owns its schema files,
 migration directory, and migration runner.
+
+Generated DB lifecycle bundles use the strategy when rendering their plan and
+scripts:
+
+- `ownership: "generated"` keeps apply-capable lifecycle scripts. Supported
+  SQL migrations may be applied by generated scripts; unsupported plans stop for
+  manual review.
+- `ownership: "maintained"` renders proposal-only lifecycle scripts. They emit
+  desired snapshots, migration plans, and SQL proposals, but never apply
+  migrations or seed generated demo data into the maintained database.

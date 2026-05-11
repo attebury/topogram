@@ -17,8 +17,12 @@ import {
   generateWithRuntimeGenerator,
   getBundledGeneratorAdapter
 } from "../../src/generator/adapters.js";
-import { generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
+import { generateEnvironmentBundle, generateEnvironmentPlan } from "../../src/generator/runtime/environment.js";
 import { resolveRuntimeTopology } from "../../src/generator/runtime/shared.js";
+import {
+  generateDbLifecycleBundleForProjection,
+  generateDbLifecyclePlan
+} from "../../src/generator/surfaces/databases/lifecycle-shared.js";
 import { resolveWorkspaceContext } from "../../src/workspace-paths.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -589,6 +593,79 @@ test("topogram check reports database migration strategy in JSON topology", () =
   }
 });
 
+test("database lifecycle plan and bundle honor generated and maintained migration strategies", () => {
+  const graph = appBasicGraph();
+  const projection = graph.byKind.projection.find((entry) => entry.id === "proj_db_postgres");
+  assert.ok(projection);
+
+  const generated = appBasicProjectConfig();
+  generated.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "generated",
+    tool: "sql",
+    apply: "script",
+    statePath: "app/apps/db/app_postgres/state"
+  };
+  const generatedPlan = generateDbLifecyclePlan(graph, {
+    projectConfig: generated,
+    projectionId: "proj_db_postgres"
+  });
+  assert.equal(generatedPlan.migrationStrategy.ownership, "generated");
+  assert.equal(generatedPlan.behavior.appliesMigrations, true);
+  assert.equal(generatedPlan.state.currentSnapshot, "app/apps/db/app_postgres/state/current.snapshot.json");
+  const generatedBundle = generateDbLifecycleBundleForProjection(graph, projection, {
+    projectConfig: generated,
+    projectionId: "proj_db_postgres"
+  });
+  assert.match(generatedBundle["scripts/db-migrate.sh"], /apply_sql/);
+  assert.match(generatedBundle["README.md"], /Generated apply mode/);
+
+  const maintained = appBasicProjectConfig();
+  maintained.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "maintained",
+    tool: "prisma",
+    apply: "never",
+    snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+    schemaPath: "apps/services/app_api/prisma/schema.prisma",
+    migrationsPath: "apps/services/app_api/prisma/migrations"
+  };
+  const maintainedPlan = generateDbLifecyclePlan(graph, {
+    projectConfig: maintained,
+    projectionId: "proj_db_postgres"
+  });
+  assert.equal(maintainedPlan.migrationStrategy.ownership, "maintained");
+  assert.equal(maintainedPlan.behavior.proposalOnly, true);
+  assert.equal(maintainedPlan.behavior.appliesMigrations, false);
+  assert.equal(maintainedPlan.state.currentSnapshot, "topo/state/db/app_postgres/current.snapshot.json");
+  assert.equal(maintainedPlan.proposals.schemaPath, "apps/services/app_api/prisma/schema.prisma");
+  const maintainedBundle = generateDbLifecycleBundleForProjection(graph, projection, {
+    projectConfig: maintained,
+    projectionId: "proj_db_postgres"
+  });
+  assert.match(maintainedBundle["README.md"], /Maintained proposal mode/);
+  assert.match(maintainedBundle["scripts/db-migrate.sh"], /No migration was applied/);
+  assert.doesNotMatch(maintainedBundle["scripts/db-migrate.sh"], /\bapply_sql\b/);
+});
+
+test("generated environment bootstrap skips demo seed for maintained database runtimes", () => {
+  const graph = appBasicGraph();
+  const maintained = appBasicProjectConfig();
+  maintained.topology.runtimes.find((runtime) => runtime.id === "app_postgres").migration = {
+    ownership: "maintained",
+    tool: "sql",
+    apply: "never",
+    snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+    migrationsPath: "apps/services/app_api/db/migrations"
+  };
+
+  const bundle = generateEnvironmentBundle(graph, {
+    projectConfig: maintained,
+    implementation: APP_BASIC_IMPLEMENTATION
+  });
+
+  assert.match(bundle["scripts/bootstrap-db.sh"], /Primary API uses a maintained database runtime; skipping generated demo seed/);
+  assert.doesNotMatch(bundle["scripts/bootstrap-db.sh"], /npm run seed:demo/);
+});
+
 test("project config validation catches incompatible and planned generators", () => {
   const graph = appBasicGraph();
   const incompatible = appBasicProjectConfig();
@@ -765,6 +842,82 @@ exports.generate = (context) => {
     runtimeId: "app_web",
     apiRuntime: "app_api",
     apiComponent: "app_api"
+  });
+});
+
+test("package-backed database adapters receive migration strategy in lifecycle contracts", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-db-context-"));
+  const { packageName, packageRoot } = writePackageBackedGenerator(root, {
+    id: "@scope/smoke-db",
+    package: "@scope/topogram-generator-smoke-db",
+    surface: "database",
+    projectionTypes: ["db_contract"],
+    runtimeKinds: ["database"],
+    inputs: ["db-contract", "db-lifecycle-plan"],
+    outputs: ["db-lifecycle-bundle"],
+    stack: {
+      runtime: "database",
+      framework: "smoke-db",
+      language: "sql"
+    },
+    capabilities: {
+      lifecycle: true,
+      migrations: true
+    }
+  });
+  const capturePath = path.join(root, "adapter-db-context.json");
+  fs.writeFileSync(
+    path.join(packageRoot, "index.cjs"),
+    `exports.manifest = require("./topogram-generator.json");
+exports.generate = (context) => {
+  require("node:fs").writeFileSync(${JSON.stringify(capturePath)}, JSON.stringify({
+    runtimeId: context.runtime.id,
+    ownership: context.contracts.lifecyclePlan.migrationStrategy.ownership,
+    tool: context.contracts.lifecyclePlan.migrationStrategy.tool,
+    apply: context.contracts.lifecyclePlan.migrationStrategy.apply,
+    snapshotPath: context.contracts.lifecyclePlan.proposals.snapshotPath
+  }, null, 2));
+  return { files: { "README.md": "# db\\n" }, diagnostics: [] };
+};
+`,
+    "utf8"
+  );
+  writeGeneratorPolicy(root, { allowedPackages: [packageName] });
+  const graph = appBasicGraph();
+  const projection = graph.byKind.projection.find((entry) => entry.id === "proj_db_postgres");
+  const result = generateWithRuntimeGenerator({
+    graph,
+    projection,
+    runtime: {
+      id: "app_postgres",
+      kind: "database",
+      projection,
+      generator: {
+        id: "@scope/smoke-db",
+        version: "1",
+        package: packageName
+      },
+      migration: {
+        ownership: "maintained",
+        tool: "drizzle",
+        apply: "never",
+        snapshotPath: "topo/state/db/app_postgres/current.snapshot.json",
+        schemaPath: "apps/api/src/db/schema.ts",
+        migrationsPath: "apps/api/drizzle"
+      }
+    },
+    topology: null,
+    implementation: null,
+    options: { configDir: root }
+  });
+
+  assert.equal(result.files["README.md"], "# db\n");
+  assert.deepEqual(readJson(capturePath), {
+    runtimeId: "app_postgres",
+    ownership: "maintained",
+    tool: "drizzle",
+    apply: "never",
+    snapshotPath: "topo/state/db/app_postgres/current.snapshot.json"
   });
 });
 

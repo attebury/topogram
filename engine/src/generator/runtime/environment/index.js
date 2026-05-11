@@ -43,7 +43,7 @@ function buildEnvironmentPlan(graph, options = {}) {
   const runtimeReference = runtimeReferenceFor(graph, options);
   const topology = resolveRuntimeTopology(graph, options);
   const { apiProjection, uiProjection, dbProjection } = getDefaultEnvironmentProjections(graph, options);
-  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id }) : null;
+  const dbLifecycle = dbProjection ? generateDbLifecyclePlan(graph, { ...options, projectionId: dbProjection.id, runtime: topology.primaryDb || undefined }) : null;
   const dbEngine = dbLifecycle?.engine || null;
   const profile = options.profileId || (dbEngine === "sqlite" || !dbProjection ? "local_process" : "local_docker");
   const usesDocker = profile === "local_docker";
@@ -67,7 +67,8 @@ function buildEnvironmentPlan(graph, options = {}) {
         generator: runtime.generator,
         port: runtime.port ?? null,
         uses_api: runtime.api || null,
-        uses_database: runtime.database || null
+        uses_database: runtime.database || null,
+        ...(runtime.kind === "database" && runtime.migration ? { migration: runtime.migration } : {})
       }))
     },
     projections: {
@@ -145,7 +146,8 @@ function buildEnvironmentPlan(graph, options = {}) {
         engine: component.id === topology.primaryDb?.id ? dbEngine : null,
         port: component.port,
         dir: topology.dbDir(component),
-        env: dbEnvVarsForComponent(component, { primary: component.id === topology.primaryDb?.id })
+        env: dbEnvVarsForComponent(component, { primary: component.id === topology.primaryDb?.id }),
+        ...(component.migration ? { migration: component.migration } : {})
       }))
     },
     ports: {
@@ -329,7 +331,8 @@ ${dockerSection}
 - ${hasWeb && hasApi ? "The generated web app talks to `PUBLIC_TOPOGRAM_API_BASE_URL`." : hasWeb ? "The generated web app is standalone." : "No web surface is generated."}
 - ${hasNative ? "Native app scaffolds use the same UI surface contracts as web surfaces." : "No native surface is generated."}
 - If \`.env\` is missing, generated scripts fall back to \`.env.example\`.
-- The DB lifecycle scripts remain the source of truth for greenfield bootstrap and brownfield migration.
+- Generated-owned DB lifecycle scripts remain the source of truth for greenfield bootstrap and generated migrations.
+- Maintained DB lifecycle scripts emit proposals only and never apply migrations.
 `;
 }
 
@@ -349,6 +352,10 @@ function renderEnvironmentBootstrapDbScript(plan) {
     return `(cd "$ROOT_DIR/${component.dir}" && TOPOGRAM_ENV_FILE=/dev/null ${assignments} bash ./scripts/db-bootstrap-or-migrate.sh)`;
   });
   const primaryApi = plan.runtimes.apis[0];
+  const primaryApiDatabase = primaryApi?.uses_database
+    ? plan.runtimes.databases.find((component) => component.id === primaryApi.uses_database)
+    : null;
+  const seedAllowed = Boolean(primaryApi?.uses_database) && primaryApiDatabase?.migration?.ownership !== "maintained";
   if (plan.runtimes.databases.length === 0) {
     return renderEnvAwareShellScript([
       'echo "No database runtimes are configured; skipping DB bootstrap."'
@@ -366,9 +373,11 @@ function renderEnvironmentBootstrapDbScript(plan) {
     ...dbBootstrapLines,
     'if [[ "${TOPOGRAM_SEED_DEMO:-true}" != "false" ]]; then',
     ...apiDatabaseExportLines(primaryApi),
-    ...(primaryApi?.uses_database
+    ...(seedAllowed
       ? [`(cd "$ROOT_DIR/${primaryApi.dir}" && npm install && npm exec -- prisma generate --schema prisma/schema.prisma && npm exec -- prisma db push --schema prisma/schema.prisma --skip-generate && npm run seed:demo)`]
-      : ['echo "No DB-backed API component is configured; skipping demo seed."']),
+      : [primaryApi?.uses_database
+        ? 'echo "Primary API uses a maintained database runtime; skipping generated demo seed."'
+        : 'echo "No DB-backed API component is configured; skipping demo seed."']),
     "fi"
   ]);
 }
