@@ -1,6 +1,6 @@
 acceptance_criterion ac_command_vocabulary_uses_copy_extract_adopt {
   name "Command Vocabulary Uses Copy Extract Adopt"
-  description "Given public CLI help, docs, scripts, generated guidance, and dogfood CLI surface records, when users inspect project lifecycle commands, then they see copy, extract, and top-level adopt instead of public new, import, catalog copy, or import adopt command shapes."
+  description "Given public CLI help, docs, scripts, generated guidance, and dogfood CLI surface records, when users inspect project lifecycle commands, then they see init, copy, extract, top-level adopt, generate, and emit as the active command vocabulary."
   requirement req_clear_command_vocabulary
   status approved
 }

@@ -48,17 +48,17 @@ echo "Checking installed catalog-first command surface..."
   "$TOPOGRAM_BIN" template list
 )
 
-echo "Checking catalog-disabled default starter guidance..."
+echo "Checking catalog-disabled copy guidance..."
 set +e
-DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" new ./no-catalog-default 2>&1)"
+DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" copy hello-web ./no-catalog-default 2>&1)"
 DISABLED_STATUS=$?
 set -e
 if [[ "$DISABLED_STATUS" -eq 0 ]]; then
-  echo "Expected catalog-disabled default starter creation to fail." >&2
+  echo "Expected catalog-disabled catalog copy to fail." >&2
   exit 1
 fi
-if [[ "$DISABLED_OUTPUT" != *"The default starter 'hello-web' is catalog-backed"* ]]; then
-  echo "Expected catalog-disabled guidance to explain the catalog-backed default starter." >&2
+if [[ "$DISABLED_OUTPUT" != *"Catalog access is disabled"* && "$DISABLED_OUTPUT" != *"Could not resolve template"* ]]; then
+  echo "Expected catalog-disabled guidance to explain catalog-backed copy failure." >&2
   echo "$DISABLED_OUTPUT" >&2
   exit 1
 fi
@@ -66,7 +66,7 @@ fi
 echo "Creating hello-web starter..."
 (
   cd "$CONSUMER_DIR"
-  "$TOPOGRAM_BIN" new ./hello-web --template hello-web
+  "$TOPOGRAM_BIN" copy hello-web ./hello-web
 )
 
 STARTER_DIR="$CONSUMER_DIR/hello-web"

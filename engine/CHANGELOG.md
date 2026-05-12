@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- No changes yet.
+
+## 0.3.79 - 2026-05-12
+
+- Add graph-native `journey` statements with ordered `step` and `alternate`
+  record blocks, resolver/query support, and canonical dogfood journey records.
+- Add `topogram init` as the primary command for starting an empty maintained
+  Topogram workspace, including optional SDLC policy initialization.
+- Replace the public creation/extraction vocabulary with `copy`, `extract`, and
+  top-level `adopt`: `topogram copy <source> <target>` copies templates or pure
+  Topogram packages, `topogram extract` reads brownfield apps into reviewable
+  candidates, and `topogram adopt` promotes selected candidates.
+- Rename public extraction provenance and guidance to extract/adopt terms,
+  including generated starter docs, agent brief output, package smoke scripts,
+  and dogfood CLI surface records.
+- Keep `generate` scoped to app/runtime output and `emit` scoped to contracts,
+  reports, snapshots, and plans.
+
+## 0.3.78 - 2026-05-12
+
 - Install package-backed generator dependencies during `topogram template check`
   before starter validation.
 
