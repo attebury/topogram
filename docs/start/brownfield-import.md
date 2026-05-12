@@ -126,3 +126,20 @@ does not overwrite adopted canonical `topo/**` files.
 - Generate a new stack from the adopted Topogram.
 - Treat the app as maintained and use Topogram to emit contracts, reports, and
   migration proposals while humans or agents edit app code directly.
+
+## Existing app plus an existing Topogram
+
+If you already have a Topogram you want to use inside an existing app, do not
+use brownfield import first. Initialize the app as maintained, then copy or
+merge the reviewed `topo/` files:
+
+```bash
+cd ./existing-app
+topogram init .
+topogram check --json
+```
+
+`topogram init` creates maintained ownership for `.`. After that, copy the pure
+Topogram workspace into `topo/`, review `topogram.project.json`, run
+`topogram check`, and use `topogram emit` for contracts, reports, and migration
+proposals. Topogram should not overwrite maintained app source.

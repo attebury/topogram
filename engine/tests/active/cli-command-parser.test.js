@@ -16,6 +16,14 @@ test("split command parser handles extracted command families", () => {
     templateCommand: "list",
     inputPath: null
   });
+  assert.deepEqual(parseSplitCommandArgs(["init"]), {
+    initProject: true,
+    inputPath: "."
+  });
+  assert.deepEqual(parseSplitCommandArgs(["init", "./existing-app", "--json"]), {
+    initProject: true,
+    inputPath: "./existing-app"
+  });
   assert.deepEqual(parseSplitCommandArgs(["generate"]), {
     generateTarget: "app-bundle",
     write: true,

@@ -37,6 +37,17 @@ npm run verify
 Start here when you want Topogram to create a new generated app from a template.
 See [Greenfield Generate](./docs/start/greenfield-generate.md).
 
+### Initialize an existing repo
+
+```bash
+npx topogram init .
+topogram check --json
+```
+
+Start here when you want an empty maintained Topogram workspace in a repo you
+already own. `init` does not copy a template, install generators, or generate
+app code.
+
 ### Import an existing app
 
 ```bash

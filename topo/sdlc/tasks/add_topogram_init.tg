@@ -1,0 +1,14 @@
+task task_add_topogram_init {
+  name "Add Topogram Init"
+  description "Add the `topogram init` command, tests, docs, and dogfood CLI surface updates for empty or maintained-workspace initialization."
+  satisfies [req_init_maintained_workspace]
+  acceptance_refs [ac_init_creates_empty_maintained_workspace]
+  verification_refs [verification_engine_gate]
+  affects [cap_create_project cap_validate_workspace cap_brief_agent]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

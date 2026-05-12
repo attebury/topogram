@@ -15,6 +15,8 @@ topogram setup catalog-auth
 ## Project creation
 
 ```bash
+topogram init
+topogram init ./existing-app --json
 topogram template list
 topogram new --list-templates
 topogram new ./my-app --template hello-web

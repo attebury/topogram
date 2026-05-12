@@ -1,0 +1,6 @@
+acceptance_criterion ac_init_creates_empty_maintained_workspace {
+  name "Init Creates Empty Maintained Workspace"
+  description "Given a directory without Topogram config, when `topogram init` runs, then it creates topo/, topogram.project.json with workspace ./topo, maintained output ownership for the target repo, and read-only guidance without copying a template or overwriting existing app files."
+  requirement req_init_maintained_workspace
+  status approved
+}

@@ -2,6 +2,9 @@
 
 Use this workflow when Topogram should create a new app or runtime bundle.
 
+Use `topogram init` instead when you want an empty maintained Topogram
+workspace in an existing repo and do not want to copy a starter template.
+
 ## 1. Create a project
 
 ```bash
@@ -15,6 +18,17 @@ npm install
 
 `hello-web` is the default small web starter. Other catalog aliases can include
 API, database, or native runtimes.
+
+For a blank maintained workspace:
+
+```bash
+npx topogram init ./existing-or-empty-repo
+cd ./existing-or-empty-repo
+topogram check --json
+```
+
+`init` writes `topo/` and `topogram.project.json` only. It does not copy a
+template, install generators, or generate app code.
 
 ## 2. Inspect the project
 

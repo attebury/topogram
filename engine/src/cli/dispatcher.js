@@ -10,6 +10,7 @@ import { runGenerateAppCommand } from "./commands/generate.js";
 import { runGeneratorCommand } from "./commands/generator.js";
 import { runGeneratorPolicyCommand } from "./commands/generator-policy.js";
 import { runImportCommand } from "./commands/import-runner.js";
+import { runInitProjectCommand } from "./commands/init.js";
 import { runNewProjectCommand } from "./commands/new.js";
 import { runPackageCommand } from "./commands/package.js";
 import { runParseCommand, runResolveCommand } from "./commands/inspect.js";
@@ -259,6 +260,10 @@ export async function runCliDispatch(context) {
 
   if (commandArgs?.sourceCommand) {
     return runSourceCommand({ commandArgs, inputPath, args, json: emitJson });
+  }
+
+  if (commandArgs?.initProject) {
+    return runInitProjectCommand(effectiveInputPath || ".", { json: emitJson, cwd: process.cwd() });
   }
 
   if (commandArgs?.newProject) {

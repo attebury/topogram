@@ -42,6 +42,7 @@ import {
 import {
   printEmitHelp,
   printGenerateHelp,
+  printInitHelp,
   printNewHelp,
   printUsage,
   printWidgetHelp
@@ -54,6 +55,10 @@ import {
 export function printCommandHelp(command) {
   if (command === "new" || command === "create") {
     printNewHelp();
+    return true;
+  }
+  if (command === "init") {
+    printInitHelp();
     return true;
   }
   if (command === "generate") {

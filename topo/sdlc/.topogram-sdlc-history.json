@@ -1246,5 +1246,44 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "req_init_maintained_workspace": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-12T19:10:31.265Z",
+      "by": "actor_coding_agent",
+      "note": "Review requirement for non-template init command"
+    },
+    {
+      "from": "approved",
+      "to": "in-review",
+      "at": "2026-05-12T19:20:16.016Z",
+      "by": "actor_coding_agent",
+      "note": "Repair SDLC history after parallel transition race"
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-12T19:20:26.543Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement has accepted init behavior and test coverage"
+    }
+  ],
+  "task_add_topogram_init": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T19:10:42.122Z",
+      "by": "actor_coding_agent",
+      "note": "Implement init command, docs, and tests"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T19:26:33.290Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

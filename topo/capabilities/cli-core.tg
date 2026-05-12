@@ -1,6 +1,6 @@
 capability cap_create_project {
   name "Create Project"
-  description "Create a new Topogram project from a template or catalog alias."
+  description "Create or initialize a Topogram project, either from a template/catalog alias or as an empty maintained workspace."
   actors [actor_consumer_developer, actor_coding_agent]
   output [shape_cli_status_result]
   domain dom_catalog_templates

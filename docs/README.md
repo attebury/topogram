@@ -7,6 +7,7 @@ These docs are organized by audience. Historical docs were archived to
 
 | Goal | Start Here |
 | --- | --- |
+| Initialize Topogram in an existing repo | [Greenfield Generate](./start/greenfield-generate.md) |
 | Generate a new app | [Greenfield Generate](./start/greenfield-generate.md) |
 | Import an existing app | [Brownfield Import](./start/brownfield-import.md) |
 | Maintain database migrations | [Database Migrations](./start/database-migrations.md) |

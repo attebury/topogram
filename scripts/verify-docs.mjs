@@ -300,6 +300,7 @@ function verifyCliReferenceMatchesHelp() {
   assert.equal(help.status, 0, help.stderr || help.stdout);
   const cliReference = read("docs/reference/cli.md");
   for (const command of [
+    "topogram init",
     "topogram new",
     "topogram check",
     "topogram generate",

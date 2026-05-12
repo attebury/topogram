@@ -1,0 +1,10 @@
+requirement req_init_maintained_workspace {
+  name "Init Maintained Workspace"
+  description "Topogram must provide a non-template initialization path that adds a topo workspace and maintained project config to an existing or empty repository without overwriting app source."
+  affects [cap_create_project cap_validate_workspace cap_brief_agent]
+  introduces_rules []
+  respects_rules [rule_generated_and_maintained_ownership_differ]
+  domain dom_workspace_project_config
+  priority medium
+  status approved
+}

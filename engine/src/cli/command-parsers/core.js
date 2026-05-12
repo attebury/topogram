@@ -47,6 +47,9 @@ export function parseCoreCommandArgs(args) {
       ? { templateCommand: "list", inputPath: null }
       : { newProject: true, inputPath: args[1] };
   }
+  if (args[0] === "init") {
+    return { initProject: true, inputPath: commandPath(args, 1, ".") };
+  }
   if (args[0] === "generate" && args[1] === "app") {
     return { generateTarget: "app-bundle", write: true, inputPath: commandPath(args, 2), defaultOutDir: "./app" };
   }

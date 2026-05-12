@@ -66,6 +66,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram generator policy check [path] [--json]");
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
+  console.log("   or: topogram init [path] [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("   or: topogram new <path> --template <package> --allow-local-npmrc");
   console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
@@ -76,6 +77,7 @@ export function printUsage(options = {}) {
   console.log("  topogram setup package-auth");
   console.log("  topogram release status");
   console.log("  topogram release roll-consumers --latest");
+  console.log("  topogram init .");
   console.log("  topogram new ./my-app");
   console.log("  topogram new --list-templates");
   console.log("  topogram new ./my-app --template todo");
@@ -113,6 +115,7 @@ export function printUsage(options = {}) {
   console.log("  npm install --save-dev @topogram/cli");
   console.log("  npx topogram doctor");
   console.log("  npx topogram template list");
+  console.log("  npx topogram init .");
   console.log("  npx topogram new ./my-app --template hello-web");
   console.log("  cd ./my-app && npm install && npm run check && npm run generate");
   console.log("  npm --prefix app run compile");
@@ -234,6 +237,23 @@ export function printNewHelp() {
   console.log("  topogram new ./my-app --template @scope/topogram-template");
   console.log("");
   console.log("Default template: hello-web from the configured catalog.");
+}
+
+/**
+ * @returns {void}
+ */
+export function printInitHelp() {
+  console.log("Usage: topogram init [path] [--json]");
+  console.log("");
+  console.log("Initializes an empty Topogram workspace in an existing or new repository without copying a template.");
+  console.log("");
+  console.log("Defaults: path is the current directory. Init creates topo/, topogram.project.json, and starter guidance files only when they are missing.");
+  console.log("The default output is maintained ownership for '.', so Topogram will not overwrite app source.");
+  console.log("");
+  console.log("Examples:");
+  console.log("  topogram init");
+  console.log("  topogram init . --json");
+  console.log("  topogram init ./existing-app");
 }
 
 /**

@@ -48,4 +48,12 @@ journey journey_greenfield_start_from_template {
     condition "The desired starter is not exposed as a catalog alias."
     commands ["topogram new ./my-app --template @topogram/template-hello-web"]
   }
+
+  alternate {
+    id initialize_empty_workspace
+    from create_project
+    condition "The user already owns a repo and wants an empty maintained Topogram workspace instead of starter content."
+    commands ["topogram init ."]
+    expects ["Project contains topo/ and topogram.project.json with maintained output ownership for the existing repo."]
+  }
 }
