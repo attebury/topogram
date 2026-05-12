@@ -40,13 +40,13 @@ See [Greenfield Generate](./docs/start/greenfield-generate.md).
 ### Initialize an existing repo
 
 ```bash
-npx topogram init .
+npx topogram init . --with-sdlc
 topogram check --json
 ```
 
 Start here when you want an empty maintained Topogram workspace in a repo you
 already own. `init` does not copy a template, install generators, or generate
-app code.
+app code. `--with-sdlc` opts the repo into enforced SDLC immediately.
 
 ### Import an existing app
 

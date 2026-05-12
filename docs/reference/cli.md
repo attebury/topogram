@@ -16,6 +16,7 @@ topogram setup catalog-auth
 
 ```bash
 topogram init
+topogram init . --with-sdlc
 topogram init ./existing-app --json
 topogram template list
 topogram new --list-templates

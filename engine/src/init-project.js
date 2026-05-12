@@ -3,11 +3,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { defaultSdlcPolicy, SDLC_POLICY_FILE } from "./sdlc/policy.js";
 import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH, PROJECT_CONFIG_FILE } from "./workspace-paths.js";
 
 /**
  * @typedef {Object} InitProjectOptions
  * @property {string} [targetPath]
+ * @property {boolean} [withSdlc]
  */
 
 /**
@@ -19,6 +21,7 @@ import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH, PROJECT_CONFIG_FILE }
  * @property {string[]} created
  * @property {string[]} skipped
  * @property {Record<string, any>} projectConfig
+ * @property {{ enabled: boolean, path: string|null }} sdlc
  */
 
 /**
@@ -89,6 +92,12 @@ topogram check --json
 topogram query list --json
 \`\`\`
 
+To adopt enforced SDLC after initialization, run:
+
+\`\`\`bash
+topogram sdlc policy init .
+\`\`\`
+
 ## Source
 
 - \`topo/\` is the project-owned Topogram workspace.
@@ -120,6 +129,14 @@ edited directly after reading focused packets.
 Use \`topogram emit <target>\` for contracts, reports, snapshots, migration
 plans, and agent context. Do not expect \`topogram generate\` to overwrite this
 maintained app unless output ownership is deliberately changed.
+
+If \`topogram.sdlc-policy.json\` exists, use SDLC commands for task and status
+work before protected edits:
+
+\`\`\`bash
+topogram sdlc policy explain --json
+topogram sdlc prep commit . --json
+\`\`\`
 `;
 }
 
@@ -171,6 +188,16 @@ export function initTopogramProject(options = {}) {
   created.push(PROJECT_CONFIG_FILE);
   writeIfMissing(projectRoot, path.join(projectRoot, "README.md"), initializedReadme(), created, skipped);
   writeIfMissing(projectRoot, path.join(projectRoot, "AGENTS.md"), initializedAgentsGuide(), created, skipped);
+  const sdlcPolicyPath = path.join(projectRoot, SDLC_POLICY_FILE);
+  if (options.withSdlc) {
+    writeIfMissing(
+      projectRoot,
+      sdlcPolicyPath,
+      `${JSON.stringify(defaultSdlcPolicy(), null, 2)}\n`,
+      created,
+      skipped
+    );
+  }
 
   return {
     ok: true,
@@ -179,6 +206,10 @@ export function initTopogramProject(options = {}) {
     projectConfigPath,
     created,
     skipped,
-    projectConfig
+    projectConfig,
+    sdlc: {
+      enabled: options.withSdlc ? fs.existsSync(sdlcPolicyPath) : false,
+      path: options.withSdlc ? sdlcPolicyPath : null
+    }
   };
 }

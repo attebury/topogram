@@ -77,6 +77,34 @@ test("topogram init creates an empty maintained workspace without overwriting ap
   }
 });
 
+test("topogram init --with-sdlc adopts enforced SDLC during initialization", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-init-sdlc-"));
+  const appRoot = path.join(root, "existing-app");
+  fs.mkdirSync(appRoot, { recursive: true });
+
+  try {
+    const init = runCli(["init", appRoot, "--with-sdlc", "--json"]);
+    assert.equal(init.status, 0, init.stderr || init.stdout);
+    const payload = JSON.parse(init.stdout);
+    assert.equal(payload.sdlc.enabled, true);
+    assert.equal(payload.created.includes("topogram.sdlc-policy.json"), true);
+
+    const policy = readJson(path.join(appRoot, "topogram.sdlc-policy.json"));
+    assert.equal(policy.status, "adopted");
+    assert.equal(policy.mode, "enforced");
+    assert.equal(policy.protectedPaths.includes("topo/**"), true);
+
+    const explain = runCli(["sdlc", "policy", "explain", appRoot, "--json"]);
+    assert.equal(explain.status, 0, explain.stderr || explain.stdout);
+    const explainPayload = JSON.parse(explain.stdout);
+    assert.equal(explainPayload.policy.exists, true);
+    assert.equal(explainPayload.policy.status, "adopted");
+    assert.equal(explainPayload.policy.mode, "enforced");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("topogram init refuses existing Topogram config or non-empty topo workspace", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-init-refuse-"));
   try {

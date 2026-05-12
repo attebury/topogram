@@ -1285,5 +1285,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_init_can_enable_sdlc": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T19:44:50.586Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted init-time SDLC opt-in behavior"
+    }
+  ],
+  "task_add_init_with_sdlc": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T19:45:04.154Z",
+      "by": "actor_coding_agent",
+      "note": "Implement init-time SDLC opt-in"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T19:45:12.264Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing CLI flag, docs, and tests"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T19:50:06.296Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

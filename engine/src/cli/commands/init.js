@@ -29,6 +29,7 @@ export function printInitProjectResult(result, cwd) {
   console.log("Output ownership: maintained (.)");
   console.log("Template: none");
   console.log("Generated app output: none");
+  console.log(`SDLC: ${result.sdlc.enabled ? "adopted/enforced" : "not adopted"}`);
   if (result.created.length > 0) {
     console.log(`Created: ${result.created.join(", ")}`);
   }
@@ -41,16 +42,22 @@ export function printInitProjectResult(result, cwd) {
   console.log("  topogram agent brief --json");
   console.log("  topogram check --json");
   console.log("  topogram query list --json");
+  if (result.sdlc.enabled) {
+    console.log("  topogram sdlc policy explain --json");
+    console.log("  topogram sdlc prep commit . --json");
+  } else {
+    console.log("  topogram sdlc policy init .");
+  }
   console.log("  topogram emit <target> ./topo --json");
 }
 
 /**
  * @param {string} inputPath
- * @param {{ json?: boolean, cwd?: string }} [options]
+ * @param {{ json?: boolean, cwd?: string, withSdlc?: boolean }} [options]
  * @returns {number}
  */
 export function runInitProjectCommand(inputPath, options = {}) {
-  const result = initTopogramProject({ targetPath: inputPath || "." });
+  const result = initTopogramProject({ targetPath: inputPath || ".", withSdlc: Boolean(options.withSdlc) });
   if (options.json) {
     console.log(stableStringify(result));
   } else {

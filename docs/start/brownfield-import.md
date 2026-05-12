@@ -135,11 +135,12 @@ merge the reviewed `topo/` files:
 
 ```bash
 cd ./existing-app
-topogram init .
+topogram init . --with-sdlc
 topogram check --json
 ```
 
 `topogram init` creates maintained ownership for `.`. After that, copy the pure
 Topogram workspace into `topo/`, review `topogram.project.json`, run
 `topogram check`, and use `topogram emit` for contracts, reports, and migration
-proposals. Topogram should not overwrite maintained app source.
+proposals. `--with-sdlc` opts the repo into enforced SDLC linkage. Topogram
+should not overwrite maintained app source.

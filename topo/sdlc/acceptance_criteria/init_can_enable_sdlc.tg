@@ -1,0 +1,6 @@
+acceptance_criterion ac_init_can_enable_sdlc {
+  name "Init Can Enable Sdlc"
+  description "Given a directory without Topogram config, when `topogram init --with-sdlc` runs, then it creates the maintained workspace and writes topogram.sdlc-policy.json with adopted/enforced defaults."
+  requirement req_init_maintained_workspace
+  status approved
+}

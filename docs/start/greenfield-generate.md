@@ -22,13 +22,14 @@ API, database, or native runtimes.
 For a blank maintained workspace:
 
 ```bash
-npx topogram init ./existing-or-empty-repo
+npx topogram init ./existing-or-empty-repo --with-sdlc
 cd ./existing-or-empty-repo
 topogram check --json
 ```
 
 `init` writes `topo/` and `topogram.project.json` only. It does not copy a
-template, install generators, or generate app code.
+template, install generators, or generate app code. `--with-sdlc` also writes
+`topogram.sdlc-policy.json` with adopted/enforced defaults.
 
 ## 2. Inspect the project
 

@@ -24,7 +24,7 @@ projection proj_topogram_cli {
   outputs [maintained_engine]
 
   commands {
-    command init capability cap_create_project usage "topogram init [target]" mode writes_workspace
+    command init capability cap_create_project usage "topogram init [target] [--with-sdlc]" mode writes_workspace
     command new capability cap_create_project usage "topogram new <target> [--template <id-or-spec>]" mode writes_workspace
     command check capability cap_validate_workspace usage "topogram check [path] [--json]" mode read_only
     command generate capability cap_generate_app_outputs usage "topogram generate [path] [--out <path>]" mode writes_app
@@ -47,6 +47,7 @@ projection proj_topogram_cli {
 
   command_options {
     command init option json type boolean flag --json
+    command init option with_sdlc type boolean flag --with-sdlc
     command check option json type boolean flag --json
     command generate option out type string flag --out
     command emit option json type boolean flag --json
@@ -85,7 +86,7 @@ projection proj_topogram_cli {
   }
 
   command_examples {
-    command init example "topogram init . --json"
+    command init example "topogram init . --with-sdlc --json"
     command check example "topogram check . --json"
     command emit example "topogram emit ui-widget-contract . --widget widget_data_grid --json"
     command import example "topogram import . --out /private/tmp/topogram-engine-cli-import --from cli --json"

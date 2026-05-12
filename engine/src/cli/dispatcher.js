@@ -263,7 +263,11 @@ export async function runCliDispatch(context) {
   }
 
   if (commandArgs?.initProject) {
-    return runInitProjectCommand(effectiveInputPath || ".", { json: emitJson, cwd: process.cwd() });
+    return runInitProjectCommand(effectiveInputPath || ".", {
+      json: emitJson,
+      cwd: process.cwd(),
+      withSdlc: args.includes("--with-sdlc")
+    });
   }
 
   if (commandArgs?.newProject) {

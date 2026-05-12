@@ -66,7 +66,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram generator policy check [path] [--json]");
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
-  console.log("   or: topogram init [path] [--json]");
+  console.log("   or: topogram init [path] [--with-sdlc] [--json]");
   console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
   console.log("   or: topogram new <path> --template <package> --allow-local-npmrc");
   console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
@@ -243,15 +243,17 @@ export function printNewHelp() {
  * @returns {void}
  */
 export function printInitHelp() {
-  console.log("Usage: topogram init [path] [--json]");
+  console.log("Usage: topogram init [path] [--with-sdlc] [--json]");
   console.log("");
   console.log("Initializes an empty Topogram workspace in an existing or new repository without copying a template.");
   console.log("");
   console.log("Defaults: path is the current directory. Init creates topo/, topogram.project.json, and starter guidance files only when they are missing.");
   console.log("The default output is maintained ownership for '.', so Topogram will not overwrite app source.");
+  console.log("--with-sdlc also writes topogram.sdlc-policy.json with adopted/enforced defaults.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram init");
+  console.log("  topogram init . --with-sdlc");
   console.log("  topogram init . --json");
   console.log("  topogram init ./existing-app");
 }

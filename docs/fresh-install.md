@@ -18,4 +18,5 @@ npm --prefix app run compile
 
 Use `topogram init .` instead of `topogram new` when the repository already
 exists and you want Topogram to track it as maintained source without copying a
-template or generating app code.
+template or generating app code. Add `--with-sdlc` when the repo should enforce
+SDLC linkage from the first commit.
