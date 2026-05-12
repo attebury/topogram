@@ -1,0 +1,6 @@
+acceptance_criterion ac_graph_native_journeys_resolve {
+  name "Graph Native Journeys Resolve"
+  description "Given a workspace with journey records, when Topogram checks, resolves, and queries the workspace, then journeys validate as first-class graph statements with ordered steps, alternates, domain membership, and focused query slices."
+  requirement req_graph_native_journeys
+  status approved
+}

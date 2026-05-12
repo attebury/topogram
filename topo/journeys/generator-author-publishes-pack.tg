@@ -1,0 +1,40 @@
+journey journey_generator_author_publishes_pack {
+  name "Generator Author Publishes Pack"
+  description "A generator author publishes a package-backed generator that realizes normalized contracts for one runtime stack."
+  status canonical
+  domain dom_generator_runtime
+  actors [actor_generator_author]
+  goal "Publish a generator package with a valid manifest, normalized contract input, generated output proof, and no stack logic leaking back into Topogram core."
+  related_capabilities [cap_manage_generators cap_generate_app_outputs cap_run_engine_gates]
+  related_projections [proj_topogram_cli]
+  success_signals ["The generator manifest validates." "The generator consumes normalized contracts." "Package smoke compiles or runs generated output."]
+  failure_signals ["The generator hardcodes domain behavior instead of using contracts." "The generator package bypasses generator policy or manifest compatibility checks." "Tests only inspect files or strings instead of compiling or running generated output." "Stack-specific assumptions leak back into Topogram core."]
+  tags [journey generator package contracts]
+
+  step {
+    id choose_stack_surface
+    intent "Choose a single runtime stack and surface kind."
+    expects ["The package has a clear generator manifest target."]
+  }
+
+  step {
+    id expose_generator_adapter
+    intent "Expose the generator manifest and adapter."
+    after [choose_stack_surface]
+    expects ["The package exports topogram-generator.json and generate(context)."]
+  }
+
+  step {
+    id consume_contracts
+    intent "Generate only from normalized Topogram contracts."
+    after [expose_generator_adapter]
+    expects ["The package avoids deep CLI internals and domain-specific assumptions."]
+  }
+
+  step {
+    id verify_generated_output
+    intent "Prove the generated output."
+    after [consume_contracts]
+    expects ["The package smoke packs the generator, installs it into a consumer project, runs check/generate, and verifies output."]
+  }
+}

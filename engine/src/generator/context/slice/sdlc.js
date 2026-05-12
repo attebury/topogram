@@ -49,9 +49,16 @@ import {
 export function journeySlice(graph, journeyId) {
   const journey = getJourneyDoc(graph, journeyId);
   const capabilities = [...(journey.relatedCapabilities || [])].sort();
+  const entities = [...(journey.relatedEntities || [])].sort();
+  const rules = [...(journey.relatedRules || [])].sort();
   const workflows = [...(journey.relatedWorkflows || [])].sort();
   const projections = [...(journey.relatedProjections || [])].sort();
-  const verifications = verificationIdsForTarget(graph, [...capabilities, ...workflows, ...projections, journeyId]);
+  const widgets = [...(journey.relatedWidgets || [])].sort();
+  const declaredVerifications = [...(journey.relatedVerifications || [])].sort();
+  const verifications = [...new Set([
+    ...declaredVerifications,
+    ...verificationIdsForTarget(graph, [...capabilities, ...workflows, ...projections, ...widgets, journeyId])
+  ])].sort();
 
   return {
     type: "context_slice",
@@ -63,14 +70,36 @@ export function journeySlice(graph, journeyId) {
     summary: summarizeById(graph, journeyId),
     depends_on: {
       capabilities,
+      entities,
+      rules,
       workflows,
       projections,
+      widgets,
       verifications
     },
+    steps: (journey.steps || []).map(/** @param {any} step */ (step) => ({
+      id: step.id,
+      intent: step.intent,
+      commands: [...(step.commands || [])],
+      expects: [...(step.expects || [])],
+      after: [...(step.after || [])],
+      notes: step.notes || null
+    })),
+    alternates: (journey.alternates || []).map(/** @param {any} alternate */ (alternate) => ({
+      id: alternate.id,
+      from: alternate.from,
+      condition: alternate.condition,
+      commands: [...(alternate.commands || [])],
+      expects: [...(alternate.expects || [])],
+      notes: alternate.notes || null
+    })),
     related: {
       capabilities: summarizeStatementsByIds(graph, capabilities),
+      entities: summarizeStatementsByIds(graph, entities),
+      rules: summarizeStatementsByIds(graph, rules),
       workflows: summarizeDocsByIds(graph, workflows),
-      projections: summarizeStatementsByIds(graph, projections)
+      projections: summarizeStatementsByIds(graph, projections),
+      widgets: summarizeStatementsByIds(graph, widgets)
     },
     verification: summarizeStatementsByIds(graph, verifications),
     verification_targets: recommendedVerificationTargets(graph, [...capabilities, ...workflows, ...projections, journeyId], {

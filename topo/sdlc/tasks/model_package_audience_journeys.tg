@@ -1,0 +1,14 @@
+task task_model_package_audience_journeys {
+  name "Model Package Audience Journeys"
+  description "Add canonical journey records that clarify who uses Topogram packages, templates, generators, importer packs, extractors, and catalog entries."
+  satisfies [req_docs_are_current_and_audience_oriented]
+  acceptance_refs [ac_package_audience_journeys_modeled]
+  verification_refs [verification_engine_gate]
+  affects [cap_create_project, cap_manage_catalog, cap_manage_templates, cap_manage_generators, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

@@ -133,7 +133,10 @@ export function collectCanonicalWorkflowSurface(graph) {
 
 /** @param {ResolvedGraph} graph @returns {any} */
 export function collectCanonicalActorRoleSurface(graph) {
-  const journeyDocs = (graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey");
+  const journeyDocs = [
+    ...(graph.byKind?.journey || []),
+    ...(graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey")
+  ];
   const workflowDocs = (graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "workflow");
   return {
     actor_ids: ((graph.byKind.actor || []).map((/** @type {any} */ entry) => entry.id)).sort(),

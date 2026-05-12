@@ -205,6 +205,8 @@ function validateFieldShapes(errors, statement, fieldMap) {
   ensureSingleValueField(errors, statement, fieldMap, "updated", ["string"]);
   ensureSingleValueField(errors, statement, fieldMap, "notes", ["string"]);
   ensureSingleValueField(errors, statement, fieldMap, "outcome", ["string"]);
+  ensureSingleValueField(errors, statement, fieldMap, "goal", ["string"]);
+  ensureSingleValueField(errors, statement, fieldMap, "trigger", ["string"]);
 
   const listFields = [
     "aliases",
@@ -238,7 +240,19 @@ function validateFieldShapes(errors, statement, fieldMap) {
     "regions",
     "lookups",
     "dependencies",
-    "approvals"
+    "approvals",
+    "success_signals",
+    "failure_signals",
+    "tags",
+    "related_capabilities",
+    "related_entities",
+    "related_rules",
+    "related_workflows",
+    "related_projections",
+    "related_widgets",
+    "related_verifications",
+    "related_decisions",
+    "related_docs"
   ];
   if (statement.kind === "orchestration") {
     listFields.push("steps");
@@ -250,6 +264,16 @@ function validateFieldShapes(errors, statement, fieldMap) {
   const blockFields = ["fields", "props", "events", "slots", "behaviors", "keys", "relations", "invariants", "rename", "overrides", "endpoints", "error_responses", "wire_fields", "responses", "preconditions", "idempotency", "cache", "delete_semantics", "async_jobs", "async_status", "downloads", "authorization", "callbacks", "commands", "command_options", "command_outputs", "command_effects", "command_examples", "screens", "collection_views", "screen_actions", "visibility_rules", "field_lookups", "screen_routes", "web_hints", "ios_hints", "app_shell", "navigation", "screen_regions", "widget_bindings", "design_tokens", "tables", "columns", "keys", "indexes", "relations", "lifecycle", "generator_defaults"];
   if (statement.kind === "plan") {
     blockFields.push("steps");
+  }
+  if (statement.kind === "journey") {
+    for (const key of ["step", "alternate"]) {
+      const fields = fieldMap.get(key) || [];
+      for (const field of fields) {
+        if (field.value.type !== "block") {
+          pushError(errors, `Field '${key}' on ${statement.kind} ${statement.id} must be block, found ${field.value.type}`, field.loc);
+        }
+      }
+    }
   }
   for (const key of blockFields) {
     ensureSingleValueField(errors, statement, fieldMap, key, ["block"]);
@@ -429,6 +453,15 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
     requirement: null,
     from_requirement: ["requirement"],
     affects: ["capability", "entity", "rule", "projection", "widget", "orchestration", "operation"],
+    related_capabilities: ["capability"],
+    related_entities: ["entity"],
+    related_rules: ["rule"],
+    related_workflows: null,
+    related_projections: ["projection"],
+    related_widgets: ["widget"],
+    related_verifications: ["verification"],
+    related_decisions: ["decision"],
+    related_docs: null,
     introduces_rules: ["rule"],
     respects_rules: ["rule"],
     decisions: ["decision"],

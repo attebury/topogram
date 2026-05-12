@@ -138,6 +138,11 @@ function journeyDigest(graph, journey) {
       id: journey.id
     },
     summary: summarizeById(graph, journey.id),
+    steps: (journey.steps || []).map((step) => ({
+      id: step.id,
+      intent: step.intent || null,
+      after: [...(step.after || [])]
+    })),
     verifications: verificationIdsForTarget(graph, [journey.id, ...(journey.relatedCapabilities || [])]),
     review_boundary: reviewBoundaryForJourneyDoc(journey),
     ownership_boundary: defaultOwnershipBoundary()
@@ -174,7 +179,11 @@ export function generateContextDigest(graph) {
     files[`projections/${projection.id}.context-digest.json`] = projectionDigest(graph, projection);
   }
 
-  for (const journey of (graph.docs || []).filter((doc) => doc.kind === "journey").sort((a, b) => a.id.localeCompare(b.id))) {
+  const journeys = [
+    ...(graph.byKind.journey || []),
+    ...(graph.docs || []).filter((doc) => doc.kind === "journey")
+  ].sort((a, b) => a.id.localeCompare(b.id));
+  for (const journey of journeys) {
     files[`journeys/${journey.id}.context-digest.json`] = journeyDigest(graph, journey);
   }
 

@@ -20,6 +20,7 @@ export {
   summarizeById,
   summarizeStatementsByIds,
   summarizeDocsByIds,
+  summarizeJourneyLikeByIds,
   workspaceInventory
 } from "./shared/relationships.js";
 export {

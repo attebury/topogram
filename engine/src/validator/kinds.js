@@ -16,6 +16,7 @@ export const STATEMENT_KINDS = new Set([
   "verification",
   "operation",
   "domain",
+  "journey",
   "pitch",
   "requirement",
   "acceptance_criterion",
@@ -32,6 +33,7 @@ export const ACCEPTANCE_CRITERION_IDENTIFIER_PATTERN = /^ac_[a-z][a-z0-9_]*$/;
 export const TASK_IDENTIFIER_PATTERN = /^task_[a-z][a-z0-9_]*$/;
 export const PLAN_IDENTIFIER_PATTERN = /^plan_[a-z][a-z0-9_]*$/;
 export const BUG_IDENTIFIER_PATTERN = /^bug_[a-z][a-z0-9_]*$/;
+export const JOURNEY_IDENTIFIER_PATTERN = /^journey_[a-z][a-z0-9_]*$/;
 export const DOCUMENT_IDENTIFIER_PATTERN = /^doc_[a-z][a-z0-9_]*$/;
 
 export const GLOBAL_STATUSES = new Set(["draft", "proposed", "active", "deprecated"]);
@@ -46,6 +48,7 @@ export const TASK_STATUSES = new Set(["unclaimed", "claimed", "in-progress", "do
 export const PLAN_STATUSES = new Set(["draft", "active", "complete", "superseded"]);
 export const PLAN_STEP_STATUSES = new Set(["pending", "in-progress", "blocked", "done", "skipped"]);
 export const BUG_STATUSES = new Set(["open", "in-progress", "fixed", "verified", "wont-fix"]);
+export const JOURNEY_STATUSES = new Set(["draft", "canonical", "active", "deprecated"]);
 export const TASK_DISPOSITIONS = new Set(["active", "follow_up", "deferred", "backlog", "blocker"]);
 
 export const PRIORITY_VALUES = new Set(["critical", "high", "medium", "low"]);
@@ -79,7 +82,8 @@ export const STATUS_SETS_BY_KIND = {
   acceptance_criterion: ACCEPTANCE_CRITERION_STATUSES,
   task: TASK_STATUSES,
   plan: PLAN_STATUSES,
-  bug: BUG_STATUSES
+  bug: BUG_STATUSES,
+  journey: JOURNEY_STATUSES
 };
 export const VERIFICATION_METHODS = new Set(["smoke", "runtime", "contract", "journey", "manual"]);
 export const CLI_COMMAND_EFFECTS = new Set(["read_only", "writes_workspace", "writes_app", "network", "package_install", "git", "filesystem"]);
@@ -120,6 +124,7 @@ export const DOMAIN_TAGGABLE_KINDS = new Set([
   "orchestration",
   "operation",
   "decision",
+  "journey",
   "pitch",
   "requirement",
   "task",
@@ -243,6 +248,34 @@ export const FIELD_SPECS = {
   domain: {
     required: ["name", "description", "status"],
     allowed: ["name", "description", "in_scope", "out_of_scope", "owners", "parent_domain", "aliases", "status"]
+  },
+  journey: {
+    required: ["name", "description", "status", "actors", "goal", "step"],
+    allowed: [
+      "name",
+      "description",
+      "status",
+      "actors",
+      "roles",
+      "goal",
+      "trigger",
+      "step",
+      "alternate",
+      "success_signals",
+      "failure_signals",
+      "related_capabilities",
+      "related_entities",
+      "related_rules",
+      "related_workflows",
+      "related_projections",
+      "related_widgets",
+      "related_verifications",
+      "related_decisions",
+      "related_docs",
+      "tags",
+      "domain",
+      "updated"
+    ]
   },
   pitch: {
     required: ["name", "description", "status", "priority"],

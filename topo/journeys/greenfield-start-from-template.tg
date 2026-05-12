@@ -1,0 +1,51 @@
+journey journey_greenfield_start_from_template {
+  name "Greenfield Start From Template"
+  description "A consumer developer creates a new project from a template, edits the Topogram, generates app outputs, and verifies the generated app."
+  status canonical
+  domain dom_catalog_templates
+  actors [actor_consumer_developer actor_coding_agent]
+  goal "Create a generated app whose source of truth is the copied topo workspace and project config."
+  related_capabilities [cap_create_project cap_manage_templates cap_validate_workspace cap_generate_app_outputs cap_emit_artifacts]
+  related_projections [proj_topogram_cli]
+  success_signals ["The generated project contains topo/, topogram.project.json, policies, README.md, AGENTS.md, and package scripts." "topogram check passes." "npm run verify passes after generation."]
+  failure_signals ["The user edits generated-owned app files as the durable source of truth." "The template ships executable implementation without visible trust guidance." "The generated project does not tell agents what to read or which commands to run first." "Generator dependencies are missing or hidden from project policy."]
+  tags [journey greenfield template generate]
+
+  step {
+    id create_project
+    intent "Copy a selected template into a new project."
+    commands ["topogram new ./my-app --template <alias>"]
+    expects ["Topogram resolves the catalog alias or package spec, installs the template package with scripts disabled, and copies starter content."]
+  }
+
+  step {
+    id install_and_brief
+    intent "Install dependencies and read agent guidance."
+    after [create_project]
+    commands ["npm install" "npm run agent:brief"]
+    expects ["The user or agent knows read order, policies, trust state, and edit boundaries."]
+  }
+
+  step {
+    id check_and_generate
+    intent "Validate the Topogram and write generated app outputs."
+    after [install_and_brief]
+    commands ["npm run check" "npm run generate"]
+    expects ["The workspace validates and generated-owned outputs are written."]
+  }
+
+  step {
+    id verify_generated_app
+    intent "Run the generated app verification gate."
+    after [check_and_generate]
+    commands ["npm run verify"]
+    expects ["Generated output compiles or runs through the starter verification surface."]
+  }
+
+  alternate {
+    id use_package_spec
+    from create_project
+    condition "The desired starter is not exposed as a catalog alias."
+    commands ["topogram new ./my-app --template @topogram/template-hello-web"]
+  }
+}

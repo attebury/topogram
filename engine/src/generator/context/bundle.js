@@ -12,6 +12,7 @@ import {
   stableSortedStrings,
   summarizeById,
   summarizeDocsByIds,
+  summarizeJourneyLikeByIds,
   summarizeStatementsByIds,
   verificationIdsForTarget
 } from "./shared.js";
@@ -89,9 +90,12 @@ function uiBundle(graph) {
       .map((doc) => doc.id)
   );
   const journeys = stableSortedStrings(
-    (graph.docs || [])
-      .filter((doc) => doc.kind === "journey" && (doc.relatedProjections || []).some((id) => projections.includes(id)))
-      .map((doc) => doc.id)
+    [
+      ...(graph.byKind.journey || []),
+      ...(graph.docs || []).filter((doc) => doc.kind === "journey")
+    ]
+      .filter((journey) => (journey.relatedProjections || []).some((id) => projections.includes(id)))
+      .map((journey) => journey.id)
   );
   const rules = stableSortedStrings(capabilities.flatMap((capabilityId) => {
     return (graph.byKind.rule || [])
@@ -112,7 +116,7 @@ function uiBundle(graph) {
       projections: summarizeStatementsByIds(graph, projections),
       capabilities: summarizeStatementsByIds(graph, capabilities),
       workflows: summarizeDocsByIds(graph, workflows),
-      journeys: summarizeDocsByIds(graph, journeys),
+      journeys: summarizeJourneyLikeByIds(graph, journeys),
       rules: summarizeStatementsByIds(graph, rules)
     },
     dependencies: {
@@ -131,7 +135,7 @@ function uiBundle(graph) {
     review_boundaries: {
       projections: projections.map((id) => ({ id, review_boundary: summarizeById(graph, id)?.reviewBoundary || null })),
       workflows: workflows.map((id) => ({ id, review_boundary: reviewBoundaryForWorkflowDoc((graph.docs || []).find((doc) => doc.id === id)) })),
-      journeys: journeys.map((id) => ({ id, review_boundary: reviewBoundaryForJourneyDoc((graph.docs || []).find((doc) => doc.id === id)) }))
+      journeys: journeys.map((id) => ({ id, review_boundary: reviewBoundaryForJourneyDoc(summarizeById(graph, id) || null) }))
     }
   };
 }
@@ -186,7 +190,10 @@ function dbBundle(graph) {
 function maintainedAppBundle(graph) {
   const proofStories = maintainedProofMetadata(graph);
   const projections = stableSortedStrings((graph.byKind.projection || []).map((item) => item.id));
-  const journeys = stableSortedStrings((graph.docs || []).filter((doc) => doc.kind === "journey").map((doc) => doc.id));
+  const journeys = stableSortedStrings([
+    ...(graph.byKind.journey || []).map((item) => item.id),
+    ...(graph.docs || []).filter((doc) => doc.kind === "journey").map((doc) => doc.id)
+  ]);
   const verifications = stableSortedStrings((graph.byKind.verification || []).map((item) => item.id));
   const maintainedFiles = stableSortedStrings(proofStories.flatMap((item) => item.maintainedFiles || []));
   const emittedDependencies = stableSortedStrings(proofStories.flatMap((item) => item.emittedDependencies || []));
@@ -215,7 +222,7 @@ function maintainedAppBundle(graph) {
     },
     included_surfaces: {
       projections: summarizeStatementsByIds(graph, projections),
-      journeys: summarizeDocsByIds(graph, journeys),
+      journeys: summarizeJourneyLikeByIds(graph, journeys),
       maintained_files_in_scope: maintainedFiles,
       emitted_artifact_dependencies: emittedDependencies,
       human_owned_seams: humanOwnedSeams,

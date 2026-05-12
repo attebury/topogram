@@ -28,9 +28,11 @@ function primaryEntityIdForBundle(bundle) {
 
 function canonicalJourneyCoverage(graph) {
   const journeyDocs = (graph?.docs || []).filter((doc) => doc.kind === "journey");
+  const journeyStatements = graph?.byKind?.journey || [];
+  const journeys = [...journeyStatements, ...journeyDocs];
   return {
-    byEntityId: new Set(journeyDocs.flatMap((doc) => doc.relatedEntities || [])),
-    byCapabilityId: new Set(journeyDocs.flatMap((doc) => doc.relatedCapabilities || []))
+    byEntityId: new Set(journeys.flatMap((journey) => journey.relatedEntities || [])),
+    byCapabilityId: new Set(journeys.flatMap((journey) => journey.relatedCapabilities || []))
   };
 }
 
@@ -42,7 +44,10 @@ function collectJourneyGenerationContext(graph) {
   const uiSharedScreens = projections
     .filter((projection) => projection.type === "ui_contract")
     .flatMap((projection) => (projection.uiScreens || []).map((screen) => ({ ...screen, projectionId: projection.id })));
-  const canonicalJourneys = (graph.docs || []).filter((doc) => doc.kind === "journey");
+  const canonicalJourneys = [
+    ...(graph.byKind?.journey || []),
+    ...(graph.docs || []).filter((doc) => doc.kind === "journey")
+  ];
   const coveredEntityIds = new Set(canonicalJourneys.flatMap((doc) => doc.relatedEntities || []));
 
   return entities

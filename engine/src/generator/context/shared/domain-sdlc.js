@@ -287,9 +287,13 @@ export function getWorkflowDoc(graph, workflowId) {
  * @returns {any}
  */
 export function getJourneyDoc(graph, journeyId) {
+  const journey = (graph.byKind?.journey || []).find(/** @param {any} item */ (item) => item.id === journeyId);
+  if (journey) {
+    return journey;
+  }
   const doc = (graph.docs || []).find(/** @param {any} item */ (item) => item.kind === "journey" && item.id === journeyId);
   if (!doc) {
-    throw new Error(`No journey doc found with id '${journeyId}'`);
+    throw new Error(`No journey found with id '${journeyId}'`);
   }
   return doc;
 }

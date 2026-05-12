@@ -1148,5 +1148,71 @@
       "by": "actor_coding_agent",
       "note": "Approve release acceptance for 0.3.78"
     }
+  ],
+  "ac_package_audience_journeys_modeled": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T16:22:27.481Z",
+      "by": "actor_coding_agent",
+      "note": "Approve audience journey modeling acceptance"
+    }
+  ],
+  "task_model_package_audience_journeys": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T16:22:36.251Z",
+      "by": "actor_coding_agent",
+      "note": "Start package audience journey modeling"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T16:22:43.358Z",
+      "by": "actor_coding_agent",
+      "note": "Add canonical package audience journeys"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T16:30:43.752Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "req_docs_are_current_and_audience_oriented": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-12T16:27:59.896Z",
+      "by": "actor_coding_agent",
+      "note": "Review docs audience requirement for journey modeling"
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-12T16:28:07.769Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement has accepted docs and package audience criteria"
+    }
+  ],
+  "ac_docs_reset_current_workflows": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T16:28:25.391Z",
+      "by": "actor_coding_agent",
+      "note": "Docs reset acceptance is current and required for audience-oriented docs"
+    }
+  ],
+  "task_add_graph_native_journeys": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T18:25:59.608Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

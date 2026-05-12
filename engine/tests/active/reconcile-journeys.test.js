@@ -11,6 +11,7 @@ function buildGraph(overrides = {}) {
   return {
     docs: overrides.docs || [],
     byKind: {
+      journey: overrides.journeys || [],
       entity: overrides.entities || [],
       capability: overrides.capabilities || [],
       rule: overrides.rules || [],
@@ -75,7 +76,7 @@ test("buildJourneyDrafts creates creation lifecycle and core flow drafts with st
 
 test("buildJourneyDrafts suppresses drafts for entities already covered by canonical journeys", () => {
   const graph = buildGraph({
-    docs: [{ kind: "journey", relatedEntities: ["entity_issue"], relatedCapabilities: [] }],
+    journeys: [{ kind: "journey", id: "journey_issue", relatedEntities: ["entity_issue"], relatedCapabilities: [] }],
     entities: [{ id: "entity_issue", name: "Issue" }],
     capabilities: [{ id: "cap_create_issue", creates: [{ id: "entity_issue" }] }],
     rules: [],
@@ -124,7 +125,7 @@ test("bundle journey helpers keep draft gating metadata and output paths stable"
   assert.match(draft.body, /workflow_issue_resolution/);
 
   const coveredGraph = buildGraph({
-    docs: [{ kind: "journey", relatedEntities: ["entity_issue"], relatedCapabilities: [] }]
+    journeys: [{ kind: "journey", id: "journey_issue", relatedEntities: ["entity_issue"], relatedCapabilities: [] }]
   });
   assert.equal(shouldAddBundleJourneyDraft(bundle, coveredGraph), false);
 });

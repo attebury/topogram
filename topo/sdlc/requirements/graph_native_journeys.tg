@@ -1,0 +1,10 @@
+requirement req_graph_native_journeys {
+  name "Graph Native Journeys"
+  description "Topogram must model user and agent journeys as graph-native ordered records so agents can query workflow context without relying on Markdown docs as the source of truth."
+  affects [cap_query_context cap_validate_workspace]
+  introduces_rules []
+  respects_rules [rule_spec_is_source_of_truth]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status approved
+}

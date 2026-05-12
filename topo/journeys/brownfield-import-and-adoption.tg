@@ -1,0 +1,45 @@
+journey journey_brownfield_import_and_adoption {
+  name "Brownfield Import And Adoption"
+  description "A maintainer imports an existing app, reviews candidates and evidence, adopts selected Topogram records, and keeps source app mutation explicit."
+  status canonical
+  domain dom_import_adoption
+  actors [actor_maintainer actor_coding_agent]
+  goal "Turn brownfield evidence into reviewable candidates and explicit adopted Topogram records without mutating the source app or silently rewriting project config."
+  related_capabilities [cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_validate_workspace]
+  related_decisions [decision_stateful_workflow_mutations_use_cli]
+  related_projections [proj_topogram_cli]
+  success_signals ["Import evidence is reviewable before adoption." "Canonical topo records are written only by explicit adoption." "Maintained source app files are unchanged by import."]
+  failure_signals ["Import treats docs, tests, fixtures, generated output, or cache files as primary evidence by itself." "Importer or extractor code writes canonical topo files directly." "Maintained source app files or migration files are changed during import." "Adoption happens without a human or agent selecting reviewed candidates."]
+  tags [journey brownfield import adoption]
+
+  step {
+    id import_source
+    intent "Recover candidates from a source app."
+    commands ["topogram import <source> --from <tracks>"]
+    expects ["Topogram writes candidates, evidence, source hashes, and reports under the workspace."]
+  }
+
+  step {
+    id review_plan
+    intent "Review candidate bundles before adoption."
+    after [import_source]
+    commands ["topogram import plan --json"]
+    expects ["Candidate bundles expose evidence, risks, and adoption options."]
+  }
+
+  step {
+    id adopt_selected
+    intent "Promote only reviewed candidates."
+    after [review_plan]
+    commands ["topogram import adopt <selector> --write --json"]
+    expects ["Selected candidates are promoted to canonical topo records."]
+  }
+
+  step {
+    id validate_adopted_topo
+    intent "Validate the adopted workspace."
+    after [adopt_selected]
+    commands ["topogram check . --json"]
+    expects ["The resulting Topogram validates and becomes project-owned."]
+  }
+}

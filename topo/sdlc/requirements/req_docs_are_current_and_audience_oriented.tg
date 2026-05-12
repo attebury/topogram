@@ -4,5 +4,5 @@ requirement req_docs_are_current_and_audience_oriented {
   affects [cap_brief_agent, cap_create_project, cap_import_brownfield_app, cap_generate_app_outputs, cap_query_context]
   domain dom_engine_quality
   priority high
-  status draft
+  status approved
 }

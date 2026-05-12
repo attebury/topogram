@@ -20,6 +20,7 @@ import {
   relatedWorkflowDocsForCapability,
   summarizeById,
   summarizeDocsByIds,
+  summarizeJourneyLikeByIds,
   summarizeProjection,
   summarizeStatementsByIds,
   verificationIdsForTarget,
@@ -87,7 +88,7 @@ function capabilitySlice(graph, capabilityId) {
       entities: summarizeStatementsByIds(graph, entities),
       rules: summarizeStatementsByIds(graph, rules),
       workflows: summarizeDocsByIds(graph, workflows),
-      journeys: summarizeDocsByIds(graph, journeys),
+      journeys: summarizeJourneyLikeByIds(graph, journeys),
       projections: summarizeStatementsByIds(graph, projections)
     },
     verification: summarizeStatementsByIds(graph, verifications),
@@ -118,9 +119,12 @@ function workflowSlice(graph, workflowId) {
     ];
   }))].sort();
   const rules = [...new Set(capabilities.flatMap(/** @param {string} capabilityId */ (capabilityId) => relatedRulesForTarget(graph, capabilityId)))].sort();
-  const journeys = (graph.docs || [])
-    .filter(/** @param {any} doc */ (doc) => doc.kind === "journey" && (doc.relatedWorkflows || []).includes(workflowId))
-    .map(/** @param {any} doc */ (doc) => doc.id)
+  const journeys = [
+    ...(graph.byKind?.journey || []),
+    ...(graph.docs || []).filter(/** @param {any} doc */ (doc) => doc.kind === "journey")
+  ]
+    .filter(/** @param {any} journey */ (journey) => (journey.relatedWorkflows || []).includes(workflowId))
+    .map(/** @param {any} journey */ (journey) => journey.id)
     .sort();
   const verifications = verificationIdsForTarget(graph, [...capabilities, ...entities, workflowId]);
 
@@ -143,7 +147,7 @@ function workflowSlice(graph, workflowId) {
       capabilities: summarizeStatementsByIds(graph, capabilities),
       entities: summarizeStatementsByIds(graph, entities),
       rules: summarizeStatementsByIds(graph, rules),
-      journeys: summarizeDocsByIds(graph, journeys)
+      journeys: summarizeJourneyLikeByIds(graph, journeys)
     },
     verification: summarizeStatementsByIds(graph, verifications),
     verification_targets: recommendedVerificationTargets(graph, [...capabilities, ...entities, workflowId], {

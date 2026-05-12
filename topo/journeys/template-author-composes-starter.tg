@@ -1,0 +1,41 @@
+journey journey_template_author_composes_starter {
+  name "Template Author Composes Starter"
+  description "A template author packages a starter that combines Topogram content, topology bindings, policies, scripts, and generator dependencies."
+  status canonical
+  domain dom_catalog_templates
+  actors [actor_generator_author]
+  roles [role_template_author]
+  goal "Publish a usable starter whose copied content, executable trust, generator dependencies, and verification scripts are clear."
+  related_capabilities [cap_manage_templates cap_manage_generators cap_create_project cap_run_engine_gates]
+  related_projections [proj_topogram_cli]
+  success_signals ["Template package files contain topo/, project config, manifest, package metadata, and optional README." "Generator package dependencies match topology bindings." "Executable implementation is declared and trust-gated." "Template smoke runs generated verification."]
+  failure_signals ["The template hides stack logic in copied implementation when a generator package should own it." "The template omits generator package dependencies needed by topology runtime bindings." "The template publishes consumer sidecars such as .topogram-template-trust.json." "The template smoke stops at file existence instead of running generated verification."]
+  tags [journey template starter generator_composition]
+
+  step {
+    id create_template_package
+    intent "Create the template package structure."
+    expects ["The package contains topogram-template.json, topo/, topogram.project.json, package metadata, and optional README."]
+  }
+
+  step {
+    id declare_generator_dependencies
+    intent "Compose package-backed generators through topology and dependencies."
+    after [create_template_package]
+    expects ["Generator package dependencies match topology runtime bindings."]
+  }
+
+  step {
+    id declare_trust
+    intent "Make executable template implementation explicit."
+    after [declare_generator_dependencies]
+    expects ["Templates with implementation declare includesExecutableImplementation and keep implementation narrow."]
+  }
+
+  step {
+    id verify_template
+    intent "Prove the starter as a consumer would use it."
+    after [declare_trust]
+    expects ["Template verification creates a fresh starter, installs dependencies, runs check/generate, and verifies generated output."]
+  }
+}

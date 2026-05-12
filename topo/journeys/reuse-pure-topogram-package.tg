@@ -1,0 +1,36 @@
+journey journey_reuse_pure_topogram_package {
+  name "Reuse Pure Topogram Package"
+  description "A consumer copies a pure Topogram package from the catalog, edits the copied topo workspace, and uses it as project-owned spec content."
+  status canonical
+  domain dom_catalog_templates
+  actors [actor_consumer_developer actor_coding_agent]
+  goal "Copy reusable Topogram content with source provenance but no executable implementation."
+  related_capabilities [cap_manage_catalog cap_validate_workspace cap_query_context]
+  related_decisions [decision_catalog_provenance_is_audit]
+  related_projections [proj_topogram_cli]
+  success_signals ["The copied topo content is editable project-owned source." "Source provenance records origin and drift." "No executable implementation is copied."]
+  failure_signals ["A pure Topogram package contains implementation." "Source provenance is treated as a lock that forbids local edits." "The package lacks canonical topo content." "Users confuse catalog copy with cloning an implementation repo."]
+  tags [journey topogram_package catalog provenance]
+
+  step {
+    id copy_catalog_entry
+    intent "Copy a pure Topogram package into a target project."
+    commands ["topogram catalog copy <id> <target>"]
+    expects ["Topogram installs the package with scripts disabled and verifies it is pure Topogram content."]
+  }
+
+  step {
+    id write_provenance
+    intent "Record source provenance for the copied content."
+    after [copy_catalog_entry]
+    expects ["The target contains topo/, optional topogram.project.json, optional README, and .topogram-source.json."]
+  }
+
+  step {
+    id edit_project_owned_topo
+    intent "Treat copied content as project-owned source."
+    after [write_provenance]
+    commands ["topogram check"]
+    expects ["The user can edit the copied topo workspace and validate it."]
+  }
+}

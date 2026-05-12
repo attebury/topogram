@@ -34,6 +34,7 @@ export function summarizeById(...args: any[]): any;
 export function summarizeDocsByIds(...args: any[]): any;
 export function summarizeDocument(...args: any[]): any;
 export function summarizeDomain(...args: any[]): any;
+export function summarizeJourneyLikeByIds(...args: any[]): any;
 export function summarizePitch(...args: any[]): any;
 export function summarizePlan(...args: any[]): any;
 export function summarizeProjection(...args: any[]): any;

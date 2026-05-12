@@ -98,6 +98,30 @@ export function summarizeJourneyDoc(doc) {
 }
 
 /**
+ * @param {import("./types.d.ts").ContextStatement} journey
+ * @returns {any}
+ */
+export function summarizeJourney(journey) {
+  return {
+    id: journey.id,
+    kind: journey.kind,
+    name: journey.name || journey.id,
+    description: journey.description || null,
+    status: journey.status || null,
+    goal: journey.goal || null,
+    actors: stableSortedStrings(journey.actors || []),
+    relatedCapabilities: stableSortedStrings(journey.relatedCapabilities || []),
+    relatedWorkflows: stableSortedStrings(journey.relatedWorkflows || []),
+    relatedProjections: stableSortedStrings(journey.relatedProjections || []),
+    relatedWidgets: stableSortedStrings(journey.relatedWidgets || []),
+    stepCount: (journey.steps || []).length,
+    alternateCount: (journey.alternates || []).length,
+    reviewBoundary: reviewBoundaryForJourneyDocPolicy(journey),
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
+/**
  * @param {import("./types.d.ts").ContextStatement} statement
  * @returns {any}
  */
@@ -163,6 +187,8 @@ export function summarizeStatement(statement) {
       };
     case "widget":
       return summarizeComponent(statement);
+    case "journey":
+      return summarizeJourney(statement);
     case "shape":
       return {
         id: statement.id,

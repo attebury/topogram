@@ -1,0 +1,40 @@
+journey journey_importer_author_publishes_pack {
+  name "Importer Author Publishes Pack"
+  description "An importer author publishes a package-backed importer pack that discovers brownfield candidates without owning adoption."
+  status canonical
+  domain dom_import_adoption
+  actors [actor_maintainer actor_coding_agent]
+  goal "Emit precise review-only candidates and evidence while Topogram core owns persistence, reconcile, adoption, and canonical writes."
+  related_capabilities [cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_run_engine_gates]
+  related_projections [proj_topogram_cli]
+  success_signals ["Importer output is evidence and candidate data only." "Source app files are never mutated." "Core reconcile and adoption remain explicit."]
+  failure_signals ["The importer package mutates source app files." "The importer writes canonical topo files directly." "The importer performs network access or package installation during import without explicit policy." "The importer defines its own adoption semantics instead of using core reconcile/adoption."]
+  tags [journey importer extractor package brownfield]
+
+  step {
+    id scope_importer_pack
+    intent "Scope the importer pack to a framework, language, platform, or evidence family."
+    expects ["The package has a clear evidence domain and precision target."]
+  }
+
+  step {
+    id expose_importer_manifest
+    intent "Declare importer metadata and extractor adapters."
+    after [scope_importer_pack]
+    expects ["The importer package can be policy-checked before execution."]
+  }
+
+  step {
+    id run_importer
+    intent "Read source evidence and emit findings, candidates, diagnostics, and provenance."
+    after [expose_importer_manifest]
+    expects ["The importer emits review-only output without canonical writes."]
+  }
+
+  step {
+    id reconcile_with_core
+    intent "Let Topogram core persist candidates and manage adoption."
+    after [run_importer]
+    expects ["Candidate files, reports, import history, reconcile, and adoption stay engine-owned."]
+  }
+}

@@ -20,6 +20,7 @@ import { validateAcceptanceCriterion } from "./per-kind/acceptance-criterion.js"
 import { validateTask } from "./per-kind/task.js";
 import { validatePlan } from "./per-kind/plan.js";
 import { validateBug } from "./per-kind/bug.js";
+import { validateJourney } from "./per-kind/journey.js";
 
 export {
   STATEMENT_KINDS,
@@ -32,6 +33,7 @@ export {
   TASK_IDENTIFIER_PATTERN,
   PLAN_IDENTIFIER_PATTERN,
   BUG_IDENTIFIER_PATTERN,
+  JOURNEY_IDENTIFIER_PATTERN,
   DOCUMENT_IDENTIFIER_PATTERN,
   GLOBAL_STATUSES,
   DECISION_STATUSES,
@@ -48,6 +50,7 @@ export {
   PLAN_STATUSES,
   PLAN_STEP_STATUSES,
   BUG_STATUSES,
+  JOURNEY_STATUSES,
   PRIORITY_VALUES,
   WORK_TYPES,
   BUG_SEVERITIES,
@@ -112,6 +115,7 @@ export function validateWorkspace(workspaceAst) {
       validateTask(errors, statement, fieldMap, registry);
       validatePlan(errors, statement, fieldMap, registry);
       validateBug(errors, statement, fieldMap, registry);
+      validateJourney(errors, statement, fieldMap, registry);
       validateExpressions(errors, statement, fieldMap);
     }
   }

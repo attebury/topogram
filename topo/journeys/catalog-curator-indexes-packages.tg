@@ -1,0 +1,42 @@
+journey journey_catalog_curator_indexes_packages {
+  name "Catalog Curator Indexes Packages"
+  description "A maintainer curates catalog entries that point to versioned packages without turning the catalog into executable storage."
+  status canonical
+  domain dom_catalog_templates
+  actors [actor_maintainer actor_release_manager]
+  goal "Keep catalog entries resolving to vetted package versions with clear kind, trust metadata, and verification status."
+  related_capabilities [cap_manage_catalog cap_create_project cap_verify_release_status]
+  related_decisions [decision_catalog_provenance_is_audit]
+  related_projections [proj_topogram_cli]
+  success_signals ["Catalog entries validate." "Fresh consumer smoke proves aliases resolve." "Trust metadata matches package behavior."]
+  failure_signals ["The catalog stores executable code instead of indexing packages." "A catalog entry misstates whether a package includes executable implementation." "A default alias points at a stale or failing package version." "Pure Topogram entries allow implementation or executable behavior."]
+  tags [journey catalog packages release]
+
+  step {
+    id review_package_release
+    intent "Review a package release and its verification evidence."
+    expects ["The curator knows package kind, version, trust behavior, and verification status."]
+  }
+
+  step {
+    id update_catalog_entry
+    intent "Update catalog alias metadata."
+    after [review_package_release]
+    expects ["The entry has id, kind, package, default version, tags, and trust metadata."]
+  }
+
+  step {
+    id validate_catalog
+    intent "Validate catalog shape and package metadata."
+    after [update_catalog_entry]
+    commands ["topogram catalog check topograms.catalog.json"]
+    expects ["Duplicate ids, package specs, kinds, and trust metadata pass validation."]
+  }
+
+  step {
+    id prove_consumer_resolution
+    intent "Prove a fresh install can use the catalog alias."
+    after [validate_catalog]
+    expects ["Consumer smoke verifies catalog alias resolution and starter creation."]
+  }
+}

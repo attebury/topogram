@@ -1,0 +1,15 @@
+task task_add_graph_native_journeys {
+  name "Add Graph Native Journeys"
+  description "Add the journey DSL kind, ordered record validation/resolution, graph-native query support, and convert current package/audience journeys into canonical .tg records."
+  satisfies [req_graph_native_journeys]
+  acceptance_refs [ac_graph_native_journeys_resolve]
+  verification_refs [verification_engine_gate]
+  affects [cap_query_context cap_validate_workspace]
+  blocked_by []
+  claimed_by [actor_coding_agent]
+  domain dom_sdlc_query_agent_context
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

@@ -75,6 +75,7 @@ import {
   parseProjectionGeneratorDefaultsBlock
 } from "./projections-db.js";
 import { parsePlanSteps } from "../sdlc/plan-steps.js";
+import { parseJourneyAlternates, parseJourneySteps } from "./journeys.js";
 
 export function normalizeStatement(statement, registry) {
   const fieldMap = collectFieldMap(statement);
@@ -307,6 +308,30 @@ export function normalizeStatement(statement, registry) {
             }
           : null,
         aliases: normalizeDomainScopeList(statement, "aliases")
+      };
+    case "journey":
+      return {
+        ...base,
+        actors: symbolValues(getFieldValue(statement, "actors")),
+        roles: symbolValues(getFieldValue(statement, "roles")),
+        goal: stringValue(getFieldValue(statement, "goal")),
+        trigger: stringValue(getFieldValue(statement, "trigger")),
+        steps: parseJourneySteps(statement),
+        alternates: parseJourneyAlternates(statement),
+        successSignals: normalizeDomainScopeList(statement, "success_signals"),
+        failureSignals: normalizeDomainScopeList(statement, "failure_signals"),
+        relatedCapabilities: symbolValues(getFieldValue(statement, "related_capabilities")),
+        relatedEntities: symbolValues(getFieldValue(statement, "related_entities")),
+        relatedRules: symbolValues(getFieldValue(statement, "related_rules")),
+        relatedWorkflows: symbolValues(getFieldValue(statement, "related_workflows")),
+        relatedProjections: symbolValues(getFieldValue(statement, "related_projections")),
+        relatedWidgets: symbolValues(getFieldValue(statement, "related_widgets")),
+        relatedVerifications: symbolValues(getFieldValue(statement, "related_verifications")),
+        relatedDecisions: symbolValues(getFieldValue(statement, "related_decisions")),
+        relatedDocs: symbolValues(getFieldValue(statement, "related_docs")),
+        tags: normalizeDomainScopeList(statement, "tags"),
+        updated: stringValue(getFieldValue(statement, "updated")),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "pitch":
       return {

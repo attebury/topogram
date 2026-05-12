@@ -45,10 +45,13 @@ export function verificationsFor(graph, predicate) {
  * @returns {any}
  */
 export function relatedJourneysForCapability(graph, capabilityId) {
-  return relatedDocs(
-    graph,
-    /** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey" && (doc.relatedCapabilities || []).includes(capabilityId)
-  );
+  return [
+    ...(graph.byKind?.journey || []).filter(/** @param {any} journey */ (journey) => (journey.relatedCapabilities || []).includes(capabilityId)),
+    ...relatedDocs(
+      graph,
+      /** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey" && (doc.relatedCapabilities || []).includes(capabilityId)
+    )
+  ];
 }
 
 /**
@@ -397,13 +400,25 @@ export function summarizeDocsByIds(graph, ids) {
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
+ * @param {Iterable<string>} ids
+ * @returns {any}
+ */
+export function summarizeJourneyLikeByIds(graph, ids) {
+  return stableSortedStrings(ids).map(/** @param {string} id */ (id) => summarizeById(graph, id)).filter(Boolean);
+}
+
+/**
+ * @param {import("./types.d.ts").ContextGraph} graph
  * @returns {any}
  */
 export function workspaceInventory(graph) {
   return {
     capabilities: stableSortedStrings((graph.byKind.capability || []).map(/** @param {any} item */ (item) => item.id)),
     workflows: stableSortedStrings((graph.docs || []).filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "workflow").map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id)),
-    journeys: stableSortedStrings((graph.docs || []).filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey").map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id)),
+    journeys: stableSortedStrings([
+      ...(graph.byKind.journey || []).map(/** @param {any} item */ (item) => item.id),
+      ...(graph.docs || []).filter(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.kind === "journey").map(/** @param {import("./types.d.ts").ContextDoc} doc */ (doc) => doc.id)
+    ]),
     entities: stableSortedStrings((graph.byKind.entity || []).map(/** @param {any} item */ (item) => item.id)),
     projections: stableSortedStrings((graph.byKind.projection || []).map(/** @param {any} item */ (item) => item.id)),
     widgets: stableSortedStrings((graph.byKind.widget || []).map(/** @param {any} item */ (item) => item.id)),

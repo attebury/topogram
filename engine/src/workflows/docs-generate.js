@@ -215,7 +215,10 @@ export function generateDocsWorkflow(inputPath) {
 export function generateJourneyDraftsWorkflow(inputPath) {
   const paths = normalizeWorkspacePaths(inputPath);
   const graph = loadResolvedGraph(paths.topogramRoot);
-  const canonicalJourneys = (graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey");
+  const canonicalJourneys = [
+    ...(graph.byKind?.journey || []),
+    ...(graph.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey")
+  ];
   const { drafts, skippedEntities } = buildJourneyDraftsReconcile(graph);
   /** @type {WorkflowFiles} */
   /** @type {WorkflowFiles} */

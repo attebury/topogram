@@ -62,9 +62,11 @@ export function bundleLabelFromConceptId(conceptId) {
 /** @param {ResolvedGraph} graph @returns {any} */
 export function canonicalJourneyCoverage(graph) {
   const journeyDocs = (graph?.docs || []).filter((/** @type {any} */ doc) => doc.kind === "journey");
+  const journeyStatements = graph?.byKind?.journey || [];
+  const journeys = [...journeyStatements, ...journeyDocs];
   return {
-    byEntityId: new Set(journeyDocs.flatMap((/** @type {any} */ doc) => doc.relatedEntities || [])),
-    byCapabilityId: new Set(journeyDocs.flatMap((/** @type {any} */ doc) => doc.relatedCapabilities || []))
+    byEntityId: new Set(journeys.flatMap((/** @type {any} */ journey) => journey.relatedEntities || [])),
+    byCapabilityId: new Set(journeys.flatMap((/** @type {any} */ journey) => journey.relatedCapabilities || []))
   };
 }
 

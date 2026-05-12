@@ -1,0 +1,52 @@
+journey journey_agent_maintains_from_topo {
+  name "Agent Maintains From Topo"
+  description "A coding agent starts from the project Topogram, reads focused packets, edits maintained code or specs, and proves the work without loading the whole repo."
+  status canonical
+  domain dom_sdlc_query_agent_context
+  actors [actor_coding_agent]
+  goal "Make a bounded change with SDLC linkage, focused context, passing verification, and no uncontrolled edits to command-owned state."
+  related_capabilities [cap_brief_agent cap_query_context cap_manage_sdlc_records cap_validate_workspace]
+  related_decisions [decision_queries_are_read_only_context_packets decision_stateful_workflow_mutations_use_cli decision_task_modes_are_operating_patterns]
+  related_projections [proj_topogram_cli]
+  success_signals ["The agent uses a focused query packet before broad source edits." "The change has SDLC linkage and passing verification." "Command-owned state changes happen through Topogram commands."]
+  failure_signals ["The agent edits status history, trust hashes, provenance, archives, or release state directly." "The agent reads broad source before using agent brief, query slices, or SDLC explain." "The agent changes maintained code without updating or checking the relevant Topogram contract."]
+  tags [journey agent sdlc maintained]
+
+  step {
+    id read_agent_brief
+    intent "Start from the project's current agent guidance."
+    commands ["topogram agent brief --json"]
+    expects ["The agent knows read order, edit boundaries, SDLC state, and verification gates."]
+  }
+
+  step {
+    id inspect_sdlc_item
+    intent "Understand the current task, bug, requirement, or plan."
+    after [read_agent_brief]
+    commands ["topogram sdlc explain <id> --json"]
+    expects ["The agent sees missing DoD fields and linked acceptance criteria."]
+  }
+
+  step {
+    id load_focused_context
+    intent "Load only the focused context needed for the change."
+    after [inspect_sdlc_item]
+    commands ["topogram query slice ./topo --task <id> --json"]
+    expects ["The packet includes related contracts, risks, write scope, and verification targets."]
+  }
+
+  step {
+    id edit_within_scope
+    intent "Edit declarative Topogram files, docs, tests, or maintained code inside the approved write scope."
+    after [load_focused_context]
+    expects ["Stateful status, plan-step, trust, archive, import, and release mutations use CLI commands."]
+  }
+
+  step {
+    id verify_before_commit
+    intent "Prove the scoped work before commit."
+    after [edit_within_scope]
+    commands ["topogram check . --json" "topogram sdlc check --strict" "topogram sdlc prep commit . --json"]
+    expects ["Validation, SDLC checks, and commit prep pass."]
+  }
+}

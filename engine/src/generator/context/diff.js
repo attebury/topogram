@@ -16,9 +16,16 @@ import {
 import { defaultOwnershipBoundary } from "../../policy/review-boundaries.js";
 
 function normalizeTargetMap(graph, kind) {
-  if (kind === "workflow" || kind === "journey") {
+  if (kind === "workflow") {
     const docs = (graph.docs || []).filter((doc) => doc.kind === kind);
     return new Map(docs.map((doc) => [doc.id, summarizeDoc(doc)]));
+  }
+  if (kind === "journey") {
+    const journeys = [
+      ...(graph.byKind?.journey || []).map((statement) => summarizeStatement(statement)),
+      ...(graph.docs || []).filter((doc) => doc.kind === kind).map((doc) => summarizeDoc(doc))
+    ];
+    return new Map(journeys.map((journey) => [journey.id, journey]));
   }
 
   return new Map(((graph.byKind[kind] || []).map((statement) => [statement.id, summarizeStatement(statement)])));
