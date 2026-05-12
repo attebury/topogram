@@ -102,7 +102,7 @@ function initialCandidatesForTrack(track) {
     return { capabilities: [], routes: [], stacks: [] };
   }
   if (track === "ui") {
-    return { screens: [], routes: [], actions: [], stacks: [] };
+    return { screens: [], routes: [], actions: [], flows: [], stacks: [] };
   }
   if (track === "cli") {
     return { commands: [], capabilities: [], surfaces: [] };

@@ -691,5 +691,329 @@
       "by": "actor_coding_agent",
       "note": "Published @topogram/cli 0.3.76, smoke-tested the npmjs package, rolled first-party consumers, and refreshed strict release evidence."
     }
+  ],
+  "ac_review_maintained_db_seam_candidates": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T22:38:33.822Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for maintained DB seam review packet batch."
+    }
+  ],
+  "task_review_maintained_db_seam_candidates": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T22:38:55.582Z",
+      "by": "actor_coding_agent",
+      "note": "Claim brownfield DB seam review packet batch."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T22:38:59.678Z",
+      "by": "actor_coding_agent",
+      "note": "Begin implementation of maintained DB seam review packet batch."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:31.655Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_brownfield_db_seam_review_packet#inspect_current_state": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:39:14.796Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T22:45:53.213Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "ac_import_non_resource_ui_flows_reviewable": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T22:46:01.696Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for non-resource UI flow import candidates."
+    }
+  ],
+  "ac_import_docs_noise_does_not_create_primary_candidates": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T22:46:01.699Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for import docs noise filtering."
+    }
+  ],
+  "ac_cli_import_precision_verified": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-11T22:46:01.703Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for CLI import precision verification."
+    }
+  ],
+  "task_filter_import_docs_noise": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T22:46:10.028Z",
+      "by": "actor_coding_agent",
+      "note": "Claim import docs noise filtering batch."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:20.129Z",
+      "by": "actor_coding_agent",
+      "note": "Begin import docs noise filtering implementation."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:42.071Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "task_verify_cli_import_precision_followup": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-11T22:46:10.030Z",
+      "by": "actor_coding_agent",
+      "note": "Claim CLI import precision verification batch."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:20.125Z",
+      "by": "actor_coding_agent",
+      "note": "Begin CLI import precision verification closeout."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:46.960Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_brownfield_db_seam_review_packet#implement_changes": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:37.335Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:32:25.966Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_import_docs_noise_filtering#inspect_current_state": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:37.346Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T22:46:45.105Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_non_resource_ui_flow_candidates#inspect_current_state": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:37.356Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T22:46:45.113Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_cli_import_precision_closeout#inspect_current_state": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-11T22:46:45.104Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_non_resource_ui_flow_candidates#implement_changes": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:51.746Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:32:42.442Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_cli_import_precision_closeout#implement_changes": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-11T22:46:51.750Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:14.415Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "req_import_non_resource_ui_flows": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-12T00:31:47.020Z",
+      "by": "actor_coding_agent",
+      "note": "Reviewing requirement for current brownfield import backlog implementation."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-12T00:31:51.995Z",
+      "by": "actor_coding_agent",
+      "note": "Approved after adding reviewable non-resource UI flow acceptance coverage."
+    }
+  ],
+  "req_import_docs_noise_filtering": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-12T00:31:58.588Z",
+      "by": "actor_coding_agent",
+      "note": "Reviewing requirement for current brownfield import backlog implementation."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-12T00:32:03.322Z",
+      "by": "actor_coding_agent",
+      "note": "Approved after adding source classification and negative import fixtures."
+    }
+  ],
+  "plan_brownfield_db_seam_review_packet#verify_results": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-12T00:32:30.332Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:32:37.739Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_non_resource_ui_flow_candidates#verify_results": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-12T00:32:47.359Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:32:54.265Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_import_docs_noise_filtering#implement_changes": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:32:57.987Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_import_docs_noise_filtering#verify_results": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-12T00:33:02.112Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:06.510Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "plan_cli_import_precision_closeout#verify_results": [
+    {
+      "from": "pending",
+      "to": "in-progress",
+      "at": "2026-05-12T00:33:18.879Z",
+      "by": "actor_coding_agent",
+      "note": null
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:23.308Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "task_import_non_resource_ui_flow_candidates": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T00:33:35.866Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

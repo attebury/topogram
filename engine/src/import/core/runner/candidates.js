@@ -284,6 +284,7 @@ export function normalizeCandidatesForTrack(track, candidates) {
       screens: dedupeCandidateRecords(candidates.screens || [], idHint),
       routes: dedupeCandidateRecords(candidates.routes || [], idHint),
       actions: dedupeCandidateRecords(candidates.actions || [], idHint),
+      flows: dedupeCandidateRecords(candidates.flows || [], idHint),
       widgets,
       shapes: dedupeCandidateRecords([...(candidates.shapes || []), ...eventShapes], idHint),
       stacks: [...new Set(candidates.stacks || [])].sort()
@@ -330,6 +331,7 @@ export function enrichUiWidgetDataSources(uiCandidates, allCandidates) {
   const { components, ...canonicalCandidates } = uiCandidates;
   return {
     ...canonicalCandidates,
+    flows: dedupeCandidateRecords(canonicalCandidates.flows || [], (/** @type {any} */ flow) => flow.id_hint),
     widgets: widgets.map((widget) => {
       const dataSource = inferredDataSourceForWidget(widget, allCandidates);
       const dataProp = widget.data_prop || "rows";

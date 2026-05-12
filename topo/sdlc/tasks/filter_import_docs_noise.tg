@@ -1,0 +1,14 @@
+task task_filter_import_docs_noise {
+  name "Filter Import Docs Noise"
+  description "Classify import evidence by source type and prevent docs, tests, fixtures, and generated output from becoming primary high-confidence candidates by themselves."
+  satisfies [req_import_docs_noise_filtering]
+  acceptance_refs [ac_import_docs_noise_does_not_create_primary_candidates]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

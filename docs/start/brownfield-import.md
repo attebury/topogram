@@ -43,7 +43,8 @@ Important JSON fields:
 
 - `workspaceRoot`: the project-owned workspace folder, normally `topo/`;
 - `candidateCounts`: counts by import surface such as `apiCapabilities`,
-  `dbMaintainedSeams`, `uiWidgets`, `cliCommands`, and `cliSurfaces`;
+  `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
+  `cliSurfaces`;
 - `nextCommands`: the next review commands Topogram recommends.
 
 Imported Topogram files are project-owned after creation. Edit candidates and
@@ -56,6 +57,19 @@ review-only proposals inferred from Prisma, Drizzle, or SQL schema/migration
 evidence. They are carried into `topogram import plan` as a `database` review
 bundle, but import does not edit `topogram.project.json`, schema files, or
 migration files for you.
+
+UI imports may emit non-resource flow candidates under
+`topo/candidates/app/ui/candidates.json` as `flows`. These are conservative,
+review-only hints for auth, onboarding/wizard, settings/preferences,
+dashboard/reporting, search/filter, and bulk-review routes. They include route
+evidence, confidence, missing decisions, and proposed `ui_contract` additions.
+Import plan carries them as UI review packets; adoption writes only reviewed
+reports/docs when you explicitly adopt the related selector.
+
+Import classifies evidence by source type. Runtime source and parser/config
+files can create primary candidates. Docs, tests, fixtures, and generated
+output can support review evidence, but they should not create high-confidence
+API/UI/CLI candidates by themselves.
 
 ## 3. Adopt deliberately
 
@@ -84,6 +98,8 @@ common for CLI imports.
 For DB seam candidates, review `bundle:database` and manually copy the proposed
 runtime migration block into `topogram.project.json` only after confirming the
 tool, schema path, migration path, snapshot path, and `apply: "never"` policy.
+The DB seam packet includes the proposed `topology.runtimes[...].migration`
+target and manual next steps; treat those as instructions, not automation.
 
 Adoption appends receipts to `.topogram-import-adoptions.jsonl`. Use history to
 audit them:

@@ -12,11 +12,13 @@ const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "im
 const cliPath = path.join(repoRoot, "engine", "src", "cli.js");
 const retainedImportFixtures = [
   "cli-basic",
+  "docs-noise",
   "drizzle-basic",
   "prisma-openapi",
   "prisma-schema-only",
   "route-fallback",
-  "sql-openapi"
+  "sql-openapi",
+  "ui-flows"
 ];
 
 test("engine import fixtures are limited to actively tested smoke inputs", () => {
@@ -47,6 +49,13 @@ test("Prisma plus OpenAPI import fixture extracts DB and API candidates", () => 
   assert.equal(seam.migrationsPath, "prisma/migrations");
   assert.equal(seam.snapshotPath, "topo/state/db/app_db/current.snapshot.json");
   assert.deepEqual(seam.missing_decisions, []);
+  assert.deepEqual(seam.project_config_target, {
+    file: "topogram.project.json",
+    path: "topology.runtimes[id=app_db].migration",
+    runtime_id: "app_db",
+    projection_id: "proj_db"
+  });
+  assert.equal(seam.manual_next_steps.some((step) => step.includes("copy proposed_runtime_migration")), true);
   assert.deepEqual(seam.proposed_runtime_migration, {
     ownership: "maintained",
     tool: "prisma",
@@ -145,6 +154,7 @@ test("CLI import fixture extracts command surface candidates", () => {
   assert.deepEqual(summary.tracks, ["cli"]);
   assert.deepEqual(detectionIds(summary), ["cli.generic"]);
   assert.deepEqual((summary.candidates.cli.commands || []).map((item) => item.command_id).sort(), ["check", "import"]);
+  assert.equal((summary.candidates.cli.commands || []).flatMap((item) => item.provenance || []).some((item) => item.includes("tests/cli.test.js")), false);
   assert.deepEqual(candidateIds(summary.candidates.cli.capabilities), ["cap_check", "cap_import"]);
   assert.deepEqual(candidateIds(summary.candidates.cli.surfaces), ["proj_cli_surface"]);
   const surface = summary.candidates.cli.surfaces[0];
@@ -157,6 +167,86 @@ test("CLI import fixture extracts command surface candidates", () => {
     (surface.effects || []).map((item) => `${item.command_id}:${item.effect}`).sort(),
     ["check:read_only", "import:filesystem", "import:writes_workspace"]
   );
+});
+
+test("docs, tests, and fixture snippets do not create primary import candidates", () => {
+  const summary = runImportAppWorkflow(path.join(importFixtureRoot, "docs-noise"), {
+    from: "api,cli"
+  }).summary;
+
+  assert.deepEqual(summary.tracks, ["api", "cli"]);
+  assert.deepEqual(detectionIds(summary), []);
+  assert.deepEqual(summary.candidates.api.capabilities, []);
+  assert.deepEqual(summary.candidates.api.routes, []);
+  assert.deepEqual(summary.candidates.cli.commands, []);
+  assert.deepEqual(summary.candidates.cli.surfaces, []);
+});
+
+test("non-resource UI routes emit review-only flow candidates", () => {
+  const summary = runImportAppWorkflow(path.join(importFixtureRoot, "ui-flows"), {
+    from: "ui"
+  }).summary;
+
+  assert.deepEqual(summary.tracks, ["ui"]);
+  assert.deepEqual(detectionIds(summary), ["ui.react-router"]);
+  assert.deepEqual(candidateIds(summary.candidates.ui.flows), [
+    "flow_approvals_review",
+    "flow_dashboard",
+    "flow_login",
+    "flow_onboarding_setup",
+    "flow_search",
+    "flow_settings_profile"
+  ]);
+  const flow = summary.candidates.ui.flows.find((item) => item.flow_type === "auth");
+  assert.equal(flow.kind, "ui_flow");
+  assert.equal(flow.confidence, "medium");
+  assert.deepEqual(flow.route_paths, ["/login"]);
+  assert.deepEqual(flow.screen_ids, ["login"]);
+  assert.equal(flow.proposed_ui_contract_additions.projection_type, "ui_contract");
+  assert.equal(flow.missing_decisions.includes("confirm auth provider and session lifecycle"), true);
+});
+
+test("brownfield UI flow candidates are carried into import plan and adoption review", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-ui-flows."));
+  const targetRoot = path.join(runRoot, "imported");
+  const result = runCli([
+    "import",
+    path.join(importFixtureRoot, "ui-flows"),
+    "--out",
+    targetRoot,
+    "--from",
+    "ui",
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.candidateCounts.uiFlows, 6);
+  const uiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "ui", "candidates.json"), "utf8"));
+  assert.equal(uiCandidates.flows.length, 6);
+  assert.equal(uiCandidates.flows[0].kind, "ui_flow");
+  const uiReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "ui", "report.md"), "utf8");
+  assert.match(uiReport, /Flow candidates: 6/);
+  assert.match(uiReport, /## Flow Candidates/);
+
+  const plan = runCli(["import", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.summary.proposalItemCount, 18);
+  assert.equal(planPayload.bundles.every((bundle) => bundle.kindCounts.ui === 2), true);
+  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const flowSurface = adoptionPlan.imported_proposal_surfaces.find((item) => item.item === "ui_flow_flow_login");
+  assert.equal(flowSurface.kind, "ui");
+  assert.equal(flowSurface.track, "ui");
+  assert.equal(flowSurface.source_path, "candidates/reconcile/model/bundles/flow-auth/docs/reports/ui-flow-flow_login.md");
+  assert.equal(flowSurface.canonical_rel_path, "docs/reports/ui-flow-flow_login.md");
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "docs", "reports", "ui-flow-flow_login.md")), false);
+
+  const selectorList = runCli(["import", "adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  const uiSelector = selectorPayload.broadSelectors.find((selector) => selector.selector === "ui");
+  assert.equal(uiSelector.itemCount, 12);
 });
 
 test("brownfield import creates editable Topogram workspace with source provenance", () => {
@@ -185,10 +275,13 @@ test("brownfield import creates editable Topogram workspace with source provenan
   const dbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
   assert.equal(dbCandidates.maintained_seams.length, 1);
   assert.equal(dbCandidates.maintained_seams[0].proposed_runtime_migration.tool, "sql");
+  assert.equal(dbCandidates.maintained_seams[0].manual_next_steps.some((step) => step.includes("topogram.project.json")), true);
   assert.equal(dbCandidates.maintained_seams[0].apply, "never");
   const dbReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "report.md"), "utf8");
   assert.match(dbReport, /Maintained DB migration seams: 1/);
   assert.match(dbReport, /seam_sql_db_migrations/);
+  assert.match(dbReport, /project config target/);
+  assert.match(dbReport, /manual next:/);
   const appReport = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "report.md"), "utf8");
   assert.match(appReport, /Maintained DB migration seams: 1/);
   const projectConfig = JSON.parse(fs.readFileSync(path.join(targetRoot, "topogram.project.json"), "utf8"));
@@ -208,9 +301,14 @@ test("brownfield import creates editable Topogram workspace with source provenan
   assert.equal(dbSeamSurface.bundle, "database");
   assert.equal(dbSeamSurface.recommended_state, "customize");
   assert.equal(dbSeamSurface.maintained_seam_candidates[0].tool, "sql");
+  assert.equal(dbSeamSurface.mapping_suggestions[0].project_config_target.path, "topology.runtimes[id=app_db].migration");
+  assert.equal(dbSeamSurface.mapping_suggestions[0].manual_next_steps.some((step) => step.includes("copy proposed_runtime_migration")), true);
   const reconcileReport = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "report.json"), "utf8"));
   const databaseBundle = reconcileReport.candidate_model_bundles.find((bundle) => bundle.slug === "database");
   assert.equal(databaseBundle.maintained_seam_candidates[0].id, "seam_sql_db_migrations");
+  const databaseReadme = fs.readFileSync(path.join(targetRoot, "topo", "candidates", "reconcile", "model", "bundles", "database", "README.md"), "utf8");
+  assert.match(databaseReadme, /proposed runtime migration/);
+  assert.match(databaseReadme, /manual next:/);
 
   const check = runCli(["import", "check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -930,6 +1028,7 @@ function runCli(args) {
   return childProcess.spawnSync(process.execPath, [cliPath, ...args], {
     cwd: repoRoot,
     encoding: "utf8",
+    maxBuffer: 1024 * 1024 * 10,
     env: {
       ...process.env,
       FORCE_COLOR: "0"

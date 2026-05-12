@@ -86,6 +86,13 @@ function maintainedDbSeamCandidate(context, options) {
     ...(options.migrationsPath ? { migrationsPath: options.migrationsPath } : {})
   };
   const idHint = `seam_${options.tool}_db_migrations`;
+  const manualNextSteps = [
+    "Review evidence, match_reasons, and missing_decisions before accepting this seam.",
+    `Confirm database runtime '${runtimeId}' and projection '${projectionId}' are the right topology targets for the maintained app.`,
+    "If accepted, copy proposed_runtime_migration into the matching database runtime's migration block in topogram.project.json.",
+    "Keep ownership 'maintained' and apply 'never'; import must not apply migrations or patch maintained app files.",
+    "After editing topogram.project.json, run topogram check . --json and the maintained app's migration verification."
+  ];
 
   return makeCandidateRecord({
     kind: "maintained_db_migration_seam",
@@ -112,6 +119,13 @@ function maintainedDbSeamCandidate(context, options) {
     match_reasons: options.matchReasons,
     missing_decisions: options.missingDecisions,
     proposed_runtime_migration: proposedRuntimeMigration,
+    manual_next_steps: manualNextSteps,
+    project_config_target: {
+      file: "topogram.project.json",
+      path: `topology.runtimes[id=${runtimeId}].migration`,
+      runtime_id: runtimeId,
+      projection_id: projectionId
+    },
     maintained_modules: [options.schemaPath, options.migrationsPath].filter(Boolean),
     emitted_dependencies: [snapshotPath, projectionId],
     allowed_change_classes: ["proposal_only"],

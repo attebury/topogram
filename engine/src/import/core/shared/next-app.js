@@ -10,7 +10,7 @@ import {
   normalizeEndpointPathForMatch,
   normalizeOpenApiPath
 } from "./api-routes.js";
-import { entityIdForRoute, screenIdForRoute, screenKindForRoute, uiCapabilityHintsForRoute } from "./ui-routes.js";
+import { entityIdForRoute, inferNonResourceUiFlow, screenIdForRoute, screenKindForRoute, uiCapabilityHintsForRoute } from "./ui-routes.js";
 
 /**
  * @param {string} rootDir
@@ -48,7 +48,7 @@ export function inferNextAppRoutes(rootDir) {
  */
 export function nextScreenKindForRoute(routePath) {
   const normalized = String(routePath || "");
-  if (/\/(login|register|setup)$/.test(normalized)) return "flow";
+  if (inferNonResourceUiFlow(normalized) || /\/(login|register|setup)$/.test(normalized)) return "flow";
   return screenKindForRoute(routePath);
 }
 

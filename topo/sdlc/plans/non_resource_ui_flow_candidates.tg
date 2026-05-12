@@ -1,0 +1,14 @@
+plan plan_non_resource_ui_flow_candidates {
+  name "Non Resource Ui Flow Candidates"
+  description "Implementation plan for task_import_non_resource_ui_flow_candidates."
+  task task_import_non_resource_ui_flow_candidates
+  priority medium
+  notes "Record approach notes here."
+  outcome "Record what worked, what did not, and what to repeat later."
+  steps {
+    step inspect_current_state status done description "Inspect current behavior and constraints."
+    step implement_changes status done description "Implement the planned changes."
+    step verify_results status done description "Run focused checks and record verification."
+  }
+  status draft
+}

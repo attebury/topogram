@@ -9,7 +9,8 @@ Important fields:
 - `projectRoot`: target project root.
 - `candidateCounts`: number of imported candidate artifacts by surface,
   including fields such as `apiCapabilities`, `apiRoutes`,
-  `dbMaintainedSeams`, `uiWidgets`, `cliCommands`, and `cliSurfaces`.
+  `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
+  `cliSurfaces`.
 - `writtenFiles`: files written by import or adoption.
 - `nextCommands`: recommended follow-up commands.
 - `receipt`: adoption receipt when an adoption command writes.
@@ -33,6 +34,13 @@ Review payloads:
 - Maintained DB migration seam proposals appear as `dbMaintainedSeams` in
   import counts, `candidates.db.maintained_seams` in raw candidate files, and a
   review-only `database` bundle in plan output.
+- Non-resource UI flow proposals appear as `uiFlows` in import counts,
+  `candidates.ui.flows` in raw candidate files, and review-only UI items in
+  plan/adoption output. They are proposals for shared `ui_contract` additions,
+  not automatic canonical writes.
+- Evidence records can include source type context. Runtime source and
+  parser/config files are primary; docs, tests, fixtures, and generated output
+  should not create high-confidence primary candidates by themselves.
 - `topogram import adopt --list --json` returns exact `selectors` such as
   `bundle:task` or `bundle:cli` and broad selectors such as `widgets`, `ui`,
   `cli`, `capabilities`, and `from-plan`.

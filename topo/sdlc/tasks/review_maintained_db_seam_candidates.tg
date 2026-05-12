@@ -1,0 +1,14 @@
+task task_review_maintained_db_seam_candidates {
+  name "Review Maintained Db Seam Candidates"
+  description "Make maintained DB seam candidates actionable in import plan, adoption review packets, and docs while keeping adoption review-only."
+  satisfies [req_import_maintained_seam_candidates]
+  acceptance_refs [ac_review_maintained_db_seam_candidates]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

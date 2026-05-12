@@ -741,7 +741,18 @@ export function buildAgentAdoptionPlan(adoptionPlan, maintainedBoundaryArtifact 
     mapping_suggestions: [{
       type: "manual_project_config_review",
       id: seam.id_hint || seam.seam_id,
-      reason: "Review the inferred database migration strategy before editing topogram.project.json."
+      reason: "Review the inferred database migration strategy before editing topogram.project.json.",
+      project_config_target: seam.project_config_target || {
+        file: "topogram.project.json",
+        path: "topology.runtimes[].migration"
+      },
+      proposed_runtime_migration: seam.proposed_runtime_migration || null,
+      missing_decisions: seam.missing_decisions || [],
+      evidence: seam.evidence || seam.provenance || [],
+      manual_next_steps: seam.manual_next_steps || [
+        "Review evidence and missing decisions.",
+        "Manually copy the accepted migration strategy into topogram.project.json."
+      ]
     }],
     available_actions: ADOPTION_STATE_VOCABULARY
   }));

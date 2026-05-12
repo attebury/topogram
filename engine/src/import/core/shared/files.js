@@ -85,6 +85,51 @@ export function normalizeImportRelativePath(paths, filePath) {
 /**
  * @param {import("./types.d.ts").ImportPaths} paths
  * @param {string} filePath
+ * @returns {string}
+ */
+export function importSourcePathRelativeToWorkspace(paths, filePath) {
+  return relativeTo(paths.workspaceRoot, filePath).replaceAll(path.sep, "/");
+}
+
+/**
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {string} filePath
+ * @returns {"runtime_source"|"parser_config"|"docs"|"tests"|"fixtures"|"generated_output"}
+ */
+export function classifyImportSourcePath(paths, filePath) {
+  const relativePath = importSourcePathRelativeToWorkspace(paths, filePath);
+  const basename = path.basename(relativePath).toLowerCase();
+  if (/(^|\/)(dist|build|coverage|out|generated|docs-generated|snapshots?)(\/|$)/i.test(relativePath)) {
+    return "generated_output";
+  }
+  if (/(^|\/)(test|tests|__tests__|spec|specs|mocks?)(\/|$)|\.(test|spec)\.(js|jsx|ts|tsx|mjs|cjs)$/i.test(relativePath)) {
+    return "tests";
+  }
+  if (/(^|\/)(fixture|fixtures|examples?)(\/|$)/i.test(relativePath)) {
+    return "fixtures";
+  }
+  if (/(^|\/)(doc|docs|documentation|guides?)(\/|$)|^(readme|changelog|contributing|license)(\.[a-z0-9]+)?$/i.test(relativePath) || /^(readme|changelog|contributing|license)(\.[a-z0-9]+)?$/i.test(basename)) {
+    return "docs";
+  }
+  if (/(^|\/)(package\.json|openapi\.(json|ya?ml)|swagger\.(json|ya?ml)|drizzle\.config\.(ts|js|mjs|cjs)|tsconfig\.json)$/i.test(relativePath)) {
+    return "parser_config";
+  }
+  return "runtime_source";
+}
+
+/**
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+export function isPrimaryImportSource(paths, filePath) {
+  const sourceType = classifyImportSourcePath(paths, filePath);
+  return sourceType === "runtime_source" || sourceType === "parser_config";
+}
+
+/**
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {string} filePath
  * @param {any} kind
  * @returns {any}
  */
@@ -129,6 +174,9 @@ export function canonicalSourceRank(paths, filePath, kind) {
     if (penalty.pattern.test(normalizedPath)) {
       rank += penalty.weight;
     }
+  }
+  if (!isPrimaryImportSource(paths, filePath)) {
+    rank += 1000;
   }
   return rank;
 }

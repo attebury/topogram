@@ -63,18 +63,18 @@ const inputPath = commandArgs && Object.prototype.hasOwnProperty.call(commandArg
 const cliOptions = parseCliOptions(args, commandArgs);
 
 try {
-  process.exit(await runCliDispatch({
+  process.exitCode = await runCliDispatch({
     args,
     commandArgs,
     inputPath,
     cliOptions,
     executablePath: path.resolve(process.argv[1] || fileURLToPath(import.meta.url))
-  }));
+  });
 } catch (error) {
   if (error.validation) {
     console.error(formatValidationErrors(error.validation));
   } else {
     console.error(error.message);
   }
-  process.exit(1);
+  process.exitCode = 1;
 }

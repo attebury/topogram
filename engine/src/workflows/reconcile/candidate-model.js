@@ -22,6 +22,7 @@ import {
   renderCandidateEntity,
   renderCandidateEnum,
   renderCandidateShape,
+  renderCandidateUiFlowDoc,
   renderCandidateUiReportDoc,
   renderCandidateVerification,
   renderCandidateWidget,
@@ -83,8 +84,9 @@ export function bestContextBundleForCandidate(bundles, candidate) {
 export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
   const dbCandidates = appImport.candidates.db || { entities: [], enums: [], maintained_seams: [] };
   const apiCandidates = appImport.candidates.api || { capabilities: [] };
-  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], widgets: [], shapes: [] };
+  const uiCandidates = appImport.candidates.ui || { screens: [], routes: [], actions: [], flows: [], widgets: [], shapes: [] };
   const uiWidgetCandidates = uiCandidates.widgets || uiCandidates.components || [];
+  const uiFlowCandidates = uiCandidates.flows || [];
   const uiShapeCandidates = uiCandidates.shapes || [];
   const uiShapeCandidatesById = new Map(uiShapeCandidates.map((/** @type {any} */ shape) => [shape.id || shape.id_hint, shape]));
   const workflowCandidates = appImport.candidates.workflows || { workflows: [], workflow_states: [], workflow_transitions: [] };
@@ -208,6 +210,11 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
     const conceptId = entry.entity_id || entry.concept_id || `entity_${canonicalCandidateTerm(entry.screen_id || entry.id_hint)}`;
     const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.screen_id || entry.id_hint));
     bundle.uiActions.push(entry);
+  }
+  for (const entry of uiFlowCandidates) {
+    const conceptId = entry.concept_id || `flow_${canonicalCandidateTerm(entry.flow_type || entry.id_hint)}`;
+    const bundle = getOrCreateCandidateBundle(bundles, conceptId, bundleLabelFromConceptId(conceptId || entry.id_hint));
+    bundle.uiFlows.push(entry);
   }
   /** @param {WorkflowRecord} entry @returns {any} */
   function widgetConceptId(entry) {
@@ -334,6 +341,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
       bundle.screens.length > 0 ||
       bundle.uiRoutes.length > 0 ||
       bundle.uiActions.length > 0 ||
+      bundle.uiFlows.length > 0 ||
       bundle.workflows.length > 0 ||
       bundle.verifications.length > 0 ||
       bundle.workflowStates.length > 0 ||
@@ -354,6 +362,7 @@ export function buildCandidateModelBundles(graph, appImport, topogramRoot) {
         screens: bundle.screens.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         uiRoutes: bundle.uiRoutes.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         uiActions: bundle.uiActions.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
+        uiFlows: bundle.uiFlows.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         workflows: bundle.workflows.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         verifications: bundle.verifications.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
         workflowStates: bundle.workflowStates.sort((/** @type {any} */ a, /** @type {any} */ b) => a.id_hint.localeCompare(b.id_hint)),
@@ -498,6 +507,9 @@ export function buildCandidateModelFiles(graph, appImport, topogramRoot) {
       const routes = bundle.uiRoutes.filter((/** @type {any} */ route) => route.screen_id === screen.id_hint);
       const actions = bundle.uiActions.filter((/** @type {any} */ action) => action.screen_id === screen.id_hint);
       files[`${bundleRoot}/docs/reports/ui-${screen.id_hint}.md`] = renderCandidateUiReportDoc(screen, routes, actions);
+    }
+    for (const flow of bundle.uiFlows || []) {
+      files[`${bundleRoot}/docs/reports/ui-flow-${flow.id_hint}.md`] = renderCandidateUiFlowDoc(flow);
     }
     for (const patch of bundle.projectionPatches || []) {
       files[`${bundleRoot}/${patch.patch_rel_path}`] = renderProjectionPatchDoc(patch);

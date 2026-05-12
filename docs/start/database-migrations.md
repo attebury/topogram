@@ -100,15 +100,34 @@ Review:
 
 Each candidate includes the inferred tool, schema path, migrations path,
 snapshot path, confidence, evidence, missing decisions, and a
-`proposed_runtime_migration` block. Treat that block as a proposal only. Import
-never patches `topogram.project.json` and never writes to maintained Prisma,
-Drizzle, or SQL migration files.
+`proposed_runtime_migration` block plus manual next steps. Treat that block as
+a proposal only. Import never patches `topogram.project.json` and never writes
+to maintained Prisma, Drizzle, or SQL migration files.
 
 When the candidate is correct, manually add a database runtime migration block
 to `topogram.project.json` with `ownership: "maintained"` and `apply: "never"`.
 If the candidate reports `missing_decisions`, resolve those first; for example,
 a Prisma schema without a migrations directory should not be treated as a
 complete migration seam.
+
+The reviewed config target is the matching database runtime under
+`topology.runtimes[].migration`, for example:
+
+```json
+{
+  "id": "app_db",
+  "kind": "database",
+  "projection": "proj_db",
+  "migration": {
+    "ownership": "maintained",
+    "tool": "prisma",
+    "schemaPath": "prisma/schema.prisma",
+    "migrationsPath": "prisma/migrations",
+    "snapshotPath": "topo/state/db/app_db/current.snapshot.json",
+    "apply": "never"
+  }
+}
+```
 
 ## Tool Notes
 

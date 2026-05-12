@@ -1,0 +1,6 @@
+acceptance_criterion ac_import_docs_noise_does_not_create_primary_candidates {
+  name "Import Docs Noise Does Not Create Primary Candidates"
+  description "Given docs, tests, fixtures, or generated output containing API/UI/CLI-looking snippets, when brownfield import runs, then those files may support evidence but must not create high-confidence primary candidates by themselves."
+  requirement req_import_docs_noise_filtering
+  status approved
+}

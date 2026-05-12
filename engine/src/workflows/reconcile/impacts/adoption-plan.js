@@ -156,6 +156,19 @@ export function buildBundleAdoptionPlan(bundle, canonicalShapeIndex) {
       canonical_rel_path: `docs/reports/ui-${screen.id_hint}.md`
     });
   }
+  for (const flow of bundle.uiFlows || []) {
+    steps.push({
+      action: "promote_ui_flow_report",
+      item: `ui_flow_${flow.id_hint}`,
+      target: null,
+      confidence: flow.confidence || "medium",
+      inference_summary: `Review non-resource UI flow candidate ${flow.id_hint}.`,
+      source_kind: flow.source_kind || "route_code",
+      source_path: `candidates/reconcile/model/bundles/${bundle.slug}/docs/reports/ui-flow-${flow.id_hint}.md`,
+      canonical_rel_path: `docs/reports/ui-flow-${flow.id_hint}.md`,
+      track: "ui"
+    });
+  }
   for (const patch of bundle.projectionPatches || []) {
     for (const hint of patch.missing_auth_permissions || []) {
       steps.push({

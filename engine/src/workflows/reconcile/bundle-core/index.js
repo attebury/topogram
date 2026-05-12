@@ -39,6 +39,7 @@ export function getOrCreateCandidateBundle(bundles, conceptId, label) {
       screens: [],
       uiRoutes: [],
       uiActions: [],
+      uiFlows: [],
       workflows: [],
       verifications: [],
       workflowStates: [],
@@ -337,6 +338,7 @@ export function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
     `Screens: ${bundle.screens.length}`,
     `UI routes: ${bundle.uiRoutes.length}`,
     `UI actions: ${bundle.uiActions.length}`,
+    `UI flows: ${(bundle.uiFlows || []).length}`,
     `Workflows: ${bundle.workflows.length}`,
     `Verifications: ${bundle.verifications.length}`,
     `Workflow states: ${bundle.workflowStates.length}`,
@@ -455,6 +457,16 @@ export function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
         lines.push(`    - label ${candidate.label}`);
         lines.push(`    - kind ${candidate.kind}`);
         lines.push(`    - why matched ${candidate.match_reasons.length ? candidate.match_reasons.join("; ") : "dependency overlap with maintained seam evidence"}`);
+        lines.push(`    - missing decisions ${(candidate.missing_decisions || []).length ? candidate.missing_decisions.join("; ") : "none"}`);
+        lines.push(`    - project config target \`${candidate.project_config_target?.path || "topology.runtimes[].migration"}\``);
+        lines.push(`    - evidence ${(candidate.evidence || []).slice(0, 3).map((/** @type {string} */ item) => `\`${item}\``).join(", ") || "_none_"}`);
+        lines.push("    - proposed runtime migration");
+        lines.push("      ```json");
+        lines.push(`      ${JSON.stringify(candidate.proposed_runtime_migration || {}, null, 2).replace(/\n/g, "\n      ")}`);
+        lines.push("      ```");
+        for (const step of candidate.manual_next_steps || []) {
+          lines.push(`    - manual next: ${step}`);
+        }
       }
     }
   }
@@ -554,6 +566,13 @@ export function renderCandidateBundleReadme(bundle, proposalSurfaces = []) {
       lines.push(`- \`${entry.id_hint}\` ${entry.screen_kind} at \`${entry.route_path}\``);
     }
   }
+  if ((bundle.uiFlows || []).length > 0) {
+    lines.push("", "## UI Flow Evidence", "");
+    for (const entry of bundle.uiFlows) {
+      lines.push(`- \`${entry.id_hint}\` ${entry.flow_type || "flow"} routes ${(entry.route_paths || []).map((/** @type {string} */ item) => `\`${item}\``).join(", ") || "_none_"}`);
+      lines.push(`  - missing decisions ${(entry.missing_decisions || []).length ? entry.missing_decisions.join("; ") : "none"}`);
+    }
+  }
   if (bundle.workflows.length > 0) {
     lines.push("", "## Workflow Evidence", "");
     for (const entry of bundle.workflows) {
@@ -578,7 +597,7 @@ export function renderMaintainedSeamCandidatesInline(bundle) {
   return entries
     .map((/** @type {any} */ surface) => {
       const seams = (surface.maintained_seam_candidates || [])
-        .map((/** @type {any} */ candidate) => `\`${candidate.seam_id}\` (${candidate.status}, ${candidate.ownership_class}, confidence=${candidate.confidence})`)
+        .map((/** @type {any} */ candidate) => `\`${candidate.seam_id}\` (${candidate.status}, ${candidate.ownership_class}, confidence=${candidate.confidence}, missing decisions=${(candidate.missing_decisions || []).length})`)
         .join(", ");
       return `${surface.id}: ${seams}`;
     })

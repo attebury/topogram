@@ -5,6 +5,51 @@ import { relativeTo } from "../../../path-helpers.js";
 import { canonicalCandidateTerm } from "./candidates.js";
 import { listFilesRecursive, readTextIfExists } from "./files.js";
 
+const NON_RESOURCE_FLOW_DEFINITIONS = [
+  {
+    flow_type: "auth",
+    concept_id: "flow_auth",
+    pattern: /\/(login|log-in|signin|sign-in|sign_in|logout|log-out|register|signup|sign-up|forgot-password|reset-password|password-reset)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm auth provider and session lifecycle", "confirm success and failure destinations"]
+  },
+  {
+    flow_type: "onboarding_wizard",
+    concept_id: "flow_onboarding",
+    pattern: /\/(onboarding|setup|welcome|get-started|getting-started|wizard|stepper)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm step order and completion criteria", "confirm resumability and exit behavior"]
+  },
+  {
+    flow_type: "settings_preferences",
+    concept_id: "flow_settings",
+    pattern: /\/(settings|preferences|profile|account|billing|security)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm settings ownership boundary", "confirm save, validation, and permission behavior"]
+  },
+  {
+    flow_type: "dashboard_reporting",
+    concept_id: "flow_dashboard",
+    pattern: /\/(dashboard|reports|reporting|analytics|insights|metrics)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm reporting data sources", "confirm refresh cadence and empty states"]
+  },
+  {
+    flow_type: "search_filter",
+    concept_id: "flow_search",
+    pattern: /\/(search|results|explore|browse|discover)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm searchable resources", "confirm filter, sorting, and pagination behavior"]
+  },
+  {
+    flow_type: "bulk_review",
+    concept_id: "flow_bulk_review",
+    pattern: /\/(review|reviews|approvals|approval|moderation|queue|bulk)(\/|$)/i,
+    confidence: "medium",
+    missing_decisions: ["confirm bulk action eligibility", "confirm review outcomes and audit requirements"]
+  }
+];
+
 /**
  * @param {string} routePath
  * @returns {any}
@@ -23,6 +68,7 @@ export function routeSegments(routePath) {
 export function screenKindForRoute(routePath) {
   const normalized = String(routePath || "");
   const segments = routeSegments(normalized);
+  if (inferNonResourceUiFlow(normalized)) return "flow";
   if (/\/new$/.test(normalized)) return "form";
   if (/\/:?[A-Za-z0-9_]+\/edit$/.test(normalized)) return "form";
   if (segments.length >= 2 && !/\/new$/.test(normalized) && !/\/edit$/.test(normalized)) return "detail";
@@ -33,10 +79,70 @@ export function screenKindForRoute(routePath) {
  * @param {string} routePath
  * @returns {any}
  */
+export function inferNonResourceUiFlow(routePath) {
+  const normalized = String(routePath || "");
+  for (const definition of NON_RESOURCE_FLOW_DEFINITIONS) {
+    if (definition.pattern.test(normalized)) {
+      return {
+        flow_type: definition.flow_type,
+        concept_id: definition.concept_id,
+        confidence: definition.confidence,
+        missing_decisions: definition.missing_decisions
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {string} routePath
+ * @param {string} screenId
+ * @returns {any}
+ */
+export function uiFlowIdForRoute(routePath, screenId) {
+  const flow = inferNonResourceUiFlow(routePath);
+  if (!flow) return null;
+  return `flow_${canonicalCandidateTerm(screenId || flow.flow_type).replace(/-/g, "_")}`;
+}
+
+/**
+ * @param {string} routePath
+ * @param {string} screenId
+ * @param {string} screenKind
+ * @returns {any}
+ */
+export function proposedUiContractAdditionsForFlow(routePath, screenId, screenKind) {
+  return {
+    projection_type: "ui_contract",
+    screens: [
+      {
+        id: screenId,
+        kind: screenKind || "flow",
+        title: screenId
+      }
+    ],
+    screen_routes: [
+      {
+        screen: screenId,
+        path: routePath
+      }
+    ],
+    notes: [
+      "Review-only flow recovery proposal.",
+      "Promote into the shared UI contract only after confirming behavior, state, and ownership decisions."
+    ]
+  };
+}
+
+/**
+ * @param {string} routePath
+ * @returns {any}
+ */
 export function screenIdForRoute(routePath) {
   const segments = routeSegments(routePath);
   const resource = canonicalCandidateTerm(segments[0] || "home");
   const kind = screenKindForRoute(routePath);
+  if (kind === "flow") return canonicalCandidateTerm(segments.join("_") || "home").replace(/-/g, "_");
   if (kind === "form" && /\/new$/.test(routePath)) return `${resource}_create`;
   if (kind === "form" && /\/edit$/.test(routePath)) return `${resource}_edit`;
   if (kind === "detail") return `${resource}_detail`;

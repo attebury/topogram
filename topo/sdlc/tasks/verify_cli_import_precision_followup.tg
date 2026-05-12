@@ -1,0 +1,14 @@
+task task_verify_cli_import_precision_followup {
+  name "Verify Cli Import Precision Followup"
+  description "Close out CLI import precision with negative regressions and fixture verification without reopening the completed implementation task."
+  satisfies [req_cli_import_precision_followup]
+  acceptance_refs [ac_cli_import_precision_verified]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

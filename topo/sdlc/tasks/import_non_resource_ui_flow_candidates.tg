@@ -1,0 +1,14 @@
+task task_import_non_resource_ui_flow_candidates {
+  name "Import Non Resource Ui Flow Candidates"
+  description "Infer conservative non-resource UI flow candidates and carry them through import plan and adoption review without automatic canonical writes."
+  satisfies [req_import_non_resource_ui_flows]
+  acceptance_refs [ac_import_non_resource_ui_flows_reviewable]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

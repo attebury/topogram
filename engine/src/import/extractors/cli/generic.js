@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   findImportFiles,
   idHintify,
+  isPrimaryImportSource,
   makeCandidateRecord,
   normalizeImportRelativePath,
   readJsonIfExists,
@@ -33,7 +34,7 @@ function normalizePath(value) {
  */
 function isAuthoritativeCliSource(paths, filePath) {
   const normalized = normalizePath(normalizeImportRelativePath(paths, filePath));
-  return !NON_AUTHORITATIVE_CLI_PATH_PATTERN.test(normalized);
+  return isPrimaryImportSource(paths, filePath) && !NON_AUTHORITATIVE_CLI_PATH_PATTERN.test(normalized);
 }
 
 /**

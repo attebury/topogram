@@ -2,14 +2,17 @@ import {
   dedupeCandidateRecords,
   detectUiPresentationFeatures,
   entityIdForRoute,
+  inferNonResourceUiFlow,
   inferNavigationStructure,
   inferSvelteRoutes,
   makeCandidateRecord,
   navigationPatternsFromStructure,
+  proposedUiContractAdditionsForFlow,
   relativeTo,
   shellKindFromNavigation,
   screenIdForRoute,
   screenKindForRoute,
+  uiFlowIdForRoute,
   uiCapabilityHintsForRoute,
   titleCase
 } from "../../core/shared.js";
@@ -28,7 +31,7 @@ export const svelteKitUiExtractor = {
   },
   extract(context) {
     const findings = [];
-    const candidates = { screens: [], routes: [], actions: [], stacks: [] };
+    const candidates = { screens: [], routes: [], actions: [], flows: [], stacks: [] };
     const roots = [
       path.join(context.paths.workspaceRoot, "apps", "web-sveltekit"),
       path.join(context.paths.workspaceRoot, "apps", "local-stack", "web")
@@ -74,16 +77,20 @@ export const svelteKitUiExtractor = {
       for (const routePath of routes) {
         const screenId = screenIdForRoute(routePath);
         const screenKind = screenKindForRoute(routePath);
-        const capabilityHints = uiCapabilityHintsForRoute(routePath);
+        const flow = inferNonResourceUiFlow(routePath);
+        const capabilityHints = flow ? { load: null, submit: null, primary_action: null } : uiCapabilityHintsForRoute(routePath);
+        const entityId = flow ? null : entityIdForRoute(routePath);
+        const routeProvenance = `${provenance}#${routePath}`;
         candidates.screens.push(makeCandidateRecord({
           kind: "screen",
           idHint: screenId,
           label: titleCase(screenId),
           confidence: "medium",
           sourceKind: "route_code",
-          provenance: `${provenance}#${routePath}`,
+          provenance: routeProvenance,
           track: "ui",
-          entity_id: entityIdForRoute(routePath),
+          entity_id: entityId,
+          concept_id: flow?.concept_id || entityId,
           screen_kind: screenKind,
           route_path: routePath,
           capability_hints: capabilityHints
@@ -94,12 +101,32 @@ export const svelteKitUiExtractor = {
           label: routePath,
           confidence: "medium",
           sourceKind: "route_code",
-          provenance: `${provenance}#${routePath}`,
+          provenance: routeProvenance,
           track: "ui",
           screen_id: screenId,
-          entity_id: entityIdForRoute(routePath),
+          entity_id: entityId,
+          concept_id: flow?.concept_id || entityId,
           path: routePath
         }));
+        if (flow) {
+          candidates.flows.push(makeCandidateRecord({
+            kind: "ui_flow",
+            idHint: uiFlowIdForRoute(routePath, screenId),
+            label: `${titleCase(flow.flow_type)} Flow`,
+            confidence: flow.confidence,
+            sourceKind: "route_code",
+            sourceOfTruth: "candidate",
+            provenance: routeProvenance,
+            track: "ui",
+            flow_type: flow.flow_type,
+            concept_id: flow.concept_id,
+            screen_ids: [screenId],
+            route_paths: [routePath],
+            evidence: [routeProvenance],
+            missing_decisions: flow.missing_decisions,
+            proposed_ui_contract_additions: proposedUiContractAdditionsForFlow(routePath, screenId, screenKind)
+          }));
+        }
       }
       for (const feature of features) {
         candidates.actions.push(makeCandidateRecord({
@@ -117,6 +144,7 @@ export const svelteKitUiExtractor = {
     candidates.screens = dedupeCandidateRecords(candidates.screens, (record) => record.id_hint);
     candidates.routes = dedupeCandidateRecords(candidates.routes, (record) => record.id_hint);
     candidates.actions = dedupeCandidateRecords(candidates.actions, (record) => record.id_hint);
+    candidates.flows = dedupeCandidateRecords(candidates.flows, (record) => record.id_hint);
     candidates.stacks = [...new Set(candidates.stacks)].sort();
     return { findings, candidates };
   }

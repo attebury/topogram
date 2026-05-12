@@ -115,6 +115,7 @@ export function importCandidateCounts(summary) {
     apiRoutes: candidates.api?.routes?.length || 0,
     uiScreens: candidates.ui?.screens?.length || 0,
     uiRoutes: candidates.ui?.routes?.length || 0,
+    uiFlows: candidates.ui?.flows?.length || 0,
     uiWidgets: candidates.ui?.widgets?.length || candidates.ui?.components?.length || 0,
     uiShapes: candidates.ui?.shapes?.length || 0,
     cliCommands: candidates.cli?.commands?.length || 0,

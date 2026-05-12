@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_import_precision_verified {
+  name "Cli Import Precision Verified"
+  description "Given the fake CLI fixture and engine dogfood import target, when CLI import runs, then public help and parser-derived commands outrank incidental docs, fixtures, tests, and strings, and any new precision defect is filed as a bug instead of papered over."
+  requirement req_cli_import_precision_followup
+  status approved
+}

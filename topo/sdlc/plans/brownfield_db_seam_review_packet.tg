@@ -1,0 +1,14 @@
+plan plan_brownfield_db_seam_review_packet {
+  name "Brownfield Db Seam Review Packet"
+  description "Implementation plan for task_review_maintained_db_seam_candidates."
+  task task_review_maintained_db_seam_candidates
+  priority medium
+  notes "Record approach notes here."
+  outcome "Record what worked, what did not, and what to repeat later."
+  steps {
+    step inspect_current_state status done description "Inspect current behavior and constraints."
+    step implement_changes status done description "Implement the planned changes."
+    step verify_results status done description "Run focused checks and record verification."
+  }
+  status draft
+}

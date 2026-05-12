@@ -1,0 +1,6 @@
+acceptance_criterion ac_import_non_resource_ui_flows_reviewable {
+  name "Import Non Resource Ui Flows Reviewable"
+  description "Given a brownfield app with non-resource UI routes, when UI import and import plan run, then Topogram emits review-only flow candidates with flow type, evidence, confidence, missing decisions, and proposed ui_contract additions without writing canonical flow records by default."
+  requirement req_import_non_resource_ui_flows
+  status approved
+}

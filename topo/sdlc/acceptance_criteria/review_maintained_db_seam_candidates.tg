@@ -1,0 +1,6 @@
+acceptance_criterion ac_review_maintained_db_seam_candidates {
+  name "Review Maintained Db Seam Candidates"
+  description "Given a brownfield import with maintained DB seam candidates, when a human or agent runs import plan or adoption review commands, then the packet shows each seam candidate with evidence, missing decisions, proposed runtime migration, and exact manual next steps without mutating project config."
+  requirement req_import_maintained_seam_candidates
+  status approved
+}

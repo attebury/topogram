@@ -283,6 +283,39 @@ export function renderCandidateUiReportDoc(screen, routes, actions) {
   return renderMarkdownDoc(metadata, body);
 }
 
+/** @param {WorkflowRecord} flow @returns {any} */
+export function renderCandidateUiFlowDoc(flow) {
+  /** @type {WorkflowRecord} */
+  const metadata = {
+    id: `ui_flow_${flow.id_hint}`,
+    kind: "report",
+    title: `${flow.label || flow.id_hint} Review`,
+    status: "inferred",
+    source_of_truth: "imported",
+    confidence: flow.confidence || "medium",
+    review_required: true,
+    provenance: flow.provenance || flow.evidence || [],
+    tags: ["import", "ui", "flow"]
+  };
+  const body = [
+    "Candidate non-resource UI flow imported from brownfield route evidence.",
+    "",
+    `Flow: \`${flow.id_hint}\` (${flow.flow_type || "unknown"})`,
+    `Screens: ${(flow.screen_ids || []).map((/** @type {string} */ item) => `\`${item}\``).join(", ") || "_none_"}`,
+    `Routes: ${(flow.route_paths || []).map((/** @type {string} */ item) => `\`${item}\``).join(", ") || "_none_"}`,
+    `Missing decisions: ${(flow.missing_decisions || []).length ? flow.missing_decisions.join("; ") : "none"}`,
+    "",
+    "Proposed UI contract additions:",
+    "",
+    "```json",
+    JSON.stringify(flow.proposed_ui_contract_additions || {}, null, 2),
+    "```",
+    "",
+    "Review this flow before promoting it into shared UI contract behavior."
+  ].join("\n");
+  return renderMarkdownDoc(metadata, body);
+}
+
 /** @param {WorkflowRecord} widget @returns {any} */
 export function renderCandidateWidget(widget) {
   const propName = widget.data_prop || "rows";

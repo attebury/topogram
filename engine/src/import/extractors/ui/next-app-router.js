@@ -1,4 +1,4 @@
-import { dedupeCandidateRecords, inferNextAppRoutes, makeCandidateRecord, nextScreenIdForRoute, nextScreenKindForRoute, uiCapabilityHintsForNextRoute, entityIdForNextRoute, conceptIdForNextRoute, relativeTo, titleCase, idHintify } from "../../core/shared.js";
+import { dedupeCandidateRecords, inferNextAppRoutes, inferNonResourceUiFlow, makeCandidateRecord, nextScreenIdForRoute, nextScreenKindForRoute, proposedUiContractAdditionsForFlow, uiCapabilityHintsForNextRoute, entityIdForNextRoute, conceptIdForNextRoute, relativeTo, titleCase, idHintify, uiFlowIdForRoute } from "../../core/shared.js";
 
 export const nextAppRouterUiExtractor = {
   id: "ui.next-app-router",
@@ -13,7 +13,7 @@ export const nextAppRouterUiExtractor = {
   extract(context) {
     const routes = inferNextAppRoutes(context.paths.workspaceRoot, context.helpers);
     const findings = [];
-    const candidates = { screens: [], routes: [], actions: [], stacks: [] };
+    const candidates = { screens: [], routes: [], actions: [], flows: [], stacks: [] };
     if (routes.length > 0) {
       findings.push({
         kind: "next_app_routes",
@@ -26,9 +26,10 @@ export const nextAppRouterUiExtractor = {
         const provenance = `${relativeTo(context.paths.repoRoot, route.file)}#${route.path}`;
         const screenId = nextScreenIdForRoute(route.path);
         const screenKind = nextScreenKindForRoute(route.path);
-        const capabilityHints = uiCapabilityHintsForNextRoute(route.path);
-        const entityId = entityIdForNextRoute(route.path);
-        const conceptId = conceptIdForNextRoute(route.path);
+        const flow = inferNonResourceUiFlow(route.path);
+        const capabilityHints = flow ? { load: null, submit: null, primary_action: null } : uiCapabilityHintsForNextRoute(route.path);
+        const entityId = flow ? null : entityIdForNextRoute(route.path);
+        const conceptId = flow?.concept_id || conceptIdForNextRoute(route.path);
         candidates.screens.push(makeCandidateRecord({
           kind: "screen",
           idHint: screenId,
@@ -56,6 +57,25 @@ export const nextAppRouterUiExtractor = {
           concept_id: conceptId,
           path: route.path
         }));
+        if (flow) {
+          candidates.flows.push(makeCandidateRecord({
+            kind: "ui_flow",
+            idHint: uiFlowIdForRoute(route.path, screenId),
+            label: `${titleCase(flow.flow_type)} Flow`,
+            confidence: flow.confidence,
+            sourceKind: "route_code",
+            sourceOfTruth: "candidate",
+            provenance,
+            track: "ui",
+            flow_type: flow.flow_type,
+            concept_id: flow.concept_id,
+            screen_ids: [screenId],
+            route_paths: [route.path],
+            evidence: [provenance],
+            missing_decisions: flow.missing_decisions,
+            proposed_ui_contract_additions: proposedUiContractAdditionsForFlow(route.path, screenId, screenKind)
+          }));
+        }
         if (capabilityHints.primary_action) {
           candidates.actions.push(makeCandidateRecord({
             kind: "ui_action",
@@ -77,6 +97,7 @@ export const nextAppRouterUiExtractor = {
     candidates.screens = dedupeCandidateRecords(candidates.screens, (record) => record.id_hint);
     candidates.routes = dedupeCandidateRecords(candidates.routes, (record) => record.id_hint);
     candidates.actions = dedupeCandidateRecords(candidates.actions, (record) => record.id_hint);
+    candidates.flows = dedupeCandidateRecords(candidates.flows, (record) => record.id_hint);
     candidates.stacks = [...new Set(candidates.stacks)].sort();
     return { findings, candidates };
   }
