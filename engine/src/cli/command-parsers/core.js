@@ -18,7 +18,7 @@ const QUERY_NAMES = new Set([
   "verification-targets",
   "widget-behavior",
   "change-plan",
-  "import-plan",
+  "extract-plan",
   "risk-summary",
   "canonical-writes",
   "proceed-decision",
@@ -42,10 +42,11 @@ const QUERY_NAMES = new Set([
  * @returns {import("./shared.js").SplitCommandArgs|null}
  */
 export function parseCoreCommandArgs(args) {
-  if (args[0] === "new" || args[0] === "create") {
-    return args.includes("--list-templates")
-      ? { templateCommand: "list", inputPath: null }
-      : { newProject: true, inputPath: args[1] };
+  if (args[0] === "copy") {
+    if (args.includes("--list")) {
+      return { copyCommand: "list", inputPath: null };
+    }
+    return { copyCommand: "copy", copySource: args[1], inputPath: args[2] };
   }
   if (args[0] === "init") {
     return { initProject: true, inputPath: commandPath(args, 1, ".") };

@@ -2,8 +2,7 @@
   "name": "topogram-workspace",
   "private": true,
   "scripts": {
-    "new": "npm --prefix ./engine run new --",
-    "create": "npm --prefix ./engine run new --",
+    "copy": "npm --prefix ./engine run copy --",
     "smoke:test-app": "bash ./scripts/smoke-test-app.sh",
     "smoke:fresh-npmjs": "bash ./scripts/verify-fresh-npmjs-smoke.sh",
     "cli:check": "bash ./scripts/verify-cli-package.sh",

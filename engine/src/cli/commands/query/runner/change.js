@@ -14,7 +14,7 @@ import {
 } from "../../../../agent-ops/query-builders.js";
 import { parsePath } from "../../../../parser.js";
 import { buildChangePlanContext } from "../change-plan.js";
-import { buildImportPlanForContext } from "../import-adopt.js";
+import { buildImportPlanForContext } from "../extract-adopt.js";
 import {
   adoptionPlanPath,
   buildTaskMode,
@@ -57,7 +57,7 @@ export function runChangeQuery(context) {
         maintainedRisk: built.importPlan.maintained_risk || null
       });
       return printJson(buildRiskSummaryPayload({
-        source: "import-plan",
+        source: "extract-plan",
         risk,
         nextAction: built.importPlan.next_action || null,
         maintainedRisk: built.importPlan.maintained_risk || null

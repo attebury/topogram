@@ -1317,5 +1317,85 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_init_is_primary_start_path": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T19:57:08.736Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted docs visibility criterion for init-first workflow"
+    }
+  ],
+  "task_make_init_front_and_center_in_docs": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T19:57:08.739Z",
+      "by": "actor_coding_agent",
+      "note": "Updating docs to make init front and center"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T19:57:12.865Z",
+      "by": "actor_coding_agent",
+      "note": "Docs edits are in progress"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T19:57:43.919Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "ac_command_vocabulary_uses_copy_extract_adopt": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T20:07:55.929Z",
+      "by": "actor_coding_agent",
+      "note": "Accept copy/extract/adopt public command vocabulary criterion"
+    }
+  ],
+  "req_clear_command_vocabulary": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-12T20:07:55.938Z",
+      "by": "actor_coding_agent",
+      "note": "Define public command vocabulary cutover"
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-12T20:08:02.010Z",
+      "by": "actor_coding_agent",
+      "note": "Approve lifecycle verb cutover for implementation"
+    }
+  ],
+  "task_adopt_copy_extract_adopt_commands": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T20:07:56.012Z",
+      "by": "actor_coding_agent",
+      "note": "Implement command vocabulary cutover"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T20:08:01.995Z",
+      "by": "actor_coding_agent",
+      "note": "Refactoring CLI and docs to copy/extract/adopt"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T21:22:27.048Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

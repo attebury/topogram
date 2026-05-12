@@ -1,4 +1,4 @@
-export { buildImportPlanPayload } from "./change-risk/import-plan.js";
+export { buildImportPlanPayload } from "./change-risk/extract-plan.js";
 export {
   buildAlignmentRecommendations,
   buildChangePlanPayload,

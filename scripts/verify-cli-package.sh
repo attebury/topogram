@@ -135,7 +135,7 @@ node --input-type=module -e '
 
 echo "Checking catalog-disabled default starter guidance..."
 set +e
-DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" new ./no-catalog-default 2>&1)"
+DISABLED_OUTPUT="$(cd "$CONSUMER_DIR" && TOPOGRAM_CATALOG_SOURCE=none "$TOPOGRAM_BIN" copy hello-web ./no-catalog-default 2>&1)"
 DISABLED_STATUS=$?
 set -e
 if [[ "$DISABLED_STATUS" -eq 0 ]]; then
@@ -255,7 +255,7 @@ fi
 echo "Checking installed CLI package-backed generator commands..."
 (
   cd "$CONSUMER_DIR"
-  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./generator-ux --template "$ENGINE_DIR/tests/fixtures/templates/hello-web"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" copy "$ENGINE_DIR/tests/fixtures/templates/hello-web" ./generator-ux
 )
 GENERATOR_PROJECT_DIR="$CONSUMER_DIR/generator-ux"
 npm --prefix "$GENERATOR_PROJECT_DIR" install -D "$GENERATOR_TARBALL" >/dev/null
@@ -416,13 +416,13 @@ fi
 echo "Creating a starter with the packed CLI and local fixture template..."
 (
   cd "$CONSUMER_DIR"
-  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter --template "$ENGINE_DIR/tests/fixtures/templates/hello-web"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" copy "$ENGINE_DIR/tests/fixtures/templates/hello-web" ./starter
 )
 
 echo "Creating a starter with the packed template..."
 (
   cd "$CONSUMER_DIR"
-  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" new ./starter-from-template --template "$TEMPLATE_TARBALL"
+  TOPOGRAM_CLI_PACKAGE_SPEC="$PACKAGE_TARBALL" "$TOPOGRAM_BIN" copy "$TEMPLATE_TARBALL" ./starter-from-template
 )
 
 STARTER_DIR="$CONSUMER_DIR/starter"

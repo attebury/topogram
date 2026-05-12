@@ -518,7 +518,7 @@ export function buildMultiAgentPlanPayload({
   return {
     type: "multi_agent_plan",
     workspace: workspace || null,
-    mode: "import-adopt",
+    mode: "extract-adopt",
     source_single_agent_plan: singleAgentPlan,
     summary: buildMultiAgentSummary(lanes, parallelWorkstreams, overlapRules, handoffPackets),
     coordination_strategy: {

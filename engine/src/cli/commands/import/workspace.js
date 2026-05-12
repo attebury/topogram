@@ -79,23 +79,23 @@ function importedProjectConfig() {
  */
 function importedWorkspaceReadme(sourceRoot, targetRoot, importSummary) {
   return [
-    "# Imported Topogram Workspace",
+    "# Extracted Topogram Workspace",
     "",
-    "This workspace was created from a brownfield app import.",
+    "This workspace was created from a brownfield app extraction.",
     "",
-    `- Imported source: \`${sourceRoot}\``,
+    `- Extracted source: \`${sourceRoot}\``,
     `- Target workspace: \`${targetRoot}\``,
     `- Tracks: ${(importSummary.tracks || []).join(", ") || "none"}`,
     `- Provenance: \`${TOPOGRAM_IMPORT_FILE}\``,
     "",
-    "Imported Topogram artifacts are project-owned after creation. Edit them directly, promote candidates deliberately, and run `topogram check` before generation or maintained-app work.",
+    "Extracted Topogram artifacts are project-owned after creation. Edit them directly, promote candidates deliberately, and run `topogram check` before generation or maintained-app work.",
     "",
     "Useful commands:",
     "",
     "```sh",
-    "topogram import check",
+    "topogram extract check",
     "topogram check",
-    `topogram query import-plan ./${DEFAULT_TOPO_FOLDER_NAME}`,
+    `topogram query extract-plan ./${DEFAULT_TOPO_FOLDER_NAME}`,
     "```",
     ""
   ].join("\n");
@@ -156,10 +156,10 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
   const sourceRoot = path.resolve(sourcePath);
   const targetRoot = path.resolve(targetPath);
   if (!fs.existsSync(sourceRoot) || !fs.statSync(sourceRoot).isDirectory()) {
-    throw new Error(`Cannot import missing app directory '${sourcePath}'.`);
+    throw new Error(`Cannot extract missing app directory '${sourcePath}'.`);
   }
   if (sourceRoot === targetRoot) {
-    throw new Error("Refusing to import into the same directory as the brownfield app.");
+    throw new Error("Refusing to extract into the same directory as the brownfield app.");
   }
   ensureEmptyImportTarget(targetRoot);
 
@@ -206,12 +206,12 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
     writtenFiles,
     candidateCounts,
     nextCommands: [
-      "topogram import check",
-      "topogram import plan",
-      "topogram import adopt bundle:task --dry-run",
-      "topogram import status",
+      "topogram extract check",
+      "topogram extract plan",
+      "topogram adopt bundle:task --dry-run",
+      "topogram extract status",
       "topogram check",
-      `topogram query import-plan ./${DEFAULT_TOPO_FOLDER_NAME}`
+      `topogram query extract-plan ./${DEFAULT_TOPO_FOLDER_NAME}`
     ]
   };
 }
@@ -221,15 +221,15 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
  * @returns {void}
  */
 export function printBrownfieldImportWorkspace(payload) {
-  console.log(`Imported brownfield app to ${payload.targetPath}.`);
+  console.log(`Extracted brownfield app to ${payload.targetPath}.`);
   console.log(`Source: ${payload.sourcePath}`);
   console.log(`Topogram: ${payload.topogramRoot}`);
   console.log(`Project config: ${payload.projectConfigPath}`);
-  console.log(`Import provenance: ${payload.provenancePath}`);
+  console.log(`Extraction provenance: ${payload.provenancePath}`);
   console.log(`Tracked source files: ${payload.sourceFiles}`);
   console.log(`Raw candidate files: ${payload.rawCandidateFiles}`);
   console.log(`Reconcile proposal files: ${payload.reconcileFiles}`);
-  console.log("Imported Topogram artifacts are project-owned after creation; source hashes record the app evidence trusted at import time.");
+  console.log("Extracted Topogram artifacts are project-owned after creation; source hashes record the app evidence trusted at extraction time.");
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);

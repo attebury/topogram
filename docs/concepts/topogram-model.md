@@ -6,9 +6,10 @@ Topogram separates durable intent from stack realization.
 
 `topo/` contains `.tg` statements and markdown documents. The parser flattens
 the folder tree into one graph, so folders are a human and agent convention.
-`topogram init` creates an empty `topo/` workspace for a maintained repo;
-`topogram init --with-sdlc` also adopts enforced SDLC; `topogram new` copies a
-starter template into a new project.
+Start with `topogram init` when you want a maintained repo or empty `topo/`
+workspace. `topogram init --with-sdlc` also adopts enforced SDLC. Use
+`topogram copy` when you want to copy a starter template into a generated
+project.
 
 Common statement kinds:
 

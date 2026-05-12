@@ -1,6 +1,6 @@
 # Template Authoring
 
-Template packages are starter projects for `topogram new`.
+Template packages are starter projects for `topogram copy`.
 
 ## Required layout
 
@@ -48,7 +48,7 @@ Do not publish consumer metadata such as `.topogram-template-trust.json` or
 
 ## Trust
 
-`topogram new` copies implementation code but does not execute it. Generated
+`topogram copy` copies implementation code but does not execute it. Generated
 projects record implementation hashes. Review code before running
 `topogram trust template`.
 
@@ -59,7 +59,7 @@ Template packs must not contain symlinks under `topo/`,
 
 ```bash
 topogram template check ./my-template
-topogram new ./scratch --template ./my-template
+topogram copy ./my-template ./scratch
 cd ./scratch
 npm install
 npm run check

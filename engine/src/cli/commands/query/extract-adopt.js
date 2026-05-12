@@ -38,7 +38,7 @@ export function buildImportPlanForContext(context, queryFamily) {
   }
   const adoptionPlan = readJson(planPath);
   const ast = parsePath(context.inputPath);
-  const taskModeResult = buildTaskMode(ast, {}, "import-adopt");
+  const taskModeResult = buildTaskMode(ast, {}, "extract-adopt");
   if (!resultOk(taskModeResult)) {
     return taskModeResult;
   }
@@ -74,7 +74,7 @@ export function buildImportAdoptAgentContext(context, queryFamily) {
   const topogramRoot = normalizeTopogramPath(context.inputPath);
   const artifacts = requireReconcileArtifacts(topogramRoot, queryFamily);
   const ast = parsePath(context.inputPath);
-  const taskModeResult = buildTaskMode(ast, {}, "import-adopt");
+  const taskModeResult = buildTaskMode(ast, {}, "extract-adopt");
   if (!resultOk(taskModeResult)) {
     return taskModeResult;
   }

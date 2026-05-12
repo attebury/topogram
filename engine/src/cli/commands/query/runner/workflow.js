@@ -46,7 +46,7 @@ export function runWorkflowQuery(context) {
   const selectors = selectorOptions(context);
 
   if (queryName === "next-action") {
-    const result = buildTaskMode(parsePath(context.inputPath), selectors, context.modeId || "import-adopt", context.fromTopogramPath);
+    const result = buildTaskMode(parsePath(context.inputPath), selectors, context.modeId || "extract-adopt", context.fromTopogramPath);
     if (!resultOk(result)) return printValidationFailure(result);
     return printJson({
       type: "next_action_query",
@@ -72,13 +72,13 @@ export function runWorkflowQuery(context) {
 
   if (queryName === "workflow-preset-activation") {
     if (!context.modeId) {
-      throw new Error("query workflow-preset-activation requires --mode <modeling|maintained-app-edit|import-adopt|diff-review|verification>.");
+      throw new Error("query workflow-preset-activation requires --mode <modeling|maintained-app-edit|extract-adopt|diff-review|verification>.");
     }
     const topogramRoot = normalizeTopogramPath(context.inputPath);
     const taskModeResult = buildTaskMode(parsePath(context.inputPath), selectors, context.modeId, context.fromTopogramPath);
     if (!resultOk(taskModeResult)) return printValidationFailure(taskModeResult);
     let importPlan = null;
-    if (context.modeId === "import-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
+    if (context.modeId === "extract-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
       const workflowPresets = buildWorkflowPresetState({
         workspace: topogramRoot,
         selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, "workflow-preset-activation")
@@ -118,7 +118,7 @@ export function runWorkflowQuery(context) {
  */
 function runSingleAgentPlan(context, selectors) {
   if (!context.modeId) {
-    throw new Error("query single-agent-plan requires --mode <modeling|maintained-app-edit|import-adopt|diff-review|verification>.");
+    throw new Error("query single-agent-plan requires --mode <modeling|maintained-app-edit|extract-adopt|diff-review|verification>.");
   }
   const ast = parsePath(context.inputPath);
   const result = buildTaskMode(ast, selectors, context.modeId, context.fromTopogramPath);
@@ -134,7 +134,7 @@ function runSingleAgentPlan(context, selectors) {
   });
   const topogramRoot = normalizeTopogramPath(context.inputPath);
   let importPlan = null;
-  if (context.modeId === "import-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
+  if (context.modeId === "extract-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
     const workflowPresets = buildWorkflowPresetState({
       workspace: topogramRoot,
       selectors: workflowPresetSelectors(result.artifact, context.providerId, context.presetId, "single-agent-plan")
@@ -163,7 +163,7 @@ function runSingleAgentPlan(context, selectors) {
  */
 function runResolvedWorkflowContext(context, selectors) {
   if (!context.modeId) {
-    throw new Error("query resolved-workflow-context requires --mode <modeling|maintained-app-edit|import-adopt|diff-review|verification>.");
+    throw new Error("query resolved-workflow-context requires --mode <modeling|maintained-app-edit|extract-adopt|diff-review|verification>.");
   }
   const topogramRoot = normalizeTopogramPath(context.inputPath);
   const ast = parsePath(context.inputPath);
@@ -186,7 +186,7 @@ function runResolvedWorkflowContext(context, selectors) {
     maintainedBoundaryArtifact: maintainedBundleResult?.artifact?.maintained_boundary || null
   });
   let importPlan = null;
-  if (context.modeId === "import-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
+  if (context.modeId === "extract-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
     const workflowPresets = buildWorkflowPresetState({
       workspace: topogramRoot,
       selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, "resolved-workflow-context")

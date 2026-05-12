@@ -37,9 +37,6 @@ export function parseProjectCommandArgs(args) {
   if (args[0] === "catalog" && args[1] === "check") {
     return { catalogCommand: "check", inputPath: args[2] };
   }
-  if (args[0] === "catalog" && args[1] === "copy") {
-    return { catalogCommand: "copy", catalogId: args[2], inputPath: args[3] };
-  }
   if (args[0] === "package" && args[1] === "update-cli") {
     return { packageCommand: "update-cli", inputPath: args.includes("--latest") ? "latest" : args[2] };
   }

@@ -19,12 +19,15 @@ topogram init
 topogram init . --with-sdlc
 topogram init ./existing-app --json
 topogram template list
-topogram new --list-templates
-topogram new ./my-app --template hello-web
+topogram copy --list
+topogram copy hello-web ./my-app
 topogram catalog list
 topogram catalog show <id>
-topogram catalog copy <id> <target>
+topogram copy <id> <target>
 ```
+
+Use `topogram init` first for existing or maintained repos. Use `topogram copy`
+when you want to copy a starter template and generate an app/runtime bundle.
 
 ## Validation and output
 
@@ -57,14 +60,14 @@ topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
 ## Brownfield import
 
 ```bash
-topogram import ./existing-app --out ./imported-topogram
-topogram import check ./imported-topogram
-topogram import plan ./imported-topogram
-topogram import adopt --list ./imported-topogram
-topogram import adopt <selector> ./imported-topogram --dry-run
-topogram import adopt <selector> ./imported-topogram --write
-topogram import status ./imported-topogram
-topogram import history ./imported-topogram --verify
+topogram extract ./existing-app --out ./imported-topogram
+topogram extract check ./imported-topogram
+topogram extract plan ./imported-topogram
+topogram adopt --list ./imported-topogram
+topogram adopt <selector> ./imported-topogram --dry-run
+topogram adopt <selector> ./imported-topogram --write
+topogram extract status ./imported-topogram
+topogram extract history ./imported-topogram --verify
 ```
 
 ## Policies and trust

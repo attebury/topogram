@@ -34,12 +34,12 @@ import { verifyImportAdoptionReceipts } from "./status-history.js";
 export function readTopogramImportRecord(projectRoot) {
   const importPath = path.join(normalizeProjectRoot(projectRoot), TOPOGRAM_IMPORT_FILE);
   if (!fs.existsSync(importPath)) {
-    throw new Error(`No brownfield import provenance found at '${importPath}'. Run 'topogram import <app-path> --out <target>' first.`);
+    throw new Error(`No brownfield extraction provenance found at '${importPath}'. Run 'topogram extract <app-path> --out <target>' first.`);
   }
   try {
     return { path: importPath, record: JSON.parse(fs.readFileSync(importPath, "utf8")) };
   } catch (error) {
-    throw new Error(`Invalid brownfield import provenance JSON at '${importPath}'.`);
+    throw new Error(`Invalid brownfield extraction provenance JSON at '${importPath}'.`);
   }
 }
 
@@ -48,8 +48,9 @@ export function readTopogramImportRecord(projectRoot) {
  * @returns {string|null}
  */
 export function importTrackValueFromRecord(importRecord) {
-  const tracks = Array.isArray(importRecord.import?.tracks)
-    ? importRecord.import.tracks.map((/** @type {any} */ track) => String(track).trim()).filter(Boolean)
+  const source = importRecord.extract || importRecord.import || {};
+  const tracks = Array.isArray(source.tracks)
+    ? source.tracks.map((/** @type {any} */ track) => String(track).trim()).filter(Boolean)
     : [];
   return tracks.length ? [...new Set(tracks)].join(",") : null;
 }
@@ -283,7 +284,7 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
   const projectRoot = normalizeProjectRoot(inputPath);
   const topogramRoot = normalizeTopogramPath(projectRoot);
   if (!fs.existsSync(topogramRoot) || !fs.statSync(topogramRoot).isDirectory()) {
-    throw new Error(`No workspace folder found for imported workspace '${inputPath}'.`);
+    throw new Error(`No workspace folder found for extracted workspace '${inputPath}'.`);
   }
 
   const { record: importRecord } = readTopogramImportRecord(projectRoot);
@@ -291,21 +292,21 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
     ? options.sourcePath
     : importRecord.source?.path;
   if (!sourcePath) {
-    throw new Error("No brownfield source path was provided or recorded. Use 'topogram import refresh <workspace> --from <app-path>'.");
+    throw new Error("No brownfield source path was provided or recorded. Use 'topogram extract refresh <workspace> --from <app-path>'.");
   }
   const sourceRoot = path.resolve(sourcePath);
   if (!fs.existsSync(sourceRoot) || !fs.statSync(sourceRoot).isDirectory()) {
     throw new Error(`Cannot refresh from missing app directory '${sourcePath}'.`);
   }
   if (sourceRoot === projectRoot) {
-    throw new Error("Refusing to refresh import from the imported Topogram workspace itself.");
+    throw new Error("Refusing to refresh extraction from the extracted Topogram workspace itself.");
   }
 
   const sourceComparison = compareImportRecordToSource(projectRoot, importRecord, sourceRoot);
   const trackValue = importTrackValueFromRecord(importRecord);
   const importResult = runWorkflow("import-app", sourceRoot, { from: trackValue });
   const candidateCounts = importCandidateCounts(importResult.summary);
-  const candidateCountDeltas = buildCountDeltas(importRecord.import?.candidateCounts || {}, candidateCounts);
+  const candidateCountDeltas = buildCountDeltas((importRecord.extract || importRecord.import)?.candidateCounts || {}, candidateCounts);
   const removedCandidateFiles = {
     rawCandidateFiles: countFilesRecursive(path.join(topogramRoot, "candidates", "app")),
     reconcileFiles: countFilesRecursive(path.join(topogramRoot, "candidates", "reconcile"))
@@ -324,7 +325,7 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
     topogramRoot,
     sourcePath: sourceRoot,
     provenancePath: path.join(projectRoot, TOPOGRAM_IMPORT_FILE),
-    importedAt: importRecord.importedAt || null,
+    importedAt: importRecord.extractedAt || importRecord.importedAt || null,
     previousImportStatus: sourceComparison.status,
     sourceDiff: {
       status: sourceComparison.status,
@@ -354,13 +355,13 @@ export function buildBrownfieldImportRefreshAnalysis(inputPath, options = {}) {
 /**
  * @param {string} inputPath
  * @param {{ sourcePath?: string|null, dryRun?: boolean }} [options]
- * @returns {{ ok: boolean, dryRun: boolean, projectRoot: string, workspaceRoot: string, topogramRoot: string, sourcePath: string, provenancePath: string, previousImportStatus: string, currentImportStatus: string, tracks: string[], sourceFiles: number, sourceDiff: Record<string, any>, removedCandidateFiles: Record<string, number>, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], plannedFiles: string[], candidateCounts: Record<string, number>, candidateCountDeltas: Record<string, any>, adoptionPlanDeltas: Record<string, any>, receiptVerification: Record<string, any>, refreshMetadata: Record<string, any>|null, nextCommands: string[] }}
+ * @returns {{ ok: boolean, dryRun: boolean, projectRoot: string, workspaceRoot: string, topogramRoot: string, sourcePath: string, provenancePath: string, previousExtractStatus: string, currentExtractStatus: string, tracks: string[], sourceFiles: number, sourceDiff: Record<string, any>, removedCandidateFiles: Record<string, number>, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], plannedFiles: string[], candidateCounts: Record<string, number>, candidateCountDeltas: Record<string, any>, adoptionPlanDeltas: Record<string, any>, receiptVerification: Record<string, any>, refreshMetadata: Record<string, any>|null, nextCommands: string[] }}
  */
 export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
   const analysis = buildBrownfieldImportRefreshAnalysis(inputPath, options);
   const dryRun = Boolean(options.dryRun);
   let provenancePath = analysis.provenancePath;
-  let currentImportStatus = dryRun ? analysis.previousImportStatus : "unknown";
+  let currentExtractStatus = dryRun ? analysis.previousImportStatus : "unknown";
   /** @type {string[]} */
   let writtenFiles = [];
   /** @type {AnyRecord|null} */
@@ -391,7 +392,7 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
       files: collectImportSourceFileRecords(analysis.sourcePath, { excludeRoots: [analysis.projectRoot] })
     });
     provenancePath = provenance.path;
-    currentImportStatus = buildTopogramImportStatus(analysis.projectRoot).status;
+    currentExtractStatus = buildTopogramImportStatus(analysis.projectRoot).status;
     writtenFiles = [
       TOPOGRAM_IMPORT_FILE,
       ...rawCandidateFiles.map((filePath) => `${DEFAULT_TOPO_FOLDER_NAME}/${filePath}`),
@@ -402,15 +403,15 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
     analysis.reconcileFiles = reconcileFiles.length;
   }
   return {
-    ok: dryRun || currentImportStatus === "clean",
+    ok: dryRun || currentExtractStatus === "clean",
     dryRun,
     projectRoot: analysis.projectRoot,
     workspaceRoot: analysis.topogramRoot,
     topogramRoot: analysis.topogramRoot,
     sourcePath: analysis.sourcePath,
     provenancePath,
-    previousImportStatus: analysis.previousImportStatus,
-    currentImportStatus,
+    previousExtractStatus: analysis.previousImportStatus,
+    currentExtractStatus,
     tracks: analysis.tracks,
     sourceFiles: analysis.sourceFiles,
     sourceDiff: analysis.sourceDiff,
@@ -426,11 +427,11 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
     refreshMetadata,
     nextCommands: [
       dryRun
-        ? `topogram import refresh ${importProjectCommandPath(analysis.projectRoot)}`
-        : `topogram import check ${importProjectCommandPath(analysis.projectRoot)}`,
-      `topogram import plan ${importProjectCommandPath(analysis.projectRoot)}`,
-      `topogram import status ${importProjectCommandPath(analysis.projectRoot)}`,
-      `topogram import history ${importProjectCommandPath(analysis.projectRoot)} --verify`
+        ? `topogram extract refresh ${importProjectCommandPath(analysis.projectRoot)}`
+        : `topogram extract check ${importProjectCommandPath(analysis.projectRoot)}`,
+      `topogram extract plan ${importProjectCommandPath(analysis.projectRoot)}`,
+      `topogram extract status ${importProjectCommandPath(analysis.projectRoot)}`,
+      `topogram extract history ${importProjectCommandPath(analysis.projectRoot)} --verify`
     ]
   };
 }
@@ -440,12 +441,12 @@ export function buildBrownfieldImportRefreshPayload(inputPath, options = {}) {
  * @returns {void}
  */
 export function printBrownfieldImportRefresh(payload) {
-  console.log(`${payload.dryRun ? "Previewed" : "Refreshed"} brownfield import candidates for ${payload.projectRoot}.`);
+  console.log(`${payload.dryRun ? "Previewed" : "Refreshed"} brownfield extraction candidates for ${payload.projectRoot}.`);
   console.log(`Source: ${payload.sourcePath}`);
   console.log(`Topogram: ${payload.topogramRoot}`);
-  console.log(`Import provenance: ${payload.provenancePath}`);
-  console.log(`Previous source status: ${payload.previousImportStatus}`);
-  console.log(`Current source status: ${payload.currentImportStatus}`);
+  console.log(`Extraction provenance: ${payload.provenancePath}`);
+  console.log(`Previous source status: ${payload.previousExtractStatus}`);
+  console.log(`Current source status: ${payload.currentExtractStatus}`);
   console.log(`Source diff: changed=${payload.sourceDiff.counts.changed}, added=${payload.sourceDiff.counts.added}, removed=${payload.sourceDiff.counts.removed}`);
   console.log(`Tracked source files: ${payload.sourceFiles}`);
   console.log(`Raw candidate files: ${payload.rawCandidateFiles}`);

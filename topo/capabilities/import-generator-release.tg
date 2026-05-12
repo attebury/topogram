@@ -2,7 +2,7 @@ capability cap_import_brownfield_app {
   name "Import Brownfield App"
   description "Create reviewable Topogram candidates from existing code, tests, docs, scripts, package manifests, and workflows."
   actors [actor_maintainer, actor_coding_agent]
-  output [shape_import_result]
+  output [shape_extract_result]
   domain dom_import_adoption
   status active
 }

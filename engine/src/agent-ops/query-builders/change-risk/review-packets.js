@@ -13,7 +13,7 @@ import { buildPresetGuidanceSummary } from "./risk.js";
 export function buildCanonicalWritesPayloadForImportPlan(proposalSurfaces = []) {
   return {
     type: "canonical_writes_query",
-    source: "import-plan",
+    source: "extract-plan",
     canonical_writes: proposalSurfaces
       .filter((surface) => surface.canonical_rel_path)
       .map((surface) => ({
@@ -40,7 +40,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
   const presetGuidanceSummary = buildPresetGuidanceSummary(importPlan.workflow_presets || null, null);
   return {
     type: "review_packet_query",
-    source: "import-plan",
+    source: "extract-plan",
     summary: importPlan.summary || null,
     risk_summary: {
       overall_risk: risk.overall_risk,
@@ -49,7 +49,7 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
       maintained_risk: importPlan.maintained_risk || null
     },
     next_action: importPlan.next_action || null,
-    recommended_query_family: recommendedQueryFamilyForAction(importPlan.next_action, "import-adopt"),
+    recommended_query_family: recommendedQueryFamilyForAction(importPlan.next_action, "extract-adopt"),
     canonical_writes: (importPlan.proposal_surfaces || [])
       .filter((surface) => surface.canonical_rel_path)
       .map((surface) => ({
@@ -64,9 +64,9 @@ export function buildReviewPacketPayloadForImportPlan({ importPlan, risk }) {
     maintained_risk: importPlan.maintained_risk || null,
     maintained_seam_review_summary: importPlan.maintained_seam_review_summary || null,
     operator_loop: buildOperatorLoopSummary({
-      mode: "import-adopt",
+      mode: "extract-adopt",
       nextAction: importPlan.next_action || null,
-      primaryArtifacts: ["import-plan", "adoption-plan.agent.json"],
+      primaryArtifacts: ["extract-plan", "adoption-plan.agent.json"],
       verificationTargets: importPlan.verification_targets || null,
       currentSurface: "review-packet"
     }),

@@ -18,10 +18,10 @@ import { shellCommandArg } from "./shared.js";
  */
 export function buildCatalogCopyPayload(id, targetPath, options) {
   if (!id || id.startsWith("-")) {
-    throw new Error("topogram catalog copy requires <id>.");
+    throw new Error("topogram copy requires <source>.");
   }
   if (!targetPath || targetPath.startsWith("-")) {
-    throw new Error("topogram catalog copy requires <target>.");
+    throw new Error("topogram copy requires <target>.");
   }
   const loaded = loadCatalog(options.source || null);
   const entry = findCatalogEntry(loaded.catalog, id, "topogram");
@@ -49,7 +49,7 @@ export function printCatalogCopy(payload) {
   console.log(`Package: ${payload.packageSpec}`);
   console.log(`Source provenance: ${payload.provenancePath}`);
   console.log(`Files: ${payload.files.length}`);
-  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records copy provenance only. Local edits are allowed.`);
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${shellCommandArg(path.relative(process.cwd(), payload.targetPath) || ".")}`);

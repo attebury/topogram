@@ -14,7 +14,7 @@ journey journey_greenfield_start_from_template {
   step {
     id create_project
     intent "Copy a selected template into a new project."
-    commands ["topogram new ./my-app --template <alias>"]
+    commands ["topogram copy <alias> ./my-app"]
     expects ["Topogram resolves the catalog alias or package spec, installs the template package with scripts disabled, and copies starter content."]
   }
 
@@ -46,7 +46,7 @@ journey journey_greenfield_start_from_template {
     id use_package_spec
     from create_project
     condition "The desired starter is not exposed as a catalog alias."
-    commands ["topogram new ./my-app --template @topogram/template-hello-web"]
+    commands ["topogram copy @topogram/template-hello-web ./my-app"]
   }
 
   alternate {

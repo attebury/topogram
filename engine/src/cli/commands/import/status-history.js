@@ -33,7 +33,7 @@ export function buildBrownfieldImportStatusPayload(inputPath) {
     projectRoot: artifacts.projectRoot,
     workspaceRoot: artifacts.topogramRoot,
     topogramRoot: artifacts.topogramRoot,
-    import: importCheck.import,
+    extract: importCheck.extract,
     topogram: importCheck.topogram,
     adoption: {
       status: adoptionStatus,
@@ -52,7 +52,7 @@ export function buildBrownfieldImportStatusPayload(inputPath) {
  * @returns {void}
  */
 export function printBrownfieldImportStatus(payload) {
-  console.log(`Import status: ${payload.import.status}`);
+  console.log(`Extraction status: ${payload.extract.status}`);
   console.log(`Topogram check: ${payload.topogram.ok ? "passed" : "failed"}`);
   console.log(`Adoption: ${payload.adoption.summary.appliedItemCount} applied, ${payload.adoption.summary.pendingItemCount} pending, ${payload.adoption.summary.blockedItemCount} blocked`);
   const next = payload.adoption.nextCommand;
@@ -134,7 +134,7 @@ export function verifyImportAdoptionReceipts(projectRoot, receipts) {
     summary,
     files,
     auditOnly: true,
-    note: "History verification is audit-only. Imported/adopted Topogram files are project-owned, and edits do not make the workspace invalid."
+    note: "History verification is audit-only. Extracted/adopted Topogram files are project-owned, and edits do not make the workspace invalid."
   };
 }
 
@@ -175,7 +175,7 @@ export function buildBrownfieldImportHistoryPayload(inputPath, options = {}) {
  * @returns {void}
  */
 export function printBrownfieldImportHistory(payload) {
-  console.log(`Import adoption history for ${payload.projectRoot}`);
+  console.log(`Adoption history for ${payload.projectRoot}`);
   console.log(`Receipts: ${payload.summary.receiptCount}`);
   console.log(`Forced writes: ${payload.summary.forcedWriteCount}`);
   if (!payload.exists) {

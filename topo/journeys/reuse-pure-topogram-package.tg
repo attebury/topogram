@@ -15,7 +15,7 @@ journey journey_reuse_pure_topogram_package {
   step {
     id copy_catalog_entry
     intent "Copy a pure Topogram package into a target project."
-    commands ["topogram catalog copy <id> <target>"]
+    commands ["topogram copy <id> <target>"]
     expects ["Topogram installs the package with scripts disabled and verifies it is pure Topogram content."]
   }
 

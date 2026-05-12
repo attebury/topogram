@@ -35,17 +35,18 @@ export function printUsage(options = {}) {
   console.log("   or: topogram catalog show <id> [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog doctor [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram catalog check <path-or-url> [--json]");
-  console.log("   or: topogram catalog copy <id> <target> [--version <version>] [--json] [--catalog <path-or-source>]");
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
-  console.log("   or: topogram import <app-path> --out <target> [--from <track[,track]>] [--json]");
-  console.log("   or: topogram import refresh [path] [--from <app-path>] [--dry-run] [--json]");
-  console.log("   or: topogram import diff [path] [--json]");
-  console.log("   or: topogram import check [path] [--json]");
-  console.log("   or: topogram import plan [path] [--json]");
-  console.log("   or: topogram import adopt --list [path] [--json]");
-  console.log("   or: topogram import adopt <selector> [path] [--dry-run|--write] [--force --reason <text>] [--json]");
-  console.log("   or: topogram import status [path] [--json]");
-  console.log("   or: topogram import history [path] [--verify] [--json]");
+  console.log("   or: topogram copy <source> <target> [--version <version>] [--catalog <path-or-source>] [--json]");
+  console.log("   or: topogram copy --list [--json] [--catalog <path-or-source>]");
+  console.log("   or: topogram extract <app-path> --out <target> [--from <track[,track]>] [--json]");
+  console.log("   or: topogram extract refresh [path] [--from <app-path>] [--dry-run] [--json]");
+  console.log("   or: topogram extract diff [path] [--json]");
+  console.log("   or: topogram extract check [path] [--json]");
+  console.log("   or: topogram extract plan [path] [--json]");
+  console.log("   or: topogram adopt --list [path] [--json]");
+  console.log("   or: topogram adopt <selector> [path] [--dry-run|--write] [--force --reason <text>] [--json]");
+  console.log("   or: topogram extract status [path] [--json]");
+  console.log("   or: topogram extract history [path] [--verify] [--json]");
   console.log("   or: topogram source status [path] [--local|--remote] [--json]");
   console.log("   or: topogram template list [--json]");
   console.log("   or: topogram template explain [path] [--json]");
@@ -67,9 +68,6 @@ export function printUsage(options = {}) {
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
   console.log("   or: topogram init [path] [--with-sdlc] [--json]");
-  console.log("   or: topogram new <path> [--template hello-web|todo|./local-template|@scope/template]");
-  console.log("   or: topogram new <path> --template <package> --allow-local-npmrc");
-  console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram version");
@@ -78,9 +76,9 @@ export function printUsage(options = {}) {
   console.log("  topogram release status");
   console.log("  topogram release roll-consumers --latest");
   console.log("  topogram init .");
-  console.log("  topogram new ./my-app");
-  console.log("  topogram new --list-templates");
-  console.log("  topogram new ./my-app --template todo");
+  console.log("  topogram copy --list");
+  console.log("  topogram copy hello-web ./my-app");
+  console.log("  topogram copy todo ./todo-app");
   console.log("  topogram check");
   console.log("  topogram check --json");
   console.log("  topogram widget check --projection proj_web_surface");
@@ -101,22 +99,22 @@ export function printUsage(options = {}) {
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator policy check");
   console.log("  topogram generate");
-  console.log("  topogram import ./existing-app --out ./imported-topogram");
-  console.log("  topogram import diff ./imported-topogram");
-  console.log("  topogram import refresh ./imported-topogram --from ./existing-app --dry-run");
-  console.log("  topogram import check ./imported-topogram");
-  console.log("  topogram import plan ./imported-topogram");
-  console.log("  topogram import adopt --list ./imported-topogram");
-  console.log("  topogram import adopt bundle:task ./imported-topogram --dry-run");
-  console.log("  topogram import status ./imported-topogram");
-  console.log("  topogram import history ./imported-topogram --verify");
+  console.log("  topogram extract ./existing-app --out ./extracted-topogram");
+  console.log("  topogram extract diff ./extracted-topogram");
+  console.log("  topogram extract refresh ./extracted-topogram --from ./existing-app --dry-run");
+  console.log("  topogram extract check ./extracted-topogram");
+  console.log("  topogram extract plan ./extracted-topogram");
+  console.log("  topogram adopt --list ./extracted-topogram");
+  console.log("  topogram adopt bundle:task ./extracted-topogram --dry-run");
+  console.log("  topogram extract status ./extracted-topogram");
+  console.log("  topogram extract history ./extracted-topogram --verify");
   console.log("");
   console.log("Fresh install:");
   console.log("  npm install --save-dev @topogram/cli");
   console.log("  npx topogram doctor");
   console.log("  npx topogram template list");
   console.log("  npx topogram init .");
-  console.log("  npx topogram new ./my-app --template hello-web");
+  console.log("  npx topogram copy hello-web ./my-app");
   console.log("  cd ./my-app && npm install && npm run check && npm run generate");
   console.log("  npm --prefix app run compile");
   console.log("");
@@ -126,7 +124,7 @@ export function printUsage(options = {}) {
   console.log("  topogram catalog show todo");
   console.log("  topogram catalog doctor");
   console.log("  topogram catalog check topograms.catalog.json");
-  console.log("  topogram catalog copy hello ./hello-topogram");
+  console.log("  topogram copy hello ./hello-topogram");
   console.log("  topogram source status --local");
   console.log("  topogram source status --remote");
   console.log("");
@@ -152,7 +150,7 @@ export function printUsage(options = {}) {
   console.log("  topogram template update --apply");
   console.log("");
   console.log("Defaults: check/generate use ./topo, and generate writes ./app.");
-  console.log("Default starter: hello-web from the catalog. Run `topogram template list` for catalog aliases.");
+  console.log("Default starter: hello-web from the catalog. Run `topogram copy --list` for catalog aliases.");
   console.log("Generated app commands are emitted into the output package.json.");
   console.log("Run `topogram help <command>` for command-specific help.");
   console.log("Run `topogram help all` for legacy and agent-facing commands.");
@@ -160,16 +158,12 @@ export function printUsage(options = {}) {
     return;
   }
   console.log("");
-  console.log("Legacy and internal commands:");
-  console.log("Usage: topogram create <path> [--template hello-web|todo|./local-template|@scope/template]");
+  console.log("Internal commands:");
   console.log("   or: topogram template show <id> [--json] [--catalog <path-or-source>]");
-  console.log("   or: topogram import app <path> [--from <track[,track]>] [--write]");
   console.log("   or: topogram validate <path>");
-  console.log("   or: node ./src/cli.js query work-packet <path> --mode import-adopt --lane <id>");
+  console.log("   or: node ./src/cli.js query work-packet <path> --mode extract-adopt --lane <id>");
   console.log("   or: node ./src/cli.js <path> [--json] [--validate] [--resolve] [--workflow <name>] [--mode <id>] [--from <track[,track]>] [--adopt <selector>] [--refresh-adopted] [--shape <id>] [--capability <id>] [--widget <id>] [--projection <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--profile <id>] [--from-snapshot <path>] [--from-topogram <path>] [--write] [--out-dir <path>]");
   console.log("   or: node ./src/cli.js emit <target> [path] [--json] [--write] [--out-dir <path>]");
-  console.log("   or: node ./src/cli.js import app <path> [--from <track[,track]>] [--write]");
-  console.log("   or: node ./src/cli.js import docs <path> [--write]");
   console.log("   or: node ./src/cli.js generate journeys <path> [--write]");
   console.log("   or: node ./src/cli.js report gaps <path> [--write]");
   console.log("   or: node ./src/cli.js query task-mode <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
@@ -187,56 +181,56 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query verification-targets <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query widget-behavior <path> [--projection <id>] [--widget <id>] [--json]");
   console.log("   or: node ./src/cli.js query change-plan <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query import-plan <path>");
+  console.log("   or: node ./src/cli.js query extract-plan <path>");
   console.log("   or: node ./src/cli.js query risk-summary <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query canonical-writes <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query proceed-decision <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query review-packet <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query next-action <path> [--mode <id>] [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query single-agent-plan <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--task <id>] [--plan <id>] [--bug <id>] [--from-topogram <path>]");
-  console.log("   or: node ./src/cli.js query multi-agent-plan <path> --mode import-adopt");
+  console.log("   or: node ./src/cli.js query multi-agent-plan <path> --mode extract-adopt");
   console.log("   or: node ./src/cli.js query resolved-workflow-context <path> --mode <id> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--surface <id>] [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-activation <path> --mode <id> [--provider <id>] [--preset <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query workflow-preset-diff <path> --provider <id> [--preset <id>]");
   console.log("   or: node ./src/cli.js query workflow-preset-customization <path> --provider <id> --preset <id>");
   console.log("   or: node ./src/cli.js workflow-preset customize <path> --provider <id> --preset <id> [--out <path>] [--write]");
-  console.log("   or: node ./src/cli.js query lane-status <path> --mode import-adopt");
-  console.log("   or: node ./src/cli.js query handoff-status <path> --mode import-adopt");
+  console.log("   or: node ./src/cli.js query lane-status <path> --mode extract-adopt");
+  console.log("   or: node ./src/cli.js query handoff-status <path> --mode extract-adopt");
   console.log("   or: node ./src/cli.js query auth-hints <path>");
   console.log("   or: node ./src/cli.js query auth-review-packet <path> --bundle <slug>");
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
   console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-widget-contract, widget-conformance-report, widget-behavior-report, ui-surface-contract, ui-surface-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
-  console.log("Workflows: import-app, scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
-  console.log("Import tracks: db, api, ui, workflows, verification");
+  console.log("Workflows: scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
+  console.log("Extract tracks: db, api, ui, cli, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, widgets, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
 }
 
 /**
  * @returns {void}
  */
-export function printNewHelp() {
-  console.log("Usage: topogram new <path> [--template <alias|package|path>] [--catalog <path-or-source>]");
-  console.log("   or: topogram new --list-templates [--json] [--catalog <path-or-source>]");
+export function printCopyHelp() {
+  console.log("Usage: topogram copy <source> <target> [--version <version>] [--catalog <path-or-source>] [--json]");
+  console.log("   or: topogram copy --list [--json] [--catalog <path-or-source>]");
   console.log("");
-  console.log("Creates a new editable Topogram workspace from a template package or local template path.");
+  console.log("Copies a catalog template, template package/path, or pure Topogram source into a new project directory.");
   console.log("");
   console.log("Fresh install flow:");
   console.log("  npm install --save-dev @topogram/cli");
-  console.log("  npx topogram template list");
-  console.log("  npx topogram new ./my-app --template hello-web");
+  console.log("  npx topogram copy --list");
+  console.log("  npx topogram copy hello-web ./my-app");
   console.log("  cd ./my-app && npm install && npm run check && npm run generate");
   console.log("  npm --prefix app run compile");
   console.log("");
   console.log("Examples:");
-  console.log("  topogram new ./my-app");
-  console.log("  topogram new --list-templates");
-  console.log("  topogram new ./my-app --template hello-web");
-  console.log("  topogram new ./my-app --template ./local-template");
-  console.log("  topogram new ./my-app --template @scope/topogram-template");
+  console.log("  topogram copy --list");
+  console.log("  topogram copy hello-web ./my-app");
+  console.log("  topogram copy todo ./todo-app");
+  console.log("  topogram copy ./local-template ./my-app");
+  console.log("  topogram copy @scope/topogram-template ./my-app");
   console.log("");
-  console.log("Default template: hello-web from the configured catalog.");
+  console.log("Template entries create starter projects. Topogram entries copy editable topo/ source.");
 }
 
 /**

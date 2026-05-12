@@ -1,4 +1,4 @@
-# Import JSON
+# Extract/Adopt JSON
 
 Use `--json` for agent and script automation.
 
@@ -7,54 +7,54 @@ Important fields:
 - `workspaceRoot`: canonical path to the project-owned workspace folder,
   normally `topo/`.
 - `projectRoot`: target project root.
-- `candidateCounts`: number of imported candidate artifacts by surface,
+- `candidateCounts`: number of extracted candidate artifacts by surface,
   including fields such as `apiCapabilities`, `apiRoutes`,
   `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
   `cliSurfaces`.
-- `writtenFiles`: files written by import or adoption.
+- `writtenFiles`: files written by extraction or adoption.
 - `nextCommands`: recommended follow-up commands.
 - `receipt`: adoption receipt when an adoption command writes.
 
 Current command payloads:
 
-- `topogram import <source> --out <target> --json`
-- `topogram import check --json`
-- `topogram import diff --json`
-- `topogram import refresh --json`
-- `topogram import plan --json`
-- `topogram import adopt --list --json`
-- `topogram import adopt <selector> --json`
-- `topogram import status --json`
-- `topogram import history --json`
+- `topogram extract <source> --out <target> --json`
+- `topogram extract check --json`
+- `topogram extract diff --json`
+- `topogram extract refresh --json`
+- `topogram extract plan --json`
+- `topogram adopt --list --json`
+- `topogram adopt <selector> --json`
+- `topogram extract status --json`
+- `topogram extract history --json`
 
 Review payloads:
 
-- `topogram import plan --json` returns `bundles`, `summary`,
+- `topogram extract plan --json` returns `bundles`, `summary`,
   `workspaceRoot`, and a `nextCommand`.
 - Maintained DB migration seam proposals appear as `dbMaintainedSeams` in
-  import counts, `candidates.db.maintained_seams` in raw candidate files, and a
+  extract counts, `candidates.db.maintained_seams` in raw candidate files, and a
   review-only `database` bundle in plan output.
-- Non-resource UI flow proposals appear as `uiFlows` in import counts,
+- Non-resource UI flow proposals appear as `uiFlows` in extract counts,
   `candidates.ui.flows` in raw candidate files, and review-only UI items in
   plan/adoption output. They are proposals for shared `ui_contract` additions,
   not automatic canonical writes.
 - Evidence records can include source type context. Runtime source and
   parser/config files are primary; docs, tests, fixtures, and generated output
   should not create high-confidence primary candidates by themselves.
-- `topogram import adopt --list --json` returns exact `selectors` such as
+- `topogram adopt --list --json` returns exact `selectors` such as
   `bundle:task` or `bundle:cli` and broad selectors such as `widgets`, `ui`,
   `cli`, `capabilities`, and `from-plan`.
-- `topogram import adopt <selector> --dry-run --json` returns
+- `topogram adopt <selector> --dry-run --json` returns
   `promotedCanonicalItems`, `promotedCanonicalItemCount`, `writtenFiles`, and
   `write: false`.
-- `topogram import history --verify --json` returns `verification` in
+- `topogram extract history --verify --json` returns `verification` in
   audit-only mode. Adopted Topogram files are project-owned, so local edits do
-  not invalidate import evidence.
+  not invalidate extraction evidence.
 
 Focused agent review:
 
 ```bash
-topogram query import-plan ./topo --json
+topogram query extract-plan ./topo --json
 ```
 
 This query is read-only and gives agents staged items, maintained-boundary

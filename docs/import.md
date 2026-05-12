@@ -1,10 +1,10 @@
-# Brownfield Import
+# Brownfield Extract/Adopt
 
-This page moved to [Brownfield Import](./start/brownfield-import.md).
+This page moved to [Brownfield Extract/Adopt](./start/brownfield-import.md).
 
 Machine-readable payload fields are documented in
-[Import JSON](./reference/import-json.md).
+[Extract/Adopt JSON](./reference/import-json.md).
 
-Import provenance and adoption receipts are command-owned state. Do not
-hand-edit `.topogram-import.json` or `.topogram-import-adoptions.jsonl`; use
-`topogram import status` and `topogram import history --verify`.
+Extraction provenance and adoption receipts are command-owned state. Do not
+hand-edit `.topogram-extract.json` or `.topogram-adoptions.jsonl`; use
+`topogram extract status` and `topogram extract history --verify`.

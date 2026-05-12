@@ -3,7 +3,7 @@
 import { runArtifactQuery } from "./artifacts.js";
 import { runBoundaryQuery } from "./boundaries.js";
 import { runChangeQuery } from "./change.js";
-import { runImportAdoptQuery } from "./import-adopt.js";
+import { runImportAdoptQuery } from "./extract-adopt.js";
 import { runWorkflowQuery } from "./workflow.js";
 
 /**

@@ -46,12 +46,12 @@ projection proj_cli_surface {
 
   commands {
     command check capability cap_check_topogram usage "topogram check [path] [--json]" mode read_only
-    command import capability cap_import_brownfield_app usage "topogram import <app-path> --out <target> [--from <tracks>]" mode writes_workspace
+    command extract capability cap_import_brownfield_app usage "topogram extract <app-path> --out <target> [--from <tracks>]" mode writes_workspace
   }
 
   command_options {
     command check option json type boolean flag --json description "Print JSON"
-    command import option from type enum values [db, api, ui, cli, workflows, verification]
+    command extract option from type enum values [db, api, ui, cli, workflows, verification]
   }
 
   command_outputs {
@@ -61,7 +61,7 @@ projection proj_cli_surface {
 
   command_effects {
     command check effect read_only target workspace
-    command import effect writes_workspace target workspace_candidates
+    command extract effect writes_workspace target workspace_candidates
   }
 
   command_examples {

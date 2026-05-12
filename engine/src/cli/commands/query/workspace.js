@@ -29,7 +29,7 @@ export function normalizeTopogramPath(inputPath) {
  */
 export function workflowPresetSelectors(taskModeArtifact, providerId = null, presetId = null, queryFamily = null) {
   const categories = [];
-  if (taskModeArtifact?.mode === "import-adopt") categories.push("provider_adoption");
+  if (taskModeArtifact?.mode === "extract-adopt") categories.push("provider_adoption");
   if (taskModeArtifact?.mode === "maintained-app-edit") categories.push("maintained_app");
   if ((taskModeArtifact?.verification_targets?.maintained_app_checks || []).length > 0) categories.push("maintained_boundary");
   return {
@@ -65,7 +65,7 @@ export function generatorTargetsForWorkflowContext(options = {}) {
  * @returns {boolean}
  */
 export function importAdoptOnlyRequested(options = {}) {
-  return options.modeId === "import-adopt" && !(
+  return options.modeId === "extract-adopt" && !(
     options.capabilityId ||
     options.workflowId ||
     options.projectionId ||
@@ -267,7 +267,7 @@ export function resolveRecommendedQueryFamily(nextAction, mode) {
     case "customize_workflow_preset":
     case "refresh_workflow_preset_customization":
     case "import_declared_workflow_preset":
-      return "import-plan";
+      return "extract-plan";
     case "review_diff_impact":
     case "inspect_projection":
     case "inspect_diff":
@@ -284,7 +284,7 @@ export function resolveRecommendedQueryFamily(nextAction, mode) {
     default:
       break;
   }
-  if (mode === "import-adopt") return "import-plan";
+  if (mode === "extract-adopt") return "extract-plan";
   if (mode === "maintained-app-edit") return "maintained-boundary";
   if (mode === "verification") return "verification-targets";
   return "change-plan";

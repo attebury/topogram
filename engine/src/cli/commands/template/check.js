@@ -124,7 +124,7 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
       code: "template_symlink_unsupported",
       message,
       path: path.isAbsolute(templateSpec) ? templateSpec : null,
-      suggestedFix: "Replace template symlinks with real files or directories, then rerun `topogram new` or `topogram template check`.",
+      suggestedFix: "Replace template symlinks with real files or directories, then rerun `topogram copy` or `topogram template check`.",
       step
     });
   }
@@ -132,7 +132,7 @@ function diagnosticForTemplateCreateFailure(message, templateSpec, step) {
     code: "template_create_failed",
     message,
     path: path.isAbsolute(templateSpec) ? templateSpec : null,
-    suggestedFix: "Fix the template pack so topogram new can create a starter from it.",
+    suggestedFix: "Fix the template pack so topogram copy can create a starter from it.",
     step
   });
 }

@@ -164,7 +164,7 @@ test("docs name command-owned state surfaces and their commands", () => {
     "topogram sdlc transition",
     "topogram sdlc plan step",
     "topogram trust template",
-    "topogram import history --verify",
+    "topogram extract history --verify",
     "topogram generate",
     "topogram emit --write",
     "topogram release status"
@@ -173,7 +173,7 @@ test("docs name command-owned state surfaces and their commands", () => {
   }
 
   assert.match(agentDocs, /Stateful workflow mutations are command-owned/);
-  assert.match(importDocs, /Import provenance and adoption receipts are command-owned state/);
+  assert.match(importDocs, /Extraction provenance and adoption receipts are command-owned state/);
   assert.match(templateDocs, /\.topogram-template-trust\.json.*command-owned state/s);
   assert.match(releaseDocs, /Release status reports.*command-owned state/s);
 });

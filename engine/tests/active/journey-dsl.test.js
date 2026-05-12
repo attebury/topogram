@@ -69,7 +69,7 @@ journey journey_greenfield_start {
     id create_project
     intent "Copy the selected template into a project."
     after [inspect_templates]
-    commands ["topogram new ./my-app --template hello-web"]
+    commands ["topogram copy hello-web ./my-app"]
     expects ["Project contains topo/ and topogram.project.json."]
   }
 
@@ -77,7 +77,7 @@ journey journey_greenfield_start {
     id use_package_spec
     from inspect_templates
     condition "The template is not in the catalog."
-    commands ["topogram new ./my-app --template @topogram/template-hello-web"]
+    commands ["topogram copy @topogram/template-hello-web ./my-app"]
   }
 }
 

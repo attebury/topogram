@@ -10,7 +10,7 @@ import {
   buildLaneStatusPayload,
   buildWorkPacketPayload
 } from "../../../../agent-ops/query-builders.js";
-import { buildImportAdoptAgentContext, buildImportPlanForContext } from "../import-adopt.js";
+import { buildImportAdoptAgentContext, buildImportPlanForContext } from "../extract-adopt.js";
 import { normalizeTopogramPath, printValidationFailure, readJson, resultOk } from "../workspace.js";
 import { printJson } from "./output.js";
 
@@ -25,15 +25,15 @@ import { printJson } from "./output.js";
 export function runImportAdoptQuery(context) {
   const queryName = context.commandArgs?.queryName;
 
-  if (queryName === "import-plan") {
-    const built = buildImportPlanForContext(context, "import-plan");
+  if (queryName === "extract-plan") {
+    const built = buildImportPlanForContext(context, "extract-plan");
     if (!resultOk(built)) return printValidationFailure(built);
     return printJson(built.importPlan);
   }
 
   if (queryName === "multi-agent-plan") {
-    if (context.modeId !== "import-adopt") {
-      throw new Error("query multi-agent-plan currently supports only --mode import-adopt.");
+    if (context.modeId !== "extract-adopt") {
+      throw new Error("query multi-agent-plan currently supports only --mode extract-adopt.");
     }
     const built = buildImportAdoptAgentContext(context, "multi-agent-plan");
     if (!resultOk(built)) return printValidationFailure(built);
@@ -41,8 +41,8 @@ export function runImportAdoptQuery(context) {
   }
 
   if (queryName === "work-packet") {
-    if (context.modeId !== "import-adopt") {
-      throw new Error("query work-packet currently supports only --mode import-adopt.");
+    if (context.modeId !== "extract-adopt") {
+      throw new Error("query work-packet currently supports only --mode extract-adopt.");
     }
     if (!context.laneId) {
       throw new Error("query work-packet requires --lane <id>.");
@@ -57,8 +57,8 @@ export function runImportAdoptQuery(context) {
   }
 
   if (queryName === "lane-status" || queryName === "handoff-status") {
-    if (context.modeId !== "import-adopt") {
-      throw new Error(`query ${queryName} currently supports only --mode import-adopt.`);
+    if (context.modeId !== "extract-adopt") {
+      throw new Error(`query ${queryName} currently supports only --mode extract-adopt.`);
     }
     const built = buildImportAdoptAgentContext(context, queryName);
     if (!resultOk(built)) return printValidationFailure(built);

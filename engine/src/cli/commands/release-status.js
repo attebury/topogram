@@ -290,7 +290,7 @@ export function renderReleaseStatusMarkdown(payload) {
     "The external Todo demo is the canonical end-to-end consumer proof for the current catalog-backed workflow:",
     "",
     "```bash",
-    "topogram new ./todo-demo --template todo",
+    "topogram copy todo ./todo-demo",
     "cd ./todo-demo",
     "npm install",
     "npm run check",
@@ -300,7 +300,7 @@ export function renderReleaseStatusMarkdown(payload) {
     "npm run app:runtime",
     "```",
     "",
-    "The demo CI also verifies `topogram new` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias."
+    "The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias."
   );
   const reportDiagnostics = [...matrix.diagnostics];
   if (reportDiagnostics.length > 0) {

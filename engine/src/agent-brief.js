@@ -155,11 +155,17 @@ function readImportSummary(projectRoot) {
       path: TOPOGRAM_IMPORT_FILE,
       workspaceRoot: resolveTopoRoot(projectRoot),
       source: typeof record?.source?.path === "string" ? record.source.path : null,
-      tracks: Array.isArray(record?.import?.tracks) ? record.import.tracks.map(String) : [],
-      candidateCounts: record?.import?.candidateCounts && typeof record.import.candidateCounts === "object"
+      tracks: Array.isArray(record?.extract?.tracks) ? record.extract.tracks.map(String) : Array.isArray(record?.import?.tracks) ? record.import.tracks.map(String) : [],
+      candidateCounts: record?.extract?.candidateCounts && typeof record.extract.candidateCounts === "object"
+        ? record.extract.candidateCounts
+        : record?.import?.candidateCounts && typeof record.import.candidateCounts === "object"
         ? record.import.candidateCounts
         : {},
-      ownership: typeof record?.ownership?.importedArtifacts === "string" ? record.ownership.importedArtifacts : null
+      ownership: typeof record?.ownership?.extractedArtifacts === "string"
+        ? record.ownership.extractedArtifacts
+        : typeof record?.ownership?.importedArtifacts === "string"
+        ? record.ownership.importedArtifacts
+        : null
     };
   } catch (error) {
     return {
@@ -241,16 +247,16 @@ function buildWorkflows(config, hasImportRecord) {
   }
   if (hasImportRecord) {
     workflows.push({
-      id: "brownfield-import",
-      title: "Brownfield import adoption loop",
+      id: "brownfield-extract",
+      title: "Brownfield extract/adopt loop",
       commands: [
-        "topogram import check . --json",
-        "topogram import plan . --json",
-        "topogram import adopt --list . --json",
-        "topogram import status . --json",
-        "topogram import history . --verify --json"
+        "topogram extract check . --json",
+        "topogram extract plan . --json",
+        "topogram adopt --list . --json",
+        "topogram extract status . --json",
+        "topogram extract history . --verify --json"
       ],
-      rule: "Imported Topogram files are editable after adoption; JSON automation should read workspaceRoot for the project-owned workspace path."
+      rule: "Extracted Topogram files are editable after adoption; JSON automation should read workspaceRoot for the project-owned workspace path."
     });
   }
   return workflows;
@@ -284,7 +290,7 @@ function buildWarnings(projectRoot, config, trust, importSummary, generatorPolic
     warnings.push("Generated-owned outputs are replaceable by Topogram; do not make lasting edits under generated output paths.");
   }
   if (importSummary) {
-    warnings.push(`${TOPOGRAM_IMPORT_FILE} is present. Treat imported Topogram artifacts as project-owned after adoption; hashes are import evidence.`);
+    warnings.push(`${TOPOGRAM_IMPORT_FILE} is present. Treat extracted Topogram artifacts as project-owned after adoption; hashes are extraction evidence.`);
   }
   if (!fs.existsSync(path.join(projectRoot, "AGENTS.md"))) {
     warnings.push("AGENTS.md is missing. Use this command as the current agent guidance source.");
@@ -365,7 +371,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     readItem(projectRoot, "topogram.template-policy.json", "Template trust/update policy for attached templates.", false),
     readItem(projectRoot, GENERATOR_POLICY_FILE, "Package-backed generator policy and allowed scopes.", false),
     readItem(projectRoot, TEMPLATE_TRUST_FILE, "Executable implementation trust record, if the template copied implementation code.", Boolean(config.implementation)),
-    readItem(projectRoot, TOPOGRAM_IMPORT_FILE, "Brownfield import provenance and source evidence, if this came from import.", Boolean(importSummary)),
+    readItem(projectRoot, TOPOGRAM_IMPORT_FILE, "Brownfield extraction provenance and source evidence, if this came from extract.", Boolean(importSummary)),
     readItem(projectRoot, topogramReadPath, "Canonical Topogram graph source. Use focused query packets for implementation work.", true)
   ];
 
@@ -389,11 +395,11 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     commandItem("npm run generate", "Write generated-owned runtime/app outputs after validation.", "write"),
     commandItem("npm run verify", "Run generated output verification.", "verify"),
     ...(importSummary ? [
-      commandItem("topogram import check . --json", "Validate imported workspace provenance and read workspaceRoot.", "import"),
-      commandItem("topogram import plan . --json", "Review import adoption plan and workspaceRoot.", "import"),
-      commandItem("topogram import adopt --list . --json", "List reviewable adoption selectors.", "import"),
-      commandItem("topogram import status . --json", "Check import/adoption status.", "import"),
-      commandItem("topogram import history . --verify --json", "Verify import history evidence.", "import")
+      commandItem("topogram extract check . --json", "Validate extracted workspace provenance and read workspaceRoot.", "extract"),
+      commandItem("topogram extract plan . --json", "Review extraction adoption plan and workspaceRoot.", "extract"),
+      commandItem("topogram adopt --list . --json", "List reviewable adoption selectors.", "adopt"),
+      commandItem("topogram extract status . --json", "Check extraction/adoption status.", "extract"),
+      commandItem("topogram extract history . --verify --json", "Verify adoption history evidence.", "extract")
     ] : [])
   ];
 
@@ -464,7 +470,7 @@ export function buildAgentBrief(inputPath, workspaceAst) {
       issues: trust.issues || []
     },
     generator_policy: generatorPolicy,
-    import: importSummary,
+    extract: importSummary,
     warnings: []
   };
   payload.warnings = buildWarnings(projectRoot, config, payload.trust, importSummary, generatorPolicy, sdlcPolicy);
@@ -520,11 +526,11 @@ export function formatAgentBrief(brief) {
   for (const workflow of brief.workflows || []) {
     lines.push(`  - ${workflow.title}: ${workflow.rule}`);
   }
-  if (brief.import?.workspaceRoot) {
+  if (brief.extract?.workspaceRoot) {
     lines.push("");
-    lines.push("Import:");
-    lines.push(`  - Workspace root: ${brief.import.workspaceRoot}`);
-    lines.push("  - JSON import commands expose workspaceRoot; prefer it over compatibility fields.");
+    lines.push("Extract:");
+    lines.push(`  - Workspace root: ${brief.extract.workspaceRoot}`);
+    lines.push("  - JSON extract commands expose workspaceRoot; prefer it over compatibility fields.");
   }
   lines.push("");
   lines.push("Verification gates:");

@@ -81,7 +81,7 @@ function templateListItemFromCatalogEntry(entry, source) {
  */
 export function printTemplateList(payload) {
   console.log("Template starters:");
-  console.log("Catalog aliases resolve to versioned package installs. Local paths and full package specs can also be used with `topogram new`.");
+  console.log("Catalog aliases resolve to versioned package installs. Local paths and full package specs can also be used with `topogram copy`.");
   if (payload.catalog.source) {
     console.log(`Catalog: ${payload.catalog.source} (${payload.catalog.loaded ? "loaded" : "unavailable"})`);
   } else {
@@ -93,10 +93,10 @@ export function printTemplateList(payload) {
     const surfaces = Array.isArray(template.surfaces) && template.surfaces.length > 0
       ? template.surfaces.join(", ")
       : "not declared";
-    const command = template.recommendedCommand || `topogram new ./my-app --template ${shellCommandArg(template.id)}`;
+    const command = template.recommendedCommand || `topogram copy ${shellCommandArg(template.id)} ./my-app`;
     console.log(`- ${template.id}@${template.version}${defaultLabel}`);
     console.log(`  Source: ${template.source} | Surfaces: ${surfaces} | Stack: ${stack} | Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
-    console.log(`  New: ${command}`);
+    console.log(`  Copy: ${command}`);
   }
   for (const diagnostic of payload.diagnostics) {
     console.warn(`Warning: ${diagnostic.message}`);
@@ -137,7 +137,7 @@ function templateDecisionSummary(template, sourceKind, packageSpec, commands) {
     version: template.defaultVersion || template.version || null,
     executableImplementation: executable,
     policyImpact: executable
-      ? "Copies implementation/ code into the project; topogram new does not execute it, but topogram generate may load it after local trust is recorded."
+      ? "Copies implementation/ code into the project; topogram copy does not execute it, but topogram generate may load it after local trust is recorded."
       : "No executable implementation trust is required for this template.",
     recommendedCommand: commands.primary,
     followUp: commands.followUp,

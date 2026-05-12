@@ -9,9 +9,9 @@ shape shape_cli_status_result {
   status active
 }
 
-shape shape_import_result {
-  name "Import Result"
-  description "Machine-readable result from brownfield import commands."
+shape shape_extract_result {
+  name "Extract Result"
+  description "Machine-readable result from brownfield extract commands."
   fields {
     ok boolean required
     sourcePath string required

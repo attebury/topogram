@@ -76,7 +76,7 @@ export function readImportAdoptionArtifacts(inputPath) {
     reconcileReport: path.join(reconcileRoot, "report.json")
   };
   if (!fs.existsSync(paths.adoptionPlanAgent)) {
-    throw new Error(`No import adoption plan found under '${reconcileRoot}'. Run 'topogram import <app-path> --out <target>' first.`);
+    throw new Error(`No extraction adoption plan found under '${reconcileRoot}'. Run 'topogram extract <app-path> --out <target>' first.`);
   }
   return {
     projectRoot,
@@ -182,10 +182,10 @@ export function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoo
     risks: [
       ...(blockedCount > 0 ? [`${blockedCount} adoption item(s) are blocked.`] : []),
       ...(((adoptionPlan.requires_human_review || []).length || surfaces.some((/** @type {AnyRecord} */ item) => item.human_review_required))
-        ? ["Imported proposal items require human review before adoption."]
+        ? ["Extracted proposal items require human review before adoption."]
         : [])
     ],
-    nextCommand: nextBundle ? nextBundle.nextCommand : `topogram import status ${importProjectCommandPath(projectRoot)}`
+    nextCommand: nextBundle ? nextBundle.nextCommand : `topogram extract status ${importProjectCommandPath(projectRoot)}`
   };
 }
 
@@ -209,8 +209,8 @@ export function buildBrownfieldImportPlanPayload(inputPath) {
     },
     ...adoption,
     commands: {
-      check: `topogram import check ${importProjectCommandPath(artifacts.projectRoot)}`,
-      status: `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`,
+      check: `topogram extract check ${importProjectCommandPath(artifacts.projectRoot)}`,
+      status: `topogram extract status ${importProjectCommandPath(artifacts.projectRoot)}`,
       next: adoption.nextCommand
     }
   };
@@ -221,7 +221,7 @@ export function buildBrownfieldImportPlanPayload(inputPath) {
  * @returns {void}
  */
 export function printBrownfieldImportPlan(payload) {
-  console.log(`Import adoption plan for ${payload.projectRoot}`);
+  console.log(`Extraction adoption plan for ${payload.projectRoot}`);
   console.log(`Proposal items: ${payload.summary.proposalItemCount}`);
   console.log(`Bundles: ${payload.summary.bundleCount}`);
   for (const bundle of payload.bundles) {
@@ -279,9 +279,9 @@ export function buildBrownfieldImportAdoptListPayload(inputPath) {
  * @returns {void}
  */
 export function printBrownfieldImportAdoptList(payload) {
-  console.log(`Import adoption selectors for ${payload.projectRoot}`);
+  console.log(`Adoption selectors for ${payload.projectRoot}`);
   if (payload.selectors.length === 0) {
-    console.log("No adoption selectors are available. Run `topogram import plan` to inspect reconcile artifacts.");
+    console.log("No adoption selectors are available. Run `topogram extract plan` to inspect reconcile artifacts.");
     return;
   }
   for (const selector of payload.selectors) {

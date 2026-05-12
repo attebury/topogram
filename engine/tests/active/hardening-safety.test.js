@@ -89,7 +89,7 @@ test("vanilla web generator escapes semantic UI text in generated HTML", () => {
   fs.writeFileSync(projectionPath, modified, "utf8");
 
   const projectRoot = path.join(root, "project");
-  const create = runCli(["new", projectRoot, "--template", templateRoot], {
+  const create = runCli(["copy", templateRoot, projectRoot], {
     cwd: root,
     env: {
       TOPOGRAM_CATALOG_SOURCE: "none",

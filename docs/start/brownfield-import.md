@@ -1,72 +1,72 @@
-# Brownfield Import
+# Brownfield Extract/Adopt
 
 Use this workflow when an app already exists and you want reviewable Topogram
 candidates.
 
-Import does not mutate the source app.
+Extract does not mutate the source app.
 
-## 1. Import to a separate workspace
+## 1. Extract to a separate workspace
 
 ```bash
-topogram import ./existing-app --out ./imported-topogram
+topogram extract ./existing-app --out ./imported-topogram
 cd ./imported-topogram
 ```
 
 Limit tracks when useful:
 
 ```bash
-topogram import ./existing-app --out ./imported-topogram --from db,api,ui
-topogram import ./existing-cli --out ./imported-topogram --from cli
+topogram extract ./existing-app --out ./imported-topogram --from db,api,ui
+topogram extract ./existing-cli --out ./imported-topogram --from cli
 ```
 
 Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and
 `verification`.
 
-## 2. Review import health
+## 2. Review extraction health
 
 ```bash
-topogram import check
-topogram import diff
-topogram import plan
-topogram import adopt --list
-topogram query import-plan ./topo --json
+topogram extract check
+topogram extract diff
+topogram extract plan
+topogram adopt --list
+topogram query extract-plan ./topo --json
 ```
 
-Import writes:
+Extract writes:
 
 - `topo/candidates/app/**` for raw candidates;
 - `topo/candidates/reconcile/**` for proposal bundles;
 - `topogram.project.json` with maintained ownership;
-- `.topogram-import.json` with source hashes from import time.
+- `.topogram-extract.json` with source hashes from extraction time.
 
 Important JSON fields:
 
 - `workspaceRoot`: the project-owned workspace folder, normally `topo/`;
-- `candidateCounts`: counts by import surface such as `apiCapabilities`,
+- `candidateCounts`: counts by extracted surface such as `apiCapabilities`,
   `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
   `cliSurfaces`;
 - `nextCommands`: the next review commands Topogram recommends.
 
-Imported Topogram files are project-owned after creation. Edit candidates and
-canonical files freely, but do not hand-edit import provenance or adoption
+Extracted Topogram files are project-owned after creation. Edit candidates and
+canonical files freely, but do not hand-edit extraction provenance or adoption
 receipts.
 
-DB imports may also emit maintained migration seam candidates under
+DB extraction may also emit maintained migration seam candidates under
 `topo/candidates/app/db/candidates.json` as `maintained_seams`. These are
 review-only proposals inferred from Prisma, Drizzle, or SQL schema/migration
-evidence. They are carried into `topogram import plan` as a `database` review
-bundle, but import does not edit `topogram.project.json`, schema files, or
+evidence. They are carried into `topogram extract plan` as a `database` review
+bundle, but extraction does not edit `topogram.project.json`, schema files, or
 migration files for you.
 
-UI imports may emit non-resource flow candidates under
+UI extraction may emit non-resource flow candidates under
 `topo/candidates/app/ui/candidates.json` as `flows`. These are conservative,
 review-only hints for auth, onboarding/wizard, settings/preferences,
 dashboard/reporting, search/filter, and bulk-review routes. They include route
 evidence, confidence, missing decisions, and proposed `ui_contract` additions.
-Import plan carries them as UI review packets; adoption writes only reviewed
+Extract plan carries them as UI review packets; adoption writes only reviewed
 reports/docs when you explicitly adopt the related selector.
 
-Import classifies evidence by source type. Runtime source and parser/config
+Extract classifies evidence by source type. Runtime source and parser/config
 files can create primary candidates. Docs, tests, fixtures, and generated
 output can support review evidence, but they should not create high-confidence
 API/UI/CLI candidates by themselves.
@@ -76,22 +76,22 @@ API/UI/CLI candidates by themselves.
 Preview first:
 
 ```bash
-topogram import adopt bundle:task --dry-run
-topogram import adopt widgets --dry-run
-topogram import adopt bundle:cli --dry-run
-topogram import adopt cli --dry-run
+topogram adopt bundle:task --dry-run
+topogram adopt widgets --dry-run
+topogram adopt bundle:cli --dry-run
+topogram adopt cli --dry-run
 ```
 
 Write only after review:
 
 ```bash
-topogram import adopt bundle:task --write
-topogram import adopt widgets --write
-topogram import adopt bundle:cli --write
-topogram import adopt cli --write
+topogram adopt bundle:task --write
+topogram adopt widgets --write
+topogram adopt bundle:cli --write
+topogram adopt cli --write
 ```
 
-`bundle:task` is common for API/UI imports. `widgets` promotes only widget
+`bundle:task` is common for API/UI extraction. `widgets` promotes only widget
 candidate files and their related event shapes. `bundle:cli` and `cli` are
 common for CLI imports.
 
@@ -101,21 +101,21 @@ tool, schema path, migration path, snapshot path, and `apply: "never"` policy.
 The DB seam packet includes the proposed `topology.runtimes[...].migration`
 target and manual next steps; treat those as instructions, not automation.
 
-Adoption appends receipts to `.topogram-import-adoptions.jsonl`. Use history to
+Adoption appends receipts to `.topogram-adoptions.jsonl`. Use history to
 audit them:
 
 ```bash
-topogram import status
-topogram import history --verify
+topogram extract status
+topogram extract history --verify
 ```
 
 ## 4. Refresh when source changes
 
 ```bash
-topogram import diff
-topogram import refresh . --from ../existing-app --dry-run
-topogram import refresh . --from ../existing-app
-topogram import check
+topogram extract diff
+topogram extract refresh . --from ../existing-app --dry-run
+topogram extract refresh . --from ../existing-app
+topogram extract check
 ```
 
 Refresh rewrites only candidate/reconcile artifacts and source provenance. It
@@ -130,7 +130,7 @@ does not overwrite adopted canonical `topo/**` files.
 ## Existing app plus an existing Topogram
 
 If you already have a Topogram you want to use inside an existing app, do not
-use brownfield import first. Initialize the app as maintained, then copy or
+use brownfield extract/adopt first. Initialize the app as maintained, then copy or
 merge the reviewed `topo/` files:
 
 ```bash

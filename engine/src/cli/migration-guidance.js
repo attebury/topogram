@@ -30,6 +30,15 @@ export function cliMigrationError(args) {
   if (args[0] === "component") {
     return "Command 'topogram component' was renamed to 'topogram widget'.";
   }
+  if (args[0] === "new" || args[0] === "create") {
+    return "Command 'topogram new' was replaced by 'topogram copy <source> <target>'. For example: topogram copy hello-web ./my-app.";
+  }
+  if (args[0] === "import") {
+    return "Command 'topogram import' was replaced by 'topogram extract' and top-level 'topogram adopt'.";
+  }
+  if (args[0] === "catalog" && args[1] === "copy") {
+    return "Command 'topogram catalog copy' was replaced by 'topogram copy <source> <target>'.";
+  }
   if (args[0] === "migrate") {
     return "Command 'topogram migrate workspace-folder' was removed. Use topo/ workspaces or configure topogram.project.json workspace to a non-legacy relative path.";
   }

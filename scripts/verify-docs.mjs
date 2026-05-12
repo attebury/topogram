@@ -81,10 +81,9 @@ function createLocalStarter() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-docs-check-"));
   const projectRoot = path.join(root, "starter");
   const result = runCli([
-    "new",
-    projectRoot,
-    "--template",
-    path.join(repoRoot, "engine", "tests", "fixtures", "templates", "hello-web")
+    "copy",
+    path.join(repoRoot, "engine", "tests", "fixtures", "templates", "hello-web"),
+    projectRoot
   ]);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   return projectRoot;
@@ -126,7 +125,7 @@ function createImportProject(sourceFixture, tracks) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-docs-import-"));
   const target = path.join(root, "imported");
   const payload = runCliJson([
-    "import",
+    "extract",
     path.join(repoRoot, "engine", "tests", "fixtures", "import", sourceFixture),
     "--out",
     target,
@@ -137,30 +136,30 @@ function createImportProject(sourceFixture, tracks) {
   return { root, target, payload };
 }
 
-function verifyBrownfieldDocsMatchImportWorkflow() {
+function verifyBrownfieldDocsMatchExtractWorkflow() {
   const brownfieldDocs = read("docs/start/brownfield-import.md");
   const importJsonDocs = read("docs/reference/import-json.md");
   const requiredBrownfieldCommands = [
-    "topogram import ./existing-app --out ./imported-topogram --from db,api,ui",
-    "topogram import ./existing-cli --out ./imported-topogram --from cli",
-    "topogram import check",
-    "topogram import diff",
-    "topogram import plan",
-    "topogram import adopt --list",
-    "topogram query import-plan ./topo --json",
-    "topogram import adopt bundle:task --dry-run",
-    "topogram import adopt widgets --dry-run",
-    "topogram import adopt bundle:cli --dry-run",
-    "topogram import adopt cli --dry-run",
-    "topogram import history --verify"
+    "topogram extract ./existing-app --out ./imported-topogram --from db,api,ui",
+    "topogram extract ./existing-cli --out ./imported-topogram --from cli",
+    "topogram extract check",
+    "topogram extract diff",
+    "topogram extract plan",
+    "topogram adopt --list",
+    "topogram query extract-plan ./topo --json",
+    "topogram adopt bundle:task --dry-run",
+    "topogram adopt widgets --dry-run",
+    "topogram adopt bundle:cli --dry-run",
+    "topogram adopt cli --dry-run",
+    "topogram extract history --verify"
   ];
   for (const command of requiredBrownfieldCommands) {
-    assertIncludes(brownfieldDocs, command, "brownfield import docs");
+    assertIncludes(brownfieldDocs, command, "brownfield extract/adopt docs");
   }
   for (const field of ["workspaceRoot", "candidateCounts", "apiCapabilities", "uiWidgets", "cliCommands", "cliSurfaces"]) {
-    assertIncludes(importJsonDocs, field, "import JSON docs");
+    assertIncludes(importJsonDocs, field, "extract/adopt JSON docs");
   }
-  assertIncludes(importJsonDocs, "topogram query import-plan ./topo --json", "import JSON docs");
+  assertIncludes(importJsonDocs, "topogram query extract-plan ./topo --json", "extract/adopt JSON docs");
 
   const routeImport = createImportProject("route-fallback", "api,ui");
   try {
@@ -170,36 +169,36 @@ function verifyBrownfieldDocsMatchImportWorkflow() {
     assert.ok(routeImport.payload.candidateCounts.apiCapabilities > 0);
     assert.ok(routeImport.payload.candidateCounts.uiWidgets > 0);
     assert.equal(
-      routeImport.payload.nextCommands.includes("topogram query import-plan ./topo"),
+      routeImport.payload.nextCommands.includes("topogram query extract-plan ./topo"),
       true,
-      "import should recommend focused import-plan query"
+      "extract should recommend focused extract-plan query"
     );
 
-    const check = runCliJson(["import", "check", routeImport.target, "--json"]);
+    const check = runCliJson(["extract", "check", routeImport.target, "--json"]);
     assert.equal(check.workspaceRoot, path.join(routeImport.target, "topo"));
-    assert.equal(check.import.status, "clean");
+    assert.equal(check.extract.status, "clean");
 
-    const diff = runCliJson(["import", "diff", routeImport.target, "--json"]);
+    const diff = runCliJson(["extract", "diff", routeImport.target, "--json"]);
     assert.equal(diff.workspaceRoot, path.join(routeImport.target, "topo"));
     assert.equal(diff.candidateCounts.uiWidgets, routeImport.payload.candidateCounts.uiWidgets);
 
-    const plan = runCliJson(["import", "plan", routeImport.target, "--json"]);
+    const plan = runCliJson(["extract", "plan", routeImport.target, "--json"]);
     assert.equal(plan.bundles.some((bundle) => bundle.bundle === "task"), true);
 
-    const adoptList = runCliJson(["import", "adopt", "--list", routeImport.target, "--json"]);
+    const adoptList = runCliJson(["adopt", "--list", routeImport.target, "--json"]);
     assert.equal(adoptList.selectors.some((selector) => selector.selector === "bundle:task"), true);
     assert.equal(adoptList.broadSelectors.some((selector) => selector.selector === "widgets"), true);
 
-    const widgetsPreview = runCliJson(["import", "adopt", "widgets", routeImport.target, "--dry-run", "--json"]);
+    const widgetsPreview = runCliJson(["adopt", "widgets", routeImport.target, "--dry-run", "--json"]);
     assert.equal(widgetsPreview.write, false);
     assert.equal(widgetsPreview.promotedCanonicalItems.some((item) => item.kind === "widget"), true);
     assert.deepEqual(widgetsPreview.writtenFiles, []);
 
-    const importPlan = runCliJson(["query", "import-plan", path.join(routeImport.target, "topo"), "--json"]);
-    assert.equal(importPlan.type, "import_plan_query");
+    const importPlan = runCliJson(["query", "extract-plan", path.join(routeImport.target, "topo"), "--json"]);
+    assert.equal(importPlan.type, "extract_plan_query");
     assert.equal(importPlan.summary.plan_present, true);
 
-    const history = runCliJson(["import", "history", routeImport.target, "--verify", "--json"]);
+    const history = runCliJson(["extract", "history", routeImport.target, "--verify", "--json"]);
     assert.equal(history.verified, true);
     assert.equal(history.verification.auditOnly, true);
   } finally {
@@ -212,14 +211,14 @@ function verifyBrownfieldDocsMatchImportWorkflow() {
     assert.ok(cliImport.payload.candidateCounts.cliCommands > 0);
     assert.ok(cliImport.payload.candidateCounts.cliSurfaces > 0);
 
-    const cliPlan = runCliJson(["import", "plan", cliImport.target, "--json"]);
+    const cliPlan = runCliJson(["extract", "plan", cliImport.target, "--json"]);
     assert.equal(cliPlan.bundles.some((bundle) => bundle.bundle === "cli"), true);
 
-    const cliAdoptList = runCliJson(["import", "adopt", "--list", cliImport.target, "--json"]);
+    const cliAdoptList = runCliJson(["adopt", "--list", cliImport.target, "--json"]);
     assert.equal(cliAdoptList.selectors.some((selector) => selector.selector === "bundle:cli"), true);
     assert.equal(cliAdoptList.broadSelectors.some((selector) => selector.selector === "cli"), true);
 
-    const cliPreview = runCliJson(["import", "adopt", "bundle:cli", cliImport.target, "--dry-run", "--json"]);
+    const cliPreview = runCliJson(["adopt", "bundle:cli", cliImport.target, "--dry-run", "--json"]);
     assert.equal(cliPreview.write, false);
     assert.equal(cliPreview.promotedCanonicalItems.some((item) => item.suggested_action === "promote_cli_surface"), true);
   } finally {
@@ -235,7 +234,7 @@ function verifyAgentDocsMatchCoreWorkflow() {
     "topogram query show <name> --json",
     "topogram check --json",
     "topogram query slice ./topo --journey journey_greenfield_start_from_template --json",
-    "topogram query import-plan ./topo --json",
+    "topogram query extract-plan ./topo --json",
     "topogram sdlc explain <task-id> --json",
     "topogram sdlc prep commit . --base origin/main --head HEAD --json",
     "topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json"
@@ -301,11 +300,11 @@ function verifyCliReferenceMatchesHelp() {
   const cliReference = read("docs/reference/cli.md");
   for (const command of [
     "topogram init",
-    "topogram new",
+    "topogram copy",
     "topogram check",
     "topogram generate",
     "topogram emit",
-    "topogram import",
+    "topogram extract",
     "topogram agent brief",
     "topogram query list",
     "topogram widget check",
@@ -326,7 +325,10 @@ function verifyStaleCommandNamesStayOut() {
   const forbidden = [
     "topogram template show",
     "topogram release:status",
-    "topogram migrate workspace-folder"
+    "topogram migrate workspace-folder",
+    "topogram new",
+    "topogram import",
+    "topogram catalog copy"
   ];
   for (const [file, text] of publicDocs) {
     for (const phrase of forbidden) {
@@ -339,7 +341,7 @@ function main() {
   const files = listMarkdownFiles();
   verifyLocalLinks(files);
   verifyFirstRunCommandsMatchStarter();
-  verifyBrownfieldDocsMatchImportWorkflow();
+  verifyBrownfieldDocsMatchExtractWorkflow();
   verifyAgentDocsMatchCoreWorkflow();
   verifyDslDocsMatchJourneySyntax();
   verifyTemplateCatalogDocsMatchStarter();

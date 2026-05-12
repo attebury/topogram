@@ -36,7 +36,7 @@ export function createNewProject({
   templateProvenance = null
 }) {
   if (!targetPath) {
-    throw new Error("topogram new requires <path>.");
+    throw new Error("topogram copy requires <target>.");
   }
   const projectRoot = path.resolve(targetPath);
   assertProjectOutsideEngine(projectRoot, engineRoot);
@@ -68,7 +68,7 @@ export function createNewProject({
     writeTemplateTrustRecord(projectRoot, projectConfig);
     warnings.push(
       `Template '${template.manifest.id}' copied implementation/ code into this project. ` +
-        "topogram new did not execute it, but topogram generate may load it later. " +
+        "topogram copy did not execute it, but topogram generate may load it later. " +
         "Recorded local trust in .topogram-template-trust.json."
     );
   }

@@ -1,0 +1,14 @@
+task task_make_init_front_and_center_in_docs {
+  name "Make Init Front And Center In Docs"
+  description "Update README and docs navigation so `topogram init` is the primary maintained-repo start path, with template generation presented as a separate workflow."
+  satisfies [req_init_maintained_workspace]
+  acceptance_refs [ac_init_is_primary_start_path]
+  verification_refs [verification_docs_current_workflow_review]
+  affects [cap_create_project cap_brief_agent]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

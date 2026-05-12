@@ -9,7 +9,7 @@ import { TOPOGRAM_IMPORT_FILE } from "../../../import/provenance.js";
 import { shellCommandArg } from "../catalog.js";
 import { resolveTopoRoot, resolveWorkspaceContext } from "../../../workspace-paths.js";
 
-export const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-import-adoptions.jsonl";
+export const TOPOGRAM_IMPORT_ADOPTIONS_FILE = ".topogram-adoptions.jsonl";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -219,7 +219,7 @@ export function readImportAdoptionReceipts(projectRoot) {
       try {
         return JSON.parse(line);
       } catch (error) {
-        throw new Error(`Invalid import adoption receipt JSON at ${historyPath}:${index + 1}.`);
+        throw new Error(`Invalid adoption receipt JSON at ${historyPath}:${index + 1}.`);
       }
     });
 }
@@ -265,5 +265,5 @@ export function importProjectCommandPath(projectRoot) {
  * @returns {string}
  */
 export function importAdoptCommand(projectRoot, selector, write = false) {
-  return `topogram import adopt ${selector} ${importProjectCommandPath(projectRoot)} ${write ? "--write" : "--dry-run"}`;
+  return `topogram adopt ${selector} ${importProjectCommandPath(projectRoot)} ${write ? "--write" : "--dry-run"}`;
 }

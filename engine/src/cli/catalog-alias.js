@@ -93,7 +93,7 @@ export function formatCatalogTemplateAliasError(templateName, catalogSource, err
   return [
     `Catalog template alias '${templateName}' could not be resolved from '${sourceLabel}'.`,
     reason,
-    templateName === "hello-web" ? "The default starter 'hello-web' is catalog-backed. Enable catalog access, or pass --template with a local path or full package spec." : null,
+    templateName === "hello-web" ? "The default starter 'hello-web' is catalog-backed. Enable catalog access, or use `topogram copy <source> <target>` with a local path or full package spec." : null,
     suggestions.length > 0 ? `Suggested templates: ${suggestions.join(", ")}.` : null,
     catalogDisabled ? "Unset TOPOGRAM_CATALOG_SOURCE=none, pass --catalog <source>, or use an explicit local path/package spec." : null,
     "Run `topogram template list` to see available templates, or `topogram catalog show <id>` to inspect a catalog alias.",
@@ -108,7 +108,7 @@ export function formatCatalogTemplateAliasError(templateName, catalogSource, err
  * @param {string} templateName
  * @returns {string[]}
  */
-function suggestCatalogTemplateIds(catalog, templateName) {
+export function suggestCatalogTemplateIds(catalog, templateName) {
   const queryTokens = tokenizeSuggestionText(templateName);
   const templates = (catalog.entries || []).filter((entry) => entry.kind === "template");
   return templates

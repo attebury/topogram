@@ -27,7 +27,7 @@ test("cli_surface fixture validates and resolves commands", () => {
   const projection = resolved.graph.byKind.projection.find((entry) => entry.id === "proj_cli_surface");
   assert.ok(projection);
   assert.equal(projection.type, "cli_surface");
-  assert.deepEqual(projection.commands.map((command) => command.id), ["check", "import"]);
+  assert.deepEqual(projection.commands.map((command) => command.id), ["check", "extract"]);
   assert.equal(projection.commands[0].capability.id, "cap_check_topogram");
   assert.equal(projection.commands[0].mode, "read_only");
   assert.equal(projection.commandOptions[0].name, "json");

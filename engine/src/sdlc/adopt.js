@@ -55,7 +55,7 @@ function scanPressure(root) {
 export function sdlcAdopt(workspaceRoot) {
   const root = path.resolve(workspaceRoot);
   if (!existsSync(resolveTopoRoot(root))) {
-    return { ok: false, error: `No '${DEFAULT_TOPO_FOLDER_NAME}/' workspace folder at ${root}; run 'topogram new' first` };
+    return { ok: false, error: `No '${DEFAULT_TOPO_FOLDER_NAME}/' workspace folder at ${root}; run 'topogram init' or 'topogram copy' first` };
   }
   const folders = SDLC_FOLDERS.map((name) => ensureFolder(root, name));
   const pressure = scanPressure(root);

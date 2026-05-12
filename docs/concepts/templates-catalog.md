@@ -7,7 +7,7 @@ packages.
 
 ```bash
 topogram template list
-topogram new --list-templates
+topogram copy --list
 topogram catalog list
 topogram catalog show hello-web
 ```
@@ -15,13 +15,13 @@ topogram catalog show hello-web
 ## Create from a template
 
 ```bash
-topogram new ./my-app --template hello-web
-topogram new ./todo-app --template todo
-topogram new ./my-app --template @scope/template-package
-topogram new ./my-app --template ../local-template
+topogram copy hello-web ./my-app
+topogram copy todo ./todo-app
+topogram copy @scope/template-package ./my-app
+topogram copy ../local-template ./my-app
 ```
 
-`topogram new` copies template files, writes project metadata, and installs no
+`topogram copy` copies template files, writes project metadata, and installs no
 package lifecycle scripts. If a template includes executable `implementation/`
 code, the generated project records trust metadata. Generation can be blocked
 until that implementation is reviewed and trusted.
@@ -42,7 +42,7 @@ file belongs to pure Topogram catalog copies.
 ## Copy a pure Topogram
 
 ```bash
-topogram catalog copy hello ./hello-topogram
+topogram copy hello ./hello-topogram
 cd ./hello-topogram
 topogram source status --local
 topogram check

@@ -28,7 +28,7 @@ template implementation code.
 5. `topogram.template-policy.json`, when present
 6. `topogram.generator-policy.json`, when present
 7. `.topogram-template-trust.json`, when executable implementation exists
-8. `.topogram-import.json`, when the project came from brownfield import
+8. `.topogram-extract.json`, when the project came from brownfield extract/adopt
 9. Focused `topogram query ... --json` output
 
 ## First command sequence
@@ -106,18 +106,18 @@ topogram emit ui-widget-contract ./topo --json
 `ui_contract` owns semantic UI. Concrete web/native surfaces inherit it and own
 routes and surface hints.
 
-## Brownfield import
+## Brownfield extract/adopt
 
-When `.topogram-import.json` exists:
+When `.topogram-extract.json` exists:
 
 ```bash
-topogram import check . --json
-topogram import diff . --json
-topogram import plan . --json
-topogram import adopt --list . --json
-topogram query import-plan ./topo --json
-topogram import status . --json
-topogram import history . --verify --json
+topogram extract check . --json
+topogram extract diff . --json
+topogram extract plan . --json
+topogram adopt --list . --json
+topogram query extract-plan ./topo --json
+topogram extract status . --json
+topogram extract history . --verify --json
 ```
 
 Use `workspaceRoot` from import JSON as the canonical project-owned workspace
@@ -131,7 +131,7 @@ Use commands for stateful workflow mutations:
 - `topogram sdlc plan step ... --write`
 - `topogram sdlc archive`
 - `topogram trust ...`
-- `topogram import ...`
+- `topogram extract ...`
 - `topogram generate`
 - `topogram emit --write`
 - `topogram release ...`

@@ -2,8 +2,9 @@
 
 Use this workflow when Topogram should create a new app or runtime bundle.
 
-Use `topogram init` instead when you want an empty maintained Topogram
-workspace in an existing repo and do not want to copy a starter template.
+Start with [Initialize Maintained Repo](./init-maintained.md) instead when you
+want an empty maintained Topogram workspace in an existing repo and do not want
+to copy a starter template.
 
 ## 1. Create a project
 
@@ -11,7 +12,7 @@ workspace in an existing repo and do not want to copy a starter template.
 npm install --save-dev @topogram/cli
 npx topogram doctor
 npx topogram template list
-npx topogram new ./my-app --template hello-web
+npx topogram copy hello-web ./my-app
 cd ./my-app
 npm install
 ```

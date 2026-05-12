@@ -7,7 +7,7 @@ export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintaine
   const importNextAction = buildImportPlanNextAction(taskModeArtifact.next_action || null, workflowPresetState);
   const presetGuidanceSummary = buildPresetGuidanceSummary(workflowPresetState, null);
   return {
-    type: "import_plan_query",
+    type: "extract_plan_query",
     summary: taskModeArtifact.summary || null,
     adoption_state_vocabulary: adoptionPlan.adoption_state_vocabulary || [],
     next_action: importNextAction,

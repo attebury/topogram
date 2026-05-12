@@ -1,0 +1,6 @@
+acceptance_criterion ac_init_is_primary_start_path {
+  name "Init Is Primary Start Path"
+  description "Given a user reading the README or docs index, when they look for the first Topogram start path, then `topogram init` is presented before template generation and links to a dedicated maintained-repo initialization workflow."
+  requirement req_init_maintained_workspace
+  status approved
+}

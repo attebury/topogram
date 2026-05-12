@@ -35,7 +35,7 @@ export function stableSortedStrings(values) {
 export const CANONICAL_TASK_MODES = new Set([
   "modeling",
   "maintained-app-edit",
-  "import-adopt",
+  "extract-adopt",
   "diff-review",
   "verification"
 ]);
@@ -59,7 +59,7 @@ export const PROVIDER_PRESET_MANUAL_DECISION_CATEGORIES = new Set([
 export const WORKFLOW_QUERY_FAMILIES_BY_MODE = {
   modeling: ["change-plan", "write-scope", "verification-targets", "risk-summary"],
   "maintained-app-edit": ["maintained-boundary", "maintained-conformance", "seam-check", "change-plan"],
-  "import-adopt": ["import-plan", "risk-summary", "proceed-decision", "review-packet"],
+  "extract-adopt": ["extract-plan", "risk-summary", "proceed-decision", "review-packet"],
   "diff-review": ["change-plan", "risk-summary", "review-packet"],
   verification: ["verification-targets", "proceed-decision", "risk-summary"]
 };

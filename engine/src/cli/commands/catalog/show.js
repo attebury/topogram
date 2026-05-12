@@ -63,7 +63,7 @@ export function catalogShowCommands(entry, source) {
   if (entry.kind === "template") {
     const target = "./my-app";
     return {
-      primary: `topogram new ${target} --template ${shellCommandArg(entry.id)}${catalogOption}`,
+      primary: `topogram copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
       followUp: [
         `cd ${target}`,
         "npm install",
@@ -74,7 +74,7 @@ export function catalogShowCommands(entry, source) {
   }
   const target = `./${entry.id}-topogram`;
   return {
-    primary: `topogram catalog copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
+    primary: `topogram copy ${shellCommandArg(entry.id)} ${target}${catalogOption}`,
     followUp: [
       `cd ${target}`,
       "topogram source status --local",
@@ -102,9 +102,9 @@ export function printCatalogShow(payload) {
   console.log(`Catalog entry: ${entry.id}`);
   console.log(`Kind: ${entry.kind}`);
   if (entry.kind === "template") {
-    console.log("Action: creates a starter app workspace with `topogram new`.");
+    console.log("Action: creates a starter app workspace with `topogram copy`.");
   } else {
-    console.log("Action: copies editable Topogram source with `topogram catalog copy`.");
+    console.log("Action: copies editable Topogram source with `topogram copy`.");
     console.log("Executable implementation: no (topogram entries cannot include implementation/ in v1).");
   }
   console.log(`Catalog: ${payload.source}`);

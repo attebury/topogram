@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { listFilesRecursive, relativeTo } from "./core/shared.js";
 
-export const TOPOGRAM_IMPORT_FILE = ".topogram-import.json";
+export const TOPOGRAM_IMPORT_FILE = ".topogram-extract.json";
 
 function fileHash(filePath) {
   const bytes = fs.readFileSync(filePath);
@@ -42,22 +42,22 @@ export function writeTopogramImportRecord(projectRoot, input) {
   const timestamp = input.timestamp || new Date().toISOString();
   const record = {
     version: "0.1",
-    kind: "brownfield-import",
-    importedAt: input.importedAt || timestamp,
+    kind: "brownfield-extract",
+    extractedAt: input.importedAt || timestamp,
     ...(input.refreshedAt ? { refreshedAt: input.refreshedAt } : {}),
     source: {
       path: path.resolve(input.sourceRoot),
       hashAlgorithm: "sha256",
       ignoredRoots: (input.ignoredRoots || []).map((item) => path.resolve(item))
     },
-    import: {
+    extract: {
       tracks: input.tracks || [],
       findingsCount: input.findingsCount || 0,
       candidateCounts: input.candidateCounts || {}
     },
     ownership: {
-      importedArtifacts: "project-owned",
-      note: "Topogram artifacts created by import are editable after import. Source hashes record the brownfield app evidence trusted at import time."
+      extractedArtifacts: "project-owned",
+      note: "Topogram artifacts created by extraction are editable after extraction. Source hashes record the brownfield app evidence trusted at extraction time."
     },
     ...(input.refresh ? { refresh: input.refresh } : {}),
     files: input.files || []
@@ -79,11 +79,11 @@ export function buildTopogramImportStatus(projectRoot) {
       source: null,
       content: { changed: [], added: [], removed: [] },
       diagnostics: [{
-        code: "topogram_import_missing",
+        code: "topogram_extract_missing",
         severity: "error",
-        message: `${TOPOGRAM_IMPORT_FILE} was not found. This workspace does not have brownfield import provenance.`,
+        message: `${TOPOGRAM_IMPORT_FILE} was not found. This workspace does not have brownfield extraction provenance.`,
         path: importPath,
-        suggestedFix: "Run `topogram import <app-path> --out <target>` to create an imported Topogram workspace."
+        suggestedFix: "Run `topogram extract <app-path> --out <target>` to create an extracted Topogram workspace."
       }],
       errors: [`${TOPOGRAM_IMPORT_FILE} was not found.`]
     };
@@ -92,7 +92,7 @@ export function buildTopogramImportStatus(projectRoot) {
   const source = JSON.parse(fs.readFileSync(importPath, "utf8"));
   const sourceRoot = path.resolve(source.source?.path || "");
   if (!sourceRoot || !fs.existsSync(sourceRoot) || !fs.statSync(sourceRoot).isDirectory()) {
-    const message = `Imported source path was not found: ${source.source?.path || "unknown"}`;
+    const message = `Extracted source path was not found: ${source.source?.path || "unknown"}`;
     return {
       ok: false,
       exists: true,
@@ -101,11 +101,11 @@ export function buildTopogramImportStatus(projectRoot) {
       source,
       content: { changed: [], added: [], removed: [] },
       diagnostics: [{
-        code: "topogram_import_source_missing",
+      code: "topogram_extract_source_missing",
         severity: "error",
         message,
         path: source.source?.path || null,
-        suggestedFix: "Restore the imported source path or rerun import from the current brownfield app location."
+        suggestedFix: "Restore the extracted source path or rerun extract from the current brownfield app location."
       }],
       errors: [message]
     };
@@ -147,12 +147,12 @@ export function buildTopogramImportStatus(projectRoot) {
     source,
     content,
     diagnostics: clean ? [] : [{
-      code: "topogram_import_source_changed",
+      code: "topogram_extract_source_changed",
       severity: "error",
-      message: "Imported source files changed since they were trusted for this import.",
+      message: "Extracted source files changed since they were trusted for this extraction.",
       path: sourceRoot,
-      suggestedFix: "Review the source changes. If they should drive Topogram changes, rerun import or update the Topogram artifacts manually."
+      suggestedFix: "Review the source changes. If they should drive Topogram changes, rerun extract or update the Topogram artifacts manually."
     }],
-    errors: clean ? [] : ["Imported source files changed since import."]
+    errors: clean ? [] : ["Extracted source files changed since extraction."]
   };
 }

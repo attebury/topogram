@@ -5,13 +5,13 @@ import { buildVersionPayload, printVersion } from "./commands/version.js";
 import { runAgentBriefCommand } from "./commands/agent.js";
 import { runCatalogCommand } from "./commands/catalog.js";
 import { runCheckCommand } from "./commands/check.js";
+import { runCopyCommand } from "./commands/copy.js";
 import { runEmitCommand } from "./commands/emit.js";
 import { runGenerateAppCommand } from "./commands/generate.js";
 import { runGeneratorCommand } from "./commands/generator.js";
 import { runGeneratorPolicyCommand } from "./commands/generator-policy.js";
 import { runImportCommand } from "./commands/import-runner.js";
 import { runInitProjectCommand } from "./commands/init.js";
-import { runNewProjectCommand } from "./commands/new.js";
 import { runPackageCommand } from "./commands/package.js";
 import { runParseCommand, runResolveCommand } from "./commands/inspect.js";
 import {
@@ -239,6 +239,16 @@ export async function runCliDispatch(context) {
     });
   }
 
+  if (commandArgs?.copyCommand) {
+    return runCopyCommand({
+      commandArgs,
+      catalogSource,
+      requestedVersion,
+      json: emitJson,
+      cwd: process.cwd()
+    });
+  }
+
   if (commandArgs?.packageCommand) {
     return runPackageCommand({ commandArgs, inputPath, json: emitJson });
   }
@@ -268,10 +278,6 @@ export async function runCliDispatch(context) {
       cwd: process.cwd(),
       withSdlc: args.includes("--with-sdlc")
     });
-  }
-
-  if (commandArgs?.newProject) {
-    return runNewProjectCommand(effectiveInputPath, { templateName, catalogSource, cwd: process.cwd() });
   }
 
   if (commandArgs?.templateCommand) {

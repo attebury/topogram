@@ -42,7 +42,7 @@ export function writtenFileHashesForReceipt(outputRoot, writtenFiles) {
  */
 export function buildImportAdoptionReceipt({ artifacts, selector, options, importStatus, summary, writtenFiles, outputRoot }) {
   return {
-    type: "topogram_import_adoption_receipt",
+    type: "topogram_adoption_receipt",
     version: "0.1",
     timestamp: new Date().toISOString(),
     cli: {
@@ -87,18 +87,18 @@ export function buildImportAdoptionReceipt({ artifacts, selector, options, impor
  */
 export function buildBrownfieldImportAdoptPayload(selector, inputPath, options = {}) {
   if (!selector) {
-    throw new Error("Missing required <selector>. Example: topogram import adopt bundle:task --dry-run");
+    throw new Error("Missing required <selector>. Example: topogram adopt bundle:task --dry-run");
   }
   if (options.write && options.dryRun) {
     throw new Error("Use either --dry-run or --write, not both.");
   }
   if (options.write && options.force && !options.reason) {
-    throw new Error("Forced import adoption writes require --reason <text>.");
+    throw new Error("Forced adoption writes require --reason <text>.");
   }
   const artifacts = readImportAdoptionArtifacts(inputPath);
   const importStatus = buildTopogramImportStatus(artifacts.projectRoot);
   if (options.write && !options.force && !importStatus.ok) {
-    throw new Error(`Refusing to write import adoption because brownfield source provenance is ${importStatus.status}. Run 'topogram import check ${importProjectCommandPath(artifacts.projectRoot)}', review the changed source evidence, rerun import, or pass --force --reason <text> after review.`);
+    throw new Error(`Refusing to write adoption because brownfield source provenance is ${importStatus.status}. Run 'topogram extract check ${importProjectCommandPath(artifacts.projectRoot)}', review the changed source evidence, rerun extract, or pass --force --reason <text> after review.`);
   }
   const result = runWorkflow("reconcile", artifacts.projectRoot, {
     adopt: selector,
@@ -129,19 +129,19 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
     receipt,
     receiptPath,
     adoption: summary,
-    import: importStatus,
+    extract: importStatus,
     warnings: options.write && options.force && !importStatus.ok
       ? [`Brownfield source provenance is ${importStatus.status}; adoption write was forced with reason: ${options.reason}.`]
       : [],
     nextCommands: options.write
       ? [
-          `topogram import history ${importProjectCommandPath(artifacts.projectRoot)}`,
-          `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`,
+          `topogram extract history ${importProjectCommandPath(artifacts.projectRoot)}`,
+          `topogram extract status ${importProjectCommandPath(artifacts.projectRoot)}`,
           `topogram check ${importProjectCommandPath(artifacts.projectRoot)}`
         ]
       : [
           importAdoptCommand(artifacts.projectRoot, selector, true),
-          `topogram import status ${importProjectCommandPath(artifacts.projectRoot)}`
+          `topogram extract status ${importProjectCommandPath(artifacts.projectRoot)}`
         ]
   };
 }
@@ -151,7 +151,7 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
  * @returns {void}
  */
 export function printBrownfieldImportAdopt(payload) {
-  console.log(`${payload.dryRun ? "Previewed" : "Applied"} import adoption for ${payload.selector}.`);
+  console.log(`${payload.dryRun ? "Previewed" : "Applied"} adoption for ${payload.selector}.`);
   console.log(`Project: ${payload.projectRoot}`);
   console.log(`Promoted canonical items: ${payload.promotedCanonicalItemCount}`);
   console.log(`Written files: ${payload.writtenFiles.length}`);

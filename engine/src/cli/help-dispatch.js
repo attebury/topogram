@@ -16,7 +16,8 @@ import {
   printGeneratorHelp
 } from "./commands/generator.js";
 import {
-  printImportHelp
+  printAdoptHelp,
+  printExtractHelp
 } from "./commands/import.js";
 import {
   printPackageHelp
@@ -43,7 +44,7 @@ import {
   printEmitHelp,
   printGenerateHelp,
   printInitHelp,
-  printNewHelp,
+  printCopyHelp,
   printUsage,
   printWidgetHelp
 } from "./help.js";
@@ -53,8 +54,8 @@ import {
  * @returns {boolean}
  */
 export function printCommandHelp(command) {
-  if (command === "new" || command === "create") {
-    printNewHelp();
+  if (command === "copy") {
+    printCopyHelp();
     return true;
   }
   if (command === "init") {
@@ -117,8 +118,12 @@ export function printCommandHelp(command) {
     printTrustHelp();
     return true;
   }
-  if (command === "import") {
-    printImportHelp();
+  if (command === "extract") {
+    printExtractHelp();
+    return true;
+  }
+  if (command === "adopt") {
+    printAdoptHelp();
     return true;
   }
   if (command === "check") {
@@ -175,8 +180,12 @@ export function handleUnparsedCommandHelp(args) {
     printTemplateHelp();
     return args[1] ? 1 : 0;
   }
-  if (args[0] === "import") {
-    printImportHelp();
+  if (args[0] === "extract") {
+    printExtractHelp();
+    return args[1] ? 1 : 0;
+  }
+  if (args[0] === "adopt") {
+    printAdoptHelp();
     return args[1] ? 1 : 0;
   }
   if (args[0] === "query") {

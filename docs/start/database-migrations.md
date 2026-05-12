@@ -82,13 +82,13 @@ The review loop is:
 
 ## Imported Maintained DB Seams
 
-Brownfield import can infer review-only migration seam candidates for Prisma,
+Brownfield extract/adopt can infer review-only migration seam candidates for Prisma,
 Drizzle, and SQL projects:
 
 ```bash
-topogram import ./existing-app --out ./imported-topogram --from db
+topogram extract ./existing-app --out ./imported-topogram --from db
 cd ./imported-topogram
-topogram import plan --json
+topogram extract plan --json
 ```
 
 Review:
@@ -101,7 +101,7 @@ Review:
 Each candidate includes the inferred tool, schema path, migrations path,
 snapshot path, confidence, evidence, missing decisions, and a
 `proposed_runtime_migration` block plus manual next steps. Treat that block as
-a proposal only. Import never patches `topogram.project.json` and never writes
+a proposal only. Extraction never patches `topogram.project.json` and never writes
 to maintained Prisma, Drizzle, or SQL migration files.
 
 When the candidate is correct, manually add a database runtime migration block

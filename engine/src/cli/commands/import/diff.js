@@ -21,7 +21,7 @@ export function buildBrownfieldImportDiffPayload(inputPath, options = {}) {
     topogramRoot: analysis.topogramRoot,
     sourcePath: analysis.sourcePath,
     provenancePath: analysis.provenancePath,
-    importStatus: analysis.previousImportStatus,
+    extractStatus: analysis.previousImportStatus,
     sourceDiff: analysis.sourceDiff,
     tracks: analysis.tracks,
     sourceFiles: analysis.sourceFiles,
@@ -31,9 +31,9 @@ export function buildBrownfieldImportDiffPayload(inputPath, options = {}) {
     receiptVerification: analysis.receiptVerification,
     plannedFiles: analysis.plannedFiles,
     nextCommands: [
-      `topogram import refresh ${importProjectCommandPath(analysis.projectRoot)} --dry-run`,
-      `topogram import refresh ${importProjectCommandPath(analysis.projectRoot)}`,
-      `topogram import plan ${importProjectCommandPath(analysis.projectRoot)}`
+      `topogram extract refresh ${importProjectCommandPath(analysis.projectRoot)} --dry-run`,
+      `topogram extract refresh ${importProjectCommandPath(analysis.projectRoot)}`,
+      `topogram extract plan ${importProjectCommandPath(analysis.projectRoot)}`
     ]
   };
 }
@@ -43,9 +43,9 @@ export function buildBrownfieldImportDiffPayload(inputPath, options = {}) {
  * @returns {void}
  */
 export function printBrownfieldImportDiff(payload) {
-  console.log(`Import diff for ${payload.projectRoot}`);
+  console.log(`Extraction diff for ${payload.projectRoot}`);
   console.log(`Source: ${payload.sourcePath}`);
-  console.log(`Source status: ${payload.importStatus}`);
+  console.log(`Source status: ${payload.extractStatus}`);
   console.log(`Source diff: changed=${payload.sourceDiff.counts.changed}, added=${payload.sourceDiff.counts.added}, removed=${payload.sourceDiff.counts.removed}`);
   for (const filePath of [...payload.sourceDiff.changed, ...payload.sourceDiff.added, ...payload.sourceDiff.removed].slice(0, 12)) {
     const status = payload.sourceDiff.changed.includes(filePath)

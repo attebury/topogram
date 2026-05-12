@@ -1,6 +1,9 @@
 // @ts-check
 
-export { printImportHelp } from "./import/help.js";
+export {
+  printAdoptHelp,
+  printExtractHelp
+} from "./import/help.js";
 export {
   buildBrownfieldImportWorkspacePayload,
   printBrownfieldImportWorkspace

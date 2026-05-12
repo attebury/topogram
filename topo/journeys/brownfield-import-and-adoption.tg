@@ -15,7 +15,7 @@ journey journey_brownfield_import_and_adoption {
   step {
     id import_source
     intent "Recover candidates from a source app."
-    commands ["topogram import <source> --from <tracks>"]
+    commands ["topogram extract <source> --from <tracks>"]
     expects ["Topogram writes candidates, evidence, source hashes, and reports under the workspace."]
   }
 
@@ -23,7 +23,7 @@ journey journey_brownfield_import_and_adoption {
     id review_plan
     intent "Review candidate bundles before adoption."
     after [import_source]
-    commands ["topogram import plan --json"]
+    commands ["topogram extract plan --json"]
     expects ["Candidate bundles expose evidence, risks, and adoption options."]
   }
 
@@ -31,7 +31,7 @@ journey journey_brownfield_import_and_adoption {
     id adopt_selected
     intent "Promote only reviewed candidates."
     after [review_plan]
-    commands ["topogram import adopt <selector> --write --json"]
+    commands ["topogram adopt <selector> --write --json"]
     expects ["Selected candidates are promoted to canonical topo records."]
   }
 

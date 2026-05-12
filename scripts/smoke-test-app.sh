@@ -8,7 +8,7 @@ cd "$ROOT_DIR"
 npm --prefix ./engine ci
 
 rm -rf "$SMOKE_APP_DIR"
-npm run new -- "$SMOKE_APP_DIR" --template "$ROOT_DIR/engine/tests/fixtures/templates/hello-web"
+npm run copy -- "$ROOT_DIR/engine/tests/fixtures/templates/hello-web" "$SMOKE_APP_DIR"
 npm --prefix "$SMOKE_APP_DIR" install
 npm --prefix "$SMOKE_APP_DIR" run check
 npm --prefix "$SMOKE_APP_DIR" run generate

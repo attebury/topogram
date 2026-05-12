@@ -17,7 +17,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 - Does it respect generated vs maintained ownership?
 - Does it keep stack-specific realization inside generator adapters/packages?
 - Does it avoid implicit trust in templates, package specs, local `.npmrc`, GitHub tokens, or generated HTML?
-- Does it keep command-owned state behind `topogram sdlc`, `topogram trust`, `topogram import`, `topogram generate`, `topogram emit`, or release commands?
+- Does it keep command-owned state behind `topogram sdlc`, `topogram trust`, `topogram extract`, `topogram adopt`, `topogram generate`, `topogram emit`, or release commands?
 - Do docs and CLI help describe commands that are covered by tests?
 - Does every new test prove behavior a consumer or agent relies on?
 - Does the PR cite a valid SDLC item, update `topo/**`, or state an explicit exemption?

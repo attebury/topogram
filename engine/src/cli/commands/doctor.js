@@ -37,7 +37,7 @@ export function printDoctorHelp() {
   console.log("  npm install --save-dev @topogram/cli");
   console.log("  npx topogram doctor");
   console.log("  npx topogram template list");
-  console.log("  npx topogram new ./my-app --template hello-web");
+  console.log("  npx topogram copy hello-web ./my-app");
   console.log("");
   console.log("Related setup commands:");
   console.log("  topogram setup package-auth");

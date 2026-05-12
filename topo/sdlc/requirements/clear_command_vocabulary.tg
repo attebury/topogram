@@ -1,0 +1,9 @@
+requirement req_clear_command_vocabulary {
+  name "Clear Command Vocabulary"
+  description "Topogram public commands must use lifecycle verbs that match actual behavior: init for empty maintained workspaces, copy for templates and pure Topograms, extract for brownfield candidates, adopt for reviewed candidates, generate for app/runtime outputs, and emit for contracts/reports/plans."
+  affects [cap_create_project cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_generate_app_outputs cap_emit_artifacts cap_brief_agent]
+  introduces_rules []
+  respects_rules []
+  priority medium
+  status approved
+}

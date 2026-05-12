@@ -17,11 +17,26 @@ npx topogram doctor
 
 ## Choose A Workflow
 
-### Generate a new app
+### Initialize a maintained repo
+
+```bash
+npx topogram init . --with-sdlc
+topogram agent brief --json
+topogram check --json
+topogram query list --json
+```
+
+Start here when you already have a repo, want to add a `topo/` workspace, or
+want to model a maintained app before generating anything. `init` does not copy
+a template, install generators, or generate app code. `--with-sdlc` opts the
+repo into enforced SDLC immediately. See
+[Initialize Maintained Repo](./docs/start/init-maintained.md).
+
+### Generate a new app from a template
 
 ```bash
 npx topogram template list
-npx topogram new ./my-app --template hello-web
+npx topogram copy hello-web ./my-app
 cd ./my-app
 npm install
 npm run agent:brief
@@ -37,31 +52,20 @@ npm run verify
 Start here when you want Topogram to create a new generated app from a template.
 See [Greenfield Generate](./docs/start/greenfield-generate.md).
 
-### Initialize an existing repo
+### Extract an existing app
 
 ```bash
-npx topogram init . --with-sdlc
-topogram check --json
-```
-
-Start here when you want an empty maintained Topogram workspace in a repo you
-already own. `init` does not copy a template, install generators, or generate
-app code. `--with-sdlc` opts the repo into enforced SDLC immediately.
-
-### Import an existing app
-
-```bash
-npx topogram import ./existing-app --out ./imported-topogram
+npx topogram extract ./existing-app --out ./imported-topogram
 cd ./imported-topogram
-npx topogram import check
-npx topogram import plan
-npx topogram import adopt --list
+npx topogram extract check
+npx topogram extract plan
+npx topogram adopt --list
 npx topogram check
 ```
 
 Start here when you want reviewable Topogram candidates from a brownfield app.
-Import never mutates the source app. See
-[Brownfield Import](./docs/start/brownfield-import.md).
+Extract never mutates the source app. See
+[Brownfield Extract/Adopt](./docs/start/brownfield-import.md).
 
 ### Start as an agent
 
@@ -79,6 +83,8 @@ and verification gates. See [Agent First Run](./docs/agent-first-run.md).
 - `topo/` is the editable Topogram workspace.
 - `topogram.project.json` declares outputs, topology runtimes, ownership, ports,
   and generator bindings.
+- `topogram init` starts a maintained project without a template.
+- `topogram copy` copies a template or pure Topogram source into a project.
 - `topogram check` validates the workspace and project config.
 - `topogram generate` writes app/runtime outputs such as `app/`.
 - `topogram emit` writes or prints contracts, reports, snapshots, and plans.
@@ -93,8 +99,9 @@ Use the audience map in [docs/README.md](./docs/README.md).
 
 High-value starting points:
 
+- [Initialize Maintained Repo](./docs/start/init-maintained.md)
 - [Greenfield Generate](./docs/start/greenfield-generate.md)
-- [Brownfield Import](./docs/start/brownfield-import.md)
+- [Brownfield Extract/Adopt](./docs/start/brownfield-import.md)
 - [Agent First Run](./docs/agent-first-run.md)
 - [Topogram Model](./docs/concepts/topogram-model.md)
 - [CLI Reference](./docs/reference/cli.md)
@@ -102,7 +109,7 @@ High-value starting points:
 
 ## Development
 
-This repo owns the CLI, engine, parser, validator, import/adoption workflow,
+This repo owns the CLI, engine, parser, validator, extract/adopt workflow,
 contracts, generator dispatch, fixtures, tests, and the engine dogfood `topo/`.
 
 ```bash

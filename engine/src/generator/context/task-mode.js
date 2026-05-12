@@ -325,7 +325,7 @@ function importAdoptMode(graph, options = {}) {
   return {
     type: "context_task_mode",
     version: 1,
-    mode: "import-adopt",
+    mode: "extract-adopt",
     summary: {
       focus: "Proposal review and adoption planning",
       preferred_start: "adoption-plan.agent.json",
@@ -450,7 +450,7 @@ function verificationMode(graph, options = {}) {
 export function generateContextTaskMode(graph, options = {}) {
   const mode = String(options.modeId || "").trim();
   if (!mode) {
-    throw new Error("context-task-mode requires --mode <modeling|maintained-app-edit|import-adopt|diff-review|verification>");
+    throw new Error("context-task-mode requires --mode <modeling|maintained-app-edit|extract-adopt|diff-review|verification>");
   }
 
   if (mode === "modeling") {
@@ -459,7 +459,7 @@ export function generateContextTaskMode(graph, options = {}) {
   if (mode === "maintained-app-edit") {
     return maintainedAppEditMode(graph, options);
   }
-  if (mode === "import-adopt") {
+  if (mode === "extract-adopt") {
     return importAdoptMode(graph, options);
   }
   if (mode === "diff-review") {

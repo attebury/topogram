@@ -46,7 +46,7 @@ stateful mutations:
 - `topogram sdlc plan step ... --write`
 - `topogram sdlc archive`
 - `topogram trust ...`
-- `topogram import ...`
+- `topogram extract ...`
 - `topogram generate`
 - `topogram emit --write`
 - `topogram release ...`

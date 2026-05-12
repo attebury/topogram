@@ -11,7 +11,7 @@ export function outputIdsForWorkflowContext(taskModeArtifact, maintainedBoundary
 
 export function integrationCategoriesForWorkflowContext(taskModeArtifact, importPlan = null) {
   const categories = [];
-  if (taskModeArtifact?.mode === "import-adopt") categories.push("provider_adoption");
+  if (taskModeArtifact?.mode === "extract-adopt") categories.push("provider_adoption");
   if (taskModeArtifact?.mode === "maintained-app-edit") categories.push("maintained_app");
   if ((taskModeArtifact?.verification_targets?.maintained_app_checks || []).length > 0) categories.push("maintained_boundary");
   if ((importPlan?.requires_human_review || []).length > 0) categories.push("human_review");
@@ -43,7 +43,7 @@ export function recommendedQueryFamilyForAction(nextAction, mode = null) {
     case "customize_workflow_preset":
     case "refresh_workflow_preset_customization":
     case "import_declared_workflow_preset":
-      return "import-plan";
+      return "extract-plan";
     case "review_diff_impact":
     case "inspect_projection":
     case "inspect_diff":
@@ -61,7 +61,7 @@ export function recommendedQueryFamilyForAction(nextAction, mode = null) {
       break;
   }
 
-  if (mode === "import-adopt") return "import-plan";
+  if (mode === "extract-adopt") return "extract-plan";
   if (mode === "maintained-app-edit") return "maintained-boundary";
   if (mode === "verification") return "verification-targets";
   return "change-plan";
@@ -268,7 +268,7 @@ export function buildGenericSequence(taskModeArtifact, {
 
 export function buildRecommendedSequence(taskModeArtifact, importPlan = null) {
   const mode = taskModeArtifact?.mode || null;
-  if (mode === "import-adopt") {
+  if (mode === "extract-adopt") {
     return buildImportAdoptSequence(taskModeArtifact, importPlan);
   }
   if (mode === "maintained-app-edit") {

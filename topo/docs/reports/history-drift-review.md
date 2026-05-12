@@ -112,7 +112,7 @@ Historical docs reviewed:
   `commands`, `command_options`, `command_outputs`, `command_effects`, and
   `command_examples` blocks.
 - **missing-from-history:** CLI import is a brownfield import track:
-  `topogram import <source> --from cli` emits reviewable CLI command, capability,
+  `topogram extract <source> --from cli` emits reviewable CLI command, capability,
   and `cli_surface` candidates.
 - **missing-from-history:** Explicit command effects are normalized as
   `read_only`, `writes_workspace`, `writes_app`, `network`, `package_install`,

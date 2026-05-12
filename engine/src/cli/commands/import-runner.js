@@ -11,6 +11,7 @@ import {
   buildBrownfieldImportRefreshPayload,
   buildBrownfieldImportStatusPayload,
   buildBrownfieldImportWorkspacePayload,
+  printAdoptHelp,
   printBrownfieldImportAdopt,
   printBrownfieldImportAdoptList,
   printBrownfieldImportCheck,
@@ -20,7 +21,7 @@ import {
   printBrownfieldImportRefresh,
   printBrownfieldImportStatus,
   printBrownfieldImportWorkspace,
-  printImportHelp
+  printExtractHelp
 } from "./import.js";
 
 /**
@@ -45,7 +46,7 @@ export function runImportCommand(context) {
   if (command === "workspace") {
     if (!outPath) {
       console.error("Missing required --out <target>.");
-      printImportHelp();
+      printExtractHelp();
       return 1;
     }
     const payload = buildBrownfieldImportWorkspacePayload(inputPath || "", outPath, { from: fromValue });
@@ -110,12 +111,12 @@ export function runImportCommand(context) {
   if (command === "adopt") {
     if (!commandArgs.importAdoptSelector || commandArgs.importAdoptSelector.startsWith("-")) {
       console.error("Missing required <selector>.");
-      printImportHelp();
+      printAdoptHelp();
       return 1;
     }
     if (write && dryRun) {
       console.error("Use either --dry-run or --write, not both.");
-      printImportHelp();
+      printAdoptHelp();
       return 1;
     }
     const payload = buildBrownfieldImportAdoptPayload(commandArgs.importAdoptSelector, inputPath || ".", {
@@ -153,5 +154,5 @@ export function runImportCommand(context) {
     return payload.ok ? 0 : 1;
   }
 
-  throw new Error(`Unknown import command '${command}'`);
+  throw new Error(`Unknown extract/adopt command '${command}'`);
 }

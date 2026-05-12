@@ -40,7 +40,7 @@ export function buildTopogramCheckPayloadForPath(inputPath) {
 
 /**
  * @param {string} projectRoot
- * @returns {{ ok: boolean, projectRoot: string, workspaceRoot: string, import: ReturnType<typeof buildTopogramImportStatus>, topogram: ReturnType<typeof buildTopogramCheckPayloadForPath>, errors: any[] }}
+ * @returns {{ ok: boolean, projectRoot: string, workspaceRoot: string, extract: ReturnType<typeof buildTopogramImportStatus>, topogram: ReturnType<typeof buildTopogramCheckPayloadForPath>, errors: any[] }}
  */
 export function buildBrownfieldImportCheckPayload(projectRoot) {
   const resolvedRoot = normalizeProjectRoot(projectRoot);
@@ -50,10 +50,10 @@ export function buildBrownfieldImportCheckPayload(projectRoot) {
     ok: importStatus.ok && topogramCheck.ok,
     projectRoot: resolvedRoot,
     workspaceRoot: normalizeTopogramPath(resolvedRoot),
-    import: importStatus,
+    extract: importStatus,
     topogram: topogramCheck,
     errors: [
-      ...(importStatus.errors || []).map((/** @type {string} */ message) => ({ source: "import", message })),
+      ...(importStatus.errors || []).map((/** @type {string} */ message) => ({ source: "extract", message })),
       ...(topogramCheck.errors || [])
     ]
   };
@@ -64,23 +64,23 @@ export function buildBrownfieldImportCheckPayload(projectRoot) {
  * @returns {void}
  */
 export function printBrownfieldImportCheck(payload) {
-  console.log(`Topogram import check: ${payload.import.status}`);
+  console.log(`Topogram extract check: ${payload.extract.status}`);
   console.log(`Project: ${payload.projectRoot}`);
-  if (payload.import.source?.source?.path) {
-    console.log(`Imported source: ${payload.import.source.source.path}`);
+  if (payload.extract.source?.source?.path) {
+    console.log(`Extracted source: ${payload.extract.source.source.path}`);
   }
-  console.log(`Provenance: ${payload.import.path}`);
-  if (payload.import.source?.files) {
-    console.log(`Trusted source files: ${payload.import.source.files.length}`);
+  console.log(`Provenance: ${payload.extract.path}`);
+  if (payload.extract.source?.files) {
+    console.log(`Trusted source files: ${payload.extract.source.files.length}`);
   }
-  if (payload.import.status === "changed") {
-    console.log(`Changed source files: ${payload.import.content.changed.length}`);
-    console.log(`Added source files: ${payload.import.content.added.length}`);
-    console.log(`Removed source files: ${payload.import.content.removed.length}`);
+  if (payload.extract.status === "changed") {
+    console.log(`Changed source files: ${payload.extract.content.changed.length}`);
+    console.log(`Added source files: ${payload.extract.content.added.length}`);
+    console.log(`Removed source files: ${payload.extract.content.removed.length}`);
   }
   console.log(`Topogram check: ${payload.topogram.ok ? "passed" : "failed"}`);
-  console.log("Imported Topogram artifacts are project-owned; import check compares only the brownfield source hashes trusted at import time plus normal Topogram validity.");
-  for (const diagnostic of payload.import.diagnostics || []) {
+  console.log("Extracted Topogram artifacts are project-owned; extract check compares only the brownfield source hashes trusted at extraction time plus normal Topogram validity.");
+  for (const diagnostic of payload.extract.diagnostics || []) {
     const label = diagnostic.severity === "warning" ? "Warning" : "Error";
     console.log(`${label}: ${diagnostic.message}`);
     if (diagnostic.suggestedFix) {

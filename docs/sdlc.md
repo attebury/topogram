@@ -13,8 +13,8 @@ state should move through commands so drift is detectable.
 | `topo/sdlc/_archive/*.jsonl` | `topogram sdlc archive`, `topogram sdlc unarchive`, and `topogram sdlc compact` |
 | `.topogram-template-trust.json` | `topogram trust status`, `topogram trust diff`, and `topogram trust template` |
 | `.topogram-template-files.json` | `topogram trust template` and reviewed `topogram template update ...` commands |
-| `.topogram-source.json` | `topogram catalog copy` and `topogram source status` |
-| Import provenance and adoption receipts | `topogram import status` and `topogram import history --verify` |
+| `.topogram-source.json` | `topogram copy` and `topogram source status` |
+| Import provenance and adoption receipts | `topogram extract status` and `topogram extract history --verify` |
 | `app/.topogram-generated.json` | `topogram generate` |
 | Written emitted artifacts | `topogram emit --write` |
 | Release status reports and rollout evidence | `topogram release status` and `topogram release roll-consumers` |

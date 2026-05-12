@@ -1,6 +1,6 @@
 # Topogram Engineering Laws
 
-This file is the repo-local agent briefing for working on Topogram itself. Product and roadmap decisions live in `topogram-project`; this repo owns the CLI, parser, validator, import/adoption workflow, contracts, generator dispatch, fixtures, and tests.
+This file is the repo-local agent briefing for working on Topogram itself. Product and roadmap decisions live in `topogram-project`; this repo owns the CLI, parser, validator, extract/adopt workflow, contracts, generator dispatch, fixtures, and tests.
 
 ## Read First
 
@@ -38,7 +38,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Public docs: `README.md`, `docs/**`, `CONTRIBUTING.md`, `AGENTS.md`
 - Topogram workspace and policy: `topo/**`, `topogram.project.json`, `topogram.sdlc-policy.json`
 
-Within `topo/**`, status and audit state is still command-owned. Use `topogram sdlc transition`, `topogram sdlc plan step ... --write`, `topogram sdlc archive`, trust commands, import commands, and release commands instead of hand-editing `.topogram-*` sidecars or archive JSONL.
+Within `topo/**`, status and audit state is still command-owned. Use `topogram sdlc transition`, `topogram sdlc plan step ... --write`, `topogram sdlc archive`, trust commands, extract/adopt commands, and release commands instead of hand-editing `.topogram-*` sidecars or archive JSONL.
 
 Avoid touching external consumer repos from this workspace unless the user explicitly asks. When a change requires project-management docs, update `topogram-project` separately and mention it in the final status.
 

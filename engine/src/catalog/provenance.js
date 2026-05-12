@@ -56,7 +56,7 @@ export function buildTopogramSourceStatus(projectRoot) {
         severity: "warning",
         message: `${TOPOGRAM_SOURCE_FILE} was not found. This project may not have been copied from a catalog topogram entry.`,
         path: sourcePath,
-        suggestedFix: "Run `topogram catalog copy <id> <target>` to create a project with source provenance."
+        suggestedFix: "Run `topogram copy <id> <target>` to create a project with source provenance."
       }],
       errors: []
     };

@@ -17,12 +17,12 @@ export function reportMarkdown(track, candidates) {
       `  - manual next: ${(seam.manual_next_steps || []).slice(0, 2).join(" ")}`
     ]);
     return ensureTrailingNewline(
-      `# DB Import Report\n\n- Entities: ${candidates.entities.length}\n- Enums: ${candidates.enums.length}\n- Relations: ${candidates.relations.length}\n- Indexes: ${candidates.indexes.length}\n- Maintained DB migration seams: ${(candidates.maintained_seams || []).length}\n\n## Maintained DB Migration Seam Candidates\n\n${seamLines.length ? seamLines.join("\n") : "- none"}\n`
+      `# DB Extract Report\n\n- Entities: ${candidates.entities.length}\n- Enums: ${candidates.enums.length}\n- Relations: ${candidates.relations.length}\n- Indexes: ${candidates.indexes.length}\n- Maintained DB migration seams: ${(candidates.maintained_seams || []).length}\n\n## Maintained DB Migration Seam Candidates\n\n${seamLines.length ? seamLines.join("\n") : "- none"}\n`
     );
   }
   if (track === "api") {
     return ensureTrailingNewline(
-      `# API Import Report\n\n- Capabilities: ${candidates.capabilities.length}\n- Routes: ${candidates.routes.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n`
+      `# API Extract Report\n\n- Capabilities: ${candidates.capabilities.length}\n- Routes: ${candidates.routes.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n`
     );
   }
   if (track === "ui") {
@@ -36,7 +36,7 @@ export function reportMarkdown(track, candidates) {
       `- \`${flow.id_hint}\` type \`${flow.flow_type}\` confidence ${flow.confidence || "unknown"} routes ${(flow.route_paths || []).map((/** @type {string} */ route) => `\`${route}\``).join(", ") || "_none_"} missing decisions ${(flow.missing_decisions || []).length}`
     );
     return ensureTrailingNewline(
-      `# UI Import Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Flow candidates: ${flows.length}\n- Widgets: ${widgets.length}\n- Event payload shapes: ${shapes.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Flow Candidates\n\n${flowLines.length ? flowLines.join("\n") : "- none"}\n\n## Widget Candidates\n\n${widgetLines.length ? widgetLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review flow candidates in \`topo/candidates/app/ui/candidates.json\` before adding shared UI contract behavior.\n- Review candidates under \`topo/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram import plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`
+      `# UI Extract Report\n\n- Screens: ${candidates.screens.length}\n- Routes: ${candidates.routes.length}\n- Actions: ${candidates.actions.length}\n- Flow candidates: ${flows.length}\n- Widgets: ${widgets.length}\n- Event payload shapes: ${shapes.length}\n- Stacks: ${candidates.stacks.length ? candidates.stacks.join(", ") : "none"}\n\n## Flow Candidates\n\n${flowLines.length ? flowLines.join("\n") : "- none"}\n\n## Widget Candidates\n\n${widgetLines.length ? widgetLines.join("\n") : "- none"}\n\n## Next Validation\n\n- Review flow candidates in \`topo/candidates/app/ui/candidates.json\` before adding shared UI contract behavior.\n- Review candidates under \`topo/candidates/app/ui/drafts/widgets/**\`.\n- Run \`topogram extract plan <path>\` before adoption.\n- After adoption, run \`topogram check <path>\`, \`topogram widget check <path>\`, and \`topogram widget behavior <path>\`.\n`
     );
   }
   if (track === "cli") {
@@ -44,7 +44,7 @@ export function reportMarkdown(track, candidates) {
       `- \`${command.command_id || command.id_hint}\` usage \`${command.usage || "unknown"}\` effects ${(command.effects || []).map((/** @type {any} */ effect) => `\`${effect}\``).join(", ") || "_none_"}`
     );
     return ensureTrailingNewline(
-      `# CLI Import Report\n\n- Commands: ${candidates.commands.length}\n- Capabilities: ${candidates.capabilities.length}\n- CLI surfaces: ${candidates.surfaces.length}\n\n## Command Candidates\n\n${commandLines.length ? commandLines.join("\n") : "- none"}\n`
+      `# CLI Extract Report\n\n- Commands: ${candidates.commands.length}\n- Capabilities: ${candidates.capabilities.length}\n- CLI surfaces: ${candidates.surfaces.length}\n\n## Command Candidates\n\n${commandLines.length ? commandLines.join("\n") : "- none"}\n`
     );
   }
   if (track === "verification") {

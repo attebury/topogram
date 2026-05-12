@@ -1,0 +1,14 @@
+task task_adopt_copy_extract_adopt_commands {
+  name "Adopt Copy Extract Adopt Commands"
+  description "Cut over public CLI, docs, scripts, tests, generated guidance, and dogfood topo records from new/import/extract-adopt wording to copy/extract/top-level-adopt vocabulary."
+  satisfies [req_clear_command_vocabulary]
+  acceptance_refs [ac_command_vocabulary_uses_copy_extract_adopt]
+  verification_refs [verification_engine_gate verification_cli_package_smoke]
+  affects [cap_create_project cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_brief_agent]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

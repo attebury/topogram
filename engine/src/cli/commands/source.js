@@ -239,7 +239,7 @@ export function printTopogramSourceStatus(payload) {
     }
   }
   console.log("");
-  console.log(`${TOPOGRAM_SOURCE_FILE} records catalog-copy provenance only. Local edits are allowed.`);
+  console.log(`${TOPOGRAM_SOURCE_FILE} records copy provenance only. Local edits are allowed.`);
   console.log("Template attachment controls update tracking. Detaching makes the project fully owned by this workspace.");
   console.log("Template baseline drift does not block `topogram check` or `topogram generate`.");
   console.log("Implementation trust is separate and can block check/generate when review is required.");
@@ -250,7 +250,7 @@ export function printTopogramSourceStatus(payload) {
   } else if (payload.project?.templateBaseline?.state === "diverged") {
     console.log("Next: local template-derived changes are owned by this project. Run `topogram template update --check` only when reviewing upstream template changes.");
   } else if (!payload.exists) {
-    console.log("Next: use `topogram catalog copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
+    console.log("Next: use `topogram copy <id> <target>` for pure topogram provenance, or continue with template/project provenance above.");
   } else {
     console.log("Next: run `topogram check` or `topogram generate`.");
   }

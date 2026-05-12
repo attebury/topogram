@@ -27,7 +27,7 @@
     "access": "public"
   },
   "scripts": {
-    "new": "node ./src/cli.js new",
+    "copy": "node ./src/cli.js copy",
     "check": "npm test",
     "fixture:check": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic",
     "fixture:check:json": "node ./src/cli.js check ./tests/fixtures/workspaces/app-basic --json",
