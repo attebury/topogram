@@ -234,6 +234,7 @@ function verifyAgentDocsMatchCoreWorkflow() {
     "topogram query list --json",
     "topogram query show <name> --json",
     "topogram check --json",
+    "topogram query slice ./topo --journey journey_greenfield_start_from_template --json",
     "topogram query import-plan ./topo --json",
     "topogram sdlc explain <task-id> --json",
     "topogram sdlc prep commit . --base origin/main --head HEAD --json",
@@ -247,6 +248,25 @@ function verifyAgentDocsMatchCoreWorkflow() {
   assert.equal(brief.type, "agent_brief");
   assert.ok(Array.isArray(brief.read_order));
   assert.ok(Array.isArray(brief.first_commands));
+
+  const journeySlice = runCliJson(["query", "slice", ".", "--journey", "journey_greenfield_start_from_template", "--json"]);
+  assert.equal(journeySlice.focus.kind, "journey");
+  assert.equal(journeySlice.focus.id, "journey_greenfield_start_from_template");
+  assert.ok(Array.isArray(journeySlice.steps));
+}
+
+function verifyDslDocsMatchJourneySyntax() {
+  const dslDocs = read("docs/reference/dsl.md");
+  const cliReference = read("docs/reference/cli.md");
+  for (const phrase of [
+    "`journey` statements model ordered user, maintainer, or agent workflows as graph",
+    "step {",
+    "alternate {",
+    "Markdown journey documents are transitional/supporting drafts"
+  ]) {
+    assertIncludes(dslDocs, phrase, "DSL reference");
+  }
+  assertIncludes(cliReference, "topogram query slice ./topo --journey journey_greenfield_start_from_template --json", "CLI reference");
 }
 
 function verifyTemplateCatalogDocsMatchStarter() {
@@ -320,6 +340,7 @@ function main() {
   verifyFirstRunCommandsMatchStarter();
   verifyBrownfieldDocsMatchImportWorkflow();
   verifyAgentDocsMatchCoreWorkflow();
+  verifyDslDocsMatchJourneySyntax();
   verifyTemplateCatalogDocsMatchStarter();
   verifyCliReferenceMatchesHelp();
   verifyStaleCommandNamesStayOut();

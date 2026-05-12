@@ -1,0 +1,6 @@
+acceptance_criterion ac_graph_native_journey_docs {
+  name "Graph Native Journey Docs"
+  description "Given graph-native journey support exists, when public docs and command examples are reviewed, then the DSL reference explains journey records and the documented journey query example executes against the engine Topogram."
+  requirement req_graph_native_journeys
+  status approved
+}

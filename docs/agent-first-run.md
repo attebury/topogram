@@ -47,6 +47,12 @@ topogram sdlc explain <task-id> --json
 topogram query slice ./topo --task <task-id> --json
 ```
 
+For journey-oriented workflow context:
+
+```bash
+topogram query slice ./topo --journey journey_greenfield_start_from_template --json
+```
+
 For implementation planning:
 
 ```bash

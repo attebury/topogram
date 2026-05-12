@@ -1214,5 +1214,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_graph_native_journey_docs": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T18:42:47.671Z",
+      "by": "actor_coding_agent",
+      "note": "Approve graph-native journey documentation acceptance"
+    }
+  ],
+  "task_document_graph_native_journeys": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T18:43:01.610Z",
+      "by": "actor_coding_agent",
+      "note": "Start graph-native journey docs polish"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T18:43:10.615Z",
+      "by": "actor_coding_agent",
+      "note": "Update DSL docs and journey query examples"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T18:45:51.421Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

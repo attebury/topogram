@@ -30,6 +30,11 @@ tags:
   - templates
 ---
 
+This report is supporting documentation. The canonical journeys are the
+graph-native `journey_*` statements under `topo/journeys/`; update those records
+when changing workflow intent, ordered steps, alternates, or related graph
+links.
+
 This map is the current audience model for organizing Topogram package surfaces.
 
 | Journey | Primary audience | Package surfaces | Core boundary |

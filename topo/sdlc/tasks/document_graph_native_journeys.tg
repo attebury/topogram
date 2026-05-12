@@ -1,0 +1,14 @@
+task task_document_graph_native_journeys {
+  name "Document Graph Native Journeys"
+  description "Document journey .tg syntax, add an executable journey query example, and clarify that Markdown journey text is supporting import/reconcile output rather than canonical source when .tg journeys exist."
+  satisfies [req_graph_native_journeys]
+  acceptance_refs [ac_graph_native_journey_docs]
+  verification_refs [verification_docs_current_workflow_review]
+  affects [cap_query_context cap_validate_workspace]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

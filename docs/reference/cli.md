@@ -40,6 +40,7 @@ topogram agent brief --json
 topogram query list --json
 topogram query show <name> --json
 topogram query slice ./topo --task <task-id> --json
+topogram query slice ./topo --journey journey_greenfield_start_from_template --json
 ```
 
 ## Widgets

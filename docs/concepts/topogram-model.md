@@ -13,6 +13,7 @@ Common statement kinds:
 - `entity`, `shape`, `enum`
 - `rule`, `capability`, `orchestration`, `verification`
 - `widget`
+- `journey`
 - `projection`
 - `decision`
 - SDLC kinds: `pitch`, `requirement`, `acceptance_criterion`, `task`, `plan`,
@@ -41,6 +42,17 @@ Projection `type` describes the contract or surface:
 - `db_contract` owns database tables, columns, relations, indexes, and lifecycle
   intent.
 - `cli_surface` owns command-line commands, options, effects, and examples.
+
+## Journeys
+
+`journey` records describe ordered workflows for users, maintainers, and agents.
+They use repeated `step { ... }` and `alternate { ... }` blocks so the graph can
+preserve sequence, branch points, commands, expected outcomes, and related
+capabilities or surfaces.
+
+Canonical journeys are graph-native `.tg` statements. Markdown journey text is
+supporting material or an import/reconcile draft until it is reviewed and
+promoted into a `journey` record.
 
 ## Runtimes
 
