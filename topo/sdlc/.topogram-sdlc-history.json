@@ -1038,5 +1038,30 @@
       "by": "actor_coding_agent",
       "note": "Focused import fixtures and full-repo import inspection no longer produce DB/UI candidates from noise."
     }
+  ],
+  "ac_cli_0_3_77_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T01:13:45.141Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted release proof for CLI patch 0.3.77."
+    }
+  ],
+  "task_release_cli_0_3_77": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T01:14:08.829Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming CLI patch release 0.3.77."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T01:14:17.815Z",
+      "by": "actor_coding_agent",
+      "note": "Preparing and publishing @topogram/cli 0.3.77."
+    }
   ]
 }
