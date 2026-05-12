@@ -1116,5 +1116,30 @@
       "by": "actor_coding_agent",
       "note": "Verified by import fixture regression coverage and full engine gate."
     }
+  ],
+  "task_release_cli_0_3_78": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T03:09:53.846Z",
+      "by": "actor_coding_agent",
+      "note": "Start 0.3.78 release prep"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T03:10:04.427Z",
+      "by": "actor_coding_agent",
+      "note": "Prepare release artifacts and run gates"
+    }
+  ],
+  "ac_cli_0_3_78_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-12T03:10:52.472Z",
+      "by": "actor_coding_agent",
+      "note": "Approve release acceptance for 0.3.78"
+    }
   ]
 }

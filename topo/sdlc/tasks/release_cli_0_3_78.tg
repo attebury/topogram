@@ -1,0 +1,14 @@
+task task_release_cli_0_3_78 {
+  name "Release Cli 0 3 78"
+  description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.78."
+  satisfies [req_stateful_actions_use_cli]
+  acceptance_refs [ac_cli_0_3_78_release_published]
+  verification_refs [verification_release_status_strict]
+  affects [cap_verify_release_status, cap_roll_consumer_packages]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status in-progress
+}
