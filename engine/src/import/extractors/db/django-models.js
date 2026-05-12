@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -169,8 +169,8 @@ export const djangoModelsExtractor = {
   id: "db.django-models",
   track: "db",
   detect(context) {
-    const modelFiles = findImportFiles(context.paths, (filePath) => /\/models\.py$/i.test(filePath));
-    const manageFiles = findImportFiles(context.paths, (filePath) => /\/manage\.py$/i.test(filePath));
+    const modelFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/models\.py$/i.test(filePath));
+    const manageFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/manage\.py$/i.test(filePath));
     const score = modelFiles.length > 0 && manageFiles.length > 0 ? 91 : 0;
     return {
       score,
@@ -178,7 +178,7 @@ export const djangoModelsExtractor = {
     };
   },
   extract(context) {
-    const modelFiles = findImportFiles(context.paths, (filePath) => /\/models\.py$/i.test(filePath));
+    const modelFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/models\.py$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 

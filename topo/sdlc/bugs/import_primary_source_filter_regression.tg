@@ -1,0 +1,13 @@
+bug bug_import_primary_source_filter_regression {
+  name "Import Primary Source Filter Regression"
+  description "Import source classification treats runtime paths containing template as fixtures and some extractors still scan non-primary evidence directly, so brownfield import can miss real runtime behavior or create candidates from generated/template/cache files."
+  reproduction "Classify src/templates/email.ts, src/templateRenderer.ts, and src/routes/templates.ts; they should be runtime_source. Then run DB import with drizzle.config.* pointing at generated schema code and confirm it must not produce high-confidence DB candidates from non-primary evidence."
+  affects [cap_import_brownfield_app]
+  violates []
+  fixed_in [task_harden_import_primary_source_filtering]
+  fixed_in_verification [verification_import_fixtures verification_engine_gate]
+  domain dom_import_adoption
+  priority medium
+  severity medium
+  status verified
+}

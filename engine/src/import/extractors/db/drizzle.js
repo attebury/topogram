@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   isPrimaryImportSource,
   makeCandidateRecord,
@@ -168,7 +168,7 @@ function parseDrizzleTables(schemaText) {
 }
 
 function drizzleConfigFiles(context) {
-  return findImportFiles(context.paths, (filePath) =>
+  return findPrimaryImportFiles(context.paths, (filePath) =>
     /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath)) &&
     isPrimaryImportSource(context.paths, filePath)
   );
@@ -180,7 +180,10 @@ function configuredSchemaFiles(context, configFiles) {
     const configText = context.helpers.readTextIfExists(configFile) || "";
     for (const match of configText.matchAll(/\bschema\s*:\s*["'`]([^"'`*]+)["'`]/g)) {
       const absoluteSchemaPath = path.resolve(path.dirname(configFile), match[1]);
-      if (context.helpers.readTextIfExists(absoluteSchemaPath) !== null) {
+      if (
+        context.helpers.readTextIfExists(absoluteSchemaPath) !== null &&
+        isPrimaryImportSource(context.paths, absoluteSchemaPath)
+      ) {
         files.push(absoluteSchemaPath);
       }
     }
@@ -195,7 +198,7 @@ function isDrizzleSchemaSource(context, filePath) {
 
 function findDrizzleSchemaFiles(context) {
   const configFiles = drizzleConfigFiles(context);
-  const conventionalSchemaFiles = findImportFiles(context.paths, (filePath) =>
+  const conventionalSchemaFiles = findPrimaryImportFiles(context.paths, (filePath) =>
     /(?:^|\/)(?:src\/db\/schema|src\/schema|db\/schema|schema)\.(ts|js|mjs|cjs)$/i.test(relativeTo(context.paths.workspaceRoot, filePath).replaceAll(path.sep, "/")) &&
     isPrimaryImportSource(context.paths, filePath)
   );
@@ -209,11 +212,10 @@ export const drizzleExtractor = {
   id: "db.drizzle",
   track: "db",
   detect(context) {
-    const hasConfig = drizzleConfigFiles(context).length > 0;
     const hasSchema = findDrizzleSchemaFiles(context).length > 0;
     return {
-      score: hasConfig || hasSchema ? 95 : 0,
-      reasons: hasConfig || hasSchema ? ["Found Drizzle config/schema source"] : []
+      score: hasSchema ? 95 : 0,
+      reasons: hasSchema ? ["Found Drizzle schema source"] : []
     };
   },
   extract(context) {

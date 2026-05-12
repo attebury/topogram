@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -109,14 +109,14 @@ export const liquibaseExtractor = {
   id: "db.liquibase",
   track: "db",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /db\/changelog\/.+\.(xml|ya?ml)$/i.test(filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /db\/changelog\/.+\.(xml|ya?ml)$/i.test(filePath));
     return {
       score: files.length > 0 ? 88 : 0,
       reasons: files.length > 0 ? ["Found Liquibase changelog files"] : []
     };
   },
   extract(context) {
-    const changelogFiles = findImportFiles(context.paths, (filePath) => /db\/changelog\/.+\.xml$/i.test(filePath));
+    const changelogFiles = findPrimaryImportFiles(context.paths, (filePath) => /db\/changelog\/.+\.xml$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 

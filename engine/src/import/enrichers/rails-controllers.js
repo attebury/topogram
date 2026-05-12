@@ -1,9 +1,9 @@
 import path from "node:path";
 
-import { findImportFiles, readTextIfExists } from "../core/shared.js";
+import { findPrimaryImportFiles, readTextIfExists } from "../core/shared.js";
 
 function buildControllerIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /app\/controllers\/.+_controller\.rb$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /app\/controllers\/.+_controller\.rb$/i.test(filePath));
   const index = new Map();
   for (const filePath of files) {
     const text = readTextIfExists(filePath) || "";
@@ -186,7 +186,7 @@ export const railsControllerEnricher = {
   applies(context, candidates) {
     if ((candidates.capabilities || []).length === 0) return false;
     return (candidates.stacks || []).includes("rails") ||
-      findImportFiles(context.paths, (filePath) => /app\/controllers\/.+_controller\.rb$/i.test(filePath)).length > 0;
+      findPrimaryImportFiles(context.paths, (filePath) => /app\/controllers\/.+_controller\.rb$/i.test(filePath)).length > 0;
   },
   enrich(context, candidates) {
     const controllers = buildControllerIndex(context.paths);

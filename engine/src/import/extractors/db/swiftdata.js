@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -106,7 +106,7 @@ export const swiftDataExtractor = {
   id: "db.swiftdata",
   track: "db",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
       .filter((filePath) => /@Model/.test(context.helpers.readTextIfExists(filePath) || ""));
     return {
       score: files.length > 0 ? 86 : 0,
@@ -114,7 +114,7 @@ export const swiftDataExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
       .filter((filePath) => /@Model/.test(context.helpers.readTextIfExists(filePath) || ""));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };

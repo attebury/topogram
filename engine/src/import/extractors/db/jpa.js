@@ -1,4 +1,4 @@
-import { canonicalCandidateTerm, dedupeCandidateRecords, findImportFiles, makeCandidateRecord, relativeTo, slugify, titleCase } from "../../core/shared.js";
+import { canonicalCandidateTerm, dedupeCandidateRecords, findPrimaryImportFiles, makeCandidateRecord, relativeTo, slugify, titleCase } from "../../core/shared.js";
 
 function extractAnnotatedFields(text) {
   const fields = [];
@@ -44,7 +44,7 @@ export const jpaExtractor = {
   id: "db.jpa",
   track: "db",
   detect(context) {
-    const entityFiles = findImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
+    const entityFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
     const count = entityFiles.filter((filePath) => /@Entity\b/.test(context.helpers.readTextIfExists(filePath) || "")).length;
     return {
       score: count > 0 ? 87 : 0,
@@ -52,7 +52,7 @@ export const jpaExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 

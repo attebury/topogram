@@ -1,4 +1,4 @@
-import { findImportFiles, isPrimaryImportSource, makeCandidateRecord, normalizeOpenApiPath, relativeTo, selectPreferredImportFiles, slugify, titleCase } from "../../core/shared.js";
+import { findPrimaryImportFiles, isPrimaryImportSource, makeCandidateRecord, normalizeOpenApiPath, relativeTo, selectPreferredImportFiles, slugify, titleCase } from "../../core/shared.js";
 
 function openApiRefName(ref) {
   return typeof ref === "string" ? ref.split("/").pop() || null : null;
@@ -196,7 +196,7 @@ export const openApiExtractor = {
   detect(context) {
     const files = selectPreferredImportFiles(
       context.paths,
-      findImportFiles(context.paths, (filePath) => /(openapi|swagger)\.(json|ya?ml)$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath)),
+      findPrimaryImportFiles(context.paths, (filePath) => /(openapi|swagger)\.(json|ya?ml)$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath)),
       "openapi"
     );
     return {
@@ -207,7 +207,7 @@ export const openApiExtractor = {
   extract(context) {
     const openApiFiles = selectPreferredImportFiles(
       context.paths,
-      findImportFiles(context.paths, (filePath) => /(openapi|swagger)\.(json|ya?ml)$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath)),
+      findPrimaryImportFiles(context.paths, (filePath) => /(openapi|swagger)\.(json|ya?ml)$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath)),
       "openapi"
     );
     const findings = [];

@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { runImportAppWorkflow } from "../../src/import/index.js";
+import { classifyImportSourcePath, findPrimaryImportFiles } from "../../src/import/core/shared.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "import");
@@ -28,6 +29,32 @@ test("engine import fixtures are limited to actively tested smoke inputs", () =>
     .sort();
 
   assert.deepEqual(actual, retainedImportFixtures);
+});
+
+test("import source classification preserves runtime template paths", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-source-classification."));
+  const paths = { repoRoot: root, workspaceRoot: root, topogramRoot: null };
+  const runtimePaths = [
+    "src/templates/email.ts",
+    "src/templateRenderer.ts",
+    "src/routes/templates.ts"
+  ];
+  for (const relativePath of runtimePaths) {
+    const filePath = path.join(root, relativePath);
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, "export const value = true;\n", "utf8");
+    assert.equal(classifyImportSourcePath(paths, filePath), "runtime_source", relativePath);
+  }
+
+  const fixturePath = path.join(root, "swiftui-templates", "runtime", "GhostView.swift");
+  fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
+  fs.writeFileSync(fixturePath, "struct GhostView {}\n", "utf8");
+  assert.equal(classifyImportSourcePath(paths, fixturePath), "fixtures");
+
+  const primaryFiles = findPrimaryImportFiles(paths, () => true)
+    .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
+    .sort();
+  assert.deepEqual(primaryFiles, runtimePaths.sort());
 });
 
 test("Prisma plus OpenAPI import fixture extracts DB and API candidates", () => {

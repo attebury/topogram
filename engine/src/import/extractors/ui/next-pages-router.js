@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferNonResourceUiFlow,
   makeCandidateRecord,
   proposedUiContractAdditionsForFlow,
@@ -61,7 +61,7 @@ export const nextPagesRouterUiExtractor = {
   id: "ui.next-pages-router",
   track: "ui",
   detect(context) {
-    const pageFiles = findImportFiles(context.paths, (filePath) => /src\/pages\/.+\.(tsx|ts|jsx|js|mdx)$/i.test(filePath))
+    const pageFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/pages\/.+\.(tsx|ts|jsx|js|mdx)$/i.test(filePath))
       .filter((filePath) => !/\/api\//.test(filePath) && !/\/_(app|document|error)\./.test(filePath) && !/\/404\./.test(filePath));
     return {
       score: pageFiles.length > 0 ? 85 : 0,
@@ -70,7 +70,7 @@ export const nextPagesRouterUiExtractor = {
   },
   extract(context) {
     const pagesRoot = path.join(context.paths.workspaceRoot, "src", "pages");
-    const pageFiles = findImportFiles(context.paths, (filePath) => /src\/pages\/.+\.(tsx|ts|jsx|js|mdx)$/i.test(filePath))
+    const pageFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/pages\/.+\.(tsx|ts|jsx|js|mdx)$/i.test(filePath))
       .filter((filePath) => !/\/api\//.test(filePath) && !/\/_(app|document|error)\./.test(filePath) && !/\/404\./.test(filePath));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], flows: [], stacks: [] };

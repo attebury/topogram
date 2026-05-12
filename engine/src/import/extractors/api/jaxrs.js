@@ -1,6 +1,6 @@
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -11,7 +11,7 @@ import {
 } from "../../core/shared.js";
 
 function buildJavaFileIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
   return files.map((filePath) => ({
     filePath,
     relativePath: relativeTo(paths.repoRoot, filePath),
@@ -253,7 +253,7 @@ export const jaxRsExtractor = {
   id: "api.jaxrs",
   track: "api",
   detect(context) {
-    const javaFiles = findImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
+    const javaFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
     const jaxrsCount = javaFiles.filter((filePath) => /@Path\(|@(GET|POST|PUT|PATCH|DELETE)\b/.test(readTextIfExists(filePath) || "")).length;
     return {
       score: jaxrsCount > 0 ? 92 : 0,

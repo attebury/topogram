@@ -1,9 +1,9 @@
 import path from "node:path";
 
-import { findImportFiles, relativeTo } from "../../core/shared.js";
+import { findPrimaryImportFiles, relativeTo } from "../../core/shared.js";
 
 function readPackageJson(context) {
-  const packageFile = findImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
+  const packageFile = findPrimaryImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
   if (!packageFile) return null;
   try {
     return {
@@ -24,7 +24,7 @@ function hasFrontendSignals(context) {
   if (deps.react || deps.next || deps["@remix-run/react"] || deps["@sveltejs/kit"] || deps.svelte || deps.vue || deps.nuxt) {
     return true;
   }
-  const uiFiles = findImportFiles(
+  const uiFiles = findPrimaryImportFiles(
     context.paths,
     (filePath) =>
       /(app\/.+\/page\.(tsx|ts|jsx|js|mdx)|src\/App\.tsx|src\/routes\/.+\.(svelte|tsx|jsx)|pages\/.+\.(tsx|ts|jsx|js))$/i.test(filePath)

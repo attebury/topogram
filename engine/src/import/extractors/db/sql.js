@@ -1,4 +1,4 @@
-import { canonicalCandidateTerm, findImportFiles, isPrimaryImportSource, makeCandidateRecord, relativeTo, selectPreferredImportFiles, slugify, titleCase, idHintify } from "../../core/shared.js";
+import { canonicalCandidateTerm, findPrimaryImportFiles, isPrimaryImportSource, makeCandidateRecord, relativeTo, selectPreferredImportFiles, slugify, titleCase, idHintify } from "../../core/shared.js";
 import { inferSqlMaintainedDbSeams } from "./maintained-seams.js";
 
 function parseTableConstraint(line, tableName) {
@@ -105,14 +105,14 @@ export const sqlExtractor = {
   id: "db.sql",
   track: "db",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => filePath.endsWith(".sql") && isPrimaryImportSource(context.paths, filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => filePath.endsWith(".sql") && isPrimaryImportSource(context.paths, filePath));
     return {
       score: files.length > 0 ? 80 : 0,
       reasons: files.length > 0 ? ["Found SQL schema or migration files"] : []
     };
   },
   extract(context) {
-    const allSqlFiles = findImportFiles(context.paths, (filePath) => filePath.endsWith(".sql") && isPrimaryImportSource(context.paths, filePath));
+    const allSqlFiles = findPrimaryImportFiles(context.paths, (filePath) => filePath.endsWith(".sql") && isPrimaryImportSource(context.paths, filePath));
     const schemaSqlFiles = allSqlFiles.filter((filePath) => !/migration/i.test(filePath) && !/\/src\/test\//i.test(filePath));
     const migrationSqlFiles = allSqlFiles.filter((filePath) => /migration/i.test(filePath));
     const sqlFiles =

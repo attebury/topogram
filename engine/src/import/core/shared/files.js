@@ -107,7 +107,7 @@ export function classifyImportSourcePath(paths, filePath) {
   if (/(^|\/)(\.tmp|tmp|temp|dist|build|coverage|out|generated|docs-generated|snapshots?)(\/|$)/i.test(relativePath)) {
     return "generated_output";
   }
-  if (/(^|\/)[^/]*templates?[^/]*(\/|$)/i.test(relativePath)) {
+  if (/^(template|templates|[^/]+-templates|[^/]+_templates)(\/|$)/i.test(relativePath)) {
     return "fixtures";
   }
   if (/(^|\/)(test|tests|__tests__|spec|specs|mocks?)(\/|$)|\.(test|spec)\.(js|jsx|ts|tsx|mjs|cjs)$/i.test(relativePath)) {
@@ -213,9 +213,10 @@ export function selectPreferredImportFiles(paths, files, kind) {
 /**
  * @param {import("./types.d.ts").ImportPaths} paths
  * @param {any} predicate
+ * @param {{ primaryOnly?: boolean }} [options]
  * @returns {any}
  */
-export function findImportFiles(paths, predicate) {
+export function findImportFiles(paths, predicate, options = {}) {
   const files = new Set();
   for (const rootDir of importSearchRoots(paths)) {
     for (const filePath of listFilesRecursive(rootDir, predicate)) {
@@ -226,8 +227,26 @@ export function findImportFiles(paths, predicate) {
       ) {
         continue;
       }
+      if (options.primaryOnly && !isPrimaryImportSource(paths, filePath)) {
+        continue;
+      }
       files.add(filePath);
     }
   }
   return [...files].sort();
+}
+
+/**
+ * Find files that are eligible to create primary import candidates.
+ *
+ * Docs, tests, fixture/template roots, generated output, and cache output may
+ * still support evidence elsewhere, but candidate-producing extractors should
+ * start from this helper so the primary-source rule is one API boundary.
+ *
+ * @param {import("./types.d.ts").ImportPaths} paths
+ * @param {any} predicate
+ * @returns {any}
+ */
+export function findPrimaryImportFiles(paths, predicate) {
+  return findImportFiles(paths, predicate, { primaryOnly: true });
 }

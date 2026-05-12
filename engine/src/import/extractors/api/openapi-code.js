@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiCapabilityIdFromOperation,
   inferApiEntityIdFromPath,
   makeCandidateRecord,
@@ -183,15 +183,15 @@ export const openApiCodeExtractor = {
   id: "api.openapi-code",
   track: "api",
   detect(context) {
-    const openApiFiles = findImportFiles(context.paths, (filePath) => /src\/docs\/openapi\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const openApiFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/docs\/openapi\.(ts|js|mjs|cjs)$/i.test(filePath));
     return {
       score: openApiFiles.length > 0 ? 92 : 0,
       reasons: openApiFiles.length > 0 ? ["Found code-generated OpenAPI source"] : []
     };
   },
   extract(context) {
-    const openApiFiles = findImportFiles(context.paths, (filePath) => /src\/docs\/openapi\.(ts|js|mjs|cjs)$/i.test(filePath));
-    const schemaFile = findImportFiles(context.paths, (filePath) => /src\/docs\/openapi-schemas\.(ts|js|mjs|cjs)$/i.test(filePath))[0];
+    const openApiFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/docs\/openapi\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const schemaFile = findPrimaryImportFiles(context.paths, (filePath) => /src\/docs\/openapi-schemas\.(ts|js|mjs|cjs)$/i.test(filePath))[0];
     const schemaFields = schemaFile ? parseZodObjectSchemaFields(context.helpers.readTextIfExists(schemaFile) || "") : new Map();
     const findings = [];
     const candidates = { capabilities: [], routes: [], stacks: [] };

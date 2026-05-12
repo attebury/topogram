@@ -1,0 +1,15 @@
+task task_harden_import_primary_source_filtering {
+  name "Harden Import Primary Source Filtering"
+  description "Narrow fixture/template source classification to known non-runtime roots, add a primary-source file finder, and audit import extractors so docs, fixtures, generated output, and cache evidence cannot become primary candidates by accident."
+  satisfies [req_import_docs_noise_filtering]
+  acceptance_refs [ac_import_docs_noise_does_not_create_primary_candidates]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  domain dom_import_adoption
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

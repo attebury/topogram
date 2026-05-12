@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { findImportFiles, readTextIfExists } from "../core/shared.js";
+import { findPrimaryImportFiles, readTextIfExists } from "../core/shared.js";
 
 function modelClassNameForEntity(entityId) {
   const stem = String(entityId || "")
@@ -13,7 +13,7 @@ function modelClassNameForEntity(entityId) {
 }
 
 function buildModelIndex(paths) {
-  const modelFiles = findImportFiles(paths, (filePath) => /app\/models\/.+\.rb$/i.test(filePath));
+  const modelFiles = findPrimaryImportFiles(paths, (filePath) => /app\/models\/.+\.rb$/i.test(filePath));
   const index = new Map();
   for (const filePath of modelFiles) {
     const text = readTextIfExists(filePath) || "";
@@ -93,7 +93,7 @@ export const railsModelEnricher = {
   track: "db",
   applies(context, candidates) {
     if ((candidates.entities || []).length === 0) return false;
-    return findImportFiles(context.paths, (filePath) => /app\/models\/.+\.rb$/i.test(filePath)).length > 0;
+    return findPrimaryImportFiles(context.paths, (filePath) => /app\/models\/.+\.rb$/i.test(filePath)).length > 0;
   },
   enrich(context, candidates) {
     const modelIndex = buildModelIndex(context.paths);

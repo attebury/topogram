@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { findImportFiles, readTextIfExists } from "../core/shared.js";
+import { findPrimaryImportFiles, readTextIfExists } from "../core/shared.js";
 
 function splitClassBlocks(text) {
   const lines = String(text || "").split(/\r?\n/);
@@ -51,7 +51,7 @@ function splitClassBlocks(text) {
 }
 
 function buildSerializerIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\/serializers\.py$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\/serializers\.py$/i.test(filePath));
   const index = new Map();
 
   for (const filePath of files) {
@@ -89,7 +89,7 @@ function buildSerializerIndex(paths) {
 }
 
 function buildViewIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\/views\.py$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\/views\.py$/i.test(filePath));
   const index = new Map();
 
   for (const filePath of files) {
@@ -182,7 +182,7 @@ export const djangoRestEnricher = {
   applies(context, candidates) {
     if ((candidates.capabilities || []).length === 0) return false;
     return (candidates.stacks || []).includes("django") ||
-      findImportFiles(context.paths, (filePath) => /\/serializers\.py$/i.test(filePath)).length > 0;
+      findPrimaryImportFiles(context.paths, (filePath) => /\/serializers\.py$/i.test(filePath)).length > 0;
   },
   enrich(context, candidates) {
     const serializerIndex = buildSerializerIndex(context.paths);

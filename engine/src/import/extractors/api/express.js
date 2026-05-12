@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteAuthHint,
   inferRouteCapabilityId,
@@ -94,18 +94,18 @@ export const expressExtractor = {
   id: "api.express",
   track: "api",
   detect(context) {
-    const routeFiles = findImportFiles(context.paths, (filePath) => /src\/routes\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
     return {
       score: routeFiles.length > 0 ? 85 : 0,
       reasons: routeFiles.length > 0 ? ["Found Express route modules"] : []
     };
   },
   extract(context) {
-    const permissionsFile = findImportFiles(context.paths, (filePath) => /src\/helpers\/permissions\.(ts|js|mjs|cjs)$/i.test(filePath))[0];
+    const permissionsFile = findPrimaryImportFiles(context.paths, (filePath) => /src\/helpers\/permissions\.(ts|js|mjs|cjs)$/i.test(filePath))[0];
     const permissionsText = permissionsFile ? context.helpers.readTextIfExists(permissionsFile) || "" : "";
     const apiRoutes = parseApiRoutesMap(permissionsText);
     const permissionMeta = parsePermissionsMetadata(permissionsText);
-    const routeFiles = findImportFiles(context.paths, (filePath) => /src\/routes\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
     const routes = routeFiles.flatMap((filePath) =>
       parseExpressRouteCalls(filePath, context.helpers.readTextIfExists(filePath) || "", apiRoutes, permissionMeta)
     );

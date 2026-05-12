@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -119,7 +119,7 @@ export const reactNativeScreensExtractor = {
   id: "ui.react-native-screens",
   track: "ui",
   detect(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/presentation\/screens\/.+Screen\.tsx$/i.test(filePath)
     );
@@ -130,11 +130,11 @@ export const reactNativeScreensExtractor = {
     };
   },
   extract(context) {
-    const screenFiles = findImportFiles(
+    const screenFiles = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/presentation\/screens\/.+Screen\.tsx$/i.test(filePath)
     );
-    const navigatorFile = findImportFiles(
+    const navigatorFile = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/core\/presentation\/navigation\/RootNavigator\.tsx$/i.test(filePath)
     )[0];

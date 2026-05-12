@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -85,7 +85,7 @@ export const androidComposeUiExtractor = {
   id: "ui.android-compose",
   track: "ui",
   detect(context) {
-    const composeFiles = findImportFiles(context.paths, (filePath) => /\.kt$/i.test(filePath))
+    const composeFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.kt$/i.test(filePath))
       .filter((filePath) => /@Composable/.test(context.helpers.readTextIfExists(filePath) || ""));
     const score = composeFiles.length > 0 ? 84 : 0;
     return {
@@ -94,8 +94,8 @@ export const androidComposeUiExtractor = {
     };
   },
   extract(context) {
-    const navFiles = findImportFiles(context.paths, (filePath) => /NavHost\.kt$/i.test(filePath) || /navigation\/.+\.kt$/i.test(filePath));
-    const composeFiles = findImportFiles(context.paths, (filePath) => /\.kt$/i.test(filePath))
+    const navFiles = findPrimaryImportFiles(context.paths, (filePath) => /NavHost\.kt$/i.test(filePath) || /navigation\/.+\.kt$/i.test(filePath));
+    const composeFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.kt$/i.test(filePath))
       .filter((filePath) => /@Composable/.test(context.helpers.readTextIfExists(filePath) || ""));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };

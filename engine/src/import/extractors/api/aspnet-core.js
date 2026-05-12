@@ -1,6 +1,6 @@
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -22,7 +22,7 @@ function parsePublicProperties(text) {
 }
 
 function buildDotnetFileIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\.cs$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\.cs$/i.test(filePath));
   const index = new Map();
   for (const filePath of files) {
     index.set(relativeTo(paths.repoRoot, filePath), readTextIfExists(filePath) || "");
@@ -239,8 +239,8 @@ export const aspNetCoreExtractor = {
   id: "api.aspnet-core",
   track: "api",
   detect(context) {
-    const controllerFiles = findImportFiles(context.paths, (filePath) => /Controller\.cs$/i.test(filePath));
-    const programFiles = findImportFiles(context.paths, (filePath) => /Program\.cs$/i.test(filePath));
+    const controllerFiles = findPrimaryImportFiles(context.paths, (filePath) => /Controller\.cs$/i.test(filePath));
+    const programFiles = findPrimaryImportFiles(context.paths, (filePath) => /Program\.cs$/i.test(filePath));
     const score = controllerFiles.length > 0 && programFiles.some((filePath) => /WebApplication\.CreateBuilder|AddSwaggerGen|AddMvc/.test(readTextIfExists(filePath) || "")) ? 88 : 0;
     return {
       score,
@@ -248,7 +248,7 @@ export const aspNetCoreExtractor = {
     };
   },
   extract(context) {
-    const controllerFiles = findImportFiles(context.paths, (filePath) => /Controller\.cs$/i.test(filePath));
+    const controllerFiles = findPrimaryImportFiles(context.paths, (filePath) => /Controller\.cs$/i.test(filePath));
     const featureFiles = buildDotnetFileIndex(context.paths).files.map((filePath) => ({ filePath, text: readTextIfExists(filePath) || "" }));
     const findings = [];
     const candidates = { capabilities: [], routes: [], stacks: [] };

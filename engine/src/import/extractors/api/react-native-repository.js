@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   makeCandidateRecord,
   pluralizeCandidateTerm,
   relativeTo,
@@ -82,7 +82,7 @@ export const reactNativeRepositoryExtractor = {
   id: "api.react-native-repository",
   track: "api",
   detect(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/infrastructure\/implementations\/.+Repository\.ts$/i.test(filePath)
     );
@@ -93,7 +93,7 @@ export const reactNativeRepositoryExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/infrastructure\/implementations\/.+Repository\.ts$/i.test(filePath)
     );

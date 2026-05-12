@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -64,7 +64,7 @@ export const uiKitExtractor = {
   id: "ui.uikit",
   track: "ui",
   detect(context) {
-    const controllerFiles = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const controllerFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath))
       .filter((filePath) => /(UIViewController|UITableViewController|UICollectionViewController)/.test(context.helpers.readTextIfExists(filePath) || ""));
     return {
@@ -73,7 +73,7 @@ export const uiKitExtractor = {
     };
   },
   extract(context) {
-    const controllerFiles = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const controllerFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath))
       .filter((filePath) => /(UIViewController|UITableViewController|UICollectionViewController)/.test(context.helpers.readTextIfExists(filePath) || ""));
     const findings = [];

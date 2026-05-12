@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -82,7 +82,7 @@ export const flutterEntitiesExtractor = {
   id: "db.flutter-entities",
   track: "db",
   detect(context) {
-    const entityFiles = findImportFiles(
+    const entityFiles = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/domain\/entities\/.+_entity\.dart$/i.test(filePath)
     );
@@ -93,7 +93,7 @@ export const flutterEntitiesExtractor = {
     };
   },
   extract(context) {
-    const entityFiles = findImportFiles(
+    const entityFiles = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/domain\/entities\/.+_entity\.dart$/i.test(filePath)
     );

@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   pluralizeCandidateTerm,
@@ -174,7 +174,7 @@ function inferEndpointPath(context, graphqlFiles) {
       return endpointMatch[1];
     }
   }
-  const packageJsonPath = findImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
+  const packageJsonPath = findPrimaryImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
   const packageText = packageJsonPath ? readTextIfExists(packageJsonPath) : null;
   if (packageText && /graphql-yoga|apollo-server|@apollo\/server/.test(packageText)) {
     return "/graphql";
@@ -183,7 +183,7 @@ function inferEndpointPath(context, graphqlFiles) {
 }
 
 function extractGraphqlSchemaSources(context) {
-  const files = findImportFiles(
+  const files = findPrimaryImportFiles(
     context.paths,
     (filePath) =>
       /\/src\/.+\.(ts|tsx|js|jsx)$/i.test(filePath) ||
@@ -210,7 +210,7 @@ export const graphQlSdlExtractor = {
   detect(context) {
     const schemaSources = extractGraphqlSchemaSources(context);
     const hasOperations = schemaSources.some(({ schema }) => /\btype\s+Query\b|\btype\s+Mutation\b/.test(schema));
-    const packageJsonPath = findImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
+    const packageJsonPath = findPrimaryImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath))[0];
     const packageText = packageJsonPath ? readTextIfExists(packageJsonPath) : "";
     const hasGraphqlRuntime = /graphql-yoga|graphql|apollo-server|@apollo\/server/.test(packageText || "");
     return {
@@ -220,7 +220,7 @@ export const graphQlSdlExtractor = {
   },
   extract(context) {
     const schemaSources = extractGraphqlSchemaSources(context);
-    const endpointPath = inferEndpointPath(context, findImportFiles(context.paths, (filePath) => /\/src\/.+\.(ts|tsx|js|jsx)$/i.test(filePath)));
+    const endpointPath = inferEndpointPath(context, findPrimaryImportFiles(context.paths, (filePath) => /\/src\/.+\.(ts|tsx|js|jsx)$/i.test(filePath)));
     const mergedSchema = schemaSources.map(({ schema }) => schema).join("\n\n");
     const blocks = parseGraphqlSchemaBlocks(mergedSchema);
     const inputTypes = new Map([...blocks.entries()].filter(([, block]) => block.kind === "input"));

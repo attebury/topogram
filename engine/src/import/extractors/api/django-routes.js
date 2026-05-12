@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -90,7 +90,7 @@ function permissionAuthHint(permissionText, method) {
 }
 
 function buildViewIndex(paths) {
-  const viewFiles = findImportFiles(paths, (filePath) => /\/views\.py$/i.test(filePath));
+  const viewFiles = findPrimaryImportFiles(paths, (filePath) => /\/views\.py$/i.test(filePath));
   const index = new Map();
 
   for (const filePath of viewFiles) {
@@ -250,8 +250,8 @@ export const djangoRoutesExtractor = {
   id: "api.django-routes",
   track: "api",
   detect(context) {
-    const manageFiles = findImportFiles(context.paths, (filePath) => /\/manage\.py$/i.test(filePath));
-    const urlFiles = findImportFiles(context.paths, (filePath) => /\/urls\.py$/i.test(filePath));
+    const manageFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/manage\.py$/i.test(filePath));
+    const urlFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/urls\.py$/i.test(filePath));
     const score = manageFiles.length > 0 && urlFiles.length > 0 ? 90 : 0;
     return {
       score,
@@ -259,7 +259,7 @@ export const djangoRoutesExtractor = {
     };
   },
   extract(context) {
-    const urlFiles = findImportFiles(context.paths, (filePath) => /\/urls\.py$/i.test(filePath));
+    const urlFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/urls\.py$/i.test(filePath));
     const moduleMap = new Map(urlFiles.map((filePath) => [moduleNameForFile(context.paths.repoRoot, filePath), filePath]));
     const viewIndex = buildViewIndex(context.paths);
     const rootFiles = urlFiles.filter((filePath) => !/\/apps\//.test(filePath));

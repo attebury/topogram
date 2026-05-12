@@ -1070,5 +1070,51 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_harden_import_primary_source_filtering": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-12T01:46:13.273Z",
+      "by": "actor_coding_agent",
+      "note": "Start fixing import primary source filtering regression."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-12T01:46:23.356Z",
+      "by": "actor_coding_agent",
+      "note": "Implement classifier, extractor, and regression test fixes."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T01:53:12.648Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_import_primary_source_filter_regression": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-12T01:53:17.737Z",
+      "by": "actor_coding_agent",
+      "note": "Fix import primary source filtering regression."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-12T01:53:23.068Z",
+      "by": "actor_coding_agent",
+      "note": "Primary-source filtering regression fixed and engine gate passed."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-12T01:53:35.028Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by import fixture regression coverage and full engine gate."
+    }
   ]
 }

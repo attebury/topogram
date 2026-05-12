@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -81,7 +81,7 @@ export const razorPagesUiExtractor = {
   id: "ui.razor-pages",
   track: "ui",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.cshtml$/i.test(filePath))
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /\.cshtml$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath));
     const score = files.length > 0 ? 84 : 0;
     return {
@@ -90,7 +90,7 @@ export const razorPagesUiExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.cshtml$/i.test(filePath))
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /\.cshtml$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };

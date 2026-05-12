@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -151,8 +151,8 @@ export const roomExtractor = {
   id: "db.room",
   track: "db",
   detect(context) {
-    const entityFiles = findImportFiles(context.paths, (filePath) => /Entity\.kt$/i.test(filePath) || /\/entitiy\/.+\.kt$/i.test(filePath) || /\/entity\/.+\.kt$/i.test(filePath));
-    const daoFiles = findImportFiles(context.paths, (filePath) => /Dao\.kt$/i.test(filePath));
+    const entityFiles = findPrimaryImportFiles(context.paths, (filePath) => /Entity\.kt$/i.test(filePath) || /\/entitiy\/.+\.kt$/i.test(filePath) || /\/entity\/.+\.kt$/i.test(filePath));
+    const daoFiles = findPrimaryImportFiles(context.paths, (filePath) => /Dao\.kt$/i.test(filePath));
     const score = entityFiles.length > 0 && daoFiles.length > 0 ? 89 : 0;
     return {
       score,
@@ -160,8 +160,8 @@ export const roomExtractor = {
     };
   },
   extract(context) {
-    const entityFiles = findImportFiles(context.paths, (filePath) => /Entity\.kt$/i.test(filePath) || /\/entitiy\/.+\.kt$/i.test(filePath) || /\/entity\/.+\.kt$/i.test(filePath));
-    const daoFiles = findImportFiles(context.paths, (filePath) => /Dao\.kt$/i.test(filePath));
+    const entityFiles = findPrimaryImportFiles(context.paths, (filePath) => /Entity\.kt$/i.test(filePath) || /\/entitiy\/.+\.kt$/i.test(filePath) || /\/entity\/.+\.kt$/i.test(filePath));
+    const daoFiles = findPrimaryImportFiles(context.paths, (filePath) => /Dao\.kt$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 

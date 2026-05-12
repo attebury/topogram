@@ -1,5 +1,5 @@
 import {
-  findImportFiles,
+  findPrimaryImportFiles,
   isPrimaryImportSource,
   makeCandidateRecord,
   normalizePrismaType,
@@ -114,7 +114,7 @@ export const prismaExtractor = {
   id: "db.prisma",
   track: "db",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) =>
+    const files = findPrimaryImportFiles(context.paths, (filePath) =>
       (filePath.endsWith("/prisma/schema.prisma") || filePath.endsWith("prisma/schema.prisma")) &&
       isPrimaryImportSource(context.paths, filePath)
     );
@@ -126,7 +126,7 @@ export const prismaExtractor = {
   extract(context) {
     const prismaFiles = selectPreferredImportFiles(
       context.paths,
-      findImportFiles(context.paths, (filePath) =>
+      findPrimaryImportFiles(context.paths, (filePath) =>
         (filePath.endsWith("/prisma/schema.prisma") || filePath.endsWith("prisma/schema.prisma")) &&
         isPrimaryImportSource(context.paths, filePath)
       ),

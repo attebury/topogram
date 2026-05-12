@@ -1,6 +1,6 @@
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -11,7 +11,7 @@ import {
 } from "../../core/shared.js";
 
 function buildJavaFileIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
   return files.map((filePath) => ({
     filePath,
     relativePath: relativeTo(paths.repoRoot, filePath),
@@ -163,7 +163,7 @@ export const micronautExtractor = {
   id: "api.micronaut",
   track: "api",
   detect(context) {
-    const javaFiles = findImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
+    const javaFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
     const count = javaFiles.filter((filePath) => /io\.micronaut\.http\.annotation|@Controller\(|@Get\(|@Post\(|@Put\(|@Delete\(/.test(readTextIfExists(filePath) || "")).length;
     return {
       score: count > 0 ? 95 : 0,

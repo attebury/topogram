@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -61,8 +61,8 @@ export const dotnetModelsExtractor = {
   id: "db.dotnet-models",
   track: "db",
   detect(context) {
-    const modelFiles = findImportFiles(context.paths, (filePath) => /\/Models\/.+\.cs$/i.test(filePath));
-    const csprojFiles = findImportFiles(context.paths, (filePath) => /\.csproj$/i.test(filePath));
+    const modelFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/Models\/.+\.cs$/i.test(filePath));
+    const csprojFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.csproj$/i.test(filePath));
     const score = modelFiles.length > 0 && csprojFiles.length > 0 ? 78 : 0;
     return {
       score,
@@ -70,7 +70,7 @@ export const dotnetModelsExtractor = {
     };
   },
   extract(context) {
-    const modelFiles = findImportFiles(context.paths, (filePath) => /\/Models\/.+\.cs$/i.test(filePath));
+    const modelFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/Models\/.+\.cs$/i.test(filePath));
     const findings = [];
     const entities = [];
     for (const filePath of modelFiles) {

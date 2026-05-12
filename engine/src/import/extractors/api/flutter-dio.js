@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   makeCandidateRecord,
   pluralizeCandidateTerm,
   relativeTo,
@@ -31,7 +31,7 @@ function capabilityIdFor(featureStem, methodName, httpMethod) {
 }
 
 function extractApiConfigPaths(context) {
-  const configFile = findImportFiles(context.paths, (filePath) => /\/lib\/common\/network\/api_config\.dart$/i.test(filePath))[0];
+  const configFile = findPrimaryImportFiles(context.paths, (filePath) => /\/lib\/common\/network\/api_config\.dart$/i.test(filePath))[0];
   const mapping = new Map();
   if (!configFile) return mapping;
   const text = context.helpers.readTextIfExists(configFile) || "";
@@ -87,7 +87,7 @@ export const flutterDioExtractor = {
   id: "api.flutter-dio",
   track: "api",
   detect(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/data\/datasources\/.+_remote_data_source\.dart$/i.test(filePath)
     );
@@ -98,7 +98,7 @@ export const flutterDioExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/data\/datasources\/.+_remote_data_source\.dart$/i.test(filePath)
     );

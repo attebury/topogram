@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   pluralizeCandidateTerm,
@@ -464,7 +464,7 @@ export const graphQlCodeFirstExtractor = {
   id: "api.graphql-code-first",
   track: "api",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /(\/src\/.+|\/pages\/api\/.+)\.(ts|tsx|js|jsx)$/i.test(filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /(\/src\/.+|\/pages\/api\/.+)\.(ts|tsx|js|jsx)$/i.test(filePath));
     const hasNestResolvers = files.some((filePath) => {
       const text = readTextIfExists(filePath) || "";
       return /@nestjs\/graphql/.test(text) && /@(Query|Mutation)\s*\(/.test(text);
@@ -489,7 +489,7 @@ export const graphQlCodeFirstExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /(\/src\/.+|\/pages\/api\/.+)\.(ts|tsx|js|jsx)$/i.test(filePath)).filter((filePath) => !/\.test\./i.test(filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /(\/src\/.+|\/pages\/api\/.+)\.(ts|tsx|js|jsx)$/i.test(filePath)).filter((filePath) => !/\.test\./i.test(filePath));
     const nestTypes = parseNestTypes(files);
     const pothosTypes = parsePothosTypes(files);
     const nexusTypes = parseNexusTypes(files);

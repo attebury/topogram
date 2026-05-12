@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   makeCandidateRecord,
   readTextIfExists,
   relativeTo,
@@ -155,8 +155,8 @@ export const efCoreExtractor = {
   id: "db.ef-core",
   track: "db",
   detect(context) {
-    const csprojFiles = findImportFiles(context.paths, (filePath) => /\.csproj$/i.test(filePath));
-    const dbContextFiles = findImportFiles(context.paths, (filePath) => /DbContext|Context\.cs$/i.test(filePath));
+    const csprojFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.csproj$/i.test(filePath));
+    const dbContextFiles = findPrimaryImportFiles(context.paths, (filePath) => /DbContext|Context\.cs$/i.test(filePath));
     const score = csprojFiles.length > 0 && dbContextFiles.some((filePath) => /DbContext/.test(readTextIfExists(filePath) || "")) ? 89 : 0;
     return {
       score,
@@ -164,8 +164,8 @@ export const efCoreExtractor = {
     };
   },
   extract(context) {
-    const dbContextFiles = findImportFiles(context.paths, (filePath) => /DbContext|Context\.cs$/i.test(filePath));
-    const domainFiles = findImportFiles(context.paths, (filePath) => /\/Domain\/.+\.cs$/i.test(filePath));
+    const dbContextFiles = findPrimaryImportFiles(context.paths, (filePath) => /DbContext|Context\.cs$/i.test(filePath));
+    const domainFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/Domain\/.+\.cs$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 

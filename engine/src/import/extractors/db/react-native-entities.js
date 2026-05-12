@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -60,7 +60,7 @@ export const reactNativeEntitiesExtractor = {
   id: "db.react-native-entities",
   track: "db",
   detect(context) {
-    const entityFiles = findImportFiles(
+    const entityFiles = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/domain\/entities\/.+Entity\.ts$/i.test(filePath)
     );
@@ -71,7 +71,7 @@ export const reactNativeEntitiesExtractor = {
     };
   },
   extract(context) {
-    const entityFiles = findImportFiles(
+    const entityFiles = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/src\/.+\/domain\/entities\/.+Entity\.ts$/i.test(filePath)
     );

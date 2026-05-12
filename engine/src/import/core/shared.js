@@ -24,7 +24,8 @@ export {
   isPrimaryImportSource,
   canonicalSourceRank,
   selectPreferredImportFiles,
-  findImportFiles
+  findImportFiles,
+  findPrimaryImportFiles
 } from "./shared/files.js";
 export {
   normalizeOpenApiPath,

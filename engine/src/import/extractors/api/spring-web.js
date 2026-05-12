@@ -1,6 +1,6 @@
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -13,7 +13,7 @@ import {
 const JAVA_ANNOTATION_PATTERN = String.raw`@[\w.]+(?:\((?:[^()]|\([^)]*\))*\))?`;
 
 function buildJavaFileIndex(paths) {
-  const files = findImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
+  const files = findPrimaryImportFiles(paths, (filePath) => /\.java$/i.test(filePath));
   return files.map((filePath) => ({
     filePath,
     relativePath: relativeTo(paths.repoRoot, filePath),
@@ -318,7 +318,7 @@ export const springWebExtractor = {
   id: "api.spring-web",
   track: "api",
   detect(context) {
-    const javaFiles = findImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
+    const javaFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.java$/i.test(filePath));
     const springCount = javaFiles.filter((filePath) => /@(RestController|Controller)|@(?:Get|Post|Put|Patch|Delete)Exchange|@(GetMapping|PostMapping|PutMapping|PatchMapping|DeleteMapping)|@RequestMapping/.test(readTextIfExists(filePath) || "")).length;
     return {
       score: springCount > 0 ? 90 : 0,

@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   inferRouteCapabilityId,
   makeCandidateRecord,
@@ -167,14 +167,14 @@ export const railsRoutesExtractor = {
   id: "api.rails-routes",
   track: "api",
   detect(context) {
-    const routeFiles = findImportFiles(context.paths, (filePath) => /config\/routes\.rb$/i.test(filePath));
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /config\/routes\.rb$/i.test(filePath));
     return {
       score: routeFiles.length > 0 ? 90 : 0,
       reasons: routeFiles.length > 0 ? ["Found Rails routes.rb"] : []
     };
   },
   extract(context) {
-    const routeFiles = findImportFiles(context.paths, (filePath) => /config\/routes\.rb$/i.test(filePath));
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /config\/routes\.rb$/i.test(filePath));
     const findings = [];
     const candidates = { capabilities: [], routes: [], stacks: [] };
 

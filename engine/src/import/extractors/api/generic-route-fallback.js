@@ -1,4 +1,4 @@
-import { findImportFiles, inferRouteAuthHint, inferRouteCapabilityId, inferRouteQueryParams, isPrimaryImportSource, makeCandidateRecord, normalizeOpenApiPath, relativeTo } from "../../core/shared.js";
+import { findPrimaryImportFiles, inferRouteAuthHint, inferRouteCapabilityId, inferRouteQueryParams, isPrimaryImportSource, makeCandidateRecord, normalizeOpenApiPath, relativeTo } from "../../core/shared.js";
 
 function extractHandlerContext(text, handlerName) {
   if (!handlerName) return "";
@@ -15,7 +15,7 @@ function extractHandlerContext(text, handlerName) {
 
 function inferServerRoutes(context) {
   const routes = [];
-  const routeFiles = findImportFiles(
+  const routeFiles = findPrimaryImportFiles(
     context.paths,
     (filePath) =>
       /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath) &&

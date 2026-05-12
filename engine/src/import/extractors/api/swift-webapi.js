@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -78,7 +78,7 @@ export const swiftWebApiExtractor = {
   id: "api.swift-webapi",
   track: "api",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /WebRepository\.swift$/i.test(filePath) || /WebAPI\/.+\.swift$/i.test(filePath));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /WebRepository\.swift$/i.test(filePath) || /WebAPI\/.+\.swift$/i.test(filePath));
     const score = files.some((filePath) => /APICall|URLSession/.test(context.helpers.readTextIfExists(filePath) || "")) ? 85 : 0;
     return {
       score,
@@ -86,7 +86,7 @@ export const swiftWebApiExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /WebAPI\/.+\.swift$/i.test(filePath))
+    const files = findPrimaryImportFiles(context.paths, (filePath) => /WebAPI\/.+\.swift$/i.test(filePath))
       .filter((filePath) => /struct\s+Real/.test(context.helpers.readTextIfExists(filePath) || ""));
     const capabilities = [];
     for (const filePath of files) {

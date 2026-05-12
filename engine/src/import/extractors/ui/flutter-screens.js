@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -110,7 +110,7 @@ export const flutterScreensUiExtractor = {
   id: "ui.flutter-screens",
   track: "ui",
   detect(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/presentation\/screens\/.+_screen\.dart$/i.test(filePath)
     );
@@ -121,7 +121,7 @@ export const flutterScreensUiExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(
+    const files = findPrimaryImportFiles(
       context.paths,
       (filePath) => /\/lib\/features\/.+\/presentation\/screens\/.+_screen\.dart$/i.test(filePath)
     );

@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -54,7 +54,7 @@ export const mauiXamlUiExtractor = {
   id: "ui.maui-xaml",
   track: "ui",
   detect(context) {
-    const xamlFiles = findImportFiles(context.paths, (filePath) => /\.xaml$/i.test(filePath));
+    const xamlFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.xaml$/i.test(filePath));
     const score = xamlFiles.some((filePath) => /ContentPage|Shell/.test(context.helpers.readTextIfExists(filePath) || "")) ? 82 : 0;
     return {
       score,
@@ -62,8 +62,8 @@ export const mauiXamlUiExtractor = {
     };
   },
   extract(context) {
-    const shellFiles = findImportFiles(context.paths, (filePath) => /AppShell\.xaml$/i.test(filePath));
-    const viewFiles = findImportFiles(context.paths, (filePath) => /\/Views\/.+\.xaml$/i.test(filePath));
+    const shellFiles = findPrimaryImportFiles(context.paths, (filePath) => /AppShell\.xaml$/i.test(filePath));
+    const viewFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/Views\/.+\.xaml$/i.test(filePath));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };
     const shellEntries = shellFiles.flatMap((filePath) => parseShellContent(context.helpers.readTextIfExists(filePath) || ""));

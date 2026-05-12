@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   makeCandidateRecord,
   relativeTo,
   titleCase
@@ -66,7 +66,7 @@ export const retrofitExtractor = {
   id: "api.retrofit",
   track: "api",
   detect(context) {
-    const serviceFiles = findImportFiles(context.paths, (filePath) => /Service\.kt$/i.test(filePath) || /retrofit\/.+\.kt$/i.test(filePath));
+    const serviceFiles = findPrimaryImportFiles(context.paths, (filePath) => /Service\.kt$/i.test(filePath) || /retrofit\/.+\.kt$/i.test(filePath));
     const score = serviceFiles.some((filePath) => /@GET|@POST|@PUT|@PATCH|@DELETE/.test(context.helpers.readTextIfExists(filePath) || "")) ? 87 : 0;
     return {
       score,
@@ -74,7 +74,7 @@ export const retrofitExtractor = {
     };
   },
   extract(context) {
-    const serviceFiles = findImportFiles(context.paths, (filePath) => /Service\.kt$/i.test(filePath) || /retrofit\/.+\.kt$/i.test(filePath));
+    const serviceFiles = findPrimaryImportFiles(context.paths, (filePath) => /Service\.kt$/i.test(filePath) || /retrofit\/.+\.kt$/i.test(filePath));
     const capabilities = [];
     for (const filePath of serviceFiles) {
       const provenance = relativeTo(context.paths.repoRoot, filePath);

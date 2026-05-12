@@ -3,7 +3,7 @@
 import path from "node:path";
 
 import {
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   isPrimaryImportSource,
   makeCandidateRecord,
@@ -251,9 +251,9 @@ function inspectPackageCliMetadata(context, packageFiles) {
  * @returns {{ packageFiles: string[], sourceFiles: string[], binNames: Set<string>, findings: any[], provenance: string[] }}
  */
 function discoverCliSources(context) {
-  const packageFiles = findImportFiles(context.paths, (/** @type {string} */ filePath) => /package\.json$/i.test(filePath));
+  const packageFiles = findPrimaryImportFiles(context.paths, (/** @type {string} */ filePath) => /package\.json$/i.test(filePath));
   const packageMetadata = inspectPackageCliMetadata(context, packageFiles);
-  const sourceFiles = findImportFiles(context.paths, (/** @type {string} */ filePath) => {
+  const sourceFiles = findPrimaryImportFiles(context.paths, (/** @type {string} */ filePath) => {
     const normalized = normalizePath(filePath);
     if (!isAuthoritativeCliSource(context.paths, filePath)) {
       return false;

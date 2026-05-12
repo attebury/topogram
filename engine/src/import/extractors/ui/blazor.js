@@ -1,7 +1,7 @@
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -98,7 +98,7 @@ export const blazorUiExtractor = {
   id: "ui.blazor",
   track: "ui",
   detect(context) {
-    const razorFiles = findImportFiles(context.paths, (filePath) => /\.razor$/i.test(filePath))
+    const razorFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.razor$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath));
     const score = razorFiles.length > 0 ? 86 : 0;
     return {
@@ -107,7 +107,7 @@ export const blazorUiExtractor = {
     };
   },
   extract(context) {
-    const razorFiles = findImportFiles(context.paths, (filePath) => /\.razor$/i.test(filePath))
+    const razorFiles = findPrimaryImportFiles(context.paths, (filePath) => /\.razor$/i.test(filePath))
       .filter((filePath) => !shouldIgnoreFile(filePath));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };

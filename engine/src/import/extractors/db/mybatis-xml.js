@@ -1,4 +1,4 @@
-import { dedupeCandidateRecords, findImportFiles, makeCandidateRecord, relativeTo, selectPreferredImportFiles, slugify, titleCase, idHintify, canonicalCandidateTerm } from "../../core/shared.js";
+import { dedupeCandidateRecords, findPrimaryImportFiles, makeCandidateRecord, relativeTo, selectPreferredImportFiles, slugify, titleCase, idHintify, canonicalCandidateTerm } from "../../core/shared.js";
 import { parseSqlSchema } from "./sql.js";
 
 function classifyNoiseEntity(tableName, fields) {
@@ -36,15 +36,15 @@ export const myBatisXmlExtractor = {
   id: "db.mybatis-xml",
   track: "db",
   detect(context) {
-    const mapperFiles = findImportFiles(context.paths, (filePath) => /\/mapper\/.+\.xml$/i.test(filePath));
+    const mapperFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/mapper\/.+\.xml$/i.test(filePath));
     return {
       score: mapperFiles.length > 0 ? 86 : 0,
       reasons: mapperFiles.length > 0 ? ["Found MyBatis mapper XML files"] : []
     };
   },
   extract(context) {
-    const mapperFiles = findImportFiles(context.paths, (filePath) => /\/mapper\/.+\.xml$/i.test(filePath));
-    const allSqlFiles = findImportFiles(context.paths, (filePath) => filePath.endsWith(".sql"));
+    const mapperFiles = findPrimaryImportFiles(context.paths, (filePath) => /\/mapper\/.+\.xml$/i.test(filePath));
+    const allSqlFiles = findPrimaryImportFiles(context.paths, (filePath) => filePath.endsWith(".sql"));
     const schemaSqlFiles = allSqlFiles.filter((filePath) => !/\/src\/test\//i.test(filePath));
     const sqlFiles = selectPreferredImportFiles(context.paths, schemaSqlFiles, "sql");
     const findings = [];

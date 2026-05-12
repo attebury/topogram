@@ -2,7 +2,7 @@ import path from "node:path";
 
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiCapabilityIdFromOperation,
   inferApiEntityIdFromPath,
   makeCandidateRecord,
@@ -263,8 +263,8 @@ export const fastifyExtractor = {
   id: "api.fastify",
   track: "api",
   detect(context) {
-    const routeFiles = findImportFiles(context.paths, (filePath) => /src\/routes\/api\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
-    const packageJsonFiles = findImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath));
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/api\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const packageJsonFiles = findPrimaryImportFiles(context.paths, (filePath) => /package\.json$/i.test(filePath));
     const hasFastifyDependency = packageJsonFiles.some((filePath) => /"fastify"\s*:/.test(context.helpers.readTextIfExists(filePath) || ""));
     return {
       score: routeFiles.length > 0 && hasFastifyDependency ? 86 : 0,
@@ -272,16 +272,16 @@ export const fastifyExtractor = {
     };
   },
   extract(context) {
-    const apiRoutesRoot = findImportFiles(context.paths, (filePath) => /src\/routes\/api\/index\.(ts|js|mjs|cjs)$/i.test(filePath))[0]
-      ? path.join(path.dirname(findImportFiles(context.paths, (filePath) => /src\/routes\/api\/index\.(ts|js|mjs|cjs)$/i.test(filePath))[0]))
+    const apiRoutesRoot = findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/api\/index\.(ts|js|mjs|cjs)$/i.test(filePath))[0]
+      ? path.join(path.dirname(findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/api\/index\.(ts|js|mjs|cjs)$/i.test(filePath))[0]))
       : null;
     if (!apiRoutesRoot) {
       return { findings: [], candidates: { capabilities: [], routes: [], stacks: [] } };
     }
 
-    const routeFiles = findImportFiles(context.paths, (filePath) => /src\/routes\/api\/.+\.(ts|js|mjs|cjs)$/i.test(filePath))
+    const routeFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/routes\/api\/.+\.(ts|js|mjs|cjs)$/i.test(filePath))
       .filter((filePath) => !/\/autohooks\.(ts|js|mjs|cjs)$/i.test(filePath));
-    const schemaFiles = findImportFiles(context.paths, (filePath) => /src\/schemas\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
+    const schemaFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/schemas\/.+\.(ts|js|mjs|cjs)$/i.test(filePath));
     const namedSchemas = parseNamedTypeboxSchemas(schemaFiles, context.helpers.readTextIfExists);
 
     const routes = [];

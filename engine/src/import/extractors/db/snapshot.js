@@ -1,4 +1,4 @@
-import { findImportFiles, makeCandidateRecord, relativeTo, slugify, titleCase, idHintify } from "../../core/shared.js";
+import { findPrimaryImportFiles, makeCandidateRecord, relativeTo, slugify, titleCase, idHintify } from "../../core/shared.js";
 
 function parseDbSchemaSnapshot(snapshot) {
   return {
@@ -42,14 +42,14 @@ export const snapshotExtractor = {
   id: "db.snapshot",
   track: "db",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => filePath.endsWith(".db-schema-snapshot.json"));
+    const files = findPrimaryImportFiles(context.paths, (filePath) => filePath.endsWith(".db-schema-snapshot.json"));
     return {
       score: files.length > 0 ? 40 : 0,
       reasons: files.length > 0 ? ["Found DB schema snapshot artifacts"] : []
     };
   },
   extract(context) {
-    const snapshotFiles = findImportFiles(context.paths, (filePath) => filePath.endsWith(".db-schema-snapshot.json"));
+    const snapshotFiles = findPrimaryImportFiles(context.paths, (filePath) => filePath.endsWith(".db-schema-snapshot.json"));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
     for (const filePath of snapshotFiles) {

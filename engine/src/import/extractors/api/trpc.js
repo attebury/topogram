@@ -1,6 +1,6 @@
 import {
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   inferApiEntityIdFromPath,
   makeCandidateRecord,
   pluralizeCandidateTerm,
@@ -156,15 +156,15 @@ export const trpcExtractor = {
   id: "api.trpc",
   track: "api",
   detect(context) {
-    const routerFiles = findImportFiles(context.paths, (filePath) => /src\/server\/routers\/.+\.(ts|tsx|js|jsx)$/i.test(filePath));
-    const trpcHandler = findImportFiles(context.paths, (filePath) => /src\/pages\/api\/trpc\/\[trpc\]\.(ts|tsx|js|jsx)$/i.test(filePath));
+    const routerFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/server\/routers\/.+\.(ts|tsx|js|jsx)$/i.test(filePath));
+    const trpcHandler = findPrimaryImportFiles(context.paths, (filePath) => /src\/pages\/api\/trpc\/\[trpc\]\.(ts|tsx|js|jsx)$/i.test(filePath));
     return {
       score: routerFiles.length > 0 && trpcHandler.length > 0 ? 88 : 0,
       reasons: routerFiles.length > 0 && trpcHandler.length > 0 ? ["Found tRPC router modules and Next.js tRPC handler"] : []
     };
   },
   extract(context) {
-    const routerFiles = findImportFiles(context.paths, (filePath) => /src\/server\/routers\/.+\.(ts|tsx|js|jsx)$/i.test(filePath))
+    const routerFiles = findPrimaryImportFiles(context.paths, (filePath) => /src\/server\/routers\/.+\.(ts|tsx|js|jsx)$/i.test(filePath))
       .filter((filePath) => !/\/_app\.(ts|tsx|js|jsx)$/i.test(filePath) && !/\.test\./i.test(filePath));
     const procedures = routerFiles.flatMap((filePath) => parseRouterProcedures(filePath, context.helpers.readTextIfExists(filePath) || ""));
     const findings = [];

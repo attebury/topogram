@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   canonicalCandidateTerm,
   dedupeCandidateRecords,
-  findImportFiles,
+  findPrimaryImportFiles,
   idHintify,
   makeCandidateRecord,
   relativeTo,
@@ -107,14 +107,14 @@ export const railsSchemaExtractor = {
   id: "db.rails-schema",
   track: "db",
   detect(context) {
-    const schemaFiles = findImportFiles(context.paths, (filePath) => /db\/schema\.rb$/i.test(filePath));
+    const schemaFiles = findPrimaryImportFiles(context.paths, (filePath) => /db\/schema\.rb$/i.test(filePath));
     return {
       score: schemaFiles.length > 0 ? 92 : 0,
       reasons: schemaFiles.length > 0 ? ["Found Rails schema.rb"] : []
     };
   },
   extract(context) {
-    const schemaFiles = findImportFiles(context.paths, (filePath) => /db\/schema\.rb$/i.test(filePath));
+    const schemaFiles = findPrimaryImportFiles(context.paths, (filePath) => /db\/schema\.rb$/i.test(filePath));
     const findings = [];
     const candidates = { entities: [], enums: [], relations: [], indexes: [] };
 
