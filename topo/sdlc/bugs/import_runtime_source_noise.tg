@@ -1,0 +1,12 @@
+bug bug_import_runtime_source_noise {
+  name "Import Runtime Source Noise"
+  description "A full brownfield import of the Topogram repo treated generated caches, fixtures, and generator template code as runtime source, producing DB and UI candidates from non-app evidence."
+  reproduction "Run topogram import . --out /private/tmp/topogram-import-inspection --from db,api,ui,cli, then inspect topo/candidates/app/db/candidates.json and topo/candidates/app/ui/candidates.json."
+  affects [cap_import_brownfield_app]
+  violates []
+  priority medium
+  severity medium
+  fixed_in [task_filter_import_docs_noise]
+  fixed_in_verification [verification_import_fixtures]
+  status verified
+}

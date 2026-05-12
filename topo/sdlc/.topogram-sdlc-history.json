@@ -1015,5 +1015,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "bug_import_runtime_source_noise": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-12T00:56:01.623Z",
+      "by": "actor_coding_agent",
+      "note": "Confirmed during full-repo brownfield import inspection."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-12T00:56:09.036Z",
+      "by": "actor_coding_agent",
+      "note": "Runtime source filtering now excludes generated/cache/template noise and requires actual Drizzle table evidence."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-12T00:56:14.669Z",
+      "by": "actor_coding_agent",
+      "note": "Focused import fixtures and full-repo import inspection no longer produce DB/UI candidates from noise."
+    }
   ]
 }

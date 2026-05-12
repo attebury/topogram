@@ -5,6 +5,7 @@ import {
   dedupeCandidateRecords,
   findImportFiles,
   idHintify,
+  isPrimaryImportSource,
   makeCandidateRecord,
   relativeTo,
   slugify,
@@ -167,7 +168,10 @@ function parseDrizzleTables(schemaText) {
 }
 
 function drizzleConfigFiles(context) {
-  return findImportFiles(context.paths, (filePath) => /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath)));
+  return findImportFiles(context.paths, (filePath) =>
+    /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath)) &&
+    isPrimaryImportSource(context.paths, filePath)
+  );
 }
 
 function configuredSchemaFiles(context, configFiles) {
@@ -184,15 +188,21 @@ function configuredSchemaFiles(context, configFiles) {
   return files;
 }
 
+function isDrizzleSchemaSource(context, filePath) {
+  const text = context.helpers.readTextIfExists(filePath) || "";
+  return /\b(?:pgTable|sqliteTable|mysqlTable)\s*\(/.test(text);
+}
+
 function findDrizzleSchemaFiles(context) {
   const configFiles = drizzleConfigFiles(context);
   const conventionalSchemaFiles = findImportFiles(context.paths, (filePath) =>
-    /(?:^|\/)(?:src\/db\/schema|src\/schema|db\/schema|schema)\.(ts|js|mjs|cjs)$/i.test(relativeTo(context.paths.workspaceRoot, filePath).replaceAll(path.sep, "/"))
+    /(?:^|\/)(?:src\/db\/schema|src\/schema|db\/schema|schema)\.(ts|js|mjs|cjs)$/i.test(relativeTo(context.paths.workspaceRoot, filePath).replaceAll(path.sep, "/")) &&
+    isPrimaryImportSource(context.paths, filePath)
   );
   return [...new Set([
     ...configuredSchemaFiles(context, configFiles),
     ...conventionalSchemaFiles
-  ])].sort();
+  ])].filter((filePath) => isDrizzleSchemaSource(context, filePath)).sort();
 }
 
 export const drizzleExtractor = {

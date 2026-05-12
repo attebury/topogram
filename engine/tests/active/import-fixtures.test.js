@@ -171,13 +171,17 @@ test("CLI import fixture extracts command surface candidates", () => {
 
 test("docs, tests, and fixture snippets do not create primary import candidates", () => {
   const summary = runImportAppWorkflow(path.join(importFixtureRoot, "docs-noise"), {
-    from: "api,cli"
+    from: "db,api,ui,cli"
   }).summary;
 
-  assert.deepEqual(summary.tracks, ["api", "cli"]);
+  assert.deepEqual(summary.tracks, ["db", "api", "ui", "cli"]);
   assert.deepEqual(detectionIds(summary), []);
+  assert.deepEqual(summary.candidates.db.entities, []);
+  assert.deepEqual(summary.candidates.db.maintained_seams, []);
   assert.deepEqual(summary.candidates.api.capabilities, []);
   assert.deepEqual(summary.candidates.api.routes, []);
+  assert.deepEqual(summary.candidates.ui.screens, []);
+  assert.deepEqual(summary.candidates.ui.flows, []);
   assert.deepEqual(summary.candidates.cli.commands, []);
   assert.deepEqual(summary.candidates.cli.surfaces, []);
 });

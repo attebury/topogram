@@ -2,7 +2,7 @@
 
 import path from "node:path";
 
-import { findImportFiles, makeCandidateRecord, relativeTo } from "../../core/shared.js";
+import { findImportFiles, isPrimaryImportSource, makeCandidateRecord, relativeTo } from "../../core/shared.js";
 
 /** @param {string} value @returns {string} */
 function toPosix(value) {
@@ -139,7 +139,10 @@ export function inferPrismaMaintainedDbSeams(context, prismaFiles) {
     return [];
   }
   const schemaPath = appRelativePath(context, prismaFiles[0]);
-  const migrationFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) => toPosix(filePath).includes("/prisma/migrations/")));
+  const migrationFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) =>
+    toPosix(filePath).includes("/prisma/migrations/") &&
+    isPrimaryImportSource(context.paths, filePath)
+  ));
   const migrationsPath = firstMarkedDirectory(context, migrationFiles, [["prisma", "migrations"]]);
   return [
     maintainedDbSeamCandidate(context, {
@@ -164,8 +167,14 @@ export function inferDrizzleMaintainedDbSeams(context, schemaFiles) {
   if (!schemaFiles.length) {
     return [];
   }
-  const configFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) => /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath))));
-  const drizzleFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) => appRelativePath(context, filePath).startsWith("drizzle/")));
+  const configFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) =>
+    /drizzle\.config\.(ts|js|mjs|cjs)$/i.test(path.basename(filePath)) &&
+    isPrimaryImportSource(context.paths, filePath)
+  ));
+  const drizzleFiles = /** @type {string[]} */ (findImportFiles(context.paths, /** @param {string} filePath */ (filePath) =>
+    appRelativePath(context, filePath).startsWith("drizzle/") &&
+    isPrimaryImportSource(context.paths, filePath)
+  ));
   const configuredOutPath = drizzleOutPathFromConfig(context, configFiles);
   const migrationsPath = configuredOutPath ||
     firstMarkedDirectory(context, drizzleFiles, [["drizzle"]]);

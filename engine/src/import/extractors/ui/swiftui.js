@@ -3,6 +3,7 @@ import {
   dedupeCandidateRecords,
   findImportFiles,
   idHintify,
+  isPrimaryImportSource,
   makeCandidateRecord,
   relativeTo,
   titleCase
@@ -117,7 +118,7 @@ export const swiftUiExtractor = {
   id: "ui.swiftui",
   track: "ui",
   detect(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath))
       .filter((filePath) => /:\s*View\b/.test(context.helpers.readTextIfExists(filePath) || ""));
     return {
       score: files.length > 0 ? 84 : 0,
@@ -125,7 +126,7 @@ export const swiftUiExtractor = {
     };
   },
   extract(context) {
-    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath))
+    const files = findImportFiles(context.paths, (filePath) => /\.swift$/i.test(filePath) && isPrimaryImportSource(context.paths, filePath))
       .filter((filePath) => /:\s*View\b/.test(context.helpers.readTextIfExists(filePath) || ""));
     const findings = [];
     const candidates = { screens: [], routes: [], actions: [], stacks: [] };

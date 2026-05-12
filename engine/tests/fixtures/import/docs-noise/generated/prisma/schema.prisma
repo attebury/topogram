@@ -1,0 +1,4 @@
+model Ghost {
+  id String @id
+  name String
+}

@@ -6,12 +6,17 @@ import { relativeTo } from "../../../path-helpers.js";
 export const DEFAULT_IGNORED_DIRS = new Set([
   ".git",
   ".next",
+  ".tmp",
   ".turbo",
   ".yarn",
+  ".cache",
+  ".parcel-cache",
+  ".svelte-kit",
   "build",
   "coverage",
   "dist",
   "node_modules",
+  "out",
   "tmp"
 ]);
 
@@ -99,8 +104,11 @@ export function importSourcePathRelativeToWorkspace(paths, filePath) {
 export function classifyImportSourcePath(paths, filePath) {
   const relativePath = importSourcePathRelativeToWorkspace(paths, filePath);
   const basename = path.basename(relativePath).toLowerCase();
-  if (/(^|\/)(dist|build|coverage|out|generated|docs-generated|snapshots?)(\/|$)/i.test(relativePath)) {
+  if (/(^|\/)(\.tmp|tmp|temp|dist|build|coverage|out|generated|docs-generated|snapshots?)(\/|$)/i.test(relativePath)) {
     return "generated_output";
+  }
+  if (/(^|\/)[^/]*templates?[^/]*(\/|$)/i.test(relativePath)) {
+    return "fixtures";
   }
   if (/(^|\/)(test|tests|__tests__|spec|specs|mocks?)(\/|$)|\.(test|spec)\.(js|jsx|ts|tsx|mjs|cjs)$/i.test(relativePath)) {
     return "tests";
