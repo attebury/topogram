@@ -1131,6 +1131,13 @@
       "at": "2026-05-12T03:10:04.427Z",
       "by": "actor_coding_agent",
       "note": "Prepare release artifacts and run gates"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-12T03:41:46.842Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ],
   "ac_cli_0_3_78_release_published": [
