@@ -1,0 +1,11 @@
+requirement req_extract_adopt_packets_show_extractor_context {
+  name "Extract Adopt Packets Show Extractor Context"
+  description "Agent-facing extract/adopt query packets should expose extraction provenance, package-backed extractor context, candidate counts, and adoption review commands so agents can act without reading the full candidate tree."
+  pitch pitch_agent_query_maturity
+  affects [cap_query_context, cap_import_brownfield_app, cap_manage_extractors]
+  introduces_rules []
+  respects_rules []
+  priority medium
+  status approved
+  domain dom_sdlc_query_agent_context
+}

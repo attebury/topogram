@@ -2,7 +2,7 @@ import { buildImportMaintainedRisk } from "../maintained-risk.js";
 import { buildImportPlanNextAction } from "../workflow-presets-core.js";
 import { buildPresetGuidanceSummary } from "./risk.js";
 
-export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintainedBoundaryArtifact = null, workflowPresetState = null) {
+export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintainedBoundaryArtifact = null, workflowPresetState = null, extractionContext = null) {
   const importMaintained = buildImportMaintainedRisk(adoptionPlan.imported_proposal_surfaces || [], maintainedBoundaryArtifact);
   const importNextAction = buildImportPlanNextAction(taskModeArtifact.next_action || null, workflowPresetState);
   const presetGuidanceSummary = buildPresetGuidanceSummary(workflowPresetState, null);
@@ -13,6 +13,7 @@ export function buildImportPlanPayload(adoptionPlan, taskModeArtifact, maintaine
     next_action: importNextAction,
     write_scope: taskModeArtifact.write_scope || null,
     verification_targets: taskModeArtifact.verification_targets || null,
+    extraction_context: extractionContext,
     review_groups: adoptionPlan.approved_review_groups || [],
     staged_items: adoptionPlan.staged_items || [],
     accepted_items: adoptionPlan.accepted_items || [],

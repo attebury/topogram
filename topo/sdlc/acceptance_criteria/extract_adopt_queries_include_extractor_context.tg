@@ -1,0 +1,6 @@
+acceptance_criterion ac_extract_adopt_queries_include_extractor_context {
+  name "Extract Adopt Queries Include Extractor Context"
+  description "Given a brownfield workspace extracted with package-backed DB and API extractors, when an agent runs extract-plan, single-agent-plan, multi-agent-plan, or work-packet queries in extract-adopt mode, then each packet includes the trusted extraction record, package-backed extractor summary, candidate counts, and next review/adoption commands without mutating workspace state."
+  requirement req_extract_adopt_packets_show_extractor_context
+  status approved
+}

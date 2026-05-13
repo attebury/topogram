@@ -496,6 +496,7 @@ export function buildMultiAgentPlanPayload({
   importPlan,
   report,
   adoptionStatus,
+  extractionContext = null,
   resolvedWorkflowContext = null
 }) {
   const presetGuidanceSummary = buildPresetGuidanceSummary(importPlan?.workflow_presets || null, resolvedWorkflowContext || singleAgentPlan?.resolved_workflow_context || null);
@@ -530,6 +531,7 @@ export function buildMultiAgentPlanPayload({
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
     preset_blockers: presetGuidanceSummary.preset_blockers,
     recommended_preset_action: presetGuidanceSummary.recommended_preset_action,
+    extraction_context: extractionContext || singleAgentPlan?.extraction_context || resolvedWorkflowContext?.extraction_context || null,
     resolved_workflow_context: resolvedWorkflowContext || singleAgentPlan?.resolved_workflow_context || null,
     lanes,
     parallel_workstreams: parallelWorkstreams,

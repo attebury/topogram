@@ -98,6 +98,51 @@ export function queryDefinitions() {
       example: "topogram query single-agent-plan ./topo --mode modeling --widget widget_data_grid --json"
     },
     {
+      name: "extract-plan",
+      purpose: "Summarize brownfield extraction candidates, package extractor context, and adoption review state.",
+      description: "Return the extract/adopt plan for an extracted workspace, including trusted extraction provenance and next review commands.",
+      selectors: ["provider", "preset"],
+      args: ["[path]", "[--json]"],
+      output: "extract_plan_query",
+      example: "topogram query extract-plan ./extracted-topogram --json"
+    },
+    {
+      name: "multi-agent-plan",
+      purpose: "Split extract/adopt review into serialized and parallel agent lanes.",
+      description: "Return lane ownership, handoff packets, overlap rules, and package extractor context for extract/adopt mode.",
+      selectors: ["mode", "provider", "preset"],
+      args: ["[path]", "--mode extract-adopt", "[--json]"],
+      output: "multi_agent_plan",
+      example: "topogram query multi-agent-plan ./extracted-topogram --mode extract-adopt --json"
+    },
+    {
+      name: "work-packet",
+      purpose: "Give one extract/adopt lane its allowed inputs, write scope, blockers, and handoff packet.",
+      description: "Return a lane-scoped work packet for extract/adopt mode.",
+      selectors: ["mode", "lane"],
+      args: ["[path]", "--mode extract-adopt", "--lane <id>", "[--json]"],
+      output: "work_packet",
+      example: "topogram query work-packet ./extracted-topogram --mode extract-adopt --lane adoption_operator --json"
+    },
+    {
+      name: "lane-status",
+      purpose: "Show which extract/adopt lanes are ready, blocked, or complete.",
+      description: "Return artifact-derived lane status for extract/adopt mode.",
+      selectors: ["mode"],
+      args: ["[path]", "--mode extract-adopt", "[--json]"],
+      output: "lane_status_query",
+      example: "topogram query lane-status ./extracted-topogram --mode extract-adopt --json"
+    },
+    {
+      name: "handoff-status",
+      purpose: "Show extract/adopt handoff packet status across lanes.",
+      description: "Return handoff readiness and blockers for extract/adopt mode.",
+      selectors: ["mode"],
+      args: ["[path]", "--mode extract-adopt", "[--json]"],
+      output: "handoff_status_query",
+      example: "topogram query handoff-status ./extracted-topogram --mode extract-adopt --json"
+    },
+    {
       name: "risk-summary",
       purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",

@@ -1,0 +1,15 @@
+task task_add_extractor_context_to_extract_adopt_packets {
+  name "Add Extractor Context To Extract Adopt Packets"
+  description "Add read-only extraction context to extract/adopt agent query packets and advertise the extract/adopt query path in query discovery."
+  satisfies [req_extract_adopt_packets_show_extractor_context]
+  acceptance_refs [ac_extract_adopt_queries_include_extractor_context]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_query_context, cap_import_brownfield_app, cap_manage_extractors]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+  domain dom_sdlc_query_agent_context
+}

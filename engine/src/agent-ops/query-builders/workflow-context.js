@@ -154,6 +154,7 @@ export function buildResolvedWorkflowContextPayload({
   reviewBoundary = null,
   maintainedBoundary = null,
   generatorTargets = [],
+  extractionContext = null,
   providerPresets = null,
   teamPresets = null,
   providerManifests = null,
@@ -326,6 +327,7 @@ export function buildResolvedWorkflowContextPayload({
     preferred_queries: preferredQueries,
     artifact_load_order: artifactLoadOrder,
     recommended_artifact_queries: recommendedArtifactQueries,
+    extraction_context: extractionContext,
     effective_write_scope: taskModeArtifact?.write_scope || null,
     effective_review_policy: {
       block_on: reviewBlockers,
@@ -362,6 +364,7 @@ export function buildSingleAgentPlanPayload({
   workspace,
   taskModeArtifact,
   importPlan = null,
+  extractionContext = null,
   resolvedWorkflowContext = null
 }) {
   const primaryArtifacts = stableOrderedUnion([
@@ -377,6 +380,7 @@ export function buildSingleAgentPlanPayload({
     current_focus: currentFocusFromTaskMode(taskModeArtifact),
     next_action: taskModeArtifact?.next_action || null,
     write_scope: taskModeArtifact?.write_scope || null,
+    extraction_context: extractionContext || resolvedWorkflowContext?.extraction_context || null,
     review_boundaries: buildReviewBoundaries(taskModeArtifact, importPlan),
     proof_targets: taskModeArtifact?.verification_targets || null,
     operator_loop: buildOperatorLoopSummary({

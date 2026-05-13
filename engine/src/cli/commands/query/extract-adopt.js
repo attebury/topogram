@@ -16,6 +16,7 @@ import {
   buildTaskMode,
   normalizeTopogramPath,
   readJson,
+  readExtractionContext,
   requireReconcileArtifacts,
   resultOk,
   workflowPresetSelectors
@@ -50,6 +51,7 @@ export function buildImportPlanForContext(context, queryFamily) {
     workspace: topogramRoot,
     selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, queryFamily)
   });
+  const extractionContext = readExtractionContext(topogramRoot);
   return {
     ok: true,
     topogramRoot,
@@ -60,7 +62,8 @@ export function buildImportPlanForContext(context, queryFamily) {
       adoptionPlan,
       taskModeResult.artifact,
       maintainedBundleResult.artifact.maintained_boundary || null,
-      workflowPresets
+      workflowPresets,
+      extractionContext
     )
   };
 }
@@ -85,17 +88,20 @@ export function buildImportAdoptAgentContext(context, queryFamily) {
     workspace: topogramRoot,
     selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, queryFamily)
   });
-  const importPlan = buildImportPlanPayload(adoptionPlanArtifact, taskModeResult.artifact, null, workflowPresets);
+  const extractionContext = readExtractionContext(topogramRoot);
+  const importPlan = buildImportPlanPayload(adoptionPlanArtifact, taskModeResult.artifact, null, workflowPresets, extractionContext);
   const resolvedWorkflowContext = buildResolvedWorkflowContextPayload({
     workspace: topogramRoot,
     taskModeArtifact: taskModeResult.artifact,
     importPlan,
+    extractionContext,
     selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, queryFamily)
   });
   const singleAgentPlan = buildSingleAgentPlanPayload({
     workspace: topogramRoot,
     taskModeArtifact: taskModeResult.artifact,
     importPlan,
+    extractionContext,
     resolvedWorkflowContext
   });
   const multiAgentPlan = buildMultiAgentPlanPayload({
@@ -104,6 +110,7 @@ export function buildImportAdoptAgentContext(context, queryFamily) {
     importPlan,
     report: reconcileReport,
     adoptionStatus,
+    extractionContext,
     resolvedWorkflowContext
   });
   return {

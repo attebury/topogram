@@ -2312,5 +2312,28 @@
       "by": "actor_coding_agent",
       "note": "Focused generated-app workflow coverage passed locally; CI rerun will verify on main after push."
     }
+  ],
+  "task_add_extractor_context_to_extract_adopt_packets": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T23:06:25.370Z",
+      "by": "actor_coding_agent",
+      "note": "Implement extract/adopt agent packets with extractor provenance context."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T23:11:20.231Z",
+      "by": "actor_coding_agent",
+      "note": "Extractor context added to extract/adopt query packets and focused tests pass."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T23:11:25.206Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

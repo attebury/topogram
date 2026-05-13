@@ -147,6 +147,7 @@ export function buildWorkPacketPayload({
   const publishedHandoffPacket = (multiAgentPlan?.handoff_packets || []).find((packet) => packet.from_lane === laneId)
     || handoffTemplateFromLane(lane, multiAgentPlan?.mode || null);
   const resolvedWorkflowContext = multiAgentPlan?.resolved_workflow_context || null;
+  const extractionContext = multiAgentPlan?.extraction_context || resolvedWorkflowContext?.extraction_context || null;
   const presetGuidanceSummary = multiAgentPlan?.preset_guidance_summary || buildPresetGuidanceSummary(null, resolvedWorkflowContext);
   const effectiveWriteScope = lane.workflow_context_overrides?.effective_write_scope || lane.write_scope || resolvedWorkflowContext?.effective_write_scope || null;
   const effectiveVerificationPolicy = lane.workflow_context_overrides?.effective_verification_policy || {
@@ -172,6 +173,7 @@ export function buildWorkPacketPayload({
     preset_guidance_summary: presetGuidanceSummary,
     active_preset_ids: presetGuidanceSummary.active_preset_ids,
     recommended_preset_action: presetGuidanceSummary.recommended_preset_action,
+    extraction_context: extractionContext,
     write_scope: lane.write_scope || null,
     effective_write_scope: effectiveWriteScope,
     owned_targets: lane.owned_targets || null,

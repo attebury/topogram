@@ -25,6 +25,7 @@ test("query help lists discovery commands", () => {
   assert.match(queryHelp.stdout, /topogram query show <name> \[--json\]/);
   assert.match(queryHelp.stdout, /topogram query widget-behavior \[path\]/);
   assert.match(queryHelp.stdout, /widget-behavior/);
+  assert.match(queryHelp.stdout, /extract-plan/);
   assert.match(queryHelp.stdout, /recommended artifact queries/);
 });
 
@@ -42,6 +43,17 @@ test("query list exposes stable query definitions", () => {
   assert.deepEqual(componentBehaviorQuery.selectors, ["projection", "widget"]);
   assert.deepEqual(componentBehaviorQuery.args, ["[path]", "[--projection <id>]", "[--widget <id>]", "[--json]"]);
   assert.match(componentBehaviorQuery.example, /topogram query widget-behavior/);
+
+  const extractPlanQuery = payload.queries.find((query) => query.name === "extract-plan");
+  assert.ok(extractPlanQuery);
+  assert.equal(extractPlanQuery.output, "extract_plan_query");
+  assert.match(extractPlanQuery.purpose, /package extractor context/);
+  assert.match(extractPlanQuery.example, /topogram query extract-plan/);
+
+  const workPacketQuery = payload.queries.find((query) => query.name === "work-packet");
+  assert.ok(workPacketQuery);
+  assert.equal(workPacketQuery.output, "work_packet");
+  assert.deepEqual(workPacketQuery.selectors, ["mode", "lane"]);
 });
 
 test("query show exposes one query definition", () => {

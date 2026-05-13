@@ -469,6 +469,34 @@ test("package-backed extractors merge multiple tracks into one extraction review
     true
   );
 
+  const extractPlanQuery = runCli(["query", "extract-plan", targetRoot, "--json"]);
+  assert.equal(extractPlanQuery.status, 0, extractPlanQuery.stderr || extractPlanQuery.stdout);
+  const extractPlanPayload = JSON.parse(extractPlanQuery.stdout);
+  assert.equal(extractPlanPayload.extraction_context.summary.package_backed_extractor_count, 2);
+  assert.deepEqual(
+    extractPlanPayload.extraction_context.package_backed_extractors.map((entry) => entry.packageName).sort(),
+    ["@scope/topogram-extractor-api-smoke", "@scope/topogram-extractor-db-smoke"]
+  );
+  assert.equal(extractPlanPayload.extraction_context.candidate_counts.dbMaintainedSeams, 1);
+  assert.equal(extractPlanPayload.extraction_context.next_commands.includes("topogram adopt <selector> --dry-run"), true);
+
+  const singleAgentPlan = runCli(["query", "single-agent-plan", targetRoot, "--mode", "extract-adopt", "--json"]);
+  assert.equal(singleAgentPlan.status, 0, singleAgentPlan.stderr || singleAgentPlan.stdout);
+  const singleAgentPayload = JSON.parse(singleAgentPlan.stdout);
+  assert.equal(singleAgentPayload.extraction_context.summary.package_backed_extractor_count, 2);
+  assert.equal(singleAgentPayload.resolved_workflow_context.extraction_context.summary.package_backed_extractor_count, 2);
+
+  const multiAgentPlan = runCli(["query", "multi-agent-plan", targetRoot, "--mode", "extract-adopt", "--json"]);
+  assert.equal(multiAgentPlan.status, 0, multiAgentPlan.stderr || multiAgentPlan.stdout);
+  const multiAgentPayload = JSON.parse(multiAgentPlan.stdout);
+  assert.equal(multiAgentPayload.extraction_context.summary.package_backed_extractor_count, 2);
+
+  const adoptionWorkPacket = runCli(["query", "work-packet", targetRoot, "--mode", "extract-adopt", "--lane", "adoption_operator", "--json"]);
+  assert.equal(adoptionWorkPacket.status, 0, adoptionWorkPacket.stderr || adoptionWorkPacket.stdout);
+  const adoptionWorkPacketPayload = JSON.parse(adoptionWorkPacket.stdout);
+  assert.equal(adoptionWorkPacketPayload.extraction_context.summary.package_backed_extractor_count, 2);
+  assert.equal(adoptionWorkPacketPayload.summary.canonical_writer, true);
+
   const selectorList = runCli(["adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
   const selectorPayload = JSON.parse(selectorList.stdout);

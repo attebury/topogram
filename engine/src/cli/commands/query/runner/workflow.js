@@ -26,6 +26,7 @@ import {
   normalizeTopogramPath,
   printValidationFailure,
   readJson,
+  readExtractionContext,
   resultOk,
   selectorOptions,
   workflowPresetSelectors
@@ -83,7 +84,7 @@ export function runWorkflowQuery(context) {
         workspace: topogramRoot,
         selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, "workflow-preset-activation")
       });
-      importPlan = buildImportPlanPayload(readJson(adoptionPlanPath(topogramRoot)), taskModeResult.artifact, null, workflowPresets);
+      importPlan = buildImportPlanPayload(readJson(adoptionPlanPath(topogramRoot)), taskModeResult.artifact, null, workflowPresets, readExtractionContext(topogramRoot));
     }
     return printJson(buildWorkflowPresetActivationPayload({
       workspace: topogramRoot,
@@ -134,24 +135,28 @@ function runSingleAgentPlan(context, selectors) {
   });
   const topogramRoot = normalizeTopogramPath(context.inputPath);
   let importPlan = null;
+  let extractionContext = null;
   if (context.modeId === "extract-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
+    extractionContext = readExtractionContext(topogramRoot);
     const workflowPresets = buildWorkflowPresetState({
       workspace: topogramRoot,
       selectors: workflowPresetSelectors(result.artifact, context.providerId, context.presetId, "single-agent-plan")
     });
-    importPlan = buildImportPlanPayload(readJson(adoptionPlanPath(topogramRoot)), result.artifact, null, workflowPresets);
+    importPlan = buildImportPlanPayload(readJson(adoptionPlanPath(topogramRoot)), result.artifact, null, workflowPresets, extractionContext);
   }
   const resolvedWorkflowContext = buildResolvedWorkflowContextPayload({
     workspace: topogramRoot,
     taskModeArtifact: result.artifact,
     generatorTargets,
     selectors: workflowPresetSelectors(result.artifact, context.providerId, context.presetId, "single-agent-plan"),
+    extractionContext,
     importPlan
   });
   return printJson(buildSingleAgentPlanPayload({
     workspace: topogramRoot,
     taskModeArtifact: result.artifact,
     importPlan,
+    extractionContext,
     resolvedWorkflowContext
   }));
 }
@@ -186,7 +191,9 @@ function runResolvedWorkflowContext(context, selectors) {
     maintainedBoundaryArtifact: maintainedBundleResult?.artifact?.maintained_boundary || null
   });
   let importPlan = null;
+  let extractionContext = null;
   if (context.modeId === "extract-adopt" && fs.existsSync(adoptionPlanPath(topogramRoot))) {
+    extractionContext = readExtractionContext(topogramRoot);
     const workflowPresets = buildWorkflowPresetState({
       workspace: topogramRoot,
       selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, "resolved-workflow-context")
@@ -195,7 +202,8 @@ function runResolvedWorkflowContext(context, selectors) {
       readJson(adoptionPlanPath(topogramRoot)),
       taskModeResult.artifact,
       maintainedBundleResult?.artifact?.maintained_boundary || null,
-      workflowPresets
+      workflowPresets,
+      extractionContext
     );
   }
   return printJson(buildResolvedWorkflowContextPayload({
@@ -205,6 +213,7 @@ function runResolvedWorkflowContext(context, selectors) {
     reviewBoundary: sliceResult?.artifact?.review_boundary || null,
     maintainedBoundary: maintainedBundleResult?.artifact?.maintained_boundary || null,
     generatorTargets,
+    extractionContext,
     selectors: workflowPresetSelectors(taskModeResult.artifact, context.providerId, context.presetId, "resolved-workflow-context")
   }));
 }
