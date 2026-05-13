@@ -1,13 +1,14 @@
 pitch pitch_package_backed_extractors {
   name "Package-Backed Extractors"
-  description "Evaluate package-backed extractor packs as the extension model for framework-specific brownfield discovery."
+  description "Adopt package-backed extractor packs as the extension model for framework-specific brownfield discovery."
   appetite "medium"
   problem "Extractors are currently engine-owned, which keeps trust simple but will bloat the engine as Topogram adds deeper support for more frameworks, languages, CLIs, databases, and native stacks."
   solution_sketch "Define extractor manifests and policy-gated package adapters that emit reviewable candidates and evidence only, while reconcile and adoption remain engine-owned and explicit."
   rabbit_holes "Do not optimize extractor packs for broad recall by promoting weak evidence or framework guesses into canonical Topogram records."
   no_go_areas "Do not let external extractors mutate source apps, write canonical topo files directly, perform network access by default, or bypass extraction provenance and adoption review."
   affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_manage_extractors]
+  decisions [decision_package_backed_extractors_are_extension_model]
   domain dom_import_adoption
   priority medium
-  status draft
+  status approved
 }

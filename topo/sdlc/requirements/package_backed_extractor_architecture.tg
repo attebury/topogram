@@ -1,0 +1,10 @@
+requirement req_package_backed_extractor_architecture {
+  name "Package Backed Extractor Architecture"
+  description "Topogram must support package-backed extractor packs that are manifest-backed, policy-gated, checked before use, and executed only as review-only candidate producers during brownfield extraction."
+  pitch pitch_package_backed_extractors
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  introduces_rules []
+  respects_rules []
+  priority medium
+  status approved
+}

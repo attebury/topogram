@@ -1871,5 +1871,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "pitch_package_backed_extractors": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T19:17:17.207Z",
+      "by": "actor_coding_agent",
+      "note": "Package-backed extractor architecture is implemented and verified; submit the pitch for approval."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T19:17:17.411Z",
+      "by": "actor_coding_agent",
+      "note": "Package-backed extractors are now the accepted extension model; remaining work should be requirements/tasks."
+    }
+  ],
+  "req_package_backed_extractor_architecture": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T19:19:17.168Z",
+      "by": "actor_coding_agent",
+      "note": "Reviewing package-backed extractor architecture requirement after implementation."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T19:19:17.325Z",
+      "by": "actor_coding_agent",
+      "note": "Package-backed extractor architecture is accepted and already implemented."
+    }
   ]
 }

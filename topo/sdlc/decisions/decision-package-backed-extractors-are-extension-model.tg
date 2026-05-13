@@ -1,0 +1,9 @@
+decision decision_package_backed_extractors_are_extension_model {
+  name "Package Backed Extractors Are Extension Model"
+  description "Framework-specific brownfield discovery belongs in package-backed extractor packs; Topogram core owns extraction persistence, provenance, reconcile, adoption, and canonical topo writes."
+  context ["package-backed extractor architecture is implemented", "first-party Prisma, Express, Drizzle, Node CLI, and React Router extractor packages are published and release-tracked", "fresh npmjs smoke now proves public extractor packages against a brownfield source"]
+  consequences ["extractor packages execute only during topogram extract", "extractor packages emit review-only findings candidates diagnostics and evidence", "external extractors must not mutate source apps write canonical topo files install packages perform network access or define adoption semantics", "remaining extractor work should be tracked as requirements tasks or bugs rather than keeping the architecture pitch draft"]
+  pitch pitch_package_backed_extractors
+  domain dom_import_adoption
+  status accepted
+}
