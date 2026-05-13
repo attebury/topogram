@@ -28,7 +28,8 @@ const firstPartyGeneratorRepos = [
   "topogram-generator-vanilla-web"
 ];
 const firstPartyExtractorRepos = [
-  "topogram-extractor-node-cli"
+  "topogram-extractor-node-cli",
+  "topogram-extractor-react-router"
 ];
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
 const knownCliConsumerRepos = [

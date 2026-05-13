@@ -30,7 +30,9 @@ topogram extractor list
 topogram extractor check ./my-extractor-pack
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
+topogram extractor policy pin @topogram/extractor-react-router@1
 topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
+topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
 ```
 
 Extractor packs run only during `topogram extract`. They return review-only

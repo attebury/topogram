@@ -17,7 +17,8 @@ export const DEFAULT_FIRST_PARTY_GENERATOR_REPOS = [
 ];
 
 export const DEFAULT_FIRST_PARTY_EXTRACTOR_REPOS = [
-  "topogram-extractor-node-cli"
+  "topogram-extractor-node-cli",
+  "topogram-extractor-react-router"
 ];
 
 export const DEFAULT_RELEASE_CONSUMER_REPOS = [
@@ -40,6 +41,7 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOWS = {
   "topogram-generator-swiftui-native": "Generator Verification",
   "topogram-generator-vanilla-web": "Generator Verification",
   "topogram-extractor-node-cli": "Extractor Verification",
+  "topogram-extractor-react-router": "Extractor Verification",
   "topogram-starters": "Starter Verification",
   "topogram-template-todo": "Template Verification",
   "topogram-demo-todo": "Demo Verification",

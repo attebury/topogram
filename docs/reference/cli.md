@@ -62,6 +62,7 @@ topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
 ```bash
 topogram extract ./existing-app --out ./imported-topogram
 topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
+topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
 topogram extractor list
 topogram extractor show topogram/ui-extractors
 topogram extractor check ./extractor-package

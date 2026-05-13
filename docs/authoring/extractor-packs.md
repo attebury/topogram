@@ -7,7 +7,9 @@ diagnostics, and provenance. Topogram core owns persistence, reconcile,
 adoption, and canonical `topo/**` writes.
 
 Use an extractor pack when bundled extraction is too generic for a framework,
-language, CLI, database, or UI evidence family.
+language, CLI, database, or UI evidence family. First-party examples are
+`@topogram/extractor-node-cli` for CLI surfaces and
+`@topogram/extractor-react-router` for React Router UI surfaces.
 
 ## Package Shape
 
@@ -86,6 +88,7 @@ packages are allowed by default. Other packages require an explicit
 ```bash
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
+topogram extractor policy pin @topogram/extractor-react-router@1
 topogram extractor policy check
 ```
 
@@ -103,3 +106,14 @@ topogram adopt --list /private/tmp/extracted --json
 
 Passing `topogram extractor check` proves the manifest, adapter export, and
 minimal smoke shape. It does not replace fixture-based extraction tests.
+
+## First-Party Examples
+
+```bash
+topogram extract ./existing-cli --out ./extracted-cli --from cli --extractor @topogram/extractor-node-cli
+topogram extract ./react-router-app --out ./extracted-ui --from ui --extractor @topogram/extractor-react-router
+```
+
+Both packages emit review-only candidates. The React Router extractor can add
+screen, route, non-resource flow, and widget inference evidence, but adoption is
+still explicit through `topogram adopt`.

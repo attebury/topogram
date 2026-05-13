@@ -58,8 +58,10 @@ test("runtime config preserves current public defaults", () => {
   assert.equal(defaultCatalogSource(config), "https://raw.githubusercontent.com/attebury/topograms/main/topograms.catalog.json");
   assert.ok(releaseConsumerRepos(root).includes("topogram-generator-react-web"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-node-cli"));
+  assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-react-router"));
   assert.equal(releaseConsumerWorkflowName("topogram-starters", root), "Starter Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-node-cli", root), "Extractor Verification");
+  assert.equal(releaseConsumerWorkflowName("topogram-extractor-react-router", root), "Extractor Verification");
   assert.deepEqual(releaseConsumerWorkflowJobs("topograms", root), [
     "Validate catalog",
     "Smoke native starter",
