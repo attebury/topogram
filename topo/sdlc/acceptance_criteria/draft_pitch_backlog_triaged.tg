@@ -1,0 +1,6 @@
+acceptance_criterion ac_draft_pitch_backlog_triaged {
+  name "Draft Pitch Backlog Triaged"
+  description "Given the engine topo has no open tasks but still has draft pitch records, when the pitch backlog is reviewed, then still-relevant pitches are approved or intentionally deferred and no draft pitches remain without a clear disposition."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}

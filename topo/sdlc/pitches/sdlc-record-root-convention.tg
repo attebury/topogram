@@ -10,5 +10,5 @@ pitch pitch_sdlc_record_root_convention {
   decisions [decision_sdlc_records_use_dedicated_record_root]
   domain dom_sdlc_query_agent_context
   priority high
-  status draft
+  status approved
 }

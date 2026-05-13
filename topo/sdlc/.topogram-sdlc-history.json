@@ -2058,5 +2058,181 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_draft_pitch_backlog_triaged": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T22:24:20.875Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for draft pitch backlog triage."
+    }
+  ],
+  "task_triage_draft_pitch_backlog": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T22:24:20.881Z",
+      "by": "actor_coding_agent",
+      "note": "Claim pitch backlog triage."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T22:24:24.646Z",
+      "by": "actor_coding_agent",
+      "note": "Reviewing and aligning remaining draft pitches."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T22:26:34.025Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "pitch_sdlc_record_root_convention": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:24:58.639Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has accepted convention records and completed implementation; submitting for status alignment."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:26:21.236Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the adopted SDLC folder convention."
+    }
+  ],
+  "pitch_dogfood_engine_topo": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:24:58.646Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch already has approved requirements and completed dogfood tasks; submitting for status alignment."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:28.789Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as an active operating theme backed by code-derived topo requirements and drift review."
+    }
+  ],
+  "pitch_ui_contract_maturity": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:24:58.708Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has approved UI/widget requirements and decisions; submitting for status alignment."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:28.803Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the continuing UI/widget maturity theme."
+    }
+  ],
+  "pitch_brownfield_import_maturity": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:24:58.757Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has approved brownfield requirements and completed import hardening tasks; submitting for status alignment."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:28.805Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the continuing brownfield extract/adopt maturity theme."
+    }
+  ],
+  "pitch_improve_cli_import_precision": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:25:11.745Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has an approved precision follow-up requirement and completed verification task; submitting for status alignment."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:26:21.246Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the CLI import precision theme, with follow-up requirements already tracked."
+    }
+  ],
+  "pitch_package_backed_generators": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:25:11.758Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch matches the current package-backed generator model and remains a valid extension theme."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:37.340Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the continuing package-backed generator extension theme."
+    }
+  ],
+  "pitch_agent_query_maturity": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:25:11.761Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has accepted query/agent decisions and remains a valid backlog theme."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:37.346Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as the continuing agent/query maturity theme."
+    }
+  ],
+  "pitch_cli_audience_taxonomy": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:25:11.781Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch produced the internal namespace deferral decision and remains useful as command-surface context."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:37.352Z",
+      "by": "actor_coding_agent",
+      "note": "Approve the command-surface taxonomy theme with internal namespace deferred."
+    }
+  ],
+  "pitch_workspace_hygiene_gate": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T22:25:17.495Z",
+      "by": "actor_coding_agent",
+      "note": "Pitch has a recorded decision and remains a valid future hygiene gate theme."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T22:25:41.710Z",
+      "by": "actor_coding_agent",
+      "note": "Approve as a future separate hygiene-gate theme, not part of graph validity."
+    }
   ]
 }

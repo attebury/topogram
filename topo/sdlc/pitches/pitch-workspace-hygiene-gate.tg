@@ -10,5 +10,5 @@ pitch pitch_workspace_hygiene_gate {
   decisions [decision_workspace_hygiene_is_separate_gate]
   domain dom_workspace_project_config
   priority medium
-  status draft
+  status approved
 }

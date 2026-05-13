@@ -10,5 +10,5 @@ pitch pitch_dogfood_engine_topo {
   decisions [decision_engine_topo_is_maintained, decision_initial_import_ignores_project_history, decision_cli_surface_is_projection_type]
   domain dom_sdlc_query_agent_context
   priority high
-  status draft
+  status approved
 }

@@ -10,5 +10,5 @@ pitch pitch_agent_query_maturity {
   decisions [decision_task_modes_are_operating_patterns, decision_queries_are_read_only_context_packets]
   domain dom_sdlc_query_agent_context
   priority medium
-  status draft
+  status approved
 }

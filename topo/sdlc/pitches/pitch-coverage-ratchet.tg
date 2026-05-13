@@ -9,5 +9,5 @@ pitch pitch_coverage_ratchet {
   affects [cap_run_engine_gates]
   domain dom_engine_quality
   priority low
-  status draft
+  status shaped
 }

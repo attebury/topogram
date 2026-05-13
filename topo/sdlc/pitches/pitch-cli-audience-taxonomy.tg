@@ -10,5 +10,5 @@ pitch pitch_cli_audience_taxonomy {
   decisions [decision_cli_internal_namespace_deferred]
   domain dom_cli
   priority medium
-  status draft
+  status approved
 }

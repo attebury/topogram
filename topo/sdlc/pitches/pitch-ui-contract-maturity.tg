@@ -10,5 +10,5 @@ pitch pitch_ui_contract_maturity {
   decisions [decision_semantic_ui_intent_is_contract_owned, decision_shapes_are_boundary_data]
   domain dom_sdlc_query_agent_context
   priority medium
-  status draft
+  status approved
 }

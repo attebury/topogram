@@ -9,5 +9,5 @@ pitch pitch_package_backed_generators {
   affects [cap_manage_generators, cap_generate_app_outputs, cap_run_engine_gates]
   domain dom_generator_runtime
   priority medium
-  status draft
+  status approved
 }

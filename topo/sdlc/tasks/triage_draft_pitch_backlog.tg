@@ -1,0 +1,14 @@
+task task_triage_draft_pitch_backlog {
+  name "Triage Draft Pitch Backlog"
+  description "Review the remaining draft SDLC pitches after the 0.3.82 release and align each with an approved, deferred, or superseded disposition."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_draft_pitch_backlog_triaged]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_manage_sdlc_records, cap_brief_agent, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type review
+  status done
+}
