@@ -26,6 +26,7 @@ import { explain } from "../../src/sdlc/explain.js";
 import { runSdlcCommitPrep } from "../../src/sdlc/prep.js";
 import { runRelease } from "../../src/sdlc/release.js";
 import { scaffoldNew } from "../../src/sdlc/scaffold.js";
+import { auditWorkspace } from "../../src/sdlc/audit.js";
 import { sdlcAdopt } from "../../src/sdlc/adopt.js";
 import { archiveStatement, archiveEligibleStatements } from "../../src/archive/archive.js";
 import { loadArchive } from "../../src/archive/resolver-bridge.js";
@@ -368,6 +369,79 @@ test("sdlc prep commit includes untracked task files before staging", () => {
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
+});
+
+test("sdlc audit surfaces draft records backed by done tasks", () => {
+  const ast = workspaceFromSource(`
+domain dom_app {
+  name "App"
+  description "App domain"
+  status active
+}
+
+actor actor_dev {
+  name "Developer"
+  description "Developer"
+  status active
+}
+
+capability cap_ship_feature {
+  name "Ship Feature"
+  description "Ship a feature"
+  domain dom_app
+  actors [actor_dev]
+  status active
+}
+
+verification verification_feature {
+  name "Feature Verification"
+  description "Verifies the feature"
+  validates [cap_ship_feature]
+  method contract
+  scenarios [unit]
+  domain dom_app
+  status active
+}
+
+requirement req_feature {
+  name "Feature"
+  description "A feature should exist"
+  affects [cap_ship_feature]
+  domain dom_app
+  priority medium
+  status draft
+}
+
+acceptance_criterion ac_feature_done {
+  name "Feature Done"
+  description "Given the feature, when tests run, then it passes"
+  requirement req_feature
+  status draft
+}
+
+task task_feature_done {
+  name "Feature Done"
+  description "Implement the feature"
+  satisfies [req_feature]
+  acceptance_refs [ac_feature_done]
+  verification_refs [verification_feature]
+  affects [cap_ship_feature]
+  claimed_by [actor_dev]
+  priority medium
+  work_type implementation
+  status done
+}
+`);
+  const resolved = resolveWorkspace(ast);
+  assert.equal(resolved.ok, true);
+  const audit = auditWorkspace("<memory>", resolved);
+  assert.equal(audit.type, "sdlc_audit");
+  assert.equal(audit.ok, false);
+  assert.equal(audit.counts.draftRequirementsWithCompletedTasks, 1);
+  assert.equal(audit.counts.draftAcceptanceCriteriaWithCompletedTasks, 1);
+  assert.equal(audit.counts.doneTasksWithDraftReferences, 1);
+  assert.equal(audit.findings.draftRequirementsWithCompletedTasks[0].id, "req_feature");
+  assert.equal(audit.findings.draftAcceptanceCriteriaWithCompletedTasks[0].id, "ac_feature_done");
 });
 
 test("sdlc-traceability-matrix walks pitch → req → AC → task → verification", () => {

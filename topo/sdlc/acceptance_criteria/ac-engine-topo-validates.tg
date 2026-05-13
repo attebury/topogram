@@ -2,5 +2,5 @@ acceptance_criterion ac_engine_topo_validates {
   name "Engine Topo Validates"
   description "The code-derived engine topo passes topogram check from the repository root."
   requirement req_engine_topo_code_derived
-  status draft
+  status approved
 }

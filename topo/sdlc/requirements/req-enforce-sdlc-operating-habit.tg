@@ -6,5 +6,5 @@ requirement req_enforce_sdlc_operating_habit {
   introduces_rules [rule_spec_is_source_of_truth]
   domain dom_sdlc_query_agent_context
   priority high
-  status draft
+  status approved
 }

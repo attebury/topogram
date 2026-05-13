@@ -2,5 +2,5 @@ acceptance_criterion ac_sdlc_plans_are_optional {
   name "SDLC Plans Are Optional"
   description "Tasks and bugs remain valid without plans; when a plan exists, validation enforces the plan and nested step shape."
   requirement req_sdlc_plans_track_implementation_steps
-  status draft
+  status approved
 }

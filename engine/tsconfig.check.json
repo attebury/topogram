@@ -335,6 +335,7 @@
     "./src/new-project/template-snapshots.js",
     "./src/new-project/template-updates.js",
     "./src/sdlc/adopt.d.ts",
+    "./src/sdlc/audit.js",
     "./src/sdlc/check.d.ts",
     "./src/sdlc/complete.js",
     "./src/sdlc/explain.d.ts",

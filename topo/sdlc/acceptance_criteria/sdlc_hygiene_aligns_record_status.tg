@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_hygiene_aligns_record_status {
+  name "Sdlc Hygiene Aligns Record Status"
+  description "Given completed tasks and passing checks already prove draft SDLC records, when an agent performs an SDLC hygiene pass, then satisfied acceptance criteria and requirements are transitioned through command-owned history while true backlog stays draft."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}

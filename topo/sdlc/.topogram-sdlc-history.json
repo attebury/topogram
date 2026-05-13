@@ -1560,5 +1560,259 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_sdlc_hygiene_aligns_record_status": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:47:37.330Z",
+      "by": "actor_coding_agent",
+      "note": "Approve acceptance for SDLC hygiene alignment."
+    }
+  ],
+  "task_align_sdlc_record_status": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T16:47:54.098Z",
+      "by": "actor_coding_agent",
+      "note": "Claim SDLC hygiene alignment task."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T16:48:01.009Z",
+      "by": "actor_coding_agent",
+      "note": "Start SDLC hygiene alignment."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T16:49:30.792Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "req_enforce_sdlc_operating_habit": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:53.278Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:53.505Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "req_history_drift_review_required": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:53.725Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:53.931Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "req_engine_topo_code_derived": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:54.126Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:54.360Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "req_sdlc_commit_prep_surfaces_open_tasks": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:54.736Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:54.958Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "req_sdlc_plans_track_implementation_steps": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:55.147Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:55.400Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "req_sdlc_records_use_dedicated_record_root": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T16:48:55.633Z",
+      "by": "actor_coding_agent",
+      "note": "Review after completed linked implementation and passing checks."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T16:48:55.822Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_history_drift_review_written": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:09.453Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_engine_topo_validates": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:09.663Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_agent_brief_reads_engine_topo": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:09.886Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_sdlc_policy_is_explicit": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:10.321Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_sdlc_gate_protects_changes": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:10.649Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_done_tasks_have_verification": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:10.860Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_commit_prep_classifies_open_tasks": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:11.080Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_task_queries_work_before_done": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:11.306Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_sdlc_plans_are_optional": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:11.623Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_plan_step_status_is_commanded": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:11.829Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_plan_slices_feed_agents": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:12.044Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_sdlc_scaffolds_write_to_record_root": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:12.254Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_engine_dogfood_sdlc_records_are_grouped": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:12.563Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
+  ],
+  "ac_custom_sdlc_layouts_still_validate": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T16:49:12.776Z",
+      "by": "actor_coding_agent",
+      "note": "Approve after completed linked implementation and passing checks."
+    }
   ]
 }

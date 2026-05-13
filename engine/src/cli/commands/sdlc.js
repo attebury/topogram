@@ -220,6 +220,21 @@ export async function runSdlcCommand(context) {
     return result.ok ? 0 : 1;
   }
 
+  if (commandArgs.sdlcCommand === "audit") {
+    const { auditWorkspace } = await import("../../sdlc/audit.js");
+    const resolved = resolveSdlcWorkspace(sdlcRoot);
+    if (!resolved) {
+      return 1;
+    }
+    const result = auditWorkspace(sdlcRoot, resolved);
+    if (json) {
+      console.log(stableStringify(result));
+    } else {
+      printSdlcAudit(result);
+    }
+    return result.ok ? 0 : 1;
+  }
+
   if (commandArgs.sdlcCommand === "link") {
     const { linkSdlcRecord } = await import("../../sdlc/link.js");
     const result = linkSdlcRecord(sdlcRoot, commandArgs.sdlcFromId, commandArgs.sdlcToId, {
@@ -373,4 +388,31 @@ export async function runSdlcCommand(context) {
   }
 
   throw new Error(`Unknown sdlc command '${commandArgs.sdlcCommand}'`);
+}
+
+/**
+ * @param {AnyRecord} result
+ */
+function printSdlcAudit(result) {
+  console.log("SDLC audit");
+  console.log(`Workspace: ${result.workspaceRoot}`);
+  console.log(`Draft requirements with completed task evidence: ${result.counts?.draftRequirementsWithCompletedTasks || 0}`);
+  console.log(`Draft acceptance criteria with completed task evidence: ${result.counts?.draftAcceptanceCriteriaWithCompletedTasks || 0}`);
+  console.log(`Approved acceptance criteria with draft parent requirements: ${result.counts?.approvedAcceptanceCriteriaWithDraftRequirements || 0}`);
+  console.log(`Done tasks with draft refs: ${result.counts?.doneTasksWithDraftReferences || 0}`);
+  console.log(`Remaining draft backlog: ${result.counts?.remainingDraftPitches || 0} pitch(es), ${result.counts?.remainingDraftRequirements || 0} requirement(s), ${result.counts?.remainingDraftAcceptanceCriteria || 0} acceptance criterion/criteria`);
+  const findings = [
+    ...(result.findings?.draftRequirementsWithCompletedTasks || []),
+    ...(result.findings?.draftAcceptanceCriteriaWithCompletedTasks || []),
+    ...(result.findings?.approvedAcceptanceCriteriaWithDraftRequirements || []),
+    ...(result.findings?.doneTasksWithDraftReferences || [])
+  ];
+  if (findings.length > 0) {
+    console.log("Actionable findings:");
+    for (const finding of findings.slice(0, 10)) {
+      console.log(`- ${finding.id}: ${finding.recommendedCommand || "review status"}`);
+    }
+  } else {
+    console.log("Actionable findings: none");
+  }
 }

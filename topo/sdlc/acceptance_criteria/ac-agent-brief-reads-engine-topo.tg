@@ -2,5 +2,5 @@ acceptance_criterion ac_agent_brief_reads_engine_topo {
   name "Agent Brief Reads Engine Topo"
   description "topogram agent brief --json returns project guidance from the maintained engine topo."
   requirement req_engine_topo_code_derived
-  status draft
+  status approved
 }

@@ -6,5 +6,5 @@ requirement req_engine_topo_code_derived {
   introduces_rules [rule_spec_is_source_of_truth]
   domain dom_sdlc_query_agent_context
   priority high
-  status draft
+  status approved
 }
