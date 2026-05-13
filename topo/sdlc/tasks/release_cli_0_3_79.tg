@@ -1,0 +1,14 @@
+task task_release_cli_0_3_79 {
+  name "Release Cli 0 3 79"
+  description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.79 after the public command vocabulary cutover."
+  satisfies [req_clear_command_vocabulary]
+  acceptance_refs [ac_cli_0_3_79_release_published]
+  verification_refs [verification_release_status_strict]
+  affects [cap_verify_release_status, cap_roll_consumer_packages, cap_create_project, cap_import_brownfield_app, cap_adopt_import_candidates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

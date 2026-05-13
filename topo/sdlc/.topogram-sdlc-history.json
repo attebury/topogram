@@ -1397,5 +1397,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_release_cli_0_3_79": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T00:42:37.233Z",
+      "by": "actor_coding_agent",
+      "note": "Release rollout completed and strict status passed."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T00:42:50.885Z",
+      "by": "actor_coding_agent",
+      "note": "Recording completed 0.3.79 release evidence."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T00:42:57.737Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
