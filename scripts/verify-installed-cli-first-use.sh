@@ -57,7 +57,7 @@ if [[ "$DISABLED_STATUS" -eq 0 ]]; then
   echo "Expected catalog-disabled catalog copy to fail." >&2
   exit 1
 fi
-if [[ "$DISABLED_OUTPUT" != *"Catalog access is disabled"* && "$DISABLED_OUTPUT" != *"Could not resolve template"* ]]; then
+if [[ "$DISABLED_OUTPUT" != *"Catalog source is disabled"* && "$DISABLED_OUTPUT" != *"could not be resolved"* ]]; then
   echo "Expected catalog-disabled guidance to explain catalog-backed copy failure." >&2
   echo "$DISABLED_OUTPUT" >&2
   exit 1

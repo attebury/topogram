@@ -49,7 +49,7 @@ echo "Checking public package and catalog access..."
 echo "Creating starter from public catalog alias '$TEMPLATE_ALIAS'..."
 (
   cd "$CONSUMER_DIR"
-  "$TOPOGRAM_BIN" new "./$STARTER_NAME" --template "$TEMPLATE_ALIAS"
+  "$TOPOGRAM_BIN" copy "$TEMPLATE_ALIAS" "./$STARTER_NAME"
 )
 
 STARTER_DIR="$CONSUMER_DIR/$STARTER_NAME"
