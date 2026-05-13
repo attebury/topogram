@@ -1,0 +1,12 @@
+bug bug_ci_help_all_query_widget_behavior_assertion {
+  name "Ci Help All Query Widget Behavior Assertion"
+  description "Fast Verification failed because generated app workflow help coverage asserted a legacy internal help-all line instead of the public query widget-behavior command that users and agents rely on."
+  reproduction "Inspect run 25830511590: engine verification failed at generated-app-workflow.test.js line 665 expecting /query widget-behavior <path>/ in help all output."
+  affects [cap_query_context]
+  violates [rule_tests_prove_consumer_value]
+  priority medium
+  severity medium
+  status verified
+  fixed_in [task_stabilize_help_all_query_widget_behavior_assertion]
+  fixed_in_verification [verification_engine_gate]
+}

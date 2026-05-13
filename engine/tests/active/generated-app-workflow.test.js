@@ -662,7 +662,7 @@ test("public authoring-to-app commands check and generate app bundles", () => {
 
   const fullHelp = runCli(["help", "all"]);
   assert.equal(fullHelp.status, 0, fullHelp.stderr || fullHelp.stdout);
-  assert.match(fullHelp.stdout, /query widget-behavior <path>/);
+  assert.match(fullHelp.stdout, /topogram query widget-behavior/);
   assert.match(fullHelp.stdout, /query work-packet/);
 
   const generateHelp = runCli(["generate", "--help"]);

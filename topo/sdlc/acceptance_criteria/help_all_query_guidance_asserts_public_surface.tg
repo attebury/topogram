@@ -1,0 +1,6 @@
+acceptance_criterion ac_help_all_query_guidance_asserts_public_surface {
+  name "Help All Query Guidance Asserts Public Surface"
+  description "Given help-all coverage for query commands, when the generated app workflow test runs, then it asserts the public topogram query widget-behavior command surface rather than a legacy internal node invocation line."
+  requirement req_docs_are_current_and_audience_oriented
+  status approved
+}

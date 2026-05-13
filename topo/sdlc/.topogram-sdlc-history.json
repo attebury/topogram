@@ -2266,5 +2266,51 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_stabilize_help_all_query_widget_behavior_assertion": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T22:46:01.423Z",
+      "by": "actor_coding_agent",
+      "note": "Fix Fast Verification help-all assertion against public query command surface."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T22:48:13.736Z",
+      "by": "actor_coding_agent",
+      "note": "Focused help assertion fix implemented and verified locally."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T22:48:20.465Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_ci_help_all_query_widget_behavior_assertion": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-13T22:48:40.240Z",
+      "by": "actor_coding_agent",
+      "note": "Fix in progress under task_stabilize_help_all_query_widget_behavior_assertion."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-13T22:48:50.437Z",
+      "by": "actor_coding_agent",
+      "note": "Fix committed locally through the help assertion update."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-13T22:48:53.987Z",
+      "by": "actor_coding_agent",
+      "note": "Focused generated-app workflow coverage passed locally; CI rerun will verify on main after push."
+    }
   ]
 }
