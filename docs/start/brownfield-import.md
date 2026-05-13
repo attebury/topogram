@@ -25,8 +25,17 @@ Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and
 Use package-backed extractor packs only when you deliberately want extra
 framework-specific discovery beyond the bundled extractors:
 
+| Source evidence | Extractor package | Track | Use it for |
+| --- | --- | --- | --- |
+| Prisma schema and migrations | `@topogram/extractor-prisma-db` | `db` | Entity, enum, relation, index, and maintained DB seam candidates |
+| Express routers and route modules | `@topogram/extractor-express-api` | `api` | Route, capability, parameter, auth, and stack evidence |
+| Drizzle config, schema modules, migrations | `@topogram/extractor-drizzle-db` | `db` | Table, relation, index, and maintained DB seam candidates |
+| Node package CLI code | `@topogram/extractor-node-cli` | `cli` | Commands, options, effects, and `cli_surface` candidates |
+| React Router route trees | `@topogram/extractor-react-router` | `ui` | Screens, routes, non-resource flows, widgets, and UI stack evidence |
+
 ```bash
 topogram extractor list
+topogram extractor show @topogram/extractor-prisma-db
 topogram extractor check ./my-extractor-pack
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
@@ -45,7 +54,9 @@ Extractor packs run only during `topogram extract`. They return review-only
 candidates, findings, diagnostics, and evidence. Topogram core still owns
 candidate persistence, provenance, reconcile, adoption, and canonical `topo/**`
 writes. Extractors must not mutate the source app, install packages, or perform
-network access.
+network access. `topogram extractor list` shows first-party packages even when
+they are not installed so agents can select the right package, install it, pin
+it in policy, then run extraction deliberately.
 
 ## 2. Review extraction health
 

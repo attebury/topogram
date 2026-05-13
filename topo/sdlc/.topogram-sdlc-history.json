@@ -1489,5 +1489,53 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "req_extractor_selection_ux": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T15:06:59.511Z",
+      "by": "actor_coding_agent",
+      "note": "Prepare extractor UX requirement before patch release."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T15:07:16.426Z",
+      "by": "actor_coding_agent",
+      "note": "Approve focused extractor UX requirement for the patch batch."
+    }
+  ],
+  "ac_extractor_selection_guidance": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T15:06:59.512Z",
+      "by": "actor_coding_agent",
+      "note": "Acceptance criterion is concrete enough for this UX batch."
+    }
+  ],
+  "task_polish_extractor_selection_ux": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T15:07:16.427Z",
+      "by": "actor_coding_agent",
+      "note": "Claim extractor UX polishing before CLI patch release."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T15:08:02.000Z",
+      "by": "actor_coding_agent",
+      "note": "Start extractor UX implementation."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T15:17:23.590Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

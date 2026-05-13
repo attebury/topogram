@@ -1,0 +1,10 @@
+requirement req_extractor_selection_ux {
+  name "Extractor Selection Ux"
+  description "Extractor discovery should help humans and agents choose, install, pin, and run the correct first-party extractor package before starting brownfield extraction."
+  pitch pitch_package_backed_extractors
+  affects [cap_manage_extractors, cap_import_brownfield_app]
+  introduces_rules []
+  respects_rules []
+  priority medium
+  status approved
+}

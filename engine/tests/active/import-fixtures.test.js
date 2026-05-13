@@ -203,13 +203,37 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(list.status, 0, list.stderr || list.stdout);
   const listPayload = JSON.parse(list.stdout);
   assert.equal(listPayload.summary.bundled >= 6, true);
+  assert.equal(listPayload.summary.knownFirstParty >= 5, true);
+  assert.equal(listPayload.summary.missingFirstParty >= 5, true);
   assert.equal(listPayload.extractors.some((item) => item.id === "topogram/cli-extractors" && item.executesPackageCode === false), true);
+  assert.equal(listPayload.groups.db.some((item) => item.package === "@topogram/extractor-prisma-db"), true);
+  assert.equal(listPayload.groups.db.some((item) => item.package === "@topogram/extractor-drizzle-db"), true);
+  assert.equal(listPayload.groups.api.some((item) => item.package === "@topogram/extractor-express-api"), true);
+  assert.equal(listPayload.groups.ui.some((item) => item.package === "@topogram/extractor-react-router"), true);
+  assert.equal(listPayload.groups.cli.some((item) => item.package === "@topogram/extractor-node-cli"), true);
+  const prismaListItem = listPayload.extractors.find((item) => item.package === "@topogram/extractor-prisma-db");
+  assert.equal(prismaListItem.knownFirstParty, true);
+  assert.equal(prismaListItem.installed, false);
+  assert.match(prismaListItem.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
+  assert.match(prismaListItem.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
+  assert.match(prismaListItem.extractCommand, /topogram extract \.\/prisma-app --out \.\/imported-topogram --from db --extractor @topogram\/extractor-prisma-db/);
 
   const show = runCli(["extractor", "show", "topogram/cli-extractors", "--json"]);
   assert.equal(show.status, 0, show.stderr || show.stdout);
   const showPayload = JSON.parse(show.stdout);
   assert.equal(showPayload.extractor.id, "topogram/cli-extractors");
   assert.deepEqual(showPayload.extractor.tracks, ["cli"]);
+
+  const showFirstParty = runCli(["extractor", "show", "@topogram/extractor-prisma-db", "--json"]);
+  assert.equal(showFirstParty.status, 0, showFirstParty.stderr || showFirstParty.stdout);
+  const showFirstPartyPayload = JSON.parse(showFirstParty.stdout);
+  assert.equal(showFirstPartyPayload.extractor.package, "@topogram/extractor-prisma-db");
+  assert.equal(showFirstPartyPayload.extractor.installed, false);
+  assert.equal(showFirstPartyPayload.extractor.executesPackageCode, false);
+  assert.match(showFirstPartyPayload.extractor.useWhen, /Prisma/);
+  assert.match(showFirstPartyPayload.extractor.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
+  assert.match(showFirstPartyPayload.extractor.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
+  assert.match(showFirstPartyPayload.extractor.extractCommand, /--from db --extractor @topogram\/extractor-prisma-db/);
 
   const check = runCli(["extractor", "check", packageRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);

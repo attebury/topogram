@@ -102,6 +102,11 @@ topogram extractor policy check
 No dynamic installation is performed. A package-backed extractor must already be
 installed, or you must pass a local package path.
 
+Use `topogram extractor list` to see bundled packs and first-party package
+recommendations grouped by track. Use `topogram extractor show <package>` before
+installing when you need the package purpose, install command, policy pin
+command, and a concrete extract command.
+
 ## Author Checks
 
 ```bash

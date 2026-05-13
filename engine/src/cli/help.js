@@ -107,8 +107,10 @@ export function printUsage(options = {}) {
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator policy check");
   console.log("  topogram extractor list");
+  console.log("  topogram extractor show @topogram/extractor-prisma-db");
   console.log("  topogram extractor check ./extractor-package");
   console.log("  topogram extractor policy check");
+  console.log("  topogram extract ./express-api --out ./extracted-topogram --from api --extractor @topogram/extractor-express-api");
   console.log("  topogram generate");
   console.log("  topogram extract ./existing-app --out ./extracted-topogram");
   console.log("  topogram extract diff ./extracted-topogram");

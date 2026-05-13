@@ -1,0 +1,14 @@
+task task_polish_extractor_selection_ux {
+  name "Polish Extractor Selection Ux"
+  description "Improve extractor list/show/policy output, docs, and tests so first-party package-backed extractors are discoverable before the next CLI patch release."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_selection_guidance]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors, cap_import_brownfield_app]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

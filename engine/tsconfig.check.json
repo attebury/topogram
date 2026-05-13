@@ -30,6 +30,7 @@
     "./src/generator-policy.d.ts",
     "./src/extractor-policy.js",
     "./src/extractor/check.js",
+    "./src/extractor/first-party.js",
     "./src/extractor/packages.js",
     "./src/extractor/registry.js",
     "./src/package-adapters/index.js",

@@ -57,7 +57,7 @@ topogram widget behavior ./topo --projection proj_web_surface --json
 topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
 ```
 
-## Brownfield import
+## Brownfield extract/adopt
 
 ```bash
 topogram extract ./existing-app --out ./imported-topogram
@@ -67,6 +67,7 @@ topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @t
 topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api
 topogram extract ./drizzle-app --out ./imported-topogram --from db --extractor @topogram/extractor-drizzle-db
 topogram extractor list
+topogram extractor show @topogram/extractor-prisma-db
 topogram extractor show topogram/ui-extractors
 topogram extractor check ./extractor-package
 topogram extractor policy check

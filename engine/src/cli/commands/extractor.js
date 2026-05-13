@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { stableStringify } from "../../format.js";
 import { checkExtractorPack } from "../../extractor/check.js";
+import { FIRST_PARTY_EXTRACTOR_PACKAGES, firstPartyExtractorInfo } from "../../extractor/first-party.js";
 import {
   EXTRACTOR_MANIFESTS,
   getExtractorManifest,
@@ -22,6 +23,8 @@ import {
   parseExtractorPolicyPin,
   writeExtractorPolicy
 } from "../../extractor-policy.js";
+
+const EXTRACTOR_TRACK_ORDER = ["db", "api", "ui", "cli", "workflows", "verification", "unknown"];
 
 export function printExtractorHelp() {
   console.log("Usage: topogram extractor list [--json]");
@@ -43,9 +46,11 @@ export function printExtractorHelp() {
   console.log("Examples:");
   console.log("  topogram extractor list");
   console.log("  topogram extractor show topogram/api-extractors");
+  console.log("  topogram extractor show @topogram/extractor-prisma-db");
   console.log("  topogram extractor check ./extractor-package");
   console.log("  topogram extractor policy init");
   console.log("  topogram extractor policy pin @topogram/extractor-node-cli@1");
+  console.log("  topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api");
 }
 
 /**
@@ -79,26 +84,104 @@ function declaredExtractorPackages(cwd) {
 }
 
 /**
+ * @param {string|null|undefined} packageName
+ * @param {string|null|undefined} version
+ * @returns {string|null}
+ */
+function extractorPolicyPinCommand(packageName, version) {
+  return packageName ? `topogram extractor policy pin ${packageName}@${version || "1"}` : null;
+}
+
+/**
+ * @param {string|null|undefined} packageName
+ * @param {string[]} tracks
+ * @param {string|null|undefined} exampleSource
+ * @returns {string|null}
+ */
+function extractorRunCommand(packageName, tracks, exampleSource) {
+  if (!packageName) {
+    return null;
+  }
+  const trackList = tracks.length > 0 ? tracks.join(",") : "db,api,ui,cli";
+  return `topogram extract ${exampleSource || "./existing-app"} --out ./imported-topogram --from ${trackList} --extractor ${packageName}`;
+}
+
+/**
+ * @param {Record<string, any>} extractor
+ * @returns {{ id: string|null, package: string|null, label: string|null, source: string, installed: boolean, knownFirstParty: boolean, useWhen: string|null, extractCommand: string|null }}
+ */
+function groupExtractorEntry(extractor) {
+  return {
+    id: extractor.id || null,
+    package: extractor.package || null,
+    label: extractor.label || null,
+    source: extractor.source,
+    installed: Boolean(extractor.installed),
+    knownFirstParty: Boolean(extractor.knownFirstParty),
+    useWhen: extractor.useWhen || null,
+    extractCommand: extractor.extractCommand || null
+  };
+}
+
+/**
+ * @param {Record<string, any>[]} extractors
+ * @returns {Record<string, ReturnType<typeof groupExtractorEntry>[]>}
+ */
+function groupExtractorsByTrack(extractors) {
+  /** @type {Record<string, ReturnType<typeof groupExtractorEntry>[]>} */
+  const groups = {};
+  for (const track of EXTRACTOR_TRACK_ORDER) {
+    groups[track] = [];
+  }
+  for (const extractor of extractors) {
+    const tracks = Array.isArray(extractor.tracks) && extractor.tracks.length > 0 ? extractor.tracks : ["unknown"];
+    for (const track of tracks) {
+      if (!groups[track]) {
+        groups[track] = [];
+      }
+      groups[track].push(groupExtractorEntry(extractor));
+    }
+  }
+  for (const entries of Object.values(groups)) {
+    entries.sort((left, right) => String(left.label || left.id || left.package || "").localeCompare(String(right.label || right.id || right.package || "")));
+  }
+  return Object.fromEntries(Object.entries(groups).filter(([, entries]) => entries.length > 0));
+}
+
+/**
  * @param {any} manifest
  * @param {{ installed?: boolean, manifestPath?: string|null, packageRoot?: string|null, errors?: string[] }} [metadata]
  * @returns {Record<string, any>}
  */
 function extractorManifestSummary(manifest, metadata = {}) {
-  const installCommand = manifest.package ? packageExtractorInstallCommand(manifest.package) : null;
+  const firstParty = firstPartyExtractorInfo(manifest.package || manifest.id);
+  const packageName = manifest.package || null;
+  const tracks = manifest.tracks || [];
+  const version = manifest.version || firstParty?.version || "1";
+  const installCommand = packageName ? packageExtractorInstallCommand(packageName) : null;
+  const policyPinCommand = extractorPolicyPinCommand(packageName, version);
+  const extractCommand = extractorRunCommand(packageName, tracks, firstParty?.exampleSource);
   return {
     id: manifest.id,
-    version: manifest.version,
-    tracks: manifest.tracks || [],
+    version,
+    label: firstParty?.label || null,
+    tracks,
     extractors: manifest.extractors || [],
     stack: manifest.stack || {},
     capabilities: manifest.capabilities || {},
     candidateKinds: manifest.candidateKinds || [],
     evidenceTypes: manifest.evidenceTypes || [],
+    useWhen: firstParty?.useWhen || null,
+    extracts: firstParty?.extracts || [],
+    knownFirstParty: Boolean(firstParty),
     source: manifest.source,
     loadsAdapter: false,
     executesPackageCode: false,
-    ...(manifest.package ? { package: manifest.package } : {}),
+    ...(packageName ? { package: packageName } : {}),
     ...(installCommand ? { installCommand } : {}),
+    ...(policyPinCommand ? { policyPinCommand } : {}),
+    ...(extractCommand ? { extractCommand } : {}),
+    ...(packageName ? { showCommand: `topogram extractor show ${packageName}` } : {}),
     installed: metadata.installed !== false,
     manifestPath: metadata.manifestPath || null,
     packageRoot: metadata.packageRoot || null,
@@ -107,24 +190,63 @@ function extractorManifestSummary(manifest, metadata = {}) {
 }
 
 /**
+ * @param {typeof FIRST_PARTY_EXTRACTOR_PACKAGES[number]} info
+ * @returns {Record<string, any>}
+ */
+function firstPartyExtractorPlaceholder(info) {
+  return {
+    id: info.id,
+    version: info.version,
+    label: info.label,
+    tracks: info.tracks,
+    extractors: info.extractors,
+    stack: info.stack,
+    capabilities: info.capabilities,
+    candidateKinds: info.candidateKinds,
+    evidenceTypes: info.evidenceTypes,
+    useWhen: info.useWhen,
+    extracts: info.extracts,
+    knownFirstParty: true,
+    source: "package",
+    loadsAdapter: false,
+    executesPackageCode: false,
+    package: info.package,
+    installCommand: packageExtractorInstallCommand(info.package),
+    policyPinCommand: extractorPolicyPinCommand(info.package, info.version),
+    extractCommand: extractorRunCommand(info.package, info.tracks, info.exampleSource),
+    showCommand: `topogram extractor show ${info.package}`,
+    installed: false,
+    manifestPath: null,
+    packageRoot: null,
+    errors: []
+  };
+}
+
+/**
  * @param {string} cwd
- * @returns {{ ok: boolean, cwd: string, extractors: Record<string, any>[], summary: Record<string, number> }}
+ * @returns {{ ok: boolean, cwd: string, extractors: Record<string, any>[], groups: Record<string, ReturnType<typeof groupExtractorEntry>[]>, summary: Record<string, number> }}
  */
 export function buildExtractorListPayload(cwd) {
   const extractors = EXTRACTOR_MANIFESTS
     .map((manifest) => extractorManifestSummary(manifest))
     .sort((left, right) => left.id.localeCompare(right.id));
+  const seenPackages = new Set(extractors.map((extractor) => extractor.package).filter(Boolean));
+  const seenIds = new Set(extractors.map((extractor) => extractor.id).filter(Boolean));
   for (const packageName of declaredExtractorPackages(cwd)) {
     const loaded = loadPackageExtractorManifest(packageName, cwd);
     if (loaded.manifest) {
-      extractors.push(extractorManifestSummary(loaded.manifest, {
+      const summary = extractorManifestSummary(loaded.manifest, {
         installed: true,
         manifestPath: loaded.manifestPath,
         packageRoot: loaded.packageRoot,
         errors: loaded.errors
-      }));
+      });
+      extractors.push(summary);
+      if (summary.package) seenPackages.add(summary.package);
+      if (summary.id) seenIds.add(summary.id);
     } else {
-      extractors.push({
+      const firstParty = firstPartyExtractorInfo(packageName);
+      const fallback = firstParty ? firstPartyExtractorPlaceholder(firstParty) : {
         id: null,
         version: null,
         tracks: [],
@@ -133,26 +255,44 @@ export function buildExtractorListPayload(cwd) {
         capabilities: {},
         candidateKinds: [],
         evidenceTypes: [],
+        useWhen: null,
+        extracts: [],
+        knownFirstParty: false,
         source: "package",
         package: packageName,
         installCommand: packageExtractorInstallCommand(packageName),
+        policyPinCommand: null,
+        extractCommand: null,
+        showCommand: `topogram extractor show ${packageName}`,
         installed: false,
         manifestPath: loaded.manifestPath,
         packageRoot: loaded.packageRoot,
         errors: loaded.errors
-      });
+      };
+      extractors.push({ ...fallback, errors: loaded.errors });
+      seenPackages.add(packageName);
+      if (fallback.id) seenIds.add(fallback.id);
+    }
+  }
+  for (const firstParty of FIRST_PARTY_EXTRACTOR_PACKAGES) {
+    if (!seenPackages.has(firstParty.package) && !seenIds.has(firstParty.id)) {
+      extractors.push(firstPartyExtractorPlaceholder(firstParty));
     }
   }
   extractors.sort((left, right) => String(left.id || left.package || "").localeCompare(String(right.id || right.package || "")));
+  const groups = groupExtractorsByTrack(extractors);
   return {
     ok: extractors.every((extractor) => extractor.errors.length === 0),
     cwd,
     extractors,
+    groups,
     summary: {
       total: extractors.length,
       bundled: extractors.filter((extractor) => extractor.source === "bundled").length,
       package: extractors.filter((extractor) => extractor.source === "package").length,
-      installed: extractors.filter((extractor) => extractor.installed).length
+      installed: extractors.filter((extractor) => extractor.installed).length,
+      knownFirstParty: extractors.filter((extractor) => extractor.knownFirstParty).length,
+      missingFirstParty: extractors.filter((extractor) => extractor.knownFirstParty && !extractor.installed).length
     }
   };
 }
@@ -184,6 +324,10 @@ export function buildExtractorShowPayload(spec, cwd) {
       errors: []
     };
   }
+  const firstParty = firstPartyExtractorInfo(spec);
+  if (firstParty) {
+    return { ok: true, sourceSpec: spec, extractor: firstPartyExtractorPlaceholder(firstParty), errors: [] };
+  }
   return { ok: false, sourceSpec: spec, extractor: null, errors: loaded.errors };
 }
 
@@ -193,23 +337,36 @@ export function buildExtractorShowPayload(spec, cwd) {
  */
 export function printExtractorList(payload) {
   console.log("Topogram extractors");
-  console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; installed: ${payload.summary.installed}`);
+  console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; installed: ${payload.summary.installed}; first-party missing: ${payload.summary.missingFirstParty || 0}`);
+  console.log("Package-backed extractors are listed for discovery even before they are installed.");
   console.log("");
-  for (const extractor of payload.extractors) {
-    const id = extractor.id || extractor.package || "unknown";
-    const status = extractor.errors.length > 0
-      ? "invalid"
-      : extractor.source === "package"
-        ? (extractor.installed ? "package installed" : "package missing")
-        : "bundled";
-    console.log(`- ${id}${extractor.version ? `@${extractor.version}` : ""} (${extractor.tracks.join(", ") || "unknown"}, ${status})`);
-    console.log(`  Source: ${extractor.source}`);
-    console.log("  Adapter loaded: no");
-    console.log("  Executes package code: no");
-    console.log(`  Extractors: ${extractor.extractors.join(", ") || "none"}`);
-    if (extractor.package) console.log(`  Package: ${extractor.package}`);
-    if (extractor.installCommand) console.log(`  Install: ${extractor.installCommand}`);
-    for (const error of extractor.errors || []) console.log(`  Error: ${error}`);
+  for (const track of EXTRACTOR_TRACK_ORDER) {
+    const entries = (payload.groups || {})[track] || [];
+    if (entries.length === 0) {
+      continue;
+    }
+    console.log(`${track}:`);
+    for (const entry of entries) {
+      const extractor = /** @type {Record<string, any>} */ (payload.extractors.find((item) => (entry.package && item.package === entry.package) || (entry.id && item.id === entry.id)) || entry);
+      const id = extractor.id || extractor.package || "unknown";
+      const status = extractor.errors.length > 0
+        ? "invalid"
+        : extractor.source === "package"
+          ? (extractor.installed ? "package installed" : "package missing")
+          : "bundled";
+      console.log(`- ${extractor.label ? `${extractor.label} ` : ""}${id}${extractor.version ? `@${extractor.version}` : ""} (${status})`);
+      if (extractor.useWhen) console.log(`  Use: ${extractor.useWhen}`);
+      console.log(`  Source: ${extractor.source}`);
+      console.log("  Adapter loaded: no");
+      console.log("  Executes package code: no");
+      console.log(`  Extractors: ${extractor.extractors.join(", ") || "none"}`);
+      if (extractor.package) console.log(`  Package: ${extractor.package}`);
+      if (extractor.installCommand) console.log(`  Install: ${extractor.installCommand}`);
+      if (extractor.policyPinCommand) console.log(`  Policy: ${extractor.policyPinCommand}`);
+      if (extractor.extractCommand) console.log(`  Extract: ${extractor.extractCommand}`);
+      for (const error of extractor.errors || []) console.log(`  Error: ${error}`);
+    }
+    console.log("");
   }
 }
 
@@ -229,8 +386,14 @@ export function printExtractorShow(payload) {
   console.log(`Source: ${extractor.source}`);
   console.log("Adapter loaded: no");
   console.log("Executes package code: no");
+  if (extractor.label) console.log(`Label: ${extractor.label}`);
+  if (extractor.useWhen) console.log(`Use: ${extractor.useWhen}`);
+  if (extractor.extracts?.length) console.log(`Extracts: ${extractor.extracts.join(", ")}`);
+  console.log(`Installed: ${extractor.installed ? "yes" : "no"}`);
   if (extractor.package) console.log(`Package: ${extractor.package}`);
   if (extractor.installCommand) console.log(`Install: ${extractor.installCommand}`);
+  if (extractor.policyPinCommand) console.log(`Policy: ${extractor.policyPinCommand}`);
+  if (extractor.extractCommand) console.log(`Extract: ${extractor.extractCommand}`);
   if (extractor.manifestPath) console.log(`Manifest: ${extractor.manifestPath}`);
   console.log(`Extractors: ${extractor.extractors.join(", ") || "none"}`);
   console.log(`Candidate kinds: ${extractor.candidateKinds.join(", ") || "none"}`);
@@ -282,6 +445,9 @@ export function buildExtractorPolicyStatusPayload(projectPath) {
       version,
       allowed: extractorPackageAllowed(policy, packageName),
       installed: Boolean(loaded.manifest),
+      knownFirstParty: Boolean(firstPartyExtractorInfo(packageName)),
+      installCommand: packageExtractorInstallCommand(packageName),
+      showCommand: `topogram extractor show ${packageName}`,
       manifestPath: loaded.manifestPath,
       packageRoot: loaded.packageRoot,
       errors: [...loaded.errors, ...diagnostics.filter((diagnostic) => diagnostic.severity === "error").map((diagnostic) => diagnostic.message)]
@@ -371,8 +537,12 @@ export function printExtractorPolicyStatus(payload) {
   console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
   console.log(`Default policy active: ${payload.defaulted ? "yes" : "no"}`);
   console.log(`Enabled packages: ${payload.summary.enabledPackages}`);
+  console.log("Default allowlist: bundled topogram/* extractors and first-party @topogram/extractor-* packages.");
+  console.log("Install behavior: Topogram does not install extractor packages automatically.");
   for (const item of payload.packages) {
     console.log(`- ${item.packageName}@${item.version}: ${item.installed ? "installed" : "missing"}, ${item.allowed ? "allowed" : "denied"}`);
+    if (!item.installed && item.installCommand) console.log(`  Install: ${item.installCommand}`);
+    if (item.showCommand) console.log(`  Show: ${item.showCommand}`);
   }
   for (const diagnostic of payload.diagnostics) {
     console.log(`[${diagnostic.severity}] ${diagnostic.code}: ${diagnostic.message}`);

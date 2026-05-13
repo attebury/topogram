@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_selection_guidance {
+  name "Extractor Selection Guidance"
+  description "Given first-party extractor packages exist, when a human or agent runs extractor list, show, or policy status commands, then Topogram exposes track grouping, package purpose, install commands, policy pin commands, and concrete extract examples without executing package code."
+  requirement req_extractor_selection_ux
+  status approved
+}

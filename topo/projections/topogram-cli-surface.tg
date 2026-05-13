@@ -97,6 +97,7 @@ projection proj_topogram_cli {
     command emit example "topogram emit ui-widget-contract . --widget widget_data_grid --json"
     command extract example "topogram extract . --out /private/tmp/topogram-engine-cli-import --from cli --json"
     command extractor example "topogram extractor list --json"
+    command extractor example "topogram extractor show @topogram/extractor-prisma-db --json"
     command adopt example "topogram adopt cli ./imported-topogram --write --json"
     command release_status example "topogram release:status --strict --write-report ./docs/release-matrix.md"
   }
