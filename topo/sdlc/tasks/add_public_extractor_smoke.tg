@@ -1,0 +1,14 @@
+task task_add_public_extractor_smoke {
+  name "Add Public Extractor Smoke"
+  description "Extend the published CLI smoke to install first-party extractor packages from npmjs and prove package-backed extraction against a small brownfield source."
+  satisfies [req_first_party_extractor_packages_tracked]
+  acceptance_refs [ac_public_extractor_smoke]
+  verification_refs [verification_release_status_strict verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_run_engine_gates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

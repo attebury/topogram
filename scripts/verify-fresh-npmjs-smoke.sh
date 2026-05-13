@@ -8,8 +8,10 @@ TMP_PARENT="${TMPDIR:-/tmp}"
 WORK_ROOT="${TOPOGRAM_FRESH_SMOKE_ROOT:-$(mktemp -d "${TMP_PARENT%/}/topogram-fresh-npmjs.XXXXXX")}"
 NPM_CACHE_DIR="$WORK_ROOT/.npm-cache"
 CONSUMER_DIR="$WORK_ROOT/consumer"
+EXTRACTOR_SOURCE_DIR="$WORK_ROOT/extractor-source"
+EXTRACTOR_TARGET_DIR="$WORK_ROOT/extracted-topogram"
 
-mkdir -p "$CONSUMER_DIR" "$NPM_CACHE_DIR"
+mkdir -p "$CONSUMER_DIR" "$NPM_CACHE_DIR" "$EXTRACTOR_SOURCE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
 
 echo "Fresh npmjs smoke dir: $WORK_ROOT"
@@ -45,6 +47,153 @@ echo "Checking public package and catalog access..."
   "$TOPOGRAM_BIN" doctor
   "$TOPOGRAM_BIN" template list
 )
+
+echo "Checking public extractor packages..."
+(
+  cd "$CONSUMER_DIR"
+  npm install --save-dev @topogram/extractor-prisma-db @topogram/extractor-express-api >/dev/null
+  "$TOPOGRAM_BIN" extractor show @topogram/extractor-prisma-db --json >/dev/null
+  "$TOPOGRAM_BIN" extractor show @topogram/extractor-express-api --json >/dev/null
+  "$TOPOGRAM_BIN" extractor check @topogram/extractor-prisma-db --json >/dev/null
+  "$TOPOGRAM_BIN" extractor check @topogram/extractor-express-api --json >/dev/null
+)
+
+mkdir -p "$EXTRACTOR_SOURCE_DIR/prisma/migrations/20260513000000_init" "$EXTRACTOR_SOURCE_DIR/src"
+cat > "$EXTRACTOR_SOURCE_DIR/package.json" <<'JSON'
+{
+  "name": "topogram-public-extractor-smoke-source",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.0",
+    "prisma": "^5.0.0"
+  }
+}
+JSON
+cat > "$EXTRACTOR_SOURCE_DIR/prisma/schema.prisma" <<'PRISMA'
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model PackageTask {
+  id        String   @id
+  title     String
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+PRISMA
+cat > "$EXTRACTOR_SOURCE_DIR/prisma/migrations/20260513000000_init/migration.sql" <<'SQL'
+CREATE TABLE "PackageTask" (
+  "id" TEXT PRIMARY KEY,
+  "title" TEXT NOT NULL,
+  "status" TEXT NOT NULL DEFAULT 'open',
+  "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX "PackageTask_status_idx" ON "PackageTask" ("status");
+SQL
+cat > "$EXTRACTOR_SOURCE_DIR/src/server.js" <<'JS'
+const express = require("express");
+
+const app = express();
+const router = express.Router();
+
+router.get("/package-tasks", requireAuth, (req, res) => {
+  res.json({ status: req.query.status || "open", items: [] });
+});
+
+router.post("/package-tasks", requireAuth, (req, res) => {
+  res.status(201).json({ id: "task_1" });
+});
+
+function requireAuth(req, res, next) {
+  next();
+}
+
+app.use("/api", router);
+module.exports = app;
+JS
+
+echo "Extracting a source app with public extractor packages..."
+(
+  cd "$CONSUMER_DIR"
+  "$TOPOGRAM_BIN" extract "$EXTRACTOR_SOURCE_DIR" \
+    --out "$EXTRACTOR_TARGET_DIR" \
+    --from db,api \
+    --extractor @topogram/extractor-prisma-db \
+    --extractor @topogram/extractor-express-api \
+    --json > "$WORK_ROOT/public-extractor-smoke.json"
+  "$TOPOGRAM_BIN" extract plan "$EXTRACTOR_TARGET_DIR" --json > "$WORK_ROOT/public-extractor-plan.json"
+  "$TOPOGRAM_BIN" adopt --list "$EXTRACTOR_TARGET_DIR" --json > "$WORK_ROOT/public-extractor-adopt-list.json"
+)
+node --input-type=module - "$WORK_ROOT" "$EXTRACTOR_TARGET_DIR" <<'NODE'
+import fs from "node:fs";
+import path from "node:path";
+
+const workRoot = process.argv[2];
+const targetRoot = process.argv[3];
+const extractPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "public-extractor-smoke.json"), "utf8"));
+if (!extractPayload.ok) {
+  throw new Error("Expected public package-backed extraction to pass.");
+}
+const counts = extractPayload.candidateCounts || {};
+for (const [key, minimum] of Object.entries({
+  dbEntities: 1,
+  dbMaintainedSeams: 1,
+  apiCapabilities: 1,
+  apiRoutes: 1
+})) {
+  if ((counts[key] || 0) < minimum) {
+    throw new Error(`Expected candidateCounts.${key} >= ${minimum}, got ${counts[key] || 0}.`);
+  }
+}
+
+const provenancePath = path.join(targetRoot, ".topogram-extract.json");
+const provenance = JSON.parse(fs.readFileSync(provenancePath, "utf8"));
+const packageNames = (provenance.extract?.extractorPackages || []).map((entry) => entry.packageName).sort();
+for (const packageName of ["@topogram/extractor-express-api", "@topogram/extractor-prisma-db"]) {
+  if (!packageNames.includes(packageName)) {
+    throw new Error(`Expected extraction provenance to include ${packageName}.`);
+  }
+}
+
+const dbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
+if (!dbCandidates.entities?.some((entry) => entry.id_hint === "entity_package_task")) {
+  throw new Error("Expected Prisma package extractor to emit PackageTask entity candidate.");
+}
+if (!dbCandidates.maintained_seams?.some((entry) => entry.tool === "prisma")) {
+  throw new Error("Expected Prisma package extractor to emit a maintained DB seam candidate.");
+}
+
+const apiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "api", "candidates.json"), "utf8"));
+if (!apiCandidates.routes?.some((entry) => entry.path === "/package-tasks")) {
+  throw new Error("Expected Express package extractor to emit /package-tasks route candidate.");
+}
+if (!apiCandidates.capabilities?.some((entry) => entry.id_hint === "cap_list_package_tasks")) {
+  throw new Error("Expected Express package extractor to emit list package tasks capability candidate.");
+}
+
+const planPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "public-extractor-plan.json"), "utf8"));
+const planBundles = (planPayload.bundles || []).map((bundle) => bundle.bundle);
+if (!planBundles.includes("database")) {
+  throw new Error("Expected extract plan to include the maintained database seam review bundle.");
+}
+if (!planBundles.includes("package-task")) {
+  throw new Error("Expected extract plan to include a package task API/model review bundle.");
+}
+
+const adoptPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "public-extractor-adopt-list.json"), "utf8"));
+const adoptSelectors = (adoptPayload.selectors || []).map((item) => item.selector);
+if (!adoptSelectors.includes("bundle:database") || !adoptSelectors.includes("bundle:package-task")) {
+  throw new Error("Expected adopt --list to expose package-backed extraction review selectors.");
+}
+NODE
 
 echo "Creating starter from public catalog alias '$TEMPLATE_ALIAS'..."
 (

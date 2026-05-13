@@ -29,6 +29,11 @@ npm run release:status:strict
 npm run release:status:strict -- --write-report ./docs/release-matrix.md
 ```
 
+`smoke:fresh-npmjs` installs the published CLI from npmjs, checks the public
+catalog, installs first-party extractor packages, runs package-backed
+extract/adopt review on a small brownfield source, then copies and compiles a
+catalog starter. It is the public-package smoke, not a local fixture test.
+
 `release:roll-consumers` prints per-consumer progress to stderr while it updates,
 checks, commits, pushes, and optionally watches CI. If a rollout is interrupted,
 rerun the same command; the report includes recovery state for consumers that are
