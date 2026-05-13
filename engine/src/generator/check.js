@@ -2,12 +2,18 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
 
 import {
   loadPackageGeneratorManifest,
   validateGeneratorManifest
 } from "./registry.js";
+import {
+  isPathSpec,
+  loadInstalledPackageAdapter,
+  loadLocalPackageAdapter,
+  packageNameFromSpec,
+  validateRelativeStringFileMap
+} from "../package-adapters/index.js";
 
 /**
  * @typedef {import("./registry.js").GeneratorManifest} GeneratorManifest
@@ -27,82 +33,6 @@ import {
  * @property {{ files: number, artifacts: number, diagnostics: number }|null} smoke
  * @property {boolean} executesPackageCode
  */
-
-/**
- * @param {string} spec
- * @param {string} cwd
- * @returns {boolean}
- */
-function isPathSpec(spec, cwd) {
-  return spec.startsWith(".") || spec.startsWith("/") || fs.existsSync(path.resolve(cwd, spec));
-}
-
-/**
- * @param {string} spec
- * @returns {string}
- */
-function packageNameFromSpec(spec) {
-  if (spec.startsWith("@")) {
-    const versionIndex = spec.indexOf("@", 1);
-    return versionIndex > 0 ? spec.slice(0, versionIndex) : spec;
-  }
-  const versionIndex = spec.indexOf("@");
-  return versionIndex > 0 ? spec.slice(0, versionIndex) : spec;
-}
-
-/**
- * @param {any} moduleValue
- * @param {string|null|undefined} exportName
- * @returns {any}
- */
-function selectPackageExport(moduleValue, exportName) {
-  if (exportName) {
-    return moduleValue?.[exportName] || moduleValue?.default?.[exportName] || null;
-  }
-  return moduleValue?.default || moduleValue;
-}
-
-/**
- * @param {string} root
- * @param {GeneratorManifest} manifest
- * @returns {{ adapter: any|null, error: string|null }}
- */
-function loadLocalAdapter(root, manifest) {
-  try {
-    const packageJsonPath = path.join(root, "package.json");
-    const requireFromPackage = createRequire(packageJsonPath);
-    return {
-      adapter: selectPackageExport(requireFromPackage(root), manifest.export),
-      error: null
-    };
-  } catch (error) {
-    return {
-      adapter: null,
-      error: `Generator package export could not be loaded from '${root}': ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
-}
-
-/**
- * @param {string} packageName
- * @param {string} rootDir
- * @param {GeneratorManifest} manifest
- * @returns {{ adapter: any|null, error: string|null }}
- */
-function loadInstalledAdapter(packageName, rootDir, manifest) {
-  try {
-    const requireFromRoot = createRequire(path.join(rootDir, "package.json"));
-    return {
-      adapter: selectPackageExport(requireFromRoot(packageName), manifest.export),
-      error: null
-    };
-  } catch (error) {
-    return {
-      adapter: null,
-      error: `Generator package '${packageName}' export could not be loaded from '${rootDir}': ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
-}
 
 /**
  * @param {GeneratorManifest} manifest
@@ -208,14 +138,12 @@ function validateSmokeResult(result) {
   if (!result.files || typeof result.files !== "object" || Array.isArray(result.files)) {
     return { ok: false, message: "generate(context) result must include a files object", smoke: null };
   }
-  for (const [filePath, content] of Object.entries(result.files)) {
-    const normalizedPath = typeof filePath === "string" ? path.normalize(filePath) : "";
-    if (typeof filePath !== "string" || filePath.length === 0 || path.isAbsolute(filePath) || normalizedPath === ".." || normalizedPath.startsWith(`..${path.sep}`)) {
-      return { ok: false, message: "generated file paths must be non-empty relative paths", smoke: null };
-    }
-    if (typeof content !== "string") {
-      return { ok: false, message: `generated file '${filePath}' content must be a string`, smoke: null };
-    }
+  const fileMapValidation = validateRelativeStringFileMap(result.files, {
+    filePathMessage: "generated file paths must be non-empty relative paths",
+    contentMessage: (filePath) => `generated file '${filePath}' content must be a string`
+  });
+  if (!fileMapValidation.ok) {
+    return { ok: false, message: fileMapValidation.message, smoke: null };
   }
   return {
     ok: true,
@@ -304,7 +232,11 @@ export function checkGeneratorPack(sourceSpec, options = {}) {
   }
 
   if (payload.source === "path") {
-    const loaded = loadLocalAdapter(payload.packageRoot || cwd, payload.manifest);
+    const loaded = loadLocalPackageAdapter({
+      packageRoot: payload.packageRoot || cwd,
+      exportName: payload.manifest.export,
+      packageLabel: "Generator package"
+    });
     adapter = loaded.adapter;
     if (loaded.error) {
       payload.errors.push(loaded.error);
@@ -312,7 +244,12 @@ export function checkGeneratorPack(sourceSpec, options = {}) {
       return payload;
     }
   } else if (payload.packageName) {
-    const loaded = loadInstalledAdapter(payload.packageName, cwd, payload.manifest);
+    const loaded = loadInstalledPackageAdapter({
+      packageName: payload.packageName,
+      rootDir: cwd,
+      exportName: payload.manifest.export,
+      packageLabel: "Generator package"
+    });
     adapter = loaded.adapter;
     if (loaded.error) {
       payload.errors.push(loaded.error);

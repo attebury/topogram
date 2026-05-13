@@ -4,6 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { stableStringify } from "./format.js";
+import {
+  optionalStringArray,
+  optionalStringRecord,
+  packageAllowedByPolicy,
+  packageScopeFromName as sharedPackageScopeFromName
+} from "./package-adapters/index.js";
 
 export const GENERATOR_POLICY_FILE = "topogram.generator-policy.json";
 
@@ -67,47 +73,6 @@ function generatorPolicyDiagnostic(input) {
 }
 
 /**
- * @param {unknown} value
- * @param {string} fieldName
- * @param {string} policyPath
- * @returns {string[]}
- */
-function optionalStringArray(value, fieldName, policyPath) {
-  if (value == null) {
-    return [];
-  }
-  if (!Array.isArray(value)) {
-    throw new Error(`${policyPath} ${fieldName} must be an array of strings.`);
-  }
-  return value.map((item) => {
-    if (typeof item !== "string" || item.length === 0) {
-      throw new Error(`${policyPath} ${fieldName} must contain only non-empty strings.`);
-    }
-    return item;
-  });
-}
-
-/**
- * @param {unknown} value
- * @param {string} policyPath
- * @returns {Record<string, string>}
- */
-function optionalStringRecord(value, policyPath) {
-  if (value == null) {
-    return {};
-  }
-  if (typeof value !== "object" || Array.isArray(value)) {
-    throw new Error(`${policyPath} pinnedVersions must be an object of package-or-generator ids to versions.`);
-  }
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => {
-    if (typeof item !== "string" || item.length === 0) {
-      throw new Error(`${policyPath} pinnedVersions['${key}'] must be a non-empty string.`);
-    }
-    return [key, item];
-  }));
-}
-
-/**
  * @returns {GeneratorPolicy}
  */
 export function defaultGeneratorPolicy() {
@@ -136,7 +101,7 @@ export function validateGeneratorPolicy(value, policyPath) {
       ? defaults.allowedPackageScopes
       : optionalStringArray(raw.allowedPackageScopes, "allowedPackageScopes", policyPath),
     allowedPackages: optionalStringArray(raw.allowedPackages, "allowedPackages", policyPath),
-    pinnedVersions: optionalStringRecord(raw.pinnedVersions, policyPath)
+    pinnedVersions: optionalStringRecord(raw.pinnedVersions, policyPath, "package-or-generator ids")
   };
 }
 
@@ -145,16 +110,7 @@ export function validateGeneratorPolicy(value, policyPath) {
  * @returns {string|null}
  */
 export function packageScopeFromName(packageName) {
-  return packageName.startsWith("@") ? packageName.split("/")[0] || null : null;
-}
-
-/**
- * @param {string} allowed
- * @param {string|null} scope
- * @returns {boolean}
- */
-function packageScopeMatches(allowed, scope) {
-  return Boolean(scope && (allowed === scope || allowed === `${scope}/*`));
+  return sharedPackageScopeFromName(packageName);
 }
 
 /**
@@ -163,11 +119,7 @@ function packageScopeMatches(allowed, scope) {
  * @returns {boolean}
  */
 export function generatorPackageAllowed(policy, packageName) {
-  if (policy.allowedPackages.includes(packageName)) {
-    return true;
-  }
-  const scope = packageScopeFromName(packageName);
-  return policy.allowedPackageScopes.some((allowed) => packageScopeMatches(allowed, scope));
+  return packageAllowedByPolicy(policy, packageName);
 }
 
 /**

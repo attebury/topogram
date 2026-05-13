@@ -1420,5 +1420,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_extract_shared_package_adapter_infrastructure": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T01:05:56.220Z",
+      "by": "actor_coding_agent",
+      "note": "Starting shared package adapter infrastructure refactor."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T01:06:04.221Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing package-adapter helper extraction."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T01:36:02.378Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

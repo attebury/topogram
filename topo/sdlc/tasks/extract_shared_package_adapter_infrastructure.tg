@@ -1,0 +1,14 @@
+task task_extract_shared_package_adapter_infrastructure {
+  name "Extract Shared Package Adapter Infrastructure"
+  description "Factor generator package resolution, adapter loading, manifest loading, file-map validation, and policy helper mechanics into domain-neutral package adapter utilities without adding extractor package behavior yet."
+  satisfies [req_clear_command_vocabulary]
+  acceptance_refs [ac_shared_package_adapter_infrastructure]
+  verification_refs [verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_generators, cap_import_brownfield_app, cap_run_engine_gates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

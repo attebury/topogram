@@ -897,6 +897,55 @@ test("generator policy command implementation modules stay focused and type chec
   });
 });
 
+test("package adapter utilities stay domain-neutral and type checked", () => {
+  const root = path.join(repoRoot, "engine", "src", "package-adapters");
+  assertImplementationModules({ root, maxLines: 240 });
+
+  const offenders = [];
+  const forbidden = [
+    "from \"../generator",
+    "from \"../../generator",
+    "from \"../import",
+    "from \"../../import",
+    "topogram-generator",
+    "topogram-extractor",
+    "Generator package",
+    "Extractor package"
+  ];
+  for (const file of visitFiles(root).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    for (const reference of forbidden) {
+      if (contents.includes(reference)) {
+        offenders.push({ file: relative, reference });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("generator package loading delegates to package adapter utilities", () => {
+  const files = [
+    "engine/src/generator/registry/index.js",
+    "engine/src/generator/check.js"
+  ];
+  const offenders = [];
+  for (const relative of files) {
+    const contents = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+    if (!contents.includes("package-adapters")) {
+      offenders.push({ file: relative, reason: "missing package adapter import" });
+    }
+    for (const forbidden of ["createRequire", "function loadLocalAdapter", "function loadInstalledAdapter", "function selectPackageExport"]) {
+      if (contents.includes(forbidden)) {
+        offenders.push({ file: relative, reason: forbidden });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("import command entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "import.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);

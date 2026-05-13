@@ -1,8 +1,11 @@
 // @ts-check
 
-import fs from "node:fs";
-import path from "node:path";
-import { createRequire } from "node:module";
+import {
+  loadPackageManifest,
+  packageInstallCommand,
+  packageInstallHint,
+  resolvePackageManifestPath
+} from "../../package-adapters/index.js";
 import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../ui/taxonomy.js";
 
 /**
@@ -209,19 +212,11 @@ export function getGeneratorManifest(generatorId) {
 }
 
 /**
- * @param {string|null|undefined} rootDir
- * @returns {string}
- */
-function packageResolutionBase(rootDir) {
-  return path.join(rootDir || process.cwd(), "package.json");
-}
-
-/**
  * @param {string|null|undefined} packageName
  * @returns {string|null}
  */
 export function packageGeneratorInstallCommand(packageName) {
-  return packageName ? `npm install -D ${packageName}` : null;
+  return packageInstallCommand(packageName);
 }
 
 /**
@@ -229,8 +224,7 @@ export function packageGeneratorInstallCommand(packageName) {
  * @returns {string|null}
  */
 export function packageGeneratorInstallHint(packageName) {
-  const command = packageGeneratorInstallCommand(packageName);
-  return command ? `Install it from the project root with: ${command}` : null;
+  return packageInstallHint(packageName);
 }
 
 /**
@@ -239,41 +233,7 @@ export function packageGeneratorInstallHint(packageName) {
  * @returns {{ manifestPath: string|null, packageRoot: string|null, error: string|null }}
  */
 export function resolvePackageGeneratorManifestPath(packageName, rootDir = process.cwd()) {
-  const requireFromRoot = createRequire(packageResolutionBase(rootDir));
-  try {
-    const manifestPath = requireFromRoot.resolve(`${packageName}/topogram-generator.json`);
-    return {
-      manifestPath,
-      packageRoot: path.dirname(manifestPath),
-      error: null
-    };
-  } catch (manifestError) {
-    try {
-      const packageJsonPath = requireFromRoot.resolve(`${packageName}/package.json`);
-      const packageRoot = path.dirname(packageJsonPath);
-      const manifestPath = path.join(packageRoot, "topogram-generator.json");
-      if (!fs.existsSync(manifestPath)) {
-        return {
-          manifestPath: null,
-          packageRoot,
-          error: `Generator package '${packageName}' is missing topogram-generator.json`
-        };
-      }
-      return {
-        manifestPath,
-        packageRoot,
-        error: null
-      };
-    } catch {
-      const detail = manifestError instanceof Error ? manifestError.message : String(manifestError);
-      const installHint = packageGeneratorInstallHint(packageName);
-      return {
-        manifestPath: null,
-        packageRoot: null,
-        error: `Generator package '${packageName}' could not be resolved from '${rootDir || process.cwd()}': ${detail}${installHint ? `. ${installHint}` : ""}`
-      };
-    }
-  }
+  return resolvePackageManifestPath(packageName, "topogram-generator.json", rootDir, "Generator package");
 }
 
 /**
@@ -282,32 +242,13 @@ export function resolvePackageGeneratorManifestPath(packageName, rootDir = proce
  * @returns {{ manifest: GeneratorManifest|null, errors: string[], manifestPath: string|null, packageRoot: string|null }}
  */
 export function loadPackageGeneratorManifest(packageName, rootDir = process.cwd()) {
-  const resolved = resolvePackageGeneratorManifestPath(packageName, rootDir);
-  if (!resolved.manifestPath) {
-    return {
-      manifest: null,
-      errors: [resolved.error || `Generator package '${packageName}' could not be resolved`],
-      manifestPath: null,
-      packageRoot: resolved.packageRoot
-    };
-  }
-  try {
-    const manifest = JSON.parse(fs.readFileSync(resolved.manifestPath, "utf8"));
-    const validation = validateGeneratorManifest(manifest);
-    return {
-      manifest: validation.ok ? manifest : null,
-      errors: validation.errors,
-      manifestPath: resolved.manifestPath,
-      packageRoot: resolved.packageRoot
-    };
-  } catch (error) {
-    return {
-      manifest: null,
-      errors: [`Generator package '${packageName}' manifest could not be read: ${error instanceof Error ? error.message : String(error)}`],
-      manifestPath: resolved.manifestPath,
-      packageRoot: resolved.packageRoot
-    };
-  }
+  return loadPackageManifest({
+    packageName,
+    rootDir,
+    manifestFile: "topogram-generator.json",
+    packageLabel: "Generator package",
+    validateManifest: validateGeneratorManifest
+  });
 }
 
 /**

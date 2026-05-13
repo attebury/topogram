@@ -1,0 +1,6 @@
+acceptance_criterion ac_shared_package_adapter_infrastructure {
+  name "Shared Package Adapter Infrastructure"
+  description "Given generator packages already use package manifests, policy, and adapter loading, when reusable package adapter infrastructure is extracted, then generator behavior and diagnostics stay stable while future extractor packages can reuse the package-loading and policy helpers."
+  requirement req_clear_command_vocabulary
+  status approved
+}
