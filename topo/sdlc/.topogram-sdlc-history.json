@@ -2050,6 +2050,13 @@
       "at": "2026-05-13T20:24:29.318Z",
       "by": "actor_coding_agent",
       "note": "Starting local release preparation for 0.3.82."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T20:53:34.104Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }
