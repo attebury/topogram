@@ -9,6 +9,7 @@ import { parsePath, parseSource } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
 import { validateWorkspace } from "../../src/validator.js";
 import { generateWorkspace } from "../../src/generator/index.js";
+import { summarizeDiffArtifact } from "../../src/agent-ops/query-builders/common.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -1802,6 +1803,19 @@ test("context-diff reports widget additions and modifications", () => {
     assert.equal(dataGridModified.classification, "modified");
     assert.equal(dataGridModified.current.version, "1.0");
     assert.equal(dataGridModified.baseline.version, "1.1");
+    const migration = modified.artifact.widget_contract_migration_plan.widgets.find((entry) => entry.widget_id === "widget_data_grid");
+    assert.ok(migration, "expected widget migration plan entry");
+    assert.equal(migration.classification, "modified");
+    assert.deepEqual(migration.changed_sections, ["version"]);
+    assert.deepEqual(migration.affected_projection_ids, ["proj_ui_contract", "proj_web_surface", "proj_web_surface_react"]);
+    assert.ok(
+      migration.review_commands.some((entry) =>
+        entry.command === "topogram widget behavior ./topo --projection proj_web_surface --widget widget_data_grid --json"
+      )
+    );
+    const diffSummary = summarizeDiffArtifact(modified.artifact);
+    assert.equal(diffSummary.widget_migration_count, 1);
+    assert.equal(diffSummary.widget_migration_projection_count, 3);
   } finally {
     fs.rmSync(baselineRoot, { recursive: true, force: true });
   }
@@ -1826,6 +1840,12 @@ test("context-diff reports projection impact for removed widgets from baseline",
       result.artifact.affected_generated_surfaces.projections.map((projection) => projection.id),
       ["proj_ui_contract", "proj_web_surface", "proj_web_surface_react"]
     );
+    const migration = result.artifact.widget_contract_migration_plan.widgets.find((entry) => entry.widget_id === "widget_data_grid");
+    assert.ok(migration, "expected removed widget migration plan entry");
+    assert.equal(migration.classification, "removed");
+    assert.deepEqual(migration.affected_projection_ids, ["proj_ui_contract", "proj_web_surface", "proj_web_surface_react"]);
+    assert.ok(migration.changed_sections.includes("props"));
+    assert.ok(migration.review_commands.some((entry) => entry.target === "widget-conformance-report"));
   } finally {
     fs.rmSync(currentRoot, { recursive: true, force: true });
   }

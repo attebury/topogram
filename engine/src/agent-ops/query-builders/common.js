@@ -15,6 +15,8 @@ export function summarizeDiffArtifact(diffArtifact) {
     review_boundary_change_count: (diffArtifact.review_boundary_changes || []).length,
     maintained_file_count: (diffArtifact.affected_maintained_surfaces?.maintained_files_in_scope || []).length,
     affected_verification_count: (diffArtifact.affected_verifications || []).length,
+    widget_migration_count: (diffArtifact.widget_contract_migration_plan?.widgets || []).length,
+    widget_migration_projection_count: (diffArtifact.widget_contract_migration_plan?.affected_projection_ids || []).length,
     affected_output_count: maintainedOutputs.length,
     affected_seam_count: maintainedSeams.length,
     highest_maintained_severity: highestMaintainedSeverity

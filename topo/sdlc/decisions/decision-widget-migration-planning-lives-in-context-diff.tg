@@ -1,0 +1,9 @@
+decision decision_widget_migration_planning_lives_in_context_diff {
+  name "Widget Migration Planning Lives In Context Diff"
+  description "Widget contract migration planning belongs in the diff-review artifact because migration risk appears when a changed widget contract is compared with a baseline."
+  context ["Widget contract changes are not meaningful in isolation; humans and agents need the changed contract sections plus the affected projection closure.", "The existing context-diff and change-plan workflow already owns baseline comparison, generated-surface impact, and downstream review guidance."]
+  consequences ["context-diff emits a widget_contract_migration_plan for changed widgets", "query change-plan summarizes the widget migration plan when a diff baseline is provided", "widget check and widget behavior remain current-state gates rather than baseline migration commands"]
+  pitch pitch_ui_contract_maturity
+  domain dom_generator_runtime
+  status accepted
+}

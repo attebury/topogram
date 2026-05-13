@@ -1,0 +1,6 @@
+acceptance_criterion ac_widget_contract_migration_plan_emitted {
+  name "Widget Contract Migration Plan Emitted"
+  description "Given a widget contract changes between a baseline Topogram and the current Topogram, when an agent emits or queries the context diff, then Topogram reports changed widget contract sections, affected projections, and concrete review commands for widget contracts, conformance, behavior wiring, and surface contracts."
+  requirement req_widget_contract_migration_planning
+  status approved
+}

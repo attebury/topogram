@@ -1992,5 +1992,39 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_widget_contract_migration_plan_emitted": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T19:51:33.361Z",
+      "by": "actor_coding_agent",
+      "note": "Acceptance criterion defines observable context-diff widget migration planning."
+    }
+  ],
+  "req_widget_contract_migration_planning": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T19:51:33.364Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement has accepted decision and acceptance criterion."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T19:51:42.329Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement is ready for implementation through context-diff migration planning."
+    }
+  ],
+  "task_add_widget_contract_migration_plan": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T19:55:53.468Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

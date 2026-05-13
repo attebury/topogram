@@ -1,0 +1,15 @@
+task task_add_widget_contract_migration_plan {
+  name "Add Widget Contract Migration Plan"
+  description "Add widget contract migration planning to context-diff and query diff summaries so changed widget contracts produce concrete review commands for affected projections."
+  satisfies [req_widget_contract_migration_planning]
+  acceptance_refs [ac_widget_contract_migration_plan_emitted]
+  verification_refs [verification_engine_gate verification_cli_package_smoke verification_dogfood_topo_workspace]
+  introduces_decisions [decision_widget_migration_planning_lives_in_context_diff]
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

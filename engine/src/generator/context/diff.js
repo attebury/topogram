@@ -128,6 +128,101 @@ function collectAffectedProjectionIds(graph, baselineGraph, diff) {
   ]);
 }
 
+const WIDGET_CONTRACT_SECTIONS = [
+  "category",
+  "version",
+  "status",
+  "props",
+  "events",
+  "slots",
+  "behavior",
+  "behaviors",
+  "patterns",
+  "regions",
+  "approvals",
+  "lookups",
+  "dependencies"
+];
+
+function changedWidgetContractSections(entry) {
+  if (entry.classification === "additive") {
+    return WIDGET_CONTRACT_SECTIONS.filter((section) => entry.current?.[section] != null);
+  }
+  if (entry.classification === "removed") {
+    return WIDGET_CONTRACT_SECTIONS.filter((section) => entry.baseline?.[section] != null);
+  }
+  return WIDGET_CONTRACT_SECTIONS.filter((section) =>
+    JSON.stringify(entry.current?.[section] ?? null) !== JSON.stringify(entry.baseline?.[section] ?? null)
+  );
+}
+
+function affectedProjectionIdsForWidgetChange(graph, baselineGraph, entry) {
+  if (entry.classification === "additive") {
+    return relatedProjectionsForWidget(graph, entry.id);
+  }
+  if (entry.classification === "removed") {
+    return relatedProjectionsForWidget(baselineGraph, entry.id);
+  }
+  return stableSortedStrings([
+    ...relatedProjectionsForWidget(graph, entry.id),
+    ...relatedProjectionsForWidget(baselineGraph, entry.id)
+  ]);
+}
+
+function projectionMigrationCommands(widgetId, projectionId) {
+  return [
+    {
+      target: "ui-widget-contract",
+      command: `topogram emit ui-widget-contract ./topo --widget ${widgetId} --json`,
+      reason: `Refresh the normalized widget contract for ${widgetId}.`
+    },
+    {
+      target: "widget-conformance-report",
+      command: `topogram emit widget-conformance-report ./topo --projection ${projectionId} --json`,
+      reason: `Review projection ${projectionId} widget placement, required props, events, and region/pattern compatibility.`
+    },
+    {
+      target: "widget-behavior-report",
+      command: `topogram widget behavior ./topo --projection ${projectionId} --widget ${widgetId} --json`,
+      reason: `Review behavior data/event/action wiring for ${widgetId} on projection ${projectionId}.`
+    },
+    {
+      target: "ui-surface-contract",
+      command: `topogram emit ui-surface-contract ./topo --projection ${projectionId} --json`,
+      reason: `Refresh the surface contract consumed by stack generators for projection ${projectionId}.`
+    }
+  ];
+}
+
+function buildWidgetContractMigrationPlan(graph, baselineGraph, diff) {
+  const widgets = (diff.widgets || []).map((entry) => {
+    const affectedProjectionIds = affectedProjectionIdsForWidgetChange(graph, baselineGraph, entry);
+    return {
+      widget_id: entry.id,
+      classification: entry.classification,
+      changed_sections: changedWidgetContractSections(entry),
+      affected_projection_ids: affectedProjectionIds,
+      affected_projections: affectedProjectionIds
+        .map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id))
+        .filter(Boolean),
+      review_commands: affectedProjectionIds.flatMap((projectionId) => projectionMigrationCommands(entry.id, projectionId)),
+      migration_steps: [
+        "Review changed_sections to understand the semantic widget contract delta.",
+        "Refresh the widget contract and affected surface contracts.",
+        "Run conformance and behavior reports for every affected projection.",
+        "Regenerate generated-owned outputs or manually update maintained surfaces after review."
+      ]
+    };
+  });
+
+  return {
+    widgets,
+    affected_widget_ids: stableSortedStrings(widgets.map((entry) => entry.widget_id)),
+    affected_projection_ids: stableSortedStrings(widgets.flatMap((entry) => entry.affected_projection_ids)),
+    review_command_count: widgets.reduce((count, entry) => count + entry.review_commands.length, 0)
+  };
+}
+
 function collectAffectedCapabilityIds(graph, diff) {
   const changedCapabilities = stableSortedStrings((diff.capabilities || []).map((entry) => entry.id));
   const changedEntities = stableSortedStrings((diff.entities || []).map((entry) => entry.id));
@@ -213,6 +308,7 @@ export function generateContextDiff(graph, options = {}) {
   const affectedCapabilities = collectAffectedCapabilityIds(graph, diff);
   const affectedProjections = collectAffectedProjectionIds(graph, baselineGraph, diff);
   const affectedVerifications = collectAffectedVerificationIds(graph, diff);
+  const widgetContractMigrationPlan = buildWidgetContractMigrationPlan(graph, baselineGraph, diff);
   const changedSemanticIds = changedIdsForDiffSections(diff);
   const affectedMaintainedStories = maintainedProofMetadata(graph).filter((item) => {
     const emittedDependencies = item.emittedDependencies || [];
@@ -257,6 +353,7 @@ export function generateContextDiff(graph, options = {}) {
       }))
     },
     affected_verifications: affectedVerifications.map((id) => summarizeById(graph, id) || summarizeById(baselineGraph, id)).filter(Boolean),
+    widget_contract_migration_plan: widgetContractMigrationPlan,
     review_boundary_changes: reviewBoundaryChangeItems,
     sdlc: sdlcChanges
   };

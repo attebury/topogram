@@ -69,6 +69,20 @@ topogram query slice ./topo --widget widget_data_grid
 Use `--json` for agent packets and `--write --out-dir <dir>` when a report or
 contract should be written to disk.
 
+## Migration review
+
+When a widget contract changes against a baseline, use `context-diff` to review
+the migration plan:
+
+```bash
+topogram emit context-diff ./topo --from-topogram ./baseline/topo --json
+```
+
+The `widget_contract_migration_plan` section lists changed widget contract
+sections, affected projections, and the exact widget contract, conformance,
+behavior, and surface-contract commands to run before regenerating or updating
+maintained UI code.
+
 ## Generator rule
 
 If a generator accepts a widget pattern, tests should prove it appears in the
