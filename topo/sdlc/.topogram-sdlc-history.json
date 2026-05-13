@@ -1944,5 +1944,53 @@
       "by": "actor_coding_agent",
       "note": "Source-health workflow is implemented, documented, and verified by current CLI/docs/gate tests."
     }
+  ],
+  "ac_widget_behavior_vocab_is_canonical": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T19:39:56.509Z",
+      "by": "actor_coding_agent",
+      "note": "Acceptance criterion defines observable canonical behavior vocabulary validation."
+    }
+  ],
+  "req_widget_behavior_vocab_stability": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T19:39:56.513Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement has a decision and acceptance criterion for canonical vocabulary."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T19:40:20.041Z",
+      "by": "actor_coding_agent",
+      "note": "Requirement has accepted ownership decision, approved acceptance, and implementation task."
+    }
+  ],
+  "task_stabilize_widget_behavior_vocab": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T19:40:09.027Z",
+      "by": "actor_coding_agent",
+      "note": "Claim implementation task for canonical widget behavior vocabulary."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T19:40:28.995Z",
+      "by": "actor_coding_agent",
+      "note": "Implement central taxonomy and manifest validation."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T19:41:09.705Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

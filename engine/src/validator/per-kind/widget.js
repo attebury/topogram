@@ -1,5 +1,10 @@
 // @ts-check
 import {
+  WIDGET_BEHAVIOR_DIRECTIVES,
+  WIDGET_BEHAVIOR_KINDS,
+  WIDGET_CATEGORIES,
+  WIDGET_PAGINATION_MODES,
+  WIDGET_SELECTION_MODES,
   UI_PATTERN_KINDS,
   UI_REGION_KINDS
 } from "../kinds.js";
@@ -9,49 +14,6 @@ import {
   pushError,
   symbolValues
 } from "../utils.js";
-
-const WIDGET_CATEGORIES = new Set([
-  "collection",
-  "form",
-  "display",
-  "navigation",
-  "dialog",
-  "feedback",
-  "lookup",
-  "layout",
-  "service"
-]);
-
-const WIDGET_BEHAVIOR_KINDS = new Set([
-  "selection",
-  "sorting",
-  "filtering",
-  "search",
-  "pagination",
-  "grouping",
-  "drag_drop",
-  "inline_edit",
-  "bulk_action",
-  "optimistic_update",
-  "realtime_update",
-  "keyboard_navigation"
-]);
-
-/** @type {Record<string, Set<string>>} */
-const WIDGET_BEHAVIOR_DIRECTIVES = {
-  selection: new Set(["mode", "state", "emits"]),
-  sorting: new Set(["fields", "default"]),
-  filtering: new Set(["fields"]),
-  search: new Set(["fields"]),
-  pagination: new Set(["mode", "page_size"]),
-  grouping: new Set(["fields"]),
-  drag_drop: new Set(["axis", "reorder"]),
-  inline_edit: new Set(["fields", "submit", "emits"]),
-  bulk_action: new Set(["actions", "state", "emits"]),
-  optimistic_update: new Set(["actions", "rollback"]),
-  realtime_update: new Set(["source", "merge"]),
-  keyboard_navigation: new Set(["scope", "shortcuts"])
-};
 
 /** @param {TopogramToken | null | undefined} token @returns {any} */
 function tokenValue(token) {
@@ -262,10 +224,10 @@ function validateWidgetBehaviors(errors, statement, fieldMap, registry) {
       if (directive === "actions" || directive === "submit") {
         validateBehaviorActionReferences(errors, statement, registry, kind, directive, valueToken, eventNames);
       }
-      if (kind === "selection" && directive === "mode" && !["single", "multi", "none"].includes(tokenValue(valueToken))) {
+      if (kind === "selection" && directive === "mode" && !WIDGET_SELECTION_MODES.has(tokenValue(valueToken))) {
         pushError(errors, `Widget ${statement.id} behavior 'selection' has invalid mode '${tokenValue(valueToken)}'`, valueToken.loc);
       }
-      if (kind === "pagination" && directive === "mode" && !["cursor", "paged", "infinite", "none"].includes(tokenValue(valueToken))) {
+      if (kind === "pagination" && directive === "mode" && !WIDGET_PAGINATION_MODES.has(tokenValue(valueToken))) {
         pushError(errors, `Widget ${statement.id} behavior 'pagination' has invalid mode '${tokenValue(valueToken)}'`, valueToken.loc);
       }
     }

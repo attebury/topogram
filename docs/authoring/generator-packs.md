@@ -53,6 +53,21 @@ exports.generate = function generate(context) {
 Use `context.runtime` and `context.contracts` as the primary API. Raw projection
 internals are compatibility fallback, not the preferred contract.
 
+## Widget support vocabulary
+
+`widgetSupport.patterns` must use the canonical UI pattern vocabulary from the
+DSL, such as `resource_table`, `data_grid_view`, `board_view`, `calendar_view`,
+and `summary_stats`.
+
+`widgetSupport.behaviors` must use the canonical widget behavior vocabulary:
+`selection`, `sorting`, `filtering`, `search`, `pagination`, `grouping`,
+`drag_drop`, `inline_edit`, `bulk_action`, `optimistic_update`,
+`realtime_update`, and `keyboard_navigation`.
+
+Unknown pattern or behavior values are manifest errors. A generator that cannot
+render a supported widget contract should use `unsupported` to report `error`,
+`warning`, or `contract-only`; it should not invent stack-local behavior names.
+
 ## Verify
 
 ```bash

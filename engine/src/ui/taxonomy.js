@@ -155,6 +155,51 @@ export const UI_GENERATOR_RENDERED_COMPONENT_PATTERNS = new Set([
   "data_grid_view"
 ]);
 
+export const WIDGET_CATEGORIES = new Set([
+  "collection",
+  "form",
+  "display",
+  "navigation",
+  "dialog",
+  "feedback",
+  "lookup",
+  "layout",
+  "service"
+]);
+
+export const WIDGET_BEHAVIOR_KINDS = new Set([
+  "selection",
+  "sorting",
+  "filtering",
+  "search",
+  "pagination",
+  "grouping",
+  "drag_drop",
+  "inline_edit",
+  "bulk_action",
+  "optimistic_update",
+  "realtime_update",
+  "keyboard_navigation"
+]);
+
+export const WIDGET_BEHAVIOR_DIRECTIVES = {
+  selection: new Set(["mode", "state", "emits"]),
+  sorting: new Set(["fields", "default"]),
+  filtering: new Set(["fields"]),
+  search: new Set(["fields"]),
+  pagination: new Set(["mode", "page_size"]),
+  grouping: new Set(["fields"]),
+  drag_drop: new Set(["axis", "reorder"]),
+  inline_edit: new Set(["fields", "submit", "emits"]),
+  bulk_action: new Set(["actions", "state", "emits"]),
+  optimistic_update: new Set(["actions", "rollback"]),
+  realtime_update: new Set(["source", "merge"]),
+  keyboard_navigation: new Set(["scope", "shortcuts"])
+};
+
+export const WIDGET_SELECTION_MODES = new Set(["single", "multi", "none"]);
+export const WIDGET_PAGINATION_MODES = new Set(["cursor", "paged", "infinite", "none"]);
+
 /**
  * @param {string[]} presentations
  * @returns {string}

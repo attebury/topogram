@@ -1,0 +1,15 @@
+task task_stabilize_widget_behavior_vocab {
+  name "Stabilize Widget Behavior Vocab"
+  description "Centralize the canonical widget behavior vocabulary in the engine taxonomy and validate generator manifest widget behavior support against it."
+  satisfies [req_widget_behavior_vocab_stability]
+  acceptance_refs [ac_widget_behavior_vocab_is_canonical]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace verification_docs_current_workflow_review]
+  introduces_decisions [decision_widget_behavior_vocabulary_is_engine_owned]
+  affects [cap_check_widget_contracts, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

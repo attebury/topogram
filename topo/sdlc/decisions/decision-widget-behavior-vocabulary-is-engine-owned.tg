@@ -1,0 +1,9 @@
+decision decision_widget_behavior_vocabulary_is_engine_owned {
+  name "Widget Behavior Vocabulary Is Engine Owned"
+  description "Topogram owns the canonical semantic widget behavior vocabulary used by widget contracts, generator manifests, conformance reports, and agent packets."
+  context ["Third-party template and generator authors need stable behavior names.", "Stack-local behavior names would make cross-stack UI contracts drift and force agents to infer semantics from generated code."]
+  consequences ["widget behavior names are validated from a central engine taxonomy", "generator manifests may advertise only canonical widget behavior names", "framework-specific interaction details stay in generators and maintained app code", "new behavior names require an explicit DSL decision and validation/test updates"]
+  pitch pitch_ui_contract_maturity
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

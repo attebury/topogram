@@ -47,10 +47,11 @@ the shared UI contract. They own routes and surface hints, not widget placement.
 
 ## Behavior
 
-Widgets can declare behaviors such as `selection`, `sorting`, `filtering`,
-`search`, `pagination`, `bulk_action`, and `keyboard_navigation`. Projection
-bindings realize those behaviors by connecting data, events, navigation, and
-capabilities.
+Widgets can declare only the canonical behavior vocabulary: `selection`,
+`sorting`, `filtering`, `search`, `pagination`, `grouping`, `drag_drop`,
+`inline_edit`, `bulk_action`, `optimistic_update`, `realtime_update`, and
+`keyboard_navigation`. Projection bindings realize those behaviors by
+connecting data, events, navigation, and capabilities.
 
 ## Required checks
 

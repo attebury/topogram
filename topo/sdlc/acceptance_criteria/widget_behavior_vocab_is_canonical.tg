@@ -1,0 +1,6 @@
+acceptance_criterion ac_widget_behavior_vocab_is_canonical {
+  name "Widget Behavior Vocab Is Canonical"
+  description "Given a widget contract or generator manifest declares widget behavior support, when Topogram validates or reports that surface, then every behavior value comes from the canonical widget behavior vocabulary and unknown values fail with actionable diagnostics."
+  requirement req_widget_behavior_vocab_stability
+  status approved
+}

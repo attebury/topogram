@@ -156,6 +156,30 @@ test("generator manifest validation rejects malformed manifests", () => {
   assert.match(result.errors.join("\n"), /package source/);
 });
 
+test("generator manifest validation rejects unknown widget support vocabulary", () => {
+  const result = validateGeneratorManifest({
+    id: "topogram/bad-widget-support",
+    version: "1",
+    surface: "web",
+    runtimeKinds: ["web_surface"],
+    projectionTypes: ["web_surface"],
+    inputs: ["ui-surface-contract"],
+    outputs: ["web-app"],
+    stack: { framework: "test" },
+    capabilities: { routes: true },
+    widgetSupport: {
+      patterns: ["made_up_pattern"],
+      behaviors: ["made_up_behavior"],
+      unsupported: "warning"
+    },
+    source: "bundled"
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /widgetSupport\.patterns contains unsupported pattern 'made_up_pattern'/);
+  assert.match(result.errors.join("\n"), /widgetSupport\.behaviors contains unsupported behavior 'made_up_behavior'/);
+});
+
 test("topogram generator check validates package-backed generators by package and path", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-generator-check-"));
   writeJson(path.join(root, "package.json"), { private: true });

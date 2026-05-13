@@ -6,7 +6,11 @@ import {
   packageInstallHint,
   resolvePackageManifestPath
 } from "../../package-adapters/index.js";
-import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../ui/taxonomy.js";
+import {
+  UI_GENERATOR_RENDERED_COMPONENT_PATTERNS,
+  UI_PATTERN_KINDS,
+  WIDGET_BEHAVIOR_KINDS
+} from "../../ui/taxonomy.js";
 
 /**
  * @typedef {Object} GeneratorManifest
@@ -194,6 +198,18 @@ function isStringArray(value, nonEmpty = false) {
 }
 
 /**
+ * @param {any} value
+ * @param {Set<string>} allowed
+ * @returns {string[]}
+ */
+function unsupportedStringValues(value, allowed) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((entry) => typeof entry === "string" && !allowed.has(entry));
+}
+
+/**
  * @param {string} oldName
  * @param {string} newName
  * @param {string} example
@@ -377,8 +393,14 @@ export function validateGeneratorManifest(manifest) {
       if (manifest.widgetSupport.patterns != null && !isStringArray(manifest.widgetSupport.patterns)) {
         errors.push(`${label} widgetSupport.patterns must be a string array`);
       }
+      for (const pattern of unsupportedStringValues(manifest.widgetSupport.patterns, UI_PATTERN_KINDS)) {
+        errors.push(`${label} widgetSupport.patterns contains unsupported pattern '${pattern}'`);
+      }
       if (manifest.widgetSupport.behaviors != null && !isStringArray(manifest.widgetSupport.behaviors)) {
         errors.push(`${label} widgetSupport.behaviors must be a string array`);
+      }
+      for (const behavior of unsupportedStringValues(manifest.widgetSupport.behaviors, WIDGET_BEHAVIOR_KINDS)) {
+        errors.push(`${label} widgetSupport.behaviors contains unsupported behavior '${behavior}'`);
       }
       if (
         manifest.widgetSupport.unsupported != null &&
