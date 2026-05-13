@@ -2026,5 +2026,30 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_cli_0_3_82_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T20:24:07.934Z",
+      "by": "actor_coding_agent",
+      "note": "Approved release acceptance for 0.3.82 patch."
+    }
+  ],
+  "task_release_cli_0_3_82": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T20:24:19.799Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming the 0.3.82 CLI patch release work."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T20:24:29.318Z",
+      "by": "actor_coding_agent",
+      "note": "Starting local release preparation for 0.3.82."
+    }
   ]
 }

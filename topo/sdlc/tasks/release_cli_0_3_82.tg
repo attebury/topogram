@@ -1,0 +1,14 @@
+task task_release_cli_0_3_82 {
+  name "Release Cli 0 3 82"
+  description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.82 after widget behavior vocabulary and widget migration planning changes."
+  satisfies [req_widget_behavior_vocab_stability, req_widget_contract_migration_planning]
+  acceptance_refs [ac_cli_0_3_82_release_published]
+  verification_refs [verification_release_status_strict, verification_cli_package_smoke, verification_engine_gate]
+  affects [cap_verify_release_status, cap_roll_consumer_packages, cap_check_widget_contracts, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status in-progress
+}
