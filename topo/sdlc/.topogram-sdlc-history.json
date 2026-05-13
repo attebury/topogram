@@ -1903,5 +1903,46 @@
       "by": "actor_coding_agent",
       "note": "Package-backed extractor architecture is accepted and already implemented."
     }
+  ],
+  "pitch_catalog_source_health_maturity": [
+    {
+      "from": "draft",
+      "to": "submitted",
+      "at": "2026-05-13T19:27:26.098Z",
+      "by": "actor_coding_agent",
+      "note": "Current source-health workflow is implemented and documented; submit the pitch for approval."
+    },
+    {
+      "from": "submitted",
+      "to": "approved",
+      "at": "2026-05-13T19:27:26.300Z",
+      "by": "actor_coding_agent",
+      "note": "Catalog/source health is accepted as the current first-run workflow direction."
+    }
+  ],
+  "ac_source_health_workflow_current": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T19:27:26.496Z",
+      "by": "actor_coding_agent",
+      "note": "Acceptance criterion reflects current first-run health workflow behavior."
+    }
+  ],
+  "req_source_health_workflow": [
+    {
+      "from": "draft",
+      "to": "in-review",
+      "at": "2026-05-13T19:27:26.703Z",
+      "by": "actor_coding_agent",
+      "note": "Reviewing source-health workflow requirement after documenting current behavior."
+    },
+    {
+      "from": "in-review",
+      "to": "approved",
+      "at": "2026-05-13T19:27:26.906Z",
+      "by": "actor_coding_agent",
+      "note": "Source-health workflow is implemented, documented, and verified by current CLI/docs/gate tests."
+    }
   ]
 }

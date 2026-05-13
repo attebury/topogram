@@ -1,0 +1,6 @@
+acceptance_criterion ac_source_health_workflow_current {
+  name "Source Health Workflow Current"
+  description "Given a copied or maintained Topogram project, when a human or agent runs the first-run health workflow, then doctor, source status, template explain, policy checks, check, and agent/query guidance expose package access, catalog access, provenance, template attachment, generator policy, trust, and workspace validity before generation or maintained-code edits."
+  requirement req_source_health_workflow
+  status approved
+}

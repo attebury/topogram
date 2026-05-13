@@ -1,0 +1,9 @@
+decision decision_first_run_health_is_command_workflow {
+  name "First Run Health Is Command Workflow"
+  description "First-run project health is a command workflow, not a single validation command."
+  context ["doctor checks runtime package and catalog access", "source status explains copied Topogram provenance and local drift", "template explain describes template attachment update state and implementation trust", "policy checks explain generator and template package decisions", "check validates workspace topology ownership trust and policy", "agent brief and query commands tell agents what to read next"]
+  consequences ["generated starters should surface doctor source status template explain policy checks check agent brief and focused query commands", "docs should present the health workflow before generation or maintained-code edits", "source provenance remains audit information and must not become an ownership lock"]
+  pitch pitch_catalog_source_health_maturity
+  domain dom_catalog_templates
+  status accepted
+}

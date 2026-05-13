@@ -7,8 +7,8 @@ pitch pitch_catalog_source_health_maturity {
   rabbit_holes "Do not treat provenance hashes as ownership locks on user-edited Topogram source."
   no_go_areas "Do not present ambiguous catalog entries as canonical examples before their identity is settled."
   affects [cap_manage_catalog, cap_manage_templates, cap_create_project, cap_brief_agent]
-  decisions [decision_catalog_hello_identity, decision_catalog_provenance_is_audit]
+  decisions [decision_catalog_hello_identity, decision_catalog_provenance_is_audit, decision_first_run_health_is_command_workflow]
   domain dom_catalog_templates
   priority medium
-  status draft
+  status approved
 }
