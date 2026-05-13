@@ -1,0 +1,14 @@
+task task_prove_package_extractor_adoption_output {
+  name "Prove Package Extractor Adoption Output"
+  description "Strengthen package-backed extractor regression coverage so combined DB/API extractor candidates preview and write reviewed canonical adoption output without silently adopting maintained DB seam proposals."
+  satisfies [req_package_backed_extractor_architecture]
+  acceptance_refs [ac_package_extractor_adoption_review_writes]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

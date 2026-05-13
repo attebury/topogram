@@ -476,6 +476,45 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "capabilities"), true);
   assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:database"), true);
   assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:package-task"), true);
+
+  const databasePreview = runCli(["adopt", "bundle:database", targetRoot, "--dry-run", "--json"]);
+  assert.equal(databasePreview.status, 0, databasePreview.stderr || databasePreview.stdout);
+  const databasePreviewPayload = JSON.parse(databasePreview.stdout);
+  assert.equal(databasePreviewPayload.dryRun, true);
+  assert.deepEqual(databasePreviewPayload.writtenFiles, []);
+  assert.equal(
+    fs.readFileSync(path.join(targetRoot, "topogram.project.json"), "utf8").includes("proposed_runtime_migration"),
+    false
+  );
+
+  const packageTaskPreview = runCli(["adopt", "bundle:package-task", targetRoot, "--dry-run", "--json"]);
+  assert.equal(packageTaskPreview.status, 0, packageTaskPreview.stderr || packageTaskPreview.stdout);
+  const packageTaskPreviewPayload = JSON.parse(packageTaskPreview.stdout);
+  assert.equal(packageTaskPreviewPayload.dryRun, true);
+  assert.equal(packageTaskPreviewPayload.promotedCanonicalItemCount >= 2, true);
+  assert.deepEqual(packageTaskPreviewPayload.writtenFiles, []);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-package-task.tg")), false);
+  assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-adoptions.jsonl")), false);
+
+  const packageTaskWrite = runCli(["adopt", "bundle:package-task", targetRoot, "--write", "--json"]);
+  assert.equal(packageTaskWrite.status, 0, packageTaskWrite.stderr || packageTaskWrite.stdout);
+  const packageTaskWritePayload = JSON.parse(packageTaskWrite.stdout);
+  assert.equal(packageTaskWritePayload.dryRun, false);
+  assert.equal(packageTaskWritePayload.write, true);
+  assert.equal(packageTaskWritePayload.receipt.selector, "bundle:package-task");
+  assert.equal(packageTaskWritePayload.receipt.sourceProvenance.status, "clean");
+  assert.equal(packageTaskWritePayload.writtenFiles.includes("entities/entity-package-task.tg"), true);
+  assert.equal(packageTaskWritePayload.writtenFiles.includes("capabilities/cap-list-package-tasks.tg"), true);
+  assert.equal(
+    packageTaskWritePayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-package-task.tg" && item.sha256),
+    true
+  );
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-package-task.tg")), true);
+  assert.equal(fs.existsSync(path.join(targetRoot, "topo", "capabilities", "cap-list-package-tasks.tg")), true);
+  assert.equal(
+    fs.readFileSync(path.join(targetRoot, "topogram.project.json"), "utf8").includes("proposed_runtime_migration"),
+    false
+  );
 });
 
 test("package-backed extractors reject malformed candidate output during extraction", () => {

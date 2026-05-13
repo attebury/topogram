@@ -1,0 +1,6 @@
+acceptance_criterion ac_package_extractor_adoption_review_writes {
+  name "Package Extractor Adoption Review Writes"
+  description "Given DB and API package-backed extractors emit review-only candidates in one extraction, when a human or agent previews and writes a reviewed bundle adoption, then canonical Topogram files are written only for adopted entities/capabilities while maintained DB seam proposals remain review-only and do not patch topogram.project.json."
+  requirement req_package_backed_extractor_architecture
+  status approved
+}

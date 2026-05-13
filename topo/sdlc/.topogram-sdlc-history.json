@@ -2234,5 +2234,37 @@
       "by": "actor_coding_agent",
       "note": "Approve as a future separate hygiene-gate theme, not part of graph validity."
     }
+  ],
+  "ac_package_extractor_adoption_review_writes": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T22:31:26.705Z",
+      "by": "actor_coding_agent",
+      "note": "Approve package extractor adoption output proof."
+    }
+  ],
+  "task_prove_package_extractor_adoption_output": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T22:31:28.651Z",
+      "by": "actor_coding_agent",
+      "note": "Claim package extractor adoption proof task."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T22:31:34.853Z",
+      "by": "actor_coding_agent",
+      "note": "Adding package extractor adoption write regression coverage."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T22:32:19.549Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
