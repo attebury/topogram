@@ -1,0 +1,6 @@
+acceptance_criterion ac_combined_package_extractor_workflow {
+  name "Combined Package Extractor Workflow"
+  description "Given package-backed extractor support is available, when one extraction run uses DB and API extractor packages together, then Topogram merges review-only candidates, records package provenance, and exposes adoption review output without source mutation or canonical writes."
+  requirement req_extractor_selection_ux
+  status approved
+}

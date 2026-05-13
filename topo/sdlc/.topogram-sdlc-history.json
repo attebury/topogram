@@ -1814,5 +1814,37 @@
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
     }
+  ],
+  "ac_combined_package_extractor_workflow": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-13T18:24:10.350Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted combined package extractor proof scope."
+    }
+  ],
+  "task_prove_combined_package_extractors": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T18:24:22.243Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming combined package extractor proof."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T18:24:31.572Z",
+      "by": "actor_coding_agent",
+      "note": "Starting combined package extractor proof implementation."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T18:27:36.792Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

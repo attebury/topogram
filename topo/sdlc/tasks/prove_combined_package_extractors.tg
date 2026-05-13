@@ -1,0 +1,14 @@
+task task_prove_combined_package_extractors {
+  name "Prove Combined Package Extractors"
+  description "Add an engine regression proving one brownfield extraction run can execute multiple policy-allowed package-backed extractors and carry their merged DB/API candidates into extraction and adoption review artifacts."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_combined_package_extractor_workflow]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

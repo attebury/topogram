@@ -304,6 +304,180 @@ test("package-backed extractors add review-only candidates and provenance when p
   assert.deepEqual(provenance.extract.extractorPackages[0].extractors, ["cli.package-smoke"]);
 });
 
+test("package-backed extractors merge multiple tracks into one extraction review", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-combined."));
+  const sourceRoot = path.join(runRoot, "source");
+  fs.mkdirSync(sourceRoot, { recursive: true });
+  fs.writeFileSync(path.join(sourceRoot, "package.json"), "{\"name\":\"combined-package-extractor-source\",\"private\":true}\n", "utf8");
+
+  const dbPackage = writeExtractorPackage(path.join(runRoot, "db-extractor"), {
+    packageName: "@scope/topogram-extractor-db-smoke",
+    manifestId: "@scope/extractor-db-smoke",
+    track: "db",
+    extractorId: "db.package-smoke",
+    stack: { orm: "smoke-db" },
+    capabilities: { schema: true, maintainedDbSeams: true },
+    candidateKinds: ["entity", "maintained_db_migration_seam"],
+    candidatesSource: JSON.stringify({
+      entities: [{
+        id_hint: "entity_package_task",
+        name: "Package Task",
+        source: "package",
+        fields: [{ name: "id", type: "string", required: true }],
+        evidence: ["package-backed DB extractor"],
+        confidence: 0.91
+      }],
+      enums: [],
+      relations: [],
+      indexes: [],
+      maintained_seams: [{
+        kind: "maintained_db_migration_seam",
+        id_hint: "seam_package_db_migrations",
+        tool: "prisma",
+        ownership: "maintained",
+        apply: "never",
+        schemaPath: "prisma/schema.prisma",
+        migrationsPath: "prisma/migrations",
+        snapshotPath: "topo/state/db/app_db/current.snapshot.json",
+        runtime_id_hint: "app_db",
+        projection_id_hint: "proj_db",
+        confidence: "high",
+        evidence: ["package-backed DB extractor"],
+        match_reasons: ["package-backed DB extractor proposed a maintained seam"],
+        missing_decisions: [],
+        project_config_target: {
+          file: "topogram.project.json",
+          path: "topology.runtimes[id=app_db].migration",
+          runtime_id: "app_db",
+          projection_id: "proj_db"
+        },
+        manual_next_steps: ["Review and copy proposed_runtime_migration into topogram.project.json."],
+        proposed_runtime_migration: {
+          ownership: "maintained",
+          tool: "prisma",
+          apply: "never",
+          snapshotPath: "topo/state/db/app_db/current.snapshot.json",
+          schemaPath: "prisma/schema.prisma",
+          migrationsPath: "prisma/migrations"
+        }
+      }]
+    }, null, 2)
+  });
+  const apiPackage = writeExtractorPackage(path.join(runRoot, "api-extractor"), {
+    packageName: "@scope/topogram-extractor-api-smoke",
+    manifestId: "@scope/extractor-api-smoke",
+    track: "api",
+    extractorId: "api.package-smoke",
+    stack: { runtime: "node", framework: "express-smoke" },
+    capabilities: { routes: true },
+    candidateKinds: ["capability", "route", "stack"],
+    candidatesSource: JSON.stringify({
+      capabilities: [{
+        id_hint: "cap_list_package_tasks",
+        name: "List Package Tasks",
+        method: "GET",
+        path: "/package-tasks",
+        entity: "entity_package_task",
+        inputs: [],
+        evidence: ["package-backed API extractor"],
+        confidence: 0.9
+      }],
+      routes: [{
+        method: "GET",
+        path: "/package-tasks",
+        source_kind: "package",
+        source: "package:@scope/topogram-extractor-api-smoke",
+        capability: "cap_list_package_tasks",
+        entity: "entity_package_task",
+        evidence: ["package-backed API extractor"],
+        confidence: 0.9
+      }],
+      stacks: [{
+        id_hint: "stack_express_smoke",
+        name: "Express Smoke API",
+        framework: "express-smoke",
+        runtime: "node",
+        evidence: ["package-backed API extractor"],
+        confidence: 0.8
+      }]
+    }, null, 2)
+  });
+  const targetRoot = path.join(runRoot, "imported");
+  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+  fs.writeFileSync(policyPath, `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: ["@scope/topogram-extractor-db-smoke", "@scope/topogram-extractor-api-smoke"],
+    pinnedVersions: {
+      "@scope/topogram-extractor-db-smoke": "1",
+      "@scope/topogram-extractor-api-smoke": "1"
+    },
+    enabledPackages: []
+  }, null, 2)}\n`, "utf8");
+
+  const result = runCli([
+    "extract",
+    sourceRoot,
+    "--out",
+    targetRoot,
+    "--from",
+    "db,api",
+    "--extractor",
+    dbPackage,
+    "--extractor",
+    apiPackage,
+    "--extractor-policy",
+    policyPath,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.candidateCounts.dbEntities, 1);
+  assert.equal(payload.candidateCounts.dbMaintainedSeams, 1);
+  assert.equal(payload.candidateCounts.apiCapabilities, 1);
+  assert.equal(payload.candidateCounts.apiRoutes, 1);
+
+  const dbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "db", "candidates.json"), "utf8"));
+  const apiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "api", "candidates.json"), "utf8"));
+  assert.deepEqual(candidateIds(dbCandidates.entities), ["entity_package_task"]);
+  assert.equal(dbCandidates.maintained_seams[0].id_hint, "seam_package_db_migrations");
+  assert.deepEqual(candidateIds(apiCandidates.capabilities), ["cap_list_package_tasks"]);
+  assert.equal(apiCandidates.routes[0].path, "/package-tasks");
+
+  const provenance = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-extract.json"), "utf8"));
+  assert.deepEqual(
+    provenance.extract.extractorPackages.map((entry) => entry.packageName).sort(),
+    ["@scope/topogram-extractor-api-smoke", "@scope/topogram-extractor-db-smoke"]
+  );
+  assert.deepEqual(
+    provenance.extract.extractorPackages.flatMap((entry) => entry.extractors).sort(),
+    ["api.package-smoke", "db.package-smoke"]
+  );
+
+  const plan = runCli(["extract", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  const planPayload = JSON.parse(plan.stdout);
+  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  assert.equal(adoptionPlan.imported_maintained_db_seam_candidates.length, 1);
+  assert.equal(
+    adoptionPlan.imported_proposal_surfaces.some((item) => item.kind === "capability" && item.item === "cap_list_package_tasks"),
+    true
+  );
+  assert.equal(
+    adoptionPlan.imported_proposal_surfaces.some((item) => item.kind === "maintained_db_migration_seam" && item.item === "seam_package_db_migrations"),
+    true
+  );
+
+  const selectorList = runCli(["adopt", "--list", targetRoot, "--json"]);
+  assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
+  const selectorPayload = JSON.parse(selectorList.stdout);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "entities"), true);
+  assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "capabilities"), true);
+  assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:database"), true);
+  assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:package-task"), true);
+});
+
 test("package-backed extractors reject malformed candidate output during extraction", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-bad-output."));
   const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"), { malformedCandidates: true });
@@ -1218,23 +1392,40 @@ function assertNoLegacyTopogramWorkspace(projectRoot) {
 
 function writeExtractorPackage(packageRoot, options = {}) {
   fs.mkdirSync(packageRoot, { recursive: true });
-  const packageName = "@scope/topogram-extractor-smoke";
+  const packageName = options.packageName || "@scope/topogram-extractor-smoke";
+  const manifestId = options.manifestId || "@scope/extractor-cli-smoke";
+  const track = options.track || "cli";
+  const extractorId = options.extractorId || "cli.package-smoke";
+  const candidateKinds = options.candidateKinds || ["command"];
+  const stack = options.stack || { runtime: "node", framework: "generic-cli" };
+  const capabilities = options.capabilities || { commands: true };
+  const candidatesSource = options.candidatesSource || `[{
+          command_id: "package_smoke",
+          label: "Package Smoke",
+          usage: "package-smoke",
+          provenance: ["package-extractor"]
+        }]`;
+  const candidateObjectSource = options.malformedCandidates
+    ? "{ commands: { bad: true } }"
+    : track === "cli"
+      ? `{ commands: ${candidatesSource} }`
+      : candidatesSource;
   fs.writeFileSync(path.join(packageRoot, "package.json"), `${JSON.stringify({
     name: packageName,
     version: "1.0.0",
     main: "index.cjs"
   }, null, 2)}\n`, "utf8");
   fs.writeFileSync(path.join(packageRoot, "topogram-extractor.json"), `${JSON.stringify({
-    id: "@scope/extractor-cli-smoke",
+    id: manifestId,
     version: "1",
-    tracks: ["cli"],
+    tracks: [track],
     source: "package",
     package: packageName,
-    stack: { runtime: "node", framework: "generic-cli" },
-    capabilities: { commands: true },
-    candidateKinds: ["command"],
+    stack,
+    capabilities,
+    candidateKinds,
     evidenceTypes: ["runtime_source"],
-    extractors: ["cli.package-smoke"]
+    extractors: [extractorId]
   }, null, 2)}\n`, "utf8");
   const markerLine = options.markerPath
     ? `require("node:fs").writeFileSync(${JSON.stringify(options.markerPath)}, "loaded\\n", "utf8");\n`
@@ -1242,8 +1433,8 @@ function writeExtractorPackage(packageRoot, options = {}) {
   fs.writeFileSync(path.join(packageRoot, "index.cjs"), `${markerLine}const manifest = require("./topogram-extractor.json");
 exports.manifest = manifest;
 exports.extractors = [{
-  id: "cli.package-smoke",
-  track: "cli",
+  id: ${JSON.stringify(extractorId)},
+  track: ${JSON.stringify(track)},
   detect(context) {
     if (context.helpers.fs) throw new Error("package extractor received fs helper");
     return { score: 100, reasons: ["package smoke"] };
@@ -1252,14 +1443,7 @@ exports.extractors = [{
     if (context.helpers.fs) throw new Error("package extractor received fs helper");
     return {
       findings: [{ kind: "package_smoke", message: "package extractor ran" }],
-      candidates: {
-        commands: ${options.malformedCandidates ? "{ bad: true }" : `[{
-          command_id: "package_smoke",
-          label: "Package Smoke",
-          usage: "package-smoke",
-          provenance: ["package-extractor"]
-        }]`}
-      },
+      candidates: ${candidateObjectSource},
       diagnostics: []
     };
   }
