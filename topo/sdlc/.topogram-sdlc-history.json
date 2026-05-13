@@ -2335,5 +2335,21 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_release_cli_0_3_83": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T23:37:35.009Z",
+      "by": "actor_coding_agent",
+      "note": "Prepare @topogram/cli 0.3.83 release for extractor context packet work."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T23:37:41.043Z",
+      "by": "actor_coding_agent",
+      "note": "Starting release prepare, verification, publish, smoke, and release evidence refresh."
+    }
   ]
 }

@@ -1,0 +1,14 @@
+task task_release_cli_0_3_83 {
+  name "Release Cli 0 3 83"
+  description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.83 after extractor context was added to extract/adopt agent packets."
+  satisfies [req_extract_adopt_packets_show_extractor_context]
+  acceptance_refs [ac_cli_0_3_83_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
+  affects [cap_query_context, cap_import_brownfield_app, cap_manage_extractors, cap_verify_release_status, cap_roll_consumer_packages]
+  blocked_by []
+  disposition active
+  priority high
+  work_type implementation
+  claimed_by actor_coding_agent
+  status in-progress
+}

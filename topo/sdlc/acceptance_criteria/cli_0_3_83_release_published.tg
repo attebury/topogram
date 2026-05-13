@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_83_release_published {
+  name "Cli 0 3 83 Release Published"
+  description "Given extractor context has been added to extract/adopt agent packets on main, when @topogram/cli 0.3.83 is prepared, published, smoke-tested, and release evidence is refreshed, then strict release status is green for the CLI and first-party consumers."
+  requirement req_extract_adopt_packets_show_extractor_context
+  status approved
+}
