@@ -7,9 +7,13 @@ diagnostics, and provenance. Topogram core owns persistence, reconcile,
 adoption, and canonical `topo/**` writes.
 
 Use an extractor pack when bundled extraction is too generic for a framework,
-language, CLI, database, or UI evidence family. First-party examples are
-`@topogram/extractor-node-cli` for CLI surfaces and
-`@topogram/extractor-react-router` for React Router UI surfaces.
+language, CLI, database, or UI evidence family. First-party examples include:
+
+- `@topogram/extractor-node-cli` for CLI surfaces;
+- `@topogram/extractor-react-router` for React Router UI surfaces;
+- `@topogram/extractor-prisma-db` for Prisma schema/migration evidence;
+- `@topogram/extractor-express-api` for Express route surfaces;
+- `@topogram/extractor-drizzle-db` for Drizzle schema/migration evidence.
 
 ## Package Shape
 
@@ -89,6 +93,9 @@ packages are allowed by default. Other packages require an explicit
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
 topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extractor policy pin @topogram/extractor-prisma-db@1
+topogram extractor policy pin @topogram/extractor-express-api@1
+topogram extractor policy pin @topogram/extractor-drizzle-db@1
 topogram extractor policy check
 ```
 
@@ -112,8 +119,12 @@ minimal smoke shape. It does not replace fixture-based extraction tests.
 ```bash
 topogram extract ./existing-cli --out ./extracted-cli --from cli --extractor @topogram/extractor-node-cli
 topogram extract ./react-router-app --out ./extracted-ui --from ui --extractor @topogram/extractor-react-router
+topogram extract ./prisma-app --out ./extracted-db --from db --extractor @topogram/extractor-prisma-db
+topogram extract ./express-api --out ./extracted-api --from api --extractor @topogram/extractor-express-api
+topogram extract ./drizzle-app --out ./extracted-db --from db --extractor @topogram/extractor-drizzle-db
 ```
 
-Both packages emit review-only candidates. The React Router extractor can add
-screen, route, non-resource flow, and widget inference evidence, but adoption is
-still explicit through `topogram adopt`.
+These packages emit review-only candidates. React Router can add screen, route,
+non-resource flow, and widget evidence. Prisma and Drizzle can add maintained DB
+seam proposals. Express can add route, capability, parameter, auth, and stack
+evidence. Adoption is still explicit through `topogram adopt`.

@@ -1466,5 +1466,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_roll_first_party_extractor_packages": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T14:36:43.495Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming the first-party extractor package rollout."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T14:37:02.433Z",
+      "by": "actor_coding_agent",
+      "note": "Updating release consumers, tests, docs, and release matrix for the new extractor packages."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T14:44:53.311Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

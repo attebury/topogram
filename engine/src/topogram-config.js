@@ -18,7 +18,10 @@ export const DEFAULT_FIRST_PARTY_GENERATOR_REPOS = [
 
 export const DEFAULT_FIRST_PARTY_EXTRACTOR_REPOS = [
   "topogram-extractor-node-cli",
-  "topogram-extractor-react-router"
+  "topogram-extractor-react-router",
+  "topogram-extractor-prisma-db",
+  "topogram-extractor-express-api",
+  "topogram-extractor-drizzle-db"
 ];
 
 export const DEFAULT_RELEASE_CONSUMER_REPOS = [
@@ -42,6 +45,9 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOWS = {
   "topogram-generator-vanilla-web": "Generator Verification",
   "topogram-extractor-node-cli": "Extractor Verification",
   "topogram-extractor-react-router": "Extractor Verification",
+  "topogram-extractor-prisma-db": "Extractor Verification",
+  "topogram-extractor-express-api": "Extractor Verification",
+  "topogram-extractor-drizzle-db": "Extractor Verification",
   "topogram-starters": "Starter Verification",
   "topogram-template-todo": "Template Verification",
   "topogram-demo-todo": "Demo Verification",

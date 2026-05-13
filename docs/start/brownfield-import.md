@@ -31,8 +31,14 @@ topogram extractor check ./my-extractor-pack
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
 topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extractor policy pin @topogram/extractor-prisma-db@1
+topogram extractor policy pin @topogram/extractor-express-api@1
+topogram extractor policy pin @topogram/extractor-drizzle-db@1
 topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
 topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
+topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @topogram/extractor-prisma-db
+topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api
+topogram extract ./drizzle-app --out ./imported-topogram --from db --extractor @topogram/extractor-drizzle-db
 ```
 
 Extractor packs run only during `topogram extract`. They return review-only

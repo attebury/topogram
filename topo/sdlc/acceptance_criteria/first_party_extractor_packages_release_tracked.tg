@@ -1,0 +1,6 @@
+acceptance_criterion ac_first_party_extractor_packages_release_tracked {
+  name "First Party Extractor Packages Release Tracked"
+  description "Given first-party Prisma, Express, and Drizzle extractor packages are published, when release status strict runs, then those repos are included as first-party consumers with extractor verification workflow evidence."
+  requirement req_first_party_extractor_packages_tracked
+  status approved
+}

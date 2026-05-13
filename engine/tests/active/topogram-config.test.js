@@ -59,9 +59,15 @@ test("runtime config preserves current public defaults", () => {
   assert.ok(releaseConsumerRepos(root).includes("topogram-generator-react-web"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-node-cli"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-react-router"));
+  assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-prisma-db"));
+  assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-express-api"));
+  assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-drizzle-db"));
   assert.equal(releaseConsumerWorkflowName("topogram-starters", root), "Starter Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-node-cli", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-react-router", root), "Extractor Verification");
+  assert.equal(releaseConsumerWorkflowName("topogram-extractor-prisma-db", root), "Extractor Verification");
+  assert.equal(releaseConsumerWorkflowName("topogram-extractor-express-api", root), "Extractor Verification");
+  assert.equal(releaseConsumerWorkflowName("topogram-extractor-drizzle-db", root), "Extractor Verification");
   assert.deepEqual(releaseConsumerWorkflowJobs("topograms", root), [
     "Validate catalog",
     "Smoke native starter",

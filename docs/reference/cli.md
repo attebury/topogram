@@ -63,6 +63,9 @@ topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
 topogram extract ./existing-app --out ./imported-topogram
 topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
 topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
+topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @topogram/extractor-prisma-db
+topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api
+topogram extract ./drizzle-app --out ./imported-topogram --from db --extractor @topogram/extractor-drizzle-db
 topogram extractor list
 topogram extractor show topogram/ui-extractors
 topogram extractor check ./extractor-package

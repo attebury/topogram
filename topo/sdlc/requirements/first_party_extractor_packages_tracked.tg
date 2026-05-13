@@ -1,0 +1,9 @@
+requirement req_first_party_extractor_packages_tracked {
+  name "First Party Extractor Packages Tracked"
+  description "Topogram release status should track first-party extractor package repos that are published as public npm packages and verified by extractor package CI."
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_run_engine_gates]
+  introduces_rules []
+  respects_rules []
+  priority medium
+  status approved
+}
