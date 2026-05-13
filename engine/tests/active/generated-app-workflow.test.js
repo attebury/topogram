@@ -27,9 +27,13 @@ const firstPartyGeneratorRepos = [
   "topogram-generator-swiftui-native",
   "topogram-generator-vanilla-web"
 ];
+const firstPartyExtractorRepos = [
+  "topogram-extractor-node-cli"
+];
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
 const knownCliConsumerRepos = [
   ...firstPartyGeneratorRepos,
+  ...firstPartyExtractorRepos,
   "topogram-starters",
   ...externalTodoConsumerRepos,
   "topogram-hello",

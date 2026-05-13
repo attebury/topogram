@@ -16,8 +16,13 @@ export const DEFAULT_FIRST_PARTY_GENERATOR_REPOS = [
   "topogram-generator-vanilla-web"
 ];
 
+export const DEFAULT_FIRST_PARTY_EXTRACTOR_REPOS = [
+  "topogram-extractor-node-cli"
+];
+
 export const DEFAULT_RELEASE_CONSUMER_REPOS = [
   ...DEFAULT_FIRST_PARTY_GENERATOR_REPOS,
+  ...DEFAULT_FIRST_PARTY_EXTRACTOR_REPOS,
   "topogram-starters",
   "topogram-template-todo",
   "topogram-demo-todo",
@@ -34,6 +39,7 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOWS = {
   "topogram-generator-sveltekit-web": "Generator Verification",
   "topogram-generator-swiftui-native": "Generator Verification",
   "topogram-generator-vanilla-web": "Generator Verification",
+  "topogram-extractor-node-cli": "Extractor Verification",
   "topogram-starters": "Starter Verification",
   "topogram-template-todo": "Template Verification",
   "topogram-demo-todo": "Demo Verification",
