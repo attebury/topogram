@@ -22,18 +22,17 @@ README.md
 
 ```json
 {
-  "id": "@topogram/extractor-react-router",
+  "id": "@topogram/extractor-node-cli",
   "version": "1",
-  "tracks": ["ui"],
+  "tracks": ["cli"],
   "source": "package",
-  "package": "@topogram/extractor-react-router",
-  "export": ".",
-  "stack": { "framework": "react-router" },
-  "capabilities": ["routes", "screens", "flows"],
-  "candidateKinds": ["screens", "routes", "flows"],
+  "package": "@topogram/extractor-node-cli",
+  "stack": { "runtime": "node", "framework": "generic-cli" },
+  "capabilities": ["commands", "options", "effects"],
+  "candidateKinds": ["command", "capability", "cli_surface"],
   "evidenceTypes": ["runtime_source", "parser_config"],
   "extractors": [
-    { "id": "ui.react-router", "track": "ui" }
+    { "id": "cli.node-package", "track": "cli" }
   ]
 }
 ```
@@ -45,18 +44,18 @@ module.exports = {
   manifest,
   extractors: [
     {
-      id: "ui.react-router",
-      track: "ui",
+      id: "cli.node-package",
+      track: "cli",
       detect(context) {
-        return { score: 1, reasons: ["Found React Router source."] };
+        return { score: 1, reasons: ["Found Node package CLI metadata."] };
       },
       extract(context) {
         return {
           findings: [],
           candidates: {
-            screens: [],
-            routes: [],
-            flows: []
+            commands: [],
+            capabilities: [],
+            surfaces: []
           },
           diagnostics: []
         };
@@ -86,7 +85,7 @@ packages are allowed by default. Other packages require an explicit
 
 ```bash
 topogram extractor policy init
-topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extractor policy pin @topogram/extractor-node-cli@1
 topogram extractor policy check
 ```
 

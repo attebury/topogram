@@ -29,8 +29,8 @@ framework-specific discovery beyond the bundled extractors:
 topogram extractor list
 topogram extractor check ./my-extractor-pack
 topogram extractor policy init
-topogram extractor policy pin @topogram/extractor-react-router@1
-topogram extract ./existing-app --out ./imported-topogram --extractor @topogram/extractor-react-router
+topogram extractor policy pin @topogram/extractor-node-cli@1
+topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
 ```
 
 Extractor packs run only during `topogram extract`. They return review-only

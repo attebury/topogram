@@ -240,11 +240,10 @@ export function extractorPolicyDiagnosticsForPackages(policyInfo, bindings, step
 export function parseExtractorPolicyPin(spec) {
   const separator = spec.lastIndexOf("@");
   if (separator <= 0 || separator === spec.length - 1) {
-    throw new Error("Extractor policy pin requires a package name and extractor version, for example @topogram/extractor-react-router@1.");
+    throw new Error("Extractor policy pin requires a package name and extractor version, for example @topogram/extractor-node-cli@1.");
   }
   return {
     packageName: spec.slice(0, separator),
     version: spec.slice(separator + 1)
   };
 }
-

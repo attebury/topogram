@@ -45,7 +45,7 @@ export function printExtractorHelp() {
   console.log("  topogram extractor show topogram/api-extractors");
   console.log("  topogram extractor check ./extractor-package");
   console.log("  topogram extractor policy init");
-  console.log("  topogram extractor policy pin @topogram/extractor-react-router@1");
+  console.log("  topogram extractor policy pin @topogram/extractor-node-cli@1");
 }
 
 /**
