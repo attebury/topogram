@@ -60,7 +60,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `topogram-generator-swiftui-native` | `0.3.80` | Generator Verification | completed/success | [25777666222](https://github.com/attebury/topogram-generator-swiftui-native/actions/runs/25777666222) |
 | `topogram-generator-vanilla-web` | `0.3.80` | Generator Verification | completed/success | [25777686585](https://github.com/attebury/topogram-generator-vanilla-web/actions/runs/25777686585) |
 | `topogram-extractor-node-cli` | `0.3.80` | Extractor Verification | completed/success | [25777442786](https://github.com/attebury/topogram-extractor-node-cli/actions/runs/25777442786) |
-| `topogram-extractor-react-router` | `0.3.80` | Extractor Verification | completed/success | [25779360952](https://github.com/attebury/topogram-extractor-react-router/actions/runs/25779360952) |
+| `topogram-extractor-react-router` | `0.3.80` | Extractor Verification | completed/success | [25803224629](https://github.com/attebury/topogram-extractor-react-router/actions/runs/25803224629) |
 | `topogram-starters` | `0.3.80` | Starter Verification | completed/success | [25777734663](https://github.com/attebury/topogram-starters/actions/runs/25777734663) |
 | `topogram-template-todo` | `0.3.80` | Template Verification | completed/success | [25777804859](https://github.com/attebury/topogram-template-todo/actions/runs/25777804859) |
 | `topogram-demo-todo` | `0.3.80` | Demo Verification | completed/success | [25777838880](https://github.com/attebury/topogram-demo-todo/actions/runs/25777838880) |
