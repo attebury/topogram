@@ -1537,5 +1537,21 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_release_cli_0_3_81": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-13T15:57:58.954Z",
+      "by": "actor_coding_agent",
+      "note": "Claim 0.3.81 release task."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-13T15:58:08.163Z",
+      "by": "actor_coding_agent",
+      "note": "Start 0.3.81 release preparation."
+    }
   ]
 }
