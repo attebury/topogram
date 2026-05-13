@@ -1552,6 +1552,13 @@
       "at": "2026-05-13T15:58:08.163Z",
       "by": "actor_coding_agent",
       "note": "Start 0.3.81 release preparation."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-13T16:33:35.445Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }

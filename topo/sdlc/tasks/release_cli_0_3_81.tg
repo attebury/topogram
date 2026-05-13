@@ -3,12 +3,12 @@ task task_release_cli_0_3_81 {
   description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.81 after extractor selection UX changes."
   satisfies [req_extractor_selection_ux]
   acceptance_refs [ac_cli_0_3_81_release_published]
-  verification_refs [verification_release_status_strict, verification_cli_package_smoke, verification_engine_gate]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
   affects [cap_verify_release_status, cap_roll_consumer_packages, cap_manage_extractors, cap_import_brownfield_app]
   blocked_by []
   claimed_by actor_coding_agent
   disposition active
   priority high
   work_type implementation
-  status in-progress
+  status done
 }
