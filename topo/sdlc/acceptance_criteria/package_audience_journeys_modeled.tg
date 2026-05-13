@@ -1,6 +1,6 @@
 acceptance_criterion ac_package_audience_journeys_modeled {
   name "Package Audience Journeys Modeled"
-  description "Given package, template, generator, importer, and catalog boundaries are being refined, when Topogram docs and graph records are updated, then canonical journey records identify the main audiences, their goals, package surfaces, trust boundaries, and organizing implications."
+  description "Given package, template, generator, extractor, and catalog boundaries are being refined, when Topogram docs and graph records are updated, then canonical journey records identify the main audiences, their goals, package surfaces, trust boundaries, and organizing implications."
   requirement req_docs_are_current_and_audience_oriented
   status approved
 }

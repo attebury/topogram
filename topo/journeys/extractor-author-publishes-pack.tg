@@ -1,0 +1,40 @@
+journey journey_extractor_author_publishes_pack {
+  name "Extractor Author Publishes Pack"
+  description "An extractor author publishes a package-backed extractor pack that discovers brownfield candidates without owning adoption."
+  status canonical
+  domain dom_import_adoption
+  actors [actor_extractor_author actor_coding_agent]
+  goal "Emit precise review-only candidates and evidence while Topogram core owns persistence, reconcile, adoption, and canonical writes."
+  related_capabilities [cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_manage_extractors cap_run_engine_gates]
+  related_projections [proj_topogram_cli]
+  success_signals ["Extractor output is evidence and candidate data only." "Source app files are never mutated." "Core reconcile and adoption remain explicit."]
+  failure_signals ["The extractor package mutates source app files." "The extractor writes canonical topo files directly." "The extractor performs network access or package installation during extraction without explicit policy." "The extractor defines its own adoption semantics instead of using core reconcile/adoption."]
+  tags [journey extractor package brownfield]
+
+  step {
+    id scope_extractor_pack
+    intent "Scope the extractor pack to a framework, language, platform, or evidence family."
+    expects ["The package has a clear evidence domain and precision target."]
+  }
+
+  step {
+    id expose_extractor_manifest
+    intent "Declare extractor metadata and extractor adapters."
+    after [scope_extractor_pack]
+    expects ["The extractor package can be policy-checked before execution."]
+  }
+
+  step {
+    id run_extractor
+    intent "Read source evidence and emit findings, candidates, diagnostics, and provenance."
+    after [expose_extractor_manifest]
+    expects ["The extractor emits review-only output without canonical writes."]
+  }
+
+  step {
+    id reconcile_with_core
+    intent "Let Topogram core persist candidates and manage adoption."
+    after [run_extractor]
+    expects ["Candidate files, reports, import history, reconcile, and adoption stay engine-owned."]
+  }
+}

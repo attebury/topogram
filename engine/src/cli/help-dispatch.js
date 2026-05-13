@@ -13,6 +13,9 @@ import {
   printDoctorHelp
 } from "./commands/doctor.js";
 import {
+  printExtractorHelp
+} from "./commands/extractor.js";
+import {
   printGeneratorHelp
 } from "./commands/generator.js";
 import {
@@ -84,6 +87,10 @@ export function printCommandHelp(command) {
   }
   if (command === "generator") {
     printGeneratorHelp();
+    return true;
+  }
+  if (command === "extractor") {
+    printExtractorHelp();
     return true;
   }
   if (command === "template") {
@@ -174,6 +181,10 @@ export function handleUnparsedCommandHelp(args) {
   }
   if (args[0] === "generator") {
     printGeneratorHelp();
+    return args[1] ? 1 : 0;
+  }
+  if (args[0] === "extractor") {
+    printExtractorHelp();
     return args[1] ? 1 : 0;
   }
   if (args[0] === "template") {

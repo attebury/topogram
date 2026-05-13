@@ -22,6 +22,12 @@ actor actor_generator_author {
   status active
 }
 
+actor actor_extractor_author {
+  name "Extractor Author"
+  description "Developer publishing package-backed extractor packs that emit review-only candidates and evidence from brownfield source."
+  status active
+}
+
 actor actor_release_manager {
   name "Release Manager"
   description "Human or agent coordinating npm package releases and first-party consumer rollout."

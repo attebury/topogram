@@ -88,6 +88,8 @@ and verification gates. See [Agent First Run](./docs/agent-first-run.md).
 - `topogram check` validates the workspace and project config.
 - `topogram generate` writes app/runtime outputs such as `app/`.
 - `topogram emit` writes or prints contracts, reports, snapshots, and plans.
+- `topogram extract` reads brownfield source and writes reviewable candidates;
+  extractor packages can add discovery, but core owns persistence and adoption.
 - `widget` models reusable semantic UI intent; generators map that intent to
   stack-specific code.
 - Templates compose starter Topograms and generator packages. Generator packages

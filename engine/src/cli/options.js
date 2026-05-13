@@ -25,6 +25,21 @@ export function optionValueIfPresent(args, flag) {
 /**
  * @param {string[]} args
  * @param {string} flag
+ * @returns {string[]}
+ */
+export function optionValues(args, flag) {
+  const values = [];
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] === flag && args[index + 1] && !args[index + 1].startsWith("-")) {
+      values.push(args[index + 1]);
+    }
+  }
+  return values;
+}
+
+/**
+ * @param {string[]} args
+ * @param {string} flag
  * @returns {string|null}
  */
 function resolvedPathOption(args, flag) {
@@ -51,6 +66,8 @@ export function parseCliOptions(args, commandArgs) {
     workflowName: commandArgs?.workflowName || (!generateTarget && workflowFlagValue ? workflowFlagValue : null),
     workflowId: generateTarget ? workflowFlagValue : null,
     fromValue: optionValue(args, "--from"),
+    extractorSpecs: optionValues(args, "--extractor"),
+    extractorPolicyPath: optionValueIfPresent(args, "--extractor-policy"),
     adoptValue: commandArgs?.adoptValue || optionValue(args, "--adopt"),
     reasonValue: optionValueIfPresent(args, "--reason"),
     modeId: optionValue(args, "--mode"),

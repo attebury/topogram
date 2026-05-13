@@ -4,7 +4,7 @@ import { TOPOGRAM_IMPORT_FILE } from "../../../import/provenance.js";
 import { TOPOGRAM_IMPORT_ADOPTIONS_FILE } from "./paths.js";
 
 export function printExtractHelp() {
-  console.log("Usage: topogram extract <app-path> --out <target> [--from <track[,track]>] [--json]");
+  console.log("Usage: topogram extract <app-path> --out <target> [--from <track[,track]>] [--extractor <id-or-package-or-path>] [--json]");
   console.log("   or: topogram extract refresh [path] [--from <app-path>] [--dry-run] [--json]");
   console.log("   or: topogram extract diff [path] [--json]");
   console.log("   or: topogram extract check [path] [--json]");
@@ -26,6 +26,8 @@ export function printExtractHelp() {
   console.log("  topogram extract ./existing-app --out ./extracted-topogram");
   console.log("  topogram extract ./existing-app --out ./extracted-topogram --from db,api,ui");
   console.log("  topogram extract ./existing-cli --out ./extracted-topogram --from cli");
+  console.log("  topogram extract ./existing-cli --out ./extracted-topogram --from cli --extractor @topogram/extractor-node-cli");
+  console.log("  topogram extract ./existing-app --out ./extracted-topogram --extractor-policy ./topogram.extractor-policy.json");
   console.log("  topogram extract diff ./extracted-topogram");
   console.log("  topogram extract refresh ./extracted-topogram --from ./existing-app --dry-run");
   console.log("  topogram extract refresh ./extracted-topogram --from ./existing-app");

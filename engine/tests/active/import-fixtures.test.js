@@ -196,6 +196,143 @@ test("CLI import fixture extracts command surface candidates", () => {
   );
 });
 
+test("extractor commands list bundled manifests and check package-backed extractors", () => {
+  const packageRoot = writeExtractorPackage(fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-package.")));
+
+  const list = runCli(["extractor", "list", "--json"]);
+  assert.equal(list.status, 0, list.stderr || list.stdout);
+  const listPayload = JSON.parse(list.stdout);
+  assert.equal(listPayload.summary.bundled >= 6, true);
+  assert.equal(listPayload.extractors.some((item) => item.id === "topogram/cli-extractors" && item.executesPackageCode === false), true);
+
+  const show = runCli(["extractor", "show", "topogram/cli-extractors", "--json"]);
+  assert.equal(show.status, 0, show.stderr || show.stdout);
+  const showPayload = JSON.parse(show.stdout);
+  assert.equal(showPayload.extractor.id, "topogram/cli-extractors");
+  assert.deepEqual(showPayload.extractor.tracks, ["cli"]);
+
+  const check = runCli(["extractor", "check", packageRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.ok, true);
+  assert.equal(checkPayload.manifest.id, "@scope/extractor-cli-smoke");
+  assert.equal(checkPayload.smoke.extractors, 1);
+});
+
+test("package-backed extractor policy gates execution before package code loads", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-policy."));
+  const markerPath = path.join(runRoot, "loaded.txt");
+  const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"), { markerPath });
+  const targetRoot = path.join(runRoot, "imported");
+
+  const result = runCli([
+    "extract",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "cli",
+    "--extractor",
+    packageRoot,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Extractor package '@scope\/topogram-extractor-smoke' is not allowed/);
+  assert.equal(fs.existsSync(markerPath), false);
+});
+
+test("package-backed extractors add review-only candidates and provenance when policy allows them", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-run."));
+  const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"));
+  const targetRoot = path.join(runRoot, "imported");
+  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+  fs.writeFileSync(policyPath, `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: ["@scope/topogram-extractor-smoke"],
+    pinnedVersions: { "@scope/topogram-extractor-smoke": "1" },
+    enabledPackages: []
+  }, null, 2)}\n`, "utf8");
+
+  const result = runCli([
+    "extract",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "cli",
+    "--extractor",
+    packageRoot,
+    "--extractor-policy",
+    policyPath,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.candidateCounts.cliCommands, 3);
+  const cliCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "cli", "candidates.json"), "utf8"));
+  assert.equal(cliCandidates.commands.some((item) => item.command_id === "package_smoke"), true);
+  const provenance = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-extract.json"), "utf8"));
+  assert.equal(provenance.extract.extractorPackages.length, 1);
+  assert.equal(provenance.extract.extractorPackages[0].packageName, "@scope/topogram-extractor-smoke");
+  assert.deepEqual(provenance.extract.extractorPackages[0].extractors, ["cli.package-smoke"]);
+});
+
+test("package-backed extractors reject malformed candidate output during extraction", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-bad-output."));
+  const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"), { malformedCandidates: true });
+  const targetRoot = path.join(runRoot, "imported");
+  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+  fs.writeFileSync(policyPath, `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: ["@scope/topogram-extractor-smoke"],
+    pinnedVersions: { "@scope/topogram-extractor-smoke": "1" },
+    enabledPackages: []
+  }, null, 2)}\n`, "utf8");
+
+  const result = runCli([
+    "extract",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "cli",
+    "--extractor",
+    packageRoot,
+    "--extractor-policy",
+    policyPath,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands must be an array/);
+});
+
+test("extractor policy commands initialize, pin, and report enabled packages", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-policy-cli."));
+  fs.writeFileSync(path.join(runRoot, "package.json"), "{\"devDependencies\":{\"@scope/topogram-extractor-smoke\":\"1.0.0\"}}\n", "utf8");
+
+  const init = runCli(["extractor", "policy", "init", runRoot, "--json"]);
+  assert.equal(init.status, 0, init.stderr || init.stdout);
+  assert.equal(fs.existsSync(path.join(runRoot, "topogram.extractor-policy.json")), true);
+
+  const pin = runCli(["extractor", "policy", "pin", "@scope/topogram-extractor-smoke@1", runRoot, "--json"]);
+  assert.equal(pin.status, 0, pin.stderr || pin.stdout);
+  const policy = JSON.parse(fs.readFileSync(path.join(runRoot, "topogram.extractor-policy.json"), "utf8"));
+  assert.deepEqual(policy.enabledPackages, ["@scope/topogram-extractor-smoke"]);
+  assert.equal(policy.pinnedVersions["@scope/topogram-extractor-smoke"], "1");
+
+  const status = runCli(["extractor", "policy", "status", runRoot, "--json"]);
+  assert.equal(status.status, 1);
+  const statusPayload = JSON.parse(status.stdout);
+  assert.equal(statusPayload.summary.enabledPackages, 1);
+  assert.equal(statusPayload.packages[0].packageName, "@scope/topogram-extractor-smoke");
+  assert.equal(statusPayload.packages[0].installed, false);
+});
+
 test("docs, tests, and fixture snippets do not create primary import candidates", () => {
   const summary = runImportAppWorkflow(path.join(importFixtureRoot, "docs-noise"), {
     from: "db,api,ui,cli"
@@ -1053,6 +1190,58 @@ function detectionIds(summary) {
 
 function assertNoLegacyTopogramWorkspace(projectRoot) {
   assert.equal(fs.existsSync(path.join(projectRoot, "topogram")), false);
+}
+
+function writeExtractorPackage(packageRoot, options = {}) {
+  fs.mkdirSync(packageRoot, { recursive: true });
+  const packageName = "@scope/topogram-extractor-smoke";
+  fs.writeFileSync(path.join(packageRoot, "package.json"), `${JSON.stringify({
+    name: packageName,
+    version: "1.0.0",
+    main: "index.cjs"
+  }, null, 2)}\n`, "utf8");
+  fs.writeFileSync(path.join(packageRoot, "topogram-extractor.json"), `${JSON.stringify({
+    id: "@scope/extractor-cli-smoke",
+    version: "1",
+    tracks: ["cli"],
+    source: "package",
+    package: packageName,
+    stack: { runtime: "node", framework: "generic-cli" },
+    capabilities: { commands: true },
+    candidateKinds: ["command"],
+    evidenceTypes: ["runtime_source"],
+    extractors: ["cli.package-smoke"]
+  }, null, 2)}\n`, "utf8");
+  const markerLine = options.markerPath
+    ? `require("node:fs").writeFileSync(${JSON.stringify(options.markerPath)}, "loaded\\n", "utf8");\n`
+    : "";
+  fs.writeFileSync(path.join(packageRoot, "index.cjs"), `${markerLine}const manifest = require("./topogram-extractor.json");
+exports.manifest = manifest;
+exports.extractors = [{
+  id: "cli.package-smoke",
+  track: "cli",
+  detect(context) {
+    if (context.helpers.fs) throw new Error("package extractor received fs helper");
+    return { score: 100, reasons: ["package smoke"] };
+  },
+  extract(context) {
+    if (context.helpers.fs) throw new Error("package extractor received fs helper");
+    return {
+      findings: [{ kind: "package_smoke", message: "package extractor ran" }],
+      candidates: {
+        commands: ${options.malformedCandidates ? "{ bad: true }" : `[{
+          command_id: "package_smoke",
+          label: "Package Smoke",
+          usage: "package-smoke",
+          provenance: ["package-extractor"]
+        }]`}
+      },
+      diagnostics: []
+    };
+  }
+}];
+`, "utf8");
+  return packageRoot;
 }
 
 function runCli(args) {

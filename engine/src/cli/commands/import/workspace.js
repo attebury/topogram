@@ -149,7 +149,7 @@ export function countFilesRecursive(rootPath) {
 /**
  * @param {string} sourcePath
  * @param {string} targetPath
- * @param {{ from?: string|null }} [options]
+ * @param {{ from?: string|null, extractorSpecs?: string[], extractorPolicyPath?: string|null, cwd?: string|null }} [options]
  * @returns {{ ok: boolean, sourcePath: string, targetPath: string, workspaceRoot: string, topogramRoot: string, projectConfigPath: string, provenancePath: string, tracks: string[], sourceFiles: number, rawCandidateFiles: number, reconcileFiles: number, writtenFiles: string[], candidateCounts: Record<string, number>, nextCommands: string[] }}
  */
 export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, options = {}) {
@@ -166,7 +166,12 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
   const topogramRoot = path.join(targetRoot, DEFAULT_TOPO_FOLDER_NAME);
   fs.mkdirSync(topogramRoot, { recursive: true });
   const sourceFiles = collectImportSourceFileRecords(sourceRoot, { excludeRoots: [targetRoot] });
-  const importResult = runWorkflow("import-app", sourceRoot, { from: options.from || null });
+  const importResult = runWorkflow("import-app", sourceRoot, {
+    from: options.from || null,
+    extractorSpecs: options.extractorSpecs || [],
+    extractorPolicyPath: options.extractorPolicyPath || null,
+    cwd: options.cwd || process.cwd()
+  });
   const rawCandidateFiles = writeRelativeFiles(topogramRoot, importResult.files || {});
 
   const projectConfigPath = path.join(targetRoot, "topogram.project.json");
@@ -182,6 +187,7 @@ export function buildBrownfieldImportWorkspacePayload(sourcePath, targetPath, op
     tracks: importResult.summary.tracks || [],
     findingsCount: importResult.summary.findings_count || 0,
     candidateCounts,
+    extractorPackages: importResult.summary.package_extractors || [],
     files: sourceFiles
   });
   const writtenFiles = [

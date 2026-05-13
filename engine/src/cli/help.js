@@ -38,7 +38,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram package update-cli <version|--latest> [--json]");
   console.log("   or: topogram copy <source> <target> [--version <version>] [--catalog <path-or-source>] [--json]");
   console.log("   or: topogram copy --list [--json] [--catalog <path-or-source>]");
-  console.log("   or: topogram extract <app-path> --out <target> [--from <track[,track]>] [--json]");
+  console.log("   or: topogram extract <app-path> --out <target> [--from <track[,track]>] [--extractor <id-or-package-or-path>] [--json]");
   console.log("   or: topogram extract refresh [path] [--from <app-path>] [--dry-run] [--json]");
   console.log("   or: topogram extract diff [path] [--json]");
   console.log("   or: topogram extract check [path] [--json]");
@@ -67,6 +67,14 @@ export function printUsage(options = {}) {
   console.log("   or: topogram generator policy check [path] [--json]");
   console.log("   or: topogram generator policy explain [path] [--json]");
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
+  console.log("   or: topogram extractor list [--json]");
+  console.log("   or: topogram extractor show <id-or-package> [--json]");
+  console.log("   or: topogram extractor check <path-or-package> [--json]");
+  console.log("   or: topogram extractor policy init [path] [--json]");
+  console.log("   or: topogram extractor policy status [path] [--json]");
+  console.log("   or: topogram extractor policy check [path] [--json]");
+  console.log("   or: topogram extractor policy explain [path] [--json]");
+  console.log("   or: topogram extractor policy pin [package@version] [path] [--json]");
   console.log("   or: topogram init [path] [--with-sdlc] [--json]");
   console.log("");
   console.log("Common commands:");
@@ -98,6 +106,9 @@ export function printUsage(options = {}) {
   console.log("  topogram generator show @topogram/generator-react-web");
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator policy check");
+  console.log("  topogram extractor list");
+  console.log("  topogram extractor check ./extractor-package");
+  console.log("  topogram extractor policy check");
   console.log("  topogram generate");
   console.log("  topogram extract ./existing-app --out ./extracted-topogram");
   console.log("  topogram extract diff ./extracted-topogram");

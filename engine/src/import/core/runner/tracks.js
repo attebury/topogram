@@ -2,6 +2,7 @@
 
 import { getEnrichersForTrack, getExtractorsForTrack } from "../registry.js";
 import { normalizeCandidatesForTrack } from "./candidates.js";
+import { packageExtractorsForContext } from "../../../extractor/packages.js";
 
 /**
  * @param {any} context
@@ -10,7 +11,12 @@ import { normalizeCandidatesForTrack } from "./candidates.js";
  */
 function sortExtractors(context, extractors) {
   return extractors
-    .map((extractor) => ({ extractor, detection: extractor.detect(context) || { score: 0, reasons: [] } }))
+    .map((extractor) => {
+      const extractorContext = extractor.source === "package" && typeof extractor.packageContext === "function"
+        ? extractor.packageContext(context)
+        : context;
+      return { extractor, detection: extractor.detect(extractorContext) || { score: 0, reasons: [] } };
+    })
     .filter((entry) => entry.detection.score > 0)
     .sort((a, b) => b.detection.score - a.detection.score || a.extractor.id.localeCompare(b.extractor.id));
 }
@@ -20,7 +26,7 @@ function sortExtractors(context, extractors) {
  * @param {Array<{ extractor: any, detection: any }>} detections
  * @returns {Array<{ extractor: any, detection: any }>}
  */
-function selectDetectionsForTrack(track, detections) {
+function selectBundledDetectionsForTrack(track, detections) {
   if (track === "db") {
     const prisma = detections.find((entry) => entry.extractor.id === "db.prisma");
     if (prisma) return [prisma];
@@ -92,6 +98,20 @@ function selectDetectionsForTrack(track, detections) {
 
 /**
  * @param {string} track
+ * @param {Array<{ extractor: any, detection: any }>} detections
+ * @returns {Array<{ extractor: any, detection: any }>}
+ */
+function selectDetectionsForTrack(track, detections) {
+  const packageDetections = detections.filter((entry) => entry.extractor.source === "package");
+  const bundledDetections = selectBundledDetectionsForTrack(
+    track,
+    detections.filter((entry) => entry.extractor.source !== "package")
+  );
+  return [...bundledDetections, ...packageDetections];
+}
+
+/**
+ * @param {string} track
  * @returns {any}
  */
 function initialCandidatesForTrack(track) {
@@ -114,6 +134,35 @@ function initialCandidatesForTrack(track) {
 }
 
 /**
+ * @param {any} extractor
+ * @param {any} result
+ * @returns {void}
+ */
+function assertExtractorResultShape(extractor, result) {
+  const label = extractor?.id || "unknown";
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    throw new Error(`Extractor '${label}' extract(context) must return an object.`);
+  }
+  if (result.findings != null && !Array.isArray(result.findings)) {
+    throw new Error(`Extractor '${label}' extract(context) findings must be an array when present.`);
+  }
+  if (result.diagnostics != null && !Array.isArray(result.diagnostics)) {
+    throw new Error(`Extractor '${label}' extract(context) diagnostics must be an array when present.`);
+  }
+  if (result.candidates == null) {
+    result.candidates = {};
+  }
+  if (!result.candidates || typeof result.candidates !== "object" || Array.isArray(result.candidates)) {
+    throw new Error(`Extractor '${label}' extract(context) candidates must be an object.`);
+  }
+  for (const [key, value] of Object.entries(result.candidates)) {
+    if (!Array.isArray(value)) {
+      throw new Error(`Extractor '${label}' extract(context) candidates.${key} must be an array.`);
+    }
+  }
+}
+
+/**
  * @param {any} context
  * @param {string} track
  * @returns {{ findings: any[], candidates: any, extractor_detections: any[] }}
@@ -121,9 +170,22 @@ function initialCandidatesForTrack(track) {
 export function runTrack(context, track) {
   const findings = [];
   const rawCandidates = initialCandidatesForTrack(track);
+  const packageState = packageExtractorsForContext(context);
+  const packageErrors = packageState.diagnostics.filter((diagnostic) => diagnostic.severity !== "warning");
+  if (packageErrors.length > 0) {
+    throw new Error(packageErrors.map((diagnostic) => diagnostic.message || String(diagnostic)).join("\n"));
+  }
+  const extractors = [
+    ...getExtractorsForTrack(track),
+    ...packageState.extractors.filter((extractor) => extractor.track === track)
+  ];
 
-  for (const { extractor, detection } of selectDetectionsForTrack(track, sortExtractors(context, getExtractorsForTrack(track)))) {
-    const result = extractor.extract(context) || { findings: [], candidates: {} };
+  for (const { extractor, detection } of selectDetectionsForTrack(track, sortExtractors(context, extractors))) {
+    const extractorContext = extractor.source === "package" && typeof extractor.packageContext === "function"
+      ? extractor.packageContext(context)
+      : context;
+    const result = extractor.extract(extractorContext) || { findings: [], candidates: {} };
+    assertExtractorResultShape(extractor, result);
     findings.push({
       extractor: extractor.id,
       detection,

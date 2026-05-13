@@ -17,6 +17,7 @@ These docs are organized by audience. Historical docs were archived to
 | Choose between `generate` and `emit` | [Generate vs Emit](./concepts/generate-vs-emit.md) |
 | Author templates | [Template Authoring](./authoring/templates.md) |
 | Author generator packages | [Generator Packs](./authoring/generator-packs.md) |
+| Author extractor packages | [Extractor Packs](./authoring/extractor-packs.md) |
 | Maintain this repo | [Engine Development](./maintainers/engine-development.md) |
 | Maintain docs | [Documentation Maintenance](./maintainers/docs.md) |
 
@@ -36,6 +37,7 @@ These docs are organized by audience. Historical docs were archived to
 - Reusable UI contract: `widget`
 - App output command: `topogram generate`
 - Artifact command: `topogram emit`
+- Brownfield discovery command: `topogram extract`
 - Topology entries: `topology.runtimes`
 - Runtime kinds: `web_surface`, `api_service`, `database`, `ios_surface`,
   `android_surface`

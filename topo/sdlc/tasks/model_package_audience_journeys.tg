@@ -1,6 +1,6 @@
 task task_model_package_audience_journeys {
   name "Model Package Audience Journeys"
-  description "Add canonical journey records that clarify who uses Topogram packages, templates, generators, importer packs, extractors, and catalog entries."
+  description "Add canonical journey records that clarify who uses Topogram packages, templates, generators, extractor packs, and catalog entries."
   satisfies [req_docs_are_current_and_audience_oriented]
   acceptance_refs [ac_package_audience_journeys_modeled]
   verification_refs [verification_engine_gate]

@@ -1,4 +1,4 @@
-These are small, actively tested importer smoke fixtures for the engine.
+These are small, actively tested extractor smoke fixtures for the engine.
 
 Retained fixtures:
 

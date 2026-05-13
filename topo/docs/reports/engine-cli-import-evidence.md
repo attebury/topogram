@@ -34,7 +34,7 @@ Useful evidence:
 - `docs/**`, `AGENTS.md`, and `CONTRIBUTING.md` expose command examples, engineering laws, and required verification gates.
 - The raw import produced a `proj_cli_surface` candidate with commands/options/effects/examples.
 
-Importer limits observed:
+Extractor limits observed:
 
 - The generic CLI extractor is intentionally stack-agnostic, but it currently over-collects usage-like source strings.
 - Many false positives came from parser, resolver, generated app fixtures, and test strings rather than public CLI help.

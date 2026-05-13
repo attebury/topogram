@@ -22,6 +22,23 @@ topogram extract ./existing-cli --out ./imported-topogram --from cli
 Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and
 `verification`.
 
+Use package-backed extractor packs only when you deliberately want extra
+framework-specific discovery beyond the bundled extractors:
+
+```bash
+topogram extractor list
+topogram extractor check ./my-extractor-pack
+topogram extractor policy init
+topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extract ./existing-app --out ./imported-topogram --extractor @topogram/extractor-react-router
+```
+
+Extractor packs run only during `topogram extract`. They return review-only
+candidates, findings, diagnostics, and evidence. Topogram core still owns
+candidate persistence, provenance, reconcile, adoption, and canonical `topo/**`
+writes. Extractors must not mutate the source app, install packages, or perform
+network access.
+
 ## 2. Review extraction health
 
 ```bash

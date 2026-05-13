@@ -9,7 +9,7 @@ journey journey_brownfield_import_and_adoption {
   related_decisions [decision_stateful_workflow_mutations_use_cli]
   related_projections [proj_topogram_cli]
   success_signals ["Import evidence is reviewable before adoption." "Canonical topo records are written only by explicit adoption." "Maintained source app files are unchanged by import."]
-  failure_signals ["Import treats docs, tests, fixtures, generated output, or cache files as primary evidence by itself." "Importer or extractor code writes canonical topo files directly." "Maintained source app files or migration files are changed during import." "Adoption happens without a human or agent selecting reviewed candidates."]
+  failure_signals ["Import treats docs, tests, fixtures, generated output, or cache files as primary evidence by itself." "Extractor code writes canonical topo files directly." "Maintained source app files or migration files are changed during import." "Adoption happens without a human or agent selecting reviewed candidates."]
   tags [journey brownfield extract adoption]
 
   step {

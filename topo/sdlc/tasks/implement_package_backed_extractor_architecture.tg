@@ -1,0 +1,14 @@
+task task_implement_package_backed_extractor_architecture {
+  name "Implement Package Backed Extractor Architecture"
+  description "Add manifest-backed bundled and package-backed extractor infrastructure, extractor policy commands, extractor package checks, and explicit extraction-time package execution without changing core adoption ownership."
+  satisfies [req_clear_command_vocabulary]
+  acceptance_refs [ac_package_backed_extractor_architecture]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_run_engine_gates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

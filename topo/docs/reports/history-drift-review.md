@@ -100,7 +100,7 @@ Historical docs reviewed:
 - **not implemented:** Coverage instrumentation and numeric coverage ratchets
   remain deferred. The current hardening proof relies on active behavior tests,
   package smoke, and boundary tests.
-- **not implemented:** The CLI importer does not yet classify public command
+- **not implemented:** The CLI extractor does not yet classify public command
   help versus incidental source strings well enough for broad self-import
   adoption.
 - **not implemented:** UI/native parity across React, SvelteKit, and future
@@ -154,7 +154,7 @@ Historical docs reviewed:
   stale `--generate` artifact commands when they appear near active program
   docs.
 - **promote:** Keep `req_cli_import_precision_followup` as a current
-  requirement. The importer is useful as evidence capture, but precision must
+  requirement. The extractor is useful as evidence capture, but precision must
   improve before large self-adoption.
 - **promote:** Treat the dogfood workspace as maintained. `topogram generate`
   must not rewrite engine source; agents should use `topogram agent brief`,

@@ -1,0 +1,6 @@
+acceptance_criterion ac_package_backed_extractor_architecture {
+  name "Package Backed Extractor Architecture"
+  description "Given brownfield extraction currently uses built-in extractors, when package-backed extractor infrastructure is added, then extractor packs can be listed, checked, policy-gated, and executed as review-only candidate producers while core keeps ownership of persistence, reconcile, and adoption."
+  requirement req_clear_command_vocabulary
+  status approved
+}

@@ -61,6 +61,11 @@ topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
 
 ```bash
 topogram extract ./existing-app --out ./imported-topogram
+topogram extract ./existing-app --out ./imported-topogram --extractor @topogram/extractor-react-router
+topogram extractor list
+topogram extractor show topogram/ui-extractors
+topogram extractor check ./extractor-package
+topogram extractor policy check
 topogram extract check ./imported-topogram
 topogram extract plan ./imported-topogram
 topogram adopt --list ./imported-topogram
@@ -79,6 +84,8 @@ topogram trust template
 topogram template policy check
 topogram generator list
 topogram generator policy check
+topogram extractor list
+topogram extractor policy check
 topogram sdlc policy explain
 ```
 

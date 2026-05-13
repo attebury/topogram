@@ -8,6 +8,7 @@ import { runCheckCommand } from "./commands/check.js";
 import { runCopyCommand } from "./commands/copy.js";
 import { runEmitCommand } from "./commands/emit.js";
 import { runGenerateAppCommand } from "./commands/generate.js";
+import { runExtractorCommand } from "./commands/extractor.js";
 import { runGeneratorCommand } from "./commands/generator.js";
 import { runGeneratorPolicyCommand } from "./commands/generator-policy.js";
 import { runImportCommand } from "./commands/import-runner.js";
@@ -81,6 +82,8 @@ export async function runCliDispatch(context) {
     workflowName,
     workflowId,
     fromValue,
+    extractorSpecs,
+    extractorPolicyPath,
     adoptValue,
     reasonValue,
     modeId,
@@ -225,6 +228,15 @@ export async function runCliDispatch(context) {
     });
   }
 
+  if (commandArgs?.extractorCommand || commandArgs?.extractorPolicyCommand) {
+    return runExtractorCommand({
+      commandArgs,
+      inputPath,
+      json: emitJson,
+      cwd: process.cwd()
+    });
+  }
+
   if (commandArgs?.generatorPolicyCommand) {
     return runGeneratorPolicyCommand({ commandArgs, inputPath, json: emitJson });
   }
@@ -259,6 +271,8 @@ export async function runCliDispatch(context) {
       inputPath,
       outPath,
       fromValue,
+      extractorSpecs,
+      extractorPolicyPath,
       reasonValue,
       refreshAdopted,
       dryRun: args.includes("--dry-run"),

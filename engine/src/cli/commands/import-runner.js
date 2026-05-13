@@ -25,7 +25,7 @@ import {
 } from "./import.js";
 
 /**
- * @param {{ commandArgs: Record<string, any>, inputPath: string|null|undefined, outPath?: string|null, fromValue?: string|null, reasonValue?: string|null, refreshAdopted?: boolean, dryRun?: boolean, write?: boolean, force?: boolean, json?: boolean }} context
+ * @param {{ commandArgs: Record<string, any>, inputPath: string|null|undefined, outPath?: string|null, fromValue?: string|null, extractorSpecs?: string[], extractorPolicyPath?: string|null, reasonValue?: string|null, refreshAdopted?: boolean, dryRun?: boolean, write?: boolean, force?: boolean, json?: boolean }} context
  * @returns {number}
  */
 export function runImportCommand(context) {
@@ -34,6 +34,8 @@ export function runImportCommand(context) {
     inputPath,
     outPath = null,
     fromValue = null,
+    extractorSpecs = [],
+    extractorPolicyPath = null,
     reasonValue = null,
     refreshAdopted = false,
     dryRun = false,
@@ -49,7 +51,7 @@ export function runImportCommand(context) {
       printExtractHelp();
       return 1;
     }
-    const payload = buildBrownfieldImportWorkspacePayload(inputPath || "", outPath, { from: fromValue });
+    const payload = buildBrownfieldImportWorkspacePayload(inputPath || "", outPath, { from: fromValue, extractorSpecs, extractorPolicyPath, cwd: process.cwd() });
     if (json) {
       console.log(stableStringify(payload));
     } else {

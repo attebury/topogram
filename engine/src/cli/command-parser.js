@@ -1,6 +1,7 @@
 // @ts-check
 
 import { parseCoreCommandArgs } from "./command-parsers/core.js";
+import { parseExtractorCommandArgs } from "./command-parsers/extractor.js";
 import { parseGeneratorCommandArgs } from "./command-parsers/generator.js";
 import { parseImportCommandArgs } from "./command-parsers/import.js";
 import { parseLegacyWorkflowCommandArgs } from "./command-parsers/legacy-workflow.js";
@@ -10,6 +11,7 @@ import { parseTemplateCommandArgs } from "./command-parsers/template.js";
 
 const COMMAND_PARSERS = [
   parseCoreCommandArgs,
+  parseExtractorCommandArgs,
   parseGeneratorCommandArgs,
   parseTemplateCommandArgs,
   parseProjectCommandArgs,

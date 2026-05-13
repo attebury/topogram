@@ -57,14 +57,80 @@ import { railsControllerEnricher } from "../enrichers/rails-controllers.js";
 import { workflowTargetStateEnricher } from "../enrichers/workflow-target-state.js";
 import { docLinkingEnricher } from "../enrichers/doc-linking.js";
 
-export const extractorRegistry = {
-  db: [prismaExtractor, djangoModelsExtractor, efCoreExtractor, roomExtractor, swiftDataExtractor, dotnetModelsExtractor, flutterEntitiesExtractor, reactNativeEntitiesExtractor, railsSchemaExtractor, liquibaseExtractor, myBatisXmlExtractor, jpaExtractor, drizzleExtractor, sqlExtractor, snapshotExtractor],
-  api: [openApiExtractor, openApiCodeExtractor, graphQlSdlExtractor, graphQlCodeFirstExtractor, trpcExtractor, aspNetCoreExtractor, retrofitExtractor, swiftWebApiExtractor, flutterDioExtractor, reactNativeRepositoryExtractor, fastifyExtractor, expressExtractor, djangoRoutesExtractor, railsRoutesExtractor, micronautExtractor, jaxRsExtractor, springWebExtractor, nextRouteExtractor, genericRouteFallbackExtractor, nextServerActionExtractor, nextAuthExtractor],
-  ui: [nextAppRouterUiExtractor, nextPagesRouterUiExtractor, androidComposeUiExtractor, blazorUiExtractor, razorPagesUiExtractor, swiftUiExtractor, uiKitExtractor, mauiXamlUiExtractor, flutterScreensUiExtractor, reactNativeScreensExtractor, reactRouterUiExtractor, svelteKitUiExtractor, backendOnlyUiExtractor],
-  cli: [genericCliExtractor],
-  workflows: [genericWorkflowExtractor],
-  verification: [genericVerificationExtractor]
-};
+function extractorPack(id, tracks, extractors, candidateKinds, stack = {}, capabilities = {}) {
+  return {
+    manifest: {
+      id,
+      version: "1",
+      tracks,
+      source: "bundled",
+      extractors: extractors.map((extractor) => extractor.id),
+      stack,
+      capabilities,
+      candidateKinds,
+      evidenceTypes: ["runtime_source", "parser_config", "docs", "tests", "fixtures"]
+    },
+    extractors
+  };
+}
+
+export const BUILTIN_EXTRACTOR_PACKS = [
+  extractorPack(
+    "topogram/db-extractors",
+    ["db"],
+    [prismaExtractor, djangoModelsExtractor, efCoreExtractor, roomExtractor, swiftDataExtractor, dotnetModelsExtractor, flutterEntitiesExtractor, reactNativeEntitiesExtractor, railsSchemaExtractor, liquibaseExtractor, myBatisXmlExtractor, jpaExtractor, drizzleExtractor, sqlExtractor, snapshotExtractor],
+    ["entity", "enum", "relation", "index", "maintained_db_migration_seam"],
+    { domain: "database" },
+    { schema: true, migrations: true, maintainedSeams: true }
+  ),
+  extractorPack(
+    "topogram/api-extractors",
+    ["api"],
+    [openApiExtractor, openApiCodeExtractor, graphQlSdlExtractor, graphQlCodeFirstExtractor, trpcExtractor, aspNetCoreExtractor, retrofitExtractor, swiftWebApiExtractor, flutterDioExtractor, reactNativeRepositoryExtractor, fastifyExtractor, expressExtractor, djangoRoutesExtractor, railsRoutesExtractor, micronautExtractor, jaxRsExtractor, springWebExtractor, nextRouteExtractor, genericRouteFallbackExtractor, nextServerActionExtractor, nextAuthExtractor],
+    ["capability", "route", "stack"],
+    { domain: "api" },
+    { routes: true, openapi: true, graphql: true }
+  ),
+  extractorPack(
+    "topogram/ui-extractors",
+    ["ui"],
+    [nextAppRouterUiExtractor, nextPagesRouterUiExtractor, androidComposeUiExtractor, blazorUiExtractor, razorPagesUiExtractor, swiftUiExtractor, uiKitExtractor, mauiXamlUiExtractor, flutterScreensUiExtractor, reactNativeScreensExtractor, reactRouterUiExtractor, svelteKitUiExtractor, backendOnlyUiExtractor],
+    ["screen", "route", "action", "flow", "widget", "shape", "stack"],
+    { domain: "ui" },
+    { screens: true, widgets: true, flows: true }
+  ),
+  extractorPack(
+    "topogram/cli-extractors",
+    ["cli"],
+    [genericCliExtractor],
+    ["command", "capability", "cli_surface"],
+    { domain: "cli" },
+    { commands: true, options: true, effects: true }
+  ),
+  extractorPack(
+    "topogram/workflow-extractors",
+    ["workflows"],
+    [genericWorkflowExtractor],
+    ["workflow", "workflow_state", "workflow_transition"],
+    { domain: "workflow" },
+    { workflows: true }
+  ),
+  extractorPack(
+    "topogram/verification-extractors",
+    ["verification"],
+    [genericVerificationExtractor],
+    ["verification", "scenario", "framework", "script"],
+    { domain: "verification" },
+    { verifications: true }
+  )
+];
+
+export const extractorRegistry = Object.fromEntries(
+  ["db", "api", "ui", "cli", "workflows", "verification"].map((track) => [
+    track,
+    BUILTIN_EXTRACTOR_PACKS.flatMap((pack) => pack.extractors).filter((extractor) => extractor.track === track)
+  ])
+);
 
 export const enricherRegistry = {
   db: [railsModelEnricher],
@@ -81,4 +147,12 @@ export function getExtractorsForTrack(track) {
 
 export function getEnrichersForTrack(track) {
   return enricherRegistry[track] || [];
+}
+
+export function getBundledExtractorPack(id) {
+  return BUILTIN_EXTRACTOR_PACKS.find((pack) => pack.manifest.id === id) || null;
+}
+
+export function getBundledExtractorById(id) {
+  return BUILTIN_EXTRACTOR_PACKS.flatMap((pack) => pack.extractors).find((extractor) => extractor.id === id) || null;
 }

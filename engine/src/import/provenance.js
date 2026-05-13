@@ -53,7 +53,8 @@ export function writeTopogramImportRecord(projectRoot, input) {
     extract: {
       tracks: input.tracks || [],
       findingsCount: input.findingsCount || 0,
-      candidateCounts: input.candidateCounts || {}
+      candidateCounts: input.candidateCounts || {},
+      extractorPackages: input.extractorPackages || []
     },
     ownership: {
       extractedArtifacts: "project-owned",

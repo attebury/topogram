@@ -6,6 +6,7 @@ import { parseImportTracks } from "./options.js";
 import { appReportMarkdown, reportMarkdown } from "./reports.js";
 import { runTrack } from "./tracks.js";
 import { draftUiProjectionFiles } from "./ui-drafts.js";
+import { packageExtractorsForContext } from "../../../extractor/packages.js";
 
 /**
  * @param {string} inputPath
@@ -64,6 +65,7 @@ export function runImportApp(inputPath, options = {}) {
     tracks,
     findings_count: Object.values(findings).reduce((total, entries) => total + entries.length, 0),
     extractor_detections: Object.fromEntries(Object.entries(resultsByTrack).map(([track, result]) => [track, result.extractor_detections])),
+    package_extractors: packageExtractorsForContext(context).provenance,
     candidates
   };
 

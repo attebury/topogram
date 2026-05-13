@@ -2,7 +2,7 @@ decision decision_cli_surface_is_projection_type {
   name "CLI Surface Is Projection Type"
   description "Command-line behavior is modeled as entries inside a cli_surface projection rather than as top-level command statements."
   context ["commands realize capabilities", "surface entries preserve options outputs effects and examples"]
-  consequences ["CLI importer emits candidate cli_surface projections", "command details remain surface-level contract data"]
+  consequences ["CLI extractor emits candidate cli_surface projections", "command details remain surface-level contract data"]
   domain dom_cli
   status accepted
 }

@@ -946,6 +946,48 @@ test("generator package loading delegates to package adapter utilities", () => {
   assert.deepEqual(offenders, []);
 });
 
+test("extractor package loading delegates to package adapter utilities", () => {
+  const files = [
+    "engine/src/extractor/registry.js",
+    "engine/src/extractor/check.js",
+    "engine/src/extractor/packages.js"
+  ];
+  const offenders = [];
+  for (const relative of files) {
+    const contents = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+    if (!contents.includes("package-adapters") && relative !== "engine/src/extractor/check.js") {
+      offenders.push({ file: relative, reason: "missing package adapter import" });
+    }
+    for (const forbidden of ["createRequire", "function loadLocalAdapter", "function loadInstalledAdapter", "function selectPackageExport"]) {
+      if (contents.includes(forbidden)) {
+        offenders.push({ file: relative, reason: forbidden });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("generator and extractor package domains stay separated", () => {
+  const files = [
+    "engine/src/extractor/registry.js",
+    "engine/src/extractor/check.js",
+    "engine/src/extractor/packages.js",
+    "engine/src/extractor-policy.js"
+  ];
+  const offenders = [];
+  for (const relative of files) {
+    const contents = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+    for (const forbidden of ["../generator", "../../generator", "topogram-generator"]) {
+      if (contents.includes(forbidden)) {
+        offenders.push({ file: relative, reason: forbidden });
+      }
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
 test("import command entrypoint stays an export surface after split", () => {
   const contents = fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "commands", "import.js"), "utf8");
   const lines = contents.split(/\r?\n/).filter(Boolean);
