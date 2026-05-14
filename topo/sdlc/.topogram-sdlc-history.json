@@ -2511,6 +2511,13 @@
       "at": "2026-05-14T13:16:45.030Z",
       "by": "actor_coding_agent",
       "note": "Bump package version, publish CLI, roll extractor consumers, and refresh release evidence."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T13:52:23.713Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }
