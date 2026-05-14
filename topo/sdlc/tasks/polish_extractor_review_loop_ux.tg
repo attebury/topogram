@@ -1,0 +1,15 @@
+task task_polish_extractor_review_loop_ux {
+  name "Polish Extractor Review Loop Ux"
+  description "Make extractor list/show/check/policy output and docs explain how extractor packages are selected, trusted, executed, and reviewed before adoption."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_selection_guidance ac_extractor_review_loop_command_guidance]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+  domain dom_import_adoption
+}

@@ -88,6 +88,11 @@ topogram extract status ./imported-topogram
 topogram extract history ./imported-topogram --verify
 ```
 
+Extractor command safety: `extractor list`, `extractor show`, and
+`extractor policy` do not load package adapter code. `extractor check` and
+`extract --extractor` do load package adapter code. Extractor packages write
+review-only candidates; `adopt --dry-run` should precede any canonical `--write`.
+
 ## Policies and trust
 
 ```bash

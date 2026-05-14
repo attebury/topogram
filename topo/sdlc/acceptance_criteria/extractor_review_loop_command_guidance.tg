@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_review_loop_command_guidance {
+  name "Extractor Review Loop Command Guidance"
+  description "Given first-party package-backed extractors are discoverable, when a human or agent runs extractor list, show, check, or policy commands, then each command explains the safe selection loop: discover, install, pin, check, extract, inspect plan, dry-run adoption, and only then write reviewed canonical records."
+  requirement req_extractor_selection_ux
+  status approved
+}

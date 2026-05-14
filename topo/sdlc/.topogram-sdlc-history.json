@@ -2551,5 +2551,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_extractor_review_loop_command_guidance": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-14T15:38:07.968Z",
+      "by": "actor_coding_agent",
+      "note": "Review loop guidance is accepted for this extractor UX slice."
+    }
+  ],
+  "task_polish_extractor_review_loop_ux": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T15:38:26.559Z",
+      "by": "actor_coding_agent",
+      "note": "Starting extractor review loop UX polish."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T15:38:34.716Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing extractor command and docs review loop guidance."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T15:43:09.319Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

@@ -165,6 +165,17 @@ recommendations grouped by track. Use `topogram extractor show <package>` before
 installing when you need the package purpose, install command, policy pin
 command, and a concrete extract command.
 
+The consumer command loop is part of the contract:
+
+1. `topogram extractor list` discovers candidates without loading package code.
+2. `topogram extractor show <package>` explains why to use one package, how to install it, how to pin it, and how to run extraction.
+3. `npm install -D <package>` is explicit; Topogram does not install extractor packages during extraction.
+4. `topogram extractor policy pin <package>@<manifest-version>` records the reviewed manifest version.
+5. `topogram extractor check <package>` loads package code only for a minimal smoke extraction.
+6. `topogram extract ... --extractor <package>` writes candidates and provenance, not canonical records.
+7. `topogram extract plan`, `topogram adopt --list`, and `topogram query extract-plan` show package provenance and selectors.
+8. `topogram adopt <selector> --dry-run` precedes any `--write`.
+
 Consumer loop:
 
 ```bash

@@ -79,6 +79,19 @@ fixture. It proves the package boundary is executable; it does not prove that
 the package understands your application. The real proof is the extract/adopt
 review loop below.
 
+Extractor command safety is intentionally staged:
+
+| Command | Loads package code? | Purpose |
+| --- | --- | --- |
+| `topogram extractor list` | No | Discover bundled and first-party package extractors by track. |
+| `topogram extractor show <package>` | No | Read purpose, install command, policy pin, and extract command. |
+| `topogram extractor policy ...` | No | Allow and pin reviewed extractor manifest versions. |
+| `topogram extractor check <package>` | Yes | Smoke-test the adapter boundary against a synthetic fixture. |
+| `topogram extract ... --extractor <package>` | Yes | Read brownfield source and write review-only candidates. |
+| `topogram extract plan` / `topogram adopt --list` | No | Review package provenance, candidate counts, bundles, selectors, and safety notes. |
+| `topogram adopt <selector> --dry-run` | No | Preview canonical `topo/**` writes. |
+| `topogram adopt <selector> --write` | No | Write only reviewed canonical records. |
+
 Then run extraction with the selected pack:
 
 ```bash

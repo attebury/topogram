@@ -44,6 +44,7 @@ export function printExtractorHelp() {
   console.log("  - extractor packages execute only during `topogram extract` or `topogram extractor check`.");
   console.log("  - extractor packages emit review-only candidates; core owns persistence, reconcile, and adoption.");
   console.log(`  - package-backed extractors are governed by ${EXTRACTOR_POLICY_FILE}; bundled topogram/* extractors are allowed.`);
+  console.log("  - safe loop: list/show -> install -> policy pin -> check -> extract -> plan/list -> adopt --dry-run -> adopt --write.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram extractor list");
@@ -121,17 +122,110 @@ function extractorPolicyPinCommand(packageName, version) {
 }
 
 /**
- * @param {string|null|undefined} packageName
+ * @param {string|null|undefined} extractorRef
  * @param {string[]} tracks
  * @param {string|null|undefined} exampleSource
  * @returns {string|null}
  */
-function extractorRunCommand(packageName, tracks, exampleSource) {
-  if (!packageName) {
+function extractorRunCommand(extractorRef, tracks, exampleSource) {
+  if (!extractorRef) {
     return null;
   }
   const trackList = tracks.length > 0 ? tracks.join(",") : "db,api,ui,cli";
-  return `topogram extract ${exampleSource || "./existing-app"} --out ./imported-topogram --from ${trackList} --extractor ${packageName}`;
+  return `topogram extract ${exampleSource || "./existing-app"} --out ./imported-topogram --from ${trackList} --extractor ${extractorRef}`;
+}
+
+/**
+ * @param {Record<string, any>|null|undefined} extractor
+ * @returns {Record<string, any>}
+ */
+function buildExtractorReviewWorkflow(extractor = null) {
+  const packageName = extractor?.package || extractor?.packageName || null;
+  const extractorRef = packageName || extractor?.id || "<extractor>";
+  const tracks = Array.isArray(extractor?.tracks) ? extractor.tracks : [];
+  const version = extractor?.version || "1";
+  const bundledExtractor = extractor?.source === "bundled" && !packageName;
+  const installCommand = extractor?.installCommand || (packageName ? packageExtractorInstallCommand(packageName) : null);
+  const policyPinCommand = extractor?.policyPinCommand || (packageName ? extractorPolicyPinCommand(packageName, version) : null);
+  const extractCommand = extractor?.extractCommand || extractorRunCommand(extractorRef, tracks, extractor?.exampleSource);
+  return {
+    type: "extractor_review_workflow",
+    packageCodeExecution: {
+      list: false,
+      show: false,
+      policy: false,
+      check: true,
+      extract: true
+    },
+    steps: [
+      {
+        id: "discover",
+        command: "topogram extractor list",
+        packageCodeExecution: false,
+        purpose: "Find bundled and first-party package-backed extractors by track."
+      },
+      {
+        id: "inspect",
+        command: `topogram extractor show ${extractorRef}`,
+        packageCodeExecution: false,
+        purpose: "Read manifest purpose, tracks, install command, policy pin command, and extract command."
+      },
+      ...(installCommand ? [{
+        id: "install",
+        command: installCommand,
+        packageCodeExecution: false,
+        purpose: "Install the extractor package explicitly; Topogram does not install it during extraction."
+      }] : []),
+      ...(policyPinCommand ? [{
+        id: "pin_policy",
+        command: policyPinCommand,
+        packageCodeExecution: false,
+        purpose: "Allow and pin the extractor manifest version before execution."
+      }] : []),
+      ...(!bundledExtractor ? [{
+        id: "check",
+        command: `topogram extractor check ${extractorRef}`,
+        packageCodeExecution: true,
+        purpose: "Load the adapter and run a minimal smoke extraction against a synthetic fixture."
+      }] : []),
+      ...(extractCommand ? [{
+        id: "extract",
+        command: extractCommand,
+        packageCodeExecution: true,
+        purpose: "Read brownfield source and write review-only candidates plus extraction provenance."
+      }] : []),
+      {
+        id: "review_plan",
+        command: "topogram extract plan ./imported-topogram",
+        packageCodeExecution: false,
+        purpose: "Review bundles, extractor provenance, candidate counts, and safety notes."
+      },
+      {
+        id: "list_selectors",
+        command: "topogram adopt --list ./imported-topogram",
+        packageCodeExecution: false,
+        purpose: "Choose an explicit adoption selector."
+      },
+      {
+        id: "dry_run_adoption",
+        command: "topogram adopt <selector> ./imported-topogram --dry-run",
+        packageCodeExecution: false,
+        purpose: "Preview canonical topo writes before changing project-owned records."
+      },
+      {
+        id: "write_reviewed_adoption",
+        command: "topogram adopt <selector> ./imported-topogram --write",
+        packageCodeExecution: false,
+        purpose: "Write only reviewed canonical records; extractor packages never own adoption semantics."
+      }
+    ],
+    safetyNotes: [
+      "topogram extractor list/show/policy do not load package adapter code.",
+      "topogram extractor check and topogram extract load package adapter code.",
+      "Extractor packages emit review-only candidates; core owns persistence, reconcile, adoption, and canonical topo writes.",
+      "Run dry-run adoption before --write."
+    ]
+  };
 }
 
 /**
@@ -188,8 +282,8 @@ function extractorManifestSummary(manifest, metadata = {}) {
   const version = manifest.version || firstParty?.version || "1";
   const installCommand = packageName ? packageExtractorInstallCommand(packageName) : null;
   const policyPinCommand = extractorPolicyPinCommand(packageName, version);
-  const extractCommand = extractorRunCommand(packageName, tracks, firstParty?.exampleSource);
-  return {
+  const extractCommand = extractorRunCommand(packageName || manifest.id, tracks, firstParty?.exampleSource);
+  const summary = {
     id: manifest.id,
     version,
     label: firstParty?.label || null,
@@ -215,6 +309,10 @@ function extractorManifestSummary(manifest, metadata = {}) {
     packageRoot: metadata.packageRoot || null,
     errors: metadata.errors || []
   };
+  return {
+    ...summary,
+    reviewWorkflow: buildExtractorReviewWorkflow(summary)
+  };
 }
 
 /**
@@ -222,7 +320,7 @@ function extractorManifestSummary(manifest, metadata = {}) {
  * @returns {Record<string, any>}
  */
 function firstPartyExtractorPlaceholder(info) {
-  return {
+  const summary = {
     id: info.id,
     version: info.version,
     label: info.label,
@@ -248,11 +346,15 @@ function firstPartyExtractorPlaceholder(info) {
     packageRoot: null,
     errors: []
   };
+  return {
+    ...summary,
+    reviewWorkflow: buildExtractorReviewWorkflow(summary)
+  };
 }
 
 /**
  * @param {string} cwd
- * @returns {{ ok: boolean, cwd: string, extractors: Record<string, any>[], groups: Record<string, ReturnType<typeof groupExtractorEntry>[]>, summary: Record<string, number> }}
+ * @returns {{ ok: boolean, cwd: string, extractors: Record<string, any>[], groups: Record<string, ReturnType<typeof groupExtractorEntry>[]>, reviewWorkflow: Record<string, any>, summary: Record<string, number> }}
  */
 export function buildExtractorListPayload(cwd) {
   const extractors = EXTRACTOR_MANIFESTS
@@ -314,6 +416,7 @@ export function buildExtractorListPayload(cwd) {
     cwd,
     extractors,
     groups,
+    reviewWorkflow: buildExtractorReviewWorkflow(),
     summary: {
       total: extractors.length,
       bundled: extractors.filter((extractor) => extractor.source === "bundled").length,
@@ -367,6 +470,7 @@ export function printExtractorList(payload) {
   console.log("Topogram extractors");
   console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; installed: ${payload.summary.installed}; first-party missing: ${payload.summary.missingFirstParty || 0}`);
   console.log("Package-backed extractors are listed for discovery even before they are installed.");
+  console.log("Selection loop: list/show (no package code) -> install -> policy pin -> extractor check (loads adapter) -> extract -> extract plan/adopt --list -> adopt --dry-run -> adopt --write.");
   console.log("");
   for (const track of EXTRACTOR_TRACK_ORDER) {
     const entries = (payload.groups || {})[track] || [];
@@ -426,10 +530,18 @@ export function printExtractorShow(payload) {
   console.log(`Extractors: ${extractor.extractors.join(", ") || "none"}`);
   console.log(`Candidate kinds: ${extractor.candidateKinds.join(", ") || "none"}`);
   console.log(`Evidence types: ${extractor.evidenceTypes.join(", ") || "none"}`);
+  if (extractor.reviewWorkflow?.steps?.length) {
+    console.log("");
+    console.log("Review loop:");
+    for (const step of extractor.reviewWorkflow.steps) {
+      console.log(`- ${step.id}: ${step.command}`);
+      console.log(`  ${step.purpose}`);
+    }
+  }
 }
 
 /**
- * @param {ReturnType<typeof checkExtractorPack>} payload
+ * @param {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any> }} payload
  * @returns {void}
  */
 export function printExtractorCheck(payload) {
@@ -453,12 +565,19 @@ export function printExtractorCheck(payload) {
     console.log("");
     console.log(`Smoke output: ${payload.smoke.extractors} extractor(s), ${payload.smoke.findings} finding(s), ${payload.smoke.candidateKeys} candidate bucket(s), ${payload.smoke.diagnostics} diagnostic(s)`);
   }
+  if (payload.reviewWorkflow?.steps?.length) {
+    console.log("");
+    console.log("Next review loop:");
+    for (const step of payload.reviewWorkflow.steps.filter((/** @type {Record<string, any>} */ step) => ["extract", "review_plan", "list_selectors", "dry_run_adoption", "write_reviewed_adoption"].includes(step.id))) {
+      console.log(`- ${step.command}`);
+    }
+  }
   for (const error of payload.errors || []) console.log(`Error: ${error}`);
 }
 
 /**
  * @param {string} projectPath
- * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, defaulted: boolean, packages: any[], diagnostics: any[], errors: string[], summary: Record<string, number> }}
+ * @returns {{ ok: boolean, path: string, exists: boolean, policy: any, defaulted: boolean, packages: any[], diagnostics: any[], errors: string[], reviewWorkflow: Record<string, any>, summary: Record<string, number> }}
  */
 export function buildExtractorPolicyStatusPayload(projectPath) {
   const root = path.resolve(projectPath || ".");
@@ -504,6 +623,7 @@ export function buildExtractorPolicyStatusPayload(projectPath) {
     packages,
     diagnostics,
     errors,
+    reviewWorkflow: buildExtractorReviewWorkflow(packages[0] || null),
     summary: {
       enabledPackages: policy.enabledPackages.length,
       installed: packages.filter((item) => item.installed).length,
@@ -567,6 +687,7 @@ export function printExtractorPolicyStatus(payload) {
   console.log(`Enabled packages: ${payload.summary.enabledPackages}`);
   console.log("Default allowlist: bundled topogram/* extractors and first-party @topogram/extractor-* packages.");
   console.log("Install behavior: Topogram does not install extractor packages automatically.");
+  console.log("Review loop: install package -> pin policy -> extractor check -> extract -> extract plan/adopt --list -> adopt --dry-run -> adopt --write.");
   for (const item of payload.packages) {
     console.log(`- ${item.packageName}@${item.version}: ${item.installed ? "installed" : "missing"}, ${item.allowed ? "allowed" : "denied"}`);
     if (!item.installed && item.installCommand) console.log(`  Install: ${item.installCommand}`);
@@ -611,9 +732,25 @@ export function runExtractorCommand(context) {
   const { commandArgs, inputPath, json, cwd } = context;
   if (commandArgs.extractorCommand === "check") {
     const payload = checkExtractorPack(inputPath || "", { cwd });
-    if (json) console.log(stableStringify(payload));
-    else printExtractorCheck(payload);
-    return payload.ok ? 0 : 1;
+    const summary = payload.manifest
+      ? extractorManifestSummary(payload.manifest, {
+          installed: Boolean(payload.manifest),
+          manifestPath: payload.manifestPath,
+          packageRoot: payload.packageRoot,
+          errors: payload.errors
+        })
+      : null;
+    const augmentedPayload = /** @type {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any> }} */ (payload);
+    augmentedPayload.reviewWorkflow = buildExtractorReviewWorkflow(summary || {
+      id: inputPath || "<extractor>",
+      package: payload.packageName || null,
+      packageName: payload.packageName || null,
+      tracks: payload.manifest?.tracks || [],
+      version: payload.manifest?.version || "1"
+    });
+    if (json) console.log(stableStringify(augmentedPayload));
+    else printExtractorCheck(augmentedPayload);
+    return augmentedPayload.ok ? 0 : 1;
   }
   if (commandArgs.extractorCommand === "scaffold") {
     const payload = scaffoldExtractorPack(inputPath || "", {

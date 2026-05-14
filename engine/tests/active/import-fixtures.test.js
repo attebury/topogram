@@ -205,6 +205,8 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(listPayload.summary.bundled >= 6, true);
   assert.equal(listPayload.summary.knownFirstParty >= 5, true);
   assert.equal(listPayload.summary.missingFirstParty >= 5, true);
+  assert.equal(listPayload.reviewWorkflow.steps.some((item) => item.id === "dry_run_adoption"), true);
+  assert.equal(listPayload.reviewWorkflow.safetyNotes.some((item) => item.includes("list/show/policy do not load")), true);
   assert.equal(listPayload.extractors.some((item) => item.id === "topogram/cli-extractors" && item.executesPackageCode === false), true);
   assert.equal(listPayload.groups.db.some((item) => item.package === "@topogram/extractor-prisma-db"), true);
   assert.equal(listPayload.groups.db.some((item) => item.package === "@topogram/extractor-drizzle-db"), true);
@@ -217,12 +219,19 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.match(prismaListItem.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
   assert.match(prismaListItem.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
   assert.match(prismaListItem.extractCommand, /topogram extract \.\/prisma-app --out \.\/imported-topogram --from db --extractor @topogram\/extractor-prisma-db/);
+  assert.equal(prismaListItem.reviewWorkflow.steps.some((item) => item.command === prismaListItem.extractCommand), true);
+
+  const humanList = runCli(["extractor", "list"]);
+  assert.equal(humanList.status, 0, humanList.stderr || humanList.stdout);
+  assert.match(humanList.stdout, /Selection loop: list\/show \(no package code\) -> install -> policy pin -> extractor check/);
 
   const show = runCli(["extractor", "show", "topogram/cli-extractors", "--json"]);
   assert.equal(show.status, 0, show.stderr || show.stdout);
   const showPayload = JSON.parse(show.stdout);
   assert.equal(showPayload.extractor.id, "topogram/cli-extractors");
   assert.deepEqual(showPayload.extractor.tracks, ["cli"]);
+  assert.equal(showPayload.extractor.reviewWorkflow.steps.some((item) => item.id === "check"), false);
+  assert.equal(showPayload.extractor.reviewWorkflow.steps.some((item) => item.id === "extract"), true);
 
   const showFirstParty = runCli(["extractor", "show", "@topogram/extractor-prisma-db", "--json"]);
   assert.equal(showFirstParty.status, 0, showFirstParty.stderr || showFirstParty.stdout);
@@ -234,6 +243,12 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.match(showFirstPartyPayload.extractor.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
   assert.match(showFirstPartyPayload.extractor.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
   assert.match(showFirstPartyPayload.extractor.extractCommand, /--from db --extractor @topogram\/extractor-prisma-db/);
+  assert.equal(showFirstPartyPayload.extractor.reviewWorkflow.steps.some((item) => item.id === "check" && item.packageCodeExecution === true), true);
+
+  const humanShow = runCli(["extractor", "show", "@topogram/extractor-prisma-db"]);
+  assert.equal(humanShow.status, 0, humanShow.stderr || humanShow.stdout);
+  assert.match(humanShow.stdout, /Review loop:/);
+  assert.match(humanShow.stdout, /topogram adopt <selector> \.\/imported-topogram --dry-run/);
 
   const check = runCli(["extractor", "check", packageRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
@@ -241,6 +256,12 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(checkPayload.ok, true);
   assert.equal(checkPayload.manifest.id, "@scope/extractor-cli-smoke");
   assert.equal(checkPayload.smoke.extractors, 1);
+  assert.equal(checkPayload.reviewWorkflow.steps.some((item) => item.id === "review_plan"), true);
+
+  const humanCheck = runCli(["extractor", "check", packageRoot]);
+  assert.equal(humanCheck.status, 0, humanCheck.stderr || humanCheck.stdout);
+  assert.match(humanCheck.stdout, /Next review loop:/);
+  assert.match(humanCheck.stdout, /topogram extract plan \.\/imported-topogram/);
 });
 
 test("extractor check rejects unsafe package-backed candidate output", () => {
@@ -755,6 +776,11 @@ test("extractor policy commands initialize, pin, and report enabled packages", (
   assert.equal(statusPayload.summary.enabledPackages, 1);
   assert.equal(statusPayload.packages[0].packageName, "@scope/topogram-extractor-smoke");
   assert.equal(statusPayload.packages[0].installed, false);
+  assert.equal(statusPayload.reviewWorkflow.steps.some((item) => item.id === "check"), true);
+
+  const humanStatus = runCli(["extractor", "policy", "status", runRoot]);
+  assert.equal(humanStatus.status, 1);
+  assert.match(humanStatus.stdout, /Review loop: install package -> pin policy -> extractor check -> extract -> extract plan\/adopt --list/);
 });
 
 test("docs, tests, and fixture snippets do not create primary import candidates", () => {
