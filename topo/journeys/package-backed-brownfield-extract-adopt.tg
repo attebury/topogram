@@ -1,0 +1,61 @@
+journey journey_package_backed_brownfield_extract_adopt {
+  name "Package Backed Brownfield Extract Adopt"
+  description "A maintainer or agent uses package-backed extractors to recover framework-specific candidates, review extractor provenance, and adopt only selected canonical Topogram records."
+  status canonical
+  domain dom_import_adoption
+  actors [actor_maintainer actor_coding_agent]
+  goal "Use package-backed extractors as precise evidence producers while keeping adoption explicit and source app mutation forbidden."
+  related_capabilities [cap_manage_extractors cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_query_context]
+  related_decisions [decision_package_backed_extractors_are_extension_model decision_stateful_workflow_mutations_use_cli]
+  related_projections [proj_topogram_cli]
+  success_signals ["The selected extractor package is installed and pinned before execution." "Query packets show extractor provenance and candidate counts." "Adoption is previewed before any canonical write." "Source app files are unchanged."]
+  failure_signals ["An extractor package is run without policy review." "An agent reads raw candidate trees instead of focused extract/adopt packets." "A package extractor writes canonical topo files directly." "Adoption writes happen without a selector and dry-run review."]
+  tags [journey brownfield extractor package adoption agent]
+
+  step {
+    id inspect_extractors
+    intent "Find the extractor pack that matches the source app evidence."
+    commands ["topogram extractor list" "topogram extractor show @topogram/extractor-prisma-db"]
+    expects ["The maintainer or agent knows the package purpose, track, install command, policy pin command, and concrete extract command."]
+  }
+
+  step {
+    id install_and_pin
+    intent "Make package execution explicit before extraction."
+    after [inspect_extractors]
+    commands ["npm install -D @topogram/extractor-prisma-db" "topogram extractor policy init" "topogram extractor policy pin @topogram/extractor-prisma-db@1"]
+    expects ["The extractor package is locally installed and allowed by policy."]
+  }
+
+  step {
+    id extract_source
+    intent "Read the brownfield app and write review-only candidates."
+    after [install_and_pin]
+    commands ["topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @topogram/extractor-prisma-db"]
+    expects ["Topogram writes candidates, extraction provenance, and reconcile artifacts without mutating the source app."]
+  }
+
+  step {
+    id review_agent_packets
+    intent "Use focused extract/adopt packets instead of reading the whole candidate tree."
+    after [extract_source]
+    commands ["topogram query extract-plan ./imported-topogram/topo --json" "topogram query single-agent-plan ./imported-topogram/topo --mode extract-adopt --json" "topogram query work-packet ./imported-topogram/topo --mode extract-adopt --lane adoption_operator --json"]
+    expects ["Packets include extraction_context, package-backed extractor summaries, candidate counts, safety notes, and next review commands."]
+  }
+
+  step {
+    id preview_adoption
+    intent "Preview exactly what canonical records would be promoted."
+    after [review_agent_packets]
+    commands ["topogram adopt --list ./imported-topogram --json" "topogram adopt bundle:database ./imported-topogram --dry-run --json"]
+    expects ["The adoption preview shows proposed canonical writes and leaves the workspace unchanged."]
+  }
+
+  step {
+    id adopt_selected
+    intent "Write only the reviewed candidates that should become canonical Topogram source."
+    after [preview_adoption]
+    commands ["topogram adopt <selector> ./imported-topogram --write --json" "topogram check ./imported-topogram --json"]
+    expects ["Selected candidates are promoted, adoption receipts are recorded, and the resulting Topogram validates."]
+  }
+}

@@ -2358,5 +2358,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_polish_extractor_workflow_docs": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T00:54:58.246Z",
+      "by": "actor_coding_agent",
+      "note": "Polish extractor workflow docs and agent guidance."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T00:55:03.350Z",
+      "by": "actor_coding_agent",
+      "note": "Updating brownfield docs, extractor pack docs, journey records, and docs regression coverage."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T01:00:12.966Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

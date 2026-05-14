@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_workflow_docs_are_agent_actionable {
+  name "Extractor Workflow Docs Are Agent Actionable"
+  description "Given package-backed extractors are available, when a human or agent follows brownfield extract/adopt and extractor-pack documentation, then the docs show how to choose, install, pin, run, query, dry-run adopt, and verify extractor-produced candidates without reading engine internals."
+  requirement req_extractor_selection_ux
+  status approved
+}

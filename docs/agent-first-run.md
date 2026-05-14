@@ -116,12 +116,22 @@ topogram extract diff . --json
 topogram extract plan . --json
 topogram adopt --list . --json
 topogram query extract-plan ./topo --json
+topogram query single-agent-plan ./topo --mode extract-adopt --json
+topogram query multi-agent-plan ./topo --mode extract-adopt --json
+topogram query work-packet ./topo --mode extract-adopt --lane adoption_operator --json
 topogram extract status . --json
 topogram extract history . --verify --json
 ```
 
 Use `workspaceRoot` from import JSON as the canonical project-owned workspace
 path.
+
+In extract/adopt mode, query packets include `extraction_context` when
+`.topogram-extract.json` is present. That context tells an agent which
+package-backed extractors ran, how many candidates they produced, where the
+trusted extraction record lives, and which review/adoption commands are safe to
+run next. Treat extractor output as evidence until `topogram adopt ... --write`
+promotes reviewed candidates.
 
 ## Command-owned state
 

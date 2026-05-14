@@ -22,6 +22,7 @@ package.json
 topogram-extractor.json
 index.cjs
 README.md
+scripts/check-extractor.mjs
 ```
 
 `topogram-extractor.json` declares the pack:
@@ -71,6 +72,21 @@ module.exports = {
 };
 ```
 
+## Adapter Contract
+
+Each extractor adapter is intentionally small. It detects whether it should run,
+then returns review-only output:
+
+| Method | Purpose | Must Not |
+| --- | --- | --- |
+| `detect(context)` | Score whether the extractor has enough source evidence to run. | Mutate source files, install packages, or write `topo/**`. |
+| `extract(context)` | Return findings, candidates, diagnostics, and evidence. | Adopt candidates, edit `topogram.project.json`, or define custom adoption semantics. |
+
+The context is read-oriented. Treat source paths, helper reads, source
+classification, and configured tracks as evidence inputs. Keep any framework
+parsing local to the package and return plain candidate data for Topogram core
+to normalize.
+
 ## Safety Boundary
 
 - Extractors are read-only.
@@ -114,10 +130,21 @@ topogram extractor check ./my-extractor-pack
 topogram extract ./fixture-app --out /private/tmp/extracted --extractor ./my-extractor-pack
 topogram extract plan /private/tmp/extracted --json
 topogram adopt --list /private/tmp/extracted --json
+topogram query extract-plan /private/tmp/extracted/topo --json
 ```
 
 Passing `topogram extractor check` proves the manifest, adapter export, and
 minimal smoke shape. It does not replace fixture-based extraction tests.
+
+Package CI should also run a real fixture extraction and inspect the generated
+review packet. At minimum, prove:
+
+- `topogram extractor check ./` passes;
+- `topogram extract ./fixture-app --out <tmp> --extractor ./` writes candidates;
+- `topogram extract plan <tmp> --json` includes the expected candidate groups;
+- `topogram query extract-plan <tmp>/topo --json` includes extractor provenance;
+- `topogram adopt <selector> <tmp> --dry-run --json` previews canonical writes;
+- source fixture files are unchanged.
 
 ## First-Party Examples
 

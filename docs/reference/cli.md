@@ -74,6 +74,10 @@ topogram extractor policy check
 topogram extract check ./imported-topogram
 topogram extract plan ./imported-topogram
 topogram adopt --list ./imported-topogram
+topogram query extract-plan ./imported-topogram/topo --json
+topogram query single-agent-plan ./imported-topogram/topo --mode extract-adopt --json
+topogram query multi-agent-plan ./imported-topogram/topo --mode extract-adopt --json
+topogram query work-packet ./imported-topogram/topo --mode extract-adopt --lane adoption_operator --json
 topogram adopt <selector> ./imported-topogram --dry-run
 topogram adopt <selector> ./imported-topogram --write
 topogram extract status ./imported-topogram

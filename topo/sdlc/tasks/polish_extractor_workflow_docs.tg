@@ -1,0 +1,14 @@
+task task_polish_extractor_workflow_docs {
+  name "Polish Extractor Workflow Docs"
+  description "Make brownfield extract/adopt and extractor-pack documentation agent-actionable now that package-backed extractors and extract/adopt query packets are released."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_workflow_docs_are_agent_actionable]
+  verification_refs [verification_engine_gate]
+  affects [cap_manage_extractors, cap_import_brownfield_app, cap_reconcile_import_candidates, cap_adopt_import_candidates, cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

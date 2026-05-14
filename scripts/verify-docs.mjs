@@ -142,11 +142,17 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
   const requiredBrownfieldCommands = [
     "topogram extract ./existing-app --out ./imported-topogram --from db,api,ui",
     "topogram extract ./existing-cli --out ./imported-topogram --from cli",
+    "topogram extractor list",
+    "topogram extractor show @topogram/extractor-prisma-db",
+    "topogram extractor policy pin @topogram/extractor-prisma-db@1",
     "topogram extract check",
     "topogram extract diff",
     "topogram extract plan",
     "topogram adopt --list",
     "topogram query extract-plan ./topo --json",
+    "topogram query single-agent-plan ./topo --mode extract-adopt --json",
+    "topogram query multi-agent-plan ./topo --mode extract-adopt --json",
+    "topogram query work-packet ./topo --mode extract-adopt --lane adoption_operator --json",
     "topogram adopt bundle:task --dry-run",
     "topogram adopt widgets --dry-run",
     "topogram adopt bundle:cli --dry-run",
@@ -156,10 +162,21 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
   for (const command of requiredBrownfieldCommands) {
     assertIncludes(brownfieldDocs, command, "brownfield extract/adopt docs");
   }
-  for (const field of ["workspaceRoot", "candidateCounts", "apiCapabilities", "uiWidgets", "cliCommands", "cliSurfaces"]) {
+  for (const field of ["workspaceRoot", "candidateCounts", "extraction_context", "apiCapabilities", "uiWidgets", "cliCommands", "cliSurfaces"]) {
     assertIncludes(importJsonDocs, field, "extract/adopt JSON docs");
   }
   assertIncludes(importJsonDocs, "topogram query extract-plan ./topo --json", "extract/adopt JSON docs");
+  assertIncludes(importJsonDocs, "topogram query work-packet ./topo --mode extract-adopt --lane adoption_operator --json", "extract/adopt JSON docs");
+
+  const extractorList = runCli(["extractor", "list"]);
+  assert.equal(extractorList.status, 0, extractorList.stderr || extractorList.stdout);
+  assert.match(extractorList.stdout, /Package-backed extractors are listed for discovery/);
+  assert.match(extractorList.stdout, /@topogram\/extractor-prisma-db/);
+
+  const extractorShow = runCli(["extractor", "show", "@topogram/extractor-prisma-db"]);
+  assert.equal(extractorShow.status, 0, extractorShow.stderr || extractorShow.stdout);
+  assert.match(extractorShow.stdout, /Install: npm install -D @topogram\/extractor-prisma-db/);
+  assert.match(extractorShow.stdout, /Policy: topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
 
   const routeImport = createImportProject("route-fallback", "api,ui");
   try {
@@ -197,6 +214,18 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
     const importPlan = runCliJson(["query", "extract-plan", path.join(routeImport.target, "topo"), "--json"]);
     assert.equal(importPlan.type, "extract_plan_query");
     assert.equal(importPlan.summary.plan_present, true);
+
+    const singleAgentPlan = runCliJson(["query", "single-agent-plan", path.join(routeImport.target, "topo"), "--mode", "extract-adopt", "--json"]);
+    assert.equal(singleAgentPlan.type, "single_agent_plan");
+    assert.equal(singleAgentPlan.extraction_context.type, "extraction_context");
+
+    const multiAgentPlan = runCliJson(["query", "multi-agent-plan", path.join(routeImport.target, "topo"), "--mode", "extract-adopt", "--json"]);
+    assert.equal(multiAgentPlan.type, "multi_agent_plan");
+    assert.equal(multiAgentPlan.extraction_context.type, "extraction_context");
+
+    const workPacket = runCliJson(["query", "work-packet", path.join(routeImport.target, "topo"), "--mode", "extract-adopt", "--lane", "adoption_operator", "--json"]);
+    assert.equal(workPacket.type, "work_packet");
+    assert.equal(workPacket.extraction_context.type, "extraction_context");
 
     const history = runCliJson(["extract", "history", routeImport.target, "--verify", "--json"]);
     assert.equal(history.verified, true);

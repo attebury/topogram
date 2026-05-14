@@ -14,6 +14,9 @@ Important fields:
 - `writtenFiles`: files written by extraction or adoption.
 - `nextCommands`: recommended follow-up commands.
 - `receipt`: adoption receipt when an adoption command writes.
+- `extraction_context`: focused query context for `.topogram-extract.json`,
+  package-backed extractor provenance, candidate counts, safety notes, and next
+  review commands.
 
 Current command payloads:
 
@@ -55,10 +58,14 @@ Focused agent review:
 
 ```bash
 topogram query extract-plan ./topo --json
+topogram query single-agent-plan ./topo --mode extract-adopt --json
+topogram query multi-agent-plan ./topo --mode extract-adopt --json
+topogram query work-packet ./topo --mode extract-adopt --lane adoption_operator --json
 ```
 
-This query is read-only and gives agents staged items, maintained-boundary
-risk, write scope, review requirements, and verification targets.
+These queries are read-only and give agents staged items, extractor provenance,
+maintained-boundary risk, write scope, review requirements, lane ownership, and
+verification targets.
 
 Agents should use `workspaceRoot`, not older compatibility fields, when deciding
 where project-owned Topogram files live.

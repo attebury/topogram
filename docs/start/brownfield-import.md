@@ -22,8 +22,11 @@ topogram extract ./existing-cli --out ./imported-topogram --from cli
 Supported tracks are `db`, `api`, `ui`, `cli`, `workflows`, and
 `verification`.
 
-Use package-backed extractor packs only when you deliberately want extra
-framework-specific discovery beyond the bundled extractors:
+## Choose extractor packs before extraction
+
+Bundled extractors are always available. Use package-backed extractor packs
+when you deliberately want extra framework-specific discovery beyond the
+bundled pass:
 
 | Source evidence | Extractor package | Track | Use it for |
 | --- | --- | --- | --- |
@@ -36,13 +39,28 @@ framework-specific discovery beyond the bundled extractors:
 ```bash
 topogram extractor list
 topogram extractor show @topogram/extractor-prisma-db
-topogram extractor check ./my-extractor-pack
 topogram extractor policy init
 topogram extractor policy pin @topogram/extractor-node-cli@1
 topogram extractor policy pin @topogram/extractor-react-router@1
 topogram extractor policy pin @topogram/extractor-prisma-db@1
 topogram extractor policy pin @topogram/extractor-express-api@1
 topogram extractor policy pin @topogram/extractor-drizzle-db@1
+```
+
+Install the packages you plan to execute. Topogram never installs extractor
+packages during extraction:
+
+```bash
+npm install -D @topogram/extractor-node-cli
+npm install -D @topogram/extractor-react-router
+npm install -D @topogram/extractor-prisma-db
+npm install -D @topogram/extractor-express-api
+npm install -D @topogram/extractor-drizzle-db
+```
+
+Then run extraction with the selected pack:
+
+```bash
 topogram extract ./existing-cli --out ./imported-topogram --from cli --extractor @topogram/extractor-node-cli
 topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
 topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @topogram/extractor-prisma-db
@@ -66,6 +84,9 @@ topogram extract diff
 topogram extract plan
 topogram adopt --list
 topogram query extract-plan ./topo --json
+topogram query single-agent-plan ./topo --mode extract-adopt --json
+topogram query multi-agent-plan ./topo --mode extract-adopt --json
+topogram query work-packet ./topo --mode extract-adopt --lane adoption_operator --json
 ```
 
 Extract writes:
@@ -81,6 +102,9 @@ Important JSON fields:
 - `candidateCounts`: counts by extracted surface such as `apiCapabilities`,
   `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
   `cliSurfaces`;
+- `extraction_context`: agent query packet context with extraction provenance,
+  package-backed extractor summaries, candidate counts, safety notes, and next
+  review commands;
 - `nextCommands`: the next review commands Topogram recommends.
 
 Extracted Topogram files are project-owned after creation. Edit candidates and
