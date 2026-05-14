@@ -2350,6 +2350,13 @@
       "at": "2026-05-13T23:37:41.043Z",
       "by": "actor_coding_agent",
       "note": "Starting release prepare, verification, publish, smoke, and release evidence refresh."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T00:26:32.725Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }
