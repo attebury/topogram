@@ -6,5 +6,7 @@ bug bug_openapi_code_extractor_self_filtered {
   violates []
   priority medium
   severity medium
-  status open
+  fixed_in [task_fix_openapi_code_extractor_self_filtering]
+  fixed_in_verification [verification_import_fixtures]
+  status verified
 }

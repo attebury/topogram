@@ -1,0 +1,6 @@
+acceptance_criterion ac_openapi_code_source_stays_importable {
+  name "Openapi Code Source Stays Importable"
+  description "Given a brownfield app with code-generated OpenAPI declarations under a runtime `src/docs/openapi.ts` path, when `topogram extract --from api` runs, then the OpenAPI-code extractor treats that file as primary parser/config source and emits reviewable API candidates without allowing arbitrary docs snippets to create candidates."
+  requirement req_import_docs_noise_filtering
+  status approved
+}

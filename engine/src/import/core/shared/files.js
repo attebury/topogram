@@ -137,6 +137,9 @@ export function classifyImportSourcePath(paths, filePath) {
   if (/(^|\/)(fixture|fixtures|examples?)(\/|$)/i.test(relativePath)) {
     return "fixtures";
   }
+  if (/(^|\/)src\/docs\/openapi(-schemas)?\.(ts|js|mjs|cjs)$/i.test(relativePath)) {
+    return "parser_config";
+  }
   if (/(^|\/)(doc|docs|documentation|guides?)(\/|$)|^(readme|changelog|contributing|license)(\.[a-z0-9]+)?$/i.test(relativePath) || /^(readme|changelog|contributing|license)(\.[a-z0-9]+)?$/i.test(basename)) {
     return "docs";
   }

@@ -2861,5 +2861,51 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "bug_openapi_code_extractor_self_filtered": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-14T20:38:16.911Z",
+      "by": "actor_coding_agent",
+      "note": "Fixing OpenAPI-code extractor self-filtering found by residual audit."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-14T20:42:00.351Z",
+      "by": "actor_coding_agent",
+      "note": "Classifier and import fixture regression implemented."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-14T20:42:11.435Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by engine import fixture tests."
+    }
+  ],
+  "task_fix_openapi_code_extractor_self_filtering": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T20:40:13.639Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming OpenAPI-code extractor source-classification fix."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T20:40:18.998Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing classifier exception and import fixture regression."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T20:41:42.701Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

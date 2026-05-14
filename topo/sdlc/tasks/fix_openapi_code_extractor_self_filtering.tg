@@ -1,0 +1,14 @@
+task task_fix_openapi_code_extractor_self_filtering {
+  name "Fix Openapi Code Extractor Self Filtering"
+  description "Allow the OpenAPI-code extractor's intended runtime `src/docs/openapi.ts` and `src/docs/openapi-schemas.ts` files through the primary-source classifier while preserving docs-noise protections for non-runtime docs, tests, fixtures, templates, and generated output."
+  satisfies [req_import_docs_noise_filtering]
+  acceptance_refs [ac_openapi_code_source_stays_importable]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority medium
+  work_type implementation
+  status done
+}

@@ -43,13 +43,16 @@ test("import source classification preserves runtime template paths", () => {
   const runtimePaths = [
     "src/templates/email.ts",
     "src/templateRenderer.ts",
-    "src/routes/templates.ts"
+    "src/routes/templates.ts",
+    "src/docs/openapi.ts",
+    "src/docs/openapi-schemas.ts"
   ];
   for (const relativePath of runtimePaths) {
     const filePath = path.join(root, relativePath);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, "export const value = true;\n", "utf8");
-    assert.equal(classifyImportSourcePath(paths, filePath), "runtime_source", relativePath);
+    const expectedType = relativePath.startsWith("src/docs/openapi") ? "parser_config" : "runtime_source";
+    assert.equal(classifyImportSourcePath(paths, filePath), expectedType, relativePath);
   }
 
   const fixturePath = path.join(root, "swiftui-templates", "runtime", "GhostView.swift");
@@ -61,6 +64,33 @@ test("import source classification preserves runtime template paths", () => {
     .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
     .sort();
   assert.deepEqual(primaryFiles, runtimePaths.sort());
+});
+
+test("code-generated OpenAPI sources under runtime src/docs create API candidates", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-openapi-code-source."));
+  const openApiPath = path.join(root, "src", "docs", "openapi.ts");
+  fs.mkdirSync(path.dirname(openApiPath), { recursive: true });
+  fs.writeFileSync(openApiPath, `import { registry } from "./registry";
+
+registry.registerPath({
+  method: "get",
+  path: "/reports",
+  summary: "List reports",
+  responses: {
+    200: {
+      description: "OK",
+      schema: ReportsResponseSchema
+    }
+  }
+});
+`, "utf8");
+
+  const summary = runImportAppWorkflow(root, { from: "api" }).summary;
+
+  assert.deepEqual(summary.tracks, ["api"]);
+  assert.deepEqual(detectionIds(summary), ["api.openapi-code"]);
+  assert.deepEqual(candidateIds(summary.candidates.api.capabilities), ["cap_list_reports"]);
+  assert.deepEqual(summary.candidates.api.routes.map((route) => `${route.method} ${route.path}`), ["GET /reports"]);
 });
 
 test("import recursive file walkers skip symlink loops and escaped symlink targets", () => {
