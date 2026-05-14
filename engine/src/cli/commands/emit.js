@@ -22,6 +22,7 @@ import {
   generatedOutputSentinel,
   topogramInputPathForGeneration
 } from "../output-safety.js";
+import { readFromSnapshot } from "./emit/snapshot-input.js";
 
 const IMPLEMENTATION_PROVIDER_TARGETS = new Set([
   "persistence-scaffold",
@@ -78,6 +79,15 @@ function targetRequiresImplementationProvider(target) {
  */
 export async function runEmitCommand(options) {
   const ast = parsePath(options.inputPath);
+  let fromSnapshot = null;
+  if (options.fromSnapshotPath) {
+    const parsedSnapshot = readFromSnapshot(options.fromSnapshotPath);
+    if (!parsedSnapshot.ok) {
+      console.error(parsedSnapshot.message);
+      return 1;
+    }
+    fromSnapshot = parsedSnapshot.snapshot;
+  }
   const explicitProjectConfig = loadProjectConfig(options.projectRoot) || loadProjectConfig(options.inputPath);
   const shouldLoadImplementation = targetRequiresImplementationProvider(options.target) &&
     (!IMPLEMENTATION_OPTIONAL_TARGETS.has(options.target) || Boolean(explicitProjectConfig?.config?.implementation));
@@ -106,7 +116,7 @@ export async function runEmitCommand(options) {
     target: options.target,
     ...(options.selectors || {}),
     profileId: options.profileId,
-    fromSnapshot: options.fromSnapshotPath ? JSON.parse(fs.readFileSync(options.fromSnapshotPath, "utf8")) : null,
+    fromSnapshot,
     fromSnapshotPath: options.fromSnapshotPath,
     fromTopogramPath: options.fromTopogramPath,
     topogramInputPath: topogramInputPathForGeneration(options.inputPath),

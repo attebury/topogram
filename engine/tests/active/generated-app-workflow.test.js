@@ -981,6 +981,67 @@ test("topogram emit honors explicit artifact targets", () => {
   assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
 });
 
+test("topogram emit rejects hostile from-snapshot JSON before migration planning", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-emit-hostile-snapshot-"));
+  const hostileSnapshotPath = path.join(cwd, "hostile.snapshot.json");
+  fs.writeFileSync(
+    hostileSnapshotPath,
+    [
+      "{",
+      "  \"type\": \"db_schema_snapshot\",",
+      "  \"projection\": { \"id\": \"proj_db_postgres\" },",
+      "  \"profile\": \"postgres\",",
+      "  \"engine\": \"postgres\",",
+      "  \"enums\": [],",
+      "  \"tables\": [],",
+      "  \"__proto__\": { \"polluted\": true }",
+      "}",
+      ""
+    ].join("\n"),
+    "utf8"
+  );
+
+  const hostile = runCli([
+    "emit",
+    "db-migration-plan",
+    fixtureRoot,
+    "--projection",
+    "proj_db_postgres",
+    "--from-snapshot",
+    hostileSnapshotPath,
+    "--json"
+  ], { cwd });
+  assert.notEqual(hostile.status, 0, hostile.stdout);
+  assert.equal(hostile.stdout, "");
+  assert.match(hostile.stderr, /Invalid --from-snapshot JSON/);
+  assert.match(hostile.stderr, /unsafe key '__proto__'/);
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false);
+
+  const malformedSnapshotPath = path.join(cwd, "malformed.snapshot.json");
+  writeJson(malformedSnapshotPath, {
+    type: "db_schema_snapshot",
+    projection: { id: "proj_db_postgres" },
+    profile: "postgres",
+    engine: "postgres",
+    enums: [],
+    tables: {}
+  });
+  const malformed = runCli([
+    "emit",
+    "sql-migration",
+    fixtureRoot,
+    "--projection",
+    "proj_db_postgres",
+    "--from-snapshot",
+    malformedSnapshotPath,
+    "--json"
+  ], { cwd });
+  assert.notEqual(malformed.status, 0, malformed.stdout);
+  assert.equal(malformed.stdout, "");
+  assert.match(malformed.stderr, /Invalid --from-snapshot DB schema snapshot/);
+  assert.match(malformed.stderr, /snapshot\.tables must be an array/);
+});
+
 test("maintained database migrations emit proposals without overwriting maintained app files", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-maintained-db-proposals-"));
   const projectRoot = copyAppBasicFixture(root, "maintained-db");

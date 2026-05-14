@@ -29,6 +29,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Boundary tests are laws in code. If a hardening rule matters, add a boundary or regression test so it cannot silently regress.
 - Keep large rewrites behind pins. Add focused behavioral tests before splitting `cli.js`, `workflows.js`, or shared helpers.
 - Never bypass npm, GitHub, or filesystem safety for convenience. Unsafe package specs, implicit local `.npmrc`, token leakage, symlinks, and unescaped generated HTML are bugs.
+- Treat filesystem JSON snapshots as untrusted input. `topogram emit --from-snapshot` must reject unsafe keys and malformed DB snapshot shapes before migration planning or SQL generation.
 
 ## Safe Edit Boundaries
 

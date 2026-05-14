@@ -69,6 +69,10 @@ topogram emit drizzle-schema --projection proj_db --write --out-dir ./db-proposa
 topogram emit db-lifecycle-bundle --projection proj_db --write --out-dir ./db-proposals/lifecycle
 ```
 
+Snapshot files passed to `--from-snapshot` are treated as untrusted filesystem
+input. Topogram rejects unsafe JSON keys and malformed DB snapshot shapes before
+building migration plans or SQL proposals.
+
 The review loop is:
 
 1. Edit `topo/` and run `topogram check`.

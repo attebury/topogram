@@ -2769,5 +2769,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_harden_emit_snapshot_json_ingestion": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T18:39:44.751Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming emit snapshot JSON ingestion hardening."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T18:39:48.005Z",
+      "by": "actor_coding_agent",
+      "note": "Auditing emit snapshot parsing and adding hostile snapshot regressions."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T18:48:02.634Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
