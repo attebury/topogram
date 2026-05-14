@@ -1,0 +1,14 @@
+task task_release_cli_0_3_85 {
+  name "Release Cli 0 3 85"
+  description "Prepare, publish, smoke-test, roll first-party extractor consumers, and refresh release evidence for @topogram/cli 0.3.85 after extractor adapter output validation hardening."
+  satisfies [req_package_backed_extractor_architecture req_first_party_extractor_packages_tracked]
+  acceptance_refs [ac_cli_0_3_85_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
+  affects [cap_manage_extractors cap_verify_release_status cap_roll_consumer_packages cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  priority high
+  work_type implementation
+  claimed_by actor_coding_agent
+  status in-progress
+}

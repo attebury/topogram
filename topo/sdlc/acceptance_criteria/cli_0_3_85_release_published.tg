@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_85_release_published {
+  name "Cli 0 3 85 Release Published"
+  description "Given extractor adapter output hardening is merged on main, when @topogram/cli 0.3.85 is prepared, published, smoke-tested, rolled to first-party extractor consumers, and release evidence is refreshed, then strict release status is green for the CLI and extractor packages."
+  requirement req_package_backed_extractor_architecture
+  status approved
+}
