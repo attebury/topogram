@@ -13,6 +13,7 @@ PACK_DIR="$RUN_DIR/pack"
 CONSUMER_DIR="$RUN_DIR/consumer"
 TEMPLATE_PACKAGE_DIR="$RUN_DIR/template-package"
 GENERATOR_PACKAGE_DIR="$RUN_DIR/generator-package"
+EXTRACTOR_SCAFFOLD_DIR="$RUN_DIR/extractor-scaffold"
 CATALOG_FILE="$RUN_DIR/topograms.catalog.json"
 mkdir -p "$PACK_DIR" "$CONSUMER_DIR" "$TEMPLATE_PACKAGE_DIR" "$GENERATOR_PACKAGE_DIR"
 
@@ -132,6 +133,32 @@ node --input-type=module -e '
 "$TOPOGRAM_BIN" catalog check "$CATALOG_FILE" >/dev/null
 "$TOPOGRAM_BIN" catalog show smoke --catalog "$CATALOG_FILE" --json >/dev/null
 "$TOPOGRAM_BIN" template list --catalog "$CATALOG_FILE" --json >/dev/null
+
+echo "Checking installed CLI extractor scaffold..."
+"$TOPOGRAM_BIN" extractor scaffold "$EXTRACTOR_SCAFFOLD_DIR" \
+  --track cli \
+  --package @scope/topogram-extractor-scaffold \
+  --id @scope/extractor-scaffold \
+  --json > "$RUN_DIR/extractor-scaffold-result.json"
+"$TOPOGRAM_BIN" extractor check "$EXTRACTOR_SCAFFOLD_DIR" --json > "$RUN_DIR/extractor-scaffold-check.json"
+TOPOGRAM_BIN="$TOPOGRAM_BIN" npm --prefix "$EXTRACTOR_SCAFFOLD_DIR" run check > "$RUN_DIR/extractor-scaffold-npm-check.txt"
+node --input-type=module -e '
+  import fs from "node:fs";
+  import path from "node:path";
+  const runDir = process.argv[1];
+  const scaffoldPayload = JSON.parse(fs.readFileSync(path.join(runDir, "extractor-scaffold-result.json"), "utf8"));
+  if (!scaffoldPayload.ok || scaffoldPayload.track !== "cli") {
+    throw new Error("Expected extractor scaffold to create a CLI extractor package.");
+  }
+  const checkPayload = JSON.parse(fs.readFileSync(path.join(runDir, "extractor-scaffold-check.json"), "utf8"));
+  if (!checkPayload.ok || checkPayload.smoke?.extractors !== 1) {
+    throw new Error("Expected scaffolded extractor package to pass topogram extractor check.");
+  }
+  const npmCheck = fs.readFileSync(path.join(runDir, "extractor-scaffold-npm-check.txt"), "utf8");
+  if (!npmCheck.includes("Extractor package smoke passed")) {
+    throw new Error("Expected scaffolded extractor package npm check to pass.");
+  }
+' "$RUN_DIR"
 
 echo "Checking catalog-disabled copy guidance..."
 set +e

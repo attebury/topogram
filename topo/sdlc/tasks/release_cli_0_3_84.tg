@@ -1,0 +1,14 @@
+task task_release_cli_0_3_84 {
+  name "Release Cli 0 3 84"
+  description "Prepare, publish, smoke-test, roll consumers, and refresh release evidence for @topogram/cli 0.3.84 after adding the extractor pack scaffold command."
+  satisfies [req_package_backed_extractor_architecture]
+  acceptance_refs [ac_cli_0_3_84_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
+  affects [cap_manage_extractors cap_verify_release_status cap_roll_consumer_packages]
+  blocked_by []
+  disposition active
+  priority high
+  work_type implementation
+  claimed_by actor_coding_agent
+  status in-progress
+}

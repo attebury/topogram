@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_84_release_published {
+  name "Cli 0 3 84 Release Published"
+  description "Given the extractor scaffold command is merged on main, when @topogram/cli 0.3.84 is prepared, published, smoke-tested, rolled to first-party consumers, and release evidence is refreshed, then strict release status is green for the CLI and first-party consumers."
+  requirement req_package_backed_extractor_architecture
+  status approved
+}

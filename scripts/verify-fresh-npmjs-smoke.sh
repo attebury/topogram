@@ -10,6 +10,7 @@ NPM_CACHE_DIR="$WORK_ROOT/.npm-cache"
 CONSUMER_DIR="$WORK_ROOT/consumer"
 EXTRACTOR_SOURCE_DIR="$WORK_ROOT/extractor-source"
 EXTRACTOR_TARGET_DIR="$WORK_ROOT/extracted-topogram"
+EXTRACTOR_SCAFFOLD_DIR="$WORK_ROOT/extractor-scaffold"
 
 mkdir -p "$CONSUMER_DIR" "$NPM_CACHE_DIR" "$EXTRACTOR_SOURCE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
@@ -57,6 +58,33 @@ echo "Checking public extractor packages..."
   "$TOPOGRAM_BIN" extractor check @topogram/extractor-prisma-db --json >/dev/null
   "$TOPOGRAM_BIN" extractor check @topogram/extractor-express-api --json >/dev/null
 )
+
+echo "Checking extractor scaffold command..."
+"$TOPOGRAM_BIN" extractor scaffold "$EXTRACTOR_SCAFFOLD_DIR" \
+  --track cli \
+  --package @scope/topogram-extractor-scaffold \
+  --id @scope/extractor-scaffold \
+  --json > "$WORK_ROOT/extractor-scaffold-result.json"
+"$TOPOGRAM_BIN" extractor check "$EXTRACTOR_SCAFFOLD_DIR" --json > "$WORK_ROOT/extractor-scaffold-check.json"
+TOPOGRAM_BIN="$TOPOGRAM_BIN" npm --prefix "$EXTRACTOR_SCAFFOLD_DIR" run check > "$WORK_ROOT/extractor-scaffold-npm-check.txt"
+node --input-type=module - "$WORK_ROOT" <<'NODE'
+import fs from "node:fs";
+import path from "node:path";
+
+const workRoot = process.argv[2];
+const scaffoldPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "extractor-scaffold-result.json"), "utf8"));
+if (!scaffoldPayload.ok || scaffoldPayload.track !== "cli") {
+  throw new Error("Expected extractor scaffold to create a CLI extractor package.");
+}
+const checkPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "extractor-scaffold-check.json"), "utf8"));
+if (!checkPayload.ok || checkPayload.smoke?.extractors !== 1) {
+  throw new Error("Expected scaffolded extractor package to pass topogram extractor check.");
+}
+const npmCheck = fs.readFileSync(path.join(workRoot, "extractor-scaffold-npm-check.txt"), "utf8");
+if (!npmCheck.includes("Extractor package smoke passed")) {
+  throw new Error("Expected scaffolded extractor package npm check to pass.");
+}
+NODE
 
 mkdir -p "$EXTRACTOR_SOURCE_DIR/prisma/migrations/20260513000000_init" "$EXTRACTOR_SOURCE_DIR/src"
 cat > "$EXTRACTOR_SOURCE_DIR/package.json" <<'JSON'
