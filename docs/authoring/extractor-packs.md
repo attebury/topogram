@@ -17,12 +17,26 @@ language, CLI, database, or UI evidence family. First-party examples include:
 
 ## Package Shape
 
+Start with the scaffold when authoring a new pack:
+
+```bash
+topogram extractor scaffold ./topogram-extractor-node-cli --track cli --package @scope/topogram-extractor-node-cli
+cd ./topogram-extractor-node-cli
+npm install
+npm run check
+```
+
+The scaffold writes the package shape below plus a small fixture and check script.
+Use it as disposable starter code; replace the adapter with precise framework
+evidence before publishing.
+
 ```text
 package.json
 topogram-extractor.json
 index.cjs
 README.md
 scripts/check-extractor.mjs
+fixtures/basic-source/
 ```
 
 `topogram-extractor.json` declares the pack:
@@ -35,7 +49,7 @@ scripts/check-extractor.mjs
   "source": "package",
   "package": "@topogram/extractor-node-cli",
   "stack": { "runtime": "node", "framework": "generic-cli" },
-  "capabilities": ["commands", "options", "effects"],
+  "capabilities": { "commands": true, "options": true, "effects": true },
   "candidateKinds": ["command", "capability", "cli_surface"],
   "evidenceTypes": ["runtime_source", "parser_config"],
   "extractors": [
@@ -126,6 +140,7 @@ command, and a concrete extract command.
 ## Author Checks
 
 ```bash
+topogram extractor scaffold ./my-extractor-pack --track cli --package @scope/my-extractor-pack
 topogram extractor check ./my-extractor-pack
 topogram extract ./fixture-app --out /private/tmp/extracted --extractor ./my-extractor-pack
 topogram extract plan /private/tmp/extracted --json

@@ -43,6 +43,7 @@ projection proj_topogram_cli {
     command generator capability cap_manage_generators usage "topogram generator list|show|check [id]" mode read_only
     command generator_policy capability cap_manage_generators usage "topogram generator policy check|status [path]" mode read_only
     command extractor capability cap_manage_extractors usage "topogram extractor list|show|check [id]" mode read_only
+    command extractor_scaffold capability cap_manage_extractors usage "topogram extractor scaffold <target> [--track <track>]" mode filesystem
     command extractor_policy capability cap_manage_extractors usage "topogram extractor policy check|status|pin [path]" mode read_only
     command release_status capability cap_verify_release_status usage "topogram release:status [--strict] [--write-report <path>]" mode network
     command release_roll_consumers capability cap_roll_consumer_packages usage "topogram release roll-consumers <version> [--watch|--no-watch]" mode git
@@ -59,6 +60,9 @@ projection proj_topogram_cli {
     command extract option from type enum values [db, api, ui, cli, workflows, verification] flag --from
     command extract option extractor type string flag --extractor
     command extract option extractor_policy type string flag --extractor-policy
+    command extractor_scaffold option track type enum values [db, api, ui, cli, workflows, verification] flag --track
+    command extractor_scaffold option package type string flag --package
+    command extractor_scaffold option id type string flag --id
     command adopt option write type boolean flag --write
     command adopt option dry_run type boolean flag --dry-run
     command release_status option strict type boolean flag --strict
@@ -86,6 +90,7 @@ projection proj_topogram_cli {
     command adopt effect writes_workspace target topo_canonical_files
     command template effect filesystem target template_metadata
     command extractor effect read_only target extractor_metadata
+    command extractor_scaffold effect filesystem target extractor_package_scaffold
     command catalog effect network target catalog_source
     command release_roll_consumers effect git target consumer_repos
     command release_roll_consumers effect package_install target consumer_packages
@@ -98,6 +103,7 @@ projection proj_topogram_cli {
     command extract example "topogram extract . --out /private/tmp/topogram-engine-cli-import --from cli --json"
     command extractor example "topogram extractor list --json"
     command extractor example "topogram extractor show @topogram/extractor-prisma-db --json"
+    command extractor_scaffold example "topogram extractor scaffold ./topogram-extractor-node-cli --track cli --package @scope/topogram-extractor-node-cli --json"
     command adopt example "topogram adopt cli ./imported-topogram --write --json"
     command release_status example "topogram release:status --strict --write-report ./docs/release-matrix.md"
   }

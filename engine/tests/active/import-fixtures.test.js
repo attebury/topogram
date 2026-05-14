@@ -243,6 +243,38 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(checkPayload.smoke.extractors, 1);
 });
 
+test("extractor scaffold creates a checkable package-backed extractor", () => {
+  const packageRoot = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-scaffold.")), "pack");
+  const scaffold = runCli([
+    "extractor",
+    "scaffold",
+    packageRoot,
+    "--track",
+    "cli",
+    "--package",
+    "@scope/topogram-extractor-scaffold",
+    "--id",
+    "@scope/extractor-scaffold",
+    "--json"
+  ]);
+  assert.equal(scaffold.status, 0, scaffold.stderr || scaffold.stdout);
+  const payload = JSON.parse(scaffold.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.packageName, "@scope/topogram-extractor-scaffold");
+  assert.equal(payload.manifestId, "@scope/extractor-scaffold");
+  assert.equal(payload.track, "cli");
+  assert.ok(payload.files.includes("topogram-extractor.json"));
+  assert.ok(payload.files.includes("scripts/check-extractor.mjs"));
+  assert.equal(fs.existsSync(path.join(packageRoot, "fixtures", "basic-source", "package.json")), true);
+
+  const check = runCli(["extractor", "check", packageRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  const checkPayload = JSON.parse(check.stdout);
+  assert.equal(checkPayload.ok, true);
+  assert.equal(checkPayload.manifest.id, "@scope/extractor-scaffold");
+  assert.equal(checkPayload.smoke.extractors, 1);
+});
+
 test("package-backed extractor policy gates execution before package code loads", () => {
   const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-policy."));
   const markerPath = path.join(runRoot, "loaded.txt");

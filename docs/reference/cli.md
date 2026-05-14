@@ -70,6 +70,7 @@ topogram extractor list
 topogram extractor show @topogram/extractor-prisma-db
 topogram extractor show topogram/ui-extractors
 topogram extractor check ./extractor-package
+topogram extractor scaffold ./extractor-package --track cli --package @scope/extractor-package
 topogram extractor policy check
 topogram extract check ./imported-topogram
 topogram extract plan ./imported-topogram

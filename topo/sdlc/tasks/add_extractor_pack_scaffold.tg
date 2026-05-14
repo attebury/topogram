@@ -1,0 +1,14 @@
+task task_add_extractor_pack_scaffold {
+  name "Add Extractor Pack Scaffold"
+  description "Add a CLI scaffold command for package-backed extractor authors, with generated package files, author docs, and tests proving the scaffolded pack passes extractor conformance checks."
+  satisfies [req_package_backed_extractor_architecture req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_pack_scaffold_creates_checked_package]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

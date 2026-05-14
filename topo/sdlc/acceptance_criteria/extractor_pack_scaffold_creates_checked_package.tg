@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_pack_scaffold_creates_checked_package {
+  name "Extractor Pack Scaffold Creates Checked Package"
+  description "Given an extractor author needs a new package-backed extractor, when they run the scaffold command, then Topogram creates a minimal extractor package whose manifest, adapter export, fixture, README, and check script pass topogram extractor check and document the extract/adopt smoke loop."
+  requirement req_package_backed_extractor_architecture
+  status approved
+}

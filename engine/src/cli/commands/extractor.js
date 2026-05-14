@@ -6,6 +6,7 @@ import path from "node:path";
 import { stableStringify } from "../../format.js";
 import { checkExtractorPack } from "../../extractor/check.js";
 import { FIRST_PARTY_EXTRACTOR_PACKAGES, firstPartyExtractorInfo } from "../../extractor/first-party.js";
+import { scaffoldExtractorPack } from "../../extractor/scaffold.js";
 import {
   EXTRACTOR_MANIFESTS,
   getExtractorManifest,
@@ -30,6 +31,7 @@ export function printExtractorHelp() {
   console.log("Usage: topogram extractor list [--json]");
   console.log("   or: topogram extractor show <id-or-package> [--json]");
   console.log("   or: topogram extractor check <path-or-package> [--json]");
+  console.log("   or: topogram extractor scaffold <target> [--track <track>] [--package <name>] [--id <manifest-id>] [--json]");
   console.log("   or: topogram extractor policy init [path] [--json]");
   console.log("   or: topogram extractor policy status [path] [--json]");
   console.log("   or: topogram extractor policy check [path] [--json]");
@@ -48,9 +50,35 @@ export function printExtractorHelp() {
   console.log("  topogram extractor show topogram/api-extractors");
   console.log("  topogram extractor show @topogram/extractor-prisma-db");
   console.log("  topogram extractor check ./extractor-package");
+  console.log("  topogram extractor scaffold ./topogram-extractor-node-cli --track cli --package @scope/topogram-extractor-node-cli");
   console.log("  topogram extractor policy init");
   console.log("  topogram extractor policy pin @topogram/extractor-node-cli@1");
   console.log("  topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api");
+}
+
+/**
+ * @param {ReturnType<typeof scaffoldExtractorPack>} payload
+ * @returns {void}
+ */
+export function printExtractorScaffold(payload) {
+  console.log(payload.ok ? "Extractor scaffold created." : "Extractor scaffold failed.");
+  console.log(`Target: ${payload.target}`);
+  if (payload.packageName) console.log(`Package: ${payload.packageName}`);
+  if (payload.manifestId) console.log(`Manifest id: ${payload.manifestId}`);
+  if (payload.track) console.log(`Track: ${payload.track}`);
+  if (payload.files.length > 0) {
+    console.log("Files:");
+    for (const file of payload.files) {
+      console.log(`- ${file}`);
+    }
+  }
+  if (payload.nextCommands.length > 0) {
+    console.log("Next commands:");
+    for (const command of payload.nextCommands) {
+      console.log(`- ${command}`);
+    }
+  }
+  for (const error of payload.errors || []) console.log(`Error: ${error}`);
 }
 
 /**
@@ -585,6 +613,16 @@ export function runExtractorCommand(context) {
     const payload = checkExtractorPack(inputPath || "", { cwd });
     if (json) console.log(stableStringify(payload));
     else printExtractorCheck(payload);
+    return payload.ok ? 0 : 1;
+  }
+  if (commandArgs.extractorCommand === "scaffold") {
+    const payload = scaffoldExtractorPack(inputPath || "", {
+      track: commandArgs.extractorScaffoldTrack,
+      packageName: commandArgs.extractorScaffoldPackage,
+      manifestId: commandArgs.extractorScaffoldId
+    });
+    if (json) console.log(stableStringify(payload));
+    else printExtractorScaffold(payload);
     return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorCommand === "list") {

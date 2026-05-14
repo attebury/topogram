@@ -2381,5 +2381,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_add_extractor_pack_scaffold": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T01:18:44.489Z",
+      "by": "actor_coding_agent",
+      "note": "Starting extractor scaffold implementation."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T01:18:48.440Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing scaffold command, docs, and tests."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T01:48:55.089Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
