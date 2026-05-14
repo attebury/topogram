@@ -1,0 +1,10 @@
+bug bug_openapi_code_extractor_self_filtered {
+  name "Openapi Code Extractor Self Filtered"
+  description "The code-generated OpenAPI extractor searches for `src/docs/openapi.ts`, but the primary-source classifier treats any `docs` path segment as documentation, so `findPrimaryImportFiles` filters out the exact files this extractor is designed to read."
+  reproduction "Create a brownfield app with `src/docs/openapi.ts` containing `registry.registerPath(...)` declarations, then run `topogram extract <app> --out <target> --from api --json`; `api.openapi-code` reports no detection because `classifyImportSourcePath` returns `docs` for `src/docs/openapi.ts`."
+  affects [cap_import_brownfield_app]
+  violates []
+  priority medium
+  severity medium
+  status open
+}

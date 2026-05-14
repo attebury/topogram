@@ -2838,5 +2838,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_adversarial_residual_extractor_sdlc_audit": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T20:03:02.171Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming residual extractor and SDLC audit after 0.3.87 release."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T20:03:07.674Z",
+      "by": "actor_coding_agent",
+      "note": "Auditing extractor coverage, source classification, and command-owned SDLC state."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T20:10:50.384Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

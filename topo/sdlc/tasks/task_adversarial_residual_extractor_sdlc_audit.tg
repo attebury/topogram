@@ -6,8 +6,9 @@ task task_adversarial_residual_extractor_sdlc_audit {
   verification_refs [verification_engine_gate verification_import_fixtures verification_sdlc_enforcement verification_dogfood_topo_workspace]
   affects [cap_import_brownfield_app, cap_manage_sdlc_records, cap_query_context]
   blocked_by []
+  claimed_by actor_coding_agent
   disposition active
   priority medium
   work_type review
-  status unclaimed
+  status done
 }
