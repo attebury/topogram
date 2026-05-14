@@ -101,6 +101,15 @@ classification, and configured tracks as evidence inputs. Keep any framework
 parsing local to the package and return plain candidate data for Topogram core
 to normalize.
 
+Extractor output is validated before Topogram persists extraction artifacts.
+`findings` and `diagnostics` must be arrays when present, and `candidates` must
+be an object of track-owned array buckets. Candidate records must have a stable
+identity such as `id_hint`, `id`, `name`, or `command_id`; route candidates may
+use `method` plus `path`. File evidence must use safe project-relative paths,
+not absolute paths or `..` escapes. Candidate output must not include canonical
+files, patches, adoption plans, write instructions, or direct `topo/**` writes.
+Those are core responsibilities handled only after explicit `topogram adopt`.
+
 ## Safety Boundary
 
 - Extractors are read-only.
@@ -150,7 +159,8 @@ topogram query extract-plan /private/tmp/extracted/topo --json
 ```
 
 Passing `topogram extractor check` proves the manifest, adapter export, and
-minimal smoke shape. It does not replace fixture-based extraction tests.
+minimal smoke shape, including track-aware candidate validation. It does not
+replace fixture-based extraction tests.
 
 Package CI should also run a real fixture extraction and inspect the generated
 review packet. At minimum, prove:

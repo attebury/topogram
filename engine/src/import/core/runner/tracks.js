@@ -3,6 +3,7 @@
 import { getEnrichersForTrack, getExtractorsForTrack } from "../registry.js";
 import { normalizeCandidatesForTrack } from "./candidates.js";
 import { packageExtractorsForContext } from "../../../extractor/packages.js";
+import { validateExtractorResult } from "../../../extractor/output.js";
 
 /**
  * @param {any} context
@@ -140,25 +141,12 @@ function initialCandidatesForTrack(track) {
  */
 function assertExtractorResultShape(extractor, result) {
   const label = extractor?.id || "unknown";
-  if (!result || typeof result !== "object" || Array.isArray(result)) {
-    throw new Error(`Extractor '${label}' extract(context) must return an object.`);
-  }
-  if (result.findings != null && !Array.isArray(result.findings)) {
-    throw new Error(`Extractor '${label}' extract(context) findings must be an array when present.`);
-  }
-  if (result.diagnostics != null && !Array.isArray(result.diagnostics)) {
-    throw new Error(`Extractor '${label}' extract(context) diagnostics must be an array when present.`);
-  }
-  if (result.candidates == null) {
-    result.candidates = {};
-  }
-  if (!result.candidates || typeof result.candidates !== "object" || Array.isArray(result.candidates)) {
-    throw new Error(`Extractor '${label}' extract(context) candidates must be an object.`);
-  }
-  for (const [key, value] of Object.entries(result.candidates)) {
-    if (!Array.isArray(value)) {
-      throw new Error(`Extractor '${label}' extract(context) candidates.${key} must be an array.`);
-    }
+  const validation = validateExtractorResult(result, {
+    track: extractor?.track,
+    strictCandidates: extractor?.source === "package"
+  });
+  if (!validation.ok) {
+    throw new Error(validation.errors.map((message) => `Extractor '${label}' ${message}.`).join("\n"));
   }
 }
 

@@ -31,6 +31,7 @@
     "./src/extractor-policy.js",
     "./src/extractor/check.js",
     "./src/extractor/first-party.js",
+    "./src/extractor/output.js",
     "./src/extractor/packages.js",
     "./src/extractor/registry.js",
     "./src/extractor/scaffold.js",

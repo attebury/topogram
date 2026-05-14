@@ -1,0 +1,14 @@
+task task_harden_extractor_adapter_outputs {
+  name "Harden Extractor Adapter Outputs"
+  description "Make package-backed extractor output validation track-aware and shared between extractor package checks and real brownfield extraction, so malformed adapters cannot produce unsafe or adoption-shaped candidates."
+  satisfies [req_package_backed_extractor_architecture]
+  acceptance_refs [ac_package_backed_extractor_architecture]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

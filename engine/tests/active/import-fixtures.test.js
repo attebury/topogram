@@ -243,6 +243,55 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(checkPayload.smoke.extractors, 1);
 });
 
+test("extractor check rejects unsafe package-backed candidate output", () => {
+  const cases = [
+    {
+      name: "missing command identity",
+      options: {
+        candidateObjectSource: `{ commands: [{ label: "Missing Identity" }] }`
+      },
+      message: /candidates\.commands\[0\] must include an identity field: command_id or id_hint/
+    },
+    {
+      name: "invalid bucket for track",
+      options: {
+        candidateObjectSource: `{ entities: [{ id_hint: "entity_wrong_track", name: "Wrong Track" }] }`
+      },
+      message: /candidates\.entities is not allowed for track 'cli'/
+    },
+    {
+      name: "absolute source path",
+      options: {
+        candidateObjectSource: `{ commands: [{ command_id: "bad_path", label: "Bad Path", evidence: [{ file: "/tmp/source.js" }] }] }`
+      },
+      message: /candidates\.commands\[0\]\.evidence\[0\]\.file must be a safe project-relative path/
+    },
+    {
+      name: "adoption-shaped bucket",
+      options: {
+        candidateObjectSource: `{ adoption_plan: [] }`
+      },
+      message: /candidates\.adoption_plan is not allowed/
+    },
+    {
+      name: "canonical file write shape",
+      options: {
+        candidateObjectSource: `{ commands: [{ command_id: "writes_topo", label: "Writes Topo", files: { "topo/capabilities/cap-x.tg": "capability cap_x {}" } }] }`
+      },
+      message: /candidates\.commands\[0\]\.files is not allowed/
+    }
+  ];
+
+  for (const entry of cases) {
+    const packageRoot = writeExtractorPackage(fs.mkdtempSync(path.join(os.tmpdir(), `topogram-extractor-check-${entry.name.replaceAll(" ", "-")}.`)), entry.options);
+    const check = runCli(["extractor", "check", packageRoot, "--json"]);
+    assert.equal(check.status, 1, `${entry.name}: ${check.stderr || check.stdout}`);
+    const payload = JSON.parse(check.stdout);
+    assert.equal(payload.ok, false);
+    assert.match(payload.errors.join("\n"), entry.message, entry.name);
+  }
+});
+
 test("extractor scaffold creates a checkable package-backed extractor", () => {
   const packageRoot = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-scaffold.")), "pack");
   const scaffold = runCli([
@@ -578,34 +627,79 @@ test("package-backed extractors merge multiple tracks into one extraction review
 });
 
 test("package-backed extractors reject malformed candidate output during extraction", () => {
-  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-bad-output."));
-  const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"), { malformedCandidates: true });
-  const targetRoot = path.join(runRoot, "imported");
-  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
-  fs.writeFileSync(policyPath, `${JSON.stringify({
-    version: "0.1",
-    allowedPackageScopes: [],
-    allowedPackages: ["@scope/topogram-extractor-smoke"],
-    pinnedVersions: { "@scope/topogram-extractor-smoke": "1" },
-    enabledPackages: []
-  }, null, 2)}\n`, "utf8");
+  const cases = [
+    {
+      name: "non-array bucket",
+      options: { malformedCandidates: true },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands must be an array/
+    },
+    {
+      name: "missing identity",
+      options: {
+        candidateObjectSource: `{ commands: [{ label: "Missing Identity" }] }`
+      },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands\[0\] must include an identity field: command_id or id_hint/
+    },
+    {
+      name: "invalid track bucket",
+      options: {
+        candidateObjectSource: `{ entities: [{ id_hint: "entity_wrong_track", name: "Wrong Track" }] }`
+      },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.entities is not allowed for track 'cli'/
+    },
+    {
+      name: "absolute source path",
+      options: {
+        candidateObjectSource: `{ commands: [{ command_id: "bad_path", label: "Bad Path", evidence: [{ file: "/tmp/source.js" }] }] }`
+      },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands\[0\]\.evidence\[0\]\.file must be a safe project-relative path/
+    },
+    {
+      name: "adoption shaped output",
+      options: {
+        candidateObjectSource: `{ adoption_plan: [] }`
+      },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.adoption_plan is not allowed/
+    },
+    {
+      name: "topo write output",
+      options: {
+        candidateObjectSource: `{ commands: [{ command_id: "writes_topo", label: "Writes Topo", files: { "topo/capabilities/cap-x.tg": "capability cap_x {}" } }] }`
+      },
+      message: /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands\[0\]\.files is not allowed/
+    }
+  ];
 
-  const result = runCli([
-    "extract",
-    path.join(importFixtureRoot, "cli-basic"),
-    "--out",
-    targetRoot,
-    "--from",
-    "cli",
-    "--extractor",
-    packageRoot,
-    "--extractor-policy",
-    policyPath,
-    "--json"
-  ]);
+  for (const entry of cases) {
+    const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), `topogram-extractor-bad-output-${entry.name.replaceAll(" ", "-")}.`));
+    const packageRoot = writeExtractorPackage(path.join(runRoot, "extractor"), entry.options);
+    const targetRoot = path.join(runRoot, "imported");
+    const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+    fs.writeFileSync(policyPath, `${JSON.stringify({
+      version: "0.1",
+      allowedPackageScopes: [],
+      allowedPackages: ["@scope/topogram-extractor-smoke"],
+      pinnedVersions: { "@scope/topogram-extractor-smoke": "1" },
+      enabledPackages: []
+    }, null, 2)}\n`, "utf8");
 
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /Extractor 'cli\.package-smoke' extract\(context\) candidates\.commands must be an array/);
+    const result = runCli([
+      "extract",
+      path.join(importFixtureRoot, "cli-basic"),
+      "--out",
+      targetRoot,
+      "--from",
+      "cli",
+      "--extractor",
+      packageRoot,
+      "--extractor-policy",
+      policyPath,
+      "--json"
+    ]);
+
+    assert.equal(result.status, 1, `${entry.name}: ${result.stderr || result.stdout}`);
+    assert.match(result.stderr, entry.message, entry.name);
+  }
 });
 
 test("extractor policy commands initialize, pin, and report enabled packages", () => {
@@ -1506,9 +1600,9 @@ function writeExtractorPackage(packageRoot, options = {}) {
         }]`;
   const candidateObjectSource = options.malformedCandidates
     ? "{ commands: { bad: true } }"
-    : track === "cli"
-      ? `{ commands: ${candidatesSource} }`
-      : candidatesSource;
+    : options.candidateObjectSource || (track === "cli"
+        ? `{ commands: ${candidatesSource} }`
+        : candidatesSource);
   fs.writeFileSync(path.join(packageRoot, "package.json"), `${JSON.stringify({
     name: packageName,
     version: "1.0.0",

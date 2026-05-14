@@ -457,6 +457,11 @@ npm run check
 Replace the scaffold adapter in \`index.cjs\` with precise, read-only source evidence.
 Extractor packages must not mutate source files, write canonical \`topo/**\`, install
 packages, perform network access, or define adoption semantics.
+
+Candidate output is validated by track. Return only review candidate buckets for
+the declared track, give each candidate a stable identity, keep file evidence
+project-relative, and never return files, patches, adoption plans, or write
+instructions.
 `
   };
   for (const [relative, contents] of Object.entries(defaults.fixtureFiles)) {

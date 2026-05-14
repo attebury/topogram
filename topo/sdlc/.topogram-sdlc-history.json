@@ -2473,5 +2473,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_harden_extractor_adapter_outputs": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T06:31:02.407Z",
+      "by": "actor_coding_agent",
+      "note": "Start extractor adapter output hardening."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T06:31:15.166Z",
+      "by": "actor_coding_agent",
+      "note": "Implement shared extractor output validation and negative regressions."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T06:41:32.322Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

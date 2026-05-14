@@ -5,6 +5,7 @@ import {
   loadExtractorPackageAdapterForSpec,
   validateExtractorAdapter
 } from "./packages.js";
+import { validateExtractorResult } from "./output.js";
 
 /**
  * @typedef {import("./registry.js").ExtractorManifest} ExtractorManifest
@@ -24,39 +25,6 @@ import {
  * @property {{ extractors: number, findings: number, candidateKeys: number, diagnostics: number }|null} smoke
  * @property {boolean} executesPackageCode
  */
-
-/**
- * @param {any} result
- * @returns {{ ok: boolean, message: string, smoke: { findings: number, candidateKeys: number, diagnostics: number }|null }}
- */
-function validateExtractResult(result) {
-  if (!result || typeof result !== "object" || Array.isArray(result)) {
-    return { ok: false, message: "extract(context) must return an object", smoke: null };
-  }
-  if (result.findings != null && !Array.isArray(result.findings)) {
-    return { ok: false, message: "extract(context) findings must be an array when present", smoke: null };
-  }
-  if (result.diagnostics != null && !Array.isArray(result.diagnostics)) {
-    return { ok: false, message: "extract(context) diagnostics must be an array when present", smoke: null };
-  }
-  if (!result.candidates || typeof result.candidates !== "object" || Array.isArray(result.candidates)) {
-    return { ok: false, message: "extract(context) result must include a candidates object", smoke: null };
-  }
-  for (const [key, value] of Object.entries(result.candidates)) {
-    if (!Array.isArray(value)) {
-      return { ok: false, message: `extract(context) candidates.${key} must be an array`, smoke: null };
-    }
-  }
-  return {
-    ok: true,
-    message: `extract(context) returned ${Object.keys(result.candidates).length} candidate bucket(s)`,
-    smoke: {
-      findings: Array.isArray(result.findings) ? result.findings.length : 0,
-      candidateKeys: Object.keys(result.candidates).length,
-      diagnostics: Array.isArray(result.diagnostics) ? result.diagnostics.length : 0
-    }
-  };
-}
 
 /**
  * @param {string} sourceSpec
@@ -126,9 +94,9 @@ export function checkExtractorPack(sourceSpec, options = {}) {
         continue;
       }
       const result = extractor.extract(context) || { findings: [], candidates: {} };
-      const validation = validateExtractResult(result);
+      const validation = validateExtractorResult(result, { track: extractor.track, strictCandidates: true });
       if (!validation.ok || !validation.smoke) {
-        payload.errors.push(`Extractor '${extractor.id}' ${validation.message}.`);
+        payload.errors.push(...validation.errors.map((message) => `Extractor '${extractor.id}' ${message}.`));
         continue;
       }
       totalFindings += validation.smoke.findings;
@@ -152,4 +120,3 @@ export function checkExtractorPack(sourceSpec, options = {}) {
   payload.ok = payload.errors.length === 0;
   return payload;
 }
-
