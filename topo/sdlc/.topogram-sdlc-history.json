@@ -2746,5 +2746,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_harden_import_list_files_recursive_symlinks": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T18:28:46.856Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming import recursive file walker symlink hardening."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T18:28:53.877Z",
+      "by": "actor_coding_agent",
+      "note": "Adding explicit skip policy for symlinked files and directories during import discovery."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T18:29:26.942Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

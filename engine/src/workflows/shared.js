@@ -79,15 +79,36 @@ export function listFilesRecursive(rootDir, predicate = () => true, options = {}
     return [];
   }
   const ignoredDirs = options.ignoredDirs || DEFAULT_IGNORED_DIRS;
+  let rootRealPath;
+  try {
+    rootRealPath = fs.realpathSync(rootDir);
+  } catch {
+    return [];
+  }
+  const visitedDirs = new Set([rootRealPath]);
   /** @type {any[]} */
   const files = [];
   const walk = (/** @type {any} */ currentDir) => {
     for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
       const childPath = path.join(currentDir, entry.name);
+      if (entry.isSymbolicLink()) {
+        continue;
+      }
       if (entry.isDirectory()) {
         if (ignoredDirs.has(entry.name)) {
           continue;
         }
+        let childRealPath;
+        try {
+          childRealPath = fs.realpathSync(childPath);
+        } catch {
+          continue;
+        }
+        const relativeToRoot = path.relative(rootRealPath, childRealPath);
+        if (relativeToRoot.startsWith("..") || path.isAbsolute(relativeToRoot) || visitedDirs.has(childRealPath)) {
+          continue;
+        }
+        visitedDirs.add(childRealPath);
         walk(childPath);
         continue;
       }

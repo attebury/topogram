@@ -6,8 +6,13 @@ import path from "node:path";
 import test from "node:test";
 
 import { runImportAppWorkflow } from "../../src/import/index.js";
-import { classifyImportSourcePath, findPrimaryImportFiles } from "../../src/import/core/shared.js";
+import {
+  classifyImportSourcePath,
+  findPrimaryImportFiles,
+  listFilesRecursive as listImportFilesRecursive
+} from "../../src/import/core/shared.js";
 import { buildCanonicalAdoptionOutputs } from "../../src/workflows/reconcile/adoption-plan.js";
+import { listFilesRecursive as listWorkflowFilesRecursive } from "../../src/workflows/shared.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "import");
@@ -56,6 +61,29 @@ test("import source classification preserves runtime template paths", () => {
     .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
     .sort();
   assert.deepEqual(primaryFiles, runtimePaths.sort());
+});
+
+test("import recursive file walkers skip symlink loops and escaped symlink targets", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-symlinks."));
+  const runtimeDir = path.join(root, "src");
+  const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-import-outside."));
+  fs.mkdirSync(runtimeDir, { recursive: true });
+  fs.writeFileSync(path.join(runtimeDir, "index.ts"), "export const inside = true;\n", "utf8");
+  fs.writeFileSync(path.join(outsideDir, "outside.ts"), "export const outside = true;\n", "utf8");
+
+  fs.symlinkSync(outsideDir, path.join(runtimeDir, "outside-link"), "dir");
+  fs.symlinkSync(runtimeDir, path.join(runtimeDir, "self-link"), "dir");
+  fs.symlinkSync(path.join(outsideDir, "outside.ts"), path.join(runtimeDir, "outside-file.ts"), "file");
+
+  const relativeImportFiles = listImportFilesRecursive(root, () => true)
+    .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
+    .sort();
+  const relativeWorkflowFiles = listWorkflowFilesRecursive(root, () => true)
+    .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
+    .sort();
+
+  assert.deepEqual(relativeImportFiles, ["src/index.ts"]);
+  assert.deepEqual(relativeWorkflowFiles, ["src/index.ts"]);
 });
 
 test("reconcile adoption outputs reject topo path traversal from plan payloads", () => {
