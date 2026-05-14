@@ -1,0 +1,11 @@
+requirement req_adversarial_residual_audit_cycle {
+  name "Adversarial Residual Audit Cycle"
+  description "The engine topo workspace must rerun adversarial checkpoints on extractor coverage consistency, Drizzle configuration resolution paths ignored by safeguards, broader template-path classifications, and command-owned SDLC history hygiene whenever major import or CLI refactors merge without fresh evidence."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_import_brownfield_app, cap_manage_sdlc_records, cap_query_context]
+  introduces_rules []
+  respects_rules [rule_tests_prove_consumer_value, rule_stateful_workflow_mutations_use_cli]
+  domain dom_engine_quality
+  priority medium
+  status approved
+}

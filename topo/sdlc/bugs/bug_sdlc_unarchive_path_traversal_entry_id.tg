@@ -1,0 +1,11 @@
+bug bug_sdlc_unarchive_path_traversal_entry_id {
+  name "Sdlc Unarchive Path Traversal Entry Id"
+  description "`unarchive()` writes `targetFile` as `path.join(targetDir, \`\${entry.id}.tg\`)` without normalizing containment. An archived JSONL line whose `id` embeds `\`/\`/` `..` segments can resolve outside `topo/sdlc/{kind}s` when restoring, overwriting arbitrary paths relative to volume root because `path.join` canonicalizes traversal."
+  reproduction "Populate archive with `{ \"kind\":\"task\", \"id\":\"task_../../../../tmp/evil\", ... }` matching fields read by archive parser; run `topogram sdlc unarchive ../tmp/evil ...` selecting that id until `writeFileSync` targets `/tmp/evil.tg` (paths vary by topo root)."
+  affects [cap_manage_sdlc_records]
+  violates [rule_stateful_workflow_mutations_use_cli, rule_maintainable_security_focused_code]
+  domain dom_sdlc_query_agent_context
+  priority critical
+  severity critical
+  status open
+}

@@ -1,0 +1,11 @@
+requirement req_executable_implementation_trust_consistent {
+  name "Executable Implementation Trust Consistent"
+  description "Topogram must enforce the same executable-code trust stance for every dynamic import of implementation providers: escaping `implementation/` without template metadata must either be rejected explicitly or routed through `.topogram-templates.trust.json` and recorded hashes consistent with AGENTS.template implementation boundaries."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_manage_templates, cap_create_project, cap_generate_app_outputs]
+  introduces_rules []
+  respects_rules [rule_template_implementation_is_executable, rule_maintainable_security_focused_code]
+  domain dom_catalog_templates
+  priority high
+  status approved
+}

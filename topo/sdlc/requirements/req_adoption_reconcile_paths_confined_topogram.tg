@@ -1,0 +1,11 @@
+requirement req_adoption_reconcile_paths_confined_topogram {
+  name "Adoption Reconcile Paths Confined Topogram"
+  description "Every filesystem path derived from adoption-plan bundles—`canonical_rel_path`, `source_path`, and analogous patch targets—must be normalized and rejected unless contained under `paths.topogramRoot` after `path.resolve`; workflows must refuse dot-dot escapes before read, copy, or write."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code, rule_generated_and_maintained_ownership_differ]
+  domain dom_import_adoption
+  priority critical
+  status approved
+}

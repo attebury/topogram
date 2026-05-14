@@ -1,0 +1,6 @@
+acceptance_criterion ac_bounded_catalog_and_github_payloads {
+  name "Bounded Catalog And GitHub Payloads"
+  description "Given an HTTP catalog source or mocked GitHub response larger than configured policy thresholds, when `topogram catalog ...` resolves the source then the CLI aborts early with diagnostics instead of buffering the entire payload, and regression tests simulate an oversize body using fixtures."
+  requirement req_bounded_catalog_and_github_fetch_payloads
+  status approved
+}

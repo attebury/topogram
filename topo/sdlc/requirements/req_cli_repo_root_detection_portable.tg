@@ -1,0 +1,11 @@
+requirement req_cli_repo_root_detection_portable {
+  name "Cli Repo Root Detection Portable"
+  description "Generated-output safety must derive the packaged engine repo root portably (`fileURLToPath`/`import.meta.url`) so Windows and encoded paths cannot mis-handle comparisons in `topogramInputPathForGeneration` or sentinel checks under `cli/output-safety.js`."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_generate_app_outputs, cap_emit_artifacts, cap_validate_workspace]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code]
+  domain dom_workspace_project_config
+  priority medium
+  status approved
+}

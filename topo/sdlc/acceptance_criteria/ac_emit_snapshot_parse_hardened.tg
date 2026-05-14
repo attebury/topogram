@@ -1,0 +1,6 @@
+acceptance_criterion ac_emit_snapshot_parse_hardened {
+  name "Emit Snapshot Parse Hardened"
+  description "Given a hostile snapshot fixture containing prototype pollution payloads, when `emit` or equivalent ingestion runs, then parsing rejects or neutralizes surprises with explicit diagnostics documented in AGENTS/engine notes, guarded by regression tests."
+  requirement req_emit_snapshot_parse_hardened
+  status approved
+}

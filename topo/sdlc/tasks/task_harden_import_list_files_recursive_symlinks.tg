@@ -1,0 +1,13 @@
+task task_harden_import_list_files_recursive_symlinks {
+  name "Harden Import List Files Recursive Symlinks"
+  description "`import/core/shared/files.js` walker should classify `withFileTypes` symlink entries (`isSymbolicLink`), compare `realpath` against allowed roots before descent, optionally cap depth, extend import fixture coverage for symlink traps."
+  satisfies [req_import_walk_symlink_escape_guard]
+  acceptance_refs [ac_import_walk_symlink_policy]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type bugfix
+  status unclaimed
+}

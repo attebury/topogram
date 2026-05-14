@@ -1,0 +1,13 @@
+task task_harden_emit_snapshot_json_ingestion {
+  name "Harden Emit Snapshot Json Ingestion"
+  description "Audit `runEmitCommand`/`generateWorkspace` snapshot parameters, constrain `JSON.parse` consumers to trusted shapes, add sanitization helpers if needed, and prove behavior with adversarial fixtures plus changelog notes tying back to adversarial findings."
+  satisfies [req_emit_snapshot_parse_hardened]
+  acceptance_refs [ac_emit_snapshot_parse_hardened]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_emit_artifacts, cap_validate_workspace]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type bugfix
+  status unclaimed
+}

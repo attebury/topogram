@@ -1,0 +1,11 @@
+requirement req_bounded_catalog_and_github_fetch_payloads {
+  name "Bounded Catalog And GitHub Fetch Payloads"
+  description "CLI catalog ingestion and auxiliary GitHub REST helpers must expose explicit byte or time limits before parsing JSON/text into memory so agents cannot instruct Topogram into multi-gigabyte downloads or hostile fixture logs without operator-visible failure semantics."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_manage_catalog, cap_validate_workspace]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code]
+  domain dom_catalog_templates
+  priority medium
+  status approved
+}

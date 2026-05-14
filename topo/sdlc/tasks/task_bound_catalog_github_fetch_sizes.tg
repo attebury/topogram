@@ -1,0 +1,13 @@
+task task_bound_catalog_github_fetch_sizes {
+  name "Bound Catalog GitHub Fetch Sizes"
+  description "Implement streaming or capped buffering for catalog URL/GitHub helpers (`catalog/source.js`, companion fetch scripts), plumb knobs via env/policy with safe defaults, and add contract-style tests asserting deterministic abort behavior when limits breach."
+  satisfies [req_bounded_catalog_and_github_fetch_payloads]
+  acceptance_refs [ac_bounded_catalog_and_github_payloads]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_manage_catalog, cap_validate_workspace]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  status unclaimed
+}

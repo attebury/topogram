@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_unarchive_writes_contained {
+  name "SDLC Unarchive Writes Contained"
+  description "Given archive fixture lines whose `id` includes `..\` traversal segments or path separators outside the basename pattern, when `sdlc unarchive` runs then the CLI fails closed before writing AND passing fixtures prove restored files remain under `topo/sdlc/{kind}s`."
+  requirement req_sdlc_unarchive_writes_contained
+  status approved
+}

@@ -1,0 +1,11 @@
+requirement req_import_walk_symlink_escape_guard {
+  name "Import Walk Symlink Escape Guard"
+  description "Recursive filesystem walks used during brownfield import (`listFilesRecursive`) must skip directory symlinks pointing outside scanned roots—or record explicit policy—so scanning cannot follow attacker-controlled mounts into unexpected trees or recurse indefinitely."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_import_brownfield_app]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code]
+  domain dom_import_adoption
+  priority medium
+  status approved
+}

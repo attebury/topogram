@@ -1,0 +1,13 @@
+task task_fix_sdlc_unarchive_path_containment {
+  name "Fix Sdlc Unarchive Path Containment"
+  description "Clamp `resolveTopoRoot(workspaceRoot)`, validate `entry.id`/`entry.kind` against SDLC identifier regexes, enforce `path.relative(recordRoot, resolvedTarget)` has no `\`..\`` prefix, regression-test traversal fixtures, transition `bug_sdlc_unarchive_path_traversal_entry_id` to verified once fixed."
+  satisfies [req_sdlc_unarchive_writes_contained]
+  acceptance_refs [ac_sdlc_unarchive_writes_contained]
+  verification_refs [verification_sdlc_enforcement verification_engine_gate]
+  affects [cap_manage_sdlc_records]
+  blocked_by []
+  disposition active
+  priority critical
+  work_type bugfix
+  status unclaimed
+}

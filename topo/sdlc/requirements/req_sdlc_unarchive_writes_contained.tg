@@ -1,0 +1,11 @@
+requirement req_sdlc_unarchive_writes_contained {
+  name "SDLC Unarchive Writes Contained"
+  description "Restore paths from archived SDLC snapshots must normalize and reject any `entry.id` or emitted filename that escapes the configured record root directories; only canonical Topogram SDLC identifiers and safe basename joining are permitted before `writeFileSync`."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_manage_sdlc_records]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code, rule_stateful_workflow_mutations_use_cli]
+  domain dom_sdlc_query_agent_context
+  priority critical
+  status approved
+}

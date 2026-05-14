@@ -1,0 +1,13 @@
+task task_close_executable_implementation_trust_gap {
+  name "Close Executable Implementation Trust Gap"
+  description "Eliminate `implementationRequiresTrust` false positives that allow bypassing `.topogram-templates.trust.json` when `implementation.module` escapes `implementation/` without template attachment: validate config, unify policy wording in AGENTS, and prove with a failing-then-fixed boundary test referencing `example-implementation.js` and `template-trust/policy.js`."
+  satisfies [req_executable_implementation_trust_consistent]
+  acceptance_refs [ac_executable_implementation_trust_consistent]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_manage_templates, cap_create_project, cap_generate_app_outputs]
+  blocked_by []
+  disposition active
+  priority high
+  work_type bugfix
+  status unclaimed
+}

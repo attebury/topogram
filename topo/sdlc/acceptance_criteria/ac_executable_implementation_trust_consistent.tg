@@ -1,0 +1,6 @@
+acceptance_criterion ac_executable_implementation_trust_consistent {
+  name "Executable Implementation Trust Consistent"
+  description "Given a project whose implementation module resolves outside `./implementation/` and whose `topogram.project.json` omits template attachment metadata, when generation or emit loads the provider, then the CLI either refuses until trust is explicitly recorded per policy or validates the trusted digest path with a regression test asserting the insecure bypass cannot occur."
+  requirement req_executable_implementation_trust_consistent
+  status approved
+}

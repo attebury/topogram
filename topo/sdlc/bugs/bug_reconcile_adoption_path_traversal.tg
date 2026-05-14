@@ -1,0 +1,11 @@
+bug bug_reconcile_adoption_path_traversal {
+  name "Reconcile Adoption Path Traversal"
+  description "`buildCanonicalAdoptionOutputs` joins `paths.topogramRoot` with `item.canonical_rel_path` from adoption-plan payloads without asserting the result stays inside the topo workspace. Poisoned JSON (hand-edited plan or hostile merge) carrying `canonical_rel_path` like `actors/../` dot-dot segments can direct writes beside or outside `./topo`. `item.source_path` is similarly joined for reads and can leak files outside `./topo` when treated as relative to `topogramRoot`."
+  reproduction "Fabricate adoption-plan rows with canonical_rel_path `../outside.tg`, run reconcile adoption output write path exercised by workflows, observe destination escapes `paths.topogramRoot`; repeat with source_path traversal for reads."
+  affects [cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  violates [rule_maintainable_security_focused_code, rule_generated_and_maintained_ownership_differ]
+  domain dom_import_adoption
+  priority critical
+  severity critical
+  status open
+}

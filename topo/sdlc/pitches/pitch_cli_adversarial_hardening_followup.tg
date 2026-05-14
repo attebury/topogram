@@ -1,0 +1,14 @@
+pitch pitch_cli_adversarial_hardening_followup {
+  name "Cli Adversarial Hardening Follow Up"
+  description "Track follow-ups from adversarial CLI and engine reviews: align executable implementation loading with explicit trust boundaries, harden portability of generated-output safeguards, bound remote/catalog and GitHub API IO, clarify emit snapshot ingestion trust, and reopen residual import or SDLC process audits where prior reviews stalled. Living coverage log (refresh when sweeps widen): DONE — CLI package/npm/GitHub/catalog fetches plus git spawns (`prep`, gate, release-shared); template trust versus implementation loaders; npm-safety/output-safety/repo-root notes; extractor candidate envelope PATH_KEYS guarding; vanilla web HTML escape posture; SDLC archive/unarchive/jsonl helpers; adopt/reconcile OUTPUT path traversal (see `bug_reconcile_adoption_path_traversal`); SDLC unarchive traversal (existing bug); shared import directory walker symlink risk. NEXT — exhaustive validator/resolver policy edges, reconcile/adopt surfaces beyond `adoption-plan/outputs`, docs-generate and catalog filesystem copy seams, realization generator depth (express/hono etc.), swift/native codegen, agent-brief and query payloads, parser resource limits/ReDoS."
+  appetite "medium"
+  problem "A focused adversarial sweep surfaced gaps between documented trust norms and selective enforcement paths, plus unbounded deserialization and brittle path derivations."
+  solution_sketch "Close each gap behind requirements, verification-bound tasks, acceptance criteria, and open defects for confirmed escape paths plus an explicit pitch coverage log guiding remaining slices."
+  rabbit_holes "Do not regress legitimate sibling implementation modules permitted by deliberate local-only workflows without an explicit waiver story."
+  no_go_areas "Do not widen implicit token attachment to arbitrary third-party HTTPS endpoints."
+  affects [cap_manage_templates, cap_create_project, cap_generate_app_outputs, cap_emit_artifacts, cap_manage_catalog, cap_validate_workspace, cap_import_brownfield_app, cap_manage_sdlc_records, cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  decisions [decision_repo_local_laws_are_enforceable]
+  domain dom_engine_quality
+  priority high
+  status approved
+}

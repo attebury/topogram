@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_repo_root_detection_portable {
+  name "Cli Repo Root Detection Portable"
+  description "Given `cli/output-safety.js` refactor to compute `REPO_ROOT` via `fileURLToPath(new URL('../../..', import.meta.url))`, when engine tests execute on POSIX and documented Windows fixtures or CI matrices, then path comparisons guarding emit/generate sentinel behavior behave identically to today’s POSIX expectations and regressions gain coverage."
+  requirement req_cli_repo_root_detection_portable
+  status approved
+}

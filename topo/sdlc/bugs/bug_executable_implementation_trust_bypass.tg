@@ -1,0 +1,11 @@
+bug bug_executable_implementation_trust_bypass {
+  name "Executable Implementation Trust Bypass"
+  description "`implementationRequiresTrust` returns false when the configured implementation module resolves outside `implementation/` and no template attachment is declared; `assertTrustedImplementation` skips and `loadImplementationProvider` dynamically imports attacker-controlled filesystem paths reachable from edited project config."
+  reproduction "Place a Node module at `vendor/pwn.mjs` exporting a provider stub, point `implementation.module` to `../vendor/pwn.mjs` relative to configDir without declaring `template` metadata, omit `.topogram-templates.trust.json`, then run emit or generation that resolves the provider."
+  affects [cap_generate_app_outputs, cap_manage_templates, cap_create_project]
+  violates [rule_template_implementation_is_executable, rule_maintainable_security_focused_code]
+  domain dom_catalog_templates
+  priority high
+  severity high
+  status open
+}

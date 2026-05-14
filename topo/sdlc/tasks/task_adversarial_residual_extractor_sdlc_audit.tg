@@ -1,0 +1,13 @@
+task task_adversarial_residual_extractor_sdlc_audit {
+  name "Adversarial Residual Extractor Sdlc Audit"
+  description "Produce a reproducible checklist covering import extractor completeness, Drizzle config-resolved schemas, template-vs-runtime segmentation, `.topogram-sdlc-history` command-only mutation compliance, linking outcomes to pitches `pitch_brownfield_import_maturity`, `pitch_cli_adversarial_hardening_followup`, and verifying via `verification_import_fixtures`, `verification_sdlc_enforcement`, and gate runs."
+  satisfies [req_adversarial_residual_audit_cycle]
+  acceptance_refs [ac_adversarial_residual_audit_cycle]
+  verification_refs [verification_engine_gate verification_import_fixtures verification_sdlc_enforcement verification_dogfood_topo_workspace]
+  affects [cap_import_brownfield_app, cap_manage_sdlc_records, cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type review
+  status unclaimed
+}

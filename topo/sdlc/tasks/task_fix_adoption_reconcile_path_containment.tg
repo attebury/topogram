@@ -1,0 +1,13 @@
+task task_fix_adoption_reconcile_path_containment {
+  name "Fix Adoption Reconcile Path Containment"
+  description "Centralize topo-relative safe join helper reused by reconcile outputs (`canonical_rel_path`, `source_path`), assert resolved paths remain under topogramRoot, block ambiguous absolute paths unless explicitly permitted, coordinate with adoption-plan ingest validation, tie off `bug_reconcile_adoption_path_traversal` when verified."
+  satisfies [req_adoption_reconcile_paths_confined_topogram]
+  acceptance_refs [ac_adoption_reconcile_paths_confined_topogram]
+  verification_refs [verification_engine_gate verification_import_fixtures]
+  affects [cap_reconcile_import_candidates, cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority critical
+  work_type bugfix
+  status unclaimed
+}

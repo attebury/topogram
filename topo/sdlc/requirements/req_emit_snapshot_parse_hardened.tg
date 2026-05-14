@@ -1,0 +1,11 @@
+requirement req_emit_snapshot_parse_hardened {
+  name "Emit Snapshot Parse Hardened"
+  description "`emit` and related generator snapshot ingestion paths that hydrate workspace state from filesystem JSON must document trust assumptions and harden parsing (structured clone from JSON primitives, forbidding `__proto__` payloads, or similar) wherever snapshots originate outside immutable CI-controlled artifacts."
+  pitch pitch_cli_adversarial_hardening_followup
+  affects [cap_emit_artifacts, cap_validate_workspace]
+  introduces_rules []
+  respects_rules [rule_maintainable_security_focused_code]
+  domain dom_workspace_project_config
+  priority medium
+  status approved
+}

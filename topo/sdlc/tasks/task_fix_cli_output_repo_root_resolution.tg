@@ -1,0 +1,13 @@
+task task_fix_cli_output_repo_root_resolution {
+  name "Fix Cli Output Repo Root Resolution"
+  description "Replace `decodeURIComponent(import.meta.url).pathname` `REPO_ROOT` derivation with `fileURLToPath` plus deterministic relative resolution, extend boundary tests spanning Windows-style roots if exercised in CI mock, and document why output safety depends on canonical repo detection."
+  satisfies [req_cli_repo_root_detection_portable]
+  acceptance_refs [ac_cli_repo_root_detection_portable]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_generate_app_outputs, cap_emit_artifacts, cap_validate_workspace]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  status unclaimed
+}
