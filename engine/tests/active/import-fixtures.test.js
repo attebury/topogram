@@ -535,10 +535,32 @@ test("package-backed extractors merge multiple tracks into one extraction review
     provenance.extract.extractorPackages.flatMap((entry) => entry.extractors).sort(),
     ["api.package-smoke", "db.package-smoke"]
   );
+  assert.deepEqual(
+    provenance.extract.extractorPackages.flatMap((entry) => entry.tracks).sort(),
+    ["api", "db"]
+  );
 
   const plan = runCli(["extract", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   const planPayload = JSON.parse(plan.stdout);
+  assert.equal(planPayload.extractorContext.summary.package_backed_extractor_count, 2);
+  assert.deepEqual(
+    planPayload.extractorContext.packageBackedExtractors.map((entry) => entry.packageName).sort(),
+    ["@scope/topogram-extractor-api-smoke", "@scope/topogram-extractor-db-smoke"]
+  );
+  const databaseBundle = planPayload.bundles.find((bundle) => bundle.bundle === "database");
+  assert.equal(databaseBundle.extractorContext.packageBackedExtractors.length, 1);
+  assert.equal(databaseBundle.extractorContext.packageBackedExtractors[0].packageName, "@scope/topogram-extractor-db-smoke");
+  assert.equal(databaseBundle.extractorContext.safetyNotes.some((note) => note.includes("review candidates")), true);
+  const packageTaskBundle = planPayload.bundles.find((bundle) => bundle.bundle === "package-task");
+  assert.equal(
+    packageTaskBundle.extractorContext.packageBackedExtractors.some((entry) => entry.packageName === "@scope/topogram-extractor-api-smoke"),
+    true
+  );
+  const humanPlan = runCli(["extract", "plan", targetRoot]);
+  assert.equal(humanPlan.status, 0, humanPlan.stderr || humanPlan.stdout);
+  assert.match(humanPlan.stdout, /Extractors: @scope\/topogram-extractor-db-smoke/);
+  assert.match(humanPlan.stdout, /package-backed extractor candidates are review-only/);
   const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
   assert.equal(adoptionPlan.imported_maintained_db_seam_candidates.length, 1);
   assert.equal(
@@ -585,6 +607,17 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "capabilities"), true);
   assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:database"), true);
   assert.equal(selectorPayload.selectors.some((selector) => selector.selector === "bundle:package-task"), true);
+  const databaseSelector = selectorPayload.selectors.find((selector) => selector.selector === "bundle:database");
+  assert.equal(databaseSelector.extractorContext.packageBackedExtractors[0].packageName, "@scope/topogram-extractor-db-smoke");
+  const packageTaskSelector = selectorPayload.selectors.find((selector) => selector.selector === "bundle:package-task");
+  assert.equal(
+    packageTaskSelector.extractorContext.packageBackedExtractors.some((entry) => entry.packageName === "@scope/topogram-extractor-api-smoke"),
+    true
+  );
+  const humanSelectorList = runCli(["adopt", "--list", targetRoot]);
+  assert.equal(humanSelectorList.status, 0, humanSelectorList.stderr || humanSelectorList.stdout);
+  assert.match(humanSelectorList.stdout, /Extractors: @scope\/topogram-extractor-db-smoke/);
+  assert.match(humanSelectorList.stdout, /package-backed extractor candidates are review-only/);
 
   const databasePreview = runCli(["adopt", "bundle:database", targetRoot, "--dry-run", "--json"]);
   assert.equal(databasePreview.status, 0, databasePreview.stderr || databasePreview.stdout);

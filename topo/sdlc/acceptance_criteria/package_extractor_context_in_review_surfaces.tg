@@ -1,0 +1,6 @@
+acceptance_criterion ac_package_extractor_context_in_review_surfaces {
+  name "Package Extractor Context In Review Surfaces"
+  description "Given package-backed DB and API extractors contributed candidates, when a human or agent runs topogram extract plan or topogram adopt --list, then bundle and selector review output includes the relevant extractor package, extractor ids, tracks, candidate summary, and review-only safety guidance without changing adoption behavior."
+  requirement req_extract_adopt_packets_show_extractor_context
+  status approved
+}

@@ -2542,5 +2542,14 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_add_package_extractor_context_to_review_surfaces": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T15:16:52.451Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

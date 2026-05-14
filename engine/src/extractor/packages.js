@@ -228,13 +228,19 @@ export function packageExtractorsForContext(context) {
     const bundledPack = getBundledExtractorPack(spec);
     if (bundledPack) {
       extractors.push(...bundledPack.extractors);
-      provenance.push({ source: "bundled", id: bundledPack.manifest.id, version: bundledPack.manifest.version, extractors: bundledPack.manifest.extractors });
+      provenance.push({
+        source: "bundled",
+        id: bundledPack.manifest.id,
+        version: bundledPack.manifest.version,
+        tracks: bundledPack.manifest.tracks || [],
+        extractors: bundledPack.manifest.extractors
+      });
       continue;
     }
     const bundledExtractor = getBundledExtractorById(spec);
     if (bundledExtractor) {
       extractors.push(bundledExtractor);
-      provenance.push({ source: "bundled", id: bundledExtractor.id, version: "1", extractors: [bundledExtractor.id] });
+      provenance.push({ source: "bundled", id: bundledExtractor.id, version: "1", tracks: bundledExtractor.track ? [bundledExtractor.track] : [], extractors: [bundledExtractor.id] });
       continue;
     }
     const packageManifest = loadExtractorPackageManifestForSpec(spec, { cwd });
@@ -273,6 +279,7 @@ export function packageExtractorsForContext(context) {
       id: packageManifest.manifest.id,
       version: packageManifest.manifest.version,
       packageName,
+      tracks: packageManifest.manifest.tracks || [],
       manifestPath: packageManifest.manifestPath,
       packageRoot: packageManifest.packageRoot,
       extractors: packageManifest.manifest.extractors

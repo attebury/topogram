@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { readExtractionContext } from "../../../extraction-context.js";
 import { runWorkflow } from "../../../workflows.js";
 import {
   countByField,
@@ -61,6 +62,73 @@ export const BROWNFIELD_BROAD_ADOPT_SELECTORS = [
 ];
 
 /**
+ * @param {AnyRecord|null|undefined} extractionContext
+ * @param {AnyRecord[]} bundleSurfaces
+ * @param {string} bundleSlug
+ * @returns {string[]}
+ */
+function tracksForBundle(extractionContext, bundleSurfaces, bundleSlug) {
+  const tracks = new Set(bundleSurfaces.map((surface) => surface.track).filter(Boolean));
+  if (bundleSlug === "database" || bundleSlug.includes("db")) tracks.add("db");
+  if (bundleSlug === "cli") tracks.add("cli");
+  if (bundleSlug === "ui") tracks.add("ui");
+  if (bundleSlug.includes("api")) tracks.add("api");
+  const knownTracks = new Set(Array.isArray(extractionContext?.tracks) ? extractionContext.tracks : []);
+  return [...tracks].filter((track) => knownTracks.size === 0 || knownTracks.has(track)).sort((left, right) => left.localeCompare(right));
+}
+
+/**
+ * @param {AnyRecord} extractor
+ * @param {Set<string>} tracks
+ * @returns {boolean}
+ */
+function extractorMatchesTracks(extractor, tracks) {
+  const extractorTracks = Array.isArray(extractor.tracks) ? extractor.tracks : [];
+  return tracks.size === 0 || extractorTracks.length === 0 || extractorTracks.some((track) => tracks.has(track));
+}
+
+/**
+ * @param {AnyRecord|null|undefined} extractionContext
+ * @param {AnyRecord[]} bundleSurfaces
+ * @param {string} bundleSlug
+ * @returns {AnyRecord|null}
+ */
+function extractorContextForBundle(extractionContext, bundleSurfaces, bundleSlug) {
+  if (!extractionContext) {
+    return null;
+  }
+  const tracks = tracksForBundle(extractionContext, bundleSurfaces, bundleSlug);
+  const trackSet = new Set(tracks);
+  const packageBackedExtractors = (extractionContext.package_backed_extractors || [])
+    .filter((/** @type {AnyRecord} */ extractor) => extractorMatchesTracks(extractor, trackSet))
+    .map((/** @type {AnyRecord} */ extractor) => ({
+      id: extractor.id || null,
+      version: extractor.version || null,
+      packageName: extractor.packageName || null,
+      extractors: Array.isArray(extractor.extractors) ? extractor.extractors : [],
+      tracks: Array.isArray(extractor.tracks) ? extractor.tracks : []
+    }));
+  const bundledExtractors = (extractionContext.bundled_extractors || [])
+    .filter((/** @type {AnyRecord} */ extractor) => extractorMatchesTracks(extractor, trackSet))
+    .map((/** @type {AnyRecord} */ extractor) => ({
+      id: extractor.id || null,
+      version: extractor.version || null,
+      extractors: Array.isArray(extractor.extractors) ? extractor.extractors : [],
+      tracks: Array.isArray(extractor.tracks) ? extractor.tracks : []
+    }));
+  if (packageBackedExtractors.length === 0 && bundledExtractors.length === 0) {
+    return null;
+  }
+  return {
+    tracks,
+    packageBackedExtractors,
+    bundledExtractors,
+    candidateCounts: extractionContext.candidate_counts || {},
+    safetyNotes: extractionContext.safety_notes || []
+  };
+}
+
+/**
  * @param {string} inputPath
  * @returns {AnyRecord}
  */
@@ -84,7 +152,8 @@ export function readImportAdoptionArtifacts(inputPath) {
     paths,
     adoptionPlan: JSON.parse(fs.readFileSync(paths.adoptionPlanAgent, "utf8")),
     adoptionStatus: readJsonIfExists(paths.adoptionStatus),
-    reconcileReport: readJsonIfExists(paths.reconcileReport)
+    reconcileReport: readJsonIfExists(paths.reconcileReport),
+    extractionContext: readExtractionContext(topogramRoot)
   };
 }
 
@@ -118,9 +187,10 @@ export function buildBrownfieldBroadAdoptSelectors(projectRoot, adoptionPlan) {
  * @param {AnyRecord} adoptionPlan
  * @param {AnyRecord} adoptionStatus
  * @param {string} projectRoot
+ * @param {AnyRecord|null|undefined} extractionContext
  * @returns {AnyRecord}
  */
-export function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot) {
+export function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoot, extractionContext = null) {
   const surfaces = adoptionPlan.imported_proposal_surfaces || [];
   /** @type {string[]} */
   const slugs = [];
@@ -162,7 +232,8 @@ export function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoo
       complete: Boolean(priority?.is_complete) || (pendingItems.length === 0 && blockedItems.length === 0 && appliedItems.length > 0),
       evidenceScore: priority?.evidence_score || 0,
       why: priority?.operator_summary?.whyThisBundle || null,
-      nextCommand: importAdoptCommand(projectRoot, `bundle:${slug}`, false)
+      nextCommand: importAdoptCommand(projectRoot, `bundle:${slug}`, false),
+      extractorContext: extractorContextForBundle(extractionContext, bundleSurfaces, slug)
     };
   });
   const nextBundle = bundles.find((bundle) => !bundle.complete && bundle.pendingItemCount > 0) || bundles.find((bundle) => !bundle.complete) || bundles[0] || null;
@@ -196,7 +267,7 @@ export function summarizeImportAdoption(adoptionPlan, adoptionStatus, projectRoo
 export function buildBrownfieldImportPlanPayload(inputPath) {
   const artifacts = readImportAdoptionArtifacts(inputPath);
   const adoptionStatus = runWorkflow("adoption-status", artifacts.projectRoot).summary || artifacts.adoptionStatus || {};
-  const adoption = summarizeImportAdoption(artifacts.adoptionPlan, adoptionStatus, artifacts.projectRoot);
+  const adoption = summarizeImportAdoption(artifacts.adoptionPlan, adoptionStatus, artifacts.projectRoot, artifacts.extractionContext);
   return {
     ok: true,
     projectRoot: artifacts.projectRoot,
@@ -207,6 +278,14 @@ export function buildBrownfieldImportPlanPayload(inputPath) {
       adoptionStatus: artifacts.paths.adoptionStatus,
       reconcileReport: artifacts.paths.reconcileReport
     },
+    extractorContext: artifacts.extractionContext ? {
+      provenancePath: artifacts.extractionContext.provenance_path,
+      packageBackedExtractors: artifacts.extractionContext.package_backed_extractors,
+      bundledExtractors: artifacts.extractionContext.bundled_extractors,
+      candidateCounts: artifacts.extractionContext.candidate_counts,
+      safetyNotes: artifacts.extractionContext.safety_notes,
+      summary: artifacts.extractionContext.summary
+    } : null,
     ...adoption,
     commands: {
       check: `topogram extract check ${importProjectCommandPath(artifacts.projectRoot)}`,
@@ -228,6 +307,14 @@ export function printBrownfieldImportPlan(payload) {
     console.log(`- ${bundle.bundle}: ${bundle.itemCount} item(s), ${bundle.pendingItemCount} pending, ${bundle.appliedItemCount} applied`);
     if (bundle.why) {
       console.log(`  ${bundle.why}`);
+    }
+    if (bundle.extractorContext?.packageBackedExtractors?.length > 0) {
+      const names = bundle.extractorContext.packageBackedExtractors
+        .map((/** @type {AnyRecord} */ extractor) => extractor.packageName || extractor.id)
+        .filter(Boolean)
+        .join(", ");
+      console.log(`  Extractors: ${names}`);
+      console.log("  Safety: package-backed extractor candidates are review-only; run dry-run adoption before --write.");
     }
     console.log(`  Preview: ${bundle.nextCommand}`);
   }
@@ -257,6 +344,7 @@ export function buildBrownfieldImportAdoptListPayload(inputPath) {
     appliedItemCount: bundle.appliedItemCount,
     blockedItemCount: bundle.blockedItemCount,
     complete: bundle.complete,
+    extractorContext: bundle.extractorContext || null,
     previewCommand: importAdoptCommand(plan.projectRoot, `bundle:${bundle.bundle}`, false),
     writeCommand: importAdoptCommand(plan.projectRoot, `bundle:${bundle.bundle}`, true)
   }));
@@ -270,6 +358,7 @@ export function buildBrownfieldImportAdoptListPayload(inputPath) {
     selectors,
     broadSelectorCount: broadSelectors.length,
     broadSelectors,
+    extractorContext: plan.extractorContext,
     nextCommand: selectors.find((/** @type {AnyRecord} */ selector) => !selector.complete)?.previewCommand || plan.commands.status
   };
 }
@@ -286,6 +375,14 @@ export function printBrownfieldImportAdoptList(payload) {
   }
   for (const selector of payload.selectors) {
     console.log(`- ${selector.selector}: ${selector.itemCount} item(s), ${selector.pendingItemCount} pending, ${selector.appliedItemCount} applied`);
+    if (selector.extractorContext?.packageBackedExtractors?.length > 0) {
+      const names = selector.extractorContext.packageBackedExtractors
+        .map((/** @type {AnyRecord} */ extractor) => extractor.packageName || extractor.id)
+        .filter(Boolean)
+        .join(", ");
+      console.log(`  Extractors: ${names}`);
+      console.log("  Safety: package-backed extractor candidates are review-only; run dry-run adoption before --write.");
+    }
     console.log(`  Preview: ${selector.previewCommand}`);
     console.log(`  Write: ${selector.writeCommand}`);
   }

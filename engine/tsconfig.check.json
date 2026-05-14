@@ -34,6 +34,7 @@
     "./src/extractor/output.js",
     "./src/extractor/packages.js",
     "./src/extractor/registry.js",
+    "./src/extraction-context.js",
     "./src/extractor/scaffold.js",
     "./src/package-adapters/index.js",
     "./src/package-adapters/adapter.js",
