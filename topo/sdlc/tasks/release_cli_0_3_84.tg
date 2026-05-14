@@ -10,5 +10,5 @@ task task_release_cli_0_3_84 {
   priority high
   work_type implementation
   claimed_by actor_coding_agent
-  status in-progress
+  status done
 }
