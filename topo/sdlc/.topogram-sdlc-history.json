@@ -2815,5 +2815,21 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_release_cli_0_3_87": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T19:26:23.549Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming the 0.3.87 release after Fast Verification passed."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T19:26:27.863Z",
+      "by": "actor_coding_agent",
+      "note": "Preparing @topogram/cli 0.3.87 for publish."
+    }
   ]
 }
