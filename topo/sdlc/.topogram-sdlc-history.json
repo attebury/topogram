@@ -2922,6 +2922,13 @@
       "at": "2026-05-14T20:56:37.137Z",
       "by": "actor_coding_agent",
       "note": "Preparing @topogram/cli 0.3.88 release."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T21:43:21.315Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }
