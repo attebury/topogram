@@ -1,6 +1,6 @@
 acceptance_criterion ac_public_extractor_smoke {
   name "Public Extractor Smoke"
-  description "Given first-party extractor packages are published, when the fresh npmjs smoke installs the public CLI and extractor packages, then extraction with package-backed Prisma and Express extractors runs, records package provenance, emits review-only candidates, and exposes an adoption review surface."
+  description "Given first-party extractor packages are published, when the fresh npmjs smoke installs the public CLI and extractor packages, then extraction with package-backed Prisma, Drizzle, and Express extractors runs, records package provenance, emits review-only candidates, and exposes an adoption review surface."
   requirement req_first_party_extractor_packages_tracked
   status approved
 }

@@ -52,10 +52,12 @@ echo "Checking public package and catalog access..."
 echo "Checking public extractor packages..."
 (
   cd "$CONSUMER_DIR"
-  npm install --save-dev @topogram/extractor-prisma-db @topogram/extractor-express-api >/dev/null
+  npm install --save-dev @topogram/extractor-prisma-db @topogram/extractor-drizzle-db @topogram/extractor-express-api >/dev/null
   "$TOPOGRAM_BIN" extractor show @topogram/extractor-prisma-db --json >/dev/null
+  "$TOPOGRAM_BIN" extractor show @topogram/extractor-drizzle-db --json >/dev/null
   "$TOPOGRAM_BIN" extractor show @topogram/extractor-express-api --json >/dev/null
   "$TOPOGRAM_BIN" extractor check @topogram/extractor-prisma-db --json >/dev/null
+  "$TOPOGRAM_BIN" extractor check @topogram/extractor-drizzle-db --json >/dev/null
   "$TOPOGRAM_BIN" extractor check @topogram/extractor-express-api --json >/dev/null
 )
 
@@ -86,12 +88,13 @@ if (!npmCheck.includes("Extractor package smoke passed")) {
 }
 NODE
 
-mkdir -p "$EXTRACTOR_SOURCE_DIR/prisma/migrations/20260513000000_init" "$EXTRACTOR_SOURCE_DIR/src"
+mkdir -p "$EXTRACTOR_SOURCE_DIR/prisma/migrations/20260513000000_init" "$EXTRACTOR_SOURCE_DIR/drizzle" "$EXTRACTOR_SOURCE_DIR/src/db" "$EXTRACTOR_SOURCE_DIR/src"
 cat > "$EXTRACTOR_SOURCE_DIR/package.json" <<'JSON'
 {
   "name": "topogram-public-extractor-smoke-source",
   "private": true,
   "dependencies": {
+    "drizzle-orm": "^0.36.0",
     "express": "^4.18.0",
     "prisma": "^5.0.0"
   }
@@ -126,6 +129,37 @@ CREATE TABLE "PackageTask" (
 
 CREATE INDEX "PackageTask_status_idx" ON "PackageTask" ("status");
 SQL
+cat > "$EXTRACTOR_SOURCE_DIR/drizzle.config.ts" <<'TS'
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  schema: "./src/db/schema.ts",
+  out: "./drizzle",
+  dialect: "postgresql"
+});
+TS
+cat > "$EXTRACTOR_SOURCE_DIR/src/db/schema.ts" <<'TS'
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+export const packageLabels = pgTable("package_labels", {
+  id: uuid("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull(),
+  createdAt: timestamp("created_at").notNull()
+}, (table) => ({
+  nameIdx: index("package_labels_name_idx").on(table.name)
+}));
+TS
+cat > "$EXTRACTOR_SOURCE_DIR/drizzle/0000_package_labels.sql" <<'SQL'
+CREATE TABLE "package_labels" (
+  "id" uuid PRIMARY KEY,
+  "name" text NOT NULL UNIQUE,
+  "color" text NOT NULL,
+  "created_at" timestamp NOT NULL
+);
+
+CREATE INDEX "package_labels_name_idx" ON "package_labels" ("name");
+SQL
 cat > "$EXTRACTOR_SOURCE_DIR/src/server.js" <<'JS'
 const express = require("express");
 
@@ -155,6 +189,7 @@ echo "Extracting a source app with public extractor packages..."
     --out "$EXTRACTOR_TARGET_DIR" \
     --from db,api \
     --extractor @topogram/extractor-prisma-db \
+    --extractor @topogram/extractor-drizzle-db \
     --extractor @topogram/extractor-express-api \
     --json > "$WORK_ROOT/public-extractor-smoke.json"
   "$TOPOGRAM_BIN" extract plan "$EXTRACTOR_TARGET_DIR" --json > "$WORK_ROOT/public-extractor-plan.json"
@@ -172,8 +207,8 @@ if (!extractPayload.ok) {
 }
 const counts = extractPayload.candidateCounts || {};
 for (const [key, minimum] of Object.entries({
-  dbEntities: 1,
-  dbMaintainedSeams: 1,
+  dbEntities: 2,
+  dbMaintainedSeams: 2,
   apiCapabilities: 1,
   apiRoutes: 1
 })) {
@@ -185,7 +220,7 @@ for (const [key, minimum] of Object.entries({
 const provenancePath = path.join(targetRoot, ".topogram-extract.json");
 const provenance = JSON.parse(fs.readFileSync(provenancePath, "utf8"));
 const packageNames = (provenance.extract?.extractorPackages || []).map((entry) => entry.packageName).sort();
-for (const packageName of ["@topogram/extractor-express-api", "@topogram/extractor-prisma-db"]) {
+for (const packageName of ["@topogram/extractor-drizzle-db", "@topogram/extractor-express-api", "@topogram/extractor-prisma-db"]) {
   if (!packageNames.includes(packageName)) {
     throw new Error(`Expected extraction provenance to include ${packageName}.`);
   }
@@ -195,8 +230,14 @@ const dbCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "c
 if (!dbCandidates.entities?.some((entry) => entry.id_hint === "entity_package_task")) {
   throw new Error("Expected Prisma package extractor to emit PackageTask entity candidate.");
 }
+if (!dbCandidates.entities?.some((entry) => entry.id_hint === "entity_package_labels")) {
+  throw new Error("Expected Drizzle package extractor to emit package_labels entity candidate.");
+}
 if (!dbCandidates.maintained_seams?.some((entry) => entry.tool === "prisma")) {
   throw new Error("Expected Prisma package extractor to emit a maintained DB seam candidate.");
+}
+if (!dbCandidates.maintained_seams?.some((entry) => entry.tool === "drizzle")) {
+  throw new Error("Expected Drizzle package extractor to emit a maintained DB seam candidate.");
 }
 
 const apiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "api", "candidates.json"), "utf8"));
@@ -215,11 +256,17 @@ if (!planBundles.includes("database")) {
 if (!planBundles.includes("package-task")) {
   throw new Error("Expected extract plan to include a package task API/model review bundle.");
 }
+if (!planBundles.includes("package-labels")) {
+  throw new Error("Expected extract plan to include a package labels model review bundle.");
+}
 
 const adoptPayload = JSON.parse(fs.readFileSync(path.join(workRoot, "public-extractor-adopt-list.json"), "utf8"));
 const adoptSelectors = (adoptPayload.selectors || []).map((item) => item.selector);
 if (!adoptSelectors.includes("bundle:database") || !adoptSelectors.includes("bundle:package-task")) {
   throw new Error("Expected adopt --list to expose package-backed extraction review selectors.");
+}
+if (!adoptSelectors.includes("bundle:package-labels")) {
+  throw new Error("Expected adopt --list to expose the Drizzle package labels review selector.");
 }
 NODE
 

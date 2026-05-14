@@ -2427,5 +2427,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_add_drizzle_to_public_extractor_smoke": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T03:21:17.498Z",
+      "by": "actor_coding_agent",
+      "note": "Adding Drizzle coverage to the public extractor smoke."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T03:21:22.432Z",
+      "by": "actor_coding_agent",
+      "note": "Updating smoke script and validation assertions."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T03:23:06.370Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
