@@ -1,0 +1,14 @@
+task task_refresh_extractor_docs_after_public_packages {
+  name "Refresh Extractor Docs After Public Packages"
+  description "Refresh extractor UX documentation after the public first-party extractor packages and React Router 0.1.1 package fix are published."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_workflow_docs_are_agent_actionable]
+  verification_refs [verification_docs_current_workflow_review verification_import_fixtures]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

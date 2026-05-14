@@ -108,6 +108,22 @@ routes and surface hints.
 
 ## Brownfield extract/adopt
 
+Before running a package-backed extractor, identify and check the package:
+
+```bash
+topogram extractor list
+topogram extractor show @topogram/extractor-react-router
+npm install -D @topogram/extractor-react-router
+topogram extractor policy init
+topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extractor check @topogram/extractor-react-router
+```
+
+The policy pin uses the extractor manifest version, not the npm package
+version. `topogram extractor check` proves the package boundary can load and run
+a minimal smoke extraction; it does not prove that the package understood the
+target app. That proof comes from extract/adopt review packets.
+
 When `.topogram-extract.json` exists:
 
 ```bash
@@ -132,6 +148,9 @@ package-backed extractors ran, how many candidates they produced, where the
 trusted extraction record lives, and which review/adoption commands are safe to
 run next. Treat extractor output as evidence until `topogram adopt ... --write`
 promotes reviewed candidates.
+
+Use query packets before raw `topo/candidates/**` files unless you need the
+evidence details for a specific candidate.
 
 ## Command-owned state
 

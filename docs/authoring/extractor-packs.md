@@ -7,7 +7,12 @@ diagnostics, and provenance. Topogram core owns persistence, reconcile,
 adoption, and canonical `topo/**` writes.
 
 Use an extractor pack when bundled extraction is too generic for a framework,
-language, CLI, database, or UI evidence family. First-party examples include:
+language, CLI, database, or UI evidence family. Do not use an extractor pack as
+a content template, generator, or adoption plugin. Templates copy starting
+Topogram source; generators create runtime/app files from contracts; extractors
+read brownfield source and emit review candidates only.
+
+First-party examples include:
 
 - `@topogram/extractor-node-cli` for CLI surfaces;
 - `@topogram/extractor-react-router` for React Router UI surfaces;
@@ -101,6 +106,17 @@ classification, and configured tracks as evidence inputs. Keep any framework
 parsing local to the package and return plain candidate data for Topogram core
 to normalize.
 
+Extractor candidate buckets are track-specific:
+
+| Track | Common buckets |
+| --- | --- |
+| `db` | `entities`, `enums`, `relations`, `indexes`, `maintained_seams` |
+| `api` | `capabilities`, `routes`, `stacks` |
+| `ui` | `screens`, `routes`, `actions`, `flows`, `widgets`, `shapes`, `stacks` |
+| `cli` | `commands`, `capabilities`, `surfaces` |
+| `workflows` | `workflows`, `workflow_states`, `workflow_transitions` |
+| `verification` | `verifications`, `scenarios`, `frameworks`, `scripts` |
+
 Extractor output is validated before Topogram persists extraction artifacts.
 `findings` and `diagnostics` must be arrays when present, and `candidates` must
 be an object of track-owned array buckets. Candidate records must have a stable
@@ -122,7 +138,7 @@ Those are core responsibilities handled only after explicit `topogram adopt`.
 Core normalizes candidates and writes extraction artifacts. Adoption happens only
 through `topogram adopt`.
 
-## Policy
+## Policy And Execution
 
 Bundled `topogram/*` extractors and first-party `@topogram/extractor-*`
 packages are allowed by default. Other packages require an explicit
@@ -139,12 +155,34 @@ topogram extractor policy check
 ```
 
 No dynamic installation is performed. A package-backed extractor must already be
-installed, or you must pass a local package path.
+installed, or you must pass a local package path. Policy pins use the extractor
+manifest version, not the npm package version. For example,
+`@topogram/extractor-react-router@1` pins manifest version `1`; npm may install
+package version `0.1.1` or later.
 
 Use `topogram extractor list` to see bundled packs and first-party package
 recommendations grouped by track. Use `topogram extractor show <package>` before
 installing when you need the package purpose, install command, policy pin
 command, and a concrete extract command.
+
+Consumer loop:
+
+```bash
+npm install -D @topogram/extractor-react-router
+topogram extractor policy init
+topogram extractor policy pin @topogram/extractor-react-router@1
+topogram extractor check @topogram/extractor-react-router
+topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router
+topogram query extract-plan ./imported-topogram/topo --json
+topogram adopt --list ./imported-topogram --json
+topogram adopt <selector> ./imported-topogram --dry-run
+```
+
+`topogram extractor check` proves the package manifest, export shape, adapter
+load, and minimal smoke extraction. It does not prove domain correctness for a
+real app. A useful package test must run extraction against a representative
+fixture, inspect candidate counts and provenance, run `extract plan`, and dry-run
+adoption.
 
 ## Author Checks
 
@@ -204,6 +242,17 @@ Recommended workflows for public first-party-style packages:
 ```
 
 ## First-Party Examples
+
+Current public first-party extractor package versions at the `@topogram/cli`
+`0.3.85` release line:
+
+| Package | Version | Track |
+| --- | --- | --- |
+| `@topogram/extractor-node-cli` | `0.1.0` | `cli` |
+| `@topogram/extractor-react-router` | `0.1.1` | `ui` |
+| `@topogram/extractor-prisma-db` | `0.1.0` | `db` |
+| `@topogram/extractor-express-api` | `0.1.0` | `api` |
+| `@topogram/extractor-drizzle-db` | `0.1.0` | `db` |
 
 ```bash
 topogram extract ./existing-cli --out ./extracted-cli --from cli --extractor @topogram/extractor-node-cli

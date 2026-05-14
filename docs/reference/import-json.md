@@ -18,6 +18,13 @@ Important fields:
   package-backed extractor provenance, candidate counts, safety notes, and next
   review commands.
 
+Package-backed extractor provenance is recorded in the extraction receipt and
+then summarized through `extraction_context`. Use it to answer which package ran,
+which extractor IDs produced evidence, and whether package-backed execution was
+part of the review. Provenance does not mean adoption happened; candidates stay
+review-only until an explicit `topogram adopt ... --write` command records a
+receipt.
+
 Current command payloads:
 
 - `topogram extract <source> --out <target> --json`

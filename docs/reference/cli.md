@@ -69,8 +69,11 @@ topogram extract ./drizzle-app --out ./imported-topogram --from db --extractor @
 topogram extractor list
 topogram extractor show @topogram/extractor-prisma-db
 topogram extractor show topogram/ui-extractors
+topogram extractor check @topogram/extractor-prisma-db
 topogram extractor check ./extractor-package
 topogram extractor scaffold ./extractor-package --track cli --package @scope/extractor-package
+topogram extractor policy init
+topogram extractor policy pin @topogram/extractor-prisma-db@1
 topogram extractor policy check
 topogram extract check ./imported-topogram
 topogram extract plan ./imported-topogram

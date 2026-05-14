@@ -2519,5 +2519,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_refresh_extractor_docs_after_public_packages": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T14:37:03.645Z",
+      "by": "actor_coding_agent",
+      "note": "Start extractor docs refresh after public packages are available."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T14:37:15.166Z",
+      "by": "actor_coding_agent",
+      "note": "Updating extractor docs and package workflow guidance."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T14:40:30.213Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
