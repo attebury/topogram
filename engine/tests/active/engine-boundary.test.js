@@ -1741,3 +1741,22 @@ test("validator expressions module owns expression validation", () => {
   assert.match(contents, /function validateInvariantEntry/);
   assert.doesNotMatch(contents, /Expression validation remains orchestrated from index\.js/);
 });
+
+test("CLI repo-root detection uses fileURLToPath instead of URL pathname decoding", () => {
+  const offenders = [];
+
+  for (const file of visitFiles(path.join(repoRoot, "engine", "src")).filter((item) => item.endsWith(".js"))) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    if (
+      /decodeURIComponent\s*\(\s*new URL\([^)]*import\.meta\.url/.test(contents) ||
+      /new URL\([^)]*import\.meta\.url\)[^\n]*\.pathname/.test(contents) ||
+      /new URL\(import\.meta\.url\)[^\n]*\.pathname/.test(contents)
+    ) {
+      offenders.push(relative);
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+  assert.match(fs.readFileSync(path.join(repoRoot, "engine", "src", "cli", "output-safety.js"), "utf8"), /fileURLToPath/);
+});

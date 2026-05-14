@@ -129,8 +129,9 @@ if (stamp) {
 function renderBuildScript() {
   return `import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = path.resolve(new URL("..", import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const dist = path.join(root, "dist");
 fs.rmSync(dist, { recursive: true, force: true });
 fs.mkdirSync(dist, { recursive: true });
@@ -146,8 +147,9 @@ console.log("Built vanilla web app to dist/.");
 function renderCheckScript() {
   return `import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = path.resolve(new URL("..", import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const htmlFiles = fs.readdirSync(root).filter((entry) => entry.endsWith(".html"));
 if (htmlFiles.length < 1) {
   throw new Error("Expected at least one HTML page.");
@@ -227,8 +229,9 @@ function renderDevScript() {
   return `import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = path.resolve(new URL("..", import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const port = Number(process.env.PORT || process.env.WEB_PORT || 5173);
 const types = new Map([
   [".html", "text/html; charset=utf-8"],

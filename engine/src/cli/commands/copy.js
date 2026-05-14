@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   catalogEntryPackageSpec,
@@ -23,7 +24,7 @@ import {
 import { shellCommandArg } from "./catalog/shared.js";
 import { stableStringify } from "../../format.js";
 
-const ENGINE_ROOT = path.resolve(decodeURIComponent(new URL("../../../", import.meta.url).pathname));
+const ENGINE_ROOT = path.resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
 
 /**

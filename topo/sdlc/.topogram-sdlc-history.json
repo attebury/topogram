@@ -2930,5 +2930,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_fix_cli_output_repo_root_resolution": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T21:49:53.718Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming portable CLI repo-root detection fix."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T21:50:00.095Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing portable repo-root detection and tests."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T21:59:06.143Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

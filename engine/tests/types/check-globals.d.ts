@@ -27,5 +27,10 @@ declare module "node:module" {
   export function createRequire(filename: string): any;
 }
 
+declare module "node:url" {
+  export function fileURLToPath(url: string | URL): string;
+  export function pathToFileURL(path: string): URL;
+}
+
 declare const process: any;
 declare const Buffer: any;

@@ -3,13 +3,27 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { outputOwnershipForPath } from "../project-config.js";
 import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
 
 export const GENERATED_OUTPUT_SENTINEL = ".topogram-generated.json";
 
-const REPO_ROOT = path.resolve(decodeURIComponent(new URL("../../../", import.meta.url).pathname));
+/**
+ * Resolve the repository root from a CLI module URL without using URL
+ * pathname decoding. `fileURLToPath` preserves platform semantics for
+ * encoded paths and Windows drive roots, which output replacement guards
+ * depend on before deleting or writing generated files.
+ *
+ * @param {string|URL} moduleUrl
+ * @returns {string}
+ */
+export function repoRootFromCliModuleUrl(moduleUrl) {
+  return path.resolve(fileURLToPath(new URL("../../../", moduleUrl)));
+}
+
+const REPO_ROOT = repoRootFromCliModuleUrl(import.meta.url);
 
 /**
  * @param {string} parent

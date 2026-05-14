@@ -3,6 +3,7 @@
 import childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   latestWorkflowRun,
@@ -15,7 +16,7 @@ import {
   releaseConsumerWorkflowName
 } from "../../topogram-config.js";
 
-const REPO_ROOT = decodeURIComponent(new URL("../../../../", import.meta.url).pathname);
+const REPO_ROOT = path.resolve(fileURLToPath(new URL("../../../../", import.meta.url)));
 
 /**
  * @typedef {Record<string, any>} AnyRecord

@@ -10,6 +10,7 @@ import { generateWorkspace } from "../../src/generator.js";
 import { parsePath } from "../../src/parser.js";
 import { loadImplementationProvider } from "../../src/example-implementation.js";
 import { writeTemplateTrustRecord } from "../../src/template-trust/record.js";
+import { repoRootFromCliModuleUrl } from "../../src/cli/output-safety.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const engineRoot = path.join(repoRoot, "engine");
@@ -88,6 +89,14 @@ test("generate app normalizes a demo root and writes a sentinel", () => {
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(fs.existsSync(path.join(outDir, ".topogram-generated.json")), true);
+});
+
+test("CLI repo root resolution handles encoded module file URLs", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram root #"));
+  const fakeCliModule = path.join(root, "engine", "src", "cli", "output-safety.js");
+  const moduleUrl = pathToFileURL(fakeCliModule).href;
+
+  assert.equal(repoRootFromCliModuleUrl(moduleUrl), path.resolve(root));
 });
 
 test("app generation requires an explicit implementation provider", () => {

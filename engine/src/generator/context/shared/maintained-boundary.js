@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { resolveWorkspaceContext } from "../../../workspace-paths.js";
 
 import { parseDocFile } from "../../../workspace-docs.js";
@@ -10,7 +11,7 @@ import {
 import { seamIdHint, stableSortedStrings, titleCaseWords } from "./primitives.js";
 import { buildMaintainedWriteScope, recommendedVerificationTargets } from "./metrics.js";
 
-const bundledRepoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..", "..");
+const bundledRepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 /**
  * @param {import("./types.d.ts").ContextGraph} graph
