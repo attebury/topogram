@@ -1,0 +1,14 @@
+task task_close_out_extractor_package_readiness {
+  name "Close Out Extractor Package Readiness"
+  description "Trigger package-access verification for public extractor packages and update extractor author docs with the scaffold-first readiness checklist."
+  satisfies [req_first_party_extractor_packages_tracked req_extractor_selection_ux]
+  acceptance_refs [ac_first_party_extractor_packages_release_tracked ac_extractor_workflow_docs_are_agent_actionable]
+  verification_refs [verification_cli_package_smoke verification_docs_current_workflow_review]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_run_engine_gates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by actor_coding_agent
+  status done
+}

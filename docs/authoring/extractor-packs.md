@@ -141,6 +141,7 @@ command, and a concrete extract command.
 
 ```bash
 topogram extractor scaffold ./my-extractor-pack --track cli --package @scope/my-extractor-pack
+npm --prefix ./my-extractor-pack run check
 topogram extractor check ./my-extractor-pack
 topogram extract ./fixture-app --out /private/tmp/extracted --extractor ./my-extractor-pack
 topogram extract plan /private/tmp/extracted --json
@@ -160,6 +161,37 @@ review packet. At minimum, prove:
 - `topogram query extract-plan <tmp>/topo --json` includes extractor provenance;
 - `topogram adopt <selector> <tmp> --dry-run --json` previews canonical writes;
 - source fixture files are unchanged.
+
+## Publication Readiness Checklist
+
+Before publishing an extractor package, prove the package boundary from the
+outside. The package should be usable by a consumer without reading Topogram
+engine internals.
+
+- Scaffold or maintain the standard package shape:
+  `topogram-extractor.json`, `index.cjs`, `fixtures/`, `scripts/check-extractor.mjs`,
+  package exports, and `files`.
+- Run `npm run check` from the extractor package root.
+- Pack and install the extractor into a temporary consumer project.
+- Run `topogram extractor check <package-or-path>`.
+- Run `topogram extract <fixture> --out <tmp> --from <track> --extractor <package-or-path>`.
+- Inspect `topogram extract plan <tmp> --json`, `topogram adopt --list <tmp> --json`,
+  and `topogram query extract-plan <tmp>/topo --json`.
+- Assert expected candidates, candidate counts, extractor provenance, and safety
+  notes. Do not accept string-existence-only tests.
+- Assert source fixture files are unchanged after extraction.
+- Publish only after package CI runs the package smoke against the CLI version in
+  `topogram-cli.version`.
+- After publish, run the `Package Access` workflow to set public npm access and
+  verify `npm view <package> version --registry=https://registry.npmjs.org/`.
+
+Recommended workflows for public first-party-style packages:
+
+```text
+.github/workflows/extractor-verification.yml
+.github/workflows/publish-package.yml
+.github/workflows/package-access.yml
+```
 
 ## First-Party Examples
 

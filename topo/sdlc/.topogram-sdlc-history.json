@@ -2450,5 +2450,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_close_out_extractor_package_readiness": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T04:36:39.364Z",
+      "by": "actor_coding_agent",
+      "note": "Starting extractor package-access and author docs closeout."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T04:36:43.396Z",
+      "by": "actor_coding_agent",
+      "note": "Triggering package-access workflows and updating extractor author docs."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T04:39:44.249Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

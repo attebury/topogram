@@ -12,8 +12,16 @@ journey journey_extractor_author_publishes_pack {
   tags [journey extractor package brownfield]
 
   step {
+    id scaffold_extractor_pack
+    intent "Create the standard package shape with the Topogram scaffold command."
+    commands ["topogram extractor scaffold ./topogram-extractor-node-cli --track cli --package @scope/topogram-extractor-node-cli" "cd ./topogram-extractor-node-cli" "npm install" "npm run check"]
+    expects ["The package has a manifest, adapter export, fixture, check script, and README."]
+  }
+
+  step {
     id scope_extractor_pack
-    intent "Scope the extractor pack to a framework, language, platform, or evidence family."
+    intent "Replace scaffold starter logic with precise framework, language, platform, or evidence-family discovery."
+    after [scaffold_extractor_pack]
     expects ["The package has a clear evidence domain and precision target."]
   }
 
@@ -36,5 +44,13 @@ journey journey_extractor_author_publishes_pack {
     intent "Let Topogram core persist candidates and manage adoption."
     after [run_extractor]
     expects ["Candidate files, reports, import history, reconcile, and adoption stay engine-owned."]
+  }
+
+  step {
+    id publish_and_verify_access
+    intent "Publish the package and verify public npm access."
+    after [reconcile_with_core]
+    commands ["npm publish --provenance --access public" "gh workflow run package-access.yml"]
+    expects ["The package resolves from npmjs and Package Access passes after publish."]
   }
 }
