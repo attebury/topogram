@@ -7,6 +7,7 @@ import test from "node:test";
 
 import { runImportAppWorkflow } from "../../src/import/index.js";
 import { classifyImportSourcePath, findPrimaryImportFiles } from "../../src/import/core/shared.js";
+import { buildCanonicalAdoptionOutputs } from "../../src/workflows/reconcile/adoption-plan.js";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "import");
@@ -55,6 +56,49 @@ test("import source classification preserves runtime template paths", () => {
     .map((filePath) => path.relative(root, filePath).replaceAll(path.sep, "/"))
     .sort();
   assert.deepEqual(primaryFiles, runtimePaths.sort());
+});
+
+test("reconcile adoption outputs reject topo path traversal from plan payloads", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-adoption-containment."));
+  const topogramRoot = path.join(root, "topo");
+  fs.mkdirSync(path.join(topogramRoot, "candidates"), { recursive: true });
+  fs.writeFileSync(path.join(root, "outside-source.tg"), "actor actor_outside {}\n", "utf8");
+
+  const paths = { topogramRoot };
+  assert.throws(
+    () => buildCanonicalAdoptionOutputs(
+      paths,
+      {},
+      [{
+        bundle: "poisoned",
+        kind: "actor",
+        item: "actor_escape",
+        canonical_rel_path: "../outside-target.tg",
+        source_path: "candidates/actor_escape.tg"
+      }],
+      ["poisoned:actor:actor_escape"],
+      {}
+    ),
+    /canonical_rel_path escapes the topo workspace/
+  );
+  assert.equal(fs.existsSync(path.join(root, "outside-target.tg")), false);
+
+  assert.throws(
+    () => buildCanonicalAdoptionOutputs(
+      paths,
+      {},
+      [{
+        bundle: "poisoned",
+        kind: "actor",
+        item: "actor_escape",
+        canonical_rel_path: "actors/actor-escape.tg",
+        source_path: "../outside-source.tg"
+      }],
+      ["poisoned:actor:actor_escape"],
+      {}
+    ),
+    /source_path escapes the topo workspace/
+  );
 });
 
 test("Prisma plus OpenAPI import fixture extracts DB and API candidates", () => {

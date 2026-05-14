@@ -12,15 +12,15 @@
 //   - pitch: draft
 //   - document: draft
 
-import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import {
-  archiveDir,
   listArchiveFiles,
   parseArchiveFile,
   rewriteArchiveFile
 } from "./jsonl.js";
-import { resolveTopoRoot } from "../workspace-paths.js";
+import { isArchivableKind } from "./schema.js";
+import { sdlcRootForSdlc } from "../sdlc/paths.js";
 
 const REOPEN_STATUSES = {
   bug: "open",
@@ -29,6 +29,50 @@ const REOPEN_STATUSES = {
   pitch: "draft",
   document: "draft"
 };
+
+const SAFE_ARCHIVE_ID = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+function recordDirForKind(kind) {
+  if (kind === "acceptance_criterion") return "acceptance_criteria";
+  return `${kind}s`;
+}
+
+function isContainedPath(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function validateArchivedEntry(entry) {
+  if (!entry || typeof entry !== "object") {
+    return "Archived entry is not an object";
+  }
+  if (!isArchivableKind(entry.kind)) {
+    return `Archived entry kind '${entry.kind}' is not supported for unarchive`;
+  }
+  if (typeof entry.id !== "string" || !SAFE_ARCHIVE_ID.test(entry.id)) {
+    return `Archived entry id '${entry.id}' is not a safe Topogram identifier`;
+  }
+  return null;
+}
+
+function resolveTargetFile(workspaceRoot, entry, options = {}) {
+  const recordRoot = path.resolve(sdlcRootForSdlc(workspaceRoot), recordDirForKind(entry.kind));
+  const targetDir = path.resolve(options.targetDir || recordRoot);
+  if (!isContainedPath(recordRoot, targetDir)) {
+    return {
+      ok: false,
+      error: `Target directory '${targetDir}' escapes SDLC ${entry.kind} record root '${recordRoot}'`
+    };
+  }
+  const targetFile = path.resolve(targetDir, `${entry.id}.tg`);
+  if (!isContainedPath(recordRoot, targetFile)) {
+    return {
+      ok: false,
+      error: `Archived entry id '${entry.id}' resolves outside SDLC ${entry.kind} record root '${recordRoot}'`
+    };
+  }
+  return { ok: true, recordRoot, targetDir, targetFile };
+}
 
 function findEntry(workspaceRoot, id) {
   for (const file of listArchiveFiles(workspaceRoot)) {
@@ -109,10 +153,17 @@ export function unarchive(workspaceRoot, id, options = {}) {
   }
 
   const { file, entries, entry } = found;
+  const entryError = validateArchivedEntry(entry);
+  if (entryError) {
+    return { ok: false, error: entryError };
+  }
   const reopenStatus = options.status || REOPEN_STATUSES[entry.kind] || "draft";
-  const targetDir = options.targetDir || path.join(resolveTopoRoot(workspaceRoot), `${entry.kind}s`);
+  const target = resolveTargetFile(workspaceRoot, entry, options);
+  if (!target.ok) {
+    return target;
+  }
+  const { targetDir, targetFile } = target;
   if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
-  const targetFile = path.join(targetDir, `${entry.id}.tg`);
 
   if (existsSync(targetFile)) {
     return { ok: false, error: `Target file '${targetFile}' already exists; refuse to overwrite` };

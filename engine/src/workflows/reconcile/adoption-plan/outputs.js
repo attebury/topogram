@@ -12,6 +12,27 @@ import { readJsonIfExists, readTextIfExists } from "../../shared.js";
 import { canonicalRelativePathForItem } from "./paths.js";
 import { applyProjectionAuthPatchToTopogram } from "./projection-patches.js";
 
+/** @param {string} rootDir @param {string} relativePath @param {string} fieldName @returns {{ absolutePath: string, relativePath: string }} */
+function resolveContainedTopoPath(rootDir, relativePath, fieldName) {
+  const rawPath = String(relativePath || "").replaceAll("\\", "/");
+  if (!rawPath.trim()) {
+    throw new Error(`Adoption plan ${fieldName} must be a non-empty relative path.`);
+  }
+  if (rawPath.includes("\0") || path.isAbsolute(rawPath) || /^[A-Za-z]:\//.test(rawPath)) {
+    throw new Error(`Adoption plan ${fieldName} must be relative to the topo workspace: ${relativePath}`);
+  }
+  const absoluteRoot = path.resolve(rootDir);
+  const absolutePath = path.resolve(absoluteRoot, rawPath);
+  const relativeToRoot = path.relative(absoluteRoot, absolutePath);
+  if (!relativeToRoot || relativeToRoot.startsWith("..") || path.isAbsolute(relativeToRoot)) {
+    throw new Error(`Adoption plan ${fieldName} escapes the topo workspace: ${relativePath}`);
+  }
+  return {
+    absolutePath,
+    relativePath: relativeToRoot.replaceAll(path.sep, "/")
+  };
+}
+
 /** @param {WorkspacePaths} paths @returns {any} */
 export function readAdoptionPlan(paths) {
   return readJsonIfExists(path.join(paths.topogramRoot, "candidates", "reconcile", "adoption-plan.json"));
@@ -55,11 +76,15 @@ export function buildCanonicalAdoptionOutputs(paths, candidateFiles, planItems, 
     if (item.suggested_action === "skip_duplicate_shape") {
       continue;
     }
-    const relativeCanonicalPath = item.canonical_rel_path || canonicalRelativePathForItem(item.kind, item.item);
-    if (!relativeCanonicalPath) {
+    const rawRelativeCanonicalPath = item.canonical_rel_path || canonicalRelativePathForItem(item.kind, item.item);
+    if (!rawRelativeCanonicalPath) {
       continue;
     }
-    const canonicalPath = path.join(paths.topogramRoot, relativeCanonicalPath);
+    const { absolutePath: canonicalPath, relativePath: relativeCanonicalPath } = resolveContainedTopoPath(
+      paths.topogramRoot,
+      rawRelativeCanonicalPath,
+      "canonical_rel_path"
+    );
     if (item.suggested_action === "apply_doc_link_patch") {
       const baseContents = files[relativeCanonicalPath] || (fs.existsSync(canonicalPath) ? fs.readFileSync(canonicalPath, "utf8") : null);
       if (!baseContents) {
@@ -113,7 +138,9 @@ export function buildCanonicalAdoptionOutputs(paths, candidateFiles, planItems, 
     }
     const candidateContents =
       candidateFiles[item.source_path] ||
-      (item.source_path ? readTextIfExists(path.join(paths.topogramRoot, item.source_path)) : null);
+      (item.source_path
+        ? readTextIfExists(resolveContainedTopoPath(paths.topogramRoot, item.source_path, "source_path").absolutePath)
+        : null);
     if (!candidateContents) {
       continue;
     }

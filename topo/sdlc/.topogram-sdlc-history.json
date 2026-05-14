@@ -2615,5 +2615,97 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_fix_sdlc_unarchive_path_containment": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T17:27:52.937Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming critical SDLC unarchive path containment fix."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T17:28:03.967Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing contained restore path checks for archived SDLC entries."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T17:32:48.841Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_sdlc_unarchive_path_traversal_entry_id": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-14T17:32:24.360Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing path containment for SDLC archive restore."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-14T17:32:40.424Z",
+      "by": "actor_coding_agent",
+      "note": "Path containment fix and traversal regression tests are in place."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-14T17:32:53.856Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by focused SDLC archive tests and enforcement gate."
+    }
+  ],
+  "bug_reconcile_adoption_path_traversal": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-14T17:34:56.350Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing contained adoption-plan read/write paths."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-14T17:35:52.844Z",
+      "by": "actor_coding_agent",
+      "note": "Adoption-plan canonical and source paths are resolved through topo containment checks."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-14T17:36:00.842Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by import fixture regression for poisoned adoption-plan paths."
+    }
+  ],
+  "task_fix_adoption_reconcile_path_containment": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T17:35:08.946Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming critical adoption/reconcile path containment fix."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T17:35:14.834Z",
+      "by": "actor_coding_agent",
+      "note": "Adding topo containment checks around adoption-plan paths."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T17:35:52.860Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

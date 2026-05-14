@@ -7,5 +7,7 @@ bug bug_sdlc_unarchive_path_traversal_entry_id {
   domain dom_sdlc_query_agent_context
   priority critical
   severity critical
-  status open
+  fixed_in [task_fix_sdlc_unarchive_path_containment]
+  fixed_in_verification [verification_sdlc_enforcement]
+  status verified
 }

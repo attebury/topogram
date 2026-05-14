@@ -29,6 +29,7 @@ import { scaffoldNew } from "../../src/sdlc/scaffold.js";
 import { auditWorkspace } from "../../src/sdlc/audit.js";
 import { sdlcAdopt } from "../../src/sdlc/adopt.js";
 import { archiveStatement, archiveEligibleStatements } from "../../src/archive/archive.js";
+import { unarchive } from "../../src/archive/unarchive.js";
 import { loadArchive } from "../../src/archive/resolver-bridge.js";
 import { generateSdlcBoard } from "../../src/generator/sdlc/board.js";
 import { generateSdlcReleaseNotes } from "../../src/generator/sdlc/release-notes.js";
@@ -758,6 +759,55 @@ test("archiveStatement accepts an explicit topogram root without nested archive"
     assert.equal(result.ok, true, JSON.stringify(result, null, 2));
     assert.match(result.archiveFile, /topo\/sdlc\/_archive\/bugs-\d{4}\.jsonl$/);
     assert.equal(fs.existsSync(path.join(topogramRoot, "topo")), false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("unarchive restores archived bugs under the SDLC record root", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const archiveResult = archiveStatement(tempRoot, "bug_audit_drops_silently", { by: "test" });
+    assert.equal(archiveResult.ok, true, JSON.stringify(archiveResult, null, 2));
+
+    const result = unarchive(tempRoot, "bug_audit_drops_silently", {});
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.equal(
+      result.targetFile,
+      path.join(tempRoot, "topo", "sdlc", "bugs", "bug_audit_drops_silently.tg")
+    );
+    assert.equal(fs.existsSync(result.targetFile), true);
+    assert.equal(fs.existsSync(path.join(tempRoot, "topo", "bugs", "bug_audit_drops_silently.tg")), false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("unarchive rejects archived entry ids that would escape SDLC record roots", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const archiveRoot = path.join(tempRoot, "topo", "sdlc", "_archive");
+    fs.mkdirSync(archiveRoot, { recursive: true });
+    fs.writeFileSync(
+      path.join(archiveRoot, "bugs-2027.jsonl"),
+      `${JSON.stringify({
+        id: "bug_../../escape",
+        kind: "bug",
+        name: "Traversal",
+        description: "Malicious archived id",
+        status: "verified",
+        fields: {},
+        transitions: [],
+        archived: { at: "2027-01-01T00:00:00.000Z", by: "test" }
+      })}\n`,
+      "utf8"
+    );
+
+    const result = unarchive(tempRoot, "bug_../../escape", {});
+    assert.equal(result.ok, false);
+    assert.match(result.error, /not a safe Topogram identifier/);
+    assert.equal(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "escape.tg")), false);
+    assert.equal(fs.existsSync(path.join(tempRoot, "topo", "sdlc", "bugs", "bug_..", "..", "escape.tg")), false);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

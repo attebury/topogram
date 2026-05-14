@@ -7,5 +7,7 @@ bug bug_reconcile_adoption_path_traversal {
   domain dom_import_adoption
   priority critical
   severity critical
-  status open
+  fixed_in [task_fix_adoption_reconcile_path_containment]
+  fixed_in_verification [verification_import_fixtures]
+  status verified
 }

@@ -9,5 +9,6 @@ task task_fix_adoption_reconcile_path_containment {
   disposition active
   priority critical
   work_type bugfix
-  status unclaimed
+  claimed_by actor_coding_agent
+  status done
 }
