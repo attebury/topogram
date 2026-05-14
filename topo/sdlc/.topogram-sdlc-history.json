@@ -2583,5 +2583,30 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_cli_0_3_86_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-14T16:03:50.379Z",
+      "by": "actor_coding_agent",
+      "note": "Release acceptance is defined for the extractor UX patch."
+    }
+  ],
+  "task_release_cli_0_3_86": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T16:04:04.500Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming the release slice."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T16:04:08.304Z",
+      "by": "actor_coding_agent",
+      "note": "Preparing the 0.3.86 CLI release."
+    }
   ]
 }

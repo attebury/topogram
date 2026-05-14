@@ -1,0 +1,14 @@
+task task_release_cli_0_3_86 {
+  name "Release Cli 0 3 86"
+  description "Prepare, publish, smoke-test, roll first-party consumers, and refresh release evidence for @topogram/cli 0.3.86 after package-backed extractor review UX polish."
+  satisfies [req_extractor_selection_ux req_package_backed_extractor_architecture req_first_party_extractor_packages_tracked]
+  acceptance_refs [ac_cli_0_3_86_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
+  affects [cap_manage_extractors cap_verify_release_status cap_roll_consumer_packages cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  priority high
+  work_type implementation
+  claimed_by actor_coding_agent
+  status in-progress
+}
