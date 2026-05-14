@@ -30,6 +30,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Keep large rewrites behind pins. Add focused behavioral tests before splitting `cli.js`, `workflows.js`, or shared helpers.
 - Never bypass npm, GitHub, or filesystem safety for convenience. Unsafe package specs, implicit local `.npmrc`, token leakage, symlinks, and unescaped generated HTML are bugs.
 - Treat filesystem JSON snapshots as untrusted input. `topogram emit --from-snapshot` must reject unsafe keys and malformed DB snapshot shapes before migration planning or SQL generation.
+- Remote catalog and GitHub payloads are bounded. Keep `TOPOGRAM_REMOTE_FETCH_MAX_BYTES`, `TOPOGRAM_CATALOG_FETCH_MAX_BYTES`, and `TOPOGRAM_GITHUB_FETCH_MAX_BYTES` fail-fast and covered by tests.
 
 ## Safe Edit Boundaries
 

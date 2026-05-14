@@ -5,21 +5,65 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { readGithubCatalogSourceText } from "../github-client.js";
+import { remotePayloadMaxBytes } from "../remote-payload-limits.js";
 import { defaultCatalogSource } from "../topogram-config.js";
 import { GITHUB_TOKEN_HOSTS } from "./constants.js";
 import { validateCatalog } from "./validation.js";
 
 const FETCH_URL_SCRIPT = `
 const source = process.argv[1];
+const maxBytes = Number.parseInt(process.env.TOPOGRAM_FETCH_MAX_BYTES || "", 10) || 5242880;
 const token = process.env.TOPOGRAM_FETCH_TOKEN || "";
 const tokenHosts = new Set(["github.com", "api.github.com", "raw.githubusercontent.com"]);
 function tokenAllowed(url) {
   const hostname = new URL(url).hostname.toLowerCase();
   return tokenHosts.has(hostname) || hostname.endsWith(".github.com");
 }
+async function readResponseText(response, url) {
+  const declaredLength = Number.parseInt(response.headers.get("content-length") || "", 10);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error("Response from " + url + " exceeded " + maxBytes + " byte limit.");
+  }
+  if (!response.body) {
+    const text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > maxBytes) {
+      throw new Error("Response from " + url + " exceeded " + maxBytes + " byte limit.");
+    }
+    return text;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      break;
+    }
+    total += value.byteLength;
+    if (total > maxBytes) {
+      try {
+        await reader.cancel();
+      } catch {}
+      throw new Error("Response from " + url + " exceeded " + maxBytes + " byte limit.");
+    }
+    chunks.push(decoder.decode(value, { stream: true }));
+  }
+  chunks.push(decoder.decode());
+  return chunks.join("");
+}
 async function readUrl(url, redirects = 0) {
   if (redirects > 5) {
     throw new Error("Too many redirects.");
+  }
+  if (process.env.TOPOGRAM_CATALOG_URL_FIXTURE_PATH) {
+    const fs = await import("node:fs");
+    const fixturePath = process.env.TOPOGRAM_CATALOG_URL_FIXTURE_PATH;
+    const fixtureSize = fs.statSync(fixturePath).size;
+    if (fixtureSize > maxBytes) {
+      throw new Error("Response from " + url + " exceeded " + maxBytes + " byte limit.");
+    }
+    return fs.readFileSync(fixturePath, "utf8");
   }
   const headers = {};
   if (token && tokenAllowed(url)) {
@@ -30,7 +74,7 @@ async function readUrl(url, redirects = 0) {
     const next = new URL(response.headers.get("location"), url).toString();
     return readUrl(next, redirects + 1);
   }
-  const text = await response.text();
+  const text = await readResponseText(response, url);
   if (!response.ok) {
     const preview = text.trim().slice(0, 400);
     throw new Error(String(response.status) + " " + response.statusText + (preview ? "\\n" + preview : ""));
@@ -118,14 +162,21 @@ function readCatalogText(source) {
  */
 function readUrlText(source) {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+  const maxBytes = remotePayloadMaxBytes(
+    ["TOPOGRAM_CATALOG_FETCH_MAX_BYTES", "TOPOGRAM_REMOTE_FETCH_MAX_BYTES"],
+    undefined,
+    ["catalogFetchMaxBytes", "remoteFetchMaxBytes"]
+  );
   const tokenEnv = token && githubTokenAllowedForCatalogUrl(source)
     ? { TOPOGRAM_FETCH_TOKEN: token }
     : {};
   const result = childProcess.spawnSync(process.execPath, ["--input-type=module", "-e", FETCH_URL_SCRIPT, source], {
     encoding: "utf8",
+    maxBuffer: maxBytes + 4096,
     env: {
       ...process.env,
       ...tokenEnv,
+      TOPOGRAM_FETCH_MAX_BYTES: String(maxBytes),
       PATH: process.env.PATH || ""
     }
   });

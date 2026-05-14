@@ -1429,6 +1429,21 @@ test("topogram catalog check validates catalog schema", () => {
   assert.equal(optionalPayload.diagnostics.some((diagnostic) => diagnostic.code === "catalog_optional_stack_invalid"), true);
 });
 
+test("topogram catalog URL reads abort when payload exceeds configured limit", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-url-limit-"));
+  const fixturePath = path.join(root, "oversize-catalog.json");
+  fs.writeFileSync(fixturePath, `${JSON.stringify({ version: "0.1", entries: [] })}${" ".repeat(256)}\n`, "utf8");
+  const limited = runCli(["catalog", "check", "https://example.com/topograms.catalog.json", "--json"], {
+    env: {
+      TOPOGRAM_CATALOG_FETCH_MAX_BYTES: "64",
+      TOPOGRAM_CATALOG_URL_FIXTURE_PATH: fixturePath
+    }
+  });
+  assert.notEqual(limited.status, 0, limited.stdout);
+  assert.equal(limited.stdout, "");
+  assert.match(limited.stderr, /exceeded 64 byte limit/);
+});
+
 test("topogram catalog doctor reports catalog and package access", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-catalog-doctor-"));
   const fakeNpmBin = createFakeNpm(root);
@@ -2728,6 +2743,27 @@ test("GitHub token path uses REST for catalog and release checks without gh", ()
   assert.equal(apiRequests.some((request) => request.path === "repos/attebury/topogram-starters/actions/runs"), true);
   assert.deepEqual([...new Set(apiRequests.map((request) => request.tokenPresent))], [true]);
   assert.deepEqual([...new Set(apiRequests.map((request) => request.tokenWouldAttach))], [true]);
+});
+
+test("GitHub REST fixture reads abort when payload exceeds configured limit", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-github-rest-limit-"));
+  const fixtureRoot = path.join(root, "github-api-fixtures");
+  const catalogFixturePath = path.join(fixtureRoot, "repos", "attebury", "topograms", "contents", "topograms.catalog.json.json");
+  fs.mkdirSync(path.dirname(catalogFixturePath), { recursive: true });
+  fs.writeFileSync(catalogFixturePath, `${JSON.stringify({ content: Buffer.from("{}").toString("base64") })}${" ".repeat(256)}\n`, "utf8");
+
+  const limited = runCli(["catalog", "list", "--catalog", "github:attebury/topograms/topograms.catalog.json", "--json"], {
+    cwd: root,
+    env: {
+      GITHUB_TOKEN: "test-token",
+      TOPOGRAM_GITHUB_API_FIXTURE_ROOT: fixtureRoot,
+      TOPOGRAM_GITHUB_FETCH_MAX_BYTES: "64",
+      PATH: path.dirname(process.execPath)
+    }
+  });
+  assert.notEqual(limited.status, 0, limited.stdout);
+  assert.equal(limited.stdout, "");
+  assert.match(limited.stderr, /exceeded 64 byte limit/);
 });
 
 test("topogram release status strict accepts remote release tags without a local fetched tag", () => {

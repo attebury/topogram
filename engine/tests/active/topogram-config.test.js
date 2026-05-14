@@ -68,6 +68,9 @@ test("runtime config preserves current public defaults", () => {
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-prisma-db", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-express-api", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-drizzle-db", root), "Extractor Verification");
+  assert.equal(config.limits.remoteFetchMaxBytes, 5 * 1024 * 1024);
+  assert.equal(config.limits.catalogFetchMaxBytes, null);
+  assert.equal(config.limits.githubFetchMaxBytes, null);
   assert.deepEqual(releaseConsumerWorkflowJobs("topograms", root), [
     "Validate catalog",
     "Smoke native starter",
@@ -100,6 +103,11 @@ test("runtime config reads repo-local catalog and release overrides", () => {
       workflowJobs: {
         "example-generator": ["Check package", "Compile generated app"]
       }
+    },
+    limits: {
+      remoteFetchMaxBytes: 1024,
+      catalogFetchMaxBytes: 2048,
+      githubFetchMaxBytes: 4096
     }
   });
 
@@ -116,6 +124,9 @@ test("runtime config reads repo-local catalog and release overrides", () => {
   assert.deepEqual(releaseConsumerRepos(root), ["example-generator"]);
   assert.equal(releaseConsumerWorkflowName("example-generator", root), "Example Verification");
   assert.deepEqual(releaseConsumerWorkflowJobs("example-generator", root), ["Check package", "Compile generated app"]);
+  assert.equal(config.limits.remoteFetchMaxBytes, 1024);
+  assert.equal(config.limits.catalogFetchMaxBytes, 2048);
+  assert.equal(config.limits.githubFetchMaxBytes, 4096);
 });
 
 test("runtime config env overrides win over repo-local config", () => {
@@ -146,7 +157,10 @@ test("runtime config env overrides win over repo-local config", () => {
     }),
     TOPOGRAM_RELEASE_CONSUMER_WORKFLOW_JOBS_JSON: JSON.stringify({
       "env-consumer": ["Env Job"]
-    })
+    }),
+    TOPOGRAM_REMOTE_FETCH_MAX_BYTES: "1234",
+    TOPOGRAM_CATALOG_FETCH_MAX_BYTES: "2345",
+    TOPOGRAM_GITHUB_FETCH_MAX_BYTES: "3456"
   }, () => {
     const config = topogramRuntimeConfig(root);
     assert.equal(config.github.owner, "env-org");
@@ -157,5 +171,8 @@ test("runtime config env overrides win over repo-local config", () => {
     assert.deepEqual(releaseConsumerRepos(root), ["env-consumer", "second-consumer"]);
     assert.equal(releaseConsumerWorkflowName("env-consumer", root), "Env Workflow");
     assert.deepEqual(releaseConsumerWorkflowJobs("env-consumer", root), ["Env Job"]);
+    assert.equal(config.limits.remoteFetchMaxBytes, 1234);
+    assert.equal(config.limits.catalogFetchMaxBytes, 2345);
+    assert.equal(config.limits.githubFetchMaxBytes, 3456);
   });
 });

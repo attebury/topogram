@@ -29,6 +29,14 @@ topogram copy <id> <target>
 Use `topogram init` first for existing or maintained repos. Use `topogram copy`
 when you want to copy a starter template and generate an app/runtime bundle.
 
+Remote catalog and GitHub reads are size-limited before parsing. Override the
+default only when you have reviewed the source. These can be set in the
+environment or in `topogram.config.json` under `limits`.
+
+- `TOPOGRAM_REMOTE_FETCH_MAX_BYTES`
+- `TOPOGRAM_CATALOG_FETCH_MAX_BYTES`
+- `TOPOGRAM_GITHUB_FETCH_MAX_BYTES`
+
 ## Validation and output
 
 ```bash

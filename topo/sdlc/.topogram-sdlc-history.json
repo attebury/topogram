@@ -2792,5 +2792,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_bound_catalog_github_fetch_sizes": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T18:58:04.146Z",
+      "by": "actor_coding_agent",
+      "note": "Claiming bounded catalog and GitHub payload hardening."
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T18:58:11.056Z",
+      "by": "actor_coding_agent",
+      "note": "Adding bounded remote payload reads and deterministic oversize diagnostics."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T19:12:14.902Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

@@ -53,6 +53,7 @@
     "./src/path-helpers.d.ts",
     "./src/example-implementation.d.ts",
     "./src/policy/review-boundaries.d.ts",
+    "./src/remote-payload-limits.js",
     "./src/topogram-types.d.ts",
     "./src/workspace-docs.d.ts",
     "./src/workspace-paths.js",

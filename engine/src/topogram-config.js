@@ -83,6 +83,11 @@ export const DEFAULT_TOPOGRAM_CONFIG = {
     consumers: DEFAULT_RELEASE_CONSUMER_REPOS,
     workflows: DEFAULT_RELEASE_CONSUMER_WORKFLOWS,
     workflowJobs: DEFAULT_RELEASE_CONSUMER_WORKFLOW_JOBS
+  },
+  limits: {
+    remoteFetchMaxBytes: 5 * 1024 * 1024,
+    catalogFetchMaxBytes: null,
+    githubFetchMaxBytes: null
   }
 };
 
@@ -93,6 +98,7 @@ export const DEFAULT_CATALOG_SOURCE = `https://raw.githubusercontent.com/${DEFAU
  * @property {{ owner: string, repo: string }} github
  * @property {{ owner: string, repo: string, ref: string, path: string, source: string|null }} catalog
  * @property {{ consumers: string[], workflows: Record<string, string>, workflowJobs: Record<string, string[]> }} release
+ * @property {{ remoteFetchMaxBytes: number, catalogFetchMaxBytes: number|null, githubFetchMaxBytes: number|null }} limits
  */
 
 /**
@@ -155,6 +161,18 @@ function parseJsonEnv(value) {
 }
 
 /**
+ * @param {string|null|undefined} value
+ * @returns {number|null}
+ */
+function parsePositiveIntegerEnv(value) {
+  if (!value) {
+    return null;
+  }
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+/**
  * @param {Record<string, any>} fileConfig
  * @returns {Record<string, any>}
  */
@@ -178,6 +196,11 @@ function envConfig(fileConfig = {}) {
       consumers: consumers || fileConfig.release?.consumers,
       workflows: workflows || fileConfig.release?.workflows,
       workflowJobs: workflowJobs || fileConfig.release?.workflowJobs
+    },
+    limits: {
+      remoteFetchMaxBytes: parsePositiveIntegerEnv(process.env.TOPOGRAM_REMOTE_FETCH_MAX_BYTES) || fileConfig.limits?.remoteFetchMaxBytes,
+      catalogFetchMaxBytes: parsePositiveIntegerEnv(process.env.TOPOGRAM_CATALOG_FETCH_MAX_BYTES) || fileConfig.limits?.catalogFetchMaxBytes,
+      githubFetchMaxBytes: parsePositiveIntegerEnv(process.env.TOPOGRAM_GITHUB_FETCH_MAX_BYTES) || fileConfig.limits?.githubFetchMaxBytes
     }
   };
 }
@@ -236,6 +259,16 @@ function normalizeStringListMap(value, fallback) {
 }
 
 /**
+ * @param {unknown} value
+ * @param {number|null} fallback
+ * @returns {number|null}
+ */
+function normalizePositiveInteger(value, fallback) {
+  const parsed = Number.parseInt(String(value || ""), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+/**
  * @param {string} cwd
  * @returns {TopogramRuntimeConfig}
  */
@@ -258,6 +291,20 @@ export function topogramRuntimeConfig(cwd = process.cwd()) {
       consumers: normalizeStringList(overrides.release.consumers, DEFAULT_TOPOGRAM_CONFIG.release.consumers),
       workflows: normalizeStringMap(overrides.release.workflows, DEFAULT_TOPOGRAM_CONFIG.release.workflows),
       workflowJobs: normalizeStringListMap(overrides.release.workflowJobs, DEFAULT_TOPOGRAM_CONFIG.release.workflowJobs)
+    },
+    limits: {
+      remoteFetchMaxBytes: normalizePositiveInteger(
+        overrides.limits.remoteFetchMaxBytes,
+        DEFAULT_TOPOGRAM_CONFIG.limits.remoteFetchMaxBytes
+      ) || DEFAULT_TOPOGRAM_CONFIG.limits.remoteFetchMaxBytes,
+      catalogFetchMaxBytes: normalizePositiveInteger(
+        overrides.limits.catalogFetchMaxBytes,
+        DEFAULT_TOPOGRAM_CONFIG.limits.catalogFetchMaxBytes
+      ),
+      githubFetchMaxBytes: normalizePositiveInteger(
+        overrides.limits.githubFetchMaxBytes,
+        DEFAULT_TOPOGRAM_CONFIG.limits.githubFetchMaxBytes
+      )
     }
   };
 }

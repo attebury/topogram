@@ -2,9 +2,12 @@
 
 import childProcess from "node:child_process";
 
+import { remotePayloadMaxBytes } from "./remote-payload-limits.js";
+
 const DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
 const GITHUB_REST_SCRIPT = `
 const request = JSON.parse(process.argv[1]);
+const maxBytes = Number.parseInt(String(request.maxBytes || ""), 10) || 5242880;
 const base = String(request.baseUrl || "https://api.github.com").replace(/\\/+$/, "") + "/";
 const path = String(request.path || "").replace(/^\\/+/, "");
 const url = new URL(path, base);
@@ -23,6 +26,39 @@ const headers = {
 };
 if (request.token && canAttachToken(url)) {
   headers.authorization = "Bearer " + request.token;
+}
+async function readResponseText(response) {
+  const declaredLength = Number.parseInt(response.headers.get("content-length") || "", 10);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error("GitHub REST response exceeded " + maxBytes + " byte limit.");
+  }
+  if (!response.body) {
+    const text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > maxBytes) {
+      throw new Error("GitHub REST response exceeded " + maxBytes + " byte limit.");
+    }
+    return text;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      break;
+    }
+    total += value.byteLength;
+    if (total > maxBytes) {
+      try {
+        await reader.cancel();
+      } catch {}
+      throw new Error("GitHub REST response exceeded " + maxBytes + " byte limit.");
+    }
+    chunks.push(decoder.decode(value, { stream: true }));
+  }
+  chunks.push(decoder.decode());
+  return chunks.join("");
 }
 if (process.env.TOPOGRAM_GITHUB_API_FIXTURE_ROOT) {
   const fs = await import("node:fs");
@@ -50,6 +86,11 @@ if (process.env.TOPOGRAM_GITHUB_API_FIXTURE_ROOT) {
     }));
     process.exit(2);
   }
+  const fixtureSize = fs.statSync(fixturePath).size;
+  if (fixtureSize > maxBytes) {
+    process.stderr.write("GitHub REST fixture response exceeded " + maxBytes + " byte limit.");
+    process.exit(1);
+  }
   process.stdout.write(JSON.stringify({
     status: 200,
     body: fs.readFileSync(fixturePath, "utf8"),
@@ -59,7 +100,7 @@ if (process.env.TOPOGRAM_GITHUB_API_FIXTURE_ROOT) {
 }
 try {
   const response = await fetch(url, { headers });
-  const text = await response.text();
+  const text = await readResponseText(response);
   if (!response.ok) {
     process.stderr.write(JSON.stringify({
       status: response.status,
@@ -150,6 +191,11 @@ function shouldUseRestApi() {
  * @returns {any}
  */
 function githubRequestJson(path, options = {}) {
+  const maxBytes = remotePayloadMaxBytes(
+    ["TOPOGRAM_GITHUB_FETCH_MAX_BYTES", "TOPOGRAM_REMOTE_FETCH_MAX_BYTES"],
+    undefined,
+    ["githubFetchMaxBytes", "remoteFetchMaxBytes"]
+  );
   const result = childProcess.spawnSync(process.execPath, [
     "--input-type=module",
     "-e",
@@ -158,10 +204,12 @@ function githubRequestJson(path, options = {}) {
       baseUrl: githubApiBaseUrl(),
       path,
       query: options.query || {},
-      token: githubTokenFromEnv() || ""
+      token: githubTokenFromEnv() || "",
+      maxBytes
     })
   ], {
     encoding: "utf8",
+    maxBuffer: (maxBytes * 2) + 8192,
     env: {
       ...process.env,
       PATH: process.env.PATH || ""
@@ -479,9 +527,15 @@ function normalizeWorkflowJob(job) {
  * @returns {ReturnType<typeof childProcess.spawnSync>}
  */
 function runGh(args, cwd = process.cwd()) {
+  const maxBytes = remotePayloadMaxBytes(
+    ["TOPOGRAM_GITHUB_FETCH_MAX_BYTES", "TOPOGRAM_REMOTE_FETCH_MAX_BYTES"],
+    undefined,
+    ["githubFetchMaxBytes", "remoteFetchMaxBytes"]
+  );
   return childProcess.spawnSync("gh", args, {
     cwd,
     encoding: "utf8",
+    maxBuffer: maxBytes + 4096,
     env: {
       ...process.env,
       GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "",
