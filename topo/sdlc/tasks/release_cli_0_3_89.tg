@@ -1,0 +1,14 @@
+task task_release_cli_0_3_89 {
+  name "Release Cli 0 3 89"
+  description "Prepare, publish, smoke-test, roll first-party consumers, and refresh release evidence for @topogram/cli 0.3.89 after fixing portable CLI repo-root detection."
+  satisfies [req_cli_repo_root_detection_portable]
+  acceptance_refs [ac_cli_0_3_89_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate]
+  affects [cap_generate_app_outputs cap_emit_artifacts cap_validate_workspace cap_verify_release_status cap_roll_consumer_packages]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status in-progress
+}

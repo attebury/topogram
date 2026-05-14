@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_89_release_published {
+  name "Cli 0 3 89 Release Published"
+  description "Given the portable CLI repo-root detection fix is merged on main, when @topogram/cli 0.3.89 is prepared, published, smoke-tested, rolled to first-party consumers, and release evidence is refreshed, then strict release status is green for the CLI and first-party packages."
+  requirement req_cli_repo_root_detection_portable
+  status approved
+}
