@@ -3918,13 +3918,13 @@ test("topogram trust rejects template implementation modules outside implementat
   const statusPayload = JSON.parse(status.stdout);
   assert.equal(statusPayload.ok, false);
   assert.equal(statusPayload.requiresTrust, true);
-  assert.match(statusPayload.issues.join("\n"), /must be under implementation\/ for template-attached projects/);
+  assert.match(statusPayload.issues.join("\n"), /must be under implementation\//);
   assert.match(statusPayload.issues.join("\n"), /Keep executable template code inside implementation\//);
   assert.match(statusPayload.issues.join("\n"), /topogram trust diff/);
 
   const check = runCli(["check"], { cwd: projectRoot });
   assert.notEqual(check.status, 0, check.stdout);
-  assert.match(check.stderr, /must be under implementation\/ for template-attached projects/);
+  assert.match(check.stderr, /must be under implementation\//);
   assert.match(check.stderr, /move the module back under implementation\//i);
   assert.match(check.stderr, /topogram trust status/);
 

@@ -35,7 +35,7 @@ export function unsupportedImplementationSymlinkMessage(relativePath) {
  * @returns {string}
  */
 export function implementationOutsideRootMessage(modulePath) {
-  return `Template implementation module '${modulePath}' must be under implementation/ for template-attached projects. Keep executable template code inside implementation/ so the trust record covers what topogram generate may load. Move the module back under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
+  return `Template implementation module '${modulePath}' must be under implementation/. Keep executable template code inside implementation/ so the trust record covers what topogram generate may load. Move the module back under implementation/, then run ${TRUST_REVIEW_COMMANDS} after review.`;
 }
 
 /**

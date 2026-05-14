@@ -43,10 +43,9 @@ export function projectHasTemplateAttachment(projectConfig) {
  * @returns {boolean}
  */
 export function implementationRequiresTrust(implementationInfo, projectConfig = null) {
-  const fingerprint = implementationTrustFingerprint(implementationInfo.config);
-  const modulePath = path.resolve(implementationInfo.configDir, fingerprint.module);
-  const implementationRoot = path.resolve(implementationInfo.configDir, "implementation");
-  return isSameOrInside(implementationRoot, modulePath) || projectHasTemplateAttachment(projectConfig);
+  void projectConfig;
+  implementationTrustFingerprint(implementationInfo.config);
+  return true;
 }
 
 /**

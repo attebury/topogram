@@ -2707,5 +2707,44 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "bug_executable_implementation_trust_bypass": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-14T18:04:25.672Z",
+      "by": "actor_coding_agent",
+      "note": "Closing implementation module trust bypass."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-14T18:13:20.537Z",
+      "by": "actor_coding_agent",
+      "note": "Implementation provider loading now requires trust and rejects modules outside implementation root before import."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-14T18:13:24.913Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by regression test refusing outside implementation providers before module import."
+    }
+  ],
+  "task_close_executable_implementation_trust_gap": [
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T18:06:27.928Z",
+      "by": "actor_coding_agent",
+      "note": "Implementing trust enforcement for all configured implementation providers."
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T18:13:20.554Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

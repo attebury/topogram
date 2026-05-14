@@ -9,5 +9,6 @@ task task_close_executable_implementation_trust_gap {
   disposition active
   priority high
   work_type bugfix
-  status unclaimed
+  claimed_by actor_coding_agent
+  status done
 }

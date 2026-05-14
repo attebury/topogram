@@ -16,8 +16,7 @@ import {
 import {
   implementationModuleIsUnderRoot,
   implementationRequiresTrust,
-  implementationTrustFingerprint,
-  projectHasTemplateAttachment
+  implementationTrustFingerprint
 } from "./policy.js";
 import { readTemplateTrustRecord } from "./record.js";
 
@@ -44,7 +43,6 @@ export function assertTrustedImplementation(implementationInfo, projectConfig = 
  * @returns {{ ok: boolean, requiresTrust: boolean, trustPath: string, trustRecord: import("./record.js").TemplateTrustRecord|null, template: { id: string|null, version: string|null, source: string|null, sourceSpec: string|null, requested: string|null, sourceRoot: string|null, catalog?: Record<string, any>|null, includesExecutableImplementation: boolean|null }, implementation: { id: string|null, module: string|null, export: string|null }, content: { trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }, issues: string[] }}
  */
 export function getTemplateTrustStatus(implementationInfo, projectConfig = null) {
-  const templateAttached = projectHasTemplateAttachment(projectConfig);
   if (!implementationRequiresTrust(implementationInfo, projectConfig)) {
     return {
       ok: true,
@@ -68,7 +66,7 @@ export function getTemplateTrustStatus(implementationInfo, projectConfig = null)
   /** @type {{ trustedDigest: string|null, currentDigest: string|null, added: string[], removed: string[], changed: string[] }} */
   const contentStatus = { trustedDigest: null, currentDigest: null, added: [], removed: [], changed: [] };
 
-  if (templateAttached && !moduleInsideImplementation) {
+  if (!moduleInsideImplementation) {
     issues.push(implementationOutsideRootMessage(fingerprint.module));
   }
 

@@ -7,5 +7,7 @@ bug bug_executable_implementation_trust_bypass {
   domain dom_catalog_templates
   priority high
   severity high
-  status open
+  fixed_in [task_close_executable_implementation_trust_gap]
+  fixed_in_verification [verification_engine_gate]
+  status verified
 }

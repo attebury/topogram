@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { pathToFileURL } from "node:url";
 
 import { parsePath } from "../../src/parser.js";
 import { resolveWorkspace } from "../../src/resolver.js";
@@ -23,6 +24,7 @@ import {
   generateDbLifecycleBundleForProjection,
   generateDbLifecyclePlan
 } from "../../src/generator/surfaces/databases/lifecycle-shared.js";
+import { writeTemplateTrustRecord } from "../../src/template-trust/record.js";
 import { resolveWorkspaceContext } from "../../src/workspace-paths.js";
 import { APP_BASIC_IMPLEMENTATION } from "../fixtures/workspaces/app-basic/implementation/index.js";
 
@@ -334,14 +336,32 @@ function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-project-"));
   const topogramRoot = path.join(root, "topo");
   fs.cpSync(fixtureRoot, topogramRoot, { recursive: true });
-  const implementationModule = path
-    .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
-    .replace(/\\/g, "/");
+  rewriteCopiedImplementationImports(topogramRoot);
   const projectConfigPath = path.join(topogramRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
-  projectConfig.implementation.module = implementationModule;
+  projectConfig.implementation.module = "./implementation/index.js";
   fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+  writeTemplateTrustRecord(topogramRoot, projectConfig);
   return { root, topogramRoot };
+}
+
+function rewriteCopiedImplementationImports(topogramRoot) {
+  const rendererPath = path.join(topogramRoot, "implementation", "web", "renderers.js");
+  const replacements = new Map([
+    [
+      "../../../../../../src/generator/surfaces/web/sveltekit-actions.js",
+      pathToFileURL(path.join(engineRoot, "src", "generator", "surfaces", "web", "sveltekit-actions.js")).href
+    ],
+    [
+      "../../../../../../src/generator/surfaces/web/sveltekit-widgets.js",
+      pathToFileURL(path.join(engineRoot, "src", "generator", "surfaces", "web", "sveltekit-widgets.js")).href
+    ]
+  ]);
+  let text = fs.readFileSync(rendererPath, "utf8");
+  for (const [from, to] of replacements) {
+    text = text.replaceAll(from, to);
+  }
+  fs.writeFileSync(rendererPath, text, "utf8");
 }
 
 test("topogram check reports a valid project config in human and JSON modes", () => {
@@ -427,9 +447,7 @@ test("topogram check supports legacy implementation compatibility fallback", () 
     path.join(topogramRoot, "topogram.implementation.json"),
     `${JSON.stringify({
       implementation_id: "app-basic-fixture",
-      implementation_module: path
-        .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
-        .replace(/\\/g, "/"),
+      implementation_module: "./implementation/index.js",
       implementation_export: "APP_BASIC_IMPLEMENTATION"
     }, null, 2)}\n`,
     "utf8"

@@ -4,11 +4,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { generateWorkspace } from "../../src/generator.js";
 import { parsePath } from "../../src/parser.js";
 import { loadImplementationProvider } from "../../src/example-implementation.js";
+import { writeTemplateTrustRecord } from "../../src/template-trust/record.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const engineRoot = path.join(repoRoot, "engine");
@@ -30,18 +31,36 @@ function copyFixtureTopogram() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-review-"));
   const topogramRoot = path.join(root, "topo");
   fs.cpSync(fixtureRoot, topogramRoot, { recursive: true });
-  const implementationModule = path
-    .relative(fs.realpathSync(topogramRoot), path.join(fixtureRoot, "implementation", "index.js"))
-    .replace(/\\/g, "/");
+  rewriteCopiedImplementationImports(topogramRoot);
   const projectConfigPath = path.join(topogramRoot, "topogram.project.json");
   const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
   projectConfig.implementation = {
     id: "app-basic-fixture",
-    module: implementationModule,
+    module: "./implementation/index.js",
     export: "APP_BASIC_IMPLEMENTATION"
   };
   fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+  writeTemplateTrustRecord(topogramRoot, projectConfig);
   return { root, topogramRoot };
+}
+
+function rewriteCopiedImplementationImports(topogramRoot) {
+  const rendererPath = path.join(topogramRoot, "implementation", "web", "renderers.js");
+  const replacements = new Map([
+    [
+      "../../../../../../src/generator/surfaces/web/sveltekit-actions.js",
+      pathToFileURL(path.join(engineRoot, "src", "generator", "surfaces", "web", "sveltekit-actions.js")).href
+    ],
+    [
+      "../../../../../../src/generator/surfaces/web/sveltekit-widgets.js",
+      pathToFileURL(path.join(engineRoot, "src", "generator", "surfaces", "web", "sveltekit-widgets.js")).href
+    ]
+  ]);
+  let text = fs.readFileSync(rendererPath, "utf8");
+  for (const [from, to] of replacements) {
+    text = text.replaceAll(from, to);
+  }
+  fs.writeFileSync(rendererPath, text, "utf8");
 }
 
 function expectRefusedOutput(args, markerPath, options = {}) {
@@ -87,6 +106,34 @@ test("configured fixture provider loads without importing demos", async () => {
 
   assert.equal(provider.exampleId, "app-basic-fixture");
   assert.equal(provider.runtime.reference.appBundle.name, "Topogram Sample Workspace App Bundle");
+});
+
+test("implementation providers outside implementation root are refused without import", async () => {
+  const { root, topogramRoot } = copyFixtureTopogram();
+  const markerPath = path.join(root, "outside-provider-imported.txt");
+  const outsideDir = path.join(topogramRoot, "other");
+  fs.mkdirSync(outsideDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(outsideDir, "index.js"),
+    [
+      "import fs from 'node:fs';",
+      `fs.writeFileSync(${JSON.stringify(markerPath)}, 'imported\\n', 'utf8');`,
+      "export const APP_BASIC_IMPLEMENTATION = { exampleId: 'outside' };"
+    ].join("\n"),
+    "utf8"
+  );
+  fs.rmSync(path.join(topogramRoot, ".topogram-template-trust.json"), { force: true });
+  const projectConfigPath = path.join(topogramRoot, "topogram.project.json");
+  const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+  delete projectConfig.template;
+  projectConfig.implementation.module = "./other/index.js";
+  fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
+
+  await assert.rejects(
+    () => loadImplementationProvider(topogramRoot),
+    /must be under implementation\//
+  );
+  assert.equal(fs.existsSync(markerPath), false);
 });
 
 test("generateWorkspace does not use an app-basic provider implicitly", () => {
