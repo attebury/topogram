@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_90_release_published {
+  name "Cli 0 3 90 Release Published"
+  description "Given the SDLC task-start workflow and maintained DB migration workflow changes are merged on main, when @topogram/cli 0.3.90 is prepared, published, smoke-tested, rolled to first-party consumers, and proof repos can run SDLC task-start commands from a clean clone, then strict release status is green for the CLI and first-party packages."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}
