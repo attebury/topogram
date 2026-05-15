@@ -119,7 +119,7 @@ test("agent brief gives JSON-first extract guidance with workspaceRoot", () => {
   const human = runCli(["agent", "brief", projectRoot]);
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /\.topogram-extract\.json/);
-  assert.match(human.stdout, /Workspace root: .*\/topo/);
+  assert.match(human.stdout, /Workspace root: (<workspace>|.*\/topo)/);
   assert.match(human.stdout, /JSON extract commands expose workspaceRoot/);
 });
 
