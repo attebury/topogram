@@ -18,6 +18,7 @@ These docs are organized by audience. Historical docs were archived to
 | Author templates | [Template Authoring](./authoring/templates.md) |
 | Author generator packages | [Generator Packs](./authoring/generator-packs.md) |
 | Use or author extractor packages | [Extractor Packs](./authoring/extractor-packs.md) |
+| Inspect runnable proof stories | [Proof Walkthrough](./proof-walkthrough.md) |
 | Maintain this repo | [Engine Development](./maintainers/engine-development.md) |
 | Maintain docs | [Documentation Maintenance](./maintainers/docs.md) |
 
@@ -26,6 +27,7 @@ These docs are organized by audience. Historical docs were archived to
 Use the public proof repos when you want to inspect complete, runnable workflow
 stories instead of isolated command examples:
 
+- [Proof Walkthrough](./proof-walkthrough.md)
 - [Generated To Maintained Proof](https://github.com/attebury/topogram-proof-content-approval)
 - [Brownfield Extract/Adopt Proof](https://github.com/attebury/topogram-proof-content-approval-brownfield)
 

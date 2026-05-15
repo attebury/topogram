@@ -114,6 +114,9 @@ High-value starting points:
 
 ## Proof Repositories
 
+Start with the [Proof Walkthrough](./docs/proof-walkthrough.md) to understand
+the story, branch/tag convention, and agent-facing artifacts.
+
 - [topogram-proof-content-approval](https://github.com/attebury/topogram-proof-content-approval): generated app to maintained app, including generated and maintained DB migration checkpoints.
 - [topogram-proof-content-approval-brownfield](https://github.com/attebury/topogram-proof-content-approval-brownfield): brownfield extract/adopt, maintained feature work, drift refresh, and cross-stack recreation.
 

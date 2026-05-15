@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_walkthrough_guides_readers {
+  name "Proof Walkthrough Guides Readers"
+  description "Given the proof repositories have green public verification, when a developer or agent opens Topogram docs or a proof repo, then the walkthrough explains the proof story, each step's runnable command, the agent-facing artifact to inspect, and the change from the prior checkpoint."
+  requirement req_proof_demo_program
+  status approved
+}

@@ -3260,5 +3260,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_proof_walkthrough_guides_readers": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T17:28:52.224Z",
+      "by": "actor_coding_agent",
+      "note": "Approve proof walkthrough criteria before documentation polish."
+    }
+  ],
+  "task_polish_proof_walkthrough_docs": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T17:28:52.281Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T17:28:52.330Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T17:33:37.500Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

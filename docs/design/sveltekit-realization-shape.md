@@ -2,7 +2,7 @@
 
 ## Overview
 
-How a Topogram-aligned SvelteKit realization separates **semantic** `widget` / `ui_contract` source in `topo/` from **stack** components in the app, keeps `data-topogram-widget` traceability, and verifies via standard CLI commands ([docs/widgets.md](docs/widgets.md), bundled generator in [engine/src/generator/surfaces/web/sveltekit-widgets.js](engine/src/generator/surfaces/web/sveltekit-widgets.js)).
+How a Topogram-aligned SvelteKit realization separates **semantic** `widget` / `ui_contract` source in `topo/` from **stack** components in the app, keeps `data-topogram-widget` traceability, and verifies via standard CLI commands ([docs/widgets.md](../widgets.md), bundled generator in [engine/src/generator/surfaces/web/sveltekit-widgets.js](../../engine/src/generator/surfaces/web/sveltekit-widgets.js)).
 
 ## Principles (short)
 
@@ -62,24 +62,24 @@ This section is about **where decisions live** so teams don’t improvise stack 
    }
    ```
 
-   Reference: [engine/tests/fixtures/workspaces/app-basic/topogram.project.json](engine/tests/fixtures/workspaces/app-basic/topogram.project.json).
+   Reference: [engine/tests/fixtures/workspaces/app-basic/topogram.project.json](../../engine/tests/fixtures/workspaces/app-basic/topogram.project.json).
 
 2. **`topo/` declares the semantic web surface**  
    A `projection` with `type web_surface` (e.g. `proj_web_surface`) **realizes** the shared `ui_contract` and owns **routes** (`screen_routes`), **`web_hints`**, and links to capabilities. The **UI intent** (screens, widgets, tokens) stays in the **`ui_contract`**; SvelteKit vs React vs vanilla is a **runtime/generator** choice, not a second copy of the product graph.
 
 3. **Org-owned generator**  
-   Swap `"generator"` for a package-backed id (e.g. `@acme/generator-sveltekit`) per [docs/authoring/generator-packs.md](docs/authoring/generator-packs.md). Still a `web_surface`; still fed normalized contracts.
+   Swap `"generator"` for a package-backed id (e.g. `@acme/generator-sveltekit`) per [docs/authoring/generator-packs.md](../authoring/generator-packs.md). Still a `web_surface`; still fed normalized contracts.
 
 **Team habit:** treat “we’re on SvelteKit” as **config + topology**, document it once in CONTRIBUTING, and put **`topogram check`** in CI so a stray runtime edit doesn’t silently desync from `topo/`.
 
 ### Styles, colors, and design tokens
 
 1. **Normalize roles and constraints, not every CSS declaration**  
-   In the **`ui_contract`**, `design_tokens { ... }` captures **semantic** intent: `density`, `tone`, `radius_scale`, `color_role`, `typography_role`, `action_role`, `accessibility`, etc. (see the full block in [engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg](engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg)).  
+   In the **`ui_contract`**, `design_tokens { ... }` captures **semantic** intent: `density`, `tone`, `radius_scale`, `color_role`, `typography_role`, `action_role`, `accessibility`, etc. (see the full block in [engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg](../../engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg)).  
    That is the **portable** layer: school vs startup vs gov can **remap** roles to different palettes without changing widget semantics.
 
 2. **Generated apps**  
-   Bundled SvelteKit output derives baseline styling from those tokens (design intent → CSS such as spacing, surfaces, radii—see [engine/src/generator/surfaces/web/design-intent.js](engine/src/generator/surfaces/web/design-intent.js) and `renderDesignIntentCss` usage in the SvelteKit generator). “Correct” here means **emitted CSS matches emitted contract**, not “pretty.”
+   Bundled SvelteKit output derives baseline styling from those tokens (design intent → CSS such as spacing, surfaces, radii—see [engine/src/generator/surfaces/web/design-intent.js](../../engine/src/generator/surfaces/web/design-intent.js) and `renderDesignIntentCss` usage in the SvelteKit generator). “Correct” here means **emitted CSS matches emitted contract**, not “pretty.”
 
 3. **Maintained apps**  
    The Svelte repo owns **implementation** (`app.css`, Tailwind theme, design system package), but the team should keep a **deliberate mapping**: CSS variables or theme keys that implement the **same roles** the graph declares. When brand changes, you update **mapping + optionally `design_tokens`** if semantics shift (e.g. new destructive affordance). Run **`topogram emit`** / widget checks so drift between **declared** tokens and **built** theme shows up in review, not only in QA’s eyeballs.
@@ -91,7 +91,7 @@ This section is about **where decisions live** so teams don’t improvise stack 
 
 **Normalize** when inconsistency would hurt humans *or* agents:
 
-- Widget **patterns** and **behavior** vocabulary ([docs/widgets.md](docs/widgets.md)).
+- Widget **patterns** and **behavior** vocabulary ([docs/widgets.md](../widgets.md)).
 - **Screens, regions, bindings**, navigation—anything that should match across web/native/API consumers.
 - **Design token roles** that encode policy (contrast, focus, destructive vs primary).
 - **Contracts** (API, DB, CLI) when multiple runtimes depend on them.
@@ -105,7 +105,7 @@ This section is about **where decisions live** so teams don’t improvise stack 
 
 ### Multiple web stacks (e.g. React and SvelteKit)
 
-One **`ui_contract`** stays canonical in `topo/` (screens, widgets, `design_tokens`). **Each stack** gets its own **`web_surface`** projection that **realizes** that contract plus the same capabilities—only routes and hints differ where the product allows. The fixture pair illustrates this: [proj-web-surface.tg](engine/tests/fixtures/workspaces/app-basic/projections/proj-web-surface.tg) vs [proj-web-surface-react.tg](engine/tests/fixtures/workspaces/app-basic/projections/proj-web-surface-react.tg), both listing `proj_ui_contract` under `realizes`.
+One **`ui_contract`** stays canonical in `topo/` (screens, widgets, `design_tokens`). **Each stack** gets its own **`web_surface`** projection that **realizes** that contract plus the same capabilities—only routes and hints differ where the product allows. The fixture pair illustrates this: [proj-web-surface.tg](../../engine/tests/fixtures/workspaces/app-basic/projections/proj-web-surface.tg) vs [proj-web-surface-react.tg](../../engine/tests/fixtures/workspaces/app-basic/projections/proj-web-surface-react.tg), both listing `proj_ui_contract` under `realizes`.
 
 In **`topogram.project.json`**, add **two** `web_surface` runtimes with **different** `projection` ids and **different** `generator` ids, and point **`outputs`** at two trees (example shapes):
 
@@ -146,7 +146,7 @@ In **`topogram.project.json`**, add **two** `web_surface` runtimes with **differ
 
 Yes—if you are building a **SvelteKit widget library** meant to implement Topogram contracts, component CSS should prefer **`var(--topogram-…)`** (and optional fallbacks) so look and feel tracks **`design_tokens`** on the `ui_contract` without hardcoding brand hex in every component.
 
-Bundled generators emit a **`:root` block** from `renderDesignIntentCss` in [engine/src/generator/surfaces/web/design-intent.js](engine/src/generator/surfaces/web/design-intent.js), including **semantic markers** for coverage (e.g. `--topogram-design-density`, `--topogram-design-tone`, `--topogram-design-radius-scale`, role maps like `--topogram-design-color-primary`, plus concrete layout colors such as `--topogram-text-color`, `--topogram-surface-card`, `--topogram-action-primary-background`, `--topogram-focus-outline`, spacing `--topogram-space-unit`, radii `--topogram-radius-card`, etc.).
+Bundled generators emit a **`:root` block** from `renderDesignIntentCss` in [engine/src/generator/surfaces/web/design-intent.js](../../engine/src/generator/surfaces/web/design-intent.js), including **semantic markers** for coverage (e.g. `--topogram-design-density`, `--topogram-design-tone`, `--topogram-design-radius-scale`, role maps like `--topogram-design-color-primary`, plus concrete layout colors such as `--topogram-text-color`, `--topogram-surface-card`, `--topogram-action-primary-background`, `--topogram-focus-outline`, spacing `--topogram-space-unit`, radii `--topogram-radius-card`, etc.).
 
 **Library `DataGrid` styling** can look like this (conceptually):
 
@@ -169,7 +169,7 @@ Bundled generators emit a **`:root` block** from `renderDesignIntentCss` in [eng
 
 **What the host app must do:**
 
-- **Import** the root theme once: usually the **generated** `app.css` snippet from the same `design_tokens`, or a **maintained** file that **redeclares the same variable names** so `buildDesignIntentCoverage` (marker strings in [design-intent.js](engine/src/generator/surfaces/web/design-intent.js) `requiredDesignMarkers`) still passes for that `ui_contract`.
+- **Import** the root theme once: usually the **generated** `app.css` snippet from the same `design_tokens`, or a **maintained** file that **redeclares the same variable names** so `buildDesignIntentCoverage` (marker strings in [design-intent.js](../../engine/src/generator/surfaces/web/design-intent.js) `requiredDesignMarkers`) still passes for that `ui_contract`.
 
 **Two stacks:** React and SvelteKit apps each ship an **`app.css` (or equivalent)** built from the **same** normalized design intent, so both use **identical `--topogram-*` names**; only component implementations differ. The widget library documents **`peerDependencies`** and “requires `--topogram-*` from host” rather than embedding a second theme system unless you ship a deliberate default theme file for Storybook.
 
@@ -196,7 +196,7 @@ For each `widget` you support, ship e.g. `DataGridTopogram.svelte` that:
 Bundled generator HTML is a **scaffold**; in production you **swap the inner implementation** while keeping **graph widget ids** and **`topogram widget check`** stable.
 
 **2) Token bridge**  
-`design_tokens` on the `ui_contract` still drive **`--topogram-*`** (see [design-intent.js](engine/src/generator/surfaces/web/design-intent.js)). The DS has its **own** theme. Add a **bridge** stylesheet (or build snippet) that maps Topogram variables to **names the DS consumes**, or maps roles to the DS’s documented theme API. Load order: **DS base → bridge → app**. If the DS is Tailwind-only, maintain a small **role→utility** map for the handful of surfaces your widgets touch.
+`design_tokens` on the `ui_contract` still drive **`--topogram-*`** (see [design-intent.js](../../engine/src/generator/surfaces/web/design-intent.js)). The DS has its **own** theme. Add a **bridge** stylesheet (or build snippet) that maps Topogram variables to **names the DS consumes**, or maps roles to the DS’s documented theme API. Load order: **DS base → bridge → app**. If the DS is Tailwind-only, maintain a small **role→utility** map for the handful of surfaces your widgets touch.
 
 **3) Repo layout**  
 `topo/**` unchanged; `apps/web` depends on the OS DS from npm; **`src/lib/topogram/`** (or a workspace package) holds **adapters + bridge CSS** only. Optional **custom generator pack** emits routes that import those adapters instead of raw tables.
@@ -257,7 +257,7 @@ Web stacks express theme mostly as **CSS** (`--topogram-*` from `renderDesignInt
 ### Single source in `topo/`
 
 - **`design_tokens { ... }`** on the `ui_contract` is **platform-neutral** (density, tone, `radius_scale`, `color_role`, `typography_role`, `action_role`, `accessibility`).
-- The routed **`ui-surface-contract`** JSON (what the bundled SwiftUI pack places in `Resources/ui-surface-contract.json`) includes a **`designTokens`** object with the same semantic fields—see the **`app-basic`** shape (e.g. `density`, `tone`, `colorRoles`, `typographyRoles`, … in [ui-surface-contract.json](engine/tests/fixtures/expected/app-basic/apps/web/app_sveltekit/src/lib/topogram/ui-surface-contract.json)).
+- The routed **`ui-surface-contract`** JSON (what the bundled SwiftUI pack places in `Resources/ui-surface-contract.json`) includes a **`designTokens`** object with the same semantic fields—see the **`app-basic`** shape (e.g. `density`, `tone`, `colorRoles`, `typographyRoles`, … in [ui-surface-contract.json](../../engine/tests/fixtures/expected/app-basic/apps/web/app_sveltekit/src/lib/topogram/ui-surface-contract.json)).
 
 So: **one graph**, **one token object**; web renders CSS variables, iOS renders **Swift types**.
 
@@ -287,13 +287,13 @@ Implement a **`TopogramTheme`** (or **`DesignTokens`**) type loaded from **`desi
 
 ### Bundled SwiftUI pack (scope today)
 
-The **in-repo SwiftUI templates** emphasize **system-default** styling and contract-driven screens. They do not yet mirror web’s full **`renderDesignIntentCss`** auto-pipeline. **Production** work still treats **`designTokens` in JSON** as authoritative and implements (or generates) **`Theme.swift` + Assets** from that payload—ideally sharing the **same normalization table** as [design-intent.js](engine/src/generator/surfaces/web/design-intent.js) so density/tone/radius math **matches** web unless you intentionally diverge per **HIG**.
+The **in-repo SwiftUI templates** emphasize **system-default** styling and contract-driven screens. They do not yet mirror web’s full **`renderDesignIntentCss`** auto-pipeline. **Production** work still treats **`designTokens` in JSON** as authoritative and implements (or generates) **`Theme.swift` + Assets** from that payload—ideally sharing the **same normalization table** as [design-intent.js](../../engine/src/generator/surfaces/web/design-intent.js) so density/tone/radius math **matches** web unless you intentionally diverge per **HIG**.
 
 ---
 
 ## Maintained apps (how Topogram fits without overwriting your code)
 
-**Maintained** means: paths declared under **`topogram.project.json`** **`outputs`** use **`"ownership": "maintained"`**. Topogram **must not** replace those trees on `generate`; your **SvelteKit / React / Swift** source stays hand-owned. See [docs/concepts/generate-vs-emit.md](docs/concepts/generate-vs-emit.md) and [AGENTS.md](AGENTS.md) (generated vs maintained ownership).
+**Maintained** means: paths declared under **`topogram.project.json`** **`outputs`** use **`"ownership": "maintained"`**. Topogram **must not** replace those trees on `generate`; your **SvelteKit / React / Swift** source stays hand-owned. See [docs/concepts/generate-vs-emit.md](../concepts/generate-vs-emit.md) and [AGENTS.md](../../AGENTS.md) (generated vs maintained ownership).
 
 ### What you still do in `topo/`
 
@@ -305,7 +305,7 @@ The **in-repo SwiftUI templates** emphasize **system-default** styling and contr
 - **`topogram emit …`** — writes or prints **contracts, reports, snapshots, migration/diff context** into allowed paths. Typical maintainer habits:
   - **`emit ui-surface-contract`** (or equivalent) into **`apps/web/src/lib/topogram/`** (or `docs/contracts/`) so agents and reviewers see the **normalized** payload without scraping `.tg` by hand.
   - **`emit widget-conformance-report`**, **`topogram widget check`**, **`query slice`** — prove maintained UI still **matches** bindings for each **`web_surface` / `ios_surface` projection**.
-- **`context-diff`** against a baseline when **`design_tokens` or widgets** change—drives a review checklist for **CSS / Theme.swift** updates ([docs/widgets.md](docs/widgets.md) migration guidance).
+- **`context-diff`** against a baseline when **`design_tokens` or widgets** change—drives a review checklist for **CSS / Theme.swift** updates ([docs/widgets.md](../widgets.md) migration guidance).
 
 ### How styling and adapters work (same ideas, you own the files)
 
@@ -432,21 +432,21 @@ Existing codebases often use **`topogram extract` / `adopt`** to grow **`topo/`*
 
 - **Extract** (`topogram extract … --from api,ui` or similar) materializes **review-only** UI artifacts, including:
   - **Widget candidates** (draft `widget` `.tg` under e.g. `topo/candidates/.../widgets/`) and inferred **event payload shapes**.
-  - A **draft shared `ui_contract`** at **`topo/candidates/app/ui/drafts/proj-ui-contract.tg`** that can already contain **`screen_regions`** and **`widget_bindings`** lines inferred from the app (see [engine/src/import/core/runner/ui-drafts.js](engine/src/import/core/runner/ui-drafts.js) and tests in [engine/tests/active/import-fixtures.test.js](engine/tests/active/import-fixtures.test.js)).
+  - A **draft shared `ui_contract`** at **`topo/candidates/app/ui/drafts/proj-ui-contract.tg`** that can already contain **`screen_regions`** and **`widget_bindings`** lines inferred from the app (see [engine/src/import/core/runner/ui-drafts.js](../../engine/src/import/core/runner/ui-drafts.js) and tests in [engine/tests/active/import-fixtures.test.js](../../engine/tests/active/import-fixtures.test.js)).
 - **`topogram adopt widgets`** promotes canonical **`topo/widgets/<id>.tg`** and, via plan expansion, related **`shape`** items (event payloads). That is **widget definitions + shapes**, not a separate “bind only” artifact.
-- **`topogram adopt ui`** is broader (UI-track reports, flows, **widgets**, and **`ui_widget_event`** shapes); it still follows the **adoption plan**—it does **not** today add a dedicated **`promote_ui_contract_draft`** step that copies the whole draft projection into **`topo/projections/`** automatically (see [engine/src/workflows/reconcile/impacts/adoption-plan.js](engine/src/workflows/reconcile/impacts/adoption-plan.js): **`promote_widget`**, **`promote_ui_report`**, etc.).
+- **`topogram adopt ui`** is broader (UI-track reports, flows, **widgets**, and **`ui_widget_event`** shapes); it still follows the **adoption plan**—it does **not** today add a dedicated **`promote_ui_contract_draft`** step that copies the whole draft projection into **`topo/projections/`** automatically (see [engine/src/workflows/reconcile/impacts/adoption-plan.js](../../engine/src/workflows/reconcile/impacts/adoption-plan.js): **`promote_widget`**, **`promote_ui_report`**, etc.).
 - **Practical workflow for mappings:** after adopt, **merge** the drafted **`widget_bindings`** (and any matching **`screen_regions`**) from **`candidates/app/ui/drafts/proj-ui-contract.tg`** into your **canonical** `ui_contract` projection (or rename/replace the draft into `projections/` once capabilities/screens ids line up). Then run **`topogram check`** and **`topogram widget check`**.
 
 So: **yes, extract already proposes widget mappings** in the draft contract; **adopt** handles **widgets (and shapes) into canonical `topo/`**; **binding** those widgets onto your **approved** `ui_contract` is usually a **reviewed merge** step unless/until the tool grows a first-class projection promote for that draft.
 
 #### Should extraction also emit the **widget / style adapter** (stack code)?
 
-**Not into the brownfield source app today—and that is intentional.** [README.md](README.md) states that **`topogram extract` never mutates the source app**; adapters are **implementation**, live in **framework-specific** trees, and depend on **design system / tokens** choices extractors do not reliably know.
+**Not into the brownfield source app today—and that is intentional.** [README.md](../../README.md) states that **`topogram extract` never mutates the source app**; adapters are **implementation**, live in **framework-specific** trees, and depend on **design system / tokens** choices extractors do not reliably know.
 
 **Why adapters stay out of the default extract path:**
 
 1. **Stack variance** — The same `widget_data_grid` might be SvelteKit, React, SwiftUI, or wrapped Telerik/Kendo; a generic emit often **misses** the team’s real abstractions.
-2. **Ownership** — **Maintained** apps own application `src/**`; auto-writing adapters from extract would blur **generated vs maintained** boundaries without an explicit, trusted **write scope** ([AGENTS.md](AGENTS.md)).
+2. **Ownership** — **Maintained** apps own application `src/**`; auto-writing adapters from extract would blur **generated vs maintained** boundaries without an explicit, trusted **write scope** ([AGENTS.md](../../AGENTS.md)).
 3. **Workflow** — **Spec first:** after adopt, **`emit`** and **`query slice --widget …`** give agents or humans a **checkable contract**; migrating the **existing** UI to Topogram-aware adapters is a **follow-on migration**, not identical to “read legacy → write Topo.”
 
 **Plausible extensions (product direction, not current default):**
@@ -484,7 +484,7 @@ After adapters exist, **yes**—teams often want **stable hooks** in **maintaine
 
 ## Complete example (copy-paste walkthrough)
 
-Below is a **minimal but end-to-end illustration**: one widget (`widget_data_grid`), one screen binding (`item_list` / `results`), a web route (`/items`), and a maintained Svelte component that implements the contract’s props/events at the JS level. Real projects should mirror the richer **`app-basic`** fixture under [engine/tests/fixtures/workspaces/app-basic](engine/tests/fixtures/workspaces/app-basic) for valid graphs.
+Below is a **minimal but end-to-end illustration**: one widget (`widget_data_grid`), one screen binding (`item_list` / `results`), a web route (`/items`), and a maintained Svelte component that implements the contract’s props/events at the JS level. Real projects should mirror the richer **`app-basic`** fixture under [engine/tests/fixtures/workspaces/app-basic](../../engine/tests/fixtures/workspaces/app-basic) for valid graphs.
 
 ### 1) `topo/widgets/widget-data-grid.tg`
 
@@ -525,7 +525,7 @@ widget widget_data_grid {
 
 ### 2) `topo/projections/proj-ui-contract.tg` (minimal slice)
 
-Include at least the **screen**, **screen_regions** for `results`, and **widget_bindings** matching the fixture pattern ([proj-ui-contract.tg](engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg)):
+Include at least the **screen**, **screen_regions** for `results`, and **widget_bindings** matching the fixture pattern ([proj-ui-contract.tg](../../engine/tests/fixtures/workspaces/app-basic/projections/proj-ui-contract.tg)):
 
 ```tg
 projection proj_ui_contract {
