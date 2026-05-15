@@ -112,6 +112,11 @@ High-value starting points:
 - [CLI Reference](./docs/reference/cli.md)
 - [DSL Reference](./docs/reference/dsl.md)
 
+## Proof Repositories
+
+- [topogram-proof-content-approval](https://github.com/attebury/topogram-proof-content-approval): generated app to maintained app, including generated and maintained DB migration checkpoints.
+- [topogram-proof-content-approval-brownfield](https://github.com/attebury/topogram-proof-content-approval-brownfield): brownfield extract/adopt, maintained feature work, drift refresh, and cross-stack recreation.
+
 ## Development
 
 This repo owns the CLI, engine, parser, validator, extract/adopt workflow,

@@ -16,9 +16,13 @@ Canonical journey: `journey_proof_demo_program`.
 
 ## Proof Repos
 
-- `attebury/topogram-proof-content-approval`: generated-first proof path.
-- `attebury/topogram-proof-content-approval-brownfield`: real-ish brownfield
-  app path for extract/adopt and maintained development proof.
+- `attebury/topogram-proof-content-approval`
+  ([GitHub](https://github.com/attebury/topogram-proof-content-approval)):
+  generated-first proof path.
+- `attebury/topogram-proof-content-approval-brownfield`
+  ([GitHub](https://github.com/attebury/topogram-proof-content-approval-brownfield)):
+  real-ish brownfield app path for extract/adopt and maintained development
+  proof.
 
 ## Completed Checkpoints
 

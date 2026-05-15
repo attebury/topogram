@@ -21,6 +21,14 @@ These docs are organized by audience. Historical docs were archived to
 | Maintain this repo | [Engine Development](./maintainers/engine-development.md) |
 | Maintain docs | [Documentation Maintenance](./maintainers/docs.md) |
 
+## Proof Repositories
+
+Use the public proof repos when you want to inspect complete, runnable workflow
+stories instead of isolated command examples:
+
+- [Generated To Maintained Proof](https://github.com/attebury/topogram-proof-content-approval)
+- [Brownfield Extract/Adopt Proof](https://github.com/attebury/topogram-proof-content-approval-brownfield)
+
 ## Reference
 
 - [CLI Reference](./reference/cli.md)
