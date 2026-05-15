@@ -129,9 +129,12 @@ topogram extractor check @topogram/extractor-react-router
 ```
 
 The policy pin uses the extractor manifest version, not the npm package
-version. `topogram extractor check` proves the package boundary can load and run
-a minimal smoke extraction; it does not prove that the package understood the
-target app. That proof comes from extract/adopt review packets.
+version. `topogram extractor list`, `show`, `check`, and `policy status` report
+manifest version, installed package version, compatible CLI range, and policy
+pin state before package-backed execution. `topogram extractor check` proves the
+package boundary can load and run a minimal smoke extraction; it does not prove
+that the package understood the target app. That proof comes from extract/adopt
+review packets.
 
 When `.topogram-extract.json` exists:
 

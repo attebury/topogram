@@ -250,6 +250,7 @@
     "./src/cli/commands/emit.js",
     "./src/cli/commands/emit/snapshot-input.js",
     "./src/cli/commands/extractor.js",
+    "./src/cli/commands/extractor/summary.js",
     "./src/cli/commands/generator.js",
     "./src/cli/commands/generator-policy.js",
     "./src/cli/commands/generator-policy/package-info.js",

@@ -53,6 +53,7 @@ fixtures/basic-source/
   "tracks": ["cli"],
   "source": "package",
   "package": "@topogram/extractor-node-cli",
+  "compatibleCliRange": "^0.3.89",
   "stack": { "runtime": "node", "framework": "generic-cli" },
   "capabilities": { "commands": true, "options": true, "effects": true },
   "candidateKinds": ["command", "capability", "cli_surface"],
@@ -163,12 +164,15 @@ package version `0.1.1` or later.
 Use `topogram extractor list` to see bundled packs and first-party package
 recommendations grouped by track. Use `topogram extractor show <package>` before
 installing when you need the package purpose, install command, policy pin
-command, and a concrete extract command.
+command, npm package version, compatible CLI range, and a concrete extract
+command. `topogram extractor check <package>` reports the same version split:
+manifest version is what policy pins, package version is what npm installed, and
+compatible CLI range is the CLI line the package declares or inherits.
 
 The consumer command loop is part of the contract:
 
 1. `topogram extractor list` discovers candidates without loading package code.
-2. `topogram extractor show <package>` explains why to use one package, how to install it, how to pin it, and how to run extraction.
+2. `topogram extractor show <package>` explains why to use one package, how to install it, how to pin it, what package version is installed, what CLI range is compatible, and how to run extraction.
 3. `npm install -D <package>` is explicit; Topogram does not install extractor packages during extraction.
 4. `topogram extractor policy pin <package>@<manifest-version>` records the reviewed manifest version.
 5. `topogram extractor check <package>` loads package code only for a minimal smoke extraction.

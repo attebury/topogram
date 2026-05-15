@@ -38,7 +38,7 @@ candidates, and do not own adoption.
 
 Current first-party package-backed extractors:
 
-| Source evidence | Extractor package | npm version at CLI `0.3.85` | Track | Use it for |
+| Source evidence | Extractor package | npm version on the current CLI line | Track | Use it for |
 | --- | --- | --- | --- | --- |
 | Node package CLI code | `@topogram/extractor-node-cli` | `0.1.0` | `cli` | Commands, options, effects, and `cli_surface` candidates |
 | React Router route trees | `@topogram/extractor-react-router` | `0.1.1` | `ui` | Screens, routes, non-resource flows, widgets, and UI stack evidence |
@@ -49,6 +49,14 @@ Current first-party package-backed extractors:
 The policy pin uses the extractor manifest version, currently `@1`, not the npm
 package version. Install the npm package version you want, then pin the manifest
 identity that Topogram is allowed to execute.
+
+`topogram extractor list`, `show`, `check`, and `policy status` report the
+version split explicitly:
+
+- manifest version: the adapter contract version pinned by policy, for example `1`;
+- package version: the npm package version installed in your project, for example `0.1.1`;
+- compatible CLI range: the `@topogram/cli` range declared by the package or inferred for first-party packages;
+- policy pin state: whether the reviewed manifest version is pinned, unpinned, mismatched, blocked, or missing.
 
 ```bash
 topogram extractor list

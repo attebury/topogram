@@ -3026,5 +3026,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_harden_extractor_compatibility_version_ux": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T00:04:14.451Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T00:04:14.498Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T00:16:57.784Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

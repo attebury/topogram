@@ -106,3 +106,76 @@ export function loadPackageManifest(options) {
     };
   }
 }
+
+/**
+ * @typedef {Object} PackageJsonMetadata
+ * @property {string|null} name
+ * @property {string|null} version
+ * @property {Record<string, any>|null} packageJson
+ * @property {string|null} packageJsonPath
+ * @property {string|null} dependencyName
+ * @property {string|null} dependencyRange
+ */
+
+/**
+ * @param {Record<string, any>|null|undefined} packageJson
+ * @param {string|null|undefined} dependencyName
+ * @returns {string|null}
+ */
+function dependencyRangeForPackage(packageJson, dependencyName) {
+  if (!packageJson || !dependencyName) {
+    return null;
+  }
+  const dependencyBuckets = [
+    packageJson.dependencies,
+    packageJson.devDependencies,
+    packageJson.peerDependencies,
+    packageJson.optionalDependencies
+  ];
+  for (const dependencies of dependencyBuckets) {
+    if (!dependencies || typeof dependencies !== "object" || Array.isArray(dependencies)) {
+      continue;
+    }
+    const range = dependencies[dependencyName];
+    if (typeof range === "string" && range.length > 0) {
+      return range;
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {string|null|undefined} packageRoot
+ * @param {string|null|undefined} [dependencyName]
+ * @returns {PackageJsonMetadata}
+ */
+export function packageMetadataForRoot(packageRoot, dependencyName = null) {
+  const empty = {
+    name: null,
+    version: null,
+    packageJson: null,
+    packageJsonPath: null,
+    dependencyName: dependencyName || null,
+    dependencyRange: null
+  };
+  if (!packageRoot) {
+    return empty;
+  }
+  const packageJsonPath = path.join(packageRoot, "package.json");
+  if (!fs.existsSync(packageJsonPath)) {
+    return { ...empty, packageJsonPath };
+  }
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    return {
+      name: typeof packageJson.name === "string" && packageJson.name.length > 0 ? packageJson.name : null,
+      version: typeof packageJson.version === "string" && packageJson.version.length > 0 ? packageJson.version : null,
+      packageJson,
+      packageJsonPath,
+      dependencyName: dependencyName || null,
+      dependencyRange: dependencyRangeForPackage(packageJson, dependencyName)
+    };
+  } catch {
+    return { ...empty, packageJsonPath };
+  }
+}

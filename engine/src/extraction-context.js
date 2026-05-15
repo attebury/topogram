@@ -23,7 +23,12 @@ export function buildExtractionContext(record, provenancePath) {
     .map((entry) => ({
       id: entry.id || null,
       version: entry.version || null,
+      manifestVersion: entry.version || null,
       packageName: entry.packageName || null,
+      packageVersion: entry.packageVersion || null,
+      packageVersionStatus: entry.packageVersionStatus || null,
+      compatibleCliRange: entry.compatibleCliRange || null,
+      policyPin: entry.policyPin || null,
       extractors: Array.isArray(entry.extractors) ? entry.extractors : [],
       tracks: Array.isArray(entry.tracks) ? entry.tracks : [],
       manifestPath: entry.manifestPath || null

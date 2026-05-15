@@ -104,7 +104,12 @@ function extractorContextForBundle(extractionContext, bundleSurfaces, bundleSlug
     .map((/** @type {AnyRecord} */ extractor) => ({
       id: extractor.id || null,
       version: extractor.version || null,
+      manifestVersion: extractor.manifestVersion || extractor.version || null,
       packageName: extractor.packageName || null,
+      packageVersion: extractor.packageVersion || null,
+      packageVersionStatus: extractor.packageVersionStatus || null,
+      compatibleCliRange: extractor.compatibleCliRange || null,
+      policyPin: extractor.policyPin || null,
       extractors: Array.isArray(extractor.extractors) ? extractor.extractors : [],
       tracks: Array.isArray(extractor.tracks) ? extractor.tracks : []
     }));
@@ -310,7 +315,16 @@ export function printBrownfieldImportPlan(payload) {
     }
     if (bundle.extractorContext?.packageBackedExtractors?.length > 0) {
       const names = bundle.extractorContext.packageBackedExtractors
-        .map((/** @type {AnyRecord} */ extractor) => extractor.packageName || extractor.id)
+        .map((/** @type {AnyRecord} */ extractor) => {
+          const name = extractor.packageName || extractor.id;
+          const details = [
+            extractor.manifestVersion ? `manifest ${extractor.manifestVersion}` : null,
+            extractor.packageVersion ? `package ${extractor.packageVersion}` : null,
+            extractor.compatibleCliRange ? `cli ${extractor.compatibleCliRange}` : null,
+            extractor.policyPin?.state ? `pin ${extractor.policyPin.state}` : null
+          ].filter(Boolean).join(", ");
+          return details ? `${name} (${details})` : name;
+        })
         .filter(Boolean)
         .join(", ");
       console.log(`  Extractors: ${names}`);
@@ -377,7 +391,16 @@ export function printBrownfieldImportAdoptList(payload) {
     console.log(`- ${selector.selector}: ${selector.itemCount} item(s), ${selector.pendingItemCount} pending, ${selector.appliedItemCount} applied`);
     if (selector.extractorContext?.packageBackedExtractors?.length > 0) {
       const names = selector.extractorContext.packageBackedExtractors
-        .map((/** @type {AnyRecord} */ extractor) => extractor.packageName || extractor.id)
+        .map((/** @type {AnyRecord} */ extractor) => {
+          const name = extractor.packageName || extractor.id;
+          const details = [
+            extractor.manifestVersion ? `manifest ${extractor.manifestVersion}` : null,
+            extractor.packageVersion ? `package ${extractor.packageVersion}` : null,
+            extractor.compatibleCliRange ? `cli ${extractor.compatibleCliRange}` : null,
+            extractor.policyPin?.state ? `pin ${extractor.policyPin.state}` : null
+          ].filter(Boolean).join(", ");
+          return details ? `${name} (${details})` : name;
+        })
         .filter(Boolean)
         .join(", ");
       console.log(`  Extractors: ${names}`);

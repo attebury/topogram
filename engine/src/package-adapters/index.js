@@ -7,6 +7,7 @@ export {
 } from "./adapter.js";
 export {
   loadPackageManifest,
+  packageMetadataForRoot,
   resolvePackageManifestPath
 } from "./manifest.js";
 export {

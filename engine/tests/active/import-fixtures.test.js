@@ -17,6 +17,7 @@ import { listFilesRecursive as listWorkflowFilesRecursive } from "../../src/work
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../..");
 const importFixtureRoot = path.join(repoRoot, "engine", "tests", "fixtures", "import");
 const cliPath = path.join(repoRoot, "engine", "src", "cli.js");
+const enginePackageVersion = JSON.parse(fs.readFileSync(path.join(repoRoot, "engine", "package.json"), "utf8")).version;
 const retainedImportFixtures = [
   "cli-basic",
   "docs-noise",
@@ -318,6 +319,12 @@ test("extractor commands list bundled manifests and check package-backed extract
   const prismaListItem = listPayload.extractors.find((item) => item.package === "@topogram/extractor-prisma-db");
   assert.equal(prismaListItem.knownFirstParty, true);
   assert.equal(prismaListItem.installed, false);
+  assert.equal(prismaListItem.manifestVersion, "1");
+  assert.equal(prismaListItem.packageVersion, null);
+  assert.equal(prismaListItem.packageVersionStatus, "not_installed");
+  assert.equal(prismaListItem.compatibleCliRange, `^${enginePackageVersion}`);
+  assert.equal(prismaListItem.policyPin.state, "allowed_unpinned");
+  assert.match(prismaListItem.upgradeCommand, /npm install -D @topogram\/extractor-prisma-db@latest/);
   assert.match(prismaListItem.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
   assert.match(prismaListItem.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
   assert.match(prismaListItem.extractCommand, /topogram extract \.\/prisma-app --out \.\/imported-topogram --from db --extractor @topogram\/extractor-prisma-db/);
@@ -341,6 +348,10 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(showFirstPartyPayload.extractor.package, "@topogram/extractor-prisma-db");
   assert.equal(showFirstPartyPayload.extractor.installed, false);
   assert.equal(showFirstPartyPayload.extractor.executesPackageCode, false);
+  assert.equal(showFirstPartyPayload.extractor.manifestVersion, "1");
+  assert.equal(showFirstPartyPayload.extractor.packageVersionStatus, "not_installed");
+  assert.equal(showFirstPartyPayload.extractor.compatibleCliRange, `^${enginePackageVersion}`);
+  assert.equal(showFirstPartyPayload.extractor.policyPin.pinCommand, "topogram extractor policy pin @topogram/extractor-prisma-db@1");
   assert.match(showFirstPartyPayload.extractor.useWhen, /Prisma/);
   assert.match(showFirstPartyPayload.extractor.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
   assert.match(showFirstPartyPayload.extractor.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
@@ -357,6 +368,8 @@ test("extractor commands list bundled manifests and check package-backed extract
   const checkPayload = JSON.parse(check.stdout);
   assert.equal(checkPayload.ok, true);
   assert.equal(checkPayload.manifest.id, "@scope/extractor-cli-smoke");
+  assert.equal(checkPayload.packageVersion, "1.0.0");
+  assert.equal(checkPayload.compatibleCliRange, `^${enginePackageVersion}`);
   assert.equal(checkPayload.smoke.extractors, 1);
   assert.equal(checkPayload.reviewWorkflow.steps.some((item) => item.id === "review_plan"), true);
 
@@ -505,6 +518,9 @@ test("package-backed extractors add review-only candidates and provenance when p
   const provenance = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-extract.json"), "utf8"));
   assert.equal(provenance.extract.extractorPackages.length, 1);
   assert.equal(provenance.extract.extractorPackages[0].packageName, "@scope/topogram-extractor-smoke");
+  assert.equal(provenance.extract.extractorPackages[0].packageVersion, "1.0.0");
+  assert.equal(provenance.extract.extractorPackages[0].compatibleCliRange, `^${enginePackageVersion}`);
+  assert.equal(provenance.extract.extractorPackages[0].policyPin.state, "pinned");
   assert.deepEqual(provenance.extract.extractorPackages[0].extractors, ["cli.package-smoke"]);
 });
 
@@ -662,6 +678,13 @@ test("package-backed extractors merge multiple tracks into one extraction review
     provenance.extract.extractorPackages.flatMap((entry) => entry.tracks).sort(),
     ["api", "db"]
   );
+  assert.deepEqual(
+    provenance.extract.extractorPackages.map((entry) => `${entry.packageName}:${entry.packageVersion}:${entry.compatibleCliRange}:${entry.policyPin.state}`).sort(),
+    [
+      `@scope/topogram-extractor-api-smoke:1.0.0:^${enginePackageVersion}:pinned`,
+      `@scope/topogram-extractor-db-smoke:1.0.0:^${enginePackageVersion}:pinned`
+    ]
+  );
 
   const plan = runCli(["extract", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
@@ -671,9 +694,17 @@ test("package-backed extractors merge multiple tracks into one extraction review
     planPayload.extractorContext.packageBackedExtractors.map((entry) => entry.packageName).sort(),
     ["@scope/topogram-extractor-api-smoke", "@scope/topogram-extractor-db-smoke"]
   );
+  assert.deepEqual(
+    planPayload.extractorContext.packageBackedExtractors.map((entry) => `${entry.packageName}:${entry.packageVersion}:${entry.compatibleCliRange}:${entry.policyPin.state}`).sort(),
+    [
+      `@scope/topogram-extractor-api-smoke:1.0.0:^${enginePackageVersion}:pinned`,
+      `@scope/topogram-extractor-db-smoke:1.0.0:^${enginePackageVersion}:pinned`
+    ]
+  );
   const databaseBundle = planPayload.bundles.find((bundle) => bundle.bundle === "database");
   assert.equal(databaseBundle.extractorContext.packageBackedExtractors.length, 1);
   assert.equal(databaseBundle.extractorContext.packageBackedExtractors[0].packageName, "@scope/topogram-extractor-db-smoke");
+  assert.equal(databaseBundle.extractorContext.packageBackedExtractors[0].compatibleCliRange, `^${enginePackageVersion}`);
   assert.equal(databaseBundle.extractorContext.safetyNotes.some((note) => note.includes("review candidates")), true);
   const packageTaskBundle = planPayload.bundles.find((bundle) => bundle.bundle === "package-task");
   assert.equal(
@@ -878,6 +909,10 @@ test("extractor policy commands initialize, pin, and report enabled packages", (
   assert.equal(statusPayload.summary.enabledPackages, 1);
   assert.equal(statusPayload.packages[0].packageName, "@scope/topogram-extractor-smoke");
   assert.equal(statusPayload.packages[0].installed, false);
+  assert.equal(statusPayload.packages[0].manifestVersion, "unknown");
+  assert.equal(statusPayload.packages[0].packageVersionStatus, "not_installed");
+  assert.equal(statusPayload.packages[0].compatibleCliRange, null);
+  assert.equal(statusPayload.packages[0].policyPin.state, "package_missing");
   assert.equal(statusPayload.reviewWorkflow.steps.some((item) => item.id === "check"), true);
 
   const humanStatus = runCli(["extractor", "policy", "status", runRoot]);
@@ -1767,7 +1802,10 @@ function writeExtractorPackage(packageRoot, options = {}) {
   fs.writeFileSync(path.join(packageRoot, "package.json"), `${JSON.stringify({
     name: packageName,
     version: "1.0.0",
-    main: "index.cjs"
+    main: "index.cjs",
+    devDependencies: {
+      "@topogram/cli": `^${enginePackageVersion}`
+    }
   }, null, 2)}\n`, "utf8");
   fs.writeFileSync(path.join(packageRoot, "topogram-extractor.json"), `${JSON.stringify({
     id: manifestId,
@@ -1775,6 +1813,7 @@ function writeExtractorPackage(packageRoot, options = {}) {
     tracks: [track],
     source: "package",
     package: packageName,
+    compatibleCliRange: `^${enginePackageVersion}`,
     stack,
     capabilities,
     candidateKinds,

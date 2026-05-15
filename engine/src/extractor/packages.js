@@ -8,6 +8,7 @@ import {
   isPathSpec,
   loadInstalledPackageAdapter,
   loadLocalPackageAdapter,
+  packageMetadataForRoot,
   packageNameFromSpec
 } from "../package-adapters/index.js";
 import {
@@ -182,6 +183,25 @@ function packageBinding(packageName, version) {
 }
 
 /**
+ * @param {import("../extractor-policy.js").ExtractorPolicy} policy
+ * @param {string} packageName
+ * @param {string} manifestVersion
+ * @returns {{ state: string, pinnedVersion: string|null, expectedVersion: string, matches: boolean|null, pinCommand: string }}
+ */
+function packagePolicyPinState(policy, packageName, manifestVersion) {
+  const pinnedVersion = policy.pinnedVersions[packageName] || null;
+  return {
+    state: pinnedVersion
+      ? (pinnedVersion === manifestVersion ? "pinned" : "mismatch")
+      : (extractorPackageAllowed(policy, packageName) ? "allowed_unpinned" : "blocked"),
+    pinnedVersion,
+    expectedVersion: manifestVersion,
+    matches: pinnedVersion ? pinnedVersion === manifestVersion : null,
+    pinCommand: `topogram extractor policy pin ${packageName}@${manifestVersion}`
+  };
+}
+
+/**
  * @param {any} context
  * @returns {any}
  */
@@ -274,11 +294,16 @@ export function packageExtractorsForContext(context) {
         packageContext: packageExtractorContext
       });
     }
+    const packageMetadata = packageMetadataForRoot(packageManifest.packageRoot, "@topogram/cli");
     provenance.push({
       source: "package",
       id: packageManifest.manifest.id,
       version: packageManifest.manifest.version,
       packageName,
+      packageVersion: packageMetadata.version,
+      packageVersionStatus: packageMetadata.version ? "installed" : "unknown",
+      compatibleCliRange: packageManifest.manifest.compatibleCliRange || packageMetadata.dependencyRange || null,
+      policyPin: packagePolicyPinState(policy, packageName, packageManifest.manifest.version),
       tracks: packageManifest.manifest.tracks || [],
       manifestPath: packageManifest.manifestPath,
       packageRoot: packageManifest.packageRoot,

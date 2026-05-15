@@ -23,6 +23,7 @@ export const EXTRACTOR_TRACKS = ["db", "api", "ui", "cli", "workflows", "verific
  * @property {string[]} evidenceTypes
  * @property {string} [package]
  * @property {string} [export]
+ * @property {string} [compatibleCliRange]
  */
 
 /**
@@ -127,6 +128,9 @@ export function validateExtractorManifest(manifest) {
   }
   if (manifest.export != null && (typeof manifest.export !== "string" || manifest.export.length === 0)) {
     errors.push("Extractor manifest export must be a non-empty string when present.");
+  }
+  if (manifest.compatibleCliRange != null && (typeof manifest.compatibleCliRange !== "string" || manifest.compatibleCliRange.length === 0)) {
+    errors.push("Extractor manifest compatibleCliRange must be a non-empty string when present.");
   }
   return { ok: errors.length === 0, errors };
 }

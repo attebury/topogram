@@ -404,6 +404,7 @@ export function scaffoldExtractorPack(target, options = {}) {
     tracks: [track],
     source: "package",
     package: packageName,
+    compatibleCliRange: `^${currentCliVersion()}`,
     stack: defaults.stack,
     capabilities: defaults.capabilities,
     candidateKinds: defaults.candidateKinds,

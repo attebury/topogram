@@ -118,6 +118,9 @@ Extractor command safety: `extractor list`, `extractor show`, and
 `extractor policy` do not load package adapter code. `extractor check` and
 `extract --extractor` do load package adapter code. Extractor packages write
 review-only candidates; `adopt --dry-run` should precede any canonical `--write`.
+Extractor package output distinguishes manifest version, npm package version,
+compatible CLI range, and policy pin state so humans and agents can choose the
+exact install or pin command before execution.
 
 ## Policies and trust
 

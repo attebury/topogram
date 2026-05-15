@@ -5,6 +5,7 @@ import {
   loadExtractorPackageAdapterForSpec,
   validateExtractorAdapter
 } from "./packages.js";
+import { packageMetadataForRoot } from "../package-adapters/index.js";
 import { validateExtractorResult } from "./output.js";
 
 /**
@@ -20,6 +21,8 @@ import { validateExtractorResult } from "./output.js";
  * @property {string|null} packageRoot
  * @property {string|null} manifestPath
  * @property {ExtractorManifest|null} manifest
+ * @property {string|null} packageVersion
+ * @property {string|null} compatibleCliRange
  * @property {Array<{ name: string, ok: boolean, message: string }>} checks
  * @property {string[]} errors
  * @property {{ extractors: number, findings: number, candidateKeys: number, diagnostics: number }|null} smoke
@@ -41,6 +44,8 @@ export function checkExtractorPack(sourceSpec, options = {}) {
     packageRoot: null,
     manifestPath: null,
     manifest: null,
+    packageVersion: null,
+    compatibleCliRange: null,
     checks: [],
     errors: [],
     smoke: null,
@@ -58,6 +63,9 @@ export function checkExtractorPack(sourceSpec, options = {}) {
   payload.packageRoot = loaded.packageRoot;
   payload.manifestPath = loaded.manifestPath;
   payload.manifest = loaded.manifest;
+  const packageMetadata = packageMetadataForRoot(loaded.packageRoot, "@topogram/cli");
+  payload.packageVersion = packageMetadata.version;
+  payload.compatibleCliRange = loaded.manifest?.compatibleCliRange || packageMetadata.dependencyRange || null;
   if (!loaded.manifest) {
     payload.errors.push(...loaded.errors);
     payload.checks.push({ name: "manifest-load", ok: false, message: loaded.errors.join(" ") || "Could not load extractor manifest." });
