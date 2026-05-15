@@ -34,6 +34,7 @@ stories instead of isolated command examples:
 ## Reference
 
 - [SvelteKit / maintained UI realization (design reference)](./design/sveltekit-realization-shape.md)
+- [dev.to draft: specs before pixels](./design/devto-specs-before-pixels-draft.md)
 - [CLI Reference](./reference/cli.md)
 - [DSL Reference](./reference/dsl.md)
 - [Project Config](./reference/project-config.md)
