@@ -1086,9 +1086,15 @@ test("maintained database migrations emit proposals without overwriting maintain
   ], { cwd: projectRoot });
   assert.equal(lifecycle.status, 0, lifecycle.stderr || lifecycle.stdout);
   assert.equal(readJson(path.join(lifecycleOutDir, ".topogram-generated.json")).target, "db-lifecycle-bundle");
-  assert.match(readText(path.join(lifecycleOutDir, "README.md")), /Maintained proposal mode/);
+  const lifecycleReadme = readText(path.join(lifecycleOutDir, "README.md"));
+  assert.match(lifecycleReadme, /Maintained proposal mode/);
+  assert.match(lifecycleReadme, /Review Workflow/);
+  assert.match(lifecycleReadme, /topogram emit db-migration-plan/);
+  assert.match(lifecycleReadme, /Topogram never applies maintained database migrations/);
   const migrateScript = readText(path.join(lifecycleOutDir, "scripts", "db-migrate.sh"));
   assert.match(migrateScript, /No migration was applied/);
+  assert.match(migrateScript, /Migration tool: \$MIGRATION_TOOL/);
+  assert.match(migrateScript, /Apply boundary: \$APPLY_BOUNDARY/);
   assert.doesNotMatch(migrateScript, /\bapply_sql\b/);
 
   const schemaOutDir = path.join(root, "db-proposals", "prisma");

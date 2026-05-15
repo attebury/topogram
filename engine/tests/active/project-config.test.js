@@ -679,12 +679,24 @@ test("database lifecycle plan and bundle honor generated and maintained migratio
   assert.equal(maintainedPlan.behavior.appliesMigrations, false);
   assert.equal(maintainedPlan.state.currentSnapshot, "topo/state/db/app_postgres/current.snapshot.json");
   assert.equal(maintainedPlan.proposals.schemaPath, "apps/services/app_api/prisma/schema.prisma");
+  assert.equal(maintainedPlan.reviewWorkflow.mode, "maintained_proposal");
+  assert.equal(maintainedPlan.reviewWorkflow.tool, "prisma");
+  assert.match(maintainedPlan.reviewWorkflow.applyBoundary, /never applies maintained database migrations/);
+  assert.equal(maintainedPlan.reviewWorkflow.snapshotSource, "topo/state/db/app_postgres/current.snapshot.json");
+  assert.ok(maintainedPlan.reviewWorkflow.commands.some((entry) => entry.id === "migration_plan"));
+  assert.ok(maintainedPlan.reviewWorkflow.commands.some((entry) => entry.command.includes("topogram emit prisma-schema")));
+  assert.ok(maintainedPlan.reviewWorkflow.handoffSteps.some((entry) => entry.includes("apps/services/app_api/prisma/migrations")));
   const maintainedBundle = generateDbLifecycleBundleForProjection(graph, projection, {
     projectConfig: maintained,
     projectionId: "proj_db_postgres"
   });
   assert.match(maintainedBundle["README.md"], /Maintained proposal mode/);
+  assert.match(maintainedBundle["README.md"], /Review Workflow/);
+  assert.match(maintainedBundle["README.md"], /topogram emit db-migration-plan/);
+  assert.match(maintainedBundle["README.md"], /Topogram never applies maintained database migrations/);
   assert.match(maintainedBundle["scripts/db-migrate.sh"], /No migration was applied/);
+  assert.match(maintainedBundle["scripts/db-migrate.sh"], /Migration tool: \$MIGRATION_TOOL/);
+  assert.match(maintainedBundle["scripts/db-migrate.sh"], /Apply boundary: \$APPLY_BOUNDARY/);
   assert.doesNotMatch(maintainedBundle["scripts/db-migrate.sh"], /\bapply_sql\b/);
 });
 

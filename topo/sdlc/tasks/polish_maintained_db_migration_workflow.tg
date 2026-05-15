@@ -3,11 +3,12 @@ task task_polish_maintained_db_migration_workflow {
   description "Polish maintained database migration workflow guidance and command output so generated and maintained SQL, Prisma, and Drizzle paths are unambiguous before implementation work continues."
   satisfies [req_db_migration_ownership_model]
   acceptance_refs [ac_maintained_db_migration_workflow_actionable]
-  verification_refs []
+  verification_refs [verification_engine_gate verification_cli_package_smoke]
   affects [cap_validate_workspace cap_emit_artifacts cap_generate_app_outputs cap_import_brownfield_app]
   blocked_by []
   disposition active
   priority medium
   work_type implementation
-  status unclaimed
+  claimed_by [actor_coding_agent]
+  status done
 }

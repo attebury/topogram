@@ -9,6 +9,10 @@ import { normalizeDbSchemaSnapshot } from "./snapshot.js";
 import { generatePostgresDrizzleSchema } from "./postgres/drizzle.js";
 import { generatePostgresPrismaSchema } from "./postgres/prisma.js";
 import { generateSqlitePrismaSchema } from "./sqlite/prisma.js";
+import {
+  lifecycleReviewWorkflow,
+  renderDbLifecycleReadme
+} from "./lifecycle-review.js";
 
 function defaultInputPathForGraph(graph, options = {}) {
   if (options.topogramInputPath) {
@@ -77,7 +81,7 @@ function dbLifecyclePlan(graph, projection, options = {}) {
     ? migrationStrategy.snapshotPath
     : pathJoinPosix(stateRoot, "current.snapshot.json");
 
-  return {
+  const plan = {
     type: "db_lifecycle_plan",
     projection: snapshot.projection,
     engine,
@@ -146,6 +150,8 @@ function dbLifecyclePlan(graph, projection, options = {}) {
       proposalOnly: migrationStrategy.ownership === "maintained"
     }
   };
+  plan.reviewWorkflow = lifecycleReviewWorkflow(plan);
+  return plan;
 }
 
 function renderEmptySnapshotForProjection(projection) {
@@ -174,58 +180,6 @@ function renderDbLifecycleEnvExample(projection, plan) {
   }
 
   return `POSTGRES_USER=\${USER:-postgres}\nDATABASE_URL=postgresql://\${POSTGRES_USER}@localhost:5432/${projection.id}\nDATABASE_ADMIN_URL=postgresql://\${POSTGRES_USER}@localhost:5432/postgres\nTOPOGRAM_INPUT_PATH=${inputPath}\n`;
-}
-
-function renderDbLifecycleReadme(plan) {
-  const proposalLines = [
-    plan.proposals.snapshotPath ? `- Current snapshot source: \`${plan.proposals.snapshotPath}\`` : null,
-    plan.proposals.schemaPath ? `- Maintained schema path: \`${plan.proposals.schemaPath}\`` : null,
-    plan.proposals.migrationsPath ? `- Maintained migrations path: \`${plan.proposals.migrationsPath}\`` : null
-  ].filter(Boolean).join("\n");
-  const modeText = plan.behavior.proposalOnly
-    ? `Maintained proposal mode. Topogram emits desired snapshots, migration plans, SQL proposals, and schema proposals, but these scripts do not apply migrations to the database. A human or agent must adapt accepted proposals into the maintained migration system.`
-    : `Generated apply mode. Topogram owns this lifecycle bundle and scripts may apply supported generated SQL migrations. Unsupported or destructive migration plans stop for manual review.`;
-  return `# ${plan.projection.name} Lifecycle
-
-This bundle gives agents a repeatable database workflow for projection \`${plan.projection.id}\`.
-
-## Migration Strategy
-
-- Ownership: \`${plan.migrationStrategy.ownership}\`
-- Tool: \`${plan.migrationStrategy.tool}\`
-- Apply: \`${plan.migrationStrategy.apply}\`
-- Defaulted: \`${plan.migrationStrategy.defaulted ? "yes" : "no"}\`
-
-${modeText}
-${proposalLines ? `\n${proposalLines}\n` : ""}
-
-## Modes
-
-- Greenfield: run \`./scripts/db-bootstrap-or-migrate.sh\` with no current snapshot
-- Brownfield: run \`./scripts/db-bootstrap-or-migrate.sh\` with \`state/current.snapshot.json\` already present
-
-## Required Environment
-
-${plan.environment.required.map((name) => `- \`${name}\``).join("\n")}
-
-## Optional Environment
-
-${plan.environment.optional.map((name) => `- \`${name}\``).join("\n")}
-
-## Files
-
-- Desired snapshot: \`${plan.state.desiredSnapshot}\`
-- Current snapshot: \`${plan.state.currentSnapshot}\`
-- Migration plan: \`${plan.state.migrationPlan}\`
-- Migration SQL: \`${plan.state.migrationSql}\`
-
-## Commands
-
-- \`./scripts/db-status.sh\`
-- \`./scripts/db-bootstrap.sh\`
-- \`./scripts/db-migrate.sh\`
-- \`./scripts/db-bootstrap-or-migrate.sh\`
-`;
 }
 
 function renderDbLifecycleCommonScript(plan) {
@@ -320,6 +274,10 @@ fi
 PROJECTION_ID="${plan.projection.id}"
 CONFIGURED_STATE_PATH=${JSON.stringify(configuredStatePath)}
 CONFIGURED_SNAPSHOT_PATH=${JSON.stringify(configuredSnapshotPath)}
+MIGRATION_TOOL=${JSON.stringify(plan.migrationStrategy.tool)}
+APPLY_BOUNDARY=${JSON.stringify(plan.reviewWorkflow.applyBoundary)}
+MAINTAINED_SCHEMA_PATH=${JSON.stringify(plan.proposals.schemaPath || "")}
+MAINTAINED_MIGRATIONS_PATH=${JSON.stringify(plan.proposals.migrationsPath || "")}
 if [[ -n "$CONFIGURED_STATE_PATH" ]]; then
   STATE_DIR="\${TOPOGRAM_DB_STATE_DIR:-$PROJECT_ROOT/$CONFIGURED_STATE_PATH}"
 else
@@ -562,8 +520,17 @@ generate_desired_snapshot
 generate_sql_migration "$EMPTY_SNAPSHOT"
 
 echo "Maintained database runtime: bootstrap is proposal-only."
+echo "Migration tool: $MIGRATION_TOOL"
+echo "Apply boundary: $APPLY_BOUNDARY"
+echo "Current snapshot source: $CURRENT_SNAPSHOT"
 echo "Desired snapshot: $DESIRED_SNAPSHOT"
 echo "SQL proposal: $MIGRATION_SQL"
+if [[ -n "$MAINTAINED_SCHEMA_PATH" ]]; then
+  echo "Maintained schema path: $MAINTAINED_SCHEMA_PATH"
+fi
+if [[ -n "$MAINTAINED_MIGRATIONS_PATH" ]]; then
+  echo "Maintained migrations path: $MAINTAINED_MIGRATIONS_PATH"
+fi
 echo "No migration was applied. Review and adapt the proposal into the maintained database migration system."
 `;
 }
@@ -630,8 +597,17 @@ ensure_supported_plan
 generate_sql_migration "$CURRENT_SNAPSHOT"
 
 echo "Maintained database runtime: migration proposal generated."
+echo "Migration tool: $MIGRATION_TOOL"
+echo "Apply boundary: $APPLY_BOUNDARY"
+echo "Current snapshot source: $CURRENT_SNAPSHOT"
 echo "Migration plan: $PLAN_JSON"
 echo "SQL proposal: $MIGRATION_SQL"
+if [[ -n "$MAINTAINED_SCHEMA_PATH" ]]; then
+  echo "Maintained schema path: $MAINTAINED_SCHEMA_PATH"
+fi
+if [[ -n "$MAINTAINED_MIGRATIONS_PATH" ]]; then
+  echo "Maintained migrations path: $MAINTAINED_MIGRATIONS_PATH"
+fi
 echo "No migration was applied. Review and adapt the proposal into the maintained database migration system."
 `;
 }

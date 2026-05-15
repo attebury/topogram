@@ -61,6 +61,7 @@ do not apply migrations.
 Typical commands:
 
 ```bash
+topogram emit db-lifecycle-plan --projection proj_db --json
 topogram emit db-schema-snapshot --projection proj_db --json
 topogram emit db-migration-plan --projection proj_db --from-snapshot ./topo/state/db/main_db/current.snapshot.json --json
 topogram emit sql-migration --projection proj_db --from-snapshot ./topo/state/db/main_db/current.snapshot.json --write --out-dir ./db-proposals/sql
@@ -68,6 +69,11 @@ topogram emit prisma-schema --projection proj_db --write --out-dir ./db-proposal
 topogram emit drizzle-schema --projection proj_db --write --out-dir ./db-proposals/drizzle
 topogram emit db-lifecycle-bundle --projection proj_db --write --out-dir ./db-proposals/lifecycle
 ```
+
+`db-lifecycle-plan` includes `reviewWorkflow`. For maintained databases, that
+section is the handoff checklist: migration tool, trusted current snapshot,
+proposal commands, apply boundary, and manual steps for adapting the proposal
+into Prisma, Drizzle, or SQL migrations.
 
 Snapshot files passed to `--from-snapshot` are treated as untrusted filesystem
 input. Topogram rejects unsafe JSON keys and malformed DB snapshot shapes before
