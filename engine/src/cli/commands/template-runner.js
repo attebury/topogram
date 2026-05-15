@@ -2,8 +2,8 @@
 
 import path from "node:path";
 
-import { stableStringify } from "../../format.js";
 import { loadProjectConfig } from "../../project-config.js";
+import { sanitizePublicPayload, stablePublicStringify } from "../../public-paths.js";
 import { writeTemplatePolicyForProject } from "../../new-project.js";
 import {
   buildTemplateCheckPayload,
@@ -31,6 +31,42 @@ import {
 } from "./template.js";
 
 /**
+ * @param {Record<string, any>} [config]
+ * @param {string|null|undefined} [projectRoot]
+ * @returns {string|null}
+ */
+function workspaceRootFromConfig(config = {}, projectRoot = null) {
+  if (!projectRoot || !config.workspace || typeof config.workspace !== "string") return null;
+  return path.resolve(projectRoot, config.workspace);
+}
+
+/**
+ * @param {any} payload
+ * @param {{ projectRoot?: string|null, workspaceRoot?: string|null }} [context]
+ * @returns {any}
+ */
+function publicTemplatePayload(payload, context = {}) {
+  return sanitizePublicPayload(payload, {
+    projectRoot: context.projectRoot || payload?.projectRoot || process.cwd(),
+    workspaceRoot: context.workspaceRoot || payload?.workspaceRoot || payload?.topogramRoot || null,
+    cwd: process.cwd()
+  });
+}
+
+/**
+ * @param {any} payload
+ * @param {{ projectRoot?: string|null, workspaceRoot?: string|null }} [context]
+ * @returns {void}
+ */
+function printPublicJson(payload, context = {}) {
+  console.log(stablePublicStringify(payload, {
+    projectRoot: context.projectRoot || payload?.projectRoot || process.cwd(),
+    workspaceRoot: context.workspaceRoot || payload?.workspaceRoot || payload?.topogramRoot || null,
+    cwd: process.cwd()
+  }));
+}
+
+/**
  * @param {{ commandArgs: Record<string, any>, inputPath: string|null|undefined, args: string[], catalogSource?: string|null, templateName?: string|null, outPath?: string|null, json?: boolean }} context
  * @returns {number}
  */
@@ -40,9 +76,9 @@ export function runTemplateCommand(context) {
   if (command === "list") {
     const payload = buildTemplateListPayload({ catalogSource });
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplateList(payload);
+      printTemplateList(publicTemplatePayload(payload));
     }
     return 0;
   }
@@ -55,9 +91,9 @@ export function runTemplateCommand(context) {
     }
     const payload = buildTemplateShowPayload(inputPath, catalogSource);
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplateShow(payload);
+      printTemplateShow(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -68,10 +104,14 @@ export function runTemplateCommand(context) {
       throw new Error("Cannot explain template lifecycle without topogram.project.json.");
     }
     const payload = buildTemplateExplainPayload(projectConfigInfo);
+    const publicContext = {
+      projectRoot: projectConfigInfo.configDir,
+      workspaceRoot: workspaceRootFromConfig(projectConfigInfo.config, projectConfigInfo.configDir)
+    };
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload, publicContext);
     } else {
-      printTemplateExplain(payload);
+      printTemplateExplain(publicTemplatePayload(payload, publicContext));
     }
     return payload.ok ? 0 : 1;
   }
@@ -82,10 +122,14 @@ export function runTemplateCommand(context) {
       throw new Error("Cannot inspect template status without topogram.project.json.");
     }
     const payload = buildTemplateStatusPayload(projectConfigInfo, { latest: args.includes("--latest") });
+    const publicContext = {
+      projectRoot: projectConfigInfo.configDir,
+      workspaceRoot: workspaceRootFromConfig(projectConfigInfo.config, projectConfigInfo.configDir)
+    };
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload, publicContext);
     } else {
-      printTemplateStatus(payload);
+      printTemplateStatus(publicTemplatePayload(payload, publicContext));
     }
     return payload.ok ? 0 : 1;
   }
@@ -99,10 +143,14 @@ export function runTemplateCommand(context) {
       dryRun: args.includes("--dry-run"),
       removePolicy: args.includes("--remove-policy")
     });
+    const publicContext = {
+      projectRoot: projectConfigInfo.configDir,
+      workspaceRoot: workspaceRootFromConfig(projectConfigInfo.config, projectConfigInfo.configDir)
+    };
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload, publicContext);
     } else {
-      printTemplateDetachPayload(payload);
+      printTemplateDetachPayload(publicTemplatePayload(payload, publicContext));
     }
     return payload.ok ? 0 : 1;
   }
@@ -120,10 +168,15 @@ export function runTemplateCommand(context) {
       diagnostics: [],
       errors: []
     };
+    const publicContext = {
+      projectRoot: projectConfigInfo.configDir,
+      workspaceRoot: workspaceRootFromConfig(projectConfigInfo.config, projectConfigInfo.configDir)
+    };
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload, publicContext);
     } else {
-      console.log(`Wrote template policy: ${payload.path}`);
+      const publicPayload = publicTemplatePayload(payload, publicContext);
+      console.log(`Wrote template policy: ${publicPayload.path}`);
       console.log(`Allowed template ids: ${policy.allowedTemplateIds.join(", ") || "(any)"}`);
       console.log(`Allowed sources: ${policy.allowedSources.join(", ") || "(any)"}`);
     }
@@ -133,9 +186,9 @@ export function runTemplateCommand(context) {
   if (command === "policy:check") {
     const payload = buildTemplatePolicyCheckPayload(inputPath || "./topo");
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplatePolicyCheckPayload(payload);
+      printTemplatePolicyCheckPayload(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -143,9 +196,9 @@ export function runTemplateCommand(context) {
   if (command === "policy:explain") {
     const payload = buildTemplatePolicyExplainPayload(inputPath || "./topo");
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplatePolicyExplainPayload(payload);
+      printTemplatePolicyExplainPayload(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -153,9 +206,9 @@ export function runTemplateCommand(context) {
   if (command === "policy:pin") {
     const payload = buildTemplatePolicyPinPayload(inputPath || "./topo", commandArgs.templatePolicyPinSpec);
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplatePolicyPinPayload(payload);
+      printTemplatePolicyPinPayload(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -168,9 +221,9 @@ export function runTemplateCommand(context) {
     }
     const payload = buildTemplateCheckPayload(inputPath);
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else {
-      printTemplateCheckPayload(payload);
+      printTemplateCheckPayload(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -185,11 +238,11 @@ export function runTemplateCommand(context) {
       outPath
     });
     if (json) {
-      console.log(stableStringify(payload));
+      printPublicJson(payload);
     } else if (args.includes("--recommend")) {
-      printTemplateUpdateRecommendation(payload);
+      printTemplateUpdateRecommendation(publicTemplatePayload(payload));
     } else {
-      printTemplateUpdatePlan(payload);
+      printTemplateUpdatePlan(publicTemplatePayload(payload));
     }
     return payload.ok ? 0 : 1;
   }

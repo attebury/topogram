@@ -24,6 +24,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 - Docs must execute. Any documented command shape needs regression coverage or a clear reason it cannot be executed.
 - Generated and maintained ownership are different. Generated outputs can be replaced only through the generated-output sentinel; maintained paths are never overwritten.
 - Stateful workflow mutations are command-owned. Edit declarative `topo/**/*.tg` source directly when needed, but use Topogram commands for SDLC status/history, plan step progress, archives, template trust, provenance, generated sentinels, release state, and rollout state.
+- Public artifacts must be portable. JSON output, reports, contracts, agent packets, extraction/adoption output, generator/extractor diagnostics, SDLC packets, and proof artifacts must not expose local usernames, home directories, temp roots, CI workspace paths, or absolute source paths.
 - Template implementation is executable code. Do not trust, refresh, or execute it without explicit trust checks and reviewable hashes.
 - Generator packages own stack realization. Topogram core owns contracts, topology/runtimes, validation, trust, catalog/template lifecycle, and output ownership.
 - UI intent is semantic. Topogram models contracts, surfaces, widgets, screen routes, behavior, and design tokens, not framework trees or raw CSS.

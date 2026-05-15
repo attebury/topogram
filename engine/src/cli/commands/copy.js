@@ -22,7 +22,7 @@ import {
   printCatalogList
 } from "./catalog/list.js";
 import { shellCommandArg } from "./catalog/shared.js";
-import { stableStringify } from "../../format.js";
+import { replaceKnownPathSubstrings, stablePublicStringify, toPortablePath } from "../../public-paths.js";
 
 const ENGINE_ROOT = path.resolve(fileURLToPath(new URL("../../../", import.meta.url)));
 const TEMPLATES_ROOT = path.join(ENGINE_ROOT, "templates");
@@ -213,15 +213,20 @@ function templateCopyPayload(result) {
  */
 export function printTemplateCopyResult(result, cwd) {
   const template = result.template || {};
-  console.log(`Copied Topogram template to ${result.projectRoot}.`);
+  const publicContext = {
+    projectRoot: result.projectRoot,
+    workspaceRoot: result.topogramPath,
+    cwd
+  };
+  console.log(`Copied Topogram template to ${toPortablePath(result.projectRoot, publicContext)}.`);
   console.log(`Template: ${result.templateName}`);
   console.log(`Source: ${template.source || "unknown"}`);
   if (template.sourceSpec) {
-    console.log(`Source spec: ${template.sourceSpec}`);
+    console.log(`Source spec: ${toPortablePath(template.sourceSpec, publicContext)}`);
   }
   if (template.catalog) {
-    console.log(`Catalog: ${template.catalog.id} from ${template.catalog.source}`);
-    console.log(`Package: ${template.catalog.packageSpec}`);
+    console.log(`Catalog: ${template.catalog.id} from ${replaceKnownPathSubstrings(template.catalog.source, publicContext)}`);
+    console.log(`Package: ${replaceKnownPathSubstrings(template.catalog.packageSpec, publicContext)}`);
   }
   console.log(`Executable implementation: ${template.includesExecutableImplementation ? "yes" : "no"}`);
   console.log("Policy: topogram.template-policy.json");
@@ -231,11 +236,11 @@ export function printTemplateCopyResult(result, cwd) {
     console.log("Trust: .topogram-template-trust.json");
   }
   for (const warning of result.warnings) {
-    console.warn(`Warning: ${warning}`);
+    console.warn(`Warning: ${replaceKnownPathSubstrings(warning, publicContext)}`);
   }
   console.log("");
   console.log("Next steps:");
-  console.log(`  cd ${displayProjectRootForCopy(result, cwd)}`);
+  console.log(`  cd ${shellCommandArg(replaceKnownPathSubstrings(displayProjectRootForCopy(result, cwd), publicContext))}`);
   console.log("  npm install");
   console.log("  npm run agent:brief");
   console.log("  npm run doctor");
@@ -257,9 +262,14 @@ export function printTemplateCopyResult(result, cwd) {
  * @returns {void}
  */
 export function printTopogramCopy(payload) {
-  console.log(`Copied topogram '${payload.id}' to ${payload.targetPath}.`);
-  console.log(`Package: ${payload.packageSpec}`);
-  console.log(`Source provenance: ${payload.provenancePath}`);
+  const publicContext = {
+    projectRoot: payload.targetPath,
+    workspaceRoot: path.join(payload.targetPath, DEFAULT_TOPO_FOLDER_NAME),
+    cwd: process.cwd()
+  };
+  console.log(`Copied topogram '${payload.id}' to ${toPortablePath(payload.targetPath, publicContext)}.`);
+  console.log(`Package: ${replaceKnownPathSubstrings(payload.packageSpec, publicContext)}`);
+  console.log(`Source provenance: ${toPortablePath(payload.provenancePath, publicContext)}`);
   console.log(`Files: ${payload.files.length}`);
   console.log(`${TOPOGRAM_SOURCE_FILE} records copy provenance only. Local edits are allowed.`);
   console.log("");
@@ -286,7 +296,7 @@ export function runCopyCommand(context) {
   if (commandArgs.copyCommand === "list") {
     const payload = buildCatalogListPayload(catalogSource || null);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { cwd: process.cwd() }));
     } else {
       printCatalogList(payload);
     }
@@ -317,7 +327,11 @@ export function runCopyCommand(context) {
   }
   if (catalogTopogram) {
     if (json) {
-      console.log(stableStringify(catalogTopogram));
+      console.log(stablePublicStringify(catalogTopogram, {
+        projectRoot: catalogTopogram.targetPath,
+        workspaceRoot: path.join(catalogTopogram.targetPath, DEFAULT_TOPO_FOLDER_NAME),
+        cwd
+      }));
     } else {
       printTopogramCopy(catalogTopogram);
     }
@@ -329,7 +343,11 @@ export function runCopyCommand(context) {
     if (fs.existsSync(path.join(localRoot, DEFAULT_TOPO_FOLDER_NAME)) && !fs.existsSync(path.join(localRoot, "topogram-template.json"))) {
       const payload = copyLocalTopogramSource(source, targetPath);
       if (json) {
-        console.log(stableStringify(payload));
+        console.log(stablePublicStringify(payload, {
+          projectRoot: payload.targetPath,
+          workspaceRoot: path.join(payload.targetPath, DEFAULT_TOPO_FOLDER_NAME),
+          cwd
+        }));
       } else {
         printTopogramCopy(payload);
       }
@@ -349,7 +367,11 @@ export function runCopyCommand(context) {
     templatesRoot: TEMPLATES_ROOT
   });
   if (json) {
-    console.log(stableStringify(templateCopyPayload(result)));
+    console.log(stablePublicStringify(templateCopyPayload(result), {
+      projectRoot: result.projectRoot,
+      workspaceRoot: result.topogramPath,
+      cwd
+    }));
   } else {
     printTemplateCopyResult(result, cwd);
   }

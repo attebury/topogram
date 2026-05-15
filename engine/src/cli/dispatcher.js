@@ -42,6 +42,7 @@ import {
 } from "./path-normalization.js";
 import { printQueryHelp, printUsage } from "./help-dispatch.js";
 import { stableStringify } from "../format.js";
+import { sanitizePublicPayload, stablePublicStringify } from "../public-paths.js";
 
 /**
  * @typedef {Record<string, any>} CommandArgs
@@ -169,9 +170,9 @@ export async function runCliDispatch(context) {
   if (shouldDoctor) {
     const payload = buildDoctorPayload(catalogSource || inputPath || null);
     if (emitJson) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: process.cwd(), cwd: process.cwd() }));
     } else {
-      printDoctor(payload);
+      printDoctor(sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() }));
     }
     return payload.ok ? 0 : 1;
   }

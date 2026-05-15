@@ -11,6 +11,7 @@ import { parsePath } from "../../src/parser.js";
 import { loadImplementationProvider } from "../../src/example-implementation.js";
 import { writeTemplateTrustRecord } from "../../src/template-trust/record.js";
 import { repoRootFromCliModuleUrl } from "../../src/cli/output-safety.js";
+import { replaceKnownPathSubstrings } from "../../src/public-paths.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const engineRoot = path.join(repoRoot, "engine");
@@ -71,6 +72,15 @@ function expectRefusedOutput(args, markerPath, options = {}) {
   assert.equal(fs.readFileSync(markerPath, "utf8"), "keep\n");
 }
 
+function assertNoMachineLocalPaths(text, label) {
+  assert.doesNotMatch(text, /\/Users\//, label);
+  assert.doesNotMatch(text, /\/home\//, label);
+  assert.doesNotMatch(text, /\/private\/tmp\//, label);
+  assert.doesNotMatch(text, /\/var\/folders\//, label);
+  assert.doesNotMatch(text, /\/tmp\/topogram-/i, label);
+  assert.doesNotMatch(text, /[A-Za-z]:\\Users\\/i, label);
+}
+
 test("validate normalizes a demo root to its topo child", () => {
   const { root } = copyFixtureTopogram();
   fs.writeFileSync(path.join(root, "invalid-root.tg"), "this is not a topogram statement\n", "utf8");
@@ -97,6 +107,23 @@ test("CLI repo root resolution handles encoded module file URLs", () => {
   const moduleUrl = pathToFileURL(fakeCliModule).href;
 
   assert.equal(repoRootFromCliModuleUrl(moduleUrl), path.resolve(root));
+});
+
+test("public path replacement only matches whole path segments", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-review-"));
+  const context = {
+    projectRoot: root,
+    workspaceRoot: path.join(root, "topo")
+  };
+
+  assert.equal(
+    replaceKnownPathSubstrings(path.join(root, "topogram.project.json"), context),
+    "<repo>/topogram.project.json"
+  );
+  assert.equal(
+    replaceKnownPathSubstrings(path.join(root, "topo", "widgets", "example.tg"), context),
+    "<workspace>/widgets/example.tg"
+  );
 });
 
 test("app generation requires an explicit implementation provider", () => {
@@ -200,5 +227,58 @@ test("generated contracts do not contain machine-local paths", () => {
     assert.doesNotMatch(contents, /\/Users\//, file);
     assert.doesNotMatch(contents, /graphRoot/, file);
     assert.doesNotMatch(contents, /engine\/src\/cli\.js/, file);
+  }
+});
+
+test("public JSON outputs use portable paths", () => {
+  const { root, topogramRoot } = copyFixtureTopogram();
+  const outputs = [];
+
+  for (const [label, args, options] of [
+    ["check", ["check", root, "--json"], {}],
+    ["check human", ["check", root], {}],
+    ["agent brief", ["agent", "brief", root, "--json"], {}],
+    ["widget check", ["widget", "check", topogramRoot, "--json"], {}],
+    ["emit widget report", ["emit", "widget-conformance-report", topogramRoot, "--json"], {}],
+    ["generator policy status human", ["generator", "policy", "status", topogramRoot], {}],
+    ["generator list", ["generator", "list", "--json"], { cwd: root }],
+    ["extractor list", ["extractor", "list", "--json"], { cwd: root }],
+    ["template explain json", ["template", "explain", topogramRoot, "--json"], {}],
+    ["template explain human", ["template", "explain", topogramRoot], {}],
+    ["template detach json", ["template", "detach", topogramRoot, "--dry-run", "--json"], {}],
+    ["template detach human", ["template", "detach", topogramRoot, "--dry-run"], {}]
+  ]) {
+    const result = runCli(args, options);
+    assert.equal(result.status, 0, `${label}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+    outputs.push([label, result.stdout]);
+  }
+
+  const generatedApp = path.join(root, "generated-app");
+  const generateApp = runCli(["generate", "app", root, "--out", generatedApp]);
+  assert.equal(generateApp.status, 0, `generate app\nstdout:\n${generateApp.stdout}\nstderr:\n${generateApp.stderr}`);
+  outputs.push(["generate app human", generateApp.stdout]);
+
+  const copyTarget = path.join(root, "copied-template");
+  const copyTemplate = runCli(["copy", path.join(engineRoot, "tests", "fixtures", "templates", "hello-web"), copyTarget], { cwd: root });
+  assert.equal(copyTemplate.status, 0, `copy template\nstdout:\n${copyTemplate.stdout}\nstderr:\n${copyTemplate.stderr}`);
+  outputs.push(["copy template human", copyTemplate.stdout]);
+
+  const extractSource = path.join(engineRoot, "tests", "fixtures", "import", "route-fallback");
+  const extractTarget = path.join(root, "extracted");
+  const extract = runCli(["extract", extractSource, "--out", extractTarget, "--from", "api,ui", "--json"]);
+  assert.equal(extract.status, 0, extract.stderr || extract.stdout);
+  outputs.push(["extract", extract.stdout]);
+
+  const plan = runCli(["extract", "plan", extractTarget, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  outputs.push(["extract plan", plan.stdout]);
+
+  const adoptList = runCli(["adopt", "--list", extractTarget, "--json"]);
+  assert.equal(adoptList.status, 0, adoptList.stderr || adoptList.stdout);
+  outputs.push(["adopt list", adoptList.stdout]);
+
+  for (const [label, output] of outputs) {
+    assertNoMachineLocalPaths(output, label);
+    assert.match(output, /<repo>|<workspace>|<external>|topo\//, label);
   }
 });

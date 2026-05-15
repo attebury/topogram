@@ -1,6 +1,6 @@
 // @ts-check
 
-import { stableStringify } from "../../../format.js";
+import { sanitizePublicPayload, stablePublicStringify } from "../../../public-paths.js";
 import {
   buildGeneratorPolicyCheckPayload,
   buildGeneratorPolicyExplainPayload,
@@ -17,6 +17,17 @@ import {
 } from "./printers.js";
 
 /**
+ * @param {any} payload
+ * @returns {any}
+ */
+function publicPolicyPayload(payload) {
+  return sanitizePublicPayload(payload, {
+    projectRoot: process.cwd(),
+    cwd: process.cwd()
+  });
+}
+
+/**
  * @param {{
  *   commandArgs: Record<string, any>,
  *   inputPath: string|null|undefined,
@@ -30,9 +41,9 @@ export function runGeneratorPolicyCommand(context) {
   if (commandArgs.generatorPolicyCommand === "init") {
     const payload = buildGeneratorPolicyInitPayload(projectPath);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: projectPath, cwd: process.cwd() }));
     } else {
-      printGeneratorPolicyInitPayload(payload);
+      printGeneratorPolicyInitPayload(publicPolicyPayload(payload));
     }
     return 0;
   }
@@ -40,9 +51,9 @@ export function runGeneratorPolicyCommand(context) {
   if (commandArgs.generatorPolicyCommand === "status") {
     const payload = buildGeneratorPolicyStatusPayload(projectPath);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: projectPath, cwd: process.cwd() }));
     } else {
-      printGeneratorPolicyStatusPayload(payload);
+      printGeneratorPolicyStatusPayload(publicPolicyPayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -50,9 +61,9 @@ export function runGeneratorPolicyCommand(context) {
   if (commandArgs.generatorPolicyCommand === "check") {
     const payload = buildGeneratorPolicyCheckPayload(projectPath);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: projectPath, cwd: process.cwd() }));
     } else {
-      printGeneratorPolicyCheckPayload(payload);
+      printGeneratorPolicyCheckPayload(publicPolicyPayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -60,9 +71,9 @@ export function runGeneratorPolicyCommand(context) {
   if (commandArgs.generatorPolicyCommand === "explain") {
     const payload = buildGeneratorPolicyExplainPayload(projectPath);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: projectPath, cwd: process.cwd() }));
     } else {
-      printGeneratorPolicyExplainPayload(payload);
+      printGeneratorPolicyExplainPayload(publicPolicyPayload(payload));
     }
     return payload.ok ? 0 : 1;
   }
@@ -70,9 +81,9 @@ export function runGeneratorPolicyCommand(context) {
   if (commandArgs.generatorPolicyCommand === "pin") {
     const payload = buildGeneratorPolicyPinPayload(projectPath, commandArgs.generatorPolicyPinSpec);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: projectPath, cwd: process.cwd() }));
     } else {
-      printGeneratorPolicyPinPayload(payload);
+      printGeneratorPolicyPinPayload(publicPolicyPayload(payload));
     }
     return payload.ok ? 0 : 1;
   }

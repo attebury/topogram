@@ -1,6 +1,6 @@
 // @ts-check
 
-import { stableStringify } from "../../format.js";
+import { stablePublicStringify } from "../../public-paths.js";
 import {
   buildBrownfieldImportAdoptListPayload,
   buildBrownfieldImportAdoptPayload,
@@ -23,6 +23,19 @@ import {
   printBrownfieldImportWorkspace,
   printExtractHelp
 } from "./import.js";
+
+/**
+ * @param {Record<string, any>} payload
+ * @param {string|null|undefined} inputPath
+ * @returns {{ projectRoot: string, workspaceRoot: string|null|undefined, cwd: string }}
+ */
+function publicImportContext(payload, inputPath) {
+  return {
+    projectRoot: inputPath || process.cwd(),
+    workspaceRoot: payload.workspaceRoot || payload.topogramRoot,
+    cwd: process.cwd()
+  };
+}
 
 /**
  * @param {{ commandArgs: Record<string, any>, inputPath: string|null|undefined, outPath?: string|null, fromValue?: string|null, extractorSpecs?: string[], extractorPolicyPath?: string|null, reasonValue?: string|null, refreshAdopted?: boolean, dryRun?: boolean, write?: boolean, force?: boolean, json?: boolean }} context
@@ -53,7 +66,7 @@ export function runImportCommand(context) {
     }
     const payload = buildBrownfieldImportWorkspacePayload(inputPath || "", outPath, { from: fromValue, extractorSpecs, extractorPolicyPath, cwd: process.cwd() });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: outPath || process.cwd(), workspaceRoot: payload.workspaceRoot, cwd: process.cwd() }));
     } else {
       printBrownfieldImportWorkspace(payload);
     }
@@ -63,7 +76,7 @@ export function runImportCommand(context) {
   if (command === "diff") {
     const payload = buildBrownfieldImportDiffPayload(inputPath || ".", { sourcePath: fromValue });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportDiff(payload);
     }
@@ -73,7 +86,7 @@ export function runImportCommand(context) {
   if (command === "refresh") {
     const payload = buildBrownfieldImportRefreshPayload(inputPath || ".", { sourcePath: fromValue, dryRun });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportRefresh(payload);
     }
@@ -83,7 +96,7 @@ export function runImportCommand(context) {
   if (command === "check") {
     const payload = buildBrownfieldImportCheckPayload(inputPath || ".");
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportCheck(payload);
     }
@@ -93,7 +106,7 @@ export function runImportCommand(context) {
   if (command === "plan") {
     const payload = buildBrownfieldImportPlanPayload(inputPath || ".");
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportPlan(payload);
     }
@@ -103,7 +116,7 @@ export function runImportCommand(context) {
   if (command === "adopt-list") {
     const payload = buildBrownfieldImportAdoptListPayload(inputPath || ".");
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportAdoptList(payload);
     }
@@ -129,7 +142,7 @@ export function runImportCommand(context) {
       refreshAdopted
     });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportAdopt(payload);
     }
@@ -139,7 +152,7 @@ export function runImportCommand(context) {
   if (command === "status") {
     const payload = buildBrownfieldImportStatusPayload(inputPath || ".");
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportStatus(payload);
     }
@@ -149,7 +162,7 @@ export function runImportCommand(context) {
   if (command === "history") {
     const payload = buildBrownfieldImportHistoryPayload(inputPath || ".", { verify: commandArgs.verify });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, publicImportContext(payload, inputPath)));
     } else {
       printBrownfieldImportHistory(payload);
     }

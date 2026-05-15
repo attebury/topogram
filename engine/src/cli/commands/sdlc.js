@@ -2,8 +2,8 @@
 
 import path from "node:path";
 
-import { stableStringify } from "../../format.js";
 import { parsePath } from "../../parser.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import { resolveWorkspace } from "../../resolver.js";
 import { formatValidationErrors } from "../../validator.js";
 import { resolveTopoRoot } from "../../workspace-paths.js";
@@ -52,6 +52,7 @@ function includeHistory(args) {
  * @returns {void}
  */
 function printPolicyExplain(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log("Topogram SDLC policy");
   console.log(`Status: ${payload.policy?.status || "not_adopted"}`);
   console.log(`Mode: ${payload.policy?.mode || "none"}`);
@@ -76,6 +77,7 @@ function printPolicyExplain(payload) {
  * @returns {void}
  */
 function printCommitPrep(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), workspaceRoot: payload.workspaceRoot, cwd: process.cwd() });
   console.log("Topogram SDLC commit prep");
   console.log(`Status: ${payload.ok ? "ready" : "needs attention"}`);
   console.log(`Changed task files: ${(payload.taskFiles || []).length}`);
@@ -121,6 +123,19 @@ function resolveSdlcWorkspace(sdlcRoot) {
 }
 
 /**
+ * @param {any} payload
+ * @param {string} sdlcRoot
+ * @returns {string}
+ */
+function sdlcJson(payload, sdlcRoot) {
+  return stablePublicStringify(payload, {
+    projectRoot: path.dirname(sdlcRoot),
+    workspaceRoot: sdlcRoot,
+    cwd: process.cwd()
+  });
+}
+
+/**
  * Runs `topogram sdlc ...` commands and the legacy top-level `topogram release`
  * command.
  *
@@ -159,7 +174,7 @@ export async function runSdlcCommand(context) {
     const projectRoot = policyProjectRoot(context.inputPath || ".");
     if (commandArgs.sdlcCommand === "policy:init") {
       const result = writeDefaultSdlcPolicy(projectRoot);
-      console.log(stableStringify(result));
+      console.log(stablePublicStringify(result, { projectRoot, cwd: process.cwd() }));
       return result.ok ? 0 : 1;
     }
     if (commandArgs.sdlcCommand === "policy:check") {
@@ -174,18 +189,18 @@ export async function runSdlcCommand(context) {
         diagnostics: info.diagnostics
       };
       if (json) {
-        console.log(stableStringify(result));
+        console.log(stablePublicStringify(result, { projectRoot, cwd: process.cwd() }));
       } else if (result.ok) {
-        console.log(`SDLC policy is valid: ${result.path}`);
+        console.log(`SDLC policy is valid: ${sanitizePublicPayload(result, { projectRoot, cwd: process.cwd() }).path}`);
       } else {
-        console.error(stableStringify(result));
+        console.error(stablePublicStringify(result, { projectRoot, cwd: process.cwd() }));
       }
       return result.ok ? 0 : 1;
     }
     if (commandArgs.sdlcCommand === "policy:explain") {
       const result = explainSdlcPolicy(projectRoot);
       if (json) {
-        console.log(stableStringify(result));
+        console.log(stablePublicStringify(result, { projectRoot, cwd: process.cwd() }));
       } else {
         printPolicyExplain(result);
       }
@@ -202,7 +217,7 @@ export async function runSdlcCommand(context) {
       exemption,
       requireAdopted: args.includes("--require-adopted")
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -213,7 +228,7 @@ export async function runSdlcCommand(context) {
       head
     });
     if (json) {
-      console.log(stableStringify(result));
+      console.log(sdlcJson(result, sdlcRoot));
     } else {
       printCommitPrep(result);
     }
@@ -228,7 +243,7 @@ export async function runSdlcCommand(context) {
     }
     const result = auditWorkspace(sdlcRoot, resolved);
     if (json) {
-      console.log(stableStringify(result));
+      console.log(sdlcJson(result, sdlcRoot));
     } else {
       printSdlcAudit(result);
     }
@@ -240,7 +255,7 @@ export async function runSdlcCommand(context) {
     const result = linkSdlcRecord(sdlcRoot, commandArgs.sdlcFromId, commandArgs.sdlcToId, {
       write: args.includes("--write")
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -251,7 +266,7 @@ export async function runSdlcCommand(context) {
       actor,
       note
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -263,7 +278,7 @@ export async function runSdlcCommand(context) {
       actor,
       note
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -272,21 +287,21 @@ export async function runSdlcCommand(context) {
     const result = createPlan(sdlcRoot, commandArgs.sdlcId, commandArgs.sdlcSlug, {
       write: args.includes("--write") && !dryRun
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (commandArgs.sdlcCommand === "plan:explain") {
     const { explainPlan } = await import("../../sdlc/plan.js");
     const result = explainPlan(sdlcRoot, commandArgs.sdlcId);
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (String(commandArgs.sdlcCommand || "").startsWith("plan:step:")) {
     const { transitionPlanStep } = await import("../../sdlc/plan.js");
     if (commandArgs.sdlcCommand === "plan:step:skip" && !note) {
-      console.log(stableStringify({ ok: false, error: "sdlc plan step skip requires --note <reason>" }));
+      console.log(sdlcJson({ ok: false, error: "sdlc plan step skip requires --note <reason>" }, sdlcRoot));
       return 1;
     }
     const result = transitionPlanStep(sdlcRoot, commandArgs.sdlcId, commandArgs.sdlcStepId, commandArgs.sdlcTargetStatus, {
@@ -295,7 +310,7 @@ export async function runSdlcCommand(context) {
       actor,
       note
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -306,7 +321,7 @@ export async function runSdlcCommand(context) {
       note,
       dryRun
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -317,7 +332,7 @@ export async function runSdlcCommand(context) {
       return 1;
     }
     const result = checkWorkspace(sdlcRoot, resolved);
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return strict && (!result.ok || result.warnings.length > 0) ? 1 : 0;
   }
 
@@ -331,13 +346,13 @@ export async function runSdlcCommand(context) {
       includeHistory: includeHistory(args)
     });
     if (args.includes("--brief") && result.ok) {
-      console.log(stableStringify({
+      console.log(sdlcJson({
         id: result.id,
         status: result.status,
         next_action: result.next_action
-      }));
+      }, sdlcRoot));
     } else {
-      console.log(stableStringify(result));
+      console.log(sdlcJson(result, sdlcRoot));
     }
     return result.ok ? 0 : 1;
   }
@@ -355,35 +370,35 @@ export async function runSdlcCommand(context) {
           statuses: status ? status.split(",") : null
         });
     const result = archiveBatch(sdlcRoot, ids, { dryRun, by: actor, reason: note });
-    console.log(stableStringify({ candidates: ids, ...result }));
+    console.log(sdlcJson({ candidates: ids, ...result }, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (commandArgs.sdlcCommand === "unarchive") {
     const { unarchive } = await import("../../archive/unarchive.js");
     const result = unarchive(sdlcRoot, commandArgs.sdlcId, {});
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (commandArgs.sdlcCommand === "compact") {
     const { compact } = await import("../../archive/compact.js");
     const result = compact(path.resolve(commandArgs.sdlcArchiveFile));
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (commandArgs.sdlcCommand === "new") {
     const { scaffoldNew } = await import("../../sdlc/scaffold.js");
     const result = scaffoldNew(sdlcRoot, commandArgs.sdlcNewKind, commandArgs.sdlcNewSlug);
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
   if (commandArgs.sdlcCommand === "adopt") {
     const { sdlcAdopt } = await import("../../sdlc/adopt.js");
     const result = sdlcAdopt(sdlcRoot);
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 
@@ -395,7 +410,7 @@ export async function runSdlcCommand(context) {
       dryRun,
       actor
     });
-    console.log(stableStringify(result));
+    console.log(sdlcJson(result, sdlcRoot));
     return result.ok ? 0 : 1;
   }
 

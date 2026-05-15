@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { TOPOGRAM_SOURCE_FILE } from "./constants.js";
 import { collectFiles, fileHash } from "./files.js";
+import { replaceKnownPathSubstrings } from "../public-paths.js";
 import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
 
 /**
@@ -13,18 +14,19 @@ import { DEFAULT_TOPO_FOLDER_NAME } from "../workspace-paths.js";
  * @returns {{ path: string, record: Record<string, any> }}
  */
 export function writeTopogramSourceRecord(projectRoot, input) {
+  const publicContext = { projectRoot, cwd: process.cwd() };
   const record = {
     version: "0.1",
     kind: "topogram",
     copiedAt: new Date().toISOString(),
     catalog: {
       id: input.entry.id,
-      source: input.catalogSource
+      source: input.catalogSource ? replaceKnownPathSubstrings(input.catalogSource, publicContext) : null
     },
     package: {
       name: input.entry.package,
       version: input.version,
-      spec: input.packageSpec
+      spec: replaceKnownPathSubstrings(input.packageSpec, publicContext)
     },
     trust: {
       includesExecutableImplementation: false

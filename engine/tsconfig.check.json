@@ -52,6 +52,7 @@
     "./src/format.d.ts",
     "./src/text-helpers.d.ts",
     "./src/path-helpers.d.ts",
+    "./src/public-paths.js",
     "./src/example-implementation.d.ts",
     "./src/policy/review-boundaries.d.ts",
     "./src/remote-payload-limits.js",

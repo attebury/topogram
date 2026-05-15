@@ -2,7 +2,7 @@
 
 import path from "node:path";
 
-import { stableStringify } from "../../format.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import {
   buildTopogramSourceStatus,
   TOPOGRAM_SOURCE_FILE
@@ -145,6 +145,7 @@ export function buildProjectSourceStatus(projectRoot, options = {}) {
  * @returns {void}
  */
 export function printTopogramSourceStatus(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: payload.project?.root || process.cwd(), cwd: process.cwd() });
   if (payload.project?.package && payload.project?.packageChecks?.mode === "remote") {
     console.log("Package checks: remote. Use --local to skip registry access.");
   } else if (payload.project?.package && payload.project?.packageChecks?.mode === "local") {
@@ -274,7 +275,7 @@ export function runSourceCommand(context) {
     local: context.args.includes("--local") && !sourceStatusRemote
   });
   if (context.json) {
-    console.log(stableStringify(payload));
+    console.log(stablePublicStringify(payload, { projectRoot: payload.project?.root || process.cwd(), cwd: process.cwd() }));
   } else {
     printTopogramSourceStatus(payload);
   }

@@ -31,7 +31,7 @@ test("agent brief returns stable JSON and does not write an app", () => {
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.type, "agent_brief");
   assert.equal(payload.version, "1");
-  assert.equal(payload.project.root, fixtureRoot);
+  assert.equal(payload.project.root, "<repo>");
   assert.equal(payload.template.includesExecutableImplementation, true);
   assert.ok(payload.read_order.some((item) => item.path === "topogram.project.json"));
   assert.ok(payload.first_commands.some((item) => item.command === "npm run agent:brief"));
@@ -102,8 +102,7 @@ test("agent brief gives JSON-first extract guidance with workspaceRoot", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.type, "agent_brief");
-  const expectedWorkspaceRoot = fs.realpathSync(path.join(projectRoot, "topo"));
-  assert.equal(payload.extract.workspaceRoot, expectedWorkspaceRoot);
+  assert.match(payload.extract.workspaceRoot, /^<repo>\/topo$|^<external>\/topo$/);
   assert.ok(payload.first_commands.some((item) => item.command === "topogram extract check . --json"));
   assert.ok(payload.first_commands.some((item) => item.command === "topogram extract status . --json"));
   const importWorkflow = payload.workflows.find((workflow) => workflow.id === "brownfield-extract");

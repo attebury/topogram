@@ -4,9 +4,11 @@ Use `--json` for agent and script automation.
 
 Important fields:
 
-- `workspaceRoot`: canonical path to the project-owned workspace folder,
-  normally `topo/`.
-- `projectRoot`: target project root.
+- `workspaceRoot`: canonical path to the project-owned workspace folder. Public
+  JSON uses portable placeholders such as `<repo>/topo` or `<workspace>`, not
+  machine-local absolute paths.
+- `projectRoot`: target project root, serialized as a portable placeholder such
+  as `<repo>`.
 - `candidateCounts`: number of extracted candidate artifacts by surface,
   including fields such as `apiCapabilities`, `apiRoutes`,
   `dbMaintainedSeams`, `uiFlows`, `uiWidgets`, `cliCommands`, and
@@ -76,3 +78,8 @@ verification targets.
 
 Agents should use `workspaceRoot`, not older compatibility fields, when deciding
 where project-owned Topogram files live.
+
+Public JSON, reports, and proof artifacts are safe to commit by default: paths
+under the project are emitted as repo-relative values or placeholders, and
+external local paths are redacted as `<external>/...`. Internal engine file IO
+may still use absolute paths before values cross a public output boundary.

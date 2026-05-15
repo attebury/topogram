@@ -1,0 +1,6 @@
+acceptance_criterion ac_public_outputs_sanitize_machine_paths {
+  name "Public Outputs Sanitize Machine Paths"
+  description "Given a Topogram project located under a machine-local path, when representative public commands emit JSON or write report artifacts, then serialized output uses repo-relative paths or placeholders and does not contain local home, temp, CI workspace, or absolute source path prefixes."
+  requirement req_public_outputs_are_portable
+  status approved
+}

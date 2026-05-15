@@ -180,7 +180,7 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
 
   const routeImport = createImportProject("route-fallback", "api,ui");
   try {
-    assert.equal(routeImport.payload.workspaceRoot, path.join(routeImport.target, "topo"));
+    assert.equal(routeImport.payload.workspaceRoot, "<workspace>");
     assert.equal(routeImport.payload.tracks.includes("api"), true);
     assert.equal(routeImport.payload.tracks.includes("ui"), true);
     assert.ok(routeImport.payload.candidateCounts.apiCapabilities > 0);
@@ -192,11 +192,11 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
     );
 
     const check = runCliJson(["extract", "check", routeImport.target, "--json"]);
-    assert.equal(check.workspaceRoot, path.join(routeImport.target, "topo"));
+    assert.equal(check.workspaceRoot, "<workspace>");
     assert.equal(check.extract.status, "clean");
 
     const diff = runCliJson(["extract", "diff", routeImport.target, "--json"]);
-    assert.equal(diff.workspaceRoot, path.join(routeImport.target, "topo"));
+    assert.equal(diff.workspaceRoot, "<workspace>");
     assert.equal(diff.candidateCounts.uiWidgets, routeImport.payload.candidateCounts.uiWidgets);
 
     const plan = runCliJson(["extract", "plan", routeImport.target, "--json"]);
@@ -236,7 +236,7 @@ function verifyBrownfieldDocsMatchExtractWorkflow() {
 
   const cliImport = createImportProject("cli-basic", "cli");
   try {
-    assert.equal(cliImport.payload.workspaceRoot, path.join(cliImport.target, "topo"));
+    assert.equal(cliImport.payload.workspaceRoot, "<workspace>");
     assert.ok(cliImport.payload.candidateCounts.cliCommands > 0);
     assert.ok(cliImport.payload.candidateCounts.cliSurfaces > 0);
 

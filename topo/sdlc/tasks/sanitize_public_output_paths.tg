@@ -1,0 +1,15 @@
+task task_sanitize_public_output_paths {
+  name "Sanitize Public Output Paths"
+  description "Add shared public-path helpers, route path-bearing CLI/report outputs through them, and add regression coverage proving public artifacts do not leak machine-local absolute paths."
+  satisfies [req_public_outputs_are_portable]
+  acceptance_refs [ac_public_outputs_sanitize_machine_paths]
+  verification_refs [verification_engine_gate verification_cli_package_smoke]
+  affects [cap_brief_agent, cap_emit_artifacts, cap_import_brownfield_app, cap_adopt_import_candidates, cap_manage_generators, cap_manage_extractors, cap_manage_sdlc_records, cap_query_context]
+  blocked_by []
+  domain dom_engine_quality
+  disposition active
+  priority high
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

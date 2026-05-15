@@ -1664,7 +1664,7 @@ test("topogram template list includes catalog template aliases", () => {
   assert.equal(helloWebTemplate.includesExecutableImplementation, false);
   assert.equal(
     helloWebTemplate.recommendedCommand,
-    `topogram copy hello-web ./my-app --catalog ${catalogPath}`
+    "topogram copy hello-web ./my-app --catalog <external>/topograms.catalog.json"
   );
   assert.equal(helloWebTemplate.commands.primary, helloWebTemplate.recommendedCommand);
   const sampleTemplate = payload.templates.find((template) => template.id === "sample-template");
@@ -1678,7 +1678,7 @@ test("topogram template list includes catalog template aliases", () => {
   assert.equal(sampleTemplate.includesExecutableImplementation, true);
   assert.equal(
     sampleTemplate.recommendedCommand,
-    `topogram copy sample-template ./my-app --catalog ${catalogPath}`
+    "topogram copy sample-template ./my-app --catalog <external>/topograms.catalog.json"
   );
   assert.equal(sampleTemplate.commands.primary, sampleTemplate.recommendedCommand);
   assert.equal(payload.templates.some((template) => template.id === "hello"), false);
@@ -1742,7 +1742,7 @@ test("topogram template show describes catalog templates", () => {
   assert.match(templatePayload.decision.policyImpact, /Copies implementation\/ code/);
   assert.equal(
     templatePayload.commands.primary,
-    `topogram copy sample-template ./my-app --catalog ${catalogPath}`
+    "topogram copy sample-template ./my-app --catalog <external>/topograms.catalog.json"
   );
 
   const human = runCli(["template", "show", "sample-template", "--catalog", catalogPath]);
@@ -1825,7 +1825,10 @@ test("topogram copy resolves catalog template aliases to package specs", () => {
   assert.equal(status.status, 0, status.stderr || status.stdout);
   const statusPayload = JSON.parse(status.stdout);
   assert.equal(statusPayload.template.requested, "sample-template");
-  assert.deepEqual(statusPayload.template.catalog, projectConfig.template.catalog);
+  assert.deepEqual(statusPayload.template.catalog, {
+    ...projectConfig.template.catalog,
+    source: "<external>/topograms.catalog.json"
+  });
 
   const humanStatus = runCli(["template", "status"], { cwd: projectRoot });
   assert.equal(humanStatus.status, 0, humanStatus.stderr || humanStatus.stdout);
@@ -1837,7 +1840,7 @@ test("topogram copy resolves catalog template aliases to package specs", () => {
   const sourcePayload = JSON.parse(sourceStatus.stdout);
   assert.equal(sourcePayload.exists, false);
   assert.equal(sourcePayload.project.catalog.id, "sample-template");
-  assert.equal(sourcePayload.project.catalog.source, catalogPath);
+  assert.equal(sourcePayload.project.catalog.source, "<external>/topograms.catalog.json");
   assert.equal(sourcePayload.project.catalog.includesExecutableImplementation, true);
   assert.equal(sourcePayload.project.template.id, "@scope/topogram-template-sample");
   assert.equal(sourcePayload.project.template.requested, "sample-template");
@@ -1907,7 +1910,7 @@ test("topogram copy resolves catalog template aliases to package specs", () => {
   const doctor = runCli(["doctor", "--json"], { cwd: projectRoot, env });
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   const doctorPayload = JSON.parse(doctor.stdout);
-  assert.equal(doctorPayload.catalog.source, catalogPath);
+  assert.equal(doctorPayload.catalog.source, "<external>/topograms.catalog.json");
   assert.equal(doctorPayload.catalog.catalog.reachable, true);
   assert.equal(doctorPayload.catalog.packages.length, 1);
   assert.equal(doctorPayload.catalog.packages[0].packageSpec, "@scope/topogram-template-sample@0.1.0");
@@ -3177,12 +3180,12 @@ test("topogram copy installs pure topogram packages and rejects implementation c
   assert.equal(fs.existsSync(path.join(targetRoot, "README.md")), true);
   assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-source.json")), true);
   assert.equal(payload.files.some((file) => file === "topogram.project.json"), true);
-  assert.equal(payload.provenancePath, path.join(targetRoot, ".topogram-source.json"));
+  assert.equal(payload.provenancePath, "<repo>/.topogram-source.json");
 
   const sourceRecord = readJson(path.join(targetRoot, ".topogram-source.json"));
   assert.equal(sourceRecord.kind, "topogram");
   assert.equal(sourceRecord.catalog.id, "hello");
-  assert.equal(sourceRecord.catalog.source, catalogPath);
+  assert.equal(sourceRecord.catalog.source, "<external>/topograms.catalog.json");
   assert.equal(sourceRecord.package.name, "@scope/topogram-hello");
   assert.equal(sourceRecord.package.version, "0.1.0");
   assert.equal(sourceRecord.package.spec, "@scope/topogram-hello@0.1.0");
@@ -3796,7 +3799,7 @@ test("topogram copy creates an executable web-api-db starter project", () => {
   const templateStatusPayload = JSON.parse(templateStatus.stdout);
   assert.equal(templateStatusPayload.ok, true);
   assert.equal(templateStatusPayload.template.id, "topogram/web-api-db");
-  assert.equal(templateStatusPayload.template.requested, builtInTemplateRoot);
+  assert.equal(templateStatusPayload.template.requested, "<external>/web-api-db");
   assert.equal(templateStatusPayload.template.source, "local");
   assert.equal(templateStatusPayload.latest.checked, false);
   assert.equal(templateStatusPayload.trust.ok, true);
@@ -4437,7 +4440,7 @@ test("topogram template update status reports action needed and writes review re
   assert.equal(payload.writes, false);
   assert.equal(payload.conflicts.some((conflict) => conflict.path === "topo/entities/entity-greeting.tg"), true);
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "template_update_conflict"), true);
-  assert.equal(payload.reportPath, reportPath);
+  assert.equal(payload.reportPath, "<external>/template-update-report.json");
   const report = readJson(reportPath);
   assert.equal(report.mode, "status");
   assert.equal(report.reportPath, undefined);
@@ -4892,7 +4895,7 @@ test("topogram template check validates reusable template conformance", () => {
   assert.equal(check.status, 0, check.stderr || check.stdout);
   const payload = JSON.parse(check.stdout);
   assert.equal(payload.ok, true);
-  assert.equal(payload.templateSpec, builtInTemplateRoot);
+  assert.equal(payload.templateSpec, "<external>/web-api-db");
   assert.equal(payload.steps.find((step) => step.name === "create-starter").ok, true);
   assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, true);
   assert.equal(payload.steps.find((step) => step.name === "executable-implementation-trust").details.requiresTrust, true);
@@ -4999,7 +5002,7 @@ test("topogram template check reports invalid generated project config", () => {
   const diagnostic = payload.diagnostics.find((item) => item.code === "starter_check_failed");
   assert.ok(diagnostic);
   assert.match(diagnostic.message, /unknown generator 'topogram\/not-real'/);
-  assert.equal(fs.realpathSync(diagnostic.path), fs.realpathSync(path.join(payload.projectRoot, "topogram.project.json")));
+  assert.match(diagnostic.path, /^(<repo>|<external>)\/topogram\.project\.json$/);
   assert.equal(payload.steps.find((step) => step.name === "starter-check").ok, false);
 });
 

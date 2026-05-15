@@ -7,6 +7,7 @@ import { loadImplementationProvider } from "../../example-implementation.js";
 import { stableStringify } from "../../format.js";
 import { buildOutputFiles, generateWorkspace } from "../../generator.js";
 import { parsePath } from "../../parser.js";
+import { toPortablePath } from "../../public-paths.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -91,6 +92,10 @@ export async function runGenerateAppCommand(options) {
     fs.writeFileSync(destination, contents, "utf8");
   }
 
-  console.log(`Wrote ${outputFiles.length} file(s) to ${resolvedOutDir}`);
+  console.log(`Wrote ${outputFiles.length} file(s) to ${toPortablePath(resolvedOutDir, {
+    projectRoot: projectConfigInfo.configDir || options.projectRoot,
+    workspaceRoot: options.inputPath,
+    cwd: process.cwd()
+  })}`);
   return 0;
 }

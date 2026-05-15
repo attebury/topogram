@@ -1,0 +1,8 @@
+decision decision_public_outputs_use_portable_paths {
+  name "Public Outputs Use Portable Paths"
+  description "Topogram may use absolute paths internally for parsing, resolving, and file IO, but public output must use repo-relative paths or placeholders so committed artifacts are portable and safe to publish."
+  context ["proof repo artifacts exposed machine-local paths after extraction and agent/report commands were committed", "absolute paths are useful inside the engine but become noisy and potentially sensitive when serialized into public JSON, reports, contracts, and proof artifacts"]
+  consequences ["public path-bearing fields use repo-relative values or placeholders such as <repo>, <workspace>, and <external>", "commit guards remain a backstop, not the primary defense", "internal parser and resolver location metadata can remain absolute until it crosses a public output boundary"]
+  domain dom_engine_quality
+  status accepted
+}

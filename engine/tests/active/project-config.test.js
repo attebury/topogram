@@ -202,7 +202,7 @@ test("topogram generator check validates package-backed generators by package an
   const pathPayload = JSON.parse(byPath.stdout);
   assert.equal(pathPayload.ok, true);
   assert.equal(pathPayload.source, "path");
-  assert.equal(pathPayload.packageRoot, packageRoot);
+  assert.equal(pathPayload.packageRoot, "<external>/topogram-generator-smoke-web");
 
   const human = runCli(["generator", "check", packageRoot], { cwd: root });
   assert.equal(human.status, 0, human.stderr || human.stdout);

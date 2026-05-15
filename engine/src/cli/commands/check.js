@@ -1,8 +1,8 @@
 // @ts-check
 
 import { loadImplementationProvider } from "../../example-implementation.js";
-import { stableStringify } from "../../format.js";
 import { parsePath } from "../../parser.js";
+import { sanitizePublicPayload, stablePublicStringify, toPortablePath } from "../../public-paths.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -263,13 +263,19 @@ export async function runCheckCommand(inputPath, options = {}) {
       )
     : { ok: false, errors: [{ message: "Missing topogram.project.json or compatible topogram.implementation.json", loc: null }] };
   const payload = checkSummaryPayload({ inputPath: topogramPath, ast, resolved, projectConfigInfo, projectValidation });
+  const publicContext = {
+    projectRoot: projectConfigInfo?.configDir || process.cwd(),
+    workspaceRoot: topogramPath,
+    cwd: process.cwd()
+  };
   if (options.json) {
-    console.log(stableStringify(payload));
+    console.log(stablePublicStringify(payload, publicContext));
   } else if (payload.ok) {
-    console.log(`Topogram check passed for ${topogramPath}.`);
-    console.log(`Validated ${payload.topogram.files} file(s) and ${payload.topogram.statements} statement(s).`);
-    console.log(`Project config: ${payload.project.configPath || "compatibility defaults"}`);
-    printTopologySummary(payload.project.resolvedTopology);
+    const publicPayload = sanitizePublicPayload(payload, publicContext);
+    console.log(`Topogram check passed for ${toPortablePath(topogramPath, publicContext)}.`);
+    console.log(`Validated ${publicPayload.topogram.files} file(s) and ${publicPayload.topogram.statements} statement(s).`);
+    console.log(`Project config: ${publicPayload.project.configPath || "compatibility defaults"}`);
+    printTopologySummary(publicPayload.project.resolvedTopology);
   } else {
     if (!resolved.ok) {
       console.error(formatValidationErrors(resolved.validation));

@@ -4,9 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { loadImplementationProvider } from "../../example-implementation.js";
-import { stableStringify } from "../../format.js";
 import { buildOutputFiles, generateWorkspace } from "../../generator.js";
 import { parsePath } from "../../parser.js";
+import { stablePublicStringify, toPortablePath } from "../../public-paths.js";
 import {
   formatProjectConfigErrors,
   loadProjectConfig,
@@ -146,14 +146,22 @@ export async function runEmitCommand(options) {
       const destination = path.join(resolvedOutDir, file.path);
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       const contents =
-        typeof file.contents === "string" ? file.contents : `${stableStringify(file.contents)}\n`;
+        typeof file.contents === "string"
+          ? file.contents
+          : `${stablePublicStringify(file.contents, { projectRoot: projectConfigInfo?.configDir || options.projectRoot, workspaceRoot: options.inputPath, cwd: process.cwd() })}\n`;
       fs.writeFileSync(destination, contents, "utf8");
     }
 
-    console.log(`Wrote ${outputFiles.length} file(s) to ${resolvedOutDir}`);
+    console.log(`Wrote ${outputFiles.length} file(s) to ${toPortablePath(resolvedOutDir, {
+      projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+      workspaceRoot: options.inputPath,
+      cwd: process.cwd()
+    })}`);
     return 0;
   }
 
-  console.log(typeof result.artifact === "string" ? result.artifact : stableStringify(result.artifact));
+  console.log(typeof result.artifact === "string"
+    ? result.artifact
+    : stablePublicStringify(result.artifact, { projectRoot: projectConfigInfo?.configDir || options.projectRoot, workspaceRoot: options.inputPath, cwd: process.cwd() }));
   return 0;
 }

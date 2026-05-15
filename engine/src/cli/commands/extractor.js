@@ -2,8 +2,8 @@
 
 import path from "node:path";
 
-import { stableStringify } from "../../format.js";
 import { checkExtractorPack } from "../../extractor/check.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import { FIRST_PARTY_EXTRACTOR_PACKAGES, firstPartyExtractorInfo } from "../../extractor/first-party.js";
 import { scaffoldExtractorPack } from "../../extractor/scaffold.js";
 import {
@@ -71,6 +71,7 @@ export function printExtractorHelp() {
  * @returns {void}
  */
 export function printExtractorScaffold(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(payload.ok ? "Extractor scaffold created." : "Extractor scaffold failed.");
   console.log(`Target: ${payload.target}`);
   if (payload.packageName) console.log(`Package: ${payload.packageName}`);
@@ -208,6 +209,7 @@ export function buildExtractorShowPayload(spec, cwd) {
  * @returns {void}
  */
 export function printExtractorList(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log("Topogram extractors");
   console.log(`Bundled: ${payload.summary.bundled}; package-backed: ${payload.summary.package}; installed: ${payload.summary.installed}; first-party missing: ${payload.summary.missingFirstParty || 0}`);
   console.log("Package-backed extractors are listed for discovery even before they are installed.");
@@ -255,6 +257,7 @@ export function printExtractorList(payload) {
  * @returns {void}
  */
 export function printExtractorShow(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   if (!payload.ok || !payload.extractor) {
     console.log("Extractor pack not found.");
     for (const error of payload.errors || []) console.log(`- ${error}`);
@@ -301,6 +304,7 @@ export function printExtractorShow(payload) {
  * @returns {void}
  */
 export function printExtractorCheck(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(payload.ok ? "Extractor check passed." : "Extractor check found issues.");
   console.log(`Source: ${payload.sourceSpec}`);
   console.log(`Type: ${payload.source}`);
@@ -448,6 +452,7 @@ export function buildExtractorPolicyPinPayload(projectPath, spec) {
  * @returns {void}
  */
 export function printExtractorPolicyStatus(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(payload.ok ? "Extractor policy status: allowed" : "Extractor policy status: denied");
   console.log(`Policy file: ${payload.path}`);
   console.log(`Policy file exists: ${payload.exists ? "yes" : "no"}`);
@@ -477,6 +482,7 @@ export function printExtractorPolicyStatus(payload) {
  * @returns {void}
  */
 export function printExtractorPolicyInit(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(`Wrote extractor policy: ${payload.path}`);
   console.log(`Allowed package scopes: ${payload.policy.allowedPackageScopes.join(", ") || "(none)"}`);
   console.log(`Allowed packages: ${payload.policy.allowedPackages.join(", ") || "(none)"}`);
@@ -488,6 +494,7 @@ export function printExtractorPolicyInit(payload) {
  * @returns {void}
  */
 export function printExtractorPolicyPin(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(payload.ok ? "Extractor policy pin updated" : "Extractor policy pin failed");
   console.log(`Policy: ${payload.path}`);
   for (const pin of payload.pinned || []) {
@@ -522,7 +529,7 @@ export function runExtractorCommand(context) {
       tracks: payload.manifest?.tracks || [],
       version: payload.manifest?.version || "1"
     });
-    if (json) console.log(stableStringify(augmentedPayload));
+    if (json) console.log(stablePublicStringify(augmentedPayload, { projectRoot: cwd, cwd }));
     else printExtractorCheck(augmentedPayload);
     return augmentedPayload.ok ? 0 : 1;
   }
@@ -532,37 +539,37 @@ export function runExtractorCommand(context) {
       packageName: commandArgs.extractorScaffoldPackage,
       manifestId: commandArgs.extractorScaffoldId
     });
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     else printExtractorScaffold(payload);
     return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorCommand === "list") {
     const payload = buildExtractorListPayload(cwd);
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     else printExtractorList(payload);
     return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorCommand === "show") {
     const payload = buildExtractorShowPayload(inputPath || "", cwd);
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     else printExtractorShow(payload);
     return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorPolicyCommand === "init") {
     const payload = buildExtractorPolicyInitPayload(inputPath || ".");
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: inputPath || cwd, cwd }));
     else printExtractorPolicyInit(payload);
     return 0;
   }
   if (commandArgs.extractorPolicyCommand === "status" || commandArgs.extractorPolicyCommand === "check" || commandArgs.extractorPolicyCommand === "explain") {
     const payload = buildExtractorPolicyStatusPayload(inputPath || ".");
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: inputPath || cwd, cwd }));
     else printExtractorPolicyStatus(payload);
     return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorPolicyCommand === "pin") {
     const payload = buildExtractorPolicyPinPayload(inputPath || ".", commandArgs.extractorPolicyPinSpec);
-    if (json) console.log(stableStringify(payload));
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: inputPath || cwd, cwd }));
     else printExtractorPolicyPin(payload);
     return payload.ok ? 0 : 1;
   }

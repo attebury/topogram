@@ -29,6 +29,15 @@ const retainedImportFixtures = [
   "ui-flows"
 ];
 
+function resolvePublicArtifactPath(value, projectRoot) {
+  if (typeof value !== "string") return value;
+  if (value === "<repo>") return projectRoot;
+  if (value.startsWith("<repo>/")) return path.join(projectRoot, value.slice("<repo>/".length));
+  if (value === "<workspace>") return path.join(projectRoot, "topo");
+  if (value.startsWith("<workspace>/")) return path.join(projectRoot, "topo", value.slice("<workspace>/".length));
+  return value;
+}
+
 test("engine import fixtures are limited to actively tested smoke inputs", () => {
   const actual = fs.readdirSync(importFixtureRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -715,7 +724,7 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(humanPlan.status, 0, humanPlan.stderr || humanPlan.stdout);
   assert.match(humanPlan.stdout, /Extractors: @scope\/topogram-extractor-db-smoke/);
   assert.match(humanPlan.stdout, /package-backed extractor candidates are review-only/);
-  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const adoptionPlan = JSON.parse(fs.readFileSync(resolvePublicArtifactPath(planPayload.artifacts.adoptionPlan, targetRoot), "utf8"));
   assert.equal(adoptionPlan.imported_maintained_db_seam_candidates.length, 1);
   assert.equal(
     adoptionPlan.imported_proposal_surfaces.some((item) => item.kind === "capability" && item.item === "cap_list_package_tasks"),
@@ -989,7 +998,7 @@ test("brownfield UI flow candidates are carried into import plan and adoption re
   const planPayload = JSON.parse(plan.stdout);
   assert.equal(planPayload.summary.proposalItemCount, 18);
   assert.equal(planPayload.bundles.every((bundle) => bundle.kindCounts.ui === 2), true);
-  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const adoptionPlan = JSON.parse(fs.readFileSync(resolvePublicArtifactPath(planPayload.artifacts.adoptionPlan, targetRoot), "utf8"));
   const flowSurface = adoptionPlan.imported_proposal_surfaces.find((item) => item.item === "ui_flow_flow_login");
   assert.equal(flowSurface.kind, "ui");
   assert.equal(flowSurface.track, "ui");
@@ -1050,7 +1059,7 @@ test("brownfield import creates editable Topogram workspace with source provenan
   const planPayload = JSON.parse(plan.stdout);
   assert.equal(planPayload.bundles[0].bundle, "database");
   assert.equal(planPayload.bundles[0].kindCounts.maintained_db_migration_seam, 1);
-  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const adoptionPlan = JSON.parse(fs.readFileSync(resolvePublicArtifactPath(planPayload.artifacts.adoptionPlan, targetRoot), "utf8"));
   assert.equal(adoptionPlan.imported_maintained_db_seam_candidates.length, 1);
   const dbSeamSurface = adoptionPlan.imported_proposal_surfaces.find((item) => item.kind === "maintained_db_migration_seam");
   assert.equal(dbSeamSurface.bundle, "database");
@@ -1247,7 +1256,7 @@ test("brownfield UI import writes reviewable widget candidates and shared bindin
     doc: 1,
     ui: 4
   });
-  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const adoptionPlan = JSON.parse(fs.readFileSync(resolvePublicArtifactPath(planPayload.artifacts.adoptionPlan, targetRoot), "utf8"));
   const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
   assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
   assert.deepEqual(widgetItems[0].related_shapes, ["shape_event_task_row_select"]);
@@ -1354,8 +1363,8 @@ test("brownfield import workflow keeps project-owned files under topo workspace"
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.ok, true);
-  assert.equal(payload.workspaceRoot, topoRoot);
-  assert.equal(payload.topogramRoot, topoRoot);
+  assert.equal(payload.workspaceRoot, "<workspace>");
+  assert.equal(payload.topogramRoot, "<workspace>");
   assert.equal(fs.existsSync(path.join(topoRoot, "candidates", "app", "ui", "candidates.json")), true);
   assert.equal(fs.existsSync(path.join(topoRoot, "candidates", "reconcile", "adoption-plan.agent.json")), true);
   assertNoLegacyTopogramWorkspace(targetRoot);
@@ -1364,47 +1373,47 @@ test("brownfield import workflow keeps project-owned files under topo workspace"
   const check = runCli(["extract", "check", targetRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);
   const checkPayload = JSON.parse(check.stdout);
-  assert.equal(checkPayload.workspaceRoot, topoRoot);
+  assert.equal(checkPayload.workspaceRoot, "<workspace>");
   assert.equal(checkPayload.extract.status, "clean");
 
   const diff = runCli(["extract", "diff", targetRoot, "--json"]);
   assert.equal(diff.status, 0, diff.stderr || diff.stdout);
   const diffPayload = JSON.parse(diff.stdout);
   assert.equal(diffPayload.ok, true);
-  assert.equal(diffPayload.workspaceRoot, topoRoot);
-  assert.equal(diffPayload.topogramRoot, topoRoot);
+  assert.equal(diffPayload.workspaceRoot, "<workspace>");
+  assert.equal(diffPayload.topogramRoot, "<workspace>");
 
   const plan = runCli(["extract", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   const planPayload = JSON.parse(plan.stdout);
   assert.equal(planPayload.ok, true);
-  assert.equal(planPayload.workspaceRoot, topoRoot);
-  assert.equal(planPayload.topogramRoot, topoRoot);
+  assert.equal(planPayload.workspaceRoot, "<workspace>");
+  assert.equal(planPayload.topogramRoot, "<workspace>");
   assert.equal(planPayload.summary.proposalItemCount > 0, true);
 
   const selectorList = runCli(["adopt", "--list", targetRoot, "--json"]);
   assert.equal(selectorList.status, 0, selectorList.stderr || selectorList.stdout);
   const selectorPayload = JSON.parse(selectorList.stdout);
-  assert.equal(selectorPayload.workspaceRoot, topoRoot);
-  assert.equal(selectorPayload.topogramRoot, topoRoot);
+  assert.equal(selectorPayload.workspaceRoot, "<workspace>");
+  assert.equal(selectorPayload.topogramRoot, "<workspace>");
   assert.equal(selectorPayload.broadSelectors.some((selector) => selector.selector === "widgets"), true);
 
   const preview = runCli(["adopt", "widgets", targetRoot, "--dry-run", "--json"]);
   assert.equal(preview.status, 0, preview.stderr || preview.stdout);
   const previewPayload = JSON.parse(preview.stdout);
   assert.equal(previewPayload.dryRun, true);
-  assert.equal(previewPayload.workspaceRoot, topoRoot);
-  assert.equal(previewPayload.topogramRoot, topoRoot);
+  assert.equal(previewPayload.workspaceRoot, "<workspace>");
+  assert.equal(previewPayload.topogramRoot, "<workspace>");
   assert.deepEqual(previewPayload.writtenFiles, []);
   assert.equal(fs.existsSync(path.join(topoRoot, "widgets")), false);
 
   const write = runCli(["adopt", "widgets", targetRoot, "--write", "--json"]);
   assert.equal(write.status, 0, write.stderr || write.stdout);
   const writePayload = JSON.parse(write.stdout);
-  assert.equal(writePayload.workspaceRoot, topoRoot);
-  assert.equal(writePayload.topogramRoot, topoRoot);
-  assert.equal(writePayload.receipt.workspaceRoot, topoRoot);
-  assert.equal(writePayload.receipt.topogramRoot, topoRoot);
+  assert.equal(writePayload.workspaceRoot, "<workspace>");
+  assert.equal(writePayload.topogramRoot, "<workspace>");
+  assert.equal(writePayload.receipt.workspaceRoot, "<workspace>");
+  assert.equal(writePayload.receipt.topogramRoot, "<workspace>");
   assert.equal(writePayload.receipt.selector, "widgets");
   assert.equal(fs.existsSync(path.join(topoRoot, "widgets", "widget-task-list-results.tg")), true);
   assert.equal(writePayload.writtenFiles.every((filePath) => !filePath.startsWith("topogram/")), true);
@@ -1413,15 +1422,15 @@ test("brownfield import workflow keeps project-owned files under topo workspace"
   const status = runCli(["extract", "status", targetRoot, "--json"]);
   assert.equal(status.status, 0, status.stderr || status.stdout);
   const statusPayload = JSON.parse(status.stdout);
-  assert.equal(statusPayload.workspaceRoot, topoRoot);
-  assert.equal(statusPayload.topogramRoot, topoRoot);
+  assert.equal(statusPayload.workspaceRoot, "<workspace>");
+  assert.equal(statusPayload.topogramRoot, "<workspace>");
   assert.equal(statusPayload.extract.status, "clean");
   assert.equal(statusPayload.adoption.summary.appliedItemCount, 2);
 
   const history = runCli(["extract", "history", targetRoot, "--verify", "--json"]);
   assert.equal(history.status, 0, history.stderr || history.stdout);
   const historyPayload = JSON.parse(history.stdout);
-  assert.equal(historyPayload.workspaceRoot, topoRoot);
+  assert.equal(historyPayload.workspaceRoot, "<workspace>");
   assert.equal(historyPayload.verified, true);
   assert.equal(historyPayload.summary.receiptCount, 1);
   assert.deepEqual(historyPayload.entries, historyPayload.receipts);
@@ -1432,16 +1441,16 @@ test("brownfield import workflow keeps project-owned files under topo workspace"
   assert.equal(dryRefresh.status, 0, dryRefresh.stderr || dryRefresh.stdout);
   const dryRefreshPayload = JSON.parse(dryRefresh.stdout);
   assert.equal(dryRefreshPayload.dryRun, true);
-  assert.equal(dryRefreshPayload.workspaceRoot, topoRoot);
-  assert.equal(dryRefreshPayload.topogramRoot, topoRoot);
+  assert.equal(dryRefreshPayload.workspaceRoot, "<workspace>");
+  assert.equal(dryRefreshPayload.topogramRoot, "<workspace>");
   assert.deepEqual(dryRefreshPayload.writtenFiles, []);
 
   const refresh = runCli(["extract", "refresh", "--from", sourceRoot, targetRoot, "--json"]);
   assert.equal(refresh.status, 0, refresh.stderr || refresh.stdout);
   const refreshPayload = JSON.parse(refresh.stdout);
   assert.equal(refreshPayload.ok, true);
-  assert.equal(refreshPayload.workspaceRoot, topoRoot);
-  assert.equal(refreshPayload.topogramRoot, topoRoot);
+  assert.equal(refreshPayload.workspaceRoot, "<workspace>");
+  assert.equal(refreshPayload.topogramRoot, "<workspace>");
   assert.equal(refreshPayload.currentExtractStatus, "clean");
   assert.equal(refreshPayload.writtenFiles.every((filePath) => filePath === "topogram.project.json" || !filePath.startsWith("topogram/")), true);
   assertNoLegacyTopogramWorkspace(targetRoot);
@@ -1473,7 +1482,7 @@ test("legacy imported UI component candidates are read as widgets without rewrit
   const plan = runCli(["extract", "plan", targetRoot, "--json"]);
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   const planPayload = JSON.parse(plan.stdout);
-  const adoptionPlan = JSON.parse(fs.readFileSync(planPayload.artifacts.adoptionPlan, "utf8"));
+  const adoptionPlan = JSON.parse(fs.readFileSync(resolvePublicArtifactPath(planPayload.artifacts.adoptionPlan, targetRoot), "utf8"));
   const widgetItems = adoptionPlan.imported_proposal_surfaces.filter((item) => item.kind === "widget");
   assert.deepEqual(widgetItems.map((item) => item.item), ["widget_task_list_results"]);
 
@@ -1636,7 +1645,7 @@ test("brownfield import plan, adopt, and status expose public adoption UX", () =
   assert.equal(writePayload.receipt.sourceProvenance.status, "clean");
   assert.equal(writePayload.receipt.writtenFiles.includes("entities/entity-task.tg"), true);
   assert.equal(writePayload.receipt.writtenFileHashes.some((item) => item.path === "entities/entity-task.tg" && item.sha256 && item.size > 0), true);
-  assert.equal(writePayload.receiptPath, path.join(targetRoot, ".topogram-adoptions.jsonl"));
+  assert.equal(writePayload.receiptPath, "<repo>/.topogram-adoptions.jsonl");
   assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-task.tg")), true);
 
   const status = runCli(["extract", "status", targetRoot, "--json"]);

@@ -1,0 +1,10 @@
+requirement req_public_outputs_are_portable {
+  name "Public Outputs Are Portable"
+  description "Topogram public JSON, reports, contracts, packets, diagnostics, and proof artifacts must serialize path values in portable forms that do not expose local usernames, home directories, temp roots, CI workspace paths, or absolute source paths."
+  affects [cap_brief_agent, cap_emit_artifacts, cap_import_brownfield_app, cap_adopt_import_candidates, cap_manage_generators, cap_manage_extractors, cap_manage_sdlc_records, cap_query_context]
+  introduces_rules [rule_public_artifacts_do_not_leak_local_paths]
+  respects_rules [rule_maintainable_security_focused_code]
+  domain dom_engine_quality
+  priority high
+  status approved
+}

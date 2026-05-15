@@ -1,0 +1,13 @@
+bug bug_proof_artifacts_leaked_local_paths {
+  name "Proof Artifacts Leaked Local Paths"
+  description "Proof repository artifacts exposed machine-local absolute paths from Topogram output, including user home paths inside committed extraction/agent/report JSON."
+  reproduction "Generate or commit proof artifacts from path-bearing commands such as extractor policy status, agent brief, widget reports, extraction plans, or SDLC packets from a local checkout, then inspect the serialized JSON for local home or temp path prefixes."
+  affects [cap_brief_agent, cap_emit_artifacts, cap_import_brownfield_app, cap_adopt_import_candidates, cap_manage_generators, cap_manage_extractors, cap_manage_sdlc_records, cap_query_context]
+  violates [rule_public_artifacts_do_not_leak_local_paths]
+  fixed_in [task_sanitize_public_output_paths]
+  fixed_in_verification [verification_engine_gate verification_cli_package_smoke]
+  domain dom_engine_quality
+  priority high
+  severity medium
+  status verified
+}

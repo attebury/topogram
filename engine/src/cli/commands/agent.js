@@ -1,8 +1,8 @@
 // @ts-check
 
 import { buildAgentBrief, formatAgentBrief, normalizeAgentTopogramPath } from "../../agent-brief.js";
-import { stableStringify } from "../../format.js";
 import { parsePath } from "../../parser.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import { formatProjectConfigErrors } from "../../project-config.js";
 import { formatValidationErrors } from "../../validator.js";
 
@@ -39,9 +39,17 @@ export function runAgentBriefCommand(inputPath, options = {}) {
     return 1;
   }
   if (options.json) {
-    console.log(stableStringify(result.payload));
+    console.log(stablePublicStringify(result.payload, {
+      projectRoot: result.payload.project?.root,
+      workspaceRoot: result.payload.project?.topogram || result.payload.extract?.workspaceRoot,
+      cwd: process.cwd()
+    }));
   } else {
-    process.stdout.write(formatAgentBrief(result.payload));
+    process.stdout.write(formatAgentBrief(sanitizePublicPayload(result.payload, {
+      projectRoot: result.payload.project?.root,
+      workspaceRoot: result.payload.project?.topogram || result.payload.extract?.workspaceRoot,
+      cwd: process.cwd()
+    })));
   }
   return 0;
 }

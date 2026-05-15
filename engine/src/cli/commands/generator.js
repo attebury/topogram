@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { stableStringify } from "../../format.js";
 import { checkGeneratorPack } from "../../generator/check.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import {
   GENERATOR_MANIFESTS,
   getGeneratorManifest,
@@ -53,6 +54,7 @@ export function printGeneratorHelp() {
  * @returns {void}
  */
 export function printGeneratorCheck(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   console.log(payload.ok ? "Generator check passed." : "Generator check found issues.");
   console.log(`Source: ${payload.sourceSpec}`);
   console.log(`Type: ${payload.source}`);
@@ -360,6 +362,7 @@ export function printGeneratorList(payload) {
  * @returns {void}
  */
 export function printGeneratorShow(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
   if (!payload.ok || !payload.generator) {
     console.log("Generator not found.");
     for (const error of payload.errors || []) {
@@ -410,7 +413,7 @@ export function runGeneratorCommand(context) {
   if (commandArgs.generatorCommand === "check") {
     const payload = checkGeneratorPack(inputPath || "", { cwd });
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     } else {
       printGeneratorCheck(payload);
     }
@@ -420,7 +423,7 @@ export function runGeneratorCommand(context) {
   if (commandArgs.generatorCommand === "list") {
     const payload = buildGeneratorListPayload(cwd);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     } else {
       printGeneratorList(payload);
     }
@@ -430,7 +433,7 @@ export function runGeneratorCommand(context) {
   if (commandArgs.generatorCommand === "show") {
     const payload = buildGeneratorShowPayload(inputPath || "", cwd);
     if (json) {
-      console.log(stableStringify(payload));
+      console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
     } else {
       printGeneratorShow(payload);
     }

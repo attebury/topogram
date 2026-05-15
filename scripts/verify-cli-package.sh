@@ -504,4 +504,4 @@ if [[ ! -f "$STARTER_TEMPLATE_DIR/app/.topogram-generated.json" ]]; then
 fi
 
 echo
-echo "CLI package smoke passed: $PACKAGE_TARBALL"
+echo "CLI package smoke passed: $PACK_NAME"

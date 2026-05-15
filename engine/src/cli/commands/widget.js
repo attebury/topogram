@@ -1,8 +1,8 @@
 // @ts-check
 
-import { stableStringify } from "../../format.js";
 import { generateWorkspace } from "../../generator.js";
 import { parsePath } from "../../parser.js";
+import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import { formatValidationErrors } from "../../validator.js";
 
 /**
@@ -160,9 +160,9 @@ function runWidgetReportCommand(inputPath, options) {
   const report = result.artifact;
   const ok = (report.summary?.errors || 0) === 0;
   if (options.json) {
-    console.log(stableStringify(report));
+    console.log(stablePublicStringify(report, { projectRoot: process.cwd(), workspaceRoot: inputPath, cwd: process.cwd() }));
   } else {
-    options.print(report);
+    options.print(sanitizePublicPayload(report, { projectRoot: process.cwd(), workspaceRoot: inputPath, cwd: process.cwd() }));
   }
   return ok ? 0 : 1;
 }

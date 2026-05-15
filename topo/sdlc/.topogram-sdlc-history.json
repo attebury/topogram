@@ -3118,5 +3118,51 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_sanitize_public_output_paths": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T14:10:12.541Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T14:10:12.574Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T15:10:35.798Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_proof_artifacts_leaked_local_paths": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-15T15:10:48.156Z",
+      "by": "actor_coding_agent",
+      "note": "Path hygiene fix implemented and verification is passing."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-15T15:11:00.139Z",
+      "by": "actor_coding_agent",
+      "note": "Path hygiene fix implemented and local verification is passing."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-15T15:11:05.894Z",
+      "by": "actor_coding_agent",
+      "note": "Public path outputs are sanitized and covered by engine and CLI package verification."
+    }
   ]
 }

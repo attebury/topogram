@@ -67,6 +67,10 @@ Brownfield proof:
   to adopt SDLC unless they want enforcement.
 - Verification must compile, run, or check consumer-visible behavior; string and
   file-existence checks are not enough for proof claims.
+- Proof artifacts must be portable before branch/tag push. Committed JSON,
+  reports, contracts, and agent packets should use repo-relative paths or
+  placeholders such as `<repo>`, `<workspace>`, and `<external>`, never local
+  home, temp, or CI workspace paths.
 
 ## Notes
 

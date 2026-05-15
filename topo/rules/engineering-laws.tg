@@ -127,3 +127,13 @@ rule rule_sdlc_kinds_have_distinct_jobs {
   domain dom_sdlc_query_agent_context
   status active
 }
+
+rule rule_public_artifacts_do_not_leak_local_paths {
+  name "Public Artifacts Do Not Leak Local Paths"
+  description "Public JSON, reports, contracts, agent packets, extraction/adoption output, generator/extractor diagnostics, SDLC packets, and proof artifacts must not expose machine-local usernames, home directories, temp roots, CI workspace paths, or absolute source paths."
+  applies_to [cap_brief_agent, cap_emit_artifacts, cap_import_brownfield_app, cap_adopt_import_candidates, cap_manage_generators, cap_manage_extractors, cap_manage_sdlc_records, cap_query_context]
+  severity error
+  source_of_truth [decision_public_outputs_use_portable_paths]
+  domain dom_engine_quality
+  status active
+}
