@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_repos_public_ci_visible {
+  name "Proof Repos Public Ci Visible"
+  description "Given the public proof repositories contain completed proof steps, when a reader opens the repositories or CI runs on main, then each repo exposes a Proof Verification workflow, current verification commands, and an audit proving proof artifacts avoid machine-local paths."
+  requirement req_proof_demo_program
+  status approved
+}

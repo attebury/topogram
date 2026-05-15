@@ -1,0 +1,14 @@
+task task_add_proof_repo_public_ci {
+  name "Add Proof Repo Public Ci"
+  description "Add public GitHub verification workflows, proof audit scripts, and reader guidance to both proof repositories so their current proof state has an inspectable green verification surface."
+  satisfies [req_proof_demo_program]
+  acceptance_refs [ac_proof_repos_public_ci_visible]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_create_project cap_import_brownfield_app cap_adopt_import_candidates cap_query_context cap_verify_release_status]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

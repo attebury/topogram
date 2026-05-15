@@ -3228,5 +3228,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_proof_repos_public_ci_visible": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T17:07:09.882Z",
+      "by": "actor_coding_agent",
+      "note": "Approve proof repository public CI visibility criteria before adding workflows."
+    }
+  ],
+  "task_add_proof_repo_public_ci": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T17:07:09.930Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T17:07:09.969Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T17:15:38.815Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

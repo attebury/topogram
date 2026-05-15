@@ -63,6 +63,9 @@ Brownfield proof:
 
 - Prefer one repo per coherent story, not one repo per command.
 - Branches and tags should name the step number and workflow.
+- Public proof repos should expose a `Proof Verification` workflow and
+  `npm run proof:audit` so readers can see current CI, expected proof tags,
+  current CLI pins, and path-hygiene evidence without trusting local notes.
 - SDLC is used in proof repos to show the habit, but ordinary users do not have
   to adopt SDLC unless they want enforcement.
 - Verification must compile, run, or check consumer-visible behavior; string and
