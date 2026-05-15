@@ -3164,5 +3164,30 @@
       "by": "actor_coding_agent",
       "note": "Public path outputs are sanitized and covered by engine and CLI package verification."
     }
+  ],
+  "ac_cli_0_3_91_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T15:38:56.064Z",
+      "by": "actor_coding_agent",
+      "note": "Approve release acceptance criteria for the portable path hygiene patch."
+    }
+  ],
+  "task_release_cli_0_3_91": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T15:39:06.174Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T15:39:06.226Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    }
   ]
 }

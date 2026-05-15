@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_91_release_published {
+  name "Cli 0 3 91 Release Published"
+  description "Given public output path hygiene is merged on main, when @topogram/cli 0.3.91 is prepared, published, smoke-tested, rolled to first-party consumers, and release evidence is refreshed, then strict release status is green for the CLI and first-party packages."
+  requirement req_public_outputs_are_portable
+  status approved
+}

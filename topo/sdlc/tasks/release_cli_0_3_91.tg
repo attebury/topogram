@@ -1,0 +1,14 @@
+task task_release_cli_0_3_91 {
+  name "Release Cli 0 3 91"
+  description "Prepare, publish, smoke-test, roll first-party consumers, and refresh release evidence for @topogram/cli 0.3.91 so public proof artifacts use portable path output."
+  satisfies [req_public_outputs_are_portable]
+  acceptance_refs [ac_cli_0_3_91_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_verify_release_status cap_roll_consumer_packages cap_create_project cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status in-progress
+}
