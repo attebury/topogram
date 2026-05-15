@@ -22,34 +22,50 @@ journey journey_proof_demo_program {
 
   step {
     id generated_feature_iteration
-    intent "Add a feature by editing topo source, regenerating the generated app, and verifying output."
+    intent "Replace the starter domain with content approval records by editing topo source, regenerating the generated app, and verifying output."
     after [generated_baseline]
     commands ["topogram agent brief --json" "topogram query slice ./topo --task <task-id> --json" "npm run check" "npm run generate" "npm run verify"]
-    expects ["The proof repo has branch step/02-generated-feature-iteration and shows that the generated app remains owned by Topogram."]
+    expects ["The proof repo has branch step/02-content-approval-domain and tag proof-02-content-approval-domain."]
   }
 
   step {
-    id generated_second_iteration
-    intent "Add a second generated-only iteration that exercises UI or workflow changes without maintained app edits."
+    id review_workflow_ui
+    intent "Add review workflow screens, widgets, behavior, and UI contract artifacts while app output remains generated-owned."
     after [generated_feature_iteration]
-    commands ["npm run check" "npm run generate" "npm run verify"]
-    expects ["The proof history shows more than one generated iteration so regeneration is a habit, not a one-time scaffold."]
+    commands ["topogram emit ui-widget-contract --json" "topogram emit widget-conformance-report --json" "npm run generate" "npm run verify"]
+    expects ["The proof repo has branch step/03-review-workflow-ui and tag proof-03-review-workflow-ui."]
+  }
+
+  step {
+    id generated_db_migration
+    intent "Emit generated-owned DB migration artifacts before the app graduates to maintained ownership."
+    after [review_workflow_ui]
+    commands ["topogram emit db-schema-snapshot --json" "topogram emit db-migration-plan --json" "topogram emit sql-migration --json" "npm run generate" "npm run verify"]
+    expects ["The proof repo has branch step/04-generated-db-migration and tag proof-04-generated-db-migration."]
   }
 
   step {
     id graduate_to_maintained
     intent "Fork or branch the generated proof app into maintained ownership and stop regenerating app source."
-    after [generated_second_iteration]
+    after [generated_db_migration]
     commands ["topogram check" "topogram emit ui-surface-contract --json" "npm run verify"]
-    expects ["The project config marks app output maintained and the README explains that future app edits happen directly with Topogram contracts as guidance."]
+    expects ["The project config marks app output maintained and generation refusal is captured at tag proof-05-graduate-maintained."]
+  }
+
+  step {
+    id maintained_feature
+    intent "Use Topogram query packets to edit maintained app source directly without regenerating app output."
+    after [graduate_to_maintained]
+    commands ["topogram query single-agent-plan ./topo --mode maintained-app-edit --task <task-id> --json" "npm run verify"]
+    expects ["The proof repo has branch step/06-maintained-feature and tag proof-06-maintained-feature."]
   }
 
   step {
     id maintained_db_migration
     intent "Demonstrate a database migration workflow after the app has graduated to maintained ownership."
-    after [graduate_to_maintained]
+    after [maintained_feature]
     commands ["topogram emit db-migration-plan --json" "topogram emit sql-migration --write" "npm run verify"]
-    expects ["The proof shows reviewable migration proposals and human/agent application of maintained DB changes."]
+    expects ["The proof shows reviewable migration proposals and manual maintained DB adaptation at tag proof-07-maintained-db-migration."]
   }
 
   step {
@@ -61,25 +77,41 @@ journey journey_proof_demo_program {
 
   step {
     id brownfield_extract_adopt
-    intent "Extract candidates from the brownfield app and adopt reviewed specs into topo source."
+    intent "Extract candidates from the brownfield app, then adopt reviewed specs into topo source."
     after [brownfield_baseline]
-    commands ["topogram extract . --out ./extracted --from db,api,ui,cli --json" "topogram query extract-plan ./extracted --json" "topogram adopt --list ./extracted --json" "topogram adopt <selector> ./extracted --write"]
-    expects ["The proof shows candidate evidence, reviewed adoption, and canonical topo records without mutating the source app during extraction."]
+    commands ["topogram extract . --out ./proof/artifacts/step-02-extracted-topogram --from db,api,ui --json" "topogram adopt --list ./proof/artifacts/step-02-extracted-topogram --json" "topogram adopt from-plan ./proof/artifacts/step-02-extracted-topogram --write"]
+    expects ["The proof shows package-backed extractor evidence at tag proof-02-extract-candidates and canonical topo adoption at tag proof-03-adopt-spec."]
   }
 
   step {
     id brownfield_feature_change
     intent "Use the extracted topo and agent packets to implement a new feature in the maintained brownfield app."
     after [brownfield_extract_adopt]
-    commands ["topogram agent brief --json" "topogram query single-agent-plan ./topo --mode implementation --task <task-id> --json" "npm run verify"]
-    expects ["The proof shows Topogram helping a maintained code change rather than replacing the app."]
+    commands ["topogram agent brief --json" "topogram query single-agent-plan ./topo --mode maintained-app-edit --task <task-id> --json" "npm run verify"]
+    expects ["The proof shows Topogram helping a maintained code change at tag proof-04-feature-from-topo."]
+  }
+
+  step {
+    id brownfield_refresh_drift
+    intent "Refresh extraction after source drift and keep changes review-only unless explicitly adopted."
+    after [brownfield_feature_change]
+    commands ["topogram extract refresh ./proof/artifacts/step-02-extracted-topogram --from . --json" "topogram extract diff ./proof/artifacts/step-02-extracted-topogram --json"]
+    expects ["The proof captures drift artifacts at tag proof-05-refresh-drift."]
   }
 
   step {
     id recreate_other_stack
     intent "Use the adopted brownfield Topogram to generate or create a comparable app in another stack."
-    after [brownfield_extract_adopt]
-    commands ["topogram check" "topogram generate --out ./app"]
-    expects ["The proof demonstrates that normalized specs can guide another stack while preserving core behavior contracts."]
+    after [brownfield_refresh_drift]
+    commands ["topogram check" "topogram generate --out ./recreated-app" "npm --prefix ./recreated-app run compile"]
+    expects ["The proof demonstrates cross-stack generated compile at tag proof-06-recreate-other-stack."]
+  }
+
+  step {
+    id parity_report
+    intent "Compare maintained and recreated stacks with contracts, query packets, and verification summaries."
+    after [recreate_other_stack]
+    commands ["topogram emit db-schema-snapshot ./topo --projection proj_db_postgres --json" "topogram emit widget-conformance-report ./topo --projection proj_web_surface --json" "npm run verify" "npm --prefix ./recreated-app run compile"]
+    expects ["The proof repo has branch step/07-parity-proof, tag proof-07-parity-proof, and proof/reports/parity-report.md."]
   }
 }
