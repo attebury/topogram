@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_discipline_agent_start_workflow {
+  name "Sdlc Discipline Agent Start Workflow"
+  description "Given an SDLC-adopted Topogram repo, when a human or agent creates acceptance criteria, checks strict SDLC status, queries available work, or starts a task, then Topogram enforces observable acceptance criteria, validates done-task proof links, and returns a task-start packet with blockers, rules, decisions, queries, and verification guidance before implementation begins."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}

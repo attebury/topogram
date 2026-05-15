@@ -20,6 +20,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram sdlc gate [path] --base <ref> --head <ref> [--sdlc-id <id>] [--exemption <text>] [--require-adopted] [--json]");
   console.log("   or: topogram sdlc prep commit [path] [--base <ref> --head <ref>] [--json]");
   console.log("   or: topogram sdlc audit [path] [--json]");
+  console.log("   or: topogram sdlc start <task-id> [path] --actor <actor> [--write] [--json]");
   console.log("   or: topogram sdlc link <from-id> <to-id> [path] [--write]");
   console.log("   or: topogram sdlc complete <task-id> [path] --verification <verification-id> [--dry-run|--write]");
   console.log("   or: topogram sdlc plan create <task-id> <slug> [path] [--write]");
@@ -97,6 +98,7 @@ export function printUsage(options = {}) {
   console.log("  topogram agent brief --json");
   console.log("  topogram sdlc policy explain");
   console.log("  topogram sdlc audit . --json");
+  console.log("  topogram sdlc start <task-id> --actor actor_coding_agent --json");
   console.log("  topogram sdlc prep commit . --base origin/main --head HEAD");
   console.log("  topogram sdlc gate . --require-adopted");
   console.log("  topogram sdlc plan explain plan_example --json");

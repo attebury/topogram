@@ -98,6 +98,10 @@ test("split command parser handles extracted command families", () => {
     queryName: "extract-plan",
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["query", "sdlc-available", "./custom-topogram"]), {
+    queryName: "sdlc-available",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["query", "workflow-preset", "customize", "./custom-topogram"]), {
     workflowPresetCommand: "customize",
     inputPath: "./custom-topogram"
@@ -350,6 +354,11 @@ test("split command parser handles extracted command families", () => {
   });
   assert.deepEqual(parseSplitCommandArgs(["sdlc", "complete", "task_one", "./custom-topogram", "--verification", "verification_one"]), {
     sdlcCommand: "complete",
+    sdlcId: "task_one",
+    inputPath: "./custom-topogram"
+  });
+  assert.deepEqual(parseSplitCommandArgs(["sdlc", "start", "task_one", "./custom-topogram", "--actor", "actor_one"]), {
+    sdlcCommand: "start",
     sdlcId: "task_one",
     inputPath: "./custom-topogram"
   });

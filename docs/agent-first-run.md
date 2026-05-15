@@ -43,9 +43,17 @@ topogram check --json
 If the project has adopted SDLC and the work is tied to a task or bug, add:
 
 ```bash
+topogram query sdlc-available ./topo --json
 topogram sdlc explain <task-id> --json
+topogram sdlc start <task-id> . --actor <actor-id> --json
+topogram sdlc start <task-id> . --actor <actor-id> --write --json
 topogram query slice ./topo --task <task-id> --json
+topogram query sdlc-proof-gaps ./topo --task <task-id> --json
 ```
+
+The first `sdlc start` command is read-only and returns the task-start packet.
+Use `--write` only after reviewing blockers, ownership, decisions, rules,
+plans, and verification targets in that packet.
 
 For journey-oriented workflow context:
 
@@ -62,6 +70,7 @@ topogram query single-agent-plan . --mode modeling --capability <capability-id> 
 Before commit in an SDLC-adopted project:
 
 ```bash
+topogram query sdlc-proof-gaps ./topo --task <task-id> --json
 topogram sdlc prep commit . --base origin/main --head HEAD --json
 topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json
 ```

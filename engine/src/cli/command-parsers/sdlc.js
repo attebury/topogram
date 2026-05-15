@@ -37,6 +37,13 @@ export function parseSdlcCommandArgs(args) {
       inputPath: commandPath(args, 3, ".")
     };
   }
+  if (args[0] === "sdlc" && args[1] === "start") {
+    return {
+      sdlcCommand: "start",
+      sdlcId: args[2],
+      inputPath: commandPath(args, 3, ".")
+    };
+  }
   if (args[0] === "sdlc" && args[1] === "plan" && args[2] === "create") {
     return {
       sdlcCommand: "plan:create",

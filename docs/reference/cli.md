@@ -55,7 +55,25 @@ topogram query list --json
 topogram query show <name> --json
 topogram query slice ./topo --task <task-id> --json
 topogram query slice ./topo --journey journey_greenfield_start_from_template --json
+topogram query sdlc-available ./topo --json
+topogram query sdlc-claimed ./topo --actor actor_coding_agent --json
+topogram query sdlc-blockers ./topo --task <task-id> --json
+topogram query sdlc-proof-gaps ./topo --task <task-id> --json
 ```
+
+## SDLC
+
+```bash
+topogram sdlc policy explain --json
+topogram sdlc start <task-id> . --actor actor_coding_agent --json
+topogram sdlc start <task-id> . --actor actor_coding_agent --write --json
+topogram sdlc complete <task-id> . --verification <verification-id> --actor actor_coding_agent --write
+topogram sdlc prep commit . --base origin/main --head HEAD --json
+topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json
+```
+
+`sdlc start` is read-only by default. It returns the implementation packet for a
+task; `--write` claims and starts the task through command-owned history.
 
 ## Widgets
 

@@ -312,7 +312,10 @@ npm run source:status
 npm run template:explain
 npm run generator:policy:check
 topogram sdlc policy explain --json
+topogram query sdlc-available ./topo --json
 topogram sdlc explain <task-or-bug-id> --json
+topogram sdlc start <task-id> --actor <actor> --json
+topogram query sdlc-proof-gaps ./topo --task <task-id> --json
 ${hasImplementation ? "npm run trust:status\n" : ""}npm run check
 npm run query:list
 npm run query:show -- widget-behavior

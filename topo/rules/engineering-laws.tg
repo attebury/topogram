@@ -97,3 +97,33 @@ rule rule_sdlc_records_are_one_per_file {
   domain dom_sdlc_query_agent_context
   status active
 }
+
+rule rule_acceptance_criteria_are_observable {
+  name "Acceptance Criteria Are Observable"
+  description "Approved acceptance criteria should use Given/when/then wording and describe observable outcomes, whether the behavior is product-facing, CLI-facing, safety-related, release-related, import-related, generator-related, or agent-workflow-related."
+  applies_to [cap_manage_sdlc_records, cap_query_context, cap_run_engine_gates]
+  severity error
+  source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+rule rule_done_tasks_need_proof_links {
+  name "Done Tasks Need Proof Links"
+  description "Done tasks must link to existing requirements, approved acceptance criteria, and existing verifications so done status has a reviewable meaning."
+  applies_to [cap_manage_sdlc_records, cap_run_engine_gates]
+  severity error
+  source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
+  domain dom_sdlc_query_agent_context
+  status active
+}
+
+rule rule_sdlc_kinds_have_distinct_jobs {
+  name "SDLC Kinds Have Distinct Jobs"
+  description "Pitches explain why, requirements state durable commitments, acceptance criteria define observable proof, tasks describe small implementation slices, decisions record durable choices, and bugs record violations of accepted expectations."
+  applies_to [cap_manage_sdlc_records, cap_brief_agent, cap_query_context]
+  severity warning
+  source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
+  domain dom_sdlc_query_agent_context
+  status active
+}

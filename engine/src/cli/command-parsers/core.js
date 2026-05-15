@@ -34,7 +34,11 @@ const QUERY_NAMES = new Set([
   "lane-status",
   "handoff-status",
   "auth-hints",
-  "auth-review-packet"
+  "auth-review-packet",
+  "sdlc-available",
+  "sdlc-claimed",
+  "sdlc-blockers",
+  "sdlc-proof-gaps"
 ]);
 
 /**

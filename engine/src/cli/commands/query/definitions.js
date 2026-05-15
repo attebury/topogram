@@ -143,6 +143,42 @@ export function queryDefinitions() {
       example: "topogram query handoff-status ./extracted-topogram --mode extract-adopt --json"
     },
     {
+      name: "sdlc-available",
+      purpose: "Show SDLC work that is ready to be claimed or shaped.",
+      description: "Return unclaimed active tasks, unresolved bugs, and approved requirements without active tasks.",
+      selectors: [],
+      args: ["[path]", "[--json]"],
+      output: "sdlc_available_query",
+      example: "topogram query sdlc-available ./topo --json"
+    },
+    {
+      name: "sdlc-claimed",
+      purpose: "Show claimed and in-progress SDLC tasks grouped by actor.",
+      description: "Return claimed work, optionally filtered by --actor.",
+      selectors: ["actor"],
+      args: ["[path]", "[--actor <id>]", "[--json]"],
+      output: "sdlc_claimed_query",
+      example: "topogram query sdlc-claimed ./topo --actor actor_coding_agent --json"
+    },
+    {
+      name: "sdlc-blockers",
+      purpose: "Show SDLC task blockers and reciprocal block issues.",
+      description: "Return blocked tasks, unmet blockers, and block/blocked_by reciprocity problems.",
+      selectors: ["task"],
+      args: ["[path]", "[--task <id>]", "[--json]"],
+      output: "sdlc_blockers_query",
+      example: "topogram query sdlc-blockers ./topo --task task_implement_audit_writer --json"
+    },
+    {
+      name: "sdlc-proof-gaps",
+      purpose: "Show missing proof before a task can be completed.",
+      description: "Return missing requirement, acceptance, verification, or DoD proof for one task or all open tasks.",
+      selectors: ["task"],
+      args: ["[path]", "[--task <id>]", "[--json]"],
+      output: "sdlc_proof_gaps_query",
+      example: "topogram query sdlc-proof-gaps ./topo --task task_implement_audit_writer --json"
+    },
+    {
       name: "risk-summary",
       purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",

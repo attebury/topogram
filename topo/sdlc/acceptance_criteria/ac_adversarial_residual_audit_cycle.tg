@@ -1,6 +1,6 @@
 acceptance_criterion ac_adversarial_residual_audit_cycle {
   name "Adversarial Residual Audit Cycle"
-  description "Following each adversarial-review batch, engineers produce dated notes tying risks to bounded tasks (`task_adversarial_residual_extractor_sdlc_audit` successors) verifying extractor smoke plus SDLC discipline (`topogram sdlc gate`), closing or reopening deficits with citations to fixtures/tests."
+  description "Given an adversarial-review batch completes, when engineers record follow-up notes, then those notes tie risks to bounded tasks, verify extractor smoke plus SDLC discipline, and close or reopen deficits with fixture or test citations."
   requirement req_adversarial_residual_audit_cycle
   status approved
 }

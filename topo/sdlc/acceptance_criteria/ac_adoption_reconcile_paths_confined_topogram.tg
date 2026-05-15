@@ -1,6 +1,6 @@
 acceptance_criterion ac_adoption_reconcile_paths_confined_topogram {
   name "Adoption Reconcile Paths Confined Topogram"
-  description "Regression fixtures poison adoption-plan entries with traversal segments on canonical_rel_path and source_path; reconcile/adopt workflows must fail closed without reading or writing outside the workspace topo folder, verified in engine tests referencing `workflows/reconcile/adoption-plan/outputs.js`."
+  description "Given regression fixtures poison adoption-plan entries with traversal segments on canonical_rel_path and source_path, when reconcile or adopt workflows run, then they fail closed without reading or writing outside the workspace topo folder."
   requirement req_adoption_reconcile_paths_confined_topogram
   status approved
 }

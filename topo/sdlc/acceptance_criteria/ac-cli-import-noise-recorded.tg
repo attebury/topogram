@@ -1,6 +1,6 @@
 acceptance_criterion ac_cli_import_noise_recorded {
   name "CLI Import Noise Recorded"
-  description "CLI import records useful command candidates, ignores non-authoritative test and fixture usage-like strings, and dogfood import shows reduced false-positive command noise."
+  description "Given a brownfield CLI source with public command help and incidental usage-like strings in tests or fixtures, when CLI import runs, then it records useful command candidates and ignores non-authoritative command noise."
   requirement req_cli_import_precision_followup
   status approved
 }

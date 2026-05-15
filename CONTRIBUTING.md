@@ -6,6 +6,7 @@ Topogram changes should start from the repo laws in [AGENTS.md](./AGENTS.md) and
 
 - Read the relevant public docs under [docs/](./docs/).
 - Start from or reference an SDLC item in `topo/` for non-trivial protected changes. Use `topogram sdlc policy explain --json` to see current enforcement.
+- Use `topogram query sdlc-available ./topo --json` to find open work, then `topogram sdlc start <task-id> . --actor <actor-id> --json` before editing. Add `--write` only after reviewing the start packet.
 - Use commands for stateful workflow mutations. Do not hand-edit SDLC status/history, plan step progress, archives, trust hashes, provenance, generated sentinels, release state, or rollout state.
 - Check `topogram-project/project/program/hardening-plan.md` for current execution order.
 - Prefer focused fixes with focused tests over broad cleanup.
@@ -29,6 +30,7 @@ Run a focused test for the area you changed, then run the engine gate:
 ```bash
 node ./engine/src/cli.js sdlc prep commit . --base origin/main --head HEAD
 node ./engine/src/cli.js sdlc gate . --require-adopted
+node ./engine/src/cli.js query sdlc-proof-gaps ./topo --task <task-id> --json
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh
 ```

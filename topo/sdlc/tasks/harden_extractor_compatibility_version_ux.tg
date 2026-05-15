@@ -1,0 +1,13 @@
+task task_harden_extractor_compatibility_version_ux {
+  name "Harden Extractor Compatibility Version Ux"
+  description "Make extractor package version and compatibility guidance explicit across extractor discovery, check, policy, and extraction error paths."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_version_compatibility_guidance]
+  verification_refs []
+  affects [cap_manage_extractors cap_import_brownfield_app]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  status unclaimed
+}

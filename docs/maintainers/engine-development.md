@@ -16,6 +16,21 @@ This repo owns:
 Non-trivial protected changes should reference an SDLC item in `topo/` or carry
 an explicit exemption.
 
+## SDLC Start
+
+Before implementation, inspect available work and start the task through the
+CLI:
+
+```bash
+node ./engine/src/cli.js query sdlc-available ./topo --json
+node ./engine/src/cli.js sdlc start <task-id> . --actor actor_coding_agent --json
+node ./engine/src/cli.js sdlc start <task-id> . --actor actor_coding_agent --write --json
+```
+
+Use `topogram query sdlc-proof-gaps ./topo --task <task-id> --json` before
+completion. Done tasks need linked requirements, approved acceptance criteria,
+and verification refs.
+
 ## Local checks
 
 ```bash

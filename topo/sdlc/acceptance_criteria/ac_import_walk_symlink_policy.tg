@@ -1,6 +1,6 @@
 acceptance_criterion ac_import_walk_symlink_policy {
   name "Import Walk Symlink Policy"
-  description "Given a workspace containing a symlinked directory looping or escaping the workspace root plus representative fixtures, import discovery either skips those entries with logged diagnostics or documents and tests intentional follow behavior bounded by timeouts and root containment checks."
+  description "Given a workspace contains a symlinked directory looping or escaping the workspace root plus representative fixtures, when import discovery walks files, then it either skips those entries with logged diagnostics or documents and tests intentional follow behavior bounded by timeouts and root containment checks."
   requirement req_import_walk_symlink_escape_guard
   status approved
 }

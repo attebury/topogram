@@ -255,6 +255,18 @@ export async function runSdlcCommand(context) {
     return result.ok ? 0 : 1;
   }
 
+  if (commandArgs.sdlcCommand === "start") {
+    const { startTask } = await import("../../sdlc/start.js");
+    const result = startTask(sdlcRoot, commandArgs.sdlcId, {
+      write: args.includes("--write") && !dryRun,
+      dryRun,
+      actor,
+      note
+    });
+    console.log(stableStringify(result));
+    return result.ok ? 0 : 1;
+  }
+
   if (commandArgs.sdlcCommand === "plan:create") {
     const { createPlan } = await import("../../sdlc/plan.js");
     const result = createPlan(sdlcRoot, commandArgs.sdlcId, commandArgs.sdlcSlug, {

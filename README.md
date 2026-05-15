@@ -72,7 +72,9 @@ Extract never mutates the source app. See
 ```bash
 topogram agent brief --json
 topogram query list --json
+topogram query sdlc-available ./topo --json
 topogram sdlc explain <task-id> --json
+topogram sdlc start <task-id> . --actor <actor-id> --json
 ```
 
 Start here when an agent needs safe read order, edit boundaries, focused context,

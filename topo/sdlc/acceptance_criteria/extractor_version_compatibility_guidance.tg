@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_version_compatibility_guidance {
+  name "Extractor Version Compatibility Guidance"
+  description "Given package-backed extractors can be installed independently from the CLI, when a human or agent runs extractor list, show, check, policy status, or extract with an extractor package, then Topogram clearly reports manifest version, package version, compatible CLI range, policy pin state, and the exact upgrade or pin command needed before execution."
+  requirement req_extractor_selection_ux
+  status approved
+}

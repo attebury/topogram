@@ -1,6 +1,6 @@
 acceptance_criterion ac_plan_step_status_is_commanded {
   name "Plan Step Status Is Commanded"
-  description "Plan step status transitions use SDLC CLI commands, append history, and allow sdlc check to detect direct status drift."
+  description "Given a plan step status changes, when the change is made through the SDLC CLI, then Topogram appends history and `sdlc check` can detect later direct status drift."
   requirement req_sdlc_plans_track_implementation_steps
   status approved
 }

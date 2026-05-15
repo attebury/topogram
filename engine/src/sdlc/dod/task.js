@@ -1,5 +1,30 @@
 // Task DoD per status.
 
+function refId(ref) {
+  return typeof ref === "string" ? ref : ref?.id || null;
+}
+
+function refsFor(value) {
+  return Array.isArray(value) ? value.map(refId).filter(Boolean) : [];
+}
+
+function requireRefs(kind, ids, byId, errors, options = {}) {
+  for (const id of ids) {
+    const target = byId?.get(id);
+    if (!target) {
+      errors.push(`status 'done' references missing ${kind} '${id}'`);
+      continue;
+    }
+    if (target.kind !== kind) {
+      errors.push(`status 'done' expected ${id} to be ${kind}, found ${target.kind}`);
+      continue;
+    }
+    if (options.status && target.status !== options.status) {
+      errors.push(`status 'done' requires ${kind} '${id}' to be ${options.status}, found ${target.status}`);
+    }
+  }
+}
+
 export function checkDoD(task, targetStatus, graph) {
   const errors = [];
   const warnings = [];
@@ -26,6 +51,7 @@ export function checkDoD(task, targetStatus, graph) {
   }
 
   if (targetStatus === "done") {
+    const byId = graph?.byId;
     if (!task.satisfies || task.satisfies.length === 0) {
       errors.push("status 'done' requires field 'satisfies'");
     }
@@ -36,6 +62,11 @@ export function checkDoD(task, targetStatus, graph) {
     const verifications = task.verificationRefs || [];
     if (verifications.length === 0) {
       errors.push("status 'done' requires field 'verification_refs'");
+    }
+    if (byId) {
+      requireRefs("requirement", refsFor(task.satisfies), byId, errors);
+      requireRefs("acceptance_criterion", refsFor(acs), byId, errors, { status: "approved" });
+      requireRefs("verification", refsFor(verifications), byId, errors);
     }
   }
 

@@ -26,6 +26,13 @@ import { explain } from "../../src/sdlc/explain.js";
 import { runSdlcCommitPrep } from "../../src/sdlc/prep.js";
 import { runRelease } from "../../src/sdlc/release.js";
 import { scaffoldNew } from "../../src/sdlc/scaffold.js";
+import { startTask } from "../../src/sdlc/start.js";
+import {
+  buildSdlcAvailablePayload,
+  buildSdlcBlockersPayload,
+  buildSdlcClaimedPayload,
+  buildSdlcProofGapsPayload
+} from "../../src/sdlc/views.js";
 import { auditWorkspace } from "../../src/sdlc/audit.js";
 import { sdlcAdopt } from "../../src/sdlc/adopt.js";
 import { archiveStatement, archiveEligibleStatements } from "../../src/archive/archive.js";
@@ -62,6 +69,23 @@ function copyFixtureToTemp() {
   }
   copy(fixtureRoot, tempRoot);
   return tempRoot;
+}
+
+function writeStartableTask(root, extra = "") {
+  const taskPath = path.join(root, "topo", "tasks", "start-followup.tg");
+  fs.writeFileSync(taskPath, `task task_start_followup {
+  name "Start followup"
+  description "Exercise the task-start workflow"
+  satisfies [req_audit_persistence]
+  acceptance_refs [ac_audit_survives_restart]
+  verification_refs [verification_audit_persists]
+  affects [cap_record_audit]
+${extra}  priority medium
+  work_type implementation
+  status unclaimed
+}
+`, "utf8");
+  return taskPath;
 }
 
 test("SDLC fixture parses and validates with no errors", () => {
@@ -498,6 +522,37 @@ test("DoD: task in-progress fails when blocked_by has a non-done blocker", () =>
   assert.ok(dod.errors[0].includes("blocked_by"));
 });
 
+test("DoD: approved acceptance criteria require Given/when/then wording", () => {
+  const dod = checkDoD("acceptance_criterion", {
+    kind: "acceptance_criterion",
+    id: "ac_missing_bdd",
+    description: "The behavior works",
+    requirement: { id: "req_audit_persistence" }
+  }, "approved", { byId: new Map() });
+  assert.equal(dod.satisfied, false);
+  assert.match(dod.errors.join("\n"), /Given\/When\/Then/);
+});
+
+test("DoD: done task validates referenced requirement, approved AC, and verification kinds", () => {
+  const ast = parsePath(fixtureRoot);
+  const resolved = resolveWorkspace(ast);
+  const byId = new Map(resolved.graph.statements.map((s) => [s.id, s]));
+  const badTask = {
+    kind: "task",
+    id: "task_bad_refs",
+    status: "in-progress",
+    claimedBy: ["actor_dev"],
+    satisfies: [{ id: "cap_record_audit" }],
+    acceptanceRefs: [{ id: "ac_missing" }],
+    verificationRefs: [{ id: "req_audit_persistence" }]
+  };
+  const dod = checkDoD("task", badTask, "done", { byId });
+  assert.equal(dod.satisfied, false);
+  assert.match(dod.errors.join("\n"), /expected cap_record_audit to be requirement/);
+  assert.match(dod.errors.join("\n"), /missing acceptance_criterion 'ac_missing'/);
+  assert.match(dod.errors.join("\n"), /expected req_audit_persistence to be verification/);
+});
+
 test("transitionStatement rewrites .tg status surgically and appends history", () => {
   const tempRoot = copyFixtureToTemp();
   try {
@@ -665,6 +720,131 @@ test("documented task query commands work through the CLI", () => {
   });
   assert.equal(plan.status, 0, plan.stderr || plan.stdout);
   assert.equal(JSON.parse(plan.stdout).type, "single_agent_plan");
+});
+
+test("SDLC query views report available, claimed, blockers, and proof gaps", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writeStartableTask(tempRoot);
+    const resolved = resolveWorkspace(parsePath(tempRoot));
+    assert.equal(resolved.ok, true, JSON.stringify(resolved.validation, null, 2));
+
+    const available = buildSdlcAvailablePayload(resolved.graph);
+    assert.ok(available.unclaimed_tasks.some((task) => task.id === "task_start_followup"));
+
+    const claimed = buildSdlcClaimedPayload(resolved.graph, "actor_dev");
+    assert.ok(claimed.claimed_tasks.some((task) => task.id === "task_implement_audit_writer"));
+
+    const blockers = buildSdlcBlockersPayload(resolved.graph, "task_start_followup");
+    assert.deepEqual(blockers.blocked_tasks[0].unresolved_blockers, []);
+
+    const gaps = buildSdlcProofGapsPayload(resolved.graph, "task_start_followup");
+    assert.equal(gaps.gaps[0].ready_for_done, false);
+    assert.match(gaps.gaps[0].errors.join("\n"), /claimed_by/);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("SDLC query views work through the CLI", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writeStartableTask(tempRoot);
+    const available = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-available",
+      tempRoot,
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(available.status, 0, available.stderr || available.stdout);
+    assert.ok(JSON.parse(available.stdout).unclaimed_tasks.some((task) => task.id === "task_start_followup"));
+
+    const claimed = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-claimed",
+      tempRoot,
+      "--actor",
+      "actor_dev",
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(claimed.status, 0, claimed.stderr || claimed.stdout);
+    assert.ok(JSON.parse(claimed.stdout).claimed_tasks.some((task) => task.id === "task_implement_audit_writer"));
+
+    const proof = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-proof-gaps",
+      tempRoot,
+      "--task",
+      "task_start_followup",
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(proof.status, 0, proof.stderr || proof.stdout);
+    assert.equal(JSON.parse(proof.stdout).gaps[0].ready_for_done, false);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("sdlc start returns a read-only packet and does not mutate by default", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const taskFile = writeStartableTask(tempRoot);
+    const before = fs.readFileSync(taskFile, "utf8");
+    const result = startTask(tempRoot, "task_start_followup", { actor: "actor_dev" });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.equal(result.type, "sdlc_start_packet");
+    assert.equal(result.dryRun, true);
+    assert.equal(result.can_start, true);
+    assert.equal(fs.readFileSync(taskFile, "utf8"), before);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("sdlc start --write claims and starts an unclaimed task through history", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    const taskFile = writeStartableTask(tempRoot);
+    const result = startTask(tempRoot, "task_start_followup", {
+      actor: "actor_dev",
+      write: true,
+      note: "start test"
+    });
+    assert.equal(result.ok, true, JSON.stringify(result, null, 2));
+    assert.equal(result.task.status, "in-progress");
+    const taskText = fs.readFileSync(taskFile, "utf8");
+    assert.match(taskText, /claimed_by \[actor_dev\]/);
+    assert.match(taskText, /status in-progress/);
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
+    assert.deepEqual(history.task_start_followup.map((entry) => entry.to), ["claimed", "in-progress"]);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("sdlc start refuses blocked tasks and tasks claimed by another actor", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writeStartableTask(tempRoot, "  blocked_by [task_implement_audit_writer]\n");
+    const blocked = startTask(tempRoot, "task_start_followup", {
+      actor: "actor_dev",
+      write: true
+    });
+    assert.equal(blocked.ok, false);
+    assert.match(blocked.error, /cannot be started/);
+
+    const claimedByOther = startTask(fixtureRoot, "task_implement_audit_writer", {
+      actor: "actor_other",
+      write: true
+    });
+    assert.equal(claimedByOther.ok, false);
+    assert.match(claimedByOther.error, /cannot be started/);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test("sdlc explain returns next_action and respects DoD", () => {

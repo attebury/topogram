@@ -1,6 +1,6 @@
 acceptance_criterion ac_task_queries_work_before_done {
   name "Task Queries Work Before Done"
-  description "Documented task slice and single-agent query commands work so agents can inspect task context before declaring work complete."
+  description "Given an agent is preparing to complete a task, when documented task slice and single-agent query commands run, then the agent can inspect task context before declaring work complete."
   requirement req_sdlc_commit_prep_surfaces_open_tasks
   status approved
 }

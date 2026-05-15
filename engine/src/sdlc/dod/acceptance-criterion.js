@@ -1,5 +1,9 @@
 // Acceptance criterion DoD per status.
 
+function hasGivenWhenThen(description) {
+  return /\bGiven\b[\s\S]*\bwhen\b[\s\S]*\bthen\b/i.test(description || "");
+}
+
 export function checkDoD(ac, targetStatus, graph) {
   const errors = [];
   const warnings = [];
@@ -9,6 +13,9 @@ export function checkDoD(ac, targetStatus, graph) {
   }
 
   if (targetStatus === "approved") {
+    if (!hasGivenWhenThen(ac.description)) {
+      errors.push("approved acceptance_criterion description must use observable Given/When/Then wording");
+    }
     const byId = graph?.byId;
     if (byId && ac.requirement?.id) {
       const req = byId.get(ac.requirement.id);

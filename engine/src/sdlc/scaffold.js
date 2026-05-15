@@ -31,7 +31,7 @@ const TEMPLATES = {
 `,
   acceptance_criterion: (slug) => `acceptance_criterion ac_${slug} {
   name "${humanize(slug)}"
-  description "Given <state>, when <action>, then <observable>."
+  description "Given <state>, when <action>, then <observable outcome>."
   requirement req_TODO
   status draft
 }

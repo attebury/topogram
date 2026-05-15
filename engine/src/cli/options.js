@@ -73,6 +73,7 @@ export function parseCliOptions(args, commandArgs) {
     modeId: optionValue(args, "--mode"),
     profileId: optionValue(args, "--profile"),
     providerId: optionValue(args, "--provider"),
+    actorId: optionValue(args, "--actor"),
     presetId: optionValue(args, "--preset"),
     templateName: optionValue(args, "--template") || "hello-web",
     catalogSource: optionValueIfPresent(args, "--catalog"),

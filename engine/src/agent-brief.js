@@ -190,12 +190,15 @@ function buildWorkflows(config, hasImportRecord) {
       id: "sdlc-task-plan",
       title: "SDLC task and plan loop",
       commands: [
+        "topogram query sdlc-available ./topo --json",
+        "topogram sdlc start <task-id> --actor <actor> --json",
         "topogram sdlc explain <task-or-bug-id> --json",
         "topogram query slice ./topo --task <task-id> --json",
+        "topogram query sdlc-proof-gaps ./topo --task <task-id> --json",
         "topogram sdlc plan explain <plan-id> --json",
         "topogram sdlc plan step complete <plan-id> <step-id> --actor <actor> --write"
       ],
-      rule: "Plans are optional; edit plan text directly, but use CLI for status, history, step progress, and archive state."
+      rule: "Start from an SDLC task packet before implementation. Plans are optional; edit plan text directly, but use CLI for status, history, step progress, and archive state."
     },
     {
       id: "greenfield-generated",
@@ -383,6 +386,8 @@ export function buildAgentBrief(inputPath, workspaceAst) {
     commandItem("npm run generator:policy:check", "Validate package-backed generator policy before generation."),
     ...(sdlcPolicy.status === "adopted" ? [
       commandItem("topogram sdlc policy explain --json", "Read current SDLC enforcement mode and protected paths.", "sdlc"),
+      commandItem("topogram query sdlc-available ./topo --json", "Find unclaimed tasks, unresolved bugs, and approved requirements needing a task.", "sdlc"),
+      commandItem("topogram sdlc start <task-id> --actor actor_coding_agent --json", "Read blockers, rules, decisions, proof gaps, and verification guidance before implementation.", "sdlc"),
       commandItem("topogram sdlc gate . --require-adopted --json", "Verify protected work has SDLC linkage before PR/CI.", "sdlc"),
       commandItem("topogram sdlc explain <task-or-bug-id> --json", "Start SDLC-backed implementation from the current task or bug.", "sdlc")
     ] : []),

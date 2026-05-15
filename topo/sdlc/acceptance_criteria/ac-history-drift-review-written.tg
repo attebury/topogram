@@ -1,6 +1,6 @@
 acceptance_criterion ac_history_drift_review_written {
   name "History Drift Review Written"
-  description "topo/docs/reports/history-drift-review.md categorizes major topogram-project claims as matched, contradicted, not implemented, missing from history, or ignored with reason."
+  description "Given the code-derived engine topo has been validated, when the history drift review is written, then topo/docs/reports/history-drift-review.md categorizes major topogram-project claims as matched, contradicted, not implemented, missing from history, or ignored with reason."
   requirement req_history_drift_review_required
   status approved
 }

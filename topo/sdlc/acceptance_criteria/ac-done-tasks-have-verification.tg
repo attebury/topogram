@@ -1,6 +1,6 @@
 acceptance_criterion ac_done_tasks_have_verification {
   name "Done Tasks Have Verification"
-  description "Tasks cannot be completed without satisfies, acceptance_refs, and verification_refs."
+  description "Given a task is being completed, when SDLC DoD validation runs, then the task cannot become done without satisfies, acceptance_refs, and verification_refs."
   requirement req_enforce_sdlc_operating_habit
   status approved
 }

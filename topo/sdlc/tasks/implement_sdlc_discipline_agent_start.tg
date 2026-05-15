@@ -1,0 +1,14 @@
+task task_implement_sdlc_discipline_agent_start {
+  name "Implement Sdlc Discipline Agent Start"
+  description "Add SDLC discipline rules, stricter acceptance/task DoD, agent-facing SDLC query views, and a guided sdlc start command."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_sdlc_discipline_agent_start_workflow]
+  verification_refs [verification_sdlc_enforcement verification_dogfood_topo_workspace verification_engine_gate]
+  affects [cap_manage_sdlc_records cap_query_context cap_brief_agent cap_run_engine_gates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

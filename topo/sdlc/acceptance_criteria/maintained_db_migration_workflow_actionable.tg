@@ -1,0 +1,6 @@
+acceptance_criterion ac_maintained_db_migration_workflow_actionable {
+  name "Maintained Db Migration Workflow Actionable"
+  description "Given a maintained app has a database runtime with SQL, Prisma, or Drizzle migration evidence, when a human or agent inspects DB migration commands, emitted plans, extraction seam candidates, or generated guidance, then Topogram shows the proposal-only workflow, snapshot source, migration tool, apply boundary, review commands, and handoff steps without implying that maintained migrations will be overwritten or applied automatically."
+  requirement req_db_migration_ownership_model
+  status approved
+}

@@ -17,6 +17,7 @@ This file is the repo-local agent briefing for working on Topogram itself. Produ
 
 - Specs are the source of truth. Do not hardcode generated output behavior around a demo, fixture product, framework quirk, or test convenience.
 - Enforced SDLC is the repo working habit. Non-trivial protected changes must start from or reference a `pitch`, `requirement`, `task`, or `bug` in `topo/`; PRs must cite the item or give an explicit allowed exemption.
+- Agents should inspect available SDLC work and start tasks through the CLI: `topogram query sdlc-available ./topo --json`, then `topogram sdlc start <task-id> . --actor <actor-id> --json`, then `--write` after reviewing the packet.
 - Adopted SDLC records default to `topo/sdlc/**`. The parser remains folder-agnostic, but agents should look there first for pitches, requirements, acceptance criteria, tasks, bugs, plans, decisions, archives, and history.
 - Tests must prove consumer value. A test that only checks for a string or file exists is not enough when generated output can be installed, compiled, checked, or run.
 - Code must be maintainable and security-focused over years. Write as though someone will maintain this app for 10 years while only touching it occasionally: keep modules organized, behavior discoverable, tests meaningful, seams easy to verify, and unsafe inputs, trust boundaries, credentials, and generated output escaping explicit.
@@ -51,6 +52,7 @@ Use the narrowest meaningful test first, then the repo gate:
 ```bash
 node ./engine/src/cli.js sdlc prep commit . --base origin/main --head HEAD
 node ./engine/src/cli.js sdlc gate . --require-adopted
+node ./engine/src/cli.js query sdlc-proof-gaps ./topo --task <task-id> --json
 node --test engine/tests/active/<focused-test>.test.js
 bash ./scripts/verify-engine.sh
 bash ./scripts/verify-cli-package.sh

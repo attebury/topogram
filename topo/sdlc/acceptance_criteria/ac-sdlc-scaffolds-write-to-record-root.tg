@@ -1,6 +1,6 @@
 acceptance_criterion ac_sdlc_scaffolds_write_to_record_root {
   name "SDLC Scaffolds Write To Record Root"
-  description "SDLC creation/scaffold commands write new SDLC records under topo/sdlc by default when a project has adopted the SDLC convention."
+  description "Given a project has adopted the SDLC record-root convention, when SDLC creation or scaffold commands write new records, then they write under topo/sdlc by default."
   requirement req_sdlc_records_use_dedicated_record_root
   status approved
 }

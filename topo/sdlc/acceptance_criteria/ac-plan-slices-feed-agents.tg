@@ -1,6 +1,6 @@
 acceptance_criterion ac_plan_slices_feed_agents {
   name "Plan Slices Feed Agents"
-  description "Task and plan slices expose linked plans, nested steps, next incomplete step, and verification guidance for focused agent work."
+  description "Given an agent requests a task or plan slice, when Topogram builds the focused context packet, then the packet exposes linked plans, nested steps, the next incomplete step, and verification guidance."
   requirement req_sdlc_plans_track_implementation_steps
   status approved
 }

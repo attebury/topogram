@@ -2976,5 +2976,55 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_extractor_version_compatibility_guidance": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-14T22:31:46.051Z",
+      "by": "actor_coding_agent",
+      "note": "accepted backlog criterion for extractor compatibility/version UX"
+    }
+  ],
+  "ac_maintained_db_migration_workflow_actionable": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-14T22:31:49.383Z",
+      "by": "actor_coding_agent",
+      "note": "accepted backlog criterion for maintained DB migration workflow polish"
+    }
+  ],
+  "ac_sdlc_discipline_agent_start_workflow": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-14T22:47:55.210Z",
+      "by": "actor_coding_agent",
+      "note": "accepted SDLC discipline and task-start workflow criterion"
+    }
+  ],
+  "task_implement_sdlc_discipline_agent_start": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-14T22:48:00.375Z",
+      "by": "actor_coding_agent",
+      "note": "claim SDLC discipline and agent task start pass"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-14T22:48:09.757Z",
+      "by": "actor_coding_agent",
+      "note": "begin implementing SDLC query and start workflow"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-14T23:56:10.267Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

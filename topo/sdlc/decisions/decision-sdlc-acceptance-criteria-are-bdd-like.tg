@@ -1,0 +1,9 @@
+decision decision_sdlc_acceptance_criteria_are_bdd_like {
+  name "SDLC Acceptance Criteria Are BDD Like"
+  description "Topogram acceptance criteria are observable behavior criteria with a BDD-like Given/when/then shape, but they may describe product, CLI, safety, release, import, generator, or agent workflow behavior."
+  context ["SDLC tracking improved implementation velocity by making done work testable and reviewable." "Classic product-only BDD is too narrow for Topogram because many critical behaviors are engineering workflows and safety boundaries."]
+  consequences ["approved acceptance criteria should use Given/when/then wording" "tasks can only be done when linked to approved acceptance criteria and verification proof" "implementation tasks should remain small slices of work while pitches, decisions, requirements, bugs, and plans carry their own responsibilities"]
+  pitch pitch_dogfood_engine_topo
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

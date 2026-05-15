@@ -4,6 +4,7 @@ import { runArtifactQuery } from "./artifacts.js";
 import { runBoundaryQuery } from "./boundaries.js";
 import { runChangeQuery } from "./change.js";
 import { runImportAdoptQuery } from "./extract-adopt.js";
+import { runSdlcQuery } from "./sdlc.js";
 import { runWorkflowQuery } from "./workflow.js";
 
 /**
@@ -19,6 +20,7 @@ export async function runQueryCommand(context) {
     runArtifactQuery,
     runBoundaryQuery,
     runChangeQuery,
+    runSdlcQuery,
     runWorkflowQuery,
     runImportAdoptQuery
   ]) {
