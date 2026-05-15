@@ -31,6 +31,7 @@ stories instead of isolated command examples:
 
 ## Reference
 
+- [SvelteKit / maintained UI realization (design reference)](./design/sveltekit-realization-shape.md)
 - [CLI Reference](./reference/cli.md)
 - [DSL Reference](./reference/dsl.md)
 - [Project Config](./reference/project-config.md)
