@@ -3411,5 +3411,30 @@
       "by": "actor_coding_agent",
       "note": "Focused release-status regression, verify-engine, and verify-cli-package passed."
     }
+  ],
+  "ac_cli_0_3_92_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T22:19:22.839Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted release criterion for 0.3.92 tag-at-HEAD hardening."
+    }
+  ],
+  "task_release_cli_0_3_92": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T22:19:26.783Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T22:19:26.834Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    }
   ]
 }

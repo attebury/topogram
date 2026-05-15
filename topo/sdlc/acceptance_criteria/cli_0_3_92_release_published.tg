@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_92_release_published {
+  name "Cli 0 3 92 Release Published"
+  description "Given release status tag-at-HEAD hardening is merged on main, when @topogram/cli 0.3.92 is prepared, published without premature auto-tagging, smoke-tested, rolled to first-party consumers, final evidence is refreshed, and the release tag points at the final release commit, then strict release status is green for the CLI and first-party packages."
+  requirement req_proof_demo_program
+  status approved
+}
