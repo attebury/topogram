@@ -1,0 +1,14 @@
+task task_require_release_tag_at_head {
+  name "Require Release Tag At Head"
+  description "Make strict release status verify that the current checkout is exactly the source identified by the current package version tag."
+  satisfies [req_proof_demo_program]
+  acceptance_refs [ac_release_status_requires_released_head]
+  verification_refs [verification_release_status_strict verification_engine_gate]
+  affects [cap_verify_release_status cap_roll_consumer_packages]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

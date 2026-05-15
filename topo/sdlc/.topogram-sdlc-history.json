@@ -3356,5 +3356,60 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_release_status_requires_released_head": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T19:25:06.987Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted release status must prove the checked-out HEAD is the released source."
+    }
+  ],
+  "task_require_release_tag_at_head": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T19:25:10.936Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T19:25:10.986Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T19:33:45.799Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_release_status_accepts_unreleased_head": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-15T19:34:02.469Z",
+      "by": "actor_coding_agent",
+      "note": "Fix is implemented and entering verification."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-15T19:34:21.174Z",
+      "by": "actor_coding_agent",
+      "note": "Release status strict now reports release_tag_not_at_head and release_local_tag_not_at_head for unreleased HEADs."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-15T19:34:39.087Z",
+      "by": "actor_coding_agent",
+      "note": "Focused release-status regression, verify-engine, and verify-cli-package passed."
+    }
   ]
 }

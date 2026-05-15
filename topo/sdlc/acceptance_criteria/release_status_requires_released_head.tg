@@ -1,0 +1,6 @@
+acceptance_criterion ac_release_status_requires_released_head {
+  name "Release Status Requires Released Head"
+  description "Given the release tag for the local CLI package version exists but points at an older commit than the checked-out HEAD, when `topogram release status --strict` runs, then strict mode fails with an actionable unreleased-source diagnostic instead of treating the release as complete."
+  requirement req_proof_demo_program
+  status approved
+}

@@ -151,6 +151,11 @@ recovery summary, and progress is printed to stderr so JSON output stays
 machine-readable. Use `--no-watch` to push consumer commits without waiting for
 CI, then run `topogram release status --strict`.
 
+`topogram release status --strict` requires the current checkout to match the
+current package version's remote release tag. If new commits have landed after
+the latest `topogram-v*` tag, strict mode fails until a new patch release is
+cut or the checkout is moved back to the released commit.
+
 `topogram release status --strict` also checks public proof repositories in a
 separate proof-consumer section. Those repos are not rolled by
 `roll-consumers`; they are tutorial/product proof repos, so release status

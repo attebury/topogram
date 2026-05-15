@@ -489,11 +489,18 @@ if (args[0] === "tag" && args[1] === "--list") {
   }
   process.exit(0);
 }
+if (args[0] === "rev-list" && args[1] === "-n" && args[2] === "1" && args[3] === tag) {
+  if (process.env.FAKE_GIT_LOCAL_TAG === "0") {
+    process.exit(128);
+  }
+  process.stdout.write((process.env.FAKE_GIT_LOCAL_TAG_SHA || process.env.FAKE_GIT_TAG_SHA || "abc123") + "\\n");
+  process.exit(0);
+}
 if (args[0] === "ls-remote" && args.includes("refs/tags/" + tag)) {
   if (process.env.FAKE_GIT_REMOTE_TAG === "0") {
     process.exit(2);
   }
-  process.stdout.write("abc123\\trefs/tags/" + tag + "\\n");
+  process.stdout.write((process.env.FAKE_GIT_REMOTE_TAG_SHA || process.env.FAKE_GIT_TAG_SHA || "abc123") + "\\trefs/tags/" + tag + "\\n");
   process.exit(0);
 }
 if (args[0] === "rev-parse" && args[1] === "HEAD") {
@@ -2658,6 +2665,11 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.equal(payload.currentPublished, true);
   assert.equal(payload.git.local, true);
   assert.equal(payload.git.remote, true);
+  assert.equal(payload.git.head, "abc123");
+  assert.equal(payload.git.localTarget, "abc123");
+  assert.equal(payload.git.remoteTarget, "abc123");
+  assert.equal(payload.git.localMatchesHead, true);
+  assert.equal(payload.git.remoteMatchesHead, true);
   assert.equal(payload.consumerPins.allKnownPinned, true);
   assert.equal(payload.consumerCi.allCheckedAndPassing, true);
   assert.equal(payload.consumerCi.passing, knownCliConsumerRepos.length);
@@ -2679,6 +2691,7 @@ test("topogram release status strict passes when package, tag, and consumers are
   });
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Strict: enabled/);
+  assert.match(human.stdout, /Git tag: .* at-head=yes/);
   assert.match(human.stdout, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
   assert.match(human.stdout, new RegExp(`Proof consumer CI: ${proofConsumerRepos.length}/${proofConsumerRepos.length} passing`));
   assert.match(human.stdout, /proof topogram-proof-content-approval: .* \(current\)/);
@@ -2836,6 +2849,35 @@ test("topogram release status strict accepts remote release tags without a local
   assert.equal(payload.git.remote, true);
   assert.equal(payload.ok, true);
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "release_local_tag_missing"), false);
+});
+
+test("topogram release status strict fails when release tag is not checked-out HEAD", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-tag-head-mismatch-"));
+  writeKnownCliConsumerPins(root, cliPackageVersion);
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const fakeGhBin = createFakeGh(root);
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "def456",
+      FAKE_GIT_TAG_SHA: "abc123",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 1, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.git.head, "def456");
+  assert.equal(payload.git.localTarget, "abc123");
+  assert.equal(payload.git.remoteTarget, "abc123");
+  assert.equal(payload.git.localMatchesHead, false);
+  assert.equal(payload.git.remoteMatchesHead, false);
+  assert.equal(payload.consumerPins.allKnownPinned, true);
+  assert.equal(payload.consumerCi.allCheckedAndPassing, true);
+  const codes = payload.diagnostics.map((diagnostic) => diagnostic.code);
+  assert.ok(codes.includes("release_tag_not_at_head"));
+  assert.ok(codes.includes("release_local_tag_not_at_head"));
 });
 
 test("topogram release status strict tracks public proof consumers separately", () => {

@@ -34,13 +34,16 @@ export function messageFromError(error) {
 /**
  * @param {string} version
  * @param {string} cwd
- * @returns {{ tag: string, local: boolean|null, remote: boolean|null, diagnostics: Array<AnyRecord> }}
+ * @returns {{ tag: string, head: string|null, local: boolean|null, remote: boolean|null, localTarget: string|null, remoteTarget: string|null, localMatchesHead: boolean|null, remoteMatchesHead: boolean|null, diagnostics: Array<AnyRecord> }}
  */
 export function inspectReleaseGitTag(version, cwd) {
   const tag = `topogram-v${version}`;
   const diagnostics = [];
+  const head = currentGitHead(cwd);
   let local = null;
+  let localTarget = null;
   let remote = null;
+  let remoteTarget = null;
   const localResult = childProcess.spawnSync("git", ["tag", "--list", tag], {
     cwd,
     encoding: "utf8",
@@ -48,6 +51,21 @@ export function inspectReleaseGitTag(version, cwd) {
   });
   if (localResult.status === 0) {
     local = String(localResult.stdout || "").trim() === tag;
+    if (local) {
+      const targetResult = runGit(["rev-list", "-n", "1", tag], cwd);
+      if (targetResult.status === 0) {
+        localTarget = String(targetResult.stdout || "").trim() || null;
+      } else {
+        diagnostics.push(commandDiagnostic({
+          code: "release_local_tag_target_unavailable",
+          severity: "warning",
+          message: `Could not inspect local git tag target for ${tag}.`,
+          path: cwd,
+          suggestedFix: "Run from a git checkout with git available.",
+          result: targetResult
+        }));
+      }
+    }
   } else {
     diagnostics.push({
       code: "release_local_tag_unavailable",
@@ -57,13 +75,14 @@ export function inspectReleaseGitTag(version, cwd) {
       suggestedFix: "Run from a git checkout with git available."
     });
   }
-  const remoteResult = childProcess.spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`], {
+  const remoteResult = childProcess.spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`, `refs/tags/${tag}^{}`], {
     cwd,
     encoding: "utf8",
     env: { ...process.env, PATH: process.env.PATH || "" }
   });
   if (remoteResult.status === 0) {
     remote = true;
+    remoteTarget = parseRemoteTagTarget(String(remoteResult.stdout || ""), tag);
   } else if (remoteResult.status === 2) {
     remote = false;
   } else {
@@ -75,7 +94,30 @@ export function inspectReleaseGitTag(version, cwd) {
       suggestedFix: "Check git remote access, then rerun `topogram release status`."
     });
   }
-  return { tag, local, remote, diagnostics };
+  return {
+    tag,
+    head,
+    local,
+    remote,
+    localTarget,
+    remoteTarget,
+    localMatchesHead: head && localTarget ? localTarget === head : null,
+    remoteMatchesHead: head && remoteTarget ? remoteTarget === head : null,
+    diagnostics
+  };
+}
+
+/**
+ * @param {string} output
+ * @param {string} tag
+ * @returns {string|null}
+ */
+function parseRemoteTagTarget(output, tag) {
+  const lines = output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const peeled = lines.find((line) => line.endsWith(`refs/tags/${tag}^{}`));
+  const direct = lines.find((line) => line.endsWith(`refs/tags/${tag}`));
+  const selected = peeled || direct;
+  return selected ? selected.split(/\s+/)[0] || null : null;
 }
 
 /**

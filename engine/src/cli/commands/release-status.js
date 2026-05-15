@@ -186,6 +186,26 @@ function releaseStatusStrictDiagnostics(release) {
       suggestedFix: `Push or create the remote ${release.git.tag} tag before treating this release as complete.`
     });
   }
+  if (release.git.remote === true && release.git.remoteMatchesHead !== true) {
+    diagnostics.push({
+      code: "release_tag_not_at_head",
+      severity: "error",
+      message: release.git.head
+        ? `Release tag ${release.git.tag} points at ${release.git.remoteTarget || "unknown"}, not checked-out HEAD ${release.git.head}.`
+        : `Could not prove release tag ${release.git.tag} points at checked-out HEAD.`,
+      path: release.git.tag,
+      suggestedFix: "Cut a new patch release for the current source, or check out the commit identified by the current release tag before treating this version as complete."
+    });
+  }
+  if (release.git.local === true && release.git.localMatchesHead === false) {
+    diagnostics.push({
+      code: "release_local_tag_not_at_head",
+      severity: "error",
+      message: `Local release tag ${release.git.tag} points at ${release.git.localTarget || "unknown"}, not checked-out HEAD ${release.git.head || "unknown"}.`,
+      path: release.git.tag,
+      suggestedFix: `Refresh or remove the stale local tag, for example \`git tag -d ${release.git.tag}\` followed by \`git fetch --tags\`, then rerun release status.`
+    });
+  }
   if (release.consumerPins.allKnownPinned !== true) {
     diagnostics.push({
       code: "release_consumer_pins_not_current",
@@ -405,7 +425,7 @@ export function printReleaseStatus(payload) {
   console.log(`Package: ${payload.packageName}`);
   console.log(`Local version: ${payload.localVersion}`);
   console.log(`Latest published: ${payload.latestVersion || "unknown"}${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`);
-  console.log(`Git tag: ${payload.git.tag} local=${labelBoolean(payload.git.local)} remote=${labelBoolean(payload.git.remote)}`);
+  console.log(`Git tag: ${payload.git.tag} local=${labelBoolean(payload.git.local)} remote=${labelBoolean(payload.git.remote)} at-head=${labelBoolean(payload.git.remoteMatchesHead)}`);
   console.log(
     `Consumer pins: ${payload.consumerPins.pinned}/${payload.consumerPins.known} pinned, ` +
     `${payload.consumerPins.matching} matching, ${payload.consumerPins.differing} differing, ${payload.consumerPins.missing} missing`
@@ -504,7 +524,7 @@ export function renderReleaseStatusMarkdown(payload) {
     "",
     `- Package: \`${payload.packageName}@${payload.localVersion}\``,
     `- Latest published: \`${payload.latestVersion || "unknown"}\`${payload.currentPublished === true ? " (current)" : payload.currentPublished === false ? " (differs)" : ""}`,
-    `- Release tag: \`${payload.git.tag}\` (local=${labelBoolean(payload.git.local)}, remote=${labelBoolean(payload.git.remote)})`,
+    `- Release tag: \`${payload.git.tag}\` (local=${labelBoolean(payload.git.local)}, remote=${labelBoolean(payload.git.remote)}, at-head=${labelBoolean(payload.git.remoteMatchesHead)})`,
     `- Consumer pins: ${payload.consumerPins.matching}/${payload.consumerPins.known} matching`,
     `- Consumer CI: ${payload.consumerCi.passing}/${payload.consumerCi.checked} passing`,
     `- Proof consumer baseline: ${payload.proofConsumerFreshness.pinned}/${payload.proofConsumerFreshness.known} pinned, ${payload.proofConsumerFreshness.current} current, ${payload.proofConsumerFreshness.staleButAccepted} baseline-accepted, ${payload.proofConsumerFreshness.belowBaseline} below baseline${payload.proofMinimumVersion ? ` (minimum ${payload.proofMinimumVersion})` : ""}`,

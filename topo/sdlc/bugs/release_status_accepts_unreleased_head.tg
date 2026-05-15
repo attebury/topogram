@@ -1,0 +1,12 @@
+bug bug_release_status_accepts_unreleased_head {
+  name "Release Status Accepts Unreleased Head"
+  description "Strict release status passes when the current package version tag exists locally and remotely even if the checked-out HEAD contains unreleased commits after that tag."
+  reproduction "Commit a release-status change after topogram-v0.3.91 without bumping or retagging the package version, then run topogram release status --strict. The command reports the tag exists and can pass even though HEAD is not the released source."
+  affects [cap_verify_release_status cap_roll_consumer_packages]
+  violates [rule_tests_prove_consumer_value]
+  fixed_in [task_require_release_tag_at_head]
+  fixed_in_verification [verification_release_status_strict verification_engine_gate]
+  priority medium
+  severity medium
+  status verified
+}
