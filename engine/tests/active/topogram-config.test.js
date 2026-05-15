@@ -12,6 +12,9 @@ import {
   releaseConsumerRepos,
   releaseConsumerWorkflowJobs,
   releaseConsumerWorkflowName,
+  releaseProofConsumerRepos,
+  releaseProofConsumerWorkflowJobs,
+  releaseProofConsumerWorkflowName,
   topogramRuntimeConfig
 } from "../../src/topogram-config.js";
 
@@ -62,12 +65,19 @@ test("runtime config preserves current public defaults", () => {
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-prisma-db"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-express-api"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-drizzle-db"));
+  assert.deepEqual(releaseProofConsumerRepos(root), [
+    "topogram-proof-content-approval",
+    "topogram-proof-content-approval-brownfield"
+  ]);
   assert.equal(releaseConsumerWorkflowName("topogram-starters", root), "Starter Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-node-cli", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-react-router", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-prisma-db", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-express-api", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-drizzle-db", root), "Extractor Verification");
+  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval", root), "Proof Verification");
+  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval-brownfield", root), "Proof Verification");
+  assert.deepEqual(releaseProofConsumerWorkflowJobs("topogram-proof-content-approval", root), []);
   assert.equal(config.limits.remoteFetchMaxBytes, 5 * 1024 * 1024);
   assert.equal(config.limits.catalogFetchMaxBytes, null);
   assert.equal(config.limits.githubFetchMaxBytes, null);
@@ -102,6 +112,13 @@ test("runtime config reads repo-local catalog and release overrides", () => {
       },
       workflowJobs: {
         "example-generator": ["Check package", "Compile generated app"]
+      },
+      proofConsumers: ["example-proof"],
+      proofWorkflows: {
+        "example-proof": "Proof Workflow"
+      },
+      proofWorkflowJobs: {
+        "example-proof": ["Proof job"]
       }
     },
     limits: {
@@ -124,6 +141,9 @@ test("runtime config reads repo-local catalog and release overrides", () => {
   assert.deepEqual(releaseConsumerRepos(root), ["example-generator"]);
   assert.equal(releaseConsumerWorkflowName("example-generator", root), "Example Verification");
   assert.deepEqual(releaseConsumerWorkflowJobs("example-generator", root), ["Check package", "Compile generated app"]);
+  assert.deepEqual(releaseProofConsumerRepos(root), ["example-proof"]);
+  assert.equal(releaseProofConsumerWorkflowName("example-proof", root), "Proof Workflow");
+  assert.deepEqual(releaseProofConsumerWorkflowJobs("example-proof", root), ["Proof job"]);
   assert.equal(config.limits.remoteFetchMaxBytes, 1024);
   assert.equal(config.limits.catalogFetchMaxBytes, 2048);
   assert.equal(config.limits.githubFetchMaxBytes, 4096);
@@ -158,6 +178,13 @@ test("runtime config env overrides win over repo-local config", () => {
     TOPOGRAM_RELEASE_CONSUMER_WORKFLOW_JOBS_JSON: JSON.stringify({
       "env-consumer": ["Env Job"]
     }),
+    TOPOGRAM_RELEASE_PROOF_CONSUMERS: "env-proof",
+    TOPOGRAM_RELEASE_PROOF_CONSUMER_WORKFLOWS_JSON: JSON.stringify({
+      "env-proof": "Env Proof Workflow"
+    }),
+    TOPOGRAM_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS_JSON: JSON.stringify({
+      "env-proof": ["Env Proof Job"]
+    }),
     TOPOGRAM_REMOTE_FETCH_MAX_BYTES: "1234",
     TOPOGRAM_CATALOG_FETCH_MAX_BYTES: "2345",
     TOPOGRAM_GITHUB_FETCH_MAX_BYTES: "3456"
@@ -171,6 +198,9 @@ test("runtime config env overrides win over repo-local config", () => {
     assert.deepEqual(releaseConsumerRepos(root), ["env-consumer", "second-consumer"]);
     assert.equal(releaseConsumerWorkflowName("env-consumer", root), "Env Workflow");
     assert.deepEqual(releaseConsumerWorkflowJobs("env-consumer", root), ["Env Job"]);
+    assert.deepEqual(releaseProofConsumerRepos(root), ["env-proof"]);
+    assert.equal(releaseProofConsumerWorkflowName("env-proof", root), "Env Proof Workflow");
+    assert.deepEqual(releaseProofConsumerWorkflowJobs("env-proof", root), ["Env Proof Job"]);
     assert.equal(config.limits.remoteFetchMaxBytes, 1234);
     assert.equal(config.limits.catalogFetchMaxBytes, 2345);
     assert.equal(config.limits.githubFetchMaxBytes, 3456);

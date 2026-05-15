@@ -16,6 +16,11 @@ Both repos expose a `Proof Verification` workflow, `npm run proof:audit`, and
 `npm run verify`. They also use SDLC to show the recommended habit, but SDLC is
 not required for ordinary Topogram users.
 
+`topogram release status --strict` tracks these repos as `proofConsumers`, not
+as normal package rollout consumers. A release is not considered fully current
+until the proof repos are pinned to the current CLI, expose the audit/verify
+scripts, and have green Proof Verification workflows.
+
 ## How To Read A Proof
 
 1. Open the repo and confirm the `Proof Verification` badge is green.

@@ -3292,5 +3292,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_proof_consumers_release_status_checked": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T18:03:46.392Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted proof consumer release-status behavior before implementation."
+    }
+  ],
+  "task_track_proof_consumers_in_release_status": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T18:03:46.431Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T18:03:46.474Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T18:19:30.111Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

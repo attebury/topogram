@@ -11,6 +11,8 @@ Treat it as a dated release audit, not a floating compatibility promise.
 - Release tag: `topogram-v0.3.91` (local=yes, remote=yes)
 - Consumer pins: 18/18 matching
 - Consumer CI: 18/18 passing
+- Proof consumer pins: 2/2 matching
+- Proof consumer CI: 2/2 passing
 - Strict status: passed
 
 ## Core
@@ -70,9 +72,16 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `topogram-hello` | `0.3.91` | Topogram Package Verification | completed/success | [25927982688](https://github.com/attebury/topogram-hello/actions/runs/25927982688) |
 | `topograms` | `0.3.91` | Catalog Verification | completed/success | [25928007855](https://github.com/attebury/topograms/actions/runs/25928007855) |
 
+## Proof Consumers
+
+| Repo | Pin | Required scripts | Workflow | Status | Run |
+| --- | --- | --- | --- | --- | --- |
+| `topogram-proof-content-approval` | `0.3.91` | proof:audit, verify | Proof Verification | completed/success | [25932010238](https://github.com/attebury/topogram-proof-content-approval/actions/runs/25932010238) |
+| `topogram-proof-content-approval-brownfield` | `0.3.91` | proof:audit, verify | Proof Verification | completed/success | [25932010759](https://github.com/attebury/topogram-proof-content-approval-brownfield/actions/runs/25932010759) |
+
 ## Consumer Proofs
 
-The external Todo demo is the canonical end-to-end consumer proof for the current catalog-backed workflow:
+The external Todo demo remains the canonical end-to-end consumer proof for the current catalog-backed workflow:
 
 ```bash
 topogram copy todo ./todo-demo
@@ -86,3 +95,5 @@ npm run app:runtime
 ```
 
 The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias.
+
+Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their CLI pin, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers`.

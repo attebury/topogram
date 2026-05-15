@@ -35,6 +35,10 @@ const firstPartyExtractorRepos = [
   "topogram-extractor-drizzle-db"
 ];
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
+const proofConsumerRepos = [
+  "topogram-proof-content-approval",
+  "topogram-proof-content-approval-brownfield"
+];
 const knownCliConsumerRepos = [
   ...firstPartyGeneratorRepos,
   ...firstPartyExtractorRepos,
@@ -612,6 +616,25 @@ function writeKnownCliConsumerPins(root, version) {
   for (const consumer of knownCliConsumerRepos) {
     fs.mkdirSync(path.join(root, consumer), { recursive: true });
     fs.writeFileSync(path.join(root, consumer, "topogram-cli.version"), `${version}\n`, "utf8");
+  }
+  writeKnownProofConsumerPins(root, version);
+}
+
+function writeKnownProofConsumerPins(root, version) {
+  for (const consumer of proofConsumerRepos) {
+    const consumerRoot = path.join(root, consumer);
+    fs.mkdirSync(consumerRoot, { recursive: true });
+    writePackageJson(consumerRoot, {
+      name: consumer,
+      private: true,
+      devDependencies: {
+        "@topogram/cli": version
+      },
+      scripts: {
+        "proof:audit": "node -e true",
+        verify: "node -e true"
+      }
+    });
   }
 }
 
@@ -2638,7 +2661,13 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.equal(payload.consumerPins.allKnownPinned, true);
   assert.equal(payload.consumerCi.allCheckedAndPassing, true);
   assert.equal(payload.consumerCi.passing, knownCliConsumerRepos.length);
+  assert.equal(payload.proofConsumerPins.allKnownPinned, true);
+  assert.equal(payload.proofConsumerScripts.allPresent, true);
+  assert.equal(payload.proofConsumerCi.allCheckedAndPassing, true);
+  assert.equal(payload.proofConsumerCi.passing, proofConsumerRepos.length);
+  assert.deepEqual(payload.proofConsumers.map((consumer) => consumer.name), proofConsumerRepos);
   assert.equal(payload.consumers.every((consumer) => consumer.ci?.run?.url), true);
+  assert.equal(payload.proofConsumers.every((consumer) => consumer.ci?.run?.url), true);
   assert.deepEqual(payload.errors, []);
 
   const human = runCli(["release", "status", "--strict"], {
@@ -2648,6 +2677,8 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.equal(human.status, 0, human.stderr || human.stdout);
   assert.match(human.stdout, /Strict: enabled/);
   assert.match(human.stdout, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
+  assert.match(human.stdout, new RegExp(`Proof consumer CI: ${proofConsumerRepos.length}/${proofConsumerRepos.length} passing`));
+  assert.match(human.stdout, /proof topogram-proof-content-approval: .* \(matches\)/);
   assert.match(human.stdout, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
 
   const reportPath = path.join(root, "release-baseline.md");
@@ -2660,12 +2691,16 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(reportText, /^# Known-Good Release Matrix/m);
   assert.match(reportText, new RegExp(`\`@topogram/cli@${literalPattern(cliPackageVersion).source}\``));
   assert.match(reportText, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
+  assert.match(reportText, new RegExp(`Proof consumer CI: ${proofConsumerRepos.length}/${proofConsumerRepos.length} passing`));
   assert.match(reportText, /## Catalog Entries/);
   assert.match(reportText, /\| `sample-template` \| template \| `@topogram\/starter-sample` \| `0\.1\.0` \| React \+ Express \|/);
   assert.match(reportText, /\| `sample-topogram` \| topogram \| `@topogram\/topogram-sample` \| `0\.1\.0` \| not declared \|/);
   assert.match(reportText, /## Generator Packages/);
   assert.match(reportText, /\| `@topogram\/generator-react-web` \| web \| sample-template \|/);
   assert.match(reportText, /\| `@topogram\/generator-express-api` \| api \| sample-template \|/);
+  assert.match(reportText, /## Proof Consumers/);
+  assert.match(reportText, /\| `topogram-proof-content-approval` \|/);
+  assert.match(reportText, /proof:audit, verify/);
   assert.match(reportText, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
 
   const markdown = runCli(["release", "status", "--strict", "--markdown"], {
@@ -2685,7 +2720,8 @@ test("GitHub token path uses REST for catalog and release checks without gh", ()
       consumers: ["topogram-starters"],
       workflows: {
         "topogram-starters": "Starter Verification"
-      }
+      },
+      proofConsumers: []
     }
   });
   const catalog = {
@@ -2796,6 +2832,54 @@ test("topogram release status strict accepts remote release tags without a local
   assert.equal(payload.git.remote, true);
   assert.equal(payload.ok, true);
   assert.equal(payload.diagnostics.some((diagnostic) => diagnostic.code === "release_local_tag_missing"), false);
+});
+
+test("topogram release status strict tracks public proof consumers separately", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-release-status-proof-consumers-"));
+  writeKnownCliConsumerPins(root, cliPackageVersion);
+  writePackageJson(path.join(root, proofConsumerRepos[0]), {
+    name: proofConsumerRepos[0],
+    private: true,
+    devDependencies: {
+      "@topogram/cli": "0.0.1"
+    },
+    scripts: {
+      "proof:audit": "node -e true",
+      verify: "node -e true"
+    }
+  });
+  writePackageJson(path.join(root, proofConsumerRepos[1]), {
+    name: proofConsumerRepos[1],
+    private: true,
+    devDependencies: {
+      "@topogram/cli": cliPackageVersion
+    },
+    scripts: {
+      "proof:audit": "node -e true"
+    }
+  });
+  const fakeNpmBin = createFakeNpm(root);
+  const fakeGitBin = createFakeGit(root, `topogram-v${cliPackageVersion}`);
+  const fakeGhBin = createFakeGh(root);
+  const status = runCli(["release", "status", "--strict", "--json"], {
+    cwd: root,
+    env: {
+      FAKE_NPM_LATEST_VERSION: cliPackageVersion,
+      FAKE_GIT_HEAD: "abc123",
+      PATH: `${fakeNpmBin}${path.delimiter}${fakeGitBin}${path.delimiter}${fakeGhBin}${path.delimiter}${process.env.PATH || ""}`
+    }
+  });
+  assert.equal(status.status, 1, status.stderr || status.stdout);
+  const payload = JSON.parse(status.stdout);
+  assert.equal(payload.consumerPins.allKnownPinned, true);
+  assert.equal(payload.consumerCi.allCheckedAndPassing, true);
+  assert.equal(payload.proofConsumerPins.allKnownPinned, false);
+  assert.equal(payload.proofConsumerScripts.allPresent, false);
+  assert.equal(payload.proofConsumerCi.checked, 1);
+  assert.equal(payload.proofConsumerCi.passing, 1);
+  const codes = payload.diagnostics.map((diagnostic) => diagnostic.code);
+  assert.ok(codes.includes("release_proof_consumer_pins_not_current"));
+  assert.ok(codes.includes("release_proof_consumer_scripts_missing"));
 });
 
 test("topogram release status strict fails when first-party consumer pins are missing", () => {

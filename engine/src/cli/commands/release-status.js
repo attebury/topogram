@@ -1,7 +1,15 @@
 // @ts-check
 
+import fs from "node:fs";
+import path from "node:path";
+
 import { loadCatalog } from "../../catalog.js";
-import { catalogRepoSlug } from "../../topogram-config.js";
+import {
+  catalogRepoSlug,
+  releaseProofConsumerRepos,
+  releaseProofConsumerWorkflowJobs,
+  releaseProofConsumerWorkflowName
+} from "../../topogram-config.js";
 import {
   CLI_PACKAGE_NAME,
   latestTopogramCliVersion,
@@ -23,7 +31,7 @@ import {
 
 /**
  * @param {{ cwd?: string, strict?: boolean }} [options]
- * @returns {{ ok: boolean, strict: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: ReturnType<typeof inspectReleaseGitTag>, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumerCi: ReturnType<typeof summarizeConsumerCi>, consumers: Array<AnyRecord>, diagnostics: Array<AnyRecord>, errors: string[] }}
+ * @returns {{ ok: boolean, strict: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: ReturnType<typeof inspectReleaseGitTag>, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumerCi: ReturnType<typeof summarizeConsumerCi>, consumers: Array<AnyRecord>, proofConsumerPins: ReturnType<typeof summarizeConsumerPins>, proofConsumerCi: ReturnType<typeof summarizeConsumerCi>, proofConsumerScripts: ReturnType<typeof summarizeProofConsumerScripts>, proofConsumers: Array<AnyRecord>, diagnostics: Array<AnyRecord>, errors: string[] }}
  */
 export function buildReleaseStatusPayload(options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -51,8 +59,27 @@ export function buildReleaseStatusPayload(options = {}) {
     workflow: expectedConsumerWorkflowName(consumer.name),
     ci: null
   }));
+  const proofConsumers = discoverTopogramCliVersionConsumers(cwd, releaseProofConsumerRepos(cwd)).map((discovered) => {
+    const consumer = normalizeProofConsumerPin(discovered);
+    const requiredScripts = ["proof:audit", "verify"];
+    return /** @type {AnyRecord} */ ({
+      ...consumer,
+      matchesLocal: consumer.version ? consumer.version === localVersion : null,
+      workflow: releaseProofConsumerWorkflowName(consumer.name),
+      expectedJobs: releaseProofConsumerWorkflowJobs(consumer.name),
+      requiredScripts,
+      scripts: inspectRequiredPackageScripts(consumer.root, requiredScripts),
+      ci: null
+    });
+  });
   if (strict) {
     for (const consumer of /** @type {Array<any>} */ (consumers)) {
+      if (consumer.matchesLocal === true) {
+        consumer.ci = inspectConsumerCi(consumer, { strict: true });
+        diagnostics.push(...consumer.ci.diagnostics);
+      }
+    }
+    for (const consumer of /** @type {Array<any>} */ (proofConsumers)) {
       if (consumer.matchesLocal === true) {
         consumer.ci = inspectConsumerCi(consumer, { strict: true });
         diagnostics.push(...consumer.ci.diagnostics);
@@ -61,6 +88,9 @@ export function buildReleaseStatusPayload(options = {}) {
   }
   const consumerPins = summarizeConsumerPins(consumers);
   const consumerCi = summarizeConsumerCi(consumers);
+  const proofConsumerPins = summarizeConsumerPins(proofConsumers);
+  const proofConsumerCi = summarizeConsumerCi(proofConsumers);
+  const proofConsumerScripts = summarizeProofConsumerScripts(proofConsumers);
   const currentPublished = latestVersion ? latestVersion === localVersion : null;
   if (strict) {
     diagnostics.push(...releaseStatusStrictDiagnostics({
@@ -69,7 +99,10 @@ export function buildReleaseStatusPayload(options = {}) {
       currentPublished,
       git,
       consumerPins,
-      consumerCi
+      consumerCi,
+      proofConsumerPins,
+      proofConsumerCi,
+      proofConsumerScripts
     }));
   }
   const errors = diagnostics
@@ -86,6 +119,10 @@ export function buildReleaseStatusPayload(options = {}) {
     consumerPins,
     consumerCi,
     consumers,
+    proofConsumerPins,
+    proofConsumerCi,
+    proofConsumerScripts,
+    proofConsumers,
     diagnostics,
     errors
   };
@@ -98,7 +135,10 @@ export function buildReleaseStatusPayload(options = {}) {
  *   currentPublished: boolean|null,
  *   git: ReturnType<typeof inspectReleaseGitTag>,
  *   consumerPins: ReturnType<typeof summarizeConsumerPins>,
- *   consumerCi: ReturnType<typeof summarizeConsumerCi>
+ *   consumerCi: ReturnType<typeof summarizeConsumerCi>,
+ *   proofConsumerPins: ReturnType<typeof summarizeConsumerPins>,
+ *   proofConsumerCi: ReturnType<typeof summarizeConsumerCi>,
+ *   proofConsumerScripts: ReturnType<typeof summarizeProofConsumerScripts>
  * }} release
  * @returns {Array<{ code: string, severity: "error", message: string, path: string, suggestedFix: string }>}
  */
@@ -152,7 +192,129 @@ function releaseStatusStrictDiagnostics(release) {
       suggestedFix: "Wait for or fix the consumer verification workflows, then rerun `topogram release status --strict`."
     });
   }
+  if (release.proofConsumerPins.known > 0 && release.proofConsumerPins.allKnownPinned !== true) {
+    diagnostics.push({
+      code: "release_proof_consumer_pins_not_current",
+      severity: "error",
+      message: `Public proof consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
+      path: "topogram-cli.version",
+      suggestedFix: "Refresh the public proof repositories to the current CLI version before treating this release as complete."
+    });
+  }
+  if (release.proofConsumerPins.known > 0 && release.proofConsumerScripts.allPresent !== true) {
+    diagnostics.push({
+      code: "release_proof_consumer_scripts_missing",
+      severity: "error",
+      message: "Public proof consumers are missing required proof audit or verification scripts.",
+      path: "package.json",
+      suggestedFix: "Add proof:audit and verify scripts to proof repositories, then rerun `topogram release status --strict`."
+    });
+  }
+  if (release.proofConsumerPins.known > 0 && release.proofConsumerCi.allCheckedAndPassing !== true) {
+    diagnostics.push({
+      code: "release_proof_consumer_ci_not_current",
+      severity: "error",
+      message: "Public proof consumer verification workflows are not all passing on the checked-out proof commits.",
+      path: "GitHub Actions",
+      suggestedFix: "Wait for or fix the proof repository workflows, then rerun `topogram release status --strict`."
+    });
+  }
   return diagnostics;
+}
+
+/**
+ * @param {string|null|undefined} root
+ * @param {string[]} requiredScripts
+ * @returns {{ checked: boolean, packageJson: string|null, required: string[], present: string[], missing: string[] }}
+ */
+function inspectRequiredPackageScripts(root, requiredScripts) {
+  if (!root) {
+    return {
+      checked: false,
+      packageJson: null,
+      required: [...requiredScripts],
+      present: [],
+      missing: [...requiredScripts]
+    };
+  }
+  const packageJson = path.join(root, "package.json");
+  if (!fs.existsSync(packageJson)) {
+    return {
+      checked: false,
+      packageJson,
+      required: [...requiredScripts],
+      present: [],
+      missing: [...requiredScripts]
+    };
+  }
+  let scripts = {};
+  try {
+    const parsed = JSON.parse(fs.readFileSync(packageJson, "utf8"));
+    scripts = parsed && typeof parsed === "object" && parsed.scripts && typeof parsed.scripts === "object"
+      ? parsed.scripts
+      : {};
+  } catch {
+    scripts = {};
+  }
+  const present = requiredScripts.filter((script) => Object.prototype.hasOwnProperty.call(scripts, script));
+  const missing = requiredScripts.filter((script) => !present.includes(script));
+  return {
+    checked: true,
+    packageJson,
+    required: [...requiredScripts],
+    present,
+    missing
+  };
+}
+
+/**
+ * Proof repositories are product walkthrough repos, not package rollout repos,
+ * so they may pin the CLI only through package.json instead of topogram-cli.version.
+ *
+ * @param {{ name: string, root: string|null, path: string, version: string|null, found: boolean }} consumer
+ * @returns {{ name: string, root: string|null, path: string, version: string|null, found: boolean }}
+ */
+function normalizeProofConsumerPin(consumer) {
+  if (consumer.version || !consumer.root) {
+    return consumer;
+  }
+  const packageJson = path.join(consumer.root, "package.json");
+  if (!fs.existsSync(packageJson)) {
+    return consumer;
+  }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(packageJson, "utf8"));
+    const version = parsed?.devDependencies?.[CLI_PACKAGE_NAME] || parsed?.dependencies?.[CLI_PACKAGE_NAME] || null;
+    if (version) {
+      return {
+        ...consumer,
+        path: packageJson,
+        version: String(version).trim() || null,
+        found: true
+      };
+    }
+  } catch {
+    return consumer;
+  }
+  return consumer;
+}
+
+/**
+ * @param {Array<any>} consumers
+ * @returns {{ checked: number, present: number, missing: number, allPresent: boolean, missingNames: string[] }}
+ */
+function summarizeProofConsumerScripts(consumers) {
+  const checked = consumers.filter((consumer) => consumer.scripts?.checked);
+  const missingNames = consumers
+    .filter((consumer) => !consumer.scripts?.checked || (consumer.scripts?.missing || []).length > 0)
+    .map((consumer) => consumer.name);
+  return {
+    checked: checked.length,
+    present: consumers.length - missingNames.length,
+    missing: missingNames.length,
+    allPresent: consumers.length > 0 && missingNames.length === 0,
+    missingNames
+  };
 }
 
 /**
@@ -178,6 +340,19 @@ export function printReleaseStatus(payload) {
       `${payload.consumerCi.failing} failing, ${payload.consumerCi.unavailable} unavailable, ${payload.consumerCi.skipped} skipped`
     );
   }
+  console.log(
+    `Proof consumer pins: ${payload.proofConsumerPins.pinned}/${payload.proofConsumerPins.known} pinned, ` +
+    `${payload.proofConsumerPins.matching} matching, ${payload.proofConsumerPins.differing} differing, ${payload.proofConsumerPins.missing} missing`
+  );
+  console.log(
+    `Proof consumer scripts: ${payload.proofConsumerScripts.present}/${payload.proofConsumerScripts.present + payload.proofConsumerScripts.missing} complete`
+  );
+  if (payload.strict) {
+    console.log(
+      `Proof consumer CI: ${payload.proofConsumerCi.passing}/${payload.proofConsumerCi.checked} passing, ` +
+      `${payload.proofConsumerCi.failing} failing, ${payload.proofConsumerCi.unavailable} unavailable, ${payload.proofConsumerCi.skipped} skipped`
+    );
+  }
   for (const consumer of payload.consumers) {
     const status = consumer.matchesLocal === true
       ? "matches"
@@ -190,6 +365,25 @@ export function printReleaseStatus(payload) {
         ? `; ${consumer.workflow || "workflow"} unavailable`
         : "";
     console.log(`- ${consumer.name}: ${consumer.version || "missing"} (${status})${ciStatus}`);
+    if (consumer.ci?.run?.url) {
+      console.log(`  CI: ${consumer.ci.run.url}`);
+    }
+  }
+  for (const consumer of payload.proofConsumers) {
+    const status = consumer.matchesLocal === true
+      ? "matches"
+      : consumer.matchesLocal === false
+        ? "differs"
+        : "missing";
+    const ciStatus = consumer.ci?.run
+      ? `; ${consumer.ci.run.workflowName || consumer.workflow}: ${consumer.ci.run.status || "unknown"}/${consumer.ci.run.conclusion || "unknown"}`
+      : consumer.ci?.checked
+        ? `; ${consumer.workflow || "workflow"} unavailable`
+        : "";
+    const missingScripts = consumer.scripts?.missing?.length
+      ? `; missing scripts: ${consumer.scripts.missing.join(", ")}`
+      : "";
+    console.log(`- proof ${consumer.name}: ${consumer.version || "missing"} (${status})${missingScripts}${ciStatus}`);
     if (consumer.ci?.run?.url) {
       console.log(`  CI: ${consumer.ci.run.url}`);
     }
@@ -233,6 +427,8 @@ export function renderReleaseStatusMarkdown(payload) {
     `- Release tag: \`${payload.git.tag}\` (local=${labelBoolean(payload.git.local)}, remote=${labelBoolean(payload.git.remote)})`,
     `- Consumer pins: ${payload.consumerPins.matching}/${payload.consumerPins.known} matching`,
     `- Consumer CI: ${payload.consumerCi.passing}/${payload.consumerCi.checked} passing`,
+    `- Proof consumer pins: ${payload.proofConsumerPins.matching}/${payload.proofConsumerPins.known} matching`,
+    `- Proof consumer CI: ${payload.proofConsumerCi.passing}/${payload.proofConsumerCi.checked} passing`,
     `- Strict status: ${payload.ok ? "passed" : "failed"}`,
     "",
     "## Core",
@@ -285,9 +481,26 @@ export function renderReleaseStatusMarkdown(payload) {
   }
   lines.push(
     "",
+    "## Proof Consumers",
+    "",
+    "| Repo | Pin | Required scripts | Workflow | Status | Run |",
+    "| --- | --- | --- | --- | --- | --- |"
+  );
+  for (const consumer of payload.proofConsumers) {
+    const workflow = consumer.workflow || consumer.ci?.expectedWorkflow || "";
+    const run = consumer.ci?.run;
+    const status = run ? `${run.status || "unknown"}/${run.conclusion || "unknown"}` : consumer.ci?.checked ? "unavailable" : "not checked";
+    const url = run?.url ? `[${run.databaseId || "run"}](${run.url})` : "";
+    const missingScripts = consumer.scripts?.missing?.length
+      ? `missing ${consumer.scripts.missing.join(", ")}`
+      : "proof:audit, verify";
+    lines.push(`| \`${consumer.name}\` | \`${consumer.version || "missing"}\` | ${escapeMarkdownTableCell(missingScripts)} | ${escapeMarkdownTableCell(workflow)} | ${escapeMarkdownTableCell(status)} | ${url} |`);
+  }
+  lines.push(
+    "",
     "## Consumer Proofs",
     "",
-    "The external Todo demo is the canonical end-to-end consumer proof for the current catalog-backed workflow:",
+    "The external Todo demo remains the canonical end-to-end consumer proof for the current catalog-backed workflow:",
     "",
     "```bash",
     "topogram copy todo ./todo-demo",
@@ -300,7 +513,9 @@ export function renderReleaseStatusMarkdown(payload) {
     "npm run app:runtime",
     "```",
     "",
-    "The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias."
+    "The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias.",
+    "",
+    "Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their CLI pin, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers`."
   );
   const reportDiagnostics = [...matrix.diagnostics];
   if (reportDiagnostics.length > 0) {

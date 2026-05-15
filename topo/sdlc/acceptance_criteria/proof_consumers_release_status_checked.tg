@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_consumers_release_status_checked {
+  name "Proof Consumers Release Status Checked"
+  description "Given the public proof repositories are part of release evidence, when `topogram release status --strict` runs, then it checks proof repos in a separate proof consumer section for current @topogram/cli pins, proof audit and verify scripts, and green Proof Verification workflows."
+  requirement req_proof_demo_program
+  status approved
+}

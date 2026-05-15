@@ -223,7 +223,7 @@ function positiveIntegerEnv(name, fallback) {
 }
 
 /**
- * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
+ * @param {{ name: string, root?: string|null, workflow?: string|null, expectedJobs?: string[] }} consumer
  * @param {{ timeoutMs?: number, intervalMs?: number, onProgress?: ((event: ReleaseProgressEvent) => void)|null }} [options]
  * @returns {ReturnType<typeof inspectConsumerCi>}
  */
@@ -289,14 +289,16 @@ export function waitForConsumerCi(consumer, options = {}) {
 }
 
 /**
- * @param {{ name: string, root?: string|null, workflow?: string|null }} consumer
+ * @param {{ name: string, root?: string|null, workflow?: string|null, expectedJobs?: string[] }} consumer
  * @param {{ strict?: boolean }} [options]
  * @returns {{ checked: boolean, ok: boolean|null, expectedWorkflow: string|null, expectedJobs: string[], headSha: string|null, run: AnyRecord|null, diagnostics: Array<AnyRecord> }}
  */
 export function inspectConsumerCi(consumer, options = {}) {
   const diagnostics = [];
   const expectedWorkflow = consumer.workflow || expectedConsumerWorkflowName(consumer.name);
-  const expectedJobs = expectedConsumerWorkflowJobs(consumer.name);
+  const expectedJobs = Array.isArray(consumer.expectedJobs)
+    ? consumer.expectedJobs
+    : expectedConsumerWorkflowJobs(consumer.name);
   const repoSlug = consumerGithubRepoSlug(consumer);
   if (!consumer.root || !fs.existsSync(consumer.root)) {
     return {
@@ -482,9 +484,10 @@ function inspectConsumerWorkflowJobs(consumer, runId, expectedJobs, options = {}
 
 /**
  * @param {string} cwd
+ * @param {string[]} [repos]
  * @returns {Array<{ name: string, root: string|null, path: string, version: string|null, found: boolean }>}
  */
-export function discoverTopogramCliVersionConsumers(cwd) {
+export function discoverTopogramCliVersionConsumers(cwd, repos = releaseConsumerRepos(cwd)) {
   /** @type {string[]} */
   const roots = [];
   for (const root of [cwd, REPO_ROOT, path.dirname(REPO_ROOT)]) {
@@ -494,7 +497,7 @@ export function discoverTopogramCliVersionConsumers(cwd) {
     }
   }
   const consumers = [];
-  for (const name of releaseConsumerRepos(cwd)) {
+  for (const name of repos) {
     let found = null;
     for (const root of roots) {
       const consumerRoot = path.join(root, name);

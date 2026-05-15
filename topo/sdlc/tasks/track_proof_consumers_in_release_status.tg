@@ -1,0 +1,14 @@
+task task_track_proof_consumers_in_release_status {
+  name "Track Proof Consumers In Release Status"
+  description "Add public proof repositories to release status as a separate proof consumer class without adding them to package rollout consumers."
+  satisfies [req_proof_demo_program]
+  acceptance_refs [ac_proof_consumers_release_status_checked]
+  verification_refs [verification_release_status_strict verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_verify_release_status cap_create_project cap_import_brownfield_app cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

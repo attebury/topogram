@@ -150,3 +150,9 @@ rolling first-party consumers after a CLI publish. Human output includes a
 recovery summary, and progress is printed to stderr so JSON output stays
 machine-readable. Use `--no-watch` to push consumer commits without waiting for
 CI, then run `topogram release status --strict`.
+
+`topogram release status --strict` also checks public proof repositories in a
+separate proof-consumer section. Those repos are not rolled by
+`roll-consumers`; they are tutorial/product proof repos, so release status
+checks their CLI pin, `proof:audit` and `verify` scripts, and Proof Verification
+workflow state separately from package rollout consumers.

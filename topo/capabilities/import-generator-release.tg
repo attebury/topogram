@@ -63,7 +63,7 @@ capability cap_manage_extractors {
 
 capability cap_verify_release_status {
   name "Verify Release Status"
-  description "Compare CLI, generator, starter, catalog, template, and demo package versions against release expectations."
+  description "Compare CLI, generator, extractor, starter, catalog, template, demo, and public proof consumer versions and workflows against release expectations."
   actors [actor_release_manager, actor_maintainer, actor_coding_agent]
   output [shape_release_status_result]
   domain dom_release_consumer_proof
