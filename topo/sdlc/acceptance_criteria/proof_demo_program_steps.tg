@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_demo_program_steps {
+  name "Proof Demo Program Steps"
+  description "Given a consumer or agent wants to understand Topogram through working examples, when they inspect the proof repos, then each major workflow step is visible through a branch or tag, explains the expected command loop, includes SDLC guidance where relevant, and passes the verification command documented for that step."
+  requirement req_proof_demo_program
+  status approved
+}

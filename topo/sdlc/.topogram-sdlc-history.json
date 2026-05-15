@@ -3095,5 +3095,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_proof_demo_program_records": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T04:15:50.112Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T04:15:50.160Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T04:51:11.049Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

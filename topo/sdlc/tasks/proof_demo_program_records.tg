@@ -1,0 +1,14 @@
+task task_proof_demo_program_records {
+  name "Proof Demo Program Records"
+  description "Add Topogram SDLC and journey records that define the public proof/demo program before extending the proof repositories."
+  satisfies [req_proof_demo_program]
+  acceptance_refs [ac_proof_demo_program_steps]
+  verification_refs [verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_manage_sdlc_records cap_query_context cap_create_project cap_generate_app_outputs cap_import_brownfield_app cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

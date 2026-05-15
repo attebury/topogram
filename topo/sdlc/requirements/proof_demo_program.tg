@@ -1,0 +1,10 @@
+requirement req_proof_demo_program {
+  name "Proof Demo Program"
+  description "Topogram must have public proof repositories that demonstrate the main product workflows as reproducible, stepwise branches and tags with human-readable README guidance and agent-readable Topogram artifacts."
+  affects [cap_create_project cap_generate_app_outputs cap_import_brownfield_app cap_adopt_import_candidates cap_query_context cap_manage_sdlc_records cap_verify_release_status]
+  introduces_rules []
+  respects_rules [rule_spec_is_source_of_truth rule_tests_prove_consumer_value rule_done_tasks_need_proof_links]
+  domain dom_release_consumer_proof
+  priority medium
+  status approved
+}

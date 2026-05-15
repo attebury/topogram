@@ -1,0 +1,85 @@
+journey journey_proof_demo_program {
+  name "Proof Demo Program"
+  description "A maintainer creates public proof repositories that demonstrate Topogram workflows as reproducible branches, tags, README guidance, SDLC records, agent packets, and verification commands."
+  status active
+  domain dom_release_consumer_proof
+  actors [actor_maintainer actor_coding_agent actor_consumer_developer actor_release_manager]
+  goal "Make the main Topogram workflows inspectable and runnable without requiring a reader to infer behavior from engine internals."
+  related_capabilities [cap_create_project cap_generate_app_outputs cap_import_brownfield_app cap_adopt_import_candidates cap_query_context cap_manage_sdlc_records cap_verify_release_status]
+  related_rules [rule_spec_is_source_of_truth rule_tests_prove_consumer_value rule_done_tasks_need_proof_links]
+  related_verifications [verification_engine_gate verification_cli_package_smoke verification_release_status_strict]
+  related_decisions [decision_agent_first_run_is_required decision_queries_are_read_only_context_packets decision_sdlc_acceptance_criteria_are_bdd_like]
+  success_signals ["Each proof step is visible as a branch or tag." "Each step README explains the purpose, command loop, and verification command." "Generated steps regenerate from topo source." "Maintained steps stop treating generated app output as the source of truth." "Brownfield steps show extract/adopt candidates and agent-readable packets."]
+  failure_signals ["Proof steps require private local state." "A proof branch passes by checking only file existence or strings." "The repo history hides the transition from generated to maintained ownership." "Agent-facing artifacts are omitted from steps that claim agent workflow value."]
+  tags [journey proof demo greenfield brownfield generated maintained]
+
+  step {
+    id generated_baseline
+    intent "Create a generated app from a package-backed template and prove it compiles."
+    commands ["topogram copy web-api-db <proof-repo>" "npm install" "npm run check" "npm run generate" "npm run verify"]
+    expects ["The proof repo has branch step/01-generated-baseline, tag proof-01-generated-baseline, topo source, generated app output, and verification evidence."]
+  }
+
+  step {
+    id generated_feature_iteration
+    intent "Add a feature by editing topo source, regenerating the generated app, and verifying output."
+    after [generated_baseline]
+    commands ["topogram agent brief --json" "topogram query slice ./topo --task <task-id> --json" "npm run check" "npm run generate" "npm run verify"]
+    expects ["The proof repo has branch step/02-generated-feature-iteration and shows that the generated app remains owned by Topogram."]
+  }
+
+  step {
+    id generated_second_iteration
+    intent "Add a second generated-only iteration that exercises UI or workflow changes without maintained app edits."
+    after [generated_feature_iteration]
+    commands ["npm run check" "npm run generate" "npm run verify"]
+    expects ["The proof history shows more than one generated iteration so regeneration is a habit, not a one-time scaffold."]
+  }
+
+  step {
+    id graduate_to_maintained
+    intent "Fork or branch the generated proof app into maintained ownership and stop regenerating app source."
+    after [generated_second_iteration]
+    commands ["topogram check" "topogram emit ui-surface-contract --json" "npm run verify"]
+    expects ["The project config marks app output maintained and the README explains that future app edits happen directly with Topogram contracts as guidance."]
+  }
+
+  step {
+    id maintained_db_migration
+    intent "Demonstrate a database migration workflow after the app has graduated to maintained ownership."
+    after [graduate_to_maintained]
+    commands ["topogram emit db-migration-plan --json" "topogram emit sql-migration --write" "npm run verify"]
+    expects ["The proof shows reviewable migration proposals and human/agent application of maintained DB changes."]
+  }
+
+  step {
+    id brownfield_baseline
+    intent "Create a real-ish maintained app without Topogram as the source app for extraction."
+    commands ["npm install" "npm run check"]
+    expects ["The brownfield proof repo has branch step/01-brownfield-baseline and a runnable app before extraction."]
+  }
+
+  step {
+    id brownfield_extract_adopt
+    intent "Extract candidates from the brownfield app and adopt reviewed specs into topo source."
+    after [brownfield_baseline]
+    commands ["topogram extract . --out ./extracted --from db,api,ui,cli --json" "topogram query extract-plan ./extracted --json" "topogram adopt --list ./extracted --json" "topogram adopt <selector> ./extracted --write"]
+    expects ["The proof shows candidate evidence, reviewed adoption, and canonical topo records without mutating the source app during extraction."]
+  }
+
+  step {
+    id brownfield_feature_change
+    intent "Use the extracted topo and agent packets to implement a new feature in the maintained brownfield app."
+    after [brownfield_extract_adopt]
+    commands ["topogram agent brief --json" "topogram query single-agent-plan ./topo --mode implementation --task <task-id> --json" "npm run verify"]
+    expects ["The proof shows Topogram helping a maintained code change rather than replacing the app."]
+  }
+
+  step {
+    id recreate_other_stack
+    intent "Use the adopted brownfield Topogram to generate or create a comparable app in another stack."
+    after [brownfield_extract_adopt]
+    commands ["topogram check" "topogram generate --out ./app"]
+    expects ["The proof demonstrates that normalized specs can guide another stack while preserving core behavior contracts."]
+  }
+}

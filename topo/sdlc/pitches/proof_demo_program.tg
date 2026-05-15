@@ -1,0 +1,14 @@
+pitch pitch_proof_demo_program {
+  name "Proof Demo Program"
+  description "Build public, stepwise proof repositories that show Topogram's core workflows working end to end instead of relying on abstract documentation."
+  appetite "medium"
+  problem "Topogram now has enough CLI, template, generator, extractor, SDLC, and query surface area that new users need concrete proof paths. Without stepwise repos, claims about generated apps, maintained graduation, database migrations, brownfield extraction, and stack recreation remain hard to evaluate."
+  solution_sketch "Use a small set of public proof repos with branches and tags for focused steps. Each step has README guidance, SDLC records where useful, Topogram artifacts that agents can inspect, and a verification command that proves the step."
+  rabbit_holes "Do not create many repos before the workflow shape proves useful. Do not turn proof repos into marketing-only demos without runnable checks."
+  no_go_areas "Do not make proof repos required for ordinary users. Do not imply SDLC adoption is mandatory outside projects that choose it."
+  affects [cap_create_project cap_generate_app_outputs cap_import_brownfield_app cap_adopt_import_candidates cap_query_context cap_manage_sdlc_records cap_verify_release_status]
+  decisions [decision_agent_first_run_is_required decision_queries_are_read_only_context_packets decision_sdlc_acceptance_criteria_are_bdd_like]
+  domain dom_release_consumer_proof
+  priority high
+  status approved
+}
