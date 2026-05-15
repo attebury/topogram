@@ -3188,6 +3188,13 @@
       "at": "2026-05-15T15:39:06.226Z",
       "by": "actor_coding_agent",
       "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T16:07:52.422Z",
+      "by": "actor_coding_agent",
+      "note": null
     }
   ]
 }
