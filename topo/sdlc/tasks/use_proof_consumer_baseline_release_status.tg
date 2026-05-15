@@ -1,0 +1,14 @@
+task task_use_proof_consumer_baseline_release_status {
+  name "Use Proof Consumer Baseline Release Status"
+  description "Change proof consumer release status from current-version matching to configured baseline freshness, while preserving script and Proof Verification checks."
+  satisfies [req_proof_demo_program]
+  acceptance_refs [ac_proof_consumer_baseline_freshness]
+  verification_refs [verification_release_status_strict verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_verify_release_status cap_create_project cap_import_brownfield_app cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

@@ -1,0 +1,8 @@
+decision decision_proof_repos_are_baseline_evidence {
+  name "Proof Repos Are Baseline Evidence"
+  description "Public proof repositories are durable product stories with known-good CLI baselines; they are not package rollout consumers that must be repinned on every patch release."
+  context ["proof repos demonstrate larger workflows through branches tags README notes SDLC records agent packets and verification commands", "requiring proof repos to match every CLI patch would turn proofs into noisy release chores", "breaking workflow changes still require proof refresh because stale proofs would teach the wrong behavior"]
+  consequences ["release status checks proof repositories separately from package rollout consumers", "strict release status requires proof repos to meet a configured baseline version and pass proof scripts and Proof Verification CI", "proof baselines are refreshed when command workflow meaning changes, proof artifacts become misleading, a breaking change lands, or maintainers intentionally cut a new proof baseline"]
+  domain dom_release_consumer_proof
+  status accepted
+}

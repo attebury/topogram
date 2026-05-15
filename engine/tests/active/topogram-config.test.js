@@ -15,6 +15,7 @@ import {
   releaseProofConsumerRepos,
   releaseProofConsumerWorkflowJobs,
   releaseProofConsumerWorkflowName,
+  releaseProofMinimumVersion,
   topogramRuntimeConfig
 } from "../../src/topogram-config.js";
 
@@ -69,6 +70,7 @@ test("runtime config preserves current public defaults", () => {
     "topogram-proof-content-approval",
     "topogram-proof-content-approval-brownfield"
   ]);
+  assert.equal(releaseProofMinimumVersion(root), "0.3.91");
   assert.equal(releaseConsumerWorkflowName("topogram-starters", root), "Starter Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-node-cli", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-react-router", root), "Extractor Verification");
@@ -119,7 +121,8 @@ test("runtime config reads repo-local catalog and release overrides", () => {
       },
       proofWorkflowJobs: {
         "example-proof": ["Proof job"]
-      }
+      },
+      proofMinimumVersion: "1.2.3"
     },
     limits: {
       remoteFetchMaxBytes: 1024,
@@ -144,6 +147,7 @@ test("runtime config reads repo-local catalog and release overrides", () => {
   assert.deepEqual(releaseProofConsumerRepos(root), ["example-proof"]);
   assert.equal(releaseProofConsumerWorkflowName("example-proof", root), "Proof Workflow");
   assert.deepEqual(releaseProofConsumerWorkflowJobs("example-proof", root), ["Proof job"]);
+  assert.equal(releaseProofMinimumVersion(root), "1.2.3");
   assert.equal(config.limits.remoteFetchMaxBytes, 1024);
   assert.equal(config.limits.catalogFetchMaxBytes, 2048);
   assert.equal(config.limits.githubFetchMaxBytes, 4096);
@@ -185,6 +189,7 @@ test("runtime config env overrides win over repo-local config", () => {
     TOPOGRAM_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS_JSON: JSON.stringify({
       "env-proof": ["Env Proof Job"]
     }),
+    TOPOGRAM_RELEASE_PROOF_MINIMUM_VERSION: "2.3.4",
     TOPOGRAM_REMOTE_FETCH_MAX_BYTES: "1234",
     TOPOGRAM_CATALOG_FETCH_MAX_BYTES: "2345",
     TOPOGRAM_GITHUB_FETCH_MAX_BYTES: "3456"
@@ -201,6 +206,7 @@ test("runtime config env overrides win over repo-local config", () => {
     assert.deepEqual(releaseProofConsumerRepos(root), ["env-proof"]);
     assert.equal(releaseProofConsumerWorkflowName("env-proof", root), "Env Proof Workflow");
     assert.deepEqual(releaseProofConsumerWorkflowJobs("env-proof", root), ["Env Proof Job"]);
+    assert.equal(releaseProofMinimumVersion(root), "2.3.4");
     assert.equal(config.limits.remoteFetchMaxBytes, 1234);
     assert.equal(config.limits.catalogFetchMaxBytes, 2345);
     assert.equal(config.limits.githubFetchMaxBytes, 3456);

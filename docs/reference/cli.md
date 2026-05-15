@@ -154,5 +154,8 @@ CI, then run `topogram release status --strict`.
 `topogram release status --strict` also checks public proof repositories in a
 separate proof-consumer section. Those repos are not rolled by
 `roll-consumers`; they are tutorial/product proof repos, so release status
-checks their CLI pin, `proof:audit` and `verify` scripts, and Proof Verification
-workflow state separately from package rollout consumers.
+checks their configured proof baseline, `proof:audit` and `verify` scripts, and
+Proof Verification workflow state separately from package rollout consumers.
+Proof repos do not need to move on every patch release; refresh them when a
+workflow meaning changes, a breaking change lands, or a proof would teach stale
+behavior.

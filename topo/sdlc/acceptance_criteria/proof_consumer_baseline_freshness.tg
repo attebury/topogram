@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_consumer_baseline_freshness {
+  name "Proof Consumer Baseline Freshness"
+  description "Given public proof repositories are durable product stories rather than per-patch package consumers, when `topogram release status --strict` checks them, then strict mode passes for proof repos at or above the configured proof baseline and fails only when proof scripts, proof CI, or baseline freshness are invalid."
+  requirement req_proof_demo_program
+  status approved
+}

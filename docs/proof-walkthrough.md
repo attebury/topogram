@@ -17,9 +17,11 @@ Both repos expose a `Proof Verification` workflow, `npm run proof:audit`, and
 not required for ordinary Topogram users.
 
 `topogram release status --strict` tracks these repos as `proofConsumers`, not
-as normal package rollout consumers. A release is not considered fully current
-until the proof repos are pinned to the current CLI, expose the audit/verify
-scripts, and have green Proof Verification workflows.
+as normal package rollout consumers. A release is considered current when proof
+repos meet the configured proof baseline, expose the audit/verify scripts, and
+have green Proof Verification workflows. They do not need to be repinned for
+every CLI patch; refresh them when a command workflow meaning changes, a
+breaking change lands, or a proof artifact would teach stale behavior.
 
 ## How To Read A Proof
 

@@ -79,6 +79,7 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOW_JOBS = {
 
 /** @type {Record<string, string[]>} */
 export const DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS = {};
+export const DEFAULT_RELEASE_PROOF_MINIMUM_VERSION = "0.3.91";
 
 export const DEFAULT_TOPOGRAM_CONFIG = {
   github: {
@@ -98,7 +99,8 @@ export const DEFAULT_TOPOGRAM_CONFIG = {
     workflowJobs: DEFAULT_RELEASE_CONSUMER_WORKFLOW_JOBS,
     proofConsumers: DEFAULT_RELEASE_PROOF_CONSUMER_REPOS,
     proofWorkflows: DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOWS,
-    proofWorkflowJobs: DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS
+    proofWorkflowJobs: DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS,
+    proofMinimumVersion: DEFAULT_RELEASE_PROOF_MINIMUM_VERSION
   },
   limits: {
     remoteFetchMaxBytes: 5 * 1024 * 1024,
@@ -113,7 +115,7 @@ export const DEFAULT_CATALOG_SOURCE = `https://raw.githubusercontent.com/${DEFAU
  * @typedef {Object} TopogramRuntimeConfig
  * @property {{ owner: string, repo: string }} github
  * @property {{ owner: string, repo: string, ref: string, path: string, source: string|null }} catalog
- * @property {{ consumers: string[], workflows: Record<string, string>, workflowJobs: Record<string, string[]>, proofConsumers: string[], proofWorkflows: Record<string, string>, proofWorkflowJobs: Record<string, string[]> }} release
+ * @property {{ consumers: string[], workflows: Record<string, string>, workflowJobs: Record<string, string[]>, proofConsumers: string[], proofWorkflows: Record<string, string>, proofWorkflowJobs: Record<string, string[]>, proofMinimumVersion: string|null }} release
  * @property {{ remoteFetchMaxBytes: number, catalogFetchMaxBytes: number|null, githubFetchMaxBytes: number|null }} limits
  */
 
@@ -199,6 +201,7 @@ function envConfig(fileConfig = {}) {
   const proofConsumers = parseListEnv(process.env.TOPOGRAM_RELEASE_PROOF_CONSUMERS);
   const proofWorkflows = parseJsonEnv(process.env.TOPOGRAM_RELEASE_PROOF_WORKFLOWS || process.env.TOPOGRAM_RELEASE_PROOF_CONSUMER_WORKFLOWS_JSON);
   const proofWorkflowJobs = parseJsonEnv(process.env.TOPOGRAM_RELEASE_PROOF_WORKFLOW_JOBS || process.env.TOPOGRAM_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS_JSON);
+  const proofMinimumVersion = process.env.TOPOGRAM_RELEASE_PROOF_MINIMUM_VERSION || fileConfig.release?.proofMinimumVersion;
   return {
     github: {
       owner: process.env.TOPOGRAM_GITHUB_OWNER || fileConfig.github?.owner,
@@ -217,7 +220,8 @@ function envConfig(fileConfig = {}) {
       workflowJobs: workflowJobs || fileConfig.release?.workflowJobs,
       proofConsumers: proofConsumers || fileConfig.release?.proofConsumers,
       proofWorkflows: proofWorkflows || fileConfig.release?.proofWorkflows,
-      proofWorkflowJobs: proofWorkflowJobs || fileConfig.release?.proofWorkflowJobs
+      proofWorkflowJobs: proofWorkflowJobs || fileConfig.release?.proofWorkflowJobs,
+      proofMinimumVersion
     },
     limits: {
       remoteFetchMaxBytes: parsePositiveIntegerEnv(process.env.TOPOGRAM_REMOTE_FETCH_MAX_BYTES) || fileConfig.limits?.remoteFetchMaxBytes,
@@ -315,7 +319,10 @@ export function topogramRuntimeConfig(cwd = process.cwd()) {
       workflowJobs: normalizeStringListMap(overrides.release.workflowJobs, DEFAULT_TOPOGRAM_CONFIG.release.workflowJobs),
       proofConsumers: normalizeStringList(overrides.release.proofConsumers, DEFAULT_TOPOGRAM_CONFIG.release.proofConsumers),
       proofWorkflows: normalizeStringMap(overrides.release.proofWorkflows, DEFAULT_TOPOGRAM_CONFIG.release.proofWorkflows),
-      proofWorkflowJobs: normalizeStringListMap(overrides.release.proofWorkflowJobs, DEFAULT_TOPOGRAM_CONFIG.release.proofWorkflowJobs)
+      proofWorkflowJobs: normalizeStringListMap(overrides.release.proofWorkflowJobs, DEFAULT_TOPOGRAM_CONFIG.release.proofWorkflowJobs),
+      proofMinimumVersion: typeof overrides.release.proofMinimumVersion === "string"
+        ? overrides.release.proofMinimumVersion.trim() || null
+        : DEFAULT_TOPOGRAM_CONFIG.release.proofMinimumVersion
     },
     limits: {
       remoteFetchMaxBytes: normalizePositiveInteger(
@@ -415,4 +422,12 @@ export function releaseConsumerWorkflowJobs(name, cwd = process.cwd()) {
  */
 export function releaseProofConsumerWorkflowJobs(name, cwd = process.cwd()) {
   return [...(topogramRuntimeConfig(cwd).release.proofWorkflowJobs[name] || [])];
+}
+
+/**
+ * @param {string} [cwd]
+ * @returns {string|null}
+ */
+export function releaseProofMinimumVersion(cwd = process.cwd()) {
+  return topogramRuntimeConfig(cwd).release.proofMinimumVersion;
 }

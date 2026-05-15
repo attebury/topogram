@@ -6,6 +6,7 @@ import path from "node:path";
 import { loadCatalog } from "../../catalog.js";
 import {
   catalogRepoSlug,
+  releaseProofMinimumVersion,
   releaseProofConsumerRepos,
   releaseProofConsumerWorkflowJobs,
   releaseProofConsumerWorkflowName
@@ -31,7 +32,7 @@ import {
 
 /**
  * @param {{ cwd?: string, strict?: boolean }} [options]
- * @returns {{ ok: boolean, strict: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: ReturnType<typeof inspectReleaseGitTag>, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumerCi: ReturnType<typeof summarizeConsumerCi>, consumers: Array<AnyRecord>, proofConsumerPins: ReturnType<typeof summarizeConsumerPins>, proofConsumerCi: ReturnType<typeof summarizeConsumerCi>, proofConsumerScripts: ReturnType<typeof summarizeProofConsumerScripts>, proofConsumers: Array<AnyRecord>, diagnostics: Array<AnyRecord>, errors: string[] }}
+ * @returns {{ ok: boolean, strict: boolean, packageName: string, localVersion: string, latestVersion: string|null, currentPublished: boolean|null, git: ReturnType<typeof inspectReleaseGitTag>, consumerPins: ReturnType<typeof summarizeConsumerPins>, consumerCi: ReturnType<typeof summarizeConsumerCi>, consumers: Array<AnyRecord>, proofMinimumVersion: string|null, proofConsumerPins: ReturnType<typeof summarizeConsumerPins>, proofConsumerFreshness: ReturnType<typeof summarizeProofConsumerFreshness>, proofConsumerCi: ReturnType<typeof summarizeConsumerCi>, proofConsumerScripts: ReturnType<typeof summarizeProofConsumerScripts>, proofConsumers: Array<AnyRecord>, diagnostics: Array<AnyRecord>, errors: string[] }}
  */
 export function buildReleaseStatusPayload(options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -53,6 +54,7 @@ export function buildReleaseStatusPayload(options = {}) {
   }
   const git = inspectReleaseGitTag(localVersion, cwd);
   diagnostics.push(...git.diagnostics);
+  const proofMinimumVersion = releaseProofMinimumVersion(cwd);
   const consumers = discoverTopogramCliVersionConsumers(cwd).map((consumer) => /** @type {AnyRecord} */ ({
     ...consumer,
     matchesLocal: consumer.version ? consumer.version === localVersion : null,
@@ -65,6 +67,11 @@ export function buildReleaseStatusPayload(options = {}) {
     return /** @type {AnyRecord} */ ({
       ...consumer,
       matchesLocal: consumer.version ? consumer.version === localVersion : null,
+      baselineVersion: proofMinimumVersion,
+      meetsBaseline: proofMinimumVersion && consumer.version
+        ? compareVersions(consumer.version, proofMinimumVersion) >= 0
+        : consumer.version ? true : null,
+      refreshRecommended: consumer.version ? consumer.version !== localVersion : null,
       workflow: releaseProofConsumerWorkflowName(consumer.name),
       expectedJobs: releaseProofConsumerWorkflowJobs(consumer.name),
       requiredScripts,
@@ -80,7 +87,7 @@ export function buildReleaseStatusPayload(options = {}) {
       }
     }
     for (const consumer of /** @type {Array<any>} */ (proofConsumers)) {
-      if (consumer.matchesLocal === true) {
+      if (consumer.meetsBaseline === true) {
         consumer.ci = inspectConsumerCi(consumer, { strict: true });
         diagnostics.push(...consumer.ci.diagnostics);
       }
@@ -89,6 +96,7 @@ export function buildReleaseStatusPayload(options = {}) {
   const consumerPins = summarizeConsumerPins(consumers);
   const consumerCi = summarizeConsumerCi(consumers);
   const proofConsumerPins = summarizeConsumerPins(proofConsumers);
+  const proofConsumerFreshness = summarizeProofConsumerFreshness(proofConsumers, proofMinimumVersion, localVersion);
   const proofConsumerCi = summarizeConsumerCi(proofConsumers);
   const proofConsumerScripts = summarizeProofConsumerScripts(proofConsumers);
   const currentPublished = latestVersion ? latestVersion === localVersion : null;
@@ -100,6 +108,7 @@ export function buildReleaseStatusPayload(options = {}) {
       git,
       consumerPins,
       consumerCi,
+      proofConsumerFreshness,
       proofConsumerPins,
       proofConsumerCi,
       proofConsumerScripts
@@ -119,7 +128,9 @@ export function buildReleaseStatusPayload(options = {}) {
     consumerPins,
     consumerCi,
     consumers,
+    proofMinimumVersion,
     proofConsumerPins,
+    proofConsumerFreshness,
     proofConsumerCi,
     proofConsumerScripts,
     proofConsumers,
@@ -136,6 +147,7 @@ export function buildReleaseStatusPayload(options = {}) {
  *   git: ReturnType<typeof inspectReleaseGitTag>,
  *   consumerPins: ReturnType<typeof summarizeConsumerPins>,
  *   consumerCi: ReturnType<typeof summarizeConsumerCi>,
+ *   proofConsumerFreshness: ReturnType<typeof summarizeProofConsumerFreshness>,
  *   proofConsumerPins: ReturnType<typeof summarizeConsumerPins>,
  *   proofConsumerCi: ReturnType<typeof summarizeConsumerCi>,
  *   proofConsumerScripts: ReturnType<typeof summarizeProofConsumerScripts>
@@ -192,13 +204,13 @@ function releaseStatusStrictDiagnostics(release) {
       suggestedFix: "Wait for or fix the consumer verification workflows, then rerun `topogram release status --strict`."
     });
   }
-  if (release.proofConsumerPins.known > 0 && release.proofConsumerPins.allKnownPinned !== true) {
+  if (release.proofConsumerPins.known > 0 && release.proofConsumerFreshness.allMeetBaseline !== true) {
     diagnostics.push({
-      code: "release_proof_consumer_pins_not_current",
+      code: "release_proof_consumer_baseline_not_met",
       severity: "error",
-      message: `Public proof consumers are not all pinned to ${CLI_PACKAGE_NAME}@${release.localVersion}.`,
-      path: "topogram-cli.version",
-      suggestedFix: "Refresh the public proof repositories to the current CLI version before treating this release as complete."
+      message: `Public proof consumers do not all meet the configured proof baseline ${release.proofConsumerFreshness.minimumVersion || "none"}.`,
+      path: "package.json",
+      suggestedFix: "Refresh only the stale proof repositories that are below the configured baseline, or intentionally update the proof baseline after reviewing proof coverage."
     });
   }
   if (release.proofConsumerPins.known > 0 && release.proofConsumerScripts.allPresent !== true) {
@@ -300,6 +312,70 @@ function normalizeProofConsumerPin(consumer) {
 }
 
 /**
+ * @param {string|null|undefined} left
+ * @param {string|null|undefined} right
+ * @returns {number}
+ */
+function compareVersions(left, right) {
+  const leftParts = parseVersionParts(left);
+  const rightParts = parseVersionParts(right);
+  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
+    const leftPart = leftParts[index] || 0;
+    const rightPart = rightParts[index] || 0;
+    if (leftPart !== rightPart) {
+      return leftPart > rightPart ? 1 : -1;
+    }
+  }
+  return 0;
+}
+
+/**
+ * @param {string|null|undefined} value
+ * @returns {number[]}
+ */
+function parseVersionParts(value) {
+  return String(value || "")
+    .replace(/^[^\d]*/, "")
+    .split(/[.-]/)
+    .map((part) => Number.parseInt(part, 10))
+    .map((part) => Number.isFinite(part) ? part : 0);
+}
+
+/**
+ * @param {Array<any>} consumers
+ * @param {string|null} minimumVersion
+ * @param {string} currentVersion
+ * @returns {{ known: number, pinned: number, current: number, staleButAccepted: number, belowBaseline: number, missing: number, minimumVersion: string|null, currentVersion: string, allMeetBaseline: boolean, refreshRecommendedNames: string[], belowBaselineNames: string[], missingNames: string[] }}
+ */
+function summarizeProofConsumerFreshness(consumers, minimumVersion, currentVersion) {
+  const pinnedConsumers = consumers.filter((consumer) => consumer.found && consumer.version);
+  const missingNames = consumers.filter((consumer) => !consumer.found || !consumer.version).map((consumer) => consumer.name);
+  const belowBaselineNames = consumers
+    .filter((consumer) => consumer.version && consumer.meetsBaseline === false)
+    .map((consumer) => consumer.name);
+  const currentNames = consumers
+    .filter((consumer) => consumer.version && consumer.version === currentVersion)
+    .map((consumer) => consumer.name);
+  const refreshRecommendedNames = consumers
+    .filter((consumer) => consumer.refreshRecommended === true)
+    .map((consumer) => consumer.name);
+  return {
+    known: consumers.length,
+    pinned: pinnedConsumers.length,
+    current: currentNames.length,
+    staleButAccepted: refreshRecommendedNames.filter((name) => !belowBaselineNames.includes(name)).length,
+    belowBaseline: belowBaselineNames.length,
+    missing: missingNames.length,
+    minimumVersion,
+    currentVersion,
+    allMeetBaseline: consumers.length > 0 && missingNames.length === 0 && belowBaselineNames.length === 0,
+    refreshRecommendedNames,
+    belowBaselineNames,
+    missingNames
+  };
+}
+
+/**
  * @param {Array<any>} consumers
  * @returns {{ checked: number, present: number, missing: number, allPresent: boolean, missingNames: string[] }}
  */
@@ -341,8 +417,10 @@ export function printReleaseStatus(payload) {
     );
   }
   console.log(
-    `Proof consumer pins: ${payload.proofConsumerPins.pinned}/${payload.proofConsumerPins.known} pinned, ` +
-    `${payload.proofConsumerPins.matching} matching, ${payload.proofConsumerPins.differing} differing, ${payload.proofConsumerPins.missing} missing`
+    `Proof consumer baseline: ${payload.proofConsumerFreshness.pinned}/${payload.proofConsumerFreshness.known} pinned, ` +
+    `${payload.proofConsumerFreshness.current} current, ${payload.proofConsumerFreshness.staleButAccepted} baseline-accepted, ` +
+    `${payload.proofConsumerFreshness.belowBaseline} below baseline, ${payload.proofConsumerFreshness.missing} missing` +
+    `${payload.proofMinimumVersion ? ` (minimum ${payload.proofMinimumVersion})` : ""}`
   );
   console.log(
     `Proof consumer scripts: ${payload.proofConsumerScripts.present}/${payload.proofConsumerScripts.present + payload.proofConsumerScripts.missing} complete`
@@ -371,10 +449,12 @@ export function printReleaseStatus(payload) {
   }
   for (const consumer of payload.proofConsumers) {
     const status = consumer.matchesLocal === true
-      ? "matches"
-      : consumer.matchesLocal === false
-        ? "differs"
-        : "missing";
+      ? "current"
+      : consumer.meetsBaseline === true
+        ? "baseline"
+        : consumer.meetsBaseline === false
+          ? "below-baseline"
+          : "missing";
     const ciStatus = consumer.ci?.run
       ? `; ${consumer.ci.run.workflowName || consumer.workflow}: ${consumer.ci.run.status || "unknown"}/${consumer.ci.run.conclusion || "unknown"}`
       : consumer.ci?.checked
@@ -427,7 +507,7 @@ export function renderReleaseStatusMarkdown(payload) {
     `- Release tag: \`${payload.git.tag}\` (local=${labelBoolean(payload.git.local)}, remote=${labelBoolean(payload.git.remote)})`,
     `- Consumer pins: ${payload.consumerPins.matching}/${payload.consumerPins.known} matching`,
     `- Consumer CI: ${payload.consumerCi.passing}/${payload.consumerCi.checked} passing`,
-    `- Proof consumer pins: ${payload.proofConsumerPins.matching}/${payload.proofConsumerPins.known} matching`,
+    `- Proof consumer baseline: ${payload.proofConsumerFreshness.pinned}/${payload.proofConsumerFreshness.known} pinned, ${payload.proofConsumerFreshness.current} current, ${payload.proofConsumerFreshness.staleButAccepted} baseline-accepted, ${payload.proofConsumerFreshness.belowBaseline} below baseline${payload.proofMinimumVersion ? ` (minimum ${payload.proofMinimumVersion})` : ""}`,
     `- Proof consumer CI: ${payload.proofConsumerCi.passing}/${payload.proofConsumerCi.checked} passing`,
     `- Strict status: ${payload.ok ? "passed" : "failed"}`,
     "",
@@ -483,18 +563,25 @@ export function renderReleaseStatusMarkdown(payload) {
     "",
     "## Proof Consumers",
     "",
-    "| Repo | Pin | Required scripts | Workflow | Status | Run |",
-    "| --- | --- | --- | --- | --- | --- |"
+    "| Repo | Pin | Baseline | Freshness | Required scripts | Workflow | Status | Run |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |"
   );
   for (const consumer of payload.proofConsumers) {
     const workflow = consumer.workflow || consumer.ci?.expectedWorkflow || "";
     const run = consumer.ci?.run;
     const status = run ? `${run.status || "unknown"}/${run.conclusion || "unknown"}` : consumer.ci?.checked ? "unavailable" : "not checked";
     const url = run?.url ? `[${run.databaseId || "run"}](${run.url})` : "";
+    const freshness = consumer.matchesLocal === true
+      ? "current"
+      : consumer.meetsBaseline === true
+        ? "baseline-accepted"
+        : consumer.meetsBaseline === false
+          ? "below-baseline"
+          : "missing";
     const missingScripts = consumer.scripts?.missing?.length
       ? `missing ${consumer.scripts.missing.join(", ")}`
       : "proof:audit, verify";
-    lines.push(`| \`${consumer.name}\` | \`${consumer.version || "missing"}\` | ${escapeMarkdownTableCell(missingScripts)} | ${escapeMarkdownTableCell(workflow)} | ${escapeMarkdownTableCell(status)} | ${url} |`);
+    lines.push(`| \`${consumer.name}\` | \`${consumer.version || "missing"}\` | \`${payload.proofMinimumVersion || "none"}\` | ${escapeMarkdownTableCell(freshness)} | ${escapeMarkdownTableCell(missingScripts)} | ${escapeMarkdownTableCell(workflow)} | ${escapeMarkdownTableCell(status)} | ${url} |`);
   }
   lines.push(
     "",
@@ -515,7 +602,7 @@ export function renderReleaseStatusMarkdown(payload) {
     "",
     "The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias.",
     "",
-    "Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their CLI pin, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers`."
+    "Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their baseline CLI version, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers` or requiring every patch release to refresh proof tags."
   );
   const reportDiagnostics = [...matrix.diagnostics];
   if (reportDiagnostics.length > 0) {

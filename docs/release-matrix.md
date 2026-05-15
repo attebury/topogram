@@ -11,7 +11,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 - Release tag: `topogram-v0.3.91` (local=yes, remote=yes)
 - Consumer pins: 18/18 matching
 - Consumer CI: 18/18 passing
-- Proof consumer pins: 2/2 matching
+- Proof consumer baseline: 2/2 pinned, 2 current, 0 baseline-accepted, 0 below baseline (minimum 0.3.91)
 - Proof consumer CI: 2/2 passing
 - Strict status: passed
 
@@ -74,10 +74,10 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 ## Proof Consumers
 
-| Repo | Pin | Required scripts | Workflow | Status | Run |
-| --- | --- | --- | --- | --- | --- |
-| `topogram-proof-content-approval` | `0.3.91` | proof:audit, verify | Proof Verification | completed/success | [25932010238](https://github.com/attebury/topogram-proof-content-approval/actions/runs/25932010238) |
-| `topogram-proof-content-approval-brownfield` | `0.3.91` | proof:audit, verify | Proof Verification | completed/success | [25932010759](https://github.com/attebury/topogram-proof-content-approval-brownfield/actions/runs/25932010759) |
+| Repo | Pin | Baseline | Freshness | Required scripts | Workflow | Status | Run |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `topogram-proof-content-approval` | `0.3.91` | `0.3.91` | current | proof:audit, verify | Proof Verification | completed/success | [25932010238](https://github.com/attebury/topogram-proof-content-approval/actions/runs/25932010238) |
+| `topogram-proof-content-approval-brownfield` | `0.3.91` | `0.3.91` | current | proof:audit, verify | Proof Verification | completed/success | [25932010759](https://github.com/attebury/topogram-proof-content-approval-brownfield/actions/runs/25932010759) |
 
 ## Consumer Proofs
 
@@ -96,4 +96,4 @@ npm run app:runtime
 
 The demo CI also verifies `topogram copy` from the default public catalog and from the repo-local catalog fixture. That prevents local fixtures from masking a broken published catalog alias.
 
-Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their CLI pin, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers`.
+Proof consumer repositories are tracked separately from package rollout consumers. They are tutorial-style public product proofs, so strict release status checks their baseline CLI version, proof audit/verify scripts, and Proof Verification CI without adding them to `release roll-consumers` or requiring every patch release to refresh proof tags.
