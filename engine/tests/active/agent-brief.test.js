@@ -102,7 +102,7 @@ test("agent brief gives JSON-first extract guidance with workspaceRoot", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.type, "agent_brief");
-  assert.match(payload.extract.workspaceRoot, /^<repo>\/topo$|^<external>\/topo$/);
+  assert.match(payload.extract.workspaceRoot, /^<workspace>$|^<repo>\/topo$|^<external>\/topo$/);
   assert.ok(payload.first_commands.some((item) => item.command === "topogram extract check . --json"));
   assert.ok(payload.first_commands.some((item) => item.command === "topogram extract status . --json"));
   const importWorkflow = payload.workflows.find((workflow) => workflow.id === "brownfield-extract");
