@@ -1,0 +1,14 @@
+task task_refresh_proof_artifacts_with_portable_paths {
+  name "Refresh Proof Artifacts With Portable Paths"
+  description "Update public proof repositories to @topogram/cli 0.3.91, record a current path-hygiene audit, and verify branches/tags do not expose machine-local paths."
+  satisfies [req_public_outputs_are_portable]
+  acceptance_refs [ac_proof_artifacts_refresh_with_portable_paths]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_dogfood_topo_workspace]
+  affects [cap_create_project cap_import_brownfield_app cap_query_context cap_verify_release_status]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

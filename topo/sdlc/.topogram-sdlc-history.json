@@ -3196,5 +3196,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_proof_artifacts_refresh_with_portable_paths": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-15T16:32:02.285Z",
+      "by": "actor_coding_agent",
+      "note": "Approve proof artifact path hygiene refresh criteria after the 0.3.91 release."
+    }
+  ],
+  "task_refresh_proof_artifacts_with_portable_paths": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-15T16:32:02.559Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-15T16:32:02.595Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-15T16:37:06.829Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

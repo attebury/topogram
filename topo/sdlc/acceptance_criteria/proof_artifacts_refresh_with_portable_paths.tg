@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_artifacts_refresh_with_portable_paths {
+  name "Proof Artifacts Refresh With Portable Paths"
+  description "Given @topogram/cli 0.3.91 is published with public path hygiene, when the public proof repositories are refreshed and audited, then their current package pins use 0.3.91 and committed proof artifacts across branches and tags do not expose machine-local paths."
+  requirement req_public_outputs_are_portable
+  status approved
+}
