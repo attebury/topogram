@@ -3898,5 +3898,37 @@
       "by": "actor_coding_agent",
       "note": "Satisfied by task_add_sdlc_backlog_grooming_query and verified by focused SDLC/query tests plus engine and CLI package gates."
     }
+  ],
+  "ac_package_extractor_candidate_shapes_normalized": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T19:56:57.313Z",
+      "by": "actor_coding_agent",
+      "note": "Accepted package extractor candidate shape compatibility criteria."
+    }
+  ],
+  "task_align_package_extractor_candidate_shapes": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T19:56:57.385Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T19:56:57.429Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T20:06:11.282Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

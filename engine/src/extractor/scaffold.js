@@ -462,7 +462,8 @@ packages, perform network access, or define adoption semantics.
 Candidate output is validated by track. Return only review candidate buckets for
 the declared track, give each candidate a stable identity, keep file evidence
 project-relative, and never return files, patches, adoption plans, or write
-instructions.
+instructions. \`stacks\` and \`frameworks\` are string metadata buckets; API
+parameter shorthands such as \`path_params: ["id"]\` are normalized by Topogram.
 `
   };
   for (const [relative, contents] of Object.entries(defaults.fixtureFiles)) {

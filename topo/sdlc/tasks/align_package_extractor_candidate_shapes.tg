@@ -1,0 +1,14 @@
+task task_align_package_extractor_candidate_shapes {
+  name "Align Package Extractor Candidate Shapes"
+  description "Normalize package-backed extractor candidate output before strict validation so scalar metadata buckets and common shorthand fields match bundled extractor behavior without weakening safety checks."
+  satisfies [req_package_backed_extractor_architecture]
+  acceptance_refs [ac_package_extractor_candidate_shapes_normalized]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

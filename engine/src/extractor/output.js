@@ -79,12 +79,110 @@ const PATH_KEYS = new Set([
   "targetPath"
 ]);
 
+const SCALAR_CANDIDATE_BUCKETS = new Set(["stacks", "frameworks"]);
+
 /**
  * @param {unknown} value
  * @returns {value is Record<string, unknown>}
  */
 function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+function nonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+/**
+ * @param {string} bucket
+ * @param {unknown} value
+ * @returns {unknown}
+ */
+function normalizeScalarBucketValue(bucket, value) {
+  const direct = nonEmptyString(value);
+  if (direct) return direct;
+  if (!isPlainObject(value)) return value;
+  const keys = bucket === "stacks"
+    ? ["framework", "runtime", "name", "id_hint", "id"]
+    : ["name", "id_hint", "id", "framework"];
+  for (const key of keys) {
+    const candidate = nonEmptyString(value[key]);
+    if (candidate) return candidate;
+  }
+  return value;
+}
+
+/**
+ * @param {unknown} entry
+ * @param {boolean} required
+ * @returns {unknown}
+ */
+function normalizeParamEntry(entry, required) {
+  const name = nonEmptyString(entry);
+  if (name) return { name, required, type: null };
+  if (!isPlainObject(entry)) return entry;
+  return {
+    ...entry,
+    name: nonEmptyString(entry.name) || nonEmptyString(entry.id) || nonEmptyString(entry.id_hint) || entry.name
+  };
+}
+
+/**
+ * @param {unknown} value
+ * @param {boolean} required
+ * @returns {unknown}
+ */
+function normalizeParamList(value, required) {
+  if (!Array.isArray(value)) return value;
+  return value.map((entry) => normalizeParamEntry(entry, required));
+}
+
+/**
+ * @param {string} track
+ * @param {string} bucket
+ * @param {unknown} candidate
+ * @returns {unknown}
+ */
+function normalizeCandidateRecord(track, bucket, candidate) {
+  if (track !== "api" || bucket !== "capabilities" || !isPlainObject(candidate)) {
+    return candidate;
+  }
+  return {
+    ...candidate,
+    path_params: normalizeParamList(candidate.path_params, true),
+    query_params: normalizeParamList(candidate.query_params, false),
+    header_params: normalizeParamList(candidate.header_params, false)
+  };
+}
+
+/**
+ * Normalize public extractor package output into the same practical shapes the
+ * built-in extractors use before strict safety validation runs.
+ *
+ * @param {unknown} result
+ * @param {{ track?: string }} [options]
+ * @returns {any}
+ */
+export function normalizeExtractorResult(result, options = {}) {
+  if (!isPlainObject(result) || !isPlainObject(result.candidates)) {
+    return result;
+  }
+  /** @type {Record<string, unknown>} */
+  const candidates = {};
+  for (const [bucket, value] of Object.entries(result.candidates)) {
+    if (!Array.isArray(value)) {
+      candidates[bucket] = value;
+      continue;
+    }
+    candidates[bucket] = SCALAR_CANDIDATE_BUCKETS.has(bucket)
+      ? value.map((entry) => normalizeScalarBucketValue(bucket, entry))
+      : value.map((entry) => normalizeCandidateRecord(options.track || "", bucket, entry));
+  }
+  return { ...result, candidates };
 }
 
 /**
@@ -189,6 +287,14 @@ export function validateExtractorResult(result, options = {}) {
     }
     if (!Array.isArray(value)) {
       errors.push(`${bucketLabel} must be an array`);
+      continue;
+    }
+    if (SCALAR_CANDIDATE_BUCKETS.has(bucket)) {
+      for (let index = 0; index < value.length; index += 1) {
+        if (typeof value[index] !== "string" || String(value[index]).trim().length === 0) {
+          errors.push(`${bucketLabel}[${index}] must be a non-empty string.`);
+        }
+      }
       continue;
     }
     if (!options.strictCandidates) continue;

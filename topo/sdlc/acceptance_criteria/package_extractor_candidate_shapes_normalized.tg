@@ -1,0 +1,6 @@
+acceptance_criterion ac_package_extractor_candidate_shapes_normalized {
+  name "Package Extractor Candidate Shapes Normalized"
+  description "Given a package-backed extractor emits scalar stack or framework metadata and string shorthand API params, when extractor check or extraction validates the adapter output, then Topogram normalizes those public shapes, preserves strict safety checks, and writes review candidates with the same canonical shape as bundled extractors."
+  requirement req_package_backed_extractor_architecture
+  status approved
+}

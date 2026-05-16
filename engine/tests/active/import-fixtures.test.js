@@ -437,6 +437,152 @@ test("extractor check rejects unsafe package-backed candidate output", () => {
   }
 });
 
+test("package-backed extractors normalize scalar metadata and API shorthand candidates", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-normalize."));
+  const packageRoot = writeExtractorPackage(path.join(runRoot, "api-extractor"), {
+    packageName: "@scope/topogram-extractor-api-normalize",
+    manifestId: "@scope/extractor-api-normalize",
+    track: "api",
+    extractorId: "api.package-normalize",
+    stack: { runtime: "node", framework: "express" },
+    capabilities: { routes: true },
+    candidateKinds: ["capability", "route", "stack"],
+    candidateObjectSource: `{
+      capabilities: [{
+        id_hint: "cap_get_package_task",
+        label: "Get Package Task",
+        confidence: "high",
+        source_kind: "package",
+        endpoint: { method: "GET", path: "/package-tasks/{id}" },
+        path_params: ["id"],
+        query_params: ["includeArchived"],
+        header_params: ["authorization"],
+        input_fields: ["id"],
+        output_fields: ["id", "title"],
+        entity_id: "entity_package_task",
+        provenance: ["package-backed API extractor"]
+      }],
+      routes: [{
+        method: "GET",
+        path: "/package-tasks/{id}",
+        source_kind: "package",
+        provenance: ["package-backed API extractor"]
+      }],
+      stacks: ["express"]
+    }`
+  });
+
+  const check = runCli(["extractor", "check", packageRoot, "--json"]);
+  assert.equal(check.status, 0, check.stderr || check.stdout);
+  assert.equal(JSON.parse(check.stdout).ok, true);
+
+  const targetRoot = path.join(runRoot, "imported");
+  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+  fs.writeFileSync(policyPath, `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: ["@scope/topogram-extractor-api-normalize"],
+    pinnedVersions: { "@scope/topogram-extractor-api-normalize": "1" },
+    enabledPackages: []
+  }, null, 2)}\n`, "utf8");
+
+  const result = runCli([
+    "extract",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "api",
+    "--extractor",
+    packageRoot,
+    "--extractor-policy",
+    policyPath,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const apiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "api", "candidates.json"), "utf8"));
+  assert.deepEqual(apiCandidates.stacks, ["express"]);
+  assert.deepEqual(apiCandidates.capabilities[0].path_params, [{ name: "id", required: true, type: null }]);
+  assert.deepEqual(apiCandidates.capabilities[0].query_params, [{ name: "includeArchived", required: false, type: null }]);
+  assert.deepEqual(apiCandidates.capabilities[0].header_params, [{ name: "authorization", required: false, type: null }]);
+  assert.deepEqual(apiCandidates.capabilities[0].input_fields, ["id"]);
+  assert.deepEqual(apiCandidates.capabilities[0].output_fields, ["id", "title"]);
+
+  const plan = runCli(["extract", "plan", targetRoot, "--json"]);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  assert.equal(JSON.parse(plan.stdout).bundles.length > 0, true);
+});
+
+test("package-backed extractor scalar metadata tolerates legacy stack objects and verification frameworks", () => {
+  const runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-scalar-metadata."));
+  const apiPackage = writeExtractorPackage(path.join(runRoot, "api-extractor"), {
+    packageName: "@scope/topogram-extractor-api-legacy-stack",
+    manifestId: "@scope/extractor-api-legacy-stack",
+    track: "api",
+    extractorId: "api.package-legacy-stack",
+    candidateKinds: ["capability", "route", "stack"],
+    candidateObjectSource: `{
+      capabilities: [{ id_hint: "cap_list_legacy_stack_records", label: "List legacy stack records", provenance: ["legacy stack object"] }],
+      routes: [{ method: "GET", path: "/legacy-stack-records", source_kind: "package", provenance: ["legacy stack object"] }],
+      stacks: [{ id_hint: "stack_legacy_express", name: "Legacy Express", framework: "express" }]
+    }`
+  });
+  const verificationPackage = writeExtractorPackage(path.join(runRoot, "verification-extractor"), {
+    packageName: "@scope/topogram-extractor-verification-frameworks",
+    manifestId: "@scope/extractor-verification-frameworks",
+    track: "verification",
+    extractorId: "verification.package-frameworks",
+    candidateKinds: ["verification", "framework", "script"],
+    candidateObjectSource: `{
+      verifications: [{ id_hint: "verification_package_check", label: "Package Check", method: "runtime", provenance: ["package verification"] }],
+      frameworks: ["vitest"],
+      scripts: [{ name: "test", command: "npm test", provenance: ["package verification"] }]
+    }`
+  });
+
+  const apiCheck = runCli(["extractor", "check", apiPackage, "--json"]);
+  assert.equal(apiCheck.status, 0, apiCheck.stderr || apiCheck.stdout);
+  const verificationCheck = runCli(["extractor", "check", verificationPackage, "--json"]);
+  assert.equal(verificationCheck.status, 0, verificationCheck.stderr || verificationCheck.stdout);
+
+  const targetRoot = path.join(runRoot, "imported");
+  const policyPath = path.join(runRoot, "topogram.extractor-policy.json");
+  fs.writeFileSync(policyPath, `${JSON.stringify({
+    version: "0.1",
+    allowedPackageScopes: [],
+    allowedPackages: ["@scope/topogram-extractor-api-legacy-stack", "@scope/topogram-extractor-verification-frameworks"],
+    pinnedVersions: {
+      "@scope/topogram-extractor-api-legacy-stack": "1",
+      "@scope/topogram-extractor-verification-frameworks": "1"
+    },
+    enabledPackages: []
+  }, null, 2)}\n`, "utf8");
+
+  const result = runCli([
+    "extract",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--out",
+    targetRoot,
+    "--from",
+    "api,verification",
+    "--extractor",
+    apiPackage,
+    "--extractor",
+    verificationPackage,
+    "--extractor-policy",
+    policyPath,
+    "--json"
+  ]);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const apiCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "api", "candidates.json"), "utf8"));
+  const verificationCandidates = JSON.parse(fs.readFileSync(path.join(targetRoot, "topo", "candidates", "app", "verification", "candidates.json"), "utf8"));
+  assert.deepEqual(apiCandidates.stacks, ["express"]);
+  assert.equal(apiCandidates.stacks.some((entry) => typeof entry === "object"), false);
+  assert.deepEqual(verificationCandidates.frameworks, ["vitest"]);
+});
+
 test("extractor scaffold creates a checkable package-backed extractor", () => {
   const packageRoot = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "topogram-extractor-scaffold.")), "pack");
   const scaffold = runCli([
@@ -673,6 +819,7 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(dbCandidates.maintained_seams[0].id_hint, "seam_package_db_migrations");
   assert.deepEqual(candidateIds(apiCandidates.capabilities), ["cap_list_package_tasks"]);
   assert.equal(apiCandidates.routes[0].path, "/package-tasks");
+  assert.deepEqual(apiCandidates.stacks, ["express-smoke"]);
 
   const provenance = JSON.parse(fs.readFileSync(path.join(targetRoot, ".topogram-extract.json"), "utf8"));
   assert.deepEqual(

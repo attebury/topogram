@@ -127,6 +127,38 @@ not absolute paths or `..` escapes. Candidate output must not include canonical
 files, patches, adoption plans, write instructions, or direct `topo/**` writes.
 Those are core responsibilities handled only after explicit `topogram adopt`.
 
+`stacks` and `frameworks` are scalar metadata buckets, not adoptable graph
+records. Return strings:
+
+```js
+return {
+  findings: [],
+  candidates: {
+    capabilities: [{
+      id_hint: "cap_get_invoice",
+      label: "Get invoice",
+      endpoint: { method: "GET", path: "/invoices/{id}" },
+      path_params: ["id"],
+      query_params: ["includeLines"],
+      header_params: ["authorization"],
+      input_fields: [],
+      output_fields: ["id", "status"],
+      provenance: ["src/routes/invoices.ts"]
+    }],
+    routes: [{ method: "GET", path: "/invoices/{id}", source_kind: "route_code" }],
+    stacks: ["express"]
+  },
+  diagnostics: []
+};
+```
+
+Common shorthand is accepted at the package boundary. String parameter names are
+normalized to parameter records, so `path_params: ["id"]` becomes
+`[{ name: "id", required: true, type: null }]`; query and header params default
+to `required: false`. `input_fields` and `output_fields` may stay as string field
+names. Older stack objects are tolerated temporarily and normalized to strings,
+but new extractor packages should emit `stacks: ["express"]`.
+
 ## Safety Boundary
 
 - Extractors are read-only.

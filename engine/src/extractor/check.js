@@ -6,7 +6,7 @@ import {
   validateExtractorAdapter
 } from "./packages.js";
 import { packageMetadataForRoot } from "../package-adapters/index.js";
-import { validateExtractorResult } from "./output.js";
+import { normalizeExtractorResult, validateExtractorResult } from "./output.js";
 
 /**
  * @typedef {import("./registry.js").ExtractorManifest} ExtractorManifest
@@ -101,7 +101,7 @@ export function checkExtractorPack(sourceSpec, options = {}) {
         payload.errors.push(`Extractor '${extractor.id}' detect(context) must return { score, reasons }.`);
         continue;
       }
-      const result = extractor.extract(context) || { findings: [], candidates: {} };
+      const result = normalizeExtractorResult(extractor.extract(context) || { findings: [], candidates: {} }, { track: extractor.track });
       const validation = validateExtractorResult(result, { track: extractor.track, strictCandidates: true });
       if (!validation.ok || !validation.smoke) {
         payload.errors.push(...validation.errors.map((message) => `Extractor '${extractor.id}' ${message}.`));

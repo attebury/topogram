@@ -3,7 +3,7 @@
 import { getEnrichersForTrack, getExtractorsForTrack } from "../registry.js";
 import { normalizeCandidatesForTrack } from "./candidates.js";
 import { packageExtractorsForContext } from "../../../extractor/packages.js";
-import { validateExtractorResult } from "../../../extractor/output.js";
+import { normalizeExtractorResult, validateExtractorResult } from "../../../extractor/output.js";
 
 /**
  * @param {any} context
@@ -172,7 +172,7 @@ export function runTrack(context, track) {
     const extractorContext = extractor.source === "package" && typeof extractor.packageContext === "function"
       ? extractor.packageContext(context)
       : context;
-    const result = extractor.extract(extractorContext) || { findings: [], candidates: {} };
+    const result = normalizeExtractorResult(extractor.extract(extractorContext) || { findings: [], candidates: {} }, { track: extractor.track });
     assertExtractorResultShape(extractor, result);
     findings.push({
       extractor: extractor.id,
