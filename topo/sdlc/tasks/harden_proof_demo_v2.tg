@@ -1,0 +1,14 @@
+task task_harden_proof_demo_v2 {
+  name "Harden Proof Demo V2"
+  description "Create v2 proof repositories with manifest-backed proof audits, canonical verify commands, clean-worktree checks, and release-status tracking at @topogram/cli 0.3.92."
+  satisfies [req_proof_demo_program req_public_outputs_are_portable]
+  acceptance_refs [ac_proof_v2_hardened_verification ac_proof_consumer_baseline_freshness ac_proof_repos_public_ci_visible]
+  verification_refs [verification_release_status_strict verification_dogfood_topo_workspace]
+  affects [cap_verify_release_status cap_create_project cap_import_brownfield_app cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

@@ -28,8 +28,8 @@ Use the public proof repos when you want to inspect complete, runnable workflow
 stories instead of isolated command examples:
 
 - [Proof Walkthrough](./proof-walkthrough.md)
-- [Generated To Maintained Proof](https://github.com/attebury/topogram-proof-content-approval)
-- [Brownfield Extract/Adopt Proof](https://github.com/attebury/topogram-proof-content-approval-brownfield)
+- [Generated To Maintained Proof](https://github.com/attebury/topogram-proof-content-approval-v2)
+- [Brownfield Extract/Adopt Proof](https://github.com/attebury/topogram-proof-content-approval-brownfield-v2)
 
 ## Reference
 

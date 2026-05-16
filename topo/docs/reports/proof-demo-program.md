@@ -16,11 +16,11 @@ Canonical journey: `journey_proof_demo_program`.
 
 ## Proof Repos
 
-- `attebury/topogram-proof-content-approval`
-  ([GitHub](https://github.com/attebury/topogram-proof-content-approval)):
+- `attebury/topogram-proof-content-approval-v2`
+  ([GitHub](https://github.com/attebury/topogram-proof-content-approval-v2)):
   generated-first proof path.
-- `attebury/topogram-proof-content-approval-brownfield`
-  ([GitHub](https://github.com/attebury/topogram-proof-content-approval-brownfield)):
+- `attebury/topogram-proof-content-approval-brownfield-v2`
+  ([GitHub](https://github.com/attebury/topogram-proof-content-approval-brownfield-v2)):
   real-ish brownfield app path for extract/adopt and maintained development
   proof.
 
@@ -64,8 +64,10 @@ Brownfield proof:
 - Prefer one repo per coherent story, not one repo per command.
 - Branches and tags should name the step number and workflow.
 - Public proof repos should expose a `Proof Verification` workflow and
-  `npm run proof:audit` so readers can see current CI, expected proof tags,
-  current CLI pins, and path-hygiene evidence without trusting local notes.
+  `npm run verify` so readers can see current CI, expected proof tags,
+  current CLI pins, Topogram/SDLC checks when adopted, app compile checks,
+  proof artifact completeness, and path-hygiene evidence without trusting
+  local notes.
 - SDLC is used in proof repos to show the habit, but ordinary users do not have
   to adopt SDLC unless they want enforcement.
 - Verification must compile, run, or check consumer-visible behavior; string and

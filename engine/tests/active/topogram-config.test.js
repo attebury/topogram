@@ -67,19 +67,19 @@ test("runtime config preserves current public defaults", () => {
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-express-api"));
   assert.ok(releaseConsumerRepos(root).includes("topogram-extractor-drizzle-db"));
   assert.deepEqual(releaseProofConsumerRepos(root), [
-    "topogram-proof-content-approval",
-    "topogram-proof-content-approval-brownfield"
+    "topogram-proof-content-approval-v2",
+    "topogram-proof-content-approval-brownfield-v2"
   ]);
-  assert.equal(releaseProofMinimumVersion(root), "0.3.91");
+  assert.equal(releaseProofMinimumVersion(root), "0.3.92");
   assert.equal(releaseConsumerWorkflowName("topogram-starters", root), "Starter Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-node-cli", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-react-router", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-prisma-db", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-express-api", root), "Extractor Verification");
   assert.equal(releaseConsumerWorkflowName("topogram-extractor-drizzle-db", root), "Extractor Verification");
-  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval", root), "Proof Verification");
-  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval-brownfield", root), "Proof Verification");
-  assert.deepEqual(releaseProofConsumerWorkflowJobs("topogram-proof-content-approval", root), []);
+  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval-v2", root), "Proof Verification");
+  assert.equal(releaseProofConsumerWorkflowName("topogram-proof-content-approval-brownfield-v2", root), "Proof Verification");
+  assert.deepEqual(releaseProofConsumerWorkflowJobs("topogram-proof-content-approval-v2", root), []);
   assert.equal(config.limits.remoteFetchMaxBytes, 5 * 1024 * 1024);
   assert.equal(config.limits.catalogFetchMaxBytes, null);
   assert.equal(config.limits.githubFetchMaxBytes, null);

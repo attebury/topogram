@@ -9,8 +9,8 @@ and verification commands.
 
 | Story | Repository | What It Proves |
 | --- | --- | --- |
-| Generated to maintained | [topogram-proof-content-approval](https://github.com/attebury/topogram-proof-content-approval) | Start from a generated app, iterate through Topogram, graduate output to maintained ownership, then use Topogram for maintained feature and DB migration guidance. |
-| Brownfield extract/adopt | [topogram-proof-content-approval-brownfield](https://github.com/attebury/topogram-proof-content-approval-brownfield) | Start with a maintained app, extract candidates, adopt curated specs, implement a maintained feature, refresh drift, recreate another stack, and compare parity. |
+| Generated to maintained | [topogram-proof-content-approval-v2](https://github.com/attebury/topogram-proof-content-approval-v2) | Start from a generated app, iterate through Topogram, graduate output to maintained ownership, then use Topogram for maintained feature and DB migration guidance. |
+| Brownfield extract/adopt | [topogram-proof-content-approval-brownfield-v2](https://github.com/attebury/topogram-proof-content-approval-brownfield-v2) | Start with a maintained app, extract candidates, adopt curated specs, implement a maintained feature, refresh drift, recreate another stack, and compare parity. |
 
 Both repos expose a `Proof Verification` workflow, `npm run proof:audit`, and
 `npm run verify`. They also use SDLC to show the recommended habit, but SDLC is
@@ -19,9 +19,10 @@ not required for ordinary Topogram users.
 `topogram release status --strict` tracks these repos as `proofConsumers`, not
 as normal package rollout consumers. A release is considered current when proof
 repos meet the configured proof baseline, expose the audit/verify scripts, and
-have green Proof Verification workflows. They do not need to be repinned for
-every CLI patch; refresh them when a command workflow meaning changes, a
-breaking change lands, or a proof artifact would teach stale behavior.
+have green Proof Verification workflows. The current v2 proof baseline is
+`@topogram/cli@0.3.92`. Proof repos do not need to be repinned for every CLI
+patch; refresh them when a command workflow meaning changes, a breaking change
+lands, or a proof artifact would teach stale behavior.
 
 ## How To Read A Proof
 

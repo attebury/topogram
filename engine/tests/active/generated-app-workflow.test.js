@@ -36,8 +36,8 @@ const firstPartyExtractorRepos = [
 ];
 const externalTodoConsumerRepos = ["topogram-template-todo", "topogram-demo-todo"];
 const proofConsumerRepos = [
-  "topogram-proof-content-approval",
-  "topogram-proof-content-approval-brownfield"
+  "topogram-proof-content-approval-v2",
+  "topogram-proof-content-approval-brownfield-v2"
 ];
 const knownCliConsumerRepos = [
   ...firstPartyGeneratorRepos,
@@ -2694,7 +2694,7 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(human.stdout, /Git tag: .* at-head=yes/);
   assert.match(human.stdout, new RegExp(`Consumer CI: ${knownCliConsumerRepos.length}/${knownCliConsumerRepos.length} passing`));
   assert.match(human.stdout, new RegExp(`Proof consumer CI: ${proofConsumerRepos.length}/${proofConsumerRepos.length} passing`));
-  assert.match(human.stdout, /proof topogram-proof-content-approval: .* \(current\)/);
+  assert.match(human.stdout, /proof topogram-proof-content-approval-v2: .* \(current\)/);
   assert.match(human.stdout, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);
 
   const reportPath = path.join(root, "release-baseline.md");
@@ -2715,7 +2715,7 @@ test("topogram release status strict passes when package, tag, and consumers are
   assert.match(reportText, /\| `@topogram\/generator-react-web` \| web \| sample-template \|/);
   assert.match(reportText, /\| `@topogram\/generator-express-api` \| api \| sample-template \|/);
   assert.match(reportText, /## Proof Consumers/);
-  assert.match(reportText, /\| `topogram-proof-content-approval` \|/);
+  assert.match(reportText, /\| `topogram-proof-content-approval-v2` \|/);
   assert.match(reportText, /baseline-accepted|current/);
   assert.match(reportText, /proof:audit, verify/);
   assert.match(reportText, /https:\/\/github\.com\/attebury\/fake\/actions\/runs\/12345/);

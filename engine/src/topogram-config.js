@@ -35,8 +35,8 @@ export const DEFAULT_RELEASE_CONSUMER_REPOS = [
 ];
 
 export const DEFAULT_RELEASE_PROOF_CONSUMER_REPOS = [
-  "topogram-proof-content-approval",
-  "topogram-proof-content-approval-brownfield"
+  "topogram-proof-content-approval-v2",
+  "topogram-proof-content-approval-brownfield-v2"
 ];
 
 export const DEFAULT_RELEASE_CONSUMER_WORKFLOWS = {
@@ -61,8 +61,8 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOWS = {
 };
 
 export const DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOWS = {
-  "topogram-proof-content-approval": "Proof Verification",
-  "topogram-proof-content-approval-brownfield": "Proof Verification"
+  "topogram-proof-content-approval-v2": "Proof Verification",
+  "topogram-proof-content-approval-brownfield-v2": "Proof Verification"
 };
 
 export const DEFAULT_RELEASE_CONSUMER_WORKFLOW_JOBS = {
@@ -79,7 +79,7 @@ export const DEFAULT_RELEASE_CONSUMER_WORKFLOW_JOBS = {
 
 /** @type {Record<string, string[]>} */
 export const DEFAULT_RELEASE_PROOF_CONSUMER_WORKFLOW_JOBS = {};
-export const DEFAULT_RELEASE_PROOF_MINIMUM_VERSION = "0.3.91";
+export const DEFAULT_RELEASE_PROOF_MINIMUM_VERSION = "0.3.92";
 
 export const DEFAULT_TOPOGRAM_CONFIG = {
   github: {

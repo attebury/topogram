@@ -1,0 +1,6 @@
+acceptance_criterion ac_proof_v2_hardened_verification {
+  name "Proof V2 Hardened Verification"
+  description "Given public proof repositories teach Topogram workflows, when the v2 proof repos are published, then every main, step branch, and proof tag runs proof audit, path hygiene, Topogram validation when adopted, SDLC validation when adopted, app or recreated-stack compile checks, and clean-worktree verification."
+  requirement req_proof_demo_program
+  status approved
+}
