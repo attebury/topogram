@@ -1,0 +1,9 @@
+decision decision_glossary_backed_cold_start_slices {
+  name "Glossary Backed Cold Start Slices"
+  description "Context slices should be cold-start safe by carrying focused vocabulary, standing rule references, and mode-specific agent guidance without embedding the full agent brief."
+  context ["Agents cannot reliably remember prior brief text across focused work, so slice packets need enough local orientation to be useful on their own." "Copying the full agent brief into every slice would add noise and make packets less focused."]
+  consequences ["slice packets include explicit related glossary terms from related_terms and entity uses_terms" "slice packets include compact standing rule summaries for maintainability, consumer-value tests, and command-owned workflow mutations" "slice markdown should show agent guidance, glossary terms, and standing rules as first-class sections"]
+  domain dom_sdlc_query_agent_context
+  related_terms [term_agent_brief, term_context_slice, term_agent_mode, term_enforced_rule]
+  status accepted
+}

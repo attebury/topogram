@@ -81,6 +81,7 @@ function pushRelated(lines, heading, related) {
   if (!related || typeof related !== "object") return;
   const sections = Object.entries(related)
     .map(([key, value]) => [key, Array.isArray(value) ? value : []])
+    .filter(([key]) => key !== "terms")
     .filter(([, values]) => values.length > 0);
   if (sections.length === 0) return;
   lines.push("", `## ${heading}`);
@@ -99,6 +100,72 @@ function pushRelated(lines, heading, related) {
     if (values.length > 12) {
       lines.push(`- ... ${values.length - 12} more`);
     }
+  }
+}
+
+/**
+ * @param {string[]} lines
+ * @param {AnyRecord|null|undefined} guidance
+ * @returns {void}
+ */
+function pushAgentGuidance(lines, guidance) {
+  if (!guidance || typeof guidance !== "object") return;
+  lines.push("", "## Agent Guidance");
+  pushField(lines, "Mode", guidance.mode);
+  pushField(lines, "Read first", guidance.read_first);
+  const nextQueries = stringList(guidance.next_queries);
+  if (nextQueries.length > 0) {
+    lines.push("- Next queries:");
+    for (const command of nextQueries) lines.push(`  - \`${command}\``);
+  }
+  const commands = stringList(guidance.required_commands);
+  if (commands.length > 0) {
+    lines.push("- Required commands:");
+    for (const command of commands) lines.push(`  - \`${command}\``);
+  }
+  pushField(lines, "Completion command", guidance.completion_command);
+  pushField(lines, "Write scope summary", guidance.write_scope_summary);
+  const warnings = stringList(guidance.warnings);
+  if (warnings.length > 0) {
+    lines.push("- Warnings:");
+    for (const warning of warnings) lines.push(`  - ${warning}`);
+  }
+}
+
+/**
+ * @param {string[]} lines
+ * @param {AnyRecord[]|null|undefined} terms
+ * @returns {void}
+ */
+function pushGlossaryTerms(lines, terms) {
+  if (!Array.isArray(terms) || terms.length === 0) return;
+  lines.push("", "## Glossary Terms");
+  for (const term of terms.slice(0, 12)) {
+    const label = itemLabel(term);
+    lines.push(`- ${label || text(term)}`);
+    if (term.description) lines.push(`  - ${text(term.description)}`);
+    if (term.category) lines.push(`  - Category: \`${text(term.category)}\``);
+  }
+  if (terms.length > 12) {
+    lines.push(`- ... ${terms.length - 12} more`);
+  }
+}
+
+/**
+ * @param {string[]} lines
+ * @param {AnyRecord[]|null|undefined} rules
+ * @returns {void}
+ */
+function pushStandingRules(lines, rules) {
+  if (!Array.isArray(rules) || rules.length === 0) return;
+  lines.push("", "## Standing Rules");
+  for (const rule of rules) {
+    const label = itemLabel(rule);
+    lines.push(`- ${label || text(rule)}`);
+    if (rule.severity || rule.status) {
+      lines.push(`  - ${[rule.severity ? `severity: ${text(rule.severity)}` : null, rule.status ? `status: ${text(rule.status)}` : null].filter(Boolean).join(", ")}`);
+    }
+    if (rule.description) lines.push(`  - ${text(rule.description)}`);
   }
 }
 
@@ -204,6 +271,9 @@ export function formatContextSliceMarkdown(slice) {
 
   pushSteps(lines, slice.steps || []);
   pushAlternates(lines, slice.alternates || []);
+  pushAgentGuidance(lines, slice.agent_guidance);
+  pushStandingRules(lines, slice.standing_rules);
+  pushGlossaryTerms(lines, slice.related?.terms);
   pushIdGroups(lines, "Depends On", slice.depends_on);
   pushRelated(lines, "Related", slice.related);
   pushVerificationTargets(lines, slice.verification_targets);

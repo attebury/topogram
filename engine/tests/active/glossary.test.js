@@ -138,3 +138,35 @@ test("emit glossary writes and checks markdown output", () => {
   });
   assert.match(checkOutput, /is up to date/);
 });
+
+test("slice markdown shows agent guidance, standing rules, and glossary terms", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-glossary-slice-"));
+  const topo = path.join(root, "topo");
+  fs.mkdirSync(topo, { recursive: true });
+  fs.writeFileSync(path.join(topo, "glossary.tg"), glossarySource(), "utf8");
+
+  const result = childProcess.spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "slice",
+    topo,
+    "--mode",
+    "implementation",
+    "--capability",
+    "cap_query_context",
+    "--format",
+    "markdown"
+  ], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe"
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /## Agent Guidance/);
+  assert.match(result.stdout, /Mode: implementation/);
+  assert.match(result.stdout, /## Standing Rules/);
+  assert.match(result.stdout, /rule_tests_prove_consumer_value/);
+  assert.match(result.stdout, /## Glossary Terms/);
+  assert.match(result.stdout, /term_context_slice/);
+});
