@@ -1,0 +1,40 @@
+journey journey_sdlc_audit_adoption {
+  name "SDLC Audit Adoption"
+  description "A regulated or enterprise team adopts stricter SDLC proof requirements while preserving the same Topogram graph and command workflow."
+  status draft
+  domain dom_sdlc_query_agent_context
+  actors [actor_maintainer actor_release_manager actor_coding_agent]
+  goal "Produce reviewable audit evidence for high-risk or protected changes without replacing the standard SDLC model."
+  related_capabilities [cap_manage_sdlc_records cap_run_engine_gates cap_brief_agent cap_query_context cap_emit_artifacts cap_verify_release_status]
+  related_rules [rule_spec_is_source_of_truth rule_done_tasks_need_proof_links rule_public_artifacts_do_not_leak_local_paths]
+  success_signals ["Verification run evidence records command, actor, commit, result, and artifact hash." "High-risk changes have reviewer or approval metadata where policy requires it." "Release receipts connect tasks, bugs, requirements, verification runs, tags, and consumer rollout state."]
+  failure_signals ["Audit profile becomes the default for small projects." "Audit evidence is stored as machine-local paths or large logs in graph records." "External ticket systems silently override command-owned Topogram state."]
+  tags [sdlc audit adoption enterprise future]
+
+  step {
+    id select_audit_profile
+    intent "Opt into stricter SDLC policy behavior."
+    expects ["The project policy clearly distinguishes standard adoption from audit adoption."]
+  }
+
+  step {
+    id record_verification_run
+    intent "Capture actual proof for protected or high-risk work."
+    after [select_audit_profile]
+    expects ["The verification run records command, timestamp, actor, commit, result, portable artifact path, and evidence hash."]
+  }
+
+  step {
+    id review_and_approve
+    intent "Apply approval or reviewer requirements only where the audit profile calls for them."
+    after [record_verification_run]
+    expects ["Approvals reference reviewed evidence and do not bypass verification gates."]
+  }
+
+  step {
+    id export_audit_packet
+    intent "Export a durable change-management packet."
+    after [review_and_approve]
+    expects ["The packet can be reviewed outside Topogram without losing graph-native IDs, proof links, or release traceability."]
+  }
+}

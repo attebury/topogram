@@ -7,5 +7,5 @@ requirement req_source_health_workflow {
   respects_rules [rule_docs_must_execute]
   domain dom_catalog_templates
   priority medium
-  status approved
+  status ongoing
 }

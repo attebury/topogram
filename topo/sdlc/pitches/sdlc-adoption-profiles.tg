@@ -1,0 +1,13 @@
+pitch pitch_sdlc_adoption_profiles {
+  name "SDLC Adoption Profiles"
+  description "Support lightweight standard SDLC adoption and stricter audit-oriented adoption without splitting Topogram into separate workflow products."
+  appetite "medium"
+  problem "Small teams need useful repo discipline without compliance overhead, while enterprise teams need stronger proof, approvals, risk classification, and audit exports. A single enforced mode cannot serve both without becoming either too weak or too noisy."
+  solution_sketch "Add explicit SDLC policy profiles. Standard remains the default lightweight habit. Audit layers verification run evidence, approval points, risk/change classification, release receipts, and stronger exemption rules on top of the same SDLC graph. Advisory and regulated profiles remain future work."
+  rabbit_holes "Do not make audit behavior the default for ordinary projects, and do not build separate SDLC models per profile."
+  no_go_areas "Do not add external tracker sync, signed immutable history, or regulated-mode requirements before standard and audit profiles are coherent."
+  affects [cap_manage_sdlc_records cap_run_engine_gates cap_brief_agent cap_query_context cap_emit_artifacts]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status shaped
+}

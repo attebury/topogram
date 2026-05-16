@@ -5,5 +5,5 @@ requirement req_widget_contract_migration_planning {
   affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
   domain dom_generator_runtime
   priority medium
-  status approved
+  status satisfied
 }

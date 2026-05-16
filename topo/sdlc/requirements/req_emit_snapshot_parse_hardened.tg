@@ -7,5 +7,5 @@ requirement req_emit_snapshot_parse_hardened {
   respects_rules [rule_maintainable_security_focused_code]
   domain dom_workspace_project_config
   priority medium
-  status approved
+  status satisfied
 }

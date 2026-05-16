@@ -5,5 +5,5 @@ requirement req_clear_command_vocabulary {
   introduces_rules []
   respects_rules []
   priority medium
-  status approved
+  status satisfied
 }

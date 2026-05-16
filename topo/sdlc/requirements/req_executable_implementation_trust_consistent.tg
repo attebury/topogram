@@ -7,5 +7,5 @@ requirement req_executable_implementation_trust_consistent {
   respects_rules [rule_template_implementation_is_executable, rule_maintainable_security_focused_code]
   domain dom_catalog_templates
   priority high
-  status approved
+  status ongoing
 }

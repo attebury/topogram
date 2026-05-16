@@ -7,5 +7,5 @@ requirement req_db_migration_ownership_model {
   respects_rules [rule_generated_and_maintained_ownership_differ, rule_generators_own_stack_realization]
   domain dom_generator_runtime
   priority medium
-  status approved
+  status satisfied
 }

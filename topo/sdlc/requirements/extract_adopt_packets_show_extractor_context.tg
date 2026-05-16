@@ -6,6 +6,6 @@ requirement req_extract_adopt_packets_show_extractor_context {
   introduces_rules []
   respects_rules []
   priority medium
-  status approved
+  status satisfied
   domain dom_sdlc_query_agent_context
 }

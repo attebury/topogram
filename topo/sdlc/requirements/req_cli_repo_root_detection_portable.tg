@@ -7,5 +7,5 @@ requirement req_cli_repo_root_detection_portable {
   respects_rules [rule_maintainable_security_focused_code]
   domain dom_workspace_project_config
   priority medium
-  status approved
+  status satisfied
 }

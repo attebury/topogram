@@ -6,5 +6,5 @@ requirement req_sdlc_records_use_dedicated_record_root {
   introduces_rules [rule_agents_start_with_focused_context]
   domain dom_sdlc_query_agent_context
   priority high
-  status approved
+  status ongoing
 }

@@ -1,0 +1,36 @@
+journey journey_sdlc_standard_adoption {
+  name "SDLC Standard Adoption"
+  description "A maintainer adopts Topogram SDLC as a normal repo working habit without enterprise audit overhead."
+  status draft
+  domain dom_sdlc_query_agent_context
+  actors [actor_maintainer actor_coding_agent]
+  goal "Protect non-trivial changes with SDLC linkage, focused agent context, verification refs, and commit/CI gates."
+  related_capabilities [cap_manage_sdlc_records cap_brief_agent cap_query_context cap_run_engine_gates]
+  related_rules [rule_spec_is_source_of_truth rule_done_tasks_need_proof_links rule_sdlc_kinds_have_distinct_jobs]
+  success_signals ["Protected changes cite an SDLC item or explicit exemption." "Done tasks link requirements, approved acceptance criteria, and verifications." "Agents start from brief, start packets, and focused query slices."]
+  failure_signals ["Small teams must fill audit-only metadata before useful work." "Tasks are completed without proof links or command-owned transitions."]
+  tags [sdlc standard adoption agent]
+
+  step {
+    id initialize_policy
+    intent "Create a standard enforced SDLC policy."
+    commands ["topogram sdlc policy init . --json"]
+    expects ["The project has an adopted SDLC policy that can be enforced by gate commands."]
+  }
+
+  step {
+    id start_work
+    intent "Begin implementation from a linked task or bug."
+    after [initialize_policy]
+    commands ["topogram query sdlc-available ./topo --json" "topogram sdlc start <task-id> . --actor <actor> --json"]
+    expects ["The maintainer or agent sees blockers, proof gaps, related rules, and verification targets before editing."]
+  }
+
+  step {
+    id prove_and_gate
+    intent "Complete work with proof and run the gate."
+    after [start_work]
+    commands ["topogram sdlc complete <task-id> . --verification <verification-id> --actor <actor> --write" "topogram sdlc prep commit . --json" "topogram sdlc gate . --require-adopted --json"]
+    expects ["Standard SDLC proof and protected-change checks pass without audit-only receipts."]
+  }
+}

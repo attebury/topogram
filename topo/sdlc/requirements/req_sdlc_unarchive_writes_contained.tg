@@ -7,5 +7,5 @@ requirement req_sdlc_unarchive_writes_contained {
   respects_rules [rule_maintainable_security_focused_code, rule_stateful_workflow_mutations_use_cli]
   domain dom_sdlc_query_agent_context
   priority critical
-  status approved
+  status satisfied
 }

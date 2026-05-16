@@ -5,5 +5,5 @@ requirement req_widget_behavior_vocab_stability {
   affects [cap_check_widget_contracts, cap_query_context]
   domain dom_sdlc_query_agent_context
   priority medium
-  status approved
+  status satisfied
 }

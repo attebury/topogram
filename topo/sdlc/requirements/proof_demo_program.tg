@@ -6,5 +6,5 @@ requirement req_proof_demo_program {
   respects_rules [rule_spec_is_source_of_truth rule_tests_prove_consumer_value rule_done_tasks_need_proof_links]
   domain dom_release_consumer_proof
   priority medium
-  status approved
+  status ongoing
 }

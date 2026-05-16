@@ -6,5 +6,5 @@ requirement req_public_outputs_are_portable {
   respects_rules [rule_maintainable_security_focused_code]
   domain dom_engine_quality
   priority high
-  status approved
+  status ongoing
 }

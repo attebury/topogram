@@ -208,6 +208,13 @@
       "at": "2026-05-11T08:50:18.906Z",
       "by": "codex",
       "note": "Command-owned state boundary is documented and covered by regression tests."
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:31.157Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "task_add_sdlc_commit_prep": [
@@ -477,6 +484,13 @@
       "at": "2026-05-11T20:54:02.702Z",
       "by": "actor_coding_agent",
       "note": "DB migration ownership model accepted after project config validation, lifecycle behavior, maintained proposal docs, and regression coverage."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:47.879Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_model_db_migration_ownership": [
@@ -635,6 +649,13 @@
       "at": "2026-05-11T21:35:24.876Z",
       "by": "actor_coding_agent",
       "note": "Maintained DB seam candidates are inferred, reported, and carried through adoption review packets."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:49.836Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_infer_maintained_db_seam_candidates": [
@@ -916,6 +937,13 @@
       "at": "2026-05-12T00:31:51.995Z",
       "by": "actor_coding_agent",
       "note": "Approved after adding reviewable non-resource UI flow acceptance coverage."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:50.110Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "req_import_docs_noise_filtering": [
@@ -932,6 +960,13 @@
       "at": "2026-05-12T00:32:03.322Z",
       "by": "actor_coding_agent",
       "note": "Approved after adding source classification and negative import fixtures."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:49.598Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "plan_brownfield_db_seam_review_packet#verify_results": [
@@ -1195,6 +1230,13 @@
       "at": "2026-05-12T16:28:07.769Z",
       "by": "actor_coding_agent",
       "note": "Requirement has accepted docs and package audience criteria"
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:31.608Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "ac_docs_reset_current_workflows": [
@@ -1268,6 +1310,13 @@
       "at": "2026-05-12T19:20:26.543Z",
       "by": "actor_coding_agent",
       "note": "Requirement has accepted init behavior and test coverage"
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:50.568Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_add_topogram_init": [
@@ -1373,6 +1422,13 @@
       "at": "2026-05-12T20:08:02.010Z",
       "by": "actor_coding_agent",
       "note": "Approve lifecycle verb cutover for implementation"
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:47.188Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_adopt_copy_extract_adopt_commands": [
@@ -1504,6 +1560,13 @@
       "at": "2026-05-13T15:07:16.426Z",
       "by": "actor_coding_agent",
       "note": "Approve focused extractor UX requirement for the patch batch."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:48.882Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "ac_extractor_selection_guidance": [
@@ -1607,6 +1670,13 @@
       "at": "2026-05-13T16:48:53.505Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:31.388Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "req_history_drift_review_required": [
@@ -1623,6 +1693,13 @@
       "at": "2026-05-13T16:48:53.931Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:49.374Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "req_engine_topo_code_derived": [
@@ -1639,6 +1716,13 @@
       "at": "2026-05-13T16:48:54.360Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:48.401Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "req_sdlc_commit_prep_surfaces_open_tasks": [
@@ -1655,6 +1739,13 @@
       "at": "2026-05-13T16:48:54.958Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:32.576Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "req_sdlc_plans_track_implementation_steps": [
@@ -1671,6 +1762,13 @@
       "at": "2026-05-13T16:48:55.400Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:51.032Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "req_sdlc_records_use_dedicated_record_root": [
@@ -1687,6 +1785,13 @@
       "at": "2026-05-13T16:48:55.822Z",
       "by": "actor_coding_agent",
       "note": "Approve after completed linked implementation and passing checks."
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:32.792Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "ac_history_drift_review_written": [
@@ -1902,6 +2007,13 @@
       "at": "2026-05-13T19:19:17.325Z",
       "by": "actor_coding_agent",
       "note": "Package-backed extractor architecture is accepted and already implemented."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:50.790Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "pitch_catalog_source_health_maturity": [
@@ -1943,6 +2055,13 @@
       "at": "2026-05-13T19:27:26.906Z",
       "by": "actor_coding_agent",
       "note": "Source-health workflow is implemented, documented, and verified by current CLI/docs/gate tests."
+    },
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:30.679Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
     }
   ],
   "ac_widget_behavior_vocab_is_canonical": [
@@ -1968,6 +2087,13 @@
       "at": "2026-05-13T19:40:20.041Z",
       "by": "actor_coding_agent",
       "note": "Requirement has accepted ownership decision, approved acceptance, and implementation task."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:51.530Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_stabilize_widget_behavior_vocab": [
@@ -2016,6 +2142,13 @@
       "at": "2026-05-13T19:51:42.329Z",
       "by": "actor_coding_agent",
       "note": "Requirement is ready for implementation through context-diff migration planning."
+    },
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:51.752Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ],
   "task_add_widget_contract_migration_plan": [
@@ -3602,6 +3735,132 @@
       "at": "2026-05-16T06:57:52.137Z",
       "by": "actor_coding_agent",
       "note": "Implemented optional stale work and WIP policy gates with prep and gate coverage."
+    }
+  ],
+  "req_public_outputs_are_portable": [
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:30.916Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
+    }
+  ],
+  "req_proof_demo_program": [
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:31.841Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
+    }
+  ],
+  "req_executable_implementation_trust_consistent": [
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:32.127Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
+    }
+  ],
+  "req_first_party_extractor_packages_tracked": [
+    {
+      "from": "approved",
+      "to": "ongoing",
+      "at": "2026-05-16T08:36:32.346Z",
+      "by": "actor_coding_agent",
+      "note": "Classified as a durable operating commitment during SDLC backlog hygiene."
+    }
+  ],
+  "req_adoption_reconcile_paths_confined_topogram": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:46.519Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_adversarial_residual_audit_cycle": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:46.744Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_bounded_catalog_and_github_fetch_payloads": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:46.958Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_cli_import_precision_followup": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:47.414Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_cli_repo_root_detection_portable": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:47.647Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_emit_snapshot_parse_hardened": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:48.188Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_extract_adopt_packets_show_extractor_context": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:48.623Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_graph_native_journeys": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:49.145Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_import_walk_symlink_escape_guard": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:50.336Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
+    }
+  ],
+  "req_sdlc_unarchive_writes_contained": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T08:36:51.289Z",
+      "by": "actor_coding_agent",
+      "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
   ]
 }

@@ -6,5 +6,5 @@ requirement req_history_drift_review_required {
   introduces_rules [rule_docs_must_execute]
   domain dom_engine_quality
   priority high
-  status approved
+  status satisfied
 }

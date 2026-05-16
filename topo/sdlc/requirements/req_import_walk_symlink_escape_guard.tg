@@ -7,5 +7,5 @@ requirement req_import_walk_symlink_escape_guard {
   respects_rules [rule_maintainable_security_focused_code]
   domain dom_import_adoption
   priority medium
-  status approved
+  status satisfied
 }

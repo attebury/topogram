@@ -7,5 +7,5 @@ requirement req_adoption_reconcile_paths_confined_topogram {
   respects_rules [rule_maintainable_security_focused_code, rule_generated_and_maintained_ownership_differ]
   domain dom_import_adoption
   priority critical
-  status approved
+  status satisfied
 }
