@@ -1,0 +1,6 @@
+acceptance_criterion ac_extractor_recommendation_guides_package_selection {
+  name "Extractor Recommendation Guides Package Selection"
+  description "Given a brownfield source tree may need package-backed extractors, when a human or agent runs extractor recommendation before extraction, then Topogram reports likely bundled and package-backed extractors, why they were suggested, whether package code was loaded, and exact install, pin, check, and extract commands."
+  requirement req_extractor_selection_ux
+  status approved
+}

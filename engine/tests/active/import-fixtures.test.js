@@ -381,11 +381,64 @@ test("extractor commands list bundled manifests and check package-backed extract
   assert.equal(checkPayload.compatibleCliRange, `^${enginePackageVersion}`);
   assert.equal(checkPayload.smoke.extractors, 1);
   assert.equal(checkPayload.reviewWorkflow.steps.some((item) => item.id === "review_plan"), true);
+  assert.equal(checkPayload.useCommands.some((command) => /topogram extractor check/.test(command)), true);
+  assert.equal(checkPayload.useCommands.some((command) => /topogram extract .*--extractor/.test(command)), true);
 
   const humanCheck = runCli(["extractor", "check", packageRoot]);
   assert.equal(humanCheck.status, 0, humanCheck.stderr || humanCheck.stdout);
+  assert.match(humanCheck.stdout, /Use this extractor:/);
   assert.match(humanCheck.stdout, /Next review loop:/);
   assert.match(humanCheck.stdout, /topogram extract plan \.\/imported-topogram/);
+});
+
+test("extractor recommend suggests package-backed extractors without loading package code", () => {
+  const prisma = runCli([
+    "extractor",
+    "recommend",
+    path.join(importFixtureRoot, "prisma-openapi"),
+    "--from",
+    "db,api",
+    "--json"
+  ]);
+  assert.equal(prisma.status, 0, prisma.stderr || prisma.stdout);
+  const prismaPayload = JSON.parse(prisma.stdout);
+  assert.equal(prismaPayload.type, "extractor_recommendations");
+  assert.equal(prismaPayload.safety.packageCodeLoaded, false);
+  assert.equal(prismaPayload.bundled.some((item) => item.id === "topogram/db-extractors"), true);
+  assert.equal(prismaPayload.bundled.some((item) => item.id === "topogram/api-extractors"), true);
+  const prismaRecommendation = prismaPayload.recommendations.find((item) => item.package === "@topogram/extractor-prisma-db");
+  assert.ok(prismaRecommendation);
+  assert.equal(prismaRecommendation.packageCodeLoaded, false);
+  assert.equal(prismaRecommendation.confidence, "high");
+  assert.match(prismaRecommendation.installCommand, /npm install -D @topogram\/extractor-prisma-db/);
+  assert.match(prismaRecommendation.policyPinCommand, /topogram extractor policy pin @topogram\/extractor-prisma-db@1/);
+  assert.match(prismaRecommendation.checkCommand, /topogram extractor check @topogram\/extractor-prisma-db/);
+  assert.match(prismaRecommendation.extractCommand, /--from db --extractor @topogram\/extractor-prisma-db/);
+
+  const cli = runCli([
+    "extractor",
+    "recommend",
+    path.join(importFixtureRoot, "cli-basic"),
+    "--from",
+    "cli",
+    "--json"
+  ]);
+  assert.equal(cli.status, 0, cli.stderr || cli.stdout);
+  const cliPayload = JSON.parse(cli.stdout);
+  assert.equal(cliPayload.recommendations.some((item) => item.package === "@topogram/extractor-node-cli"), true);
+  assert.equal(cliPayload.bundled.some((item) => item.id === "topogram/cli-extractors"), true);
+
+  const drizzle = runCli([
+    "extractor",
+    "recommend",
+    path.join(importFixtureRoot, "drizzle-basic"),
+    "--from",
+    "db",
+    "--json"
+  ]);
+  assert.equal(drizzle.status, 0, drizzle.stderr || drizzle.stdout);
+  const drizzlePayload = JSON.parse(drizzle.stdout);
+  assert.equal(drizzlePayload.recommendations.some((item) => item.package === "@topogram/extractor-drizzle-db"), true);
 });
 
 test("extractor check rejects unsafe package-backed candidate output", () => {
@@ -606,6 +659,8 @@ test("extractor scaffold creates a checkable package-backed extractor", () => {
   assert.ok(payload.files.includes("topogram-extractor.json"));
   assert.ok(payload.files.includes("AGENTS.md"));
   assert.ok(payload.files.includes("scripts/check-extractor.mjs"));
+  assert.equal(payload.nextCommands.some((command) => /topogram extractor policy pin @scope\/topogram-extractor-scaffold@1/.test(command)), true);
+  assert.equal(payload.nextCommands.some((command) => /topogram extract <source-app> --out <extracted-topogram> --from cli --extractor/.test(command)), true);
   assert.equal(fs.existsSync(path.join(packageRoot, "fixtures", "basic-source", "package.json")), true);
   assert.match(fs.readFileSync(path.join(packageRoot, "AGENTS.md"), "utf8"), /Extractors are read-only/);
 

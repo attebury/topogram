@@ -33,6 +33,7 @@
     "./src/extractor/first-party.js",
     "./src/extractor/output.js",
     "./src/extractor/packages.js",
+    "./src/extractor/recommend.js",
     "./src/extractor/registry.js",
     "./src/extraction-context.js",
     "./src/extractor/scaffold.js",

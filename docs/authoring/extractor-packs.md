@@ -202,29 +202,34 @@ manifest version, not the npm package version. For example,
 package version `0.1.1` or later.
 
 Use `topogram extractor list` to see bundled packs and first-party package
-recommendations grouped by track. Use `topogram extractor show <package>` before
-installing when you need the package purpose, install command, policy pin
-command, npm package version, compatible CLI range, and a concrete extract
-command. `topogram extractor check <package>` reports the same version split:
-manifest version is what policy pins, package version is what npm installed, and
-compatible CLI range is the CLI line the package declares or inherits.
+recommendations grouped by track. Use `topogram extractor recommend <source>`
+to inspect a local brownfield source tree and get suggested first-party package
+extractors before installing or loading any package code. Use `topogram
+extractor show <package>` before installing when you need the package purpose,
+install command, policy pin command, npm package version, compatible CLI range,
+and a concrete extract command. `topogram extractor check <package>` reports the
+same version split: manifest version is what policy pins, package version is
+what npm installed, and compatible CLI range is the CLI line the package
+declares or inherits.
 
 The consumer command loop is part of the contract:
 
 1. `topogram extractor list` discovers candidates without loading package code.
-2. `topogram extractor show <package>` explains why to use one package, how to install it, how to pin it, what package version is installed, what CLI range is compatible, and how to run extraction.
-3. `npm install -D <package>` is explicit; Topogram does not install extractor packages during extraction.
-4. `topogram extractor policy pin <package>@<manifest-version>` records the reviewed manifest version.
-5. `topogram extractor check <package>` loads package code only for a minimal smoke extraction.
-6. `topogram extract ... --extractor <package>` writes candidates and provenance, not canonical records.
-7. `topogram extract plan`, `topogram adopt --list`, and `topogram query extract-plan` show package provenance and selectors.
-8. `topogram adopt <selector> --dry-run` precedes any `--write`.
+2. `topogram extractor recommend <source> --from <tracks>` suggests packages from local evidence without loading package code.
+3. `topogram extractor show <package>` explains why to use one package, how to install it, how to pin it, what package version is installed, what CLI range is compatible, and how to run extraction.
+4. `npm install -D <package>` is explicit; Topogram does not install extractor packages during extraction.
+5. `topogram extractor policy pin <package>@<manifest-version>` records the reviewed manifest version.
+6. `topogram extractor check <package>` loads package code only for a minimal smoke extraction.
+7. `topogram extract ... --extractor <package>` writes candidates and provenance, not canonical records.
+8. `topogram extract plan`, `topogram adopt --list`, and `topogram query extract-plan` show package provenance and selectors.
+9. `topogram adopt <selector> --dry-run` precedes any `--write`.
 
 Consumer loop:
 
 ```bash
 npm install -D @topogram/extractor-react-router
 topogram extractor policy init
+topogram extractor recommend ./react-router-app --from ui
 topogram extractor policy pin @topogram/extractor-react-router@1
 topogram extractor check @topogram/extractor-react-router
 topogram extract ./react-router-app --out ./imported-topogram --from ui --extractor @topogram/extractor-react-router

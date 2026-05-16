@@ -513,7 +513,10 @@ parameter shorthands such as \`path_params: ["id"]\` are normalized by Topogram.
       `cd ${absoluteTarget}`,
       "npm install",
       "npm run check",
-      "topogram extractor check ."
+      "topogram extractor check .",
+      "topogram extractor policy init <consumer-project>",
+      `topogram extractor policy pin ${packageName}@1 <consumer-project>`,
+      `topogram extract <source-app> --out <extracted-topogram> --from ${track} --extractor ${absoluteTarget} --extractor-policy <consumer-project>/topogram.extractor-policy.json`
     ],
     errors: []
   };

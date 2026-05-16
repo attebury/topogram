@@ -188,6 +188,11 @@ test("split command parser handles extracted command families", () => {
     generatorPolicyPinSpec: "@topogram/generator-react-web@1",
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["extractor", "recommend", "./legacy-app", "--from", "db,api"]), {
+    extractorCommand: "recommend",
+    extractorRecommendFrom: "db,api",
+    inputPath: "./legacy-app"
+  });
   assert.deepEqual(parseSplitCommandArgs(["template", "list", "--json"]), {
     templateCommand: "list",
     inputPath: null

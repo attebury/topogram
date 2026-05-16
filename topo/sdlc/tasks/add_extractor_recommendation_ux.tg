@@ -1,0 +1,14 @@
+task task_add_extractor_recommendation_ux {
+  name "Add Extractor Recommendation Ux"
+  description "Add a read-only extractor recommendation command plus point-of-need docs and command guidance for local and package-backed extractor selection."
+  satisfies [req_extractor_selection_ux]
+  acceptance_refs [ac_extractor_recommendation_guides_package_selection]
+  verification_refs [verification_import_fixtures verification_engine_gate verification_cli_package_smoke]
+  affects [cap_manage_extractors cap_import_brownfield_app cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

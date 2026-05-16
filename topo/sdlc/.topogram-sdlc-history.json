@@ -4017,5 +4017,37 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_extractor_recommendation_guides_package_selection": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T22:28:40.470Z",
+      "by": "actor_coding_agent",
+      "note": "Recommendation UX criterion is ready for implementation."
+    }
+  ],
+  "task_add_extractor_recommendation_ux": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T22:28:40.527Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T22:28:40.582Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T22:34:27.827Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

@@ -3,6 +3,7 @@
 import path from "node:path";
 
 import { checkExtractorPack } from "../../extractor/check.js";
+import { recommendExtractors } from "../../extractor/recommend.js";
 import { stablePublicStringify, sanitizePublicPayload } from "../../public-paths.js";
 import { FIRST_PARTY_EXTRACTOR_PACKAGES, firstPartyExtractorInfo } from "../../extractor/first-party.js";
 import { scaffoldExtractorPack } from "../../extractor/scaffold.js";
@@ -39,6 +40,7 @@ import {
 export function printExtractorHelp() {
   console.log("Usage: topogram extractor list [--json]");
   console.log("   or: topogram extractor show <id-or-package> [--json]");
+  console.log("   or: topogram extractor recommend <source> [--from <track[,track]>] [--json]");
   console.log("   or: topogram extractor check <path-or-package> [--json]");
   console.log("   or: topogram extractor scaffold <target> [--track <track>] [--package <name>] [--id <manifest-id>] [--json]");
   console.log("   or: topogram extractor policy init [path] [--json]");
@@ -54,9 +56,11 @@ export function printExtractorHelp() {
   console.log("  - extractor packages emit review-only candidates; core owns persistence, reconcile, and adoption.");
   console.log(`  - package-backed extractors are governed by ${EXTRACTOR_POLICY_FILE}; bundled topogram/* extractors are allowed.`);
   console.log("  - safe loop: list/show -> install -> policy pin -> check -> extract -> plan/list -> adopt --dry-run -> adopt --write.");
+  console.log("  - recommend is read-only and does not load package adapter code.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram extractor list");
+  console.log("  topogram extractor recommend ./existing-app --from db,api,ui,cli");
   console.log("  topogram extractor show topogram/api-extractors");
   console.log("  topogram extractor show @topogram/extractor-prisma-db");
   console.log("  topogram extractor check ./extractor-package");
@@ -64,6 +68,49 @@ export function printExtractorHelp() {
   console.log("  topogram extractor policy init");
   console.log("  topogram extractor policy pin @topogram/extractor-node-cli@1");
   console.log("  topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api");
+}
+
+/**
+ * @param {ReturnType<typeof recommendExtractors>} payload
+ * @returns {void}
+ */
+export function printExtractorRecommend(payload) {
+  payload = sanitizePublicPayload(payload, { projectRoot: process.cwd(), cwd: process.cwd() });
+  console.log(payload.ok ? "Extractor recommendations" : "Extractor recommendation failed.");
+  console.log(`Source: ${payload.source}`);
+  console.log(`Tracks: ${payload.selectedTracks.join(", ") || "none"}`);
+  console.log(`Package code loaded: ${payload.safety.packageCodeLoaded ? "yes" : "no"}`);
+  console.log(payload.safety.note);
+  if ((payload.bundled || []).length > 0) {
+    console.log("");
+    console.log("Bundled extractors always run for selected tracks:");
+    for (const item of payload.bundled) {
+      console.log(`- ${item.id} (${item.tracks.join(", ")})`);
+      console.log(`  Extract: ${item.extractCommand}`);
+    }
+  }
+  if ((payload.recommendations || []).length > 0) {
+    console.log("");
+    console.log("Package-backed recommendations:");
+    for (const item of payload.recommendations) {
+      console.log(`- ${item.label || item.package}: ${item.package} (${item.confidence})`);
+      for (const reason of item.reasons || []) console.log(`  Reason: ${reason}`);
+      if (item.evidence?.length) console.log(`  Evidence: ${item.evidence.join(", ")}`);
+      console.log(`  Install: ${item.installCommand}`);
+      console.log(`  Pin: ${item.policyPinCommand}`);
+      console.log(`  Check: ${item.checkCommand}`);
+      console.log(`  Extract: ${item.extractCommand}`);
+    }
+  } else {
+    console.log("");
+    console.log("No package-backed extractor recommendation matched. Start with bundled extraction, then inspect candidates.");
+  }
+  if ((payload.nextCommands || []).length > 0) {
+    console.log("");
+    console.log("Next commands:");
+    for (const command of payload.nextCommands) console.log(`- ${command}`);
+  }
+  for (const error of payload.errors || []) console.log(`Error: ${error}`);
 }
 
 /**
@@ -300,7 +347,7 @@ export function printExtractorShow(payload) {
 }
 
 /**
- * @param {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any> }} payload
+ * @param {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any>, useCommands?: string[] }} payload
  * @returns {void}
  */
 export function printExtractorCheck(payload) {
@@ -326,6 +373,11 @@ export function printExtractorCheck(payload) {
   if (payload.smoke) {
     console.log("");
     console.log(`Smoke output: ${payload.smoke.extractors} extractor(s), ${payload.smoke.findings} finding(s), ${payload.smoke.candidateKeys} candidate bucket(s), ${payload.smoke.diagnostics} diagnostic(s)`);
+  }
+  if (payload.useCommands?.length) {
+    console.log("");
+    console.log("Use this extractor:");
+    for (const command of payload.useCommands) console.log(`- ${command}`);
   }
   if (payload.reviewWorkflow?.steps?.length) {
     console.log("");
@@ -521,7 +573,7 @@ export function runExtractorCommand(context) {
           errors: payload.errors
         })
       : null;
-    const augmentedPayload = /** @type {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any> }} */ (payload);
+    const augmentedPayload = /** @type {ReturnType<typeof checkExtractorPack> & { reviewWorkflow?: Record<string, any>, useCommands?: string[] }} */ (payload);
     augmentedPayload.reviewWorkflow = buildExtractorReviewWorkflow(summary || {
       id: inputPath || "<extractor>",
       package: payload.packageName || null,
@@ -529,9 +581,21 @@ export function runExtractorCommand(context) {
       tracks: payload.manifest?.tracks || [],
       version: payload.manifest?.version || "1"
     });
+    augmentedPayload.useCommands = (augmentedPayload.reviewWorkflow.steps || [])
+      .filter((/** @type {Record<string, any>} */ step) => ["install", "pin_policy", "check", "extract"].includes(step.id))
+      .map((/** @type {Record<string, any>} */ step) => step.command);
     if (json) console.log(stablePublicStringify(augmentedPayload, { projectRoot: cwd, cwd }));
     else printExtractorCheck(augmentedPayload);
     return augmentedPayload.ok ? 0 : 1;
+  }
+  if (commandArgs.extractorCommand === "recommend") {
+    const payload = recommendExtractors(inputPath || ".", {
+      cwd,
+      from: commandArgs.extractorRecommendFrom
+    });
+    if (json) console.log(stablePublicStringify(payload, { projectRoot: cwd, cwd }));
+    else printExtractorRecommend(payload);
+    return payload.ok ? 0 : 1;
   }
   if (commandArgs.extractorCommand === "scaffold") {
     const payload = scaffoldExtractorPack(inputPath || "", {

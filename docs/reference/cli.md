@@ -99,6 +99,7 @@ topogram extract ./prisma-app --out ./imported-topogram --from db --extractor @t
 topogram extract ./express-api --out ./imported-topogram --from api --extractor @topogram/extractor-express-api
 topogram extract ./drizzle-app --out ./imported-topogram --from db --extractor @topogram/extractor-drizzle-db
 topogram extractor list
+topogram extractor recommend ./existing-app --from db,api,ui,cli
 topogram extractor show @topogram/extractor-prisma-db
 topogram extractor show topogram/ui-extractors
 topogram extractor check @topogram/extractor-prisma-db
@@ -121,12 +122,14 @@ topogram extract history ./imported-topogram --verify
 ```
 
 Extractor command safety: `extractor list`, `extractor show`, and
-`extractor policy` do not load package adapter code. `extractor check` and
-`extract --extractor` do load package adapter code. Extractor packages write
-review-only candidates; `adopt --dry-run` should precede any canonical `--write`.
-Extractor package output distinguishes manifest version, npm package version,
-compatible CLI range, and policy pin state so humans and agents can choose the
-exact install or pin command before execution.
+`extractor recommend`, and `extractor policy` do not load package adapter code.
+`extractor recommend <source>` only reads local source evidence and reports
+likely bundled/package-backed extractors plus install, pin, check, and extract
+commands. `extractor check` and `extract --extractor` do load package adapter
+code. Extractor packages write review-only candidates; `adopt --dry-run` should
+precede any canonical `--write`. Extractor package output distinguishes manifest
+version, npm package version, compatible CLI range, and policy pin state so
+humans and agents can choose the exact install or pin command before execution.
 
 ## Policies and trust
 

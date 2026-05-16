@@ -71,6 +71,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram generator policy pin [package@version] [path] [--json]");
   console.log("   or: topogram extractor list [--json]");
   console.log("   or: topogram extractor show <id-or-package> [--json]");
+  console.log("   or: topogram extractor recommend <source> [--from <track[,track]>] [--json]");
   console.log("   or: topogram extractor check <path-or-package> [--json]");
   console.log("   or: topogram extractor scaffold <target> [--track <track>] [--package <name>] [--id <manifest-id>] [--json]");
   console.log("   or: topogram extractor policy init [path] [--json]");
@@ -112,6 +113,7 @@ export function printUsage(options = {}) {
   console.log("  topogram generator check ./generator-package");
   console.log("  topogram generator policy check");
   console.log("  topogram extractor list");
+  console.log("  topogram extractor recommend ./existing-app --from db,api,ui,cli");
   console.log("  topogram extractor show @topogram/extractor-prisma-db");
   console.log("  topogram extractor check ./extractor-package");
   console.log("  topogram extractor scaffold ./topogram-extractor-node-cli --track cli --package @scope/topogram-extractor-node-cli");

@@ -30,11 +30,23 @@ Topogram has two extractor sources:
 - package-backed extractors are npm packages you install and opt into for a
   specific brownfield source.
 
-Use bundled extractors for a first broad pass. Use package-backed extractor
-packs when you deliberately want extra framework-specific discovery beyond the
-bundled pass. Package-backed extractors are execution dependencies, not
-templates: they run only during `topogram extract`, return review-only
-candidates, and do not own adoption.
+Use bundled extractors for a first broad pass. Use `topogram extractor
+recommend <source>` when you want Topogram to inspect local evidence and suggest
+which first-party packages are worth installing before extraction:
+
+```bash
+topogram extractor recommend ./existing-app --from db,api,ui,cli
+```
+
+Recommendation is read-only: it does not load extractor adapter code, install
+packages, write candidates, or mutate the source app. It only reports likely
+bundled and package-backed extractors, evidence, and the next install, pin,
+check, and extract commands.
+
+Use package-backed extractor packs when you deliberately want extra
+framework-specific discovery beyond the bundled pass. Package-backed extractors
+are execution dependencies, not templates: they run only during `topogram
+extract`, return review-only candidates, and do not own adoption.
 
 Current first-party package-backed extractors:
 
@@ -60,6 +72,7 @@ version split explicitly:
 
 ```bash
 topogram extractor list
+topogram extractor recommend ./existing-app --from db,api,ui,cli
 topogram extractor show @topogram/extractor-prisma-db
 topogram extractor check @topogram/extractor-prisma-db
 topogram extractor policy init
@@ -93,6 +106,7 @@ Extractor command safety is intentionally staged:
 | --- | --- | --- |
 | `topogram extractor list` | No | Discover bundled and first-party package extractors by track. |
 | `topogram extractor show <package>` | No | Read purpose, install command, policy pin, and extract command. |
+| `topogram extractor recommend <source>` | No | Inspect source evidence and suggest extractor packages plus next commands. |
 | `topogram extractor policy ...` | No | Allow and pin reviewed extractor manifest versions. |
 | `topogram extractor check <package>` | Yes | Smoke-test the adapter boundary against a synthetic fixture. |
 | `topogram extract ... --extractor <package>` | Yes | Read brownfield source and write review-only candidates. |

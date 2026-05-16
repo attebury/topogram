@@ -27,6 +27,13 @@ export function parseExtractorCommandArgs(args) {
   if (args[0] === "extractor" && args[1] === "check") {
     return { extractorCommand: "check", inputPath: args[2] };
   }
+  if (args[0] === "extractor" && args[1] === "recommend") {
+    return {
+      extractorCommand: "recommend",
+      inputPath: args[2],
+      extractorRecommendFrom: optionValue(args, "--from")
+    };
+  }
   if (args[0] === "extractor" && args[1] === "scaffold") {
     return {
       extractorCommand: "scaffold",
