@@ -84,6 +84,7 @@ export function parseCliOptions(args, commandArgs) {
     laneId: optionValue(args, "--lane"),
     fromSnapshotPath: resolvedPathOption(args, "--from-snapshot"),
     fromTopogramPath: resolvedPathOption(args, "--from-topogram"),
+    checkPath: optionValueIfPresent(args, "--check"),
     shouldWrite: Boolean(commandArgs?.write) || args.includes("--write"),
     refreshAdopted: args.includes("--refresh-adopted"),
     outPath,

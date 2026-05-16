@@ -1,0 +1,21 @@
+domain dom_app {
+  name "App"
+  description "App domain"
+  status active
+}
+
+capability cap_update_app {
+  name "Update App"
+  description "Update the app"
+  domain dom_app
+  status active
+}
+
+rule rule_active_status {
+  name "Active Status"
+  description "Old rule status vocabulary"
+  applies_to [cap_update_app]
+  severity error
+  domain dom_app
+  status active
+}

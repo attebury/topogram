@@ -100,6 +100,7 @@ export async function runCliDispatch(context) {
     laneId,
     fromSnapshotPath,
     fromTopogramPath,
+    checkPath,
     shouldWrite,
     refreshAdopted,
     outPath,
@@ -385,6 +386,7 @@ export async function runCliDispatch(context) {
       profileId,
       fromSnapshotPath,
       fromTopogramPath,
+      checkPath,
       selectors: {
         shapeId,
         capabilityId,

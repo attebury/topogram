@@ -293,6 +293,7 @@ export function printGenerateHelp() {
 export function printEmitHelp() {
   console.log("Usage: topogram emit <target> [path] [--json]");
   console.log("   or: topogram emit <target> [path] --write [--out-dir <path>]");
+  console.log("   or: topogram emit <target> [path] --check <path>");
   console.log("");
   console.log("Emits named contracts, reports, snapshots, migration plans, and other artifacts.");
   console.log("");
@@ -304,6 +305,7 @@ export function printEmitHelp() {
   console.log("  widget-behavior-report");
   console.log("  context-slice");
   console.log("  context-diff");
+  console.log("  glossary");
   console.log("  verification-targets");
   console.log("");
   console.log("Selectors:");
@@ -319,6 +321,8 @@ export function printEmitHelp() {
   console.log("  topogram emit widget-behavior-report ./topo --projection proj_web_surface --json");
   console.log("  topogram emit db-schema-snapshot ./topo --projection proj_db_postgres --json");
   console.log("  topogram emit sql-migration ./topo --projection proj_db_postgres --from-snapshot ./state/current.json");
+  console.log("  topogram emit glossary ./topo --write --out-dir docs/concepts");
+  console.log("  topogram emit glossary ./topo --check docs/concepts/glossary.md");
   console.log("  topogram emit ui-widget-contract --write --out-dir ./contracts");
 }
 

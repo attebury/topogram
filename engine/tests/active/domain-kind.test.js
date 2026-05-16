@@ -240,7 +240,7 @@ domain dom_beta {
   );
 });
 
-test("validator rejects a domain field on a kind that cannot carry one", () => {
+test("validator accepts domain-tagged terms and indexes them under domain members", () => {
   const ast = workspaceFromSource(`
 domain dom_known {
   name "Known"
@@ -251,16 +251,17 @@ domain dom_known {
 term term_party {
   name "Party"
   description "Generic party"
+  category business_language
   domain dom_known
   status active
 }
 `);
   const validation = validateWorkspace(ast);
-  assert.equal(validation.ok, false);
-  assert.match(
-    validation.errors.map((error) => error.message).join("\n"),
-    /Field 'domain' is not allowed on term term_party/
-  );
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+  const resolved = resolveWorkspace(ast);
+  assert.equal(resolved.ok, true);
+  const domain = resolved.graph.byKind.domain.find((entry) => entry.id === "dom_known");
+  assert.deepEqual(domain.members.terms, ["term_party"]);
 });
 
 test("workspace inventory reports domains alongside other kinds", () => {

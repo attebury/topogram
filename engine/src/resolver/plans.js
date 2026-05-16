@@ -162,7 +162,9 @@ export function buildOrchestrationPlan(statement) {
 export function buildTermVocabulary(statement) {
   return {
     type: "term_vocabulary",
+    category: statement.category || null,
     aliases: parseSymbolNodes(statement.aliases),
-    excludes: parseSymbolNodes(statement.excludes)
+    excludes: parseSymbolNodes(statement.excludes),
+    relatedTerms: parseReferenceNodes(statement.relatedTerms || [])
   };
 }

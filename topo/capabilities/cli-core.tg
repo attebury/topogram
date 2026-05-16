@@ -20,6 +20,7 @@ capability cap_generate_app_outputs {
   name "Generate App Outputs"
   description "Write generated app/runtime outputs from topology runtimes and generator bindings."
   actors [actor_consumer_developer, actor_coding_agent]
+  related_terms [term_generator, term_runtime, term_generated_owned_output]
   domain dom_generator_runtime
   status active
 }
@@ -29,6 +30,7 @@ capability cap_emit_artifacts {
   description "Emit contracts, reports, snapshots, migration plans, and agent-readable artifacts without generating app outputs."
   actors [actor_coding_agent, actor_consumer_developer, actor_maintainer]
   output [shape_cli_status_result]
+  related_terms [term_emit, term_context_slice]
   domain dom_sdlc_query_agent_context
   status active
 }
@@ -38,6 +40,7 @@ capability cap_query_context {
   description "List and show focused query packets so agents can work without loading the whole graph."
   actors [actor_coding_agent, actor_maintainer]
   output [shape_cli_status_result]
+  related_terms [term_agent_brief, term_context_slice, term_agent_mode]
   domain dom_sdlc_query_agent_context
   status active
 }
@@ -47,6 +50,7 @@ capability cap_brief_agent {
   description "Provide first-run guidance for agents: read order, commands, edit boundaries, topology, policies, trust, and warnings."
   actors [actor_coding_agent, actor_maintainer]
   output [shape_cli_status_result]
+  related_terms [term_agent_brief, term_context_slice]
   domain dom_sdlc_query_agent_context
   status active
 }
@@ -56,6 +60,7 @@ capability cap_check_widget_contracts {
   description "Validate widget contracts, behavior realizations, and projection conformance."
   actors [actor_coding_agent, actor_maintainer]
   output [shape_cli_status_result]
+  related_terms [term_widget, term_ui_contract, term_surface]
   domain dom_sdlc_query_agent_context
   status active
 }
@@ -65,6 +70,7 @@ capability cap_manage_sdlc_records {
   description "Check, explain, transition, archive, and release SDLC records in a Topogram workspace."
   actors [actor_coding_agent, actor_maintainer]
   output [shape_cli_status_result]
+  related_terms [term_pitch, term_requirement, term_acceptance_criterion, term_task, term_verification, term_ongoing_requirement]
   domain dom_sdlc_query_agent_context
   status active
 }

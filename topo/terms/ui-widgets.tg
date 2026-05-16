@@ -1,0 +1,26 @@
+term term_widget {
+  name "Widget"
+  description "A reusable semantic UI contract that can bind to screens and regions without naming a framework component tree."
+  category ui_widgets
+  domain dom_generator_runtime
+  aliases [semantic_component]
+  status active
+}
+
+term term_ui_contract {
+  name "UI Contract"
+  description "The platform-neutral UI projection that owns screens, regions, widget bindings, navigation, behavior, and semantic design intent."
+  category ui_widgets
+  domain dom_generator_runtime
+  related_terms [term_widget]
+  status active
+}
+
+term term_surface {
+  name "Surface"
+  description "A concrete projection such as web_surface or ios_surface that realizes a platform-neutral contract for a target platform."
+  category ui_widgets
+  domain dom_generator_runtime
+  related_terms [term_ui_contract]
+  status active
+}

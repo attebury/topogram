@@ -1,0 +1,27 @@
+term term_extractor {
+  name "Extractor"
+  description "A read-only package or built-in adapter that inspects brownfield source and emits candidates, findings, and evidence."
+  category extract_adopt
+  domain dom_import_adoption
+  aliases [extractor_pack]
+  status active
+}
+
+term term_candidate {
+  name "Candidate"
+  description "A review-only inferred record produced by extraction before it becomes canonical Topogram source."
+  category extract_adopt
+  domain dom_import_adoption
+  aliases [draft_candidate]
+  related_terms [term_extractor term_adoption]
+  status active
+}
+
+term term_adoption {
+  name "Adoption"
+  description "The explicit promotion of reviewed extraction candidates into canonical topo source."
+  category extract_adopt
+  domain dom_import_adoption
+  related_terms [term_candidate]
+  status active
+}

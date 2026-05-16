@@ -1,0 +1,54 @@
+term term_pitch {
+  name "Pitch"
+  description "An SDLC record that explains why a problem matters, the appetite for solving it, and traps to avoid."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  aliases [problem_framing]
+  status active
+}
+
+term term_requirement {
+  name "Requirement"
+  description "An SDLC commitment that describes behavior or policy Topogram should satisfy until it is satisfied, superseded, or marked ongoing."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  related_terms [term_acceptance_criterion]
+  status active
+}
+
+term term_acceptance_criterion {
+  name "Acceptance Criterion"
+  description "An observable Given/when/then proof condition attached to a requirement."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  aliases [ac acceptance]
+  related_terms [term_requirement term_verification]
+  status active
+}
+
+term term_task {
+  name "Task"
+  description "A small implementation slice that satisfies requirements, references approved acceptance criteria, and closes with verification proof."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  related_terms [term_requirement term_acceptance_criterion term_verification]
+  status active
+}
+
+term term_verification {
+  name "Verification"
+  description "A proof target or check that demonstrates an accepted expectation holds."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  aliases [proof_gate]
+  status active
+}
+
+term term_ongoing_requirement {
+  name "Ongoing Requirement"
+  description "A durable operating commitment that stays enforced through linked rules or verification rather than closing as satisfied."
+  category sdlc
+  domain dom_sdlc_query_agent_context
+  related_terms [term_requirement term_enforced_rule]
+  status active
+}

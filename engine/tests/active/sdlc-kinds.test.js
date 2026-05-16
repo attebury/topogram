@@ -254,11 +254,50 @@ test("resolver populates SDLC back-links", () => {
   assert.ok(cap.affectedByBugs.includes("bug_audit_drops_silently"));
 
   const rule = resolved.graph.byKind.rule.find((r) => r.id === "rule_audit_required");
+  assert.equal(rule.status, "enforced");
   assert.ok(rule.introducedByRequirements.includes("req_audit_persistence"));
   assert.ok(rule.violatedByBugs.includes("bug_audit_drops_silently"));
 
   const decision = resolved.graph.byKind.decision.find((d) => d.id === "decision_audit_format");
   assert.equal(decision.introducedByTasks?.length || 0, 0);
+});
+
+test("rule status enforced is valid while non-rule active status remains valid", () => {
+  const validation = validateWorkspace(workspaceFromSource(`
+domain dom_app {
+  name "App"
+  description "App domain"
+  status active
+}
+
+capability cap_update_app {
+  name "Update App"
+  description "Update the app"
+  domain dom_app
+  status active
+}
+
+rule rule_update_app {
+  name "Update App Rule"
+  description "Updates must satisfy the app rule"
+  applies_to [cap_update_app]
+  severity error
+  domain dom_app
+  status enforced
+}
+`));
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors, null, 2));
+});
+
+test("context slices expose enforced rule status in related rule summaries", () => {
+  const ast = parsePath(fixtureRoot);
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    capabilityId: "cap_record_audit"
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.validation, null, 2));
+  const rule = result.artifact.related.rules.find((entry) => entry.id === "rule_audit_required");
+  assert.equal(rule.status, "enforced");
 });
 
 test("domain.members includes SDLC kinds", () => {

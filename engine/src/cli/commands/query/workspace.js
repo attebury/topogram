@@ -113,9 +113,9 @@ export function printValidationFailure(result) {
 export function buildTaskMode(ast, selectors, modeId, fromTopogramPath = null) {
   return generateWorkspace(ast, {
     target: "context-task-mode",
-    modeId,
     ...selectors,
     widgetId: selectors.componentId,
+    modeId,
     fromTopogramPath
   });
 }
@@ -129,7 +129,8 @@ export function buildSlice(ast, selectors) {
   return generateWorkspace(ast, {
     target: "context-slice",
     ...selectors,
-    widgetId: selectors.componentId
+    widgetId: selectors.componentId,
+    modeId: selectors.modeId
   });
 }
 
@@ -252,7 +253,8 @@ export function selectorOptions(options) {
     taskId: options.taskId,
     planId: options.planId,
     bugId: options.bugId,
-    documentId: options.documentId
+    documentId: options.documentId,
+    modeId: options.modeId
   };
 }
 

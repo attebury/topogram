@@ -98,6 +98,16 @@ test("old projection type values fail with target projection type examples", () 
   }
 });
 
+test("old rule active status fails with enforced status guidance", () => {
+  const result = validateOldDslFixture("rule-status-active.tg");
+  assertRenameDiagnostic(result.formatted, {
+    oldName: "active",
+    newName: "enforced",
+    example: "status enforced",
+    fileName: "rule-status-active.tg"
+  });
+});
+
 test("old UI/API/DB block names fail with canonical block examples", () => {
   const fieldCases = [
     ["ui-fields.tg", "ui_screens", "screens", "screens {"],

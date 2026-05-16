@@ -41,6 +41,44 @@ grammar.
 
 Documents are markdown files with frontmatter under `topo/docs/**`.
 
+## Rule status
+
+Rules use a rule-specific lifecycle: `draft`, `proposed`, `enforced`, and
+`deprecated`. Use `status enforced` for rules that currently apply. Other graph
+kinds may still use `status active` where their lifecycle allows it.
+
+## Terms and Glossary
+
+`term` records define project vocabulary. They are graph-native, can be grouped
+with `category`, and can be tied to a domain with `domain`. Other records can
+reference slice-relevant vocabulary through `related_terms`; entities also keep
+`uses_terms` for business/domain language.
+
+```tg
+term term_context_slice {
+  name "Context Slice"
+  description "A focused graph packet for one implementation target."
+  category agent_workflow
+  domain dom_sdlc_query_agent_context
+  aliases [slice focused_packet]
+  status active
+}
+
+capability cap_query_context {
+  name "Query Focused Context"
+  description "List and show focused query packets."
+  related_terms [term_context_slice]
+  status active
+}
+```
+
+Emit the human glossary from term records:
+
+```bash
+topogram emit glossary ./topo --write --out-dir docs/concepts
+topogram emit glossary ./topo --check docs/concepts/glossary.md
+```
+
 ## Projection types
 
 - `ui_contract`

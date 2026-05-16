@@ -116,6 +116,18 @@ topogram emit ui-widget-contract ./topo --json
 `ui_contract` owns semantic UI. Concrete web/native surfaces inherit it and own
 routes and surface hints.
 
+## Slices and vocabulary
+
+Context slices are intended to be cold-start safe without copying the full
+agent brief into every packet. Slices include focused dependencies, standing
+rule references, mode-specific next commands, and glossary terms explicitly
+linked through `related_terms` or entity `uses_terms`.
+
+```bash
+topogram query slice ./topo --mode implementation --task <task-id> --json
+topogram emit glossary ./topo --json
+```
+
 ## Brownfield extract/adopt
 
 Before running a package-backed extractor, identify and check the package:

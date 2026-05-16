@@ -45,6 +45,8 @@ topogram generate
 topogram generate ./topo --out ./app
 topogram emit <target> ./topo --json
 topogram emit <target> ./topo --write --out-dir ./artifacts
+topogram emit glossary ./topo --write --out-dir docs/concepts
+topogram emit glossary ./topo --check docs/concepts/glossary.md
 ```
 
 ## Agent and query
@@ -84,6 +86,7 @@ task; `--write` claims and starts the task through command-owned history.
 topogram widget check ./topo --projection proj_web_surface
 topogram widget behavior ./topo --projection proj_web_surface --json
 topogram emit ui-widget-contract ./topo --widget widget_data_grid --json
+topogram emit glossary ./topo --json
 ```
 
 ## Brownfield extract/adopt

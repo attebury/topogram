@@ -104,6 +104,7 @@ export function resolveWorkspace(workspaceAst) {
   for (const statement of resolvedStatements) {
     if (statement.kind === "domain") {
       domainMembersById.set(statement.id, {
+        terms: [],
         capabilities: [],
         entities: [],
         rules: [],
@@ -122,6 +123,7 @@ export function resolveWorkspace(workspaceAst) {
     }
   }
   const memberKindToBucket = {
+    term: "terms",
     capability: "capabilities",
     entity: "entities",
     rule: "rules",
@@ -316,6 +318,7 @@ export function resolveWorkspace(workspaceAst) {
         return {
           ...statement,
           members: domainMembersById.get(statement.id) || {
+            terms: [],
             capabilities: [],
             entities: [],
             rules: [],

@@ -1,0 +1,27 @@
+term term_generated_owned_output {
+  name "Generated-Owned Output"
+  description "Output that Topogram is allowed to replace from canonical contracts and generator bindings."
+  category ownership
+  domain dom_workspace_project_config
+  aliases [generated_output]
+  status active
+}
+
+term term_maintained_output {
+  name "Maintained Output"
+  description "Project source that humans or agents edit directly; Topogram can emit guidance but must not overwrite it."
+  category ownership
+  domain dom_workspace_project_config
+  aliases [maintained_source]
+  related_terms [term_generated_owned_output]
+  status active
+}
+
+term term_enforced_rule {
+  name "Enforced Rule"
+  description "A rule whose obligation currently applies to the project."
+  category ownership
+  domain dom_engine_quality
+  aliases [active_rule]
+  status active
+}

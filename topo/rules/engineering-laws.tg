@@ -5,7 +5,7 @@ rule rule_spec_is_source_of_truth {
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
   domain dom_engine_quality
-  status active
+  status enforced
 }
 
 rule rule_tests_prove_consumer_value {
@@ -14,8 +14,9 @@ rule rule_tests_prove_consumer_value {
   applies_to [cap_run_engine_gates, cap_generate_app_outputs, cap_manage_generators]
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
+  related_terms [term_verification, term_generated_owned_output]
   domain dom_engine_quality
-  status active
+  status enforced
 }
 
 rule rule_maintainable_security_focused_code {
@@ -24,8 +25,9 @@ rule rule_maintainable_security_focused_code {
   applies_to [cap_run_engine_gates, cap_import_brownfield_app, cap_manage_templates, cap_manage_catalog]
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
+  related_terms [term_maintained_output, term_enforced_rule]
   domain dom_engine_quality
-  status active
+  status enforced
 }
 
 rule rule_docs_must_execute {
@@ -35,7 +37,7 @@ rule rule_docs_must_execute {
   severity warning
   source_of_truth [decision_repo_local_laws_are_enforceable]
   domain dom_engine_quality
-  status active
+  status enforced
 }
 
 rule rule_generated_and_maintained_ownership_differ {
@@ -45,7 +47,7 @@ rule rule_generated_and_maintained_ownership_differ {
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
   domain dom_workspace_project_config
-  status active
+  status enforced
 }
 
 rule rule_template_implementation_is_executable {
@@ -55,7 +57,7 @@ rule rule_template_implementation_is_executable {
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
   domain dom_catalog_templates
-  status active
+  status enforced
 }
 
 rule rule_generators_own_stack_realization {
@@ -65,7 +67,7 @@ rule rule_generators_own_stack_realization {
   severity error
   source_of_truth [decision_repo_local_laws_are_enforceable]
   domain dom_generator_runtime
-  status active
+  status enforced
 }
 
 rule rule_agents_start_with_focused_context {
@@ -74,8 +76,9 @@ rule rule_agents_start_with_focused_context {
   applies_to [cap_brief_agent, cap_query_context, cap_manage_sdlc_records]
   severity warning
   source_of_truth [decision_agent_first_run_is_required]
+  related_terms [term_agent_brief, term_context_slice, term_agent_mode]
   domain dom_sdlc_query_agent_context
-  status active
+  status enforced
 }
 
 rule rule_stateful_workflow_mutations_use_cli {
@@ -84,8 +87,9 @@ rule rule_stateful_workflow_mutations_use_cli {
   applies_to [cap_manage_sdlc_records, cap_manage_templates, cap_import_brownfield_app, cap_generate_app_outputs, cap_verify_release_status, cap_roll_consumer_packages]
   severity error
   source_of_truth [decision_stateful_workflow_mutations_use_cli]
+  related_terms [term_task, term_verification, term_adoption]
   domain dom_engine_quality
-  status active
+  status enforced
 }
 
 rule rule_sdlc_records_are_one_per_file {
@@ -95,7 +99,7 @@ rule rule_sdlc_records_are_one_per_file {
   severity warning
   source_of_truth [decision_sdlc_records_use_dedicated_record_root]
   domain dom_sdlc_query_agent_context
-  status active
+  status enforced
 }
 
 rule rule_acceptance_criteria_are_observable {
@@ -105,7 +109,7 @@ rule rule_acceptance_criteria_are_observable {
   severity error
   source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
   domain dom_sdlc_query_agent_context
-  status active
+  status enforced
 }
 
 rule rule_done_tasks_need_proof_links {
@@ -115,7 +119,7 @@ rule rule_done_tasks_need_proof_links {
   severity error
   source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
   domain dom_sdlc_query_agent_context
-  status active
+  status enforced
 }
 
 rule rule_sdlc_kinds_have_distinct_jobs {
@@ -125,7 +129,7 @@ rule rule_sdlc_kinds_have_distinct_jobs {
   severity warning
   source_of_truth [decision_sdlc_acceptance_criteria_are_bdd_like]
   domain dom_sdlc_query_agent_context
-  status active
+  status enforced
 }
 
 rule rule_public_artifacts_do_not_leak_local_paths {
@@ -135,5 +139,5 @@ rule rule_public_artifacts_do_not_leak_local_paths {
   severity error
   source_of_truth [decision_public_outputs_use_portable_paths]
   domain dom_engine_quality
-  status active
+  status enforced
 }

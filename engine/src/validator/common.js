@@ -212,6 +212,7 @@ function validateFieldShapes(errors, statement, fieldMap) {
     "aliases",
     "excludes",
     "uses_terms",
+    "related_terms",
     "include",
     "exclude",
     "derived_from",
@@ -342,7 +343,16 @@ function validateStatus(errors, statement, fieldMap) {
     return;
   }
 
-  // Per-kind status table takes precedence (decision and SDLC kinds), with
+  if (statement.kind === "rule" && field.value.value === "active") {
+    pushError(
+      errors,
+      `Rule ${statement.id} ${renameDiagnostic("status value 'active'", "'enforced'", "status enforced")}`,
+      field.loc
+    );
+    return;
+  }
+
+  // Per-kind status table takes precedence (rule, decision, and SDLC kinds), with
   // GLOBAL_STATUSES as the default.
   const allowed = STATUS_SETS_BY_KIND[statement.kind] || GLOBAL_STATUSES;
   if (!allowed.has(field.value.value)) {
@@ -422,6 +432,7 @@ function validateReferenceKinds(errors, statement, fieldMap, registry) {
   // uniform validation.
   const expectedByField = {
     uses_terms: ["term"],
+    related_terms: ["term"],
     derived_from: ["entity"],
     applies_to: ["capability"],
     source_of_truth: ["decision"],

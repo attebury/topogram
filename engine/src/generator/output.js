@@ -1,3 +1,5 @@
+import { renderGlossaryMarkdown } from "./glossary.js";
+
 export function buildOutputFiles(result, options = {}) {
   if (result.target === "context-digest") {
     return Object.keys(result.artifact)
@@ -274,6 +276,10 @@ export function buildOutputFiles(result, options = {}) {
 
   if (result.target === "docs-index") {
     return [{ path: "docs-index.json", contents: result.artifact }];
+  }
+
+  if (result.target === "glossary") {
+    return [{ path: "glossary.md", contents: renderGlossaryMarkdown(result.artifact) }];
   }
 
   if (result.target === "verification-plan") {

@@ -77,6 +77,15 @@ import {
 import { parsePlanSteps } from "../sdlc/plan-steps.js";
 import { parseJourneyAlternates, parseJourneySteps } from "./journeys.js";
 
+/**
+ * @param {any} statement
+ * @param {any} registry
+ * @returns {any[]}
+ */
+function relatedTerms(statement, registry) {
+  return resolveReferenceList(registry, getFieldValue(statement, "related_terms"));
+}
+
 export function normalizeStatement(statement, registry) {
   const fieldMap = collectFieldMap(statement);
   const base = {
@@ -107,6 +116,7 @@ export function normalizeStatement(statement, registry) {
       return {
         ...base,
         usesTerms: resolveReferenceList(registry, getFieldValue(statement, "uses_terms")),
+        relatedTerms: relatedTerms(statement, registry),
         fields: normalizeFieldsBlock(statement),
         keys: parseKeyBlock(statement),
         relations: parseRelationBlock(statement, registry),
@@ -116,6 +126,7 @@ export function normalizeStatement(statement, registry) {
     case "shape":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         include: symbolValues(getFieldValue(statement, "include")),
         exclude: symbolValues(getFieldValue(statement, "exclude")),
         derivedFrom: resolveReferenceList(registry, getFieldValue(statement, "derived_from")),
@@ -126,6 +137,7 @@ export function normalizeStatement(statement, registry) {
     case "capability":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         actors: resolveReferenceList(registry, getFieldValue(statement, "actors")),
         roles: resolveReferenceList(registry, getFieldValue(statement, "roles")),
         reads: resolveReferenceList(registry, getFieldValue(statement, "reads")),
@@ -139,6 +151,7 @@ export function normalizeStatement(statement, registry) {
     case "widget":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         category: symbolValue(getFieldValue(statement, "category")),
         props: normalizeWidgetProps(statement),
         events: normalizeWidgetEvents(statement, registry),
@@ -155,6 +168,7 @@ export function normalizeStatement(statement, registry) {
     case "rule":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         appliesTo: resolveReferenceList(registry, getFieldValue(statement, "applies_to")),
         actors: resolveReferenceList(registry, getFieldValue(statement, "actors")),
         roles: resolveReferenceList(registry, getFieldValue(statement, "roles")),
@@ -175,6 +189,7 @@ export function normalizeStatement(statement, registry) {
     case "decision":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         context: symbolValues(getFieldValue(statement, "context")),
         consequences: symbolValues(getFieldValue(statement, "consequences")),
         pitch: getFieldValue(statement, "pitch")
@@ -189,6 +204,7 @@ export function normalizeStatement(statement, registry) {
     case "projection":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         type: symbolValue(getFieldValue(statement, "type")),
         realizes: resolveReferenceList(registry, getFieldValue(statement, "realizes")),
         outputs: symbolValues(getFieldValue(statement, "outputs")),
@@ -273,6 +289,7 @@ export function normalizeStatement(statement, registry) {
     case "verification":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         validates: resolveReferenceList(registry, getFieldValue(statement, "validates")),
         method: symbolValue(getFieldValue(statement, "method")),
         scenarios: symbolValues(getFieldValue(statement, "scenarios")),
@@ -292,12 +309,16 @@ export function normalizeStatement(statement, registry) {
     case "term":
       return {
         ...base,
+        category: symbolValue(getFieldValue(statement, "category")),
         aliases: symbolValues(getFieldValue(statement, "aliases")),
-        excludes: symbolValues(getFieldValue(statement, "excludes"))
+        excludes: symbolValues(getFieldValue(statement, "excludes")),
+        relatedTerms: relatedTerms(statement, registry),
+        resolvedDomain: resolveDomainTag(statement, registry)
       };
     case "domain":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         inScope: normalizeDomainScopeList(statement, "in_scope"),
         outOfScope: normalizeDomainScopeList(statement, "out_of_scope"),
         owners: resolveReferenceList(registry, getFieldValue(statement, "owners")),
@@ -312,6 +333,7 @@ export function normalizeStatement(statement, registry) {
     case "journey":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         actors: symbolValues(getFieldValue(statement, "actors")),
         roles: symbolValues(getFieldValue(statement, "roles")),
         goal: stringValue(getFieldValue(statement, "goal")),
@@ -336,6 +358,7 @@ export function normalizeStatement(statement, registry) {
     case "pitch":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         priority: symbolValue(getFieldValue(statement, "priority")),
         appetite: stringValue(getFieldValue(statement, "appetite")) || symbolValue(getFieldValue(statement, "appetite")),
         problem: stringValue(getFieldValue(statement, "problem")),
@@ -350,6 +373,7 @@ export function normalizeStatement(statement, registry) {
     case "requirement":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         priority: symbolValue(getFieldValue(statement, "priority")),
         pitch: getFieldValue(statement, "pitch")
           ? {
@@ -367,6 +391,7 @@ export function normalizeStatement(statement, registry) {
     case "acceptance_criterion":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         requirement: getFieldValue(statement, "requirement")
           ? {
               id: symbolValue(getFieldValue(statement, "requirement")),
@@ -379,6 +404,7 @@ export function normalizeStatement(statement, registry) {
     case "task":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         priority: symbolValue(getFieldValue(statement, "priority")),
         workType: symbolValue(getFieldValue(statement, "work_type")),
         disposition: symbolValue(getFieldValue(statement, "disposition")),
@@ -399,6 +425,7 @@ export function normalizeStatement(statement, registry) {
     case "plan":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         task: getFieldValue(statement, "task")
           ? {
               id: symbolValue(getFieldValue(statement, "task")),
@@ -415,6 +442,7 @@ export function normalizeStatement(statement, registry) {
     case "bug":
       return {
         ...base,
+        relatedTerms: relatedTerms(statement, registry),
         priority: symbolValue(getFieldValue(statement, "priority")),
         severity: symbolValue(getFieldValue(statement, "severity")),
         affects: resolveReferenceList(registry, getFieldValue(statement, "affects")),

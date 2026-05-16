@@ -6,5 +6,5 @@ rule rule_no_item_creation_in_archived_collection {
   requirement "collection.status != archived"
   severity error
 
-  status active
+  status enforced
 }

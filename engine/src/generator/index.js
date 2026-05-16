@@ -21,6 +21,7 @@ import { generateAppTarget } from "./surfaces/index.js";
 import { generateRuntimeTarget } from "./runtime/index.js";
 import { generateContextTarget } from "./context/index.js";
 import { generateSdlcTarget } from "./sdlc/index.js";
+import { generateGlossary } from "./glossary.js";
 import { buildOutputFiles } from "./output.js";
 
 function okResult(target, artifact) {
@@ -51,6 +52,9 @@ export function generateWorkspace(workspaceAst, options = {}) {
   }
   if (target === "docs-index") {
     return okResult(target, generateDocsIndex(graph, options));
+  }
+  if (target === "glossary") {
+    return okResult(target, generateGlossary(graph, options));
   }
   if (target === "shape-transform-graph") {
     return okResult(target, generateShapeTransformGraph(graph, options));

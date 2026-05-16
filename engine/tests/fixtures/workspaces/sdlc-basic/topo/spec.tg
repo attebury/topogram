@@ -27,7 +27,7 @@ rule rule_audit_required {
   applies_to [cap_record_audit]
   severity error
   domain dom_app
-  status active
+  status enforced
 }
 
 verification verification_audit_persists {

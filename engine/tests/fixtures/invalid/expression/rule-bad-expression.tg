@@ -7,5 +7,5 @@ rule rule_bad_expression {
   requirement ""
   severity error
 
-  status active
+  status enforced
 }

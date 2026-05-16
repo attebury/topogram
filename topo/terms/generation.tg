@@ -1,0 +1,27 @@
+term term_generator {
+  name "Generator"
+  description "A package or bundled adapter that realizes Topogram contracts into app, runtime, API, database, or native output."
+  category generation
+  domain dom_generator_runtime
+  aliases [generator_pack]
+  status active
+}
+
+term term_runtime {
+  name "Runtime"
+  description "A topology unit such as a web surface, API service, database, or native surface that binds a projection to a generator."
+  category generation
+  domain dom_generator_runtime
+  aliases [topology_runtime]
+  related_terms [term_generator]
+  status active
+}
+
+term term_emit {
+  name "Emit"
+  description "The command verb for printing or writing contracts, reports, snapshots, migration plans, and other named artifacts."
+  category generation
+  domain dom_cli
+  related_terms [term_generator]
+  status active
+}

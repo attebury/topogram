@@ -12,6 +12,7 @@ export const JOURNEY_IDENTIFIER_PATTERN: RegExp;
 export const DOCUMENT_IDENTIFIER_PATTERN: RegExp;
 export const GLOBAL_STATUSES: Set<string>;
 export const DECISION_STATUSES: Set<string>;
+export const RULE_STATUSES: Set<string>;
 export const RULE_SEVERITIES: Set<string>;
 export const VERIFICATION_METHODS: Set<string>;
 export const CLI_COMMAND_EFFECTS: Set<string>;

@@ -138,7 +138,7 @@ rule rule_draft_persistence {
   applies_to [cap_fulfill_order]
   domain dom_order_fulfillment
   severity warning
-  status active
+  status enforced
 }
 
 verification verification_fulfill_order_save {
@@ -211,7 +211,7 @@ rule rule_adjustment_reason_required {
   applies_to [cap_record_inventory_count]
   domain dom_inventory
   severity error
-  status active
+  status enforced
 }
 
 # --- dom_support members ---

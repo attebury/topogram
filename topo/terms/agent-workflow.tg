@@ -1,0 +1,28 @@
+term term_agent_brief {
+  name "Agent Brief"
+  description "A read-only onboarding packet that tells an agent what to read, which commands to run first, and which project boundaries matter."
+  category agent_workflow
+  domain dom_sdlc_query_agent_context
+  aliases [brief first_run_packet]
+  status active
+}
+
+term term_context_slice {
+  name "Context Slice"
+  description "A focused graph packet for one capability, widget, projection, SDLC item, or related target, intended to be small enough for agent work."
+  category agent_workflow
+  domain dom_sdlc_query_agent_context
+  aliases [slice focused_packet]
+  related_terms [term_agent_brief]
+  status active
+}
+
+term term_agent_mode {
+  name "Agent Mode"
+  description "A declared work posture such as modeling, implementation, review, verification, extract-adopt, maintained-app, generated-app, or release."
+  category agent_workflow
+  domain dom_sdlc_query_agent_context
+  aliases [task_mode work_mode]
+  related_terms [term_context_slice]
+  status active
+}

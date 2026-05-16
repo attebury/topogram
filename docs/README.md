@@ -13,6 +13,7 @@ These docs are organized by audience. Historical docs were archived to
 | Maintain database migrations | [Database Migrations](./start/database-migrations.md) |
 | Work as an agent | [Agent First Run](./agent-first-run.md) |
 | Understand the model | [Topogram Model](./concepts/topogram-model.md) |
+| Look up project vocabulary | [Glossary](./concepts/glossary.md) |
 | Understand `topo/` ownership | [Topo Workspace](./concepts/topo-workspace.md) |
 | Choose between `generate` and `emit` | [Generate vs Emit](./concepts/generate-vs-emit.md) |
 | Author templates | [Template Authoring](./authoring/templates.md) |

@@ -6,5 +6,5 @@ rule rule_only_active_members_may_own_items {
   requirement "owner.is_active == true"
   severity error
 
-  status active
+  status enforced
 }

@@ -38,6 +38,7 @@ export const DOCUMENT_IDENTIFIER_PATTERN = /^doc_[a-z][a-z0-9_]*$/;
 
 export const GLOBAL_STATUSES = new Set(["draft", "proposed", "active", "deprecated"]);
 export const DECISION_STATUSES = new Set(["draft", "proposed", "accepted", "rejected", "deprecated"]);
+export const RULE_STATUSES = new Set(["draft", "proposed", "enforced", "deprecated"]);
 export const RULE_SEVERITIES = new Set(["error", "warning", "info"]);
 
 // Phase 2 SDLC status sets (per-kind state machines).
@@ -76,6 +77,7 @@ export const AUDIENCES = new Set(["developers", "operators", "end-users", "all"]
 // Per-kind status table — used by `validateStatus` to dispatch the
 // allowed status set without long if/else chains.
 export const STATUS_SETS_BY_KIND = {
+  rule: RULE_STATUSES,
   decision: DECISION_STATUSES,
   pitch: PITCH_STATUSES,
   requirement: REQUIREMENT_STATUSES,
@@ -122,6 +124,7 @@ export {
 // bug) to this set; acceptance_criterion stays domainless and inherits via
 // its requirement.
 export const DOMAIN_TAGGABLE_KINDS = new Set([
+  "term",
   "capability",
   "entity",
   "rule",
@@ -140,7 +143,7 @@ export const DOMAIN_TAGGABLE_KINDS = new Set([
 export const FIELD_SPECS = {
   term: {
     required: ["name", "description", "status"],
-    allowed: ["name", "description", "aliases", "excludes", "status"]
+    allowed: ["name", "description", "category", "aliases", "excludes", "related_terms", "domain", "status"]
   },
   actor: {
     required: ["name", "description", "status"],
@@ -156,27 +159,27 @@ export const FIELD_SPECS = {
   },
   entity: {
     required: ["name", "description", "fields", "status"],
-    allowed: ["name", "description", "fields", "keys", "relations", "invariants", "uses_terms", "domain", "status"]
+    allowed: ["name", "description", "fields", "keys", "relations", "invariants", "uses_terms", "related_terms", "domain", "status"]
   },
   shape: {
     required: ["name", "description", "status"],
-    allowed: ["name", "description", "include", "exclude", "rename", "overrides", "fields", "derived_from", "status"]
+    allowed: ["name", "description", "include", "exclude", "rename", "overrides", "fields", "derived_from", "related_terms", "status"]
   },
   rule: {
     required: ["name", "description", "applies_to", "status"],
-    allowed: ["name", "description", "applies_to", "actors", "roles", "condition", "requirement", "from_requirement", "severity", "source_of_truth", "domain", "status"]
+    allowed: ["name", "description", "applies_to", "actors", "roles", "condition", "requirement", "from_requirement", "severity", "source_of_truth", "related_terms", "domain", "status"]
   },
   capability: {
     required: ["name", "description", "status"],
-    allowed: ["name", "description", "actors", "roles", "reads", "creates", "updates", "deletes", "input", "output", "domain", "status"]
+    allowed: ["name", "description", "actors", "roles", "reads", "creates", "updates", "deletes", "input", "output", "related_terms", "domain", "status"]
   },
   widget: {
     required: ["name", "description", "props", "status"],
-    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "behaviors", "patterns", "regions", "lookups", "dependencies", "version", "approvals", "status"]
+    allowed: ["name", "description", "category", "props", "events", "slots", "behavior", "behaviors", "patterns", "regions", "lookups", "dependencies", "version", "approvals", "related_terms", "status"]
   },
   decision: {
     required: ["name", "description", "status"],
-    allowed: ["name", "description", "context", "consequences", "pitch", "supersedes", "domain", "status"]
+    allowed: ["name", "description", "context", "consequences", "pitch", "supersedes", "related_terms", "domain", "status"]
   },
   projection: {
     required: ["name", "description", "type", "realizes", "outputs", "status"],
@@ -224,6 +227,7 @@ export const FIELD_SPECS = {
       "relations",
       "lifecycle",
       "generator_defaults",
+      "related_terms",
       "status"
     ]
   },
@@ -242,6 +246,7 @@ export const FIELD_SPECS = {
       "requirement_refs",
       "acceptance_refs",
       "fixes_bugs",
+      "related_terms",
       "domain",
       "status"
     ]
@@ -252,7 +257,7 @@ export const FIELD_SPECS = {
   },
   domain: {
     required: ["name", "description", "status"],
-    allowed: ["name", "description", "in_scope", "out_of_scope", "owners", "parent_domain", "aliases", "status"]
+    allowed: ["name", "description", "in_scope", "out_of_scope", "owners", "parent_domain", "aliases", "related_terms", "status"]
   },
   journey: {
     required: ["name", "description", "status", "actors", "goal", "step"],
@@ -277,6 +282,7 @@ export const FIELD_SPECS = {
       "related_verifications",
       "related_decisions",
       "related_docs",
+      "related_terms",
       "tags",
       "domain",
       "updated"
@@ -296,6 +302,7 @@ export const FIELD_SPECS = {
       "no_go_areas",
       "affects",
       "decisions",
+      "related_terms",
       "domain",
       "updated",
       "approvals"
@@ -313,6 +320,7 @@ export const FIELD_SPECS = {
       "introduces_rules",
       "respects_rules",
       "supersedes",
+      "related_terms",
       "domain",
       "updated",
       "approvals"
@@ -320,7 +328,7 @@ export const FIELD_SPECS = {
   },
   acceptance_criterion: {
     required: ["name", "description", "status", "requirement"],
-    allowed: ["name", "description", "status", "requirement", "supersedes", "updated"]
+    allowed: ["name", "description", "status", "requirement", "supersedes", "related_terms", "updated"]
   },
   task: {
     required: ["name", "description", "status", "priority", "work_type"],
@@ -342,6 +350,7 @@ export const FIELD_SPECS = {
       "modifies",
       "introduces",
       "removes",
+      "related_terms",
       "domain",
       "updated"
     ]
@@ -357,6 +366,7 @@ export const FIELD_SPECS = {
       "notes",
       "outcome",
       "steps",
+      "related_terms",
       "domain",
       "updated"
     ]
@@ -380,6 +390,7 @@ export const FIELD_SPECS = {
       "modifies",
       "introduces",
       "removes",
+      "related_terms",
       "domain",
       "updated"
     ]

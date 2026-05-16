@@ -53,10 +53,30 @@ export function summarizeRule(rule) {
     kind: rule.kind,
     name: rule.name || rule.id,
     description: rule.description || null,
+    status: rule.status || null,
     appliesTo: refIds(rule.appliesTo),
     actors: refIds(rule.actors),
     roles: refIds(rule.roles),
     severity: rule.severity || null,
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
+/**
+ * @param {import("./types.d.ts").ContextStatement} term
+ * @returns {any}
+ */
+export function summarizeTerm(term) {
+  return {
+    id: term.id,
+    kind: term.kind,
+    name: term.name || term.id,
+    description: term.description || null,
+    category: term.category || null,
+    status: term.status || null,
+    aliases: stableSortedStrings(term.aliases || []),
+    excludes: stableSortedStrings(term.excludes || []),
+    relatedTerms: refIds(term.relatedTerms),
     ownership_boundary: defaultOwnershipBoundary()
   };
 }
@@ -220,6 +240,8 @@ export function summarizeStatement(statement) {
       };
     case "rule":
       return summarizeRule(statement);
+    case "term":
+      return summarizeTerm(statement);
     case "projection":
       return summarizeProjection(statement);
     case "verification":

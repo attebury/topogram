@@ -54,6 +54,10 @@ const IMPLEMENTATION_OPTIONAL_TARGETS = new Set([
   "compile-check-bundle"
 ]);
 
+const INCREMENTAL_WRITE_TARGETS = new Set([
+  "glossary"
+]);
+
 /**
  * @param {string} target
  * @returns {boolean}
@@ -73,7 +77,8 @@ function targetRequiresImplementationProvider(target) {
  *   outputSelectors?: Record<string, any>,
  *   profileId?: string|null,
  *   fromSnapshotPath?: string|null,
- *   fromTopogramPath?: string|null
+ *   fromTopogramPath?: string|null,
+ *   checkPath?: string|null
  * }} options
  * @returns {Promise<number>}
  */
@@ -130,8 +135,70 @@ export async function runEmitCommand(options) {
     return 1;
   }
 
+  if (options.checkPath) {
+    const outputFiles = buildOutputFiles(result, options.outputSelectors || {});
+    if (outputFiles.length !== 1) {
+      console.error(`Target '${options.target}' writes ${outputFiles.length} files; --check supports single-file artifact targets only.`);
+      return 1;
+    }
+    const expected = typeof outputFiles[0].contents === "string"
+      ? outputFiles[0].contents
+      : `${stablePublicStringify(outputFiles[0].contents, { projectRoot: projectConfigInfo?.configDir || options.projectRoot, workspaceRoot: options.inputPath, cwd: process.cwd() })}\n`;
+    const actual = fs.existsSync(options.checkPath) ? fs.readFileSync(options.checkPath, "utf8") : null;
+    if (actual !== expected) {
+      console.error(`Artifact '${toPortablePath(path.resolve(options.checkPath), {
+        projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+        workspaceRoot: options.inputPath,
+        cwd: process.cwd()
+      })}' is stale. Re-run 'topogram emit ${options.target} ${toPortablePath(options.inputPath, {
+        projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+        workspaceRoot: options.inputPath,
+        cwd: process.cwd()
+      })} --write --out-dir ${toPortablePath(path.dirname(path.resolve(options.checkPath)), {
+        projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+        workspaceRoot: options.inputPath,
+        cwd: process.cwd()
+      })}'.`);
+      return 1;
+    }
+    console.log(`Artifact '${toPortablePath(path.resolve(options.checkPath), {
+      projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+      workspaceRoot: options.inputPath,
+      cwd: process.cwd()
+    })}' is up to date.`);
+    return 0;
+  }
+
   if (options.write) {
     const resolvedOutDir = path.resolve(options.outDir || "artifacts");
+    if (INCREMENTAL_WRITE_TARGETS.has(options.target)) {
+      const outputFiles = buildOutputFiles(result, options.outputSelectors || {});
+      fs.mkdirSync(resolvedOutDir, { recursive: true });
+      for (const file of outputFiles) {
+        const destination = path.join(resolvedOutDir, file.path);
+        const relativeToInput = path.relative(path.resolve(options.inputPath), path.resolve(destination));
+        if (relativeToInput === "" || (!relativeToInput.startsWith("..") && !path.isAbsolute(relativeToInput))) {
+          throw new Error(`Refusing to write artifact inside the Topogram source directory: ${toPortablePath(destination, {
+            projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+            workspaceRoot: options.inputPath,
+            cwd: process.cwd()
+          })}`);
+        }
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        const contents =
+          typeof file.contents === "string"
+            ? file.contents
+            : `${stablePublicStringify(file.contents, { projectRoot: projectConfigInfo?.configDir || options.projectRoot, workspaceRoot: options.inputPath, cwd: process.cwd() })}\n`;
+        fs.writeFileSync(destination, contents, "utf8");
+      }
+      console.log(`Wrote ${outputFiles.length} file(s) to ${toPortablePath(resolvedOutDir, {
+        projectRoot: projectConfigInfo?.configDir || options.projectRoot,
+        workspaceRoot: options.inputPath,
+        cwd: process.cwd()
+      })}`);
+      return 0;
+    }
+
     assertProjectOutputAllowsWrite(projectConfigInfo, resolvedOutDir);
     assertSafeGeneratedOutputDir(resolvedOutDir, options.inputPath);
     const outputFiles = buildOutputFiles(result, options.outputSelectors || {});

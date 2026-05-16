@@ -360,6 +360,198 @@ function widgetDependencyKind(dependency) {
   return prefix || null;
 }
 
+const STANDING_RULE_IDS = [
+  "rule_tests_prove_consumer_value",
+  "rule_maintainable_security_focused_code",
+  "rule_stateful_workflow_mutations_use_cli"
+];
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} id
+ * @returns {any|null}
+ */
+function statementById(graph, id) {
+  for (const statements of Object.values(graph.byKind || {})) {
+    const found = (statements || []).find(/** @param {any} statement */ (statement) => statement.id === id);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * @param {any} value
+ * @param {Set<string>} ids
+ * @returns {void}
+ */
+function collectStringIds(value, ids) {
+  if (typeof value === "string") {
+    ids.add(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectStringIds(item, ids);
+    return;
+  }
+  if (value && typeof value === "object") {
+    if (typeof value.id === "string") ids.add(value.id);
+    for (const nested of Object.values(value)) collectStringIds(nested, ids);
+  }
+}
+
+/**
+ * @param {any} statement
+ * @returns {string[]}
+ */
+function termIdsForStatement(statement) {
+  const ids = [
+    ...(statement?.relatedTerms || []),
+    ...(statement?.usesTerms || [])
+  ].map(/** @param {any} ref */ (ref) => ref?.id || ref).filter(Boolean);
+  return [...new Set(ids)].sort();
+}
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {any} slice
+ * @returns {string[]}
+ */
+function relatedTermIdsForSlice(graph, slice) {
+  const candidateIds = new Set();
+  collectStringIds(slice.focus, candidateIds);
+  collectStringIds(slice.depends_on, candidateIds);
+  collectStringIds(slice.summary, candidateIds);
+  const termIds = new Set();
+  for (const id of candidateIds) {
+    const statement = statementById(graph, id);
+    if (!statement || statement.kind === "term") continue;
+    for (const termId of termIdsForStatement(statement)) termIds.add(termId);
+  }
+  return [...termIds].sort();
+}
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @returns {string[]}
+ */
+function standingRuleIds(graph) {
+  return STANDING_RULE_IDS
+    .filter((id) => {
+      const rule = statementById(graph, id);
+      return rule?.kind === "rule" && rule.status === "enforced";
+    })
+    .sort();
+}
+
+/**
+ * @param {string|null|undefined} modeId
+ * @returns {string}
+ */
+function normalizedMode(modeId) {
+  if (modeId === "maintained-app-edit") return "maintained-app";
+  if (modeId === "diff-review") return "review";
+  return modeId || "implementation";
+}
+
+/**
+ * @param {any} focus
+ * @returns {string}
+ */
+function selectorForFocus(focus) {
+  /** @type {Record<string, string>} */
+  const flagByKind = {
+    capability: "--capability",
+    workflow: "--workflow",
+    projection: "--projection",
+    widget: "--widget",
+    entity: "--entity",
+    journey: "--journey",
+    surface: "--surface",
+    domain: "--domain",
+    pitch: "--pitch",
+    requirement: "--requirement",
+    acceptance_criterion: "--acceptance",
+    task: "--task",
+    plan: "--plan",
+    bug: "--bug",
+    document: "--document"
+  };
+  const flag = flagByKind[focus?.kind] || "--id";
+  return `${flag} ${focus?.id || "<id>"}`;
+}
+
+/**
+ * @param {any} slice
+ * @param {string|null|undefined} modeId
+ * @returns {any}
+ */
+function buildAgentGuidance(slice, modeId) {
+  const mode = normalizedMode(modeId);
+  const selector = selectorForFocus(slice.focus);
+  const commonCommands = [
+    "topogram check . --json",
+    "topogram sdlc check . --strict",
+    "topogram sdlc prep commit . --json"
+  ];
+  /** @type {Record<string, string[]>} */
+  const modeCommands = {
+    modeling: ["topogram query slice ./topo --mode modeling " + selector + " --json"],
+    implementation: ["topogram query sdlc-proof-gaps ./topo " + (slice.focus?.kind === "task" ? `--task ${slice.focus.id}` : "--json")],
+    review: ["topogram query review-packet ./topo --mode review " + selector + " --json"],
+    verification: ["topogram query verification-targets ./topo --mode verification " + selector + " --json"],
+    "extract-adopt": ["topogram extract plan . --json", "topogram adopt --list . --json"],
+    "maintained-app": ["topogram emit context-slice ./topo " + selector + " --json"],
+    "generated-app": ["topogram generate .", "npm run verify"],
+    release: ["topogram release status --strict --json"]
+  };
+  const warnings = [];
+  if (mode === "maintained-app") {
+    warnings.push("Do not overwrite maintained app output with generation; use emitted contracts and focused queries as implementation context.");
+  }
+  if (mode === "generated-app") {
+    warnings.push("Generated-owned outputs may be refreshed by topogram generate; edit the Topogram source first.");
+  }
+  if (mode === "extract-adopt") {
+    warnings.push("Extraction candidates are review-only until explicitly adopted.");
+  }
+  return {
+    mode,
+    read_first: ["focus", "summary", "depends_on", "related", "standing_rules", "verification_targets", "write_scope"],
+    next_queries: [
+      `topogram query slice ./topo --mode ${mode} ${selector} --json`,
+      `topogram query single-agent-plan ./topo --mode ${mode} ${selector} --json`
+    ],
+    required_commands: [...(modeCommands[mode] || []), ...commonCommands],
+    completion_command: "topogram sdlc prep commit . --json",
+    warnings,
+    write_scope_summary: slice.write_scope?.summary || "Edit the canonical Topogram source and project-owned files only; generated-owned outputs should be regenerated."
+  };
+}
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {any} slice
+ * @param {import("../shared/types.d.ts").ContextSelectionOptions} options
+ * @returns {any}
+ */
+function decorateSlice(graph, slice, options) {
+  const termIds = relatedTermIdsForSlice(graph, slice);
+  const standingRules = standingRuleIds(graph);
+  return {
+    ...slice,
+    depends_on: {
+      ...(slice.depends_on || {}),
+      ...(termIds.length > 0 ? { terms: termIds } : {})
+    },
+    related: {
+      ...(slice.related || {}),
+      ...(termIds.length > 0 ? { terms: summarizeStatementsByIds(graph, termIds) } : {})
+    },
+    standing_rules: summarizeStatementsByIds(graph, standingRules),
+    agent_guidance: buildAgentGuidance(slice, options.modeId)
+  };
+}
+
 
 /**
  * @param {import("../shared/types.d.ts").ContextGraph} graph
@@ -385,20 +577,25 @@ export function generateContextSlice(graph, options = {}) {
     documentId: options.documentId
   });
 
-  if (selection.kind === "capability") return capabilitySlice(graph, selection.id);
-  if (selection.kind === "workflow") return workflowSlice(graph, selection.id);
-  if (selection.kind === "projection") return projectionSlice(graph, selection.id);
-  if (selection.kind === "widget") return widgetSlice(graph, selection.id);
-  if (selection.kind === "entity") return entitySlice(graph, selection.id);
-  if (selection.kind === "journey") return journeySlice(graph, selection.id);
-  if (selection.kind === "domain") return domainSlice(graph, selection.id);
-  if (selection.kind === "pitch") return pitchSlice(graph, selection.id);
-  if (selection.kind === "requirement") return requirementSlice(graph, selection.id);
-  if (selection.kind === "acceptance_criterion") return acceptanceCriterionSlice(graph, selection.id);
-  if (selection.kind === "task") return taskSlice(graph, selection.id);
-  if (selection.kind === "plan") return planSlice(graph, selection.id);
-  if (selection.kind === "bug") return bugSlice(graph, selection.id);
-  if (selection.kind === "document") return documentSlice(graph, selection.id);
+  let slice = null;
+  if (selection.kind === "capability") slice = capabilitySlice(graph, selection.id);
+  if (selection.kind === "workflow") slice = workflowSlice(graph, selection.id);
+  if (selection.kind === "projection") slice = projectionSlice(graph, selection.id);
+  if (selection.kind === "widget") slice = widgetSlice(graph, selection.id);
+  if (selection.kind === "entity") slice = entitySlice(graph, selection.id);
+  if (selection.kind === "journey") slice = journeySlice(graph, selection.id);
+  if (selection.kind === "domain") slice = domainSlice(graph, selection.id);
+  if (selection.kind === "pitch") slice = pitchSlice(graph, selection.id);
+  if (selection.kind === "requirement") slice = requirementSlice(graph, selection.id);
+  if (selection.kind === "acceptance_criterion") slice = acceptanceCriterionSlice(graph, selection.id);
+  if (selection.kind === "task") slice = taskSlice(graph, selection.id);
+  if (selection.kind === "plan") slice = planSlice(graph, selection.id);
+  if (selection.kind === "bug") slice = bugSlice(graph, selection.id);
+  if (selection.kind === "document") slice = documentSlice(graph, selection.id);
+
+  if (slice) {
+    return decorateSlice(graph, slice, options);
+  }
 
   throw new Error(`Unsupported context slice kind '${selection.kind}'`);
 }
