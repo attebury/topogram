@@ -786,6 +786,11 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(databasePreview.status, 0, databasePreview.stderr || databasePreview.stdout);
   const databasePreviewPayload = JSON.parse(databasePreview.stdout);
   assert.equal(databasePreviewPayload.dryRun, true);
+  assert.equal(databasePreviewPayload.extractorContext.packageBackedExtractors.length, 1);
+  assert.equal(databasePreviewPayload.extractorContext.packageBackedExtractors[0].packageName, "@scope/topogram-extractor-db-smoke");
+  assert.equal(databasePreviewPayload.extractorContext.packageBackedExtractors[0].policyPin.state, "pinned");
+  assert.equal(databasePreviewPayload.extractorContext.candidateCounts.dbMaintainedSeams, 1);
+  assert.equal(databasePreviewPayload.extractorContext.safetyNotes.some((note) => note.includes("review candidates")), true);
   assert.deepEqual(databasePreviewPayload.writtenFiles, []);
   assert.equal(
     fs.readFileSync(path.join(targetRoot, "topogram.project.json"), "utf8").includes("proposed_runtime_migration"),
@@ -796,16 +801,28 @@ test("package-backed extractors merge multiple tracks into one extraction review
   assert.equal(packageTaskPreview.status, 0, packageTaskPreview.stderr || packageTaskPreview.stdout);
   const packageTaskPreviewPayload = JSON.parse(packageTaskPreview.stdout);
   assert.equal(packageTaskPreviewPayload.dryRun, true);
+  assert.equal(
+    packageTaskPreviewPayload.extractorContext.packageBackedExtractors.some((entry) => entry.packageName === "@scope/topogram-extractor-api-smoke"),
+    true
+  );
   assert.equal(packageTaskPreviewPayload.promotedCanonicalItemCount >= 2, true);
   assert.deepEqual(packageTaskPreviewPayload.writtenFiles, []);
   assert.equal(fs.existsSync(path.join(targetRoot, "topo", "entities", "entity-package-task.tg")), false);
   assert.equal(fs.existsSync(path.join(targetRoot, ".topogram-adoptions.jsonl")), false);
+  const humanPackageTaskPreview = runCli(["adopt", "bundle:package-task", targetRoot, "--dry-run"]);
+  assert.equal(humanPackageTaskPreview.status, 0, humanPackageTaskPreview.stderr || humanPackageTaskPreview.stdout);
+  assert.match(humanPackageTaskPreview.stdout, /Extractors: .*@scope\/topogram-extractor-api-smoke/);
+  assert.match(humanPackageTaskPreview.stdout, /package-backed extractor candidates are review-only/);
 
   const packageTaskWrite = runCli(["adopt", "bundle:package-task", targetRoot, "--write", "--json"]);
   assert.equal(packageTaskWrite.status, 0, packageTaskWrite.stderr || packageTaskWrite.stdout);
   const packageTaskWritePayload = JSON.parse(packageTaskWrite.stdout);
   assert.equal(packageTaskWritePayload.dryRun, false);
   assert.equal(packageTaskWritePayload.write, true);
+  assert.equal(
+    packageTaskWritePayload.extractorContext.packageBackedExtractors.some((entry) => entry.packageName === "@scope/topogram-extractor-api-smoke"),
+    true
+  );
   assert.equal(packageTaskWritePayload.receipt.selector, "bundle:package-task");
   assert.equal(packageTaskWritePayload.receipt.sourceProvenance.status, "clean");
   assert.equal(packageTaskWritePayload.writtenFiles.includes("entities/entity-package-task.tg"), true);

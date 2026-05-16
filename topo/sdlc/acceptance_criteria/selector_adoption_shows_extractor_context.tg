@@ -1,0 +1,6 @@
+acceptance_criterion ac_selector_adoption_shows_extractor_context {
+  name "Selector Adoption Shows Extractor Context"
+  description "Given package-backed extractors contributed candidates to a brownfield extraction, when a human or agent runs topogram adopt <selector> --dry-run or --write, then the adoption payload and human output identify the relevant extractor packages, extractor ids, tracks, policy pin state, candidate counts, and review-only safety guidance for that selected adoption."
+  requirement req_extract_adopt_packets_show_extractor_context
+  status approved
+}

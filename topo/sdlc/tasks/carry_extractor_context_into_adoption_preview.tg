@@ -1,0 +1,15 @@
+task task_carry_extractor_context_into_adoption_preview {
+  name "Carry Extractor Context Into Adoption Preview"
+  description "Extend selected adoption preview/write packets so the final adoption decision carries the extractor package context already shown by extract plan and adopt list."
+  satisfies [req_extract_adopt_packets_show_extractor_context req_extractor_selection_ux]
+  acceptance_refs [ac_selector_adoption_shows_extractor_context]
+  verification_refs [verification_import_fixtures verification_engine_gate]
+  affects [cap_import_brownfield_app cap_reconcile_import_candidates cap_adopt_import_candidates cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+  domain dom_import_adoption
+}

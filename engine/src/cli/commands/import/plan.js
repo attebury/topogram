@@ -93,7 +93,7 @@ function extractorMatchesTracks(extractor, tracks) {
  * @param {string} bundleSlug
  * @returns {AnyRecord|null}
  */
-function extractorContextForBundle(extractionContext, bundleSurfaces, bundleSlug) {
+export function extractorContextForBundle(extractionContext, bundleSurfaces, bundleSlug) {
   if (!extractionContext) {
     return null;
   }
@@ -131,6 +131,42 @@ function extractorContextForBundle(extractionContext, bundleSurfaces, bundleSlug
     candidateCounts: extractionContext.candidate_counts || {},
     safetyNotes: extractionContext.safety_notes || []
   };
+}
+
+/**
+ * @param {AnyRecord|null|undefined} extractionContext
+ * @param {AnyRecord} adoptionPlan
+ * @param {string} selector
+ * @param {string} projectRoot
+ * @returns {AnyRecord|null}
+ */
+export function extractorContextForAdoptionSelector(extractionContext, adoptionPlan, selector, projectRoot) {
+  if (!extractionContext) {
+    return null;
+  }
+  const surfaces = /** @type {AnyRecord[]} */ (adoptionPlan.imported_proposal_surfaces || []);
+  if (selector.startsWith("bundle:")) {
+    const bundleSlug = selector.slice("bundle:".length);
+    return extractorContextForBundle(
+      extractionContext,
+      surfaces.filter((surface) => surface.bundle === bundleSlug),
+      bundleSlug
+    );
+  }
+  const broadSelector = buildBrownfieldBroadAdoptSelectors(projectRoot, adoptionPlan)
+    .find((definition) => definition.selector === selector);
+  if (!broadSelector) {
+    return null;
+  }
+  const selectorDefinition = BROWNFIELD_BROAD_ADOPT_SELECTORS.find((definition) => definition.selector === selector);
+  if (!selectorDefinition) {
+    return null;
+  }
+  return extractorContextForBundle(
+    extractionContext,
+    surfaces.filter(selectorDefinition.matches),
+    selector
+  );
 }
 
 /**

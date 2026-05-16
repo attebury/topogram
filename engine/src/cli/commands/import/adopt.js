@@ -12,7 +12,7 @@ import {
   importProjectCommandPath,
   projectFileHash
 } from "./paths.js";
-import { readImportAdoptionArtifacts } from "./plan.js";
+import { extractorContextForAdoptionSelector, readImportAdoptionArtifacts } from "./plan.js";
 import { writeRelativeFiles } from "./workspace.js";
 
 /**
@@ -105,6 +105,12 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
     write: Boolean(options.write),
     refreshAdopted: Boolean(options.refreshAdopted)
   });
+  const extractorContext = extractorContextForAdoptionSelector(
+    artifacts.extractionContext,
+    artifacts.adoptionPlan,
+    selector,
+    artifacts.projectRoot
+  );
   const outputRoot = path.resolve(result.defaultOutDir || artifacts.topogramRoot);
   const writtenFiles = options.write ? writeRelativeFiles(outputRoot, result.files || {}) : [];
   const summary = result.summary || {};
@@ -128,6 +134,7 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
     writtenFiles,
     receipt,
     receiptPath,
+    extractorContext,
     adoption: summary,
     extract: importStatus,
     warnings: options.write && options.force && !importStatus.ok
@@ -147,6 +154,24 @@ export function buildBrownfieldImportAdoptPayload(selector, inputPath, options =
 }
 
 /**
+ * @param {AnyRecord} extractor
+ * @returns {string|null}
+ */
+function formatExtractorSummary(extractor) {
+  const name = extractor.packageName || extractor.id || null;
+  if (!name) {
+    return null;
+  }
+  const details = [
+    extractor.manifestVersion ? `manifest ${extractor.manifestVersion}` : null,
+    extractor.packageVersion ? `package ${extractor.packageVersion}` : null,
+    extractor.compatibleCliRange ? `cli ${extractor.compatibleCliRange}` : null,
+    extractor.policyPin?.state ? `pin ${extractor.policyPin.state}` : null
+  ].filter(Boolean).join(", ");
+  return details ? `${name} (${details})` : name;
+}
+
+/**
  * @param {AnyRecord} payload
  * @returns {void}
  */
@@ -157,6 +182,14 @@ export function printBrownfieldImportAdopt(payload) {
   console.log(`Written files: ${payload.writtenFiles.length}`);
   if (payload.receiptPath) {
     console.log(`Receipt: ${payload.receiptPath}`);
+  }
+  if (payload.extractorContext?.packageBackedExtractors?.length > 0) {
+    const names = payload.extractorContext.packageBackedExtractors
+      .map(formatExtractorSummary)
+      .filter(Boolean)
+      .join(", ");
+    console.log(`Extractors: ${names}`);
+    console.log("Safety: package-backed extractor candidates are review-only; dry-run previews are for review and --write records the selected canonical adoption only.");
   }
   if (payload.dryRun) {
     console.log("No files were written. Re-run with --write to promote these candidates.");

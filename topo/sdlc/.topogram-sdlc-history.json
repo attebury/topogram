@@ -3489,5 +3489,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_carry_extractor_context_into_adoption_preview": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T04:19:39.566Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T04:19:39.618Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T04:25:16.835Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
