@@ -6,9 +6,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 ## Summary
 
-- Package: `@topogram/cli@0.3.93`
-- Latest published: `0.3.93` (current)
-- Release tag: `topogram-v0.3.93` (local=yes, remote=yes, at-head=yes)
+- Package: `@topogram/cli@0.3.94`
+- Latest published: `0.3.94` (current)
+- Release tag: `topogram-v0.3.94` (local=yes, remote=yes, at-head=yes)
 - Consumer pins: 18/18 matching
 - Consumer CI: 18/18 passing
 - Proof consumer baseline: 2/2 pinned, 0 current, 2 baseline-accepted, 0 below baseline (minimum 0.3.92)
@@ -19,9 +19,9 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Package or Repo | Version or Commit | Verification |
 | --- | --- | --- |
-| `@topogram/cli` | `0.3.93` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
-| `attebury/topograms` catalog | `23b6f45` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.93 |
-| `topogram-demo-todo` | `2540c5d` | Demo Verification: completed/success; pinned @topogram/cli@0.3.93 |
+| `@topogram/cli` | `0.3.94` | Publish CLI Package, strict release status, fresh npmjs smoke, and installed CLI smoke passed |
+| `attebury/topograms` catalog | `7a6a1c3` | Catalog Verification: completed/success; pinned @topogram/cli@0.3.94 |
+| `topogram-demo-todo` | `f084c66` | Demo Verification: completed/success; pinned @topogram/cli@0.3.94 |
 
 ## Catalog Entries
 
@@ -31,7 +31,7 @@ Treat it as a dated release audit, not a floating compatibility promise.
 | `hello-db` | template | `@topogram/starter-hello-db` | `0.1.14` | SQLite |
 | `hello-ios` | template | `@topogram/starter-hello-ios` | `0.1.14` | SwiftUI |
 | `hello-web` | template | `@topogram/starter-hello-web` | `0.1.14` | Vanilla HTML/CSS/JS |
-| `todo` | template | `@topogram/template-todo` | `0.1.38` | SvelteKit + Hono + Postgres |
+| `todo` | template | `@topogram/template-todo` | `0.1.39` | SvelteKit + Hono + Postgres |
 | `web-api` | template | `@topogram/starter-web-api` | `0.1.14` | React + Express |
 | `web-api-db` | template | `@topogram/starter-web-api-db` | `0.1.14` | SvelteKit + Hono + Postgres |
 | `hello` | topogram | `@topogram/topogram-hello` | `0.1.3` | SvelteKit + Hono + Postgres |
@@ -53,24 +53,24 @@ Treat it as a dated release audit, not a floating compatibility promise.
 
 | Repo | Pin | Workflow | Status | Run |
 | --- | --- | --- | --- | --- |
-| `topogram-generator-express-api` | `0.3.93` | Generator Verification | completed/success | [25952113484](https://github.com/attebury/topogram-generator-express-api/actions/runs/25952113484) |
-| `topogram-generator-hono-api` | `0.3.93` | Generator Verification | completed/success | [25952125781](https://github.com/attebury/topogram-generator-hono-api/actions/runs/25952125781) |
-| `topogram-generator-postgres-db` | `0.3.93` | Generator Verification | completed/success | [25952133419](https://github.com/attebury/topogram-generator-postgres-db/actions/runs/25952133419) |
-| `topogram-generator-react-web` | `0.3.93` | Generator Verification | completed/success | [25952144273](https://github.com/attebury/topogram-generator-react-web/actions/runs/25952144273) |
-| `topogram-generator-sqlite-db` | `0.3.93` | Generator Verification | completed/success | [25952152101](https://github.com/attebury/topogram-generator-sqlite-db/actions/runs/25952152101) |
-| `topogram-generator-sveltekit-web` | `0.3.93` | Generator Verification | completed/success | [25952162817](https://github.com/attebury/topogram-generator-sveltekit-web/actions/runs/25952162817) |
-| `topogram-generator-swiftui-native` | `0.3.93` | Generator Verification | completed/success | [25952174430](https://github.com/attebury/topogram-generator-swiftui-native/actions/runs/25952174430) |
-| `topogram-generator-vanilla-web` | `0.3.93` | Generator Verification | completed/success | [25952188010](https://github.com/attebury/topogram-generator-vanilla-web/actions/runs/25952188010) |
-| `topogram-extractor-node-cli` | `0.3.93` | Extractor Verification | completed/success | [25952196173](https://github.com/attebury/topogram-extractor-node-cli/actions/runs/25952196173) |
-| `topogram-extractor-react-router` | `0.3.93` | Extractor Verification | completed/success | [25952206472](https://github.com/attebury/topogram-extractor-react-router/actions/runs/25952206472) |
-| `topogram-extractor-prisma-db` | `0.3.93` | Extractor Verification | completed/success | [25952216709](https://github.com/attebury/topogram-extractor-prisma-db/actions/runs/25952216709) |
-| `topogram-extractor-express-api` | `0.3.93` | Extractor Verification | completed/success | [25952224353](https://github.com/attebury/topogram-extractor-express-api/actions/runs/25952224353) |
-| `topogram-extractor-drizzle-db` | `0.3.93` | Extractor Verification | completed/success | [25952231990](https://github.com/attebury/topogram-extractor-drizzle-db/actions/runs/25952231990) |
-| `topogram-starters` | `0.3.93` | Starter Verification | completed/success | [25952257761](https://github.com/attebury/topogram-starters/actions/runs/25952257761) |
-| `topogram-template-todo` | `0.3.93` | Template Verification | completed/success | [25952298882](https://github.com/attebury/topogram-template-todo/actions/runs/25952298882) |
-| `topogram-demo-todo` | `0.3.93` | Demo Verification | completed/success | [25952321349](https://github.com/attebury/topogram-demo-todo/actions/runs/25952321349) |
-| `topogram-hello` | `0.3.93` | Topogram Package Verification | completed/success | [25952351853](https://github.com/attebury/topogram-hello/actions/runs/25952351853) |
-| `topograms` | `0.3.93` | Catalog Verification | completed/success | [25952361827](https://github.com/attebury/topograms/actions/runs/25952361827) |
+| `topogram-generator-express-api` | `0.3.94` | Generator Verification | completed/success | [25975303833](https://github.com/attebury/topogram-generator-express-api/actions/runs/25975303833) |
+| `topogram-generator-hono-api` | `0.3.94` | Generator Verification | completed/success | [25975317899](https://github.com/attebury/topogram-generator-hono-api/actions/runs/25975317899) |
+| `topogram-generator-postgres-db` | `0.3.94` | Generator Verification | completed/success | [25975325575](https://github.com/attebury/topogram-generator-postgres-db/actions/runs/25975325575) |
+| `topogram-generator-react-web` | `0.3.94` | Generator Verification | completed/success | [25975340182](https://github.com/attebury/topogram-generator-react-web/actions/runs/25975340182) |
+| `topogram-generator-sqlite-db` | `0.3.94` | Generator Verification | completed/success | [25975353378](https://github.com/attebury/topogram-generator-sqlite-db/actions/runs/25975353378) |
+| `topogram-generator-sveltekit-web` | `0.3.94` | Generator Verification | completed/success | [25975366915](https://github.com/attebury/topogram-generator-sveltekit-web/actions/runs/25975366915) |
+| `topogram-generator-swiftui-native` | `0.3.94` | Generator Verification | completed/success | [25975380223](https://github.com/attebury/topogram-generator-swiftui-native/actions/runs/25975380223) |
+| `topogram-generator-vanilla-web` | `0.3.94` | Generator Verification | completed/success | [25975391282](https://github.com/attebury/topogram-generator-vanilla-web/actions/runs/25975391282) |
+| `topogram-extractor-node-cli` | `0.3.94` | Extractor Verification | completed/success | [25975399865](https://github.com/attebury/topogram-extractor-node-cli/actions/runs/25975399865) |
+| `topogram-extractor-react-router` | `0.3.94` | Extractor Verification | completed/success | [25975604277](https://github.com/attebury/topogram-extractor-react-router/actions/runs/25975604277) |
+| `topogram-extractor-prisma-db` | `0.3.94` | Extractor Verification | completed/success | [25975410414](https://github.com/attebury/topogram-extractor-prisma-db/actions/runs/25975410414) |
+| `topogram-extractor-express-api` | `0.3.94` | Extractor Verification | completed/success | [25975604281](https://github.com/attebury/topogram-extractor-express-api/actions/runs/25975604281) |
+| `topogram-extractor-drizzle-db` | `0.3.94` | Extractor Verification | completed/success | [25975418055](https://github.com/attebury/topogram-extractor-drizzle-db/actions/runs/25975418055) |
+| `topogram-starters` | `0.3.94` | Starter Verification | completed/success | [25975446159](https://github.com/attebury/topogram-starters/actions/runs/25975446159) |
+| `topogram-template-todo` | `0.3.94` | Template Verification | completed/success | [25975922227](https://github.com/attebury/topogram-template-todo/actions/runs/25975922227) |
+| `topogram-demo-todo` | `0.3.94` | Demo Verification | completed/success | [25975824653](https://github.com/attebury/topogram-demo-todo/actions/runs/25975824653) |
+| `topogram-hello` | `0.3.94` | Topogram Package Verification | completed/success | [25975524231](https://github.com/attebury/topogram-hello/actions/runs/25975524231) |
+| `topograms` | `0.3.94` | Catalog Verification | completed/success | [25975824289](https://github.com/attebury/topograms/actions/runs/25975824289) |
 
 ## Proof Consumers
 
