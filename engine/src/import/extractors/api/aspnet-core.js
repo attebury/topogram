@@ -31,40 +31,15 @@ function buildDotnetFileIndex(paths) {
 }
 
 function explicitHandlerHint(controllerName, methodName, routePath, httpMethod) {
-  if (controllerName === "ArticlesController" && methodName === "GetFeed") return "feed_article";
-  if (controllerName === "FavoritesController" && methodName === "FavoriteAdd") return "favorite_article";
-  if (controllerName === "FavoritesController" && methodName === "FavoriteDelete") return "unfavorite_article";
-  if (controllerName === "FollowersController" && methodName === "Follow") return "follow_profile";
-  if (controllerName === "FollowersController" && methodName === "Unfollow") return "unfollow_profile";
-  if (controllerName === "ProfilesController" && methodName === "Get") return "get_profile";
-  if (controllerName === "UsersController" && methodName === "Login") return "sign_in_account";
-  if (controllerName === "UserController" && methodName === "GetCurrent") return "get_user";
-  if (controllerName === "UserController" && methodName === "UpdateUser") return "update_user";
-  if (controllerName === "TagsController" && methodName === "Get") return "list_tags";
-  if (controllerName === "ArticlesController" && methodName === "Get" && /\/\{slug\}$/.test(routePath)) return "get_article";
-  if (controllerName === "ArticlesController" && methodName === "Get" && httpMethod === "GET") return "list_articles";
-  if (controllerName === "ArticlesController" && methodName === "Create") return "create_article";
-  if (controllerName === "ArticlesController" && methodName === "Edit") return "update_article";
-  if (controllerName === "ArticlesController" && methodName === "Delete") return "delete_article";
-  if (controllerName === "CommentsController" && methodName === "Get") return "list_comments";
-  if (controllerName === "CommentsController" && methodName === "Create") return "create_comment";
-  if (controllerName === "CommentsController" && methodName === "Delete") return "delete_comment";
-  if (controllerName === "UsersController" && methodName === "Create") return "create_user";
-  if (controllerName === "TodoItemsController" && methodName === "List") return "list_todo_items";
-  if (controllerName === "TodoItemsController" && methodName === "Create") return "create_todo_item";
-  if (controllerName === "TodoItemsController" && methodName === "Edit") return "update_todo_item";
-  if (controllerName === "TodoItemsController" && methodName === "Delete") return "delete_todo_item";
+  void controllerName;
+  void methodName;
+  void routePath;
+  void httpMethod;
   return null;
 }
 
 function explicitEntityId(controllerName, handlerHint, routePath) {
-  if (controllerName === "ProfilesController") return "entity_profile";
-  if (controllerName === "FollowersController") return "entity_profile";
-  if (controllerName === "FavoritesController") return "entity_article";
-  if (controllerName === "ArticlesController") return "entity_article";
-  if (controllerName === "CommentsController") return "entity_comment";
-  if (controllerName === "TagsController") return "entity_tag";
-  if (controllerName === "TodoItemsController") return "entity_todo-item";
+  if (/Profiles?Controller$/.test(controllerName)) return "entity_profile";
   if (controllerName === "UserController" || controllerName === "UsersController") {
     return handlerHint === "sign_in_account" ? "entity_account" : "entity_user";
   }
@@ -148,7 +123,7 @@ function flattenInputFields(typeName, featureFiles, options = {}, seen = new Set
       const [, innerType, name] = match;
       const normalizedName = name.charAt(0).toLowerCase() + name.slice(1);
       const nested = flattenInputFields(innerType, featureFiles, options, seen);
-      if (nested.length > 0 && ["article", "user", "model", "comment"].includes(normalizedName)) {
+      if (nested.length > 0 && ["body", "data", "input", "model", "payload", "record", "request"].includes(normalizedName)) {
         fields.push(...nested);
       } else {
         fields.push(normalizedName);

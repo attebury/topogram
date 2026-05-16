@@ -18,11 +18,13 @@ function parsePageRoutes(text) {
 
 function screenIdFromFile(filePath) {
   const base = filePath.split("/").pop()?.replace(/\.razor(?:\.cs)?$/i, "") || "screen";
-  if (/^List$/i.test(base)) return "catalog_item_list";
-  if (/^Create$/i.test(base)) return "catalog_item_create";
-  if (/^Edit$/i.test(base)) return "catalog_item_edit";
-  if (/^Delete$/i.test(base)) return "catalog_item_delete";
-  if (/^Details$/i.test(base)) return "catalog_item_detail";
+  const parent = filePath.split("/").slice(-2, -1)[0] || "record";
+  const parentStem = idHintify(canonicalCandidateTerm(parent.replace(/([a-z0-9])([A-Z])/g, "$1_$2"))) || "record";
+  if (/^List$/i.test(base)) return `${parentStem}_list`;
+  if (/^Create$/i.test(base)) return `${parentStem}_create`;
+  if (/^Edit$/i.test(base)) return `${parentStem}_edit`;
+  if (/^Delete$/i.test(base)) return `${parentStem}_delete`;
+  if (/^Details$/i.test(base)) return `${parentStem}_detail`;
   if (/^Logout$/i.test(base)) return "account_logout";
   return idHintify(canonicalCandidateTerm(base.replace(/([a-z0-9])([A-Z])/g, "$1_$2")));
 }
@@ -36,23 +38,18 @@ function screenKindFromId(screenId) {
 }
 
 function conceptIdFromScreenId(screenId) {
-  if (/catalog_item/.test(screenId)) return "surface_catalog_item";
   if (/account|logout/.test(screenId)) return "surface_account";
   return `surface_${screenId}`;
 }
 
 function entityIdFromScreenId(screenId) {
-  if (/catalog_item/.test(screenId)) return "entity_catalog-item";
+  const match = screenId.match(/^(.+)_(?:list|create|edit|delete|detail)$/);
+  if (match) return `entity_${canonicalCandidateTerm(match[1])}`;
   return null;
 }
 
 function routePathForScreen(screenId, explicitRoutes) {
   if (explicitRoutes.length > 0) return explicitRoutes[0];
-  if (screenId === "catalog_item_create") return "/admin/catalog-items/create";
-  if (screenId === "catalog_item_edit") return "/admin/catalog-items/:id/edit";
-  if (screenId === "catalog_item_delete") return "/admin/catalog-items/:id/delete";
-  if (screenId === "catalog_item_detail") return "/admin/catalog-items/:id";
-  if (screenId === "catalog_item_list") return "/admin";
   if (screenId === "account_logout") return "/logout";
   return `/${screenId.replace(/_/g, "-")}`;
 }
@@ -60,11 +57,12 @@ function routePathForScreen(screenId, explicitRoutes) {
 function capabilityHintsForText(text) {
   const source = String(text || "");
   const hints = [];
-  if (/\bCatalogItemService\.List\s*\(/.test(source)) hints.push("cap_list_catalog_items");
-  if (/\bCatalogItemService\.GetById\s*\(/.test(source)) hints.push("cap_get_catalog_item");
-  if (/\bCatalogItemService\.Create\s*\(/.test(source)) hints.push("cap_create_catalog_item");
-  if (/\bCatalogItemService\.Edit\s*\(/.test(source)) hints.push("cap_update_catalog_item");
-  if (/\bCatalogItemService\.Delete\s*\(/.test(source)) hints.push("cap_delete_catalog_item");
+  for (const match of source.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)Service\.(List|GetById|Create|Edit|Update|Delete)\s*\(/g)) {
+    const resource = canonicalCandidateTerm(match[1].replace(/Service$/, "").replace(/([a-z0-9])([A-Z])/g, "$1_$2"));
+    const operation = match[2].toLowerCase();
+    const verb = operation === "list" ? "list" : operation === "getbyid" ? "get" : operation === "edit" ? "update" : operation;
+    hints.push(`cap_${verb}_${resource}`);
+  }
   if (/\bPostAsync\(\s*"User\/Logout"/.test(source) || /\bRouteOutside\(\s*"\/Identity\/Account\/Login"/.test(source)) {
     hints.push("cap_sign_out_account");
   }

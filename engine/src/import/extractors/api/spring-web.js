@@ -26,76 +26,9 @@ function escapeRegExp(value) {
 }
 
 function explicitHandlerHint(methodName, routePath, httpMethod) {
-  const low = String(methodName || "").toLowerCase();
-  if (httpMethod === "GET" && /\/articles\/feed$/.test(routePath)) return "feed_article";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "favorite_article";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "unfavorite_article";
-  if (httpMethod === "GET" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "list_comments";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "create_comment";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/comments\/\{id\}$/.test(routePath)) return "delete_comment";
-  if (httpMethod === "GET" && /\/profiles\/\{username\}$/.test(routePath)) return "get_profile";
-  if (httpMethod === "POST" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "follow_profile";
-  if (httpMethod === "DELETE" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "unfollow_profile";
-  if (httpMethod === "POST" && /\/users\/login$/.test(routePath)) return "sign_in_account";
-  if (httpMethod === "POST" && routePath === "/users") return "create_user";
-  if (httpMethod === "GET" && routePath === "/user") return "get_user";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && routePath === "/user") return "update_user";
-  if (httpMethod === "GET" && routePath === "/tags") return "list_tags";
-  if (httpMethod === "GET" && /\/articles\/\{slug\}$/.test(routePath)) return "get_article";
-  if (httpMethod === "GET" && routePath === "/articles") return "list_articles";
-  if (httpMethod === "POST" && routePath === "/articles") return "create_article";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && /\/articles\/\{slug\}$/.test(routePath)) return "update_article";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}$/.test(routePath)) return "delete_article";
-  if (httpMethod === "POST" && routePath === "/Customer") return "create_customer";
-  if (httpMethod === "POST" && /\/Customer\/auth$/.test(routePath)) return "sign_in_account";
-  if (httpMethod === "GET" && routePath === "/Store") return "list_stores";
-  if (httpMethod === "GET" && /\/Store\/search\/\{text\}$/.test(routePath)) return "search_stores";
-  if (httpMethod === "GET" && /\/Store\/\{id\}$/.test(routePath)) return "get_store";
-  if (httpMethod === "GET" && /\/Store\/\{id\}\/products$/.test(routePath)) return "list_products";
-  if (httpMethod === "GET" && routePath === "/Product") return "list_products";
-  if (httpMethod === "GET" && /\/Product\/search\/\{text\}$/.test(routePath)) return "search_products";
-  if (httpMethod === "GET" && /\/Product\/\{id\}$/.test(routePath)) return "get_product";
-  if (httpMethod === "GET" && routePath === "/Cousine") return "list_cousines";
-  if (httpMethod === "GET" && /\/Cousine\/search\/\{text\}$/.test(routePath)) return "search_cousines";
-  if (httpMethod === "GET" && /\/Cousine\/\{id\}\/stores$/.test(routePath)) return "list_stores";
-  if (httpMethod === "POST" && routePath === "/Order") return "create_order";
-  if (httpMethod === "GET" && /\/Order\/\{id\}$/.test(routePath)) return "get_order";
-  if (httpMethod === "GET" && /\/Order\/\{id\}\/customer$/.test(routePath)) return "get_customer";
-  if (httpMethod === "DELETE" && /\/Order\/\{id\}$/.test(routePath)) return "delete_order";
-  if (httpMethod === "POST" && /\/Order\/\{id\}\/payment$/.test(routePath)) return "pay_order";
-  if (httpMethod === "POST" && /\/Order\/\{id\}\/delivery$/.test(routePath)) return "delivery_order";
-  if (low === "feed" || low === "getfeed") return "feed_article";
-  if (low.includes("favorite")) return low.startsWith("un") ? "unfavorite_article" : "favorite_article";
-  if (low.includes("comment")) {
-    if (low.startsWith("delete")) return "delete_comment";
-    if (low.startsWith("create") || low.startsWith("add")) return "create_comment";
-    return "list_comments";
-  }
-  if ((low === "findbyusername" || low === "getprofile") && /\/profiles\/\{username\}$/.test(routePath)) return "get_profile";
-  if (low.includes("follow")) return low.startsWith("un") ? "unfollow_profile" : "follow_profile";
-  if (low === "login" || low === "userlogin" || /\/users\/login$/.test(routePath)) return "sign_in_account";
-  if (low === "register" || low === "createuser" || (routePath === "/users" && httpMethod === "POST")) return "create_user";
-  if (low === "current" || low === "currentuser") return "get_user";
-  if ((low === "update" || low === "updateprofile") && routePath === "/user") return "update_user";
-  if (low === "findall" || low === "gettags") return "list_tags";
-  if ((low === "findbyslug" || low === "article") && httpMethod === "GET") return "get_article";
-  if ((low === "findbyfilters" || low === "getarticles") && httpMethod === "GET") return "list_articles";
-  if ((low === "create" || low === "createarticle") && routePath === "/articles") return "create_article";
-  if (low === "updatebyslug" || low === "updatearticle") return "update_article";
-  if (low === "deletebyslug" || low === "deletearticle") return "delete_article";
-  if (low === "signup") return "create_customer";
-  if (low === "signin" || /\/auth$/.test(routePath)) return "sign_in_account";
-  if (low === "getallstores") return "list_stores";
-  if (low === "getallproducts") return "list_products";
-  if (low === "getallcousines") return "list_cousines";
-  if (low.includes("search")) {
-    if (low.includes("store")) return "search_stores";
-    if (low.includes("product")) return "search_products";
-    if (low.includes("cousine")) return "search_cousines";
-  }
-  if (low === "create") {
-    return null;
-  }
+  void methodName;
+  void routePath;
+  void httpMethod;
   return null;
 }
 
@@ -157,7 +90,7 @@ function flattenFieldsFromType(typeName, files, seen = new Set(), preferredFile 
   if (recordFields.length > 0) {
     for (const field of recordFields) {
       const nested = flattenFieldsFromType(field.type, files, seen, block.filePath);
-      if (nested.length > 0 && ["article", "user", "data", "comment", "profile", "request", "orderrequest"].includes(field.name.toLowerCase())) {
+      if (nested.length > 0 && ["body", "data", "input", "model", "payload", "record", "request"].includes(field.name.toLowerCase())) {
         fields.push(...nested);
       } else {
         fields.push(field.name);
@@ -218,11 +151,8 @@ function normalizeJoinedPath(basePath, childPath = "") {
 
 function inferAuthHint(pathValue, methodName, parameters = "", annotations = "") {
   if (/@PreAuthorize/.test(annotations) || /AuthenticationPrincipal|CurrentUser/.test(parameters) || /RequestHeader\([^)]*Authorization/.test(parameters)) return "secured";
-  if (pathValue === "/users/login" || pathValue === "/Customer/auth") return "public";
-  if ((pathValue === "/users" && /create|register|signup/i.test(methodName)) || pathValue === "/Customer") return "public";
-  if ((pathValue === "/articles" || pathValue === "/tags") || /^\/articles\/\{slug\}(?:\/comments)?$/.test(pathValue) || /^\/profiles\/\{username\}$/.test(pathValue)) {
-    return "public";
-  }
+  if (/\/(login|signin|sign-in|auth)$/.test(pathValue)) return "public";
+  if (/\/(register|signup)$/.test(pathValue) || (pathValue === "/users" && /create|register|signup/i.test(methodName))) return "public";
   return "unknown";
 }
 

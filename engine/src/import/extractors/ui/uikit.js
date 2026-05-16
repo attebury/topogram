@@ -22,14 +22,13 @@ function screenIdFromController(className) {
 function screenKindFromClass(className, screenId) {
   if (/TableViewController$/.test(className) || /CollectionViewController$/.test(className)) return "list";
   if (/Settings|Onboarding|Theme|Search/i.test(className) || /settings|onboarding|theme|search/.test(screenId)) return "settings";
-  if (/Browser|Home/i.test(className) || /browser|home/.test(screenId)) return "flow";
-  if (/About|Tip|TrackingProtection|SiriFavorite/i.test(className)) return "detail";
+  if (/Home/i.test(className) || /home/.test(screenId)) return "flow";
+  if (/About|Tip/i.test(className)) return "detail";
   return "flow";
 }
 
 function conceptIdFromScreen(screenId) {
-  if (/browser|home/.test(screenId)) return "surface_browser";
-  if (/^setting$|settings|theme|about|search|tracking_protection|autocomplete|safari_instruction|siri_favorite|add_custom_domain|add_search_engine/.test(screenId)) {
+  if (/^setting$|settings|theme|about|search/.test(screenId)) {
     return "surface_settings";
   }
   if (/onboarding|default_browser|show_me_how|get_started|tooltip|terms_of_service|privacy_policy/.test(screenId)) return "surface_onboarding";

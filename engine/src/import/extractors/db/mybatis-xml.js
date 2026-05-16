@@ -4,15 +4,10 @@ import { parseSqlSchema } from "./sql.js";
 function classifyNoiseEntity(tableName, fields) {
   const normalized = String(tableName || "").toLowerCase();
   const idLikeFields = (fields || []).filter((field) => /_id$/.test(field.name));
-  if (["article_favorites", "article_tags", "follows"].includes(normalized)) {
+  if (/(^|_)(association|join|junction|link|mapping|relationship|xref)$/.test(normalized)) {
     return {
       noise_candidate: true,
-      noise_reason:
-        normalized === "article_favorites"
-          ? "Spring MyBatis implementation-noise join table for article favorites."
-          : normalized === "article_tags"
-            ? "Spring MyBatis implementation-noise join table for article-tag linkage."
-            : "Spring MyBatis implementation-noise join table for follow relationships."
+      noise_reason: "Spring MyBatis implementation-noise join table."
     };
   }
   if (idLikeFields.length >= 2 && (fields || []).length <= 4) {

@@ -14,12 +14,6 @@ function shouldIgnoreFile(filePath) {
 
 function inferFromPath(repoRelativePath) {
   const normalized = repoRelativePath.replace(/\\/g, "/");
-  if (/\/Pages\/Basket\/Index\.cshtml$/.test(normalized)) return { screenId: "basket", conceptId: "surface_basket", entityId: "entity_basket", routePath: "/basket", screenKind: "list" };
-  if (/\/Pages\/Basket\/Checkout\.cshtml$/.test(normalized)) return { screenId: "basket_checkout", conceptId: "surface_basket", entityId: "entity_basket", routePath: "/basket/checkout", screenKind: "form" };
-  if (/\/Pages\/Basket\/Success\.cshtml$/.test(normalized)) return { screenId: "basket_success", conceptId: "surface_basket", entityId: "entity_basket", routePath: "/basket/success", screenKind: "detail" };
-  if (/\/Pages\/Admin\/Index\.cshtml$/.test(normalized)) return { screenId: "catalog_item_admin", conceptId: "surface_catalog_item_admin", entityId: "entity_catalog-item", routePath: "/admin", screenKind: "list" };
-  if (/\/Pages\/Admin\/EditCatalogItem\.cshtml$/.test(normalized)) return { screenId: "catalog_item_admin_edit", conceptId: "surface_catalog_item_admin", entityId: "entity_catalog-item", routePath: "/admin/edit-catalog-item", screenKind: "form" };
-  if (/\/Pages\/Index\.cshtml$/.test(normalized)) return { screenId: "catalog_home", conceptId: "surface_catalog", entityId: "entity_item", routePath: "/", screenKind: "list" };
   if (/\/Pages\/Privacy\.cshtml$/.test(normalized)) return { screenId: "privacy", conceptId: "surface_app", entityId: null, routePath: "/privacy", screenKind: "detail" };
   if (/\/Pages\/Error\.cshtml$/.test(normalized)) return { screenId: "error", conceptId: "surface_app", entityId: null, routePath: "/error", screenKind: "detail" };
   if (/\/Areas\/Identity\/Pages\/Account\/Login\.cshtml$/.test(normalized)) return { screenId: "account_login", conceptId: "surface_account", entityId: null, routePath: "/account/login", screenKind: "auth" };
@@ -31,12 +25,44 @@ function inferFromPath(repoRelativePath) {
     const stem = idHintify(canonicalCandidateTerm(base.replace(/([a-z0-9])([A-Z])/g, "$1_$2")));
     return { screenId: stem, conceptId: "surface_account", entityId: null, routePath: `/account/${stem.replace(/_/g, "-")}`, screenKind: "auth" };
   }
-  if (/\/Views\/Order\/MyOrders\.cshtml$/.test(normalized)) return { screenId: "order_list", conceptId: "surface_order", entityId: "entity_order", routePath: "/order/my-orders", screenKind: "list" };
-  if (/\/Views\/Order\/Detail\.cshtml$/.test(normalized)) return { screenId: "order_detail", conceptId: "surface_order", entityId: "entity_order", routePath: "/order/detail", screenKind: "detail" };
   if (/\/Views\/Manage\//.test(normalized)) {
     const base = normalized.split("/").pop()?.replace(/\.cshtml$/i, "") || "manage";
     const stem = idHintify(canonicalCandidateTerm(base.replace(/([a-z0-9])([A-Z])/g, "$1_$2")));
     return { screenId: stem, conceptId: "surface_account", entityId: null, routePath: `/manage/${stem.replace(/_/g, "-")}`, screenKind: "settings" };
+  }
+  const pageMatch = normalized.match(/\/Pages\/(.+)\.cshtml$/);
+  if (pageMatch) {
+    const parts = pageMatch[1]
+      .split("/")
+      .map((part) => idHintify(canonicalCandidateTerm(part.replace(/([a-z0-9])([A-Z])/g, "$1_$2"))))
+      .filter(Boolean);
+    if (parts.length > 0) {
+      const isIndex = parts[parts.length - 1] === "index";
+      const routeParts = isIndex ? parts.slice(0, -1) : parts;
+      const screenParts = isIndex && parts.length > 1 ? parts.slice(0, -1) : parts;
+      const screenId = screenParts.join("_") || "home";
+      const entityStem = screenParts[0] && screenParts[0] !== "index" ? screenParts[0] : null;
+      return {
+        screenId,
+        conceptId: `surface_${screenId}`,
+        entityId: entityStem ? `entity_${entityStem}` : null,
+        routePath: routeParts.length > 0 ? `/${routeParts.join("/")}`.replace(/_/g, "-") : "/",
+        screenKind: /create|edit|change|checkout/.test(screenId) ? "form" : /detail|details|success/.test(screenId) ? "detail" : "list"
+      };
+    }
+  }
+  const viewMatch = normalized.match(/\/Views\/([^/]+)\/(.+)\.cshtml$/);
+  if (viewMatch) {
+    const controller = idHintify(canonicalCandidateTerm(viewMatch[1].replace(/([a-z0-9])([A-Z])/g, "$1_$2")));
+    const stem = idHintify(canonicalCandidateTerm(viewMatch[2].replace(/([a-z0-9])([A-Z])/g, "$1_$2")));
+    const screenId = stem === "index" ? controller : `${controller}_${stem}`;
+    return {
+      screenId,
+      conceptId: `surface_${controller}`,
+      entityId: `entity_${controller}`,
+      routePath: stem === "index" ? `/${controller}` : `/${controller}/${stem.replace(/_/g, "-")}`,
+      screenKind: /create|edit|change|checkout/.test(stem) ? "form" : /detail|details|show|success/.test(stem) ? "detail" : "list"
+    };
   }
 
   const base = normalized.split("/").pop()?.replace(/\.cshtml$/i, "") || "view";
@@ -58,14 +84,13 @@ function routePathForPage(text, fallback) {
 function capabilityHints(text, repoRelativePath, screenId) {
   const source = String(text || "");
   const hints = [];
-  if (/asp-page-handler="Update"|name="updatebutton"/.test(source)) hints.push("cap_update_basket");
-  if (/asp-page="\.\/Checkout"|Checkout/.test(source) && /basket/i.test(screenId)) hints.push("cap_checkout_basket");
-  if (/asp-controller="Order"\s+asp-action="Detail"|Order\/Detail/.test(source)) hints.push("cap_get_order");
-  if (/asp-controller="Order"\s+asp-action="cancel"/i.test(source)) hints.push("cap_cancel_order");
   if (/method="post"/.test(source) && /login/i.test(repoRelativePath)) hints.push("cap_sign_in_account");
   if (/method="post"/.test(source) && /register/i.test(repoRelativePath)) hints.push("cap_register_account");
-  if (/EditCatalogItem|asp-page="\/Admin\/EditCatalogItem"/.test(source)) hints.push("cap_update_catalog_item");
-  if (/Products|CatalogItem|ProductName/.test(source) && /catalog|admin/i.test(repoRelativePath)) hints.push("cap_list_catalog_items");
+  const entityStem = canonicalCandidateTerm(screenId.replace(/_(create|edit|update|delete|detail|details|list|index|checkout|success)$/i, ""));
+  if (/asp-page-handler="Update"|name="updatebutton"|asp-action="Edit"|Edit/.test(source)) hints.push(`cap_update_${entityStem}`);
+  if (/asp-action="Delete"|Delete/.test(source)) hints.push(`cap_delete_${entityStem}`);
+  if (/asp-action="Create"|Create/.test(source)) hints.push(`cap_create_${entityStem}`);
+  if (/asp-action="Detail"|Detail/.test(source)) hints.push(`cap_get_${entityStem}`);
   return [...new Set(hints)];
 }
 

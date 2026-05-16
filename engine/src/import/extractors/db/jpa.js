@@ -37,7 +37,7 @@ function extractAnnotatedFields(text) {
 }
 
 function isNoiseEntity(entityStem) {
-  return ["order-item", "orderitem"].includes(entityStem) || /(?:favorite|follow|tag)-?relationship$/.test(entityStem);
+  return /(?:^|[-_])(association|join|junction|link|mapping|relationship|xref)$/.test(entityStem);
 }
 
 export const jpaExtractor = {

@@ -177,16 +177,9 @@ function viewSetRoutes(prefix, viewMeta) {
 }
 
 function explicitHandlerHint(viewClassName, method, routePath) {
-  if (viewClassName === "ProfileFollowAPIView") {
-    return method === "POST" ? "follow_profile" : method === "DELETE" ? "unfollow_profile" : null;
-  }
-  if (viewClassName === "ArticlesFavoriteAPIView") {
-    return method === "POST" ? "favorite_article" : method === "DELETE" ? "unfavorite_article" : null;
-  }
-  if (viewClassName === "ArticlesFeedAPIView") {
-    return "feed_article";
-  }
-  if (viewClassName === "LoginAPIView") {
+  void method;
+  void routePath;
+  if (/^Login/.test(viewClassName)) {
     return "sign_in_account";
   }
   return null;

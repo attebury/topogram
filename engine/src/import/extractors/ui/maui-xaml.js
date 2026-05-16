@@ -13,8 +13,7 @@ function screenIdFromClass(className) {
 }
 
 function entityIdFromScreen(screenId) {
-  if (/^todo_(item|list)$/.test(screenId)) return "entity_todo-item";
-  if (/main/.test(screenId)) return "entity_item";
+  if (/^main$/.test(screenId)) return null;
   return `entity_${canonicalCandidateTerm(screenId)}`;
 }
 
@@ -86,7 +85,7 @@ export const mauiXamlUiExtractor = {
         provenance,
         track: "ui",
         entity_id: entityId,
-        concept_id: entityId,
+        concept_id: entityId || `surface_${screenId}`,
         screen_kind: "flow",
         route_path: routePath
       }));
@@ -100,7 +99,7 @@ export const mauiXamlUiExtractor = {
         track: "ui",
         screen_id: screenId,
         entity_id: entityId,
-        concept_id: entityId,
+        concept_id: entityId || `surface_${screenId}`,
         path: routePath
       }));
       for (const commandName of [...parseCommands(text), ...parseClickedHandlers(text)]) {
@@ -115,7 +114,7 @@ export const mauiXamlUiExtractor = {
           track: "ui",
           screen_id: screenId,
           entity_id: entityId,
-          concept_id: entityId,
+          concept_id: entityId || `surface_${screenId}`,
           capability_hint: capabilityHint,
           prominence: "primary"
         }));

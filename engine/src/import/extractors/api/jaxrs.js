@@ -24,49 +24,9 @@ function escapeRegExp(value) {
 }
 
 function explicitHandlerHint(methodName, routePath, httpMethod) {
-  const low = String(methodName || "").toLowerCase();
-  if (httpMethod === "GET" && /\/articles\/feed$/.test(routePath)) return "feed_article";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "favorite_article";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "unfavorite_article";
-  if (httpMethod === "GET" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "list_comments";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "create_comment";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/comments\/\{id\}$/.test(routePath)) return "delete_comment";
-  if (httpMethod === "GET" && /\/profiles\/\{username\}$/.test(routePath)) return "get_profile";
-  if (httpMethod === "POST" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "follow_profile";
-  if (httpMethod === "DELETE" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "unfollow_profile";
-  if (httpMethod === "POST" && routePath === "/users") return "create_user";
-  if (httpMethod === "POST" && /\/users\/login$/.test(routePath)) return "sign_in_account";
-  if (httpMethod === "GET" && routePath === "/user") return "get_user";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && routePath === "/user") return "update_user";
-  if (httpMethod === "GET" && routePath === "/tags") return "list_tags";
-  if (httpMethod === "GET" && routePath === "/tasks") return "list_tasks";
-  if (httpMethod === "POST" && routePath === "/tasks") return "create_task";
-  if (httpMethod === "GET" && /\/tasks\/\{id\}$/.test(routePath)) return "get_task";
-  if (httpMethod === "PUT" && /\/tasks\/\{id\}$/.test(routePath)) return "update_task";
-  if (httpMethod === "DELETE" && /\/tasks\/\{id\}$/.test(routePath)) return "delete_task";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && /\/tasks\/\{id\}\/status$/.test(routePath)) return "update_task_status";
-  if (low.includes("favorite")) return low.startsWith("un") ? "unfavorite_article" : "favorite_article";
-  if (low.includes("comment")) {
-    if (low.startsWith("delete")) return "delete_comment";
-    if (low.startsWith("create") || low.startsWith("add")) return "create_comment";
-    return "list_comments";
-  }
-  if (low.includes("follow")) return low.startsWith("un") ? "unfollow_profile" : "follow_profile";
-  if (low === "login" || /\/users\/login$/.test(routePath)) return "sign_in_account";
-  if ((low === "create" || low === "register" || low === "save") && routePath === "/users") return "create_user";
-  if (low === "current" || low === "getuser") return "get_user";
-  if (low === "update" && routePath === "/user") return "update_user";
-  if (low === "alltasks") return "list_tasks";
-  if (low === "taskdetails") return "get_task";
-  if (low === "updatestatus") return "update_task_status";
-  if (low === "delete") {
-    if (/\/tasks\//.test(routePath)) return "delete_task";
-    if (/\/articles\/\{slug\}$/.test(routePath)) return "delete_article";
-  }
-  if (low === "create" && routePath === "/articles") return "create_article";
-  if (low === "update" && /\/articles\/\{slug\}$/.test(routePath)) return "update_article";
-  if (low === "findbyslug" && httpMethod === "GET") return "get_article";
-  if (low === "getarticles" || low === "findbyfilters") return "list_articles";
+  void methodName;
+  void routePath;
+  void httpMethod;
   return null;
 }
 
@@ -128,7 +88,7 @@ function flattenFieldsFromType(typeName, files, seen = new Set(), preferredFile 
   if (recordFields.length > 0) {
     for (const field of recordFields) {
       const nested = flattenFieldsFromType(field.type, files, seen, block.filePath);
-      if (nested.length > 0 && ["article", "user", "data", "comment", "profile", "request"].includes(field.name.toLowerCase())) {
+      if (nested.length > 0 && ["body", "data", "input", "model", "payload", "record", "request"].includes(field.name.toLowerCase())) {
         fields.push(...nested);
       } else {
         fields.push(field.name);

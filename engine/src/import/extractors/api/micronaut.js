@@ -20,36 +20,9 @@ function buildJavaFileIndex(paths) {
 }
 
 function explicitHandlerHint(methodName, routePath, httpMethod) {
-  const low = String(methodName || "").toLowerCase();
-  if (httpMethod === "GET" && /\/articles\/feed$/.test(routePath)) return "feed_article";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "favorite_article";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/favorite$/.test(routePath)) return "unfavorite_article";
-  if (httpMethod === "GET" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "list_comments";
-  if (httpMethod === "POST" && /\/articles\/\{slug\}\/comments$/.test(routePath)) return "create_comment";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}\/comments\/\{id\}$/.test(routePath)) return "delete_comment";
-  if (httpMethod === "GET" && /\/profiles\/\{username\}$/.test(routePath)) return "get_profile";
-  if (httpMethod === "POST" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "follow_profile";
-  if (httpMethod === "DELETE" && /\/profiles\/\{username\}\/follow$/.test(routePath)) return "unfollow_profile";
-  if (httpMethod === "POST" && /\/users\/login$/.test(routePath)) return "sign_in_account";
-  if (httpMethod === "POST" && routePath === "/users") return "create_user";
-  if (httpMethod === "GET" && routePath === "/user") return "get_user";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && routePath === "/user") return "update_user";
-  if (httpMethod === "GET" && routePath === "/tags") return "list_tags";
-  if (httpMethod === "GET" && /\/articles\/\{slug\}$/.test(routePath)) return "get_article";
-  if (httpMethod === "GET" && routePath === "/articles") return "list_articles";
-  if (httpMethod === "POST" && routePath === "/articles") return "create_article";
-  if ((httpMethod === "PUT" || httpMethod === "PATCH") && /\/articles\/\{slug\}$/.test(routePath)) return "update_article";
-  if (httpMethod === "DELETE" && /\/articles\/\{slug\}$/.test(routePath)) return "delete_article";
-  if (low.includes("favorite")) return low.startsWith("un") ? "unfavorite_article" : "favorite_article";
-  if (low.includes("comment")) {
-    if (low.startsWith("delete")) return "delete_comment";
-    if (low.startsWith("add") || low.startsWith("create")) return "create_comment";
-    return "list_comments";
-  }
-  if (low.includes("follow")) return low.startsWith("un") ? "unfollow_profile" : "follow_profile";
-  if (low === "login") return "sign_in_account";
-  if (low === "register") return "create_user";
-  if (low === "current") return "get_user";
+  void methodName;
+  void routePath;
+  void httpMethod;
   return null;
 }
 
@@ -146,7 +119,7 @@ function parseMicronautRoutes(files, repoRoot) {
         handler_hint: explicitHandlerHint(methodName, pathValue, verb.toUpperCase()),
         controller: file.relativePath.split("/").pop()?.replace(/\.java$/, "") || "MicronautOperations",
         action: methodName,
-        auth_hint: pathValue === "/users/login" || pathValue === "/users" || pathValue === "/tags" || pathValue === "/articles" || /^\/profiles\/\{username\}$/.test(pathValue) ? "public" : "secured",
+        auth_hint: /\/(login|signin|sign-in|auth|register|signup)$/.test(pathValue) ? "public" : "secured",
         path_params: parsePathParams(parameters),
         query_params: parseQueryParams(parameters),
         header_params: [],

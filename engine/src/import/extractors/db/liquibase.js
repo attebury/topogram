@@ -19,16 +19,13 @@ function isJoinTable(tableName, fields) {
   const normalized = normalizeLiquibaseTableName(tableName);
   const idFields = (fields || []).filter((field) => field.name.endsWith("_id"));
   return (
-    ["article-tags", "favorites", "follows"].includes(normalized) ||
+    /(?:^|-)(association|join|junction|link|mapping|relationship|xref)$/.test(normalized) ||
     (idFields.length >= 2 && (fields || []).length <= 4)
   );
 }
 
 function joinNoiseReason(tableName) {
-  const normalized = normalizeLiquibaseTableName(tableName);
-  if (normalized === "article-tags") return "Liquibase implementation-noise join table for article-tag linkage.";
-  if (normalized === "favorites" || normalized === "article-favorites") return "Liquibase implementation-noise join table for article favorites.";
-  if (normalized === "follows" || normalized === "follow-relation") return "Liquibase implementation-noise join table for follow relationships.";
+  void tableName;
   return "Liquibase implementation-noise join table.";
 }
 

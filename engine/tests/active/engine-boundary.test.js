@@ -12,6 +12,7 @@ const appBasicRoots = [
   path.join(fixturesRoot, "expected", "app-basic")
 ];
 const nativeGeneratorRoot = path.join(repoRoot, "engine", "src", "generator", "surfaces", "native");
+const importExtractorsRoot = path.join(repoRoot, "engine", "src", "import", "extractors");
 const productNameLower = ["to", "do"].join("");
 const productNameTitle = ["To", "do"].join("");
 const generatedWorkflowBoundaryFile = path.join(activeTestsRoot, "generated-app-workflow.test.js");
@@ -68,6 +69,26 @@ const forbiddenNativeGeneratorProductArtifacts = [
   "task_detail",
   "task_create",
   "task_exports"
+];
+const forbiddenExtractorProductArtifacts = [
+  "ArticlesController",
+  "CatalogItem",
+  "Customer",
+  "Cousine",
+  "SiriFavorite",
+  "Store",
+  [productNameTitle, "ItemsController"].join(""),
+  "article_favorites",
+  "article_tags",
+  "cap_checkout_basket",
+  "cap_update_basket",
+  "catalog_item",
+  "create_customer",
+  "entity_order",
+  ["entity", [productNameLower, "item"].join("-")].join("_"),
+  "favorite_article",
+  "follow_profile",
+  "tracking_protection"
 ];
 const externalProductReferences = [
   productNameLower,
@@ -290,6 +311,20 @@ test("native generator templates stay neutral instead of reintroducing product b
     const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
     const contents = fs.readFileSync(file, "utf8");
     const references = forbiddenNativeGeneratorProductArtifacts.filter((reference) => contents.includes(reference));
+    if (references.length > 0) {
+      offenders.push({ file: relative, references });
+    }
+  }
+
+  assert.deepEqual(offenders, []);
+});
+
+test("built-in import extractors stay neutral instead of carrying sample-app shortcuts", () => {
+  const offenders = [];
+  for (const file of visitFiles(importExtractorsRoot)) {
+    const relative = path.relative(repoRoot, file).replace(/\\/g, "/");
+    const contents = fs.readFileSync(file, "utf8");
+    const references = forbiddenExtractorProductArtifacts.filter((reference) => contents.includes(reference));
     if (references.length > 0) {
       offenders.push({ file: relative, references });
     }
