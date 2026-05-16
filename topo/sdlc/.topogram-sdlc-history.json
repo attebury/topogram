@@ -3512,5 +3512,69 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_sdlc_available_hides_covered_requirements": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T04:51:34.417Z",
+      "by": "actor_coding_agent",
+      "note": "Approve available-work query acceptance criterion."
+    }
+  ],
+  "task_quiet_sdlc_available_covered_requirements": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T04:51:34.466Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T04:51:34.509Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T04:56:09.551Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "ac_sdlc_closeout_candidates_surface": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T05:18:54.951Z",
+      "by": "actor_coding_agent",
+      "note": "Approve closeout candidate query acceptance criterion."
+    }
+  ],
+  "task_add_sdlc_closeout_candidates_query": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T05:18:55.011Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T05:18:55.050Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T05:23:34.775Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

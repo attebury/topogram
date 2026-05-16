@@ -126,14 +126,14 @@ function taskRecord(task) {
 export function buildSdlcAvailablePayload(graph) {
   const allTasks = tasks(graph);
   const activeStatuses = new Set(["unclaimed", "claimed", "in-progress", "blocked"]);
-  const activeRequirementIds = new Set(
+  const activeOrCoveredRequirementIds = new Set(
     allTasks
-      .filter((task) => activeStatuses.has(task.status))
+      .filter((task) => activeStatuses.has(task.status) || task.status === "done")
       .flatMap((task) => refIds(task.satisfies))
   );
   const approvedRequirementsWithoutActiveTasks = (graph.byKind?.requirement || [])
     .filter((/** @type {AnyRecord} */ requirement) => !requirement.archived && requirement.status === "approved")
-    .filter((/** @type {AnyRecord} */ requirement) => !activeRequirementIds.has(requirement.id))
+    .filter((/** @type {AnyRecord} */ requirement) => !activeOrCoveredRequirementIds.has(requirement.id))
     .map(summary);
   return {
     type: "sdlc_available_query",
@@ -146,6 +146,36 @@ export function buildSdlcAvailablePayload(graph) {
       .filter((bug) => !["verified", "wont-fix"].includes(String(bug.status)))
       .map(summary)),
     approved_requirements_without_active_tasks: approvedRequirementsWithoutActiveTasks
+  };
+}
+
+/**
+ * @param {AnyRecord} graph
+ * @returns {AnyRecord}
+ */
+export function buildSdlcCloseoutCandidatesPayload(graph) {
+  const allTasks = tasks(graph);
+  const activeStatuses = new Set(["unclaimed", "claimed", "in-progress", "blocked"]);
+  const approvedRequirements = (graph.byKind?.requirement || [])
+    .filter((/** @type {AnyRecord} */ requirement) => !requirement.archived && requirement.status === "approved");
+  const candidates = approvedRequirements.flatMap((/** @type {AnyRecord} */ requirement) => {
+    const satisfyingTasks = allTasks.filter((task) => refIds(task.satisfies).includes(requirement.id));
+    const doneTasks = satisfyingTasks.filter((task) => task.status === "done");
+    const activeTasks = satisfyingTasks.filter((task) => activeStatuses.has(task.status));
+    if (doneTasks.length === 0 || activeTasks.length > 0) {
+      return [];
+    }
+    return [{
+      requirement: summary(requirement),
+      done_tasks: doneTasks.map(taskRecord).sort((/** @type {AnyRecord} */ a, /** @type {AnyRecord} */ b) => a.id.localeCompare(b.id)),
+      active_tasks: activeTasks.map(taskRecord).sort((/** @type {AnyRecord} */ a, /** @type {AnyRecord} */ b) => a.id.localeCompare(b.id)),
+      recommended_command: `topogram sdlc transition ${requirement.id} satisfied . --actor <actor> --note "<proof>"`
+    }];
+  });
+  return {
+    type: "sdlc_closeout_candidates_query",
+    version: 1,
+    candidates: candidates.sort((/** @type {AnyRecord} */ a, /** @type {AnyRecord} */ b) => a.requirement.id.localeCompare(b.requirement.id))
   };
 }
 

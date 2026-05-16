@@ -1,0 +1,13 @@
+pitch pitch_external_issue_tracker_sync {
+  name "External Issue Tracker Sync"
+  description "Synchronize Topogram SDLC records with external issue trackers without making them the source of truth."
+  appetite "large"
+  problem "Many teams already use GitHub Issues, Jira, Linear, or Azure Boards, but Topogram needs graph-native SDLC records for agent context, proof gaps, requirements, and release linkage."
+  solution_sketch "Start with explicit import/export or one-way sync mappings that preserve Topogram IDs, external IDs, status mapping, ownership, links, and conflict diagnostics before considering bidirectional automation."
+  rabbit_holes "Do not let external tracker status silently override Topogram command-owned state."
+  no_go_areas "Do not require network access or tracker credentials for local SDLC workflows."
+  affects [cap_manage_sdlc_records cap_query_context cap_emit_artifacts]
+  domain dom_sdlc_query_agent_context
+  priority low
+  status draft
+}

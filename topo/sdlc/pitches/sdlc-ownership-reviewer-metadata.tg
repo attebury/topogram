@@ -1,0 +1,13 @@
+pitch pitch_sdlc_ownership_reviewer_metadata {
+  name "SDLC Ownership And Reviewer Metadata"
+  description "Make ownership and review responsibility explicit enough for teams and agents to route work correctly."
+  appetite "medium"
+  problem "Tasks can be claimed, but requirements, domains, rules, verifications, and high-risk changes do not yet carry durable owner or reviewer metadata that helps agents know who should review or approve work."
+  solution_sketch "Add optional owner, reviewer, role, and escalation metadata to SDLC records and domains, then surface it in agent brief, task-start packets, proof gaps, and gates."
+  rabbit_holes "Do not require heavyweight org charts or identities before the simple project-owned actor model is useful."
+  no_go_areas "Do not make ownership metadata replace clear task scope, acceptance criteria, or verification refs."
+  affects [cap_manage_sdlc_records cap_brief_agent cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

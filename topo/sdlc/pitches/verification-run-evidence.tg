@@ -1,0 +1,13 @@
+pitch pitch_verification_run_evidence {
+  name "Verification Run Evidence"
+  description "Capture concrete verification run evidence instead of only linking tasks to verification definitions."
+  appetite "medium"
+  problem "A task can reference a verification, but enterprise users and future agents need to know when it ran, what command ran, what version ran it, what output proved it, and whether the proof belongs to the current change."
+  solution_sketch "Add optional verification run records or receipts that attach command, actor, timestamp, commit, status, artifact path, and sanitized output summary to tasks, bugs, releases, and gates."
+  rabbit_holes "Do not store huge logs or machine-local paths in the graph."
+  no_go_areas "Do not make passing verification evidence replace actual tests, CI, or consumer proof."
+  affects [cap_manage_sdlc_records cap_run_engine_gates cap_emit_artifacts]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

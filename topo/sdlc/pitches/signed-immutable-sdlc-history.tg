@@ -1,0 +1,13 @@
+pitch pitch_signed_immutable_sdlc_history {
+  name "Signed Immutable SDLC History"
+  description "Harden command-owned SDLC history for audit scenarios that need tamper evidence."
+  appetite "large"
+  problem "Current SDLC history catches status drift, but high-compliance teams may need immutable, signed, append-only evidence for transitions, approvals, verification receipts, and release decisions."
+  solution_sketch "Explore append-only history records with canonical serialization, hashes, optional signatures, and verification commands that detect mutation without forcing every project into enterprise mode."
+  rabbit_holes "Do not pretend local signatures solve identity, key management, or legal attestation by themselves."
+  no_go_areas "Do not make signed history mandatory for ordinary local Topogram projects."
+  affects [cap_manage_sdlc_records cap_run_engine_gates cap_emit_artifacts]
+  domain dom_sdlc_query_agent_context
+  priority low
+  status draft
+}

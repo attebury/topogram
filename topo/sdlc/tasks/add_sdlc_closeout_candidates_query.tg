@@ -1,0 +1,14 @@
+task task_add_sdlc_closeout_candidates_query {
+  name "Add SDLC Closeout Candidates Query"
+  description "Add a read-only SDLC query that lists approved requirements ready to transition to satisfied based on done satisfying tasks."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_sdlc_closeout_candidates_surface]
+  verification_refs [verification_engine_gate]
+  affects [cap_manage_sdlc_records cap_query_context]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

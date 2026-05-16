@@ -1,0 +1,13 @@
+pitch pitch_sdlc_approvals {
+  name "SDLC Approvals"
+  description "Model human approval points for requirements, exceptions, releases, and high-risk changes."
+  appetite "medium"
+  problem "Current statuses show approved records, but they do not distinguish who approved, what authority they had, what evidence they reviewed, or whether approval is required before implementation or release."
+  solution_sketch "Add lightweight approval metadata and policy hooks for selected transitions, with actor, role, reason, reviewed evidence, and expiry where needed."
+  rabbit_holes "Do not rebuild enterprise workflow engines or require approval gates for every small local task."
+  no_go_areas "Do not let approval metadata bypass tests, checks, or SDLC proof requirements."
+  affects [cap_manage_sdlc_records cap_run_engine_gates cap_brief_agent]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

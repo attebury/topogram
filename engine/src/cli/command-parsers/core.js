@@ -37,6 +37,7 @@ const QUERY_NAMES = new Set([
   "auth-review-packet",
   "sdlc-available",
   "sdlc-claimed",
+  "sdlc-closeout-candidates",
   "sdlc-blockers",
   "sdlc-proof-gaps"
 ]);

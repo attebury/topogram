@@ -25,7 +25,7 @@ export function defaultActiveStatuses(kind) {
     case "pitch":
       return new Set(["draft", "shaped", "submitted", "approved"]);
     case "requirement":
-      return new Set(["draft", "in-review", "approved", "superseded"]);
+      return new Set(["draft", "in-review", "approved", "satisfied", "superseded"]);
     case "acceptance_criterion":
       return new Set(["draft", "approved", "superseded"]);
     case "task":

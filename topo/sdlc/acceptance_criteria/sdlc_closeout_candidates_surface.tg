@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_closeout_candidates_surface {
+  name "SDLC Closeout Candidates Surface"
+  description "Given approved requirements have completed satisfying tasks but are not yet satisfied, when a human or agent runs topogram query sdlc-closeout-candidates, then the query returns those requirements with done task evidence and a recommended satisfied transition command."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}

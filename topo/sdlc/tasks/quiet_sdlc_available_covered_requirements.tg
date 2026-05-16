@@ -1,0 +1,14 @@
+task task_quiet_sdlc_available_covered_requirements {
+  name "Quiet SDLC Available Covered Requirements"
+  description "Add a requirement satisfied status and filter the SDLC available-work query so explicitly satisfied requirements are not shown as ready work."
+  satisfies [req_enforce_sdlc_operating_habit]
+  acceptance_refs [ac_sdlc_available_hides_covered_requirements]
+  verification_refs [verification_engine_gate]
+  affects [cap_query_context cap_manage_sdlc_records]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

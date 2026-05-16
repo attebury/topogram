@@ -145,7 +145,7 @@ export function queryDefinitions() {
     {
       name: "sdlc-available",
       purpose: "Show SDLC work that is ready to be claimed or shaped.",
-      description: "Return unclaimed active tasks, unresolved bugs, and approved requirements without active tasks.",
+      description: "Return unclaimed active tasks, unresolved bugs, and approved requirements with no active or completed satisfying task. Satisfied requirements are closed out and omitted.",
       selectors: [],
       args: ["[path]", "[--json]"],
       output: "sdlc_available_query",
@@ -159,6 +159,15 @@ export function queryDefinitions() {
       args: ["[path]", "[--actor <id>]", "[--json]"],
       output: "sdlc_claimed_query",
       example: "topogram query sdlc-claimed ./topo --actor actor_coding_agent --json"
+    },
+    {
+      name: "sdlc-closeout-candidates",
+      purpose: "Show approved requirements that can be closed as satisfied.",
+      description: "Return approved requirements with done satisfying tasks and no active satisfying tasks, plus the recommended satisfied transition command.",
+      selectors: [],
+      args: ["[path]", "[--json]"],
+      output: "sdlc_closeout_candidates_query",
+      example: "topogram query sdlc-closeout-candidates ./topo --json"
     },
     {
       name: "sdlc-blockers",

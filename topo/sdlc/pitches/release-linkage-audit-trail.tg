@@ -1,0 +1,13 @@
+pitch pitch_release_linkage_audit_trail {
+  name "Release Linkage And Audit Trail"
+  description "Tie releases to the SDLC records, verification runs, tags, consumers, and follow-ups they actually shipped."
+  appetite "medium"
+  problem "Release status checks package and consumer state, but the durable release audit trail should also show which requirements, tasks, bugs, verification runs, known gaps, tags, and rollout events belong to each release."
+  solution_sketch "Generate release receipts from SDLC records, verification evidence, release status, consumer rollouts, and changelog notes, then expose them through release status and emit artifacts."
+  rabbit_holes "Do not duplicate git, npm, or GitHub Actions as full external systems of record."
+  no_go_areas "Do not let release receipts pass if package, tag, consumer, or verification gates fail."
+  affects [cap_verify_release_status cap_roll_consumer_packages cap_manage_sdlc_records cap_emit_artifacts]
+  domain dom_release_consumer_proof
+  priority medium
+  status draft
+}

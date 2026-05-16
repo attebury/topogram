@@ -1,0 +1,13 @@
+pitch pitch_enterprise_change_management_export {
+  name "Enterprise Change Management Export"
+  description "Export SDLC and proof data in a form enterprise change-management systems can review."
+  appetite "large"
+  problem "Enterprise adopters often need change tickets, approval packets, risk evidence, verification evidence, release linkage, and audit exports even when Topogram remains the local spec and SDLC source."
+  solution_sketch "Add export artifacts for change packets with requirement, risk, approval, verification, release, ownership, and rollback information, using portable paths and stable JSON."
+  rabbit_holes "Do not tightly couple Topogram core to one enterprise platform or ticket format."
+  no_go_areas "Do not add network sync or remote writes as part of a pure export feature."
+  affects [cap_manage_sdlc_records cap_emit_artifacts cap_verify_release_status]
+  domain dom_sdlc_query_agent_context
+  priority low
+  status draft
+}

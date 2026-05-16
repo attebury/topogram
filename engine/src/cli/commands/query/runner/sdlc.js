@@ -6,6 +6,7 @@ import {
   buildSdlcAvailablePayload,
   buildSdlcBlockersPayload,
   buildSdlcClaimedPayload,
+  buildSdlcCloseoutCandidatesPayload,
   buildSdlcProofGapsPayload
 } from "../../../../sdlc/views.js";
 import { printValidationFailure, resultOk } from "../workspace.js";
@@ -34,13 +35,16 @@ function resolveGraph(inputPath) {
  */
 export function runSdlcQuery(context) {
   const queryName = context.commandArgs?.queryName;
-  if (!["sdlc-available", "sdlc-claimed", "sdlc-blockers", "sdlc-proof-gaps"].includes(queryName)) {
+  if (!["sdlc-available", "sdlc-claimed", "sdlc-blockers", "sdlc-proof-gaps", "sdlc-closeout-candidates"].includes(queryName)) {
     return null;
   }
   const graph = resolveGraph(context.inputPath);
   if (!graph) return 1;
   if (queryName === "sdlc-available") {
     return printJson(buildSdlcAvailablePayload(graph));
+  }
+  if (queryName === "sdlc-closeout-candidates") {
+    return printJson(buildSdlcCloseoutCandidatesPayload(graph));
   }
   if (queryName === "sdlc-claimed") {
     return printJson(buildSdlcClaimedPayload(graph, context.actorId || null));

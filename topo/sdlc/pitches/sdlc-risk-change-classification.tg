@@ -1,0 +1,13 @@
+pitch pitch_sdlc_risk_change_classification {
+  name "SDLC Risk And Change Classification"
+  description "Classify work by risk and change type so gates and agent packets can scale with blast radius."
+  appetite "medium"
+  problem "All tasks currently look similar to gates unless a human reads the text, which makes it hard to require stronger proof for security, data, release, migration, or generated-output changes."
+  solution_sketch "Add normalized risk and change classifications to tasks, bugs, requirements, or plans, then use them to recommend verification depth, reviewers, approval needs, and release-note treatment."
+  rabbit_holes "Do not create a taxonomy so detailed that authors avoid filling it out."
+  no_go_areas "Do not use risk labels as a substitute for concrete acceptance criteria and verification refs."
+  affects [cap_manage_sdlc_records cap_query_context cap_run_engine_gates]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

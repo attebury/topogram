@@ -1,0 +1,13 @@
+pitch pitch_stale_work_wip_gates {
+  name "Stale Work And WIP Gates"
+  description "Detect stale claimed work and prevent quiet WIP accumulation before commits and releases."
+  appetite "small"
+  problem "Claimed and in-progress tasks can linger after context switches, and completed implementation may be mixed with stale SDLC records unless commit prep and gates call it out clearly."
+  solution_sketch "Use SDLC history timestamps, status, actor claims, and changed files to warn or fail on stale WIP, abandoned claims, too many active tasks, and release attempts with unresolved protected work."
+  rabbit_holes "Do not punish legitimate long-running tasks without an explicit disposition or plan."
+  no_go_areas "Do not block read-only backlog pitches, draft requirements, or intentionally deferred work."
+  affects [cap_manage_sdlc_records cap_query_context cap_run_engine_gates]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

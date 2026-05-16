@@ -1,15 +1,19 @@
 // Requirement state machine.
 //
-// draft → in-review → approved → superseded
+// draft → in-review → approved → satisfied
+//                         └────→ superseded
 //
-// Requirements are always-live: even `superseded` requirements stay in the
-// active workspace because tasks may still reference them in the
-// traceability matrix.
+// Requirements are always-live: even `satisfied` and `superseded`
+// requirements stay in the active workspace because tasks may still reference
+// them in the traceability matrix. `satisfied` is an explicit closeout state
+// for accepted requirements that are proven enough for now, not a replacement
+// for supersession.
 
 export const LEGAL_TRANSITIONS = {
   draft: ["in-review"],
   "in-review": ["approved", "draft"],
-  approved: ["superseded", "in-review"],
+  approved: ["satisfied", "superseded", "in-review"],
+  satisfied: ["approved", "superseded"],
   superseded: []
 };
 

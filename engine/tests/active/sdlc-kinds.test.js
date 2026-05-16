@@ -31,6 +31,7 @@ import {
   buildSdlcAvailablePayload,
   buildSdlcBlockersPayload,
   buildSdlcClaimedPayload,
+  buildSdlcCloseoutCandidatesPayload,
   buildSdlcProofGapsPayload
 } from "../../src/sdlc/views.js";
 import { auditWorkspace } from "../../src/sdlc/audit.js";
@@ -86,6 +87,36 @@ ${extra}  priority medium
 }
 `, "utf8");
   return taskPath;
+}
+
+function writeAvailableRequirementFixtures(root) {
+  fs.writeFileSync(path.join(root, "topo", "requirements", "completed-requirement.tg"), `requirement req_completed_requirement {
+  name "Completed requirement"
+  description "Requirement that can be explicitly closed as satisfied"
+  priority medium
+  status approved
+}
+`, "utf8");
+  fs.writeFileSync(path.join(root, "topo", "tasks", "completed-requirement.tg"), `task task_completed_requirement {
+  name "Completed requirement task"
+  description "Done task that satisfies an approved requirement"
+  satisfies [req_completed_requirement]
+  acceptance_refs [ac_audit_survives_restart]
+  verification_refs [verification_audit_persists]
+  affects [cap_record_audit]
+  claimed_by [actor_dev]
+  priority medium
+  work_type implementation
+  status done
+}
+`, "utf8");
+  fs.writeFileSync(path.join(root, "topo", "requirements", "unworked-requirement.tg"), `requirement req_unworked_requirement {
+  name "Unworked requirement"
+  description "Requirement that still needs a task"
+  priority medium
+  status approved
+}
+`, "utf8");
 }
 
 test("SDLC fixture parses and validates with no errors", () => {
@@ -500,6 +531,8 @@ test("legal transitions: task can move unclaimed → claimed → in-progress →
   assert.equal(validateTransition("task", "claimed", "in-progress").ok, true);
   assert.equal(validateTransition("task", "claimed", "done").ok, false);
   assert.equal(validateTransition("pitch", "draft", "approved").ok, false);
+  assert.equal(validateTransition("requirement", "approved", "satisfied").ok, true);
+  assert.deepEqual(legalTransitionsFor("requirement", "satisfied"), ["approved", "superseded"]);
   assert.deepEqual(legalTransitionsFor("plan", "active"), ["complete", "superseded", "draft"]);
 });
 
@@ -726,11 +759,33 @@ test("SDLC query views report available, claimed, blockers, and proof gaps", () 
   const tempRoot = copyFixtureToTemp();
   try {
     writeStartableTask(tempRoot);
-    const resolved = resolveWorkspace(parsePath(tempRoot));
+    writeAvailableRequirementFixtures(tempRoot);
+    let resolved = resolveWorkspace(parsePath(tempRoot));
     assert.equal(resolved.ok, true, JSON.stringify(resolved.validation, null, 2));
 
     const available = buildSdlcAvailablePayload(resolved.graph);
     assert.ok(available.unclaimed_tasks.some((task) => task.id === "task_start_followup"));
+    assert.ok(
+      available.approved_requirements_without_active_tasks.some((requirement) => requirement.id === "req_unworked_requirement")
+    );
+    assert.ok(
+      !available.approved_requirements_without_active_tasks.some((requirement) => requirement.id === "req_completed_requirement"),
+      "covered requirements should not be reported as available work"
+    );
+
+    const closeoutCandidates = buildSdlcCloseoutCandidatesPayload(resolved.graph);
+    assert.equal(closeoutCandidates.type, "sdlc_closeout_candidates_query");
+    assert.ok(closeoutCandidates.candidates.some((candidate) => candidate.requirement.id === "req_completed_requirement"));
+    assert.match(closeoutCandidates.candidates[0].recommended_command, /topogram sdlc transition .* satisfied/);
+
+    const closeout = transitionStatement(path.join(tempRoot, "topo"), "req_completed_requirement", "satisfied", {
+      actor: "actor_dev",
+      note: "Close completed requirement for available-work query coverage."
+    });
+    assert.equal(closeout.ok, true, JSON.stringify(closeout, null, 2));
+    resolved = resolveWorkspace(parsePath(tempRoot));
+    const closedOut = buildSdlcCloseoutCandidatesPayload(resolved.graph);
+    assert.ok(!closedOut.candidates.some((candidate) => candidate.requirement.id === "req_completed_requirement"));
 
     const claimed = buildSdlcClaimedPayload(resolved.graph, "actor_dev");
     assert.ok(claimed.claimed_tasks.some((task) => task.id === "task_implement_audit_writer"));
@@ -750,6 +805,7 @@ test("SDLC query views work through the CLI", () => {
   const tempRoot = copyFixtureToTemp();
   try {
     writeStartableTask(tempRoot);
+    writeAvailableRequirementFixtures(tempRoot);
     const available = childProcess.spawnSync(process.execPath, [
       cliPath,
       "query",
@@ -759,6 +815,16 @@ test("SDLC query views work through the CLI", () => {
     ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
     assert.equal(available.status, 0, available.stderr || available.stdout);
     assert.ok(JSON.parse(available.stdout).unclaimed_tasks.some((task) => task.id === "task_start_followup"));
+
+    const closeouts = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-closeout-candidates",
+      tempRoot,
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(closeouts.status, 0, closeouts.stderr || closeouts.stdout);
+    assert.ok(JSON.parse(closeouts.stdout).candidates.some((candidate) => candidate.requirement.id === "req_completed_requirement"));
 
     const claimed = childProcess.spawnSync(process.execPath, [
       cliPath,

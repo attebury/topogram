@@ -1,0 +1,13 @@
+pitch pitch_sdlc_flow_metrics {
+  name "SDLC Flow Metrics"
+  description "Measure SDLC flow without turning Topogram into a noisy project-management dashboard."
+  appetite "medium"
+  problem "As SDLC adoption grows, maintainers and agents need to see cycle time, aging work, completion rate, blocked time, and proof latency so workflow problems are visible before they become release risk."
+  solution_sketch "Derive metrics from command-owned SDLC history, task status, plan steps, verification refs, and release records; expose summaries through query and emit surfaces before adding dashboards."
+  rabbit_holes "Do not reward vanity metrics, raw activity counts, or process theater over consumer-visible proof."
+  no_go_areas "Do not require teams to use Topogram as their only project tracker."
+  affects [cap_manage_sdlc_records cap_query_context cap_emit_artifacts]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status draft
+}

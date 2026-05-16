@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_available_hides_covered_requirements {
+  name "SDLC Available Hides Covered Requirements"
+  description "Given a requirement has been transitioned to satisfied after completed proof, when a human or agent runs topogram query sdlc-available, then that requirement is not reported as available work needing a task."
+  requirement req_enforce_sdlc_operating_habit
+  status approved
+}

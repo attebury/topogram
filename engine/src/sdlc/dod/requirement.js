@@ -30,5 +30,21 @@ export function checkDoD(requirement, targetStatus, graph) {
     }
   }
 
+  if (targetStatus === "satisfied") {
+    const byId = graph?.byId;
+    const tasks = requirement.tasks || [];
+    if (tasks.length === 0) {
+      errors.push("satisfied requirement must have at least one linked task");
+    }
+    if (byId) {
+      const doneTasks = tasks
+        .map((id) => byId.get(id))
+        .filter((task) => task?.kind === "task" && task.status === "done");
+      if (doneTasks.length === 0) {
+        errors.push("satisfied requirement must have at least one done task");
+      }
+    }
+  }
+
   return { satisfied: errors.length === 0, errors, warnings };
 }
