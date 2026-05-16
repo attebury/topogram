@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_94_release_published {
+  name "Cli 0 3 94 Release Published"
+  description "Given extractor recommendation UX is merged on main after @topogram/cli 0.3.93, when @topogram/cli 0.3.94 is prepared, published, smoke-tested, rolled to first-party consumers, release evidence is refreshed, and the release tag points at the final release commit, then strict release status is green for the CLI and first-party packages."
+  requirement req_extractor_selection_ux
+  status approved
+}

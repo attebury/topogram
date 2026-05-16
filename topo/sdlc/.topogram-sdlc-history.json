@@ -4049,5 +4049,30 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_cli_0_3_94_release_published": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T22:48:51.289Z",
+      "by": "actor_coding_agent",
+      "note": "Release criterion for extractor recommendation UX is ready."
+    }
+  ],
+  "task_release_cli_0_3_94": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T22:48:51.359Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T22:48:51.408Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    }
   ]
 }
