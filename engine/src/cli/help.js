@@ -192,7 +192,7 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>] [--task <id>] [--plan <id>] [--bug <id>]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>] [--task <id>] [--plan <id>] [--bug <id>] [--format markdown]");
   console.log("   or: node ./src/cli.js query domain-list <path>");
   console.log("   or: node ./src/cli.js query domain-coverage <path> --domain <id>");
   console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>]");

@@ -755,6 +755,32 @@ test("documented task query commands work through the CLI", () => {
   assert.equal(JSON.parse(plan.stdout).type, "single_agent_plan");
 });
 
+test("query slice can render a human-readable markdown view to stdout", () => {
+  const result = childProcess.spawnSync(process.execPath, [
+    cliPath,
+    "query",
+    "slice",
+    fixtureRoot,
+    "--pitch",
+    "pitch_audit_logging",
+    "--format",
+    "markdown"
+  ], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      FORCE_COLOR: "0"
+    }
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /^# Context Slice: pitch `pitch_audit_logging`/);
+  assert.match(result.stdout, /## Summary/);
+  assert.match(result.stdout, /## Related/);
+  assert.match(result.stdout, /## Verification Targets/);
+  assert.doesNotMatch(result.stdout, /^\{/);
+});
+
 test("SDLC query views report available, claimed, blockers, and proof gaps", () => {
   const tempRoot = copyFixtureToTemp();
   try {

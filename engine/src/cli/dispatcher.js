@@ -76,6 +76,7 @@ export async function runCliDispatch(context) {
   let inputPath = context.inputPath;
   const {
     emitJson,
+    outputFormat,
     shouldForce,
     shouldValidate,
     shouldResolve,
@@ -344,7 +345,8 @@ export async function runCliDispatch(context) {
       laneId,
       fromTopogramPath,
       shouldWrite,
-      outPath
+      outPath,
+      outputFormat
     })) || 0;
   }
 

@@ -37,11 +37,11 @@ export function queryDefinitions() {
     {
       name: "slice",
       purpose: "Give an agent the smallest graph slice needed to reason about one selected semantic surface.",
-      description: "Return a focused semantic context slice for one selected surface.",
+      description: "Return a focused semantic context slice for one selected surface. Use --format markdown for a human-readable stdout view.",
       selectors: ["capability", "workflow", "projection", "widget", "entity", "journey", "domain", "pitch", "requirement", "acceptance", "task", "plan", "bug", "document"],
-      args: ["[path]", "[selectors]", "[--json]"],
+      args: ["[path]", "[selectors]", "[--json|--format markdown]"],
       output: "context_slice",
-      example: "topogram query slice ./topo --task task_implement_audit_writer"
+      example: "topogram query slice ./topo --task task_implement_audit_writer --format markdown"
     },
     {
       name: "verification-targets",

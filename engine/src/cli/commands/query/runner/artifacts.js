@@ -14,7 +14,7 @@ import {
   resultOk,
   selectorOptions
 } from "../workspace.js";
-import { printJson } from "./output.js";
+import { printContextSliceMarkdown, printJson } from "./output.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -53,6 +53,14 @@ export function runArtifactQuery(context) {
   if (queryName === "slice") {
     const result = buildSlice(parsePath(context.inputPath), selectors);
     if (!resultOk(result)) return printValidationFailure(result);
+    const outputFormat = String(context.outputFormat || "").toLowerCase();
+    if (outputFormat === "markdown" || outputFormat === "md") {
+      return printContextSliceMarkdown(result.artifact);
+    }
+    if (outputFormat && outputFormat !== "json") {
+      console.error(`Unsupported query slice output format '${context.outputFormat}'. Use --format markdown or --json.`);
+      return 2;
+    }
     return printJson(result.artifact);
   }
 

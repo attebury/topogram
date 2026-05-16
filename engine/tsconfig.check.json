@@ -318,6 +318,7 @@
     "./src/cli/commands/query/runner/change.js",
     "./src/cli/commands/query/runner/extract-adopt.js",
     "./src/cli/commands/query/runner/index.js",
+    "./src/cli/commands/query/runner/markdown.js",
     "./src/cli/commands/query/runner/output.js",
     "./src/cli/commands/query/runner/sdlc.js",
     "./src/cli/commands/query/runner/workflow.js",

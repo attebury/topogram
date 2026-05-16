@@ -57,8 +57,10 @@ export function parseCliOptions(args, commandArgs) {
   const workflowFlagValue = optionValue(args, "--workflow");
   const outDir = optionValue(args, "--out-dir");
   const outPath = optionValue(args, "--out");
+  const outputFormat = args.includes("--markdown") ? "markdown" : optionValue(args, "--format");
   return {
     emitJson: args.includes("--json"),
+    outputFormat,
     shouldForce: Boolean(commandArgs?.force) || args.includes("--force"),
     shouldValidate: Boolean(commandArgs?.validate) || args.includes("--validate"),
     shouldResolve: args.includes("--resolve"),
