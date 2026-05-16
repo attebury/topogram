@@ -1,0 +1,14 @@
+task task_implement_sdlc_ongoing_metrics_stale_wip {
+  name "Implement SDLC Ongoing Metrics Stale WIP"
+  description "Add ongoing requirement semantics, read-only SDLC metrics and stale-work queries, and optional stale/WIP policy warnings and gates."
+  satisfies [req_sdlc_ongoing_requirement_lifecycle req_sdlc_lightweight_flow_metrics req_sdlc_stale_wip_policy_gates]
+  acceptance_refs [ac_sdlc_ongoing_requirements_are_durable ac_sdlc_metrics_use_history ac_sdlc_stale_wip_policy_gates]
+  verification_refs [verification_sdlc_enforcement verification_engine_gate]
+  affects [cap_manage_sdlc_records cap_query_context cap_run_engine_gates]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

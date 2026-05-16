@@ -16,7 +16,9 @@ import { resolveWorkspace } from "../resolver.js";
 import { validateProjectImplementationTrust } from "../template-trust.js";
 import { resolveTopoRoot, resolveWorkspaceContext } from "../workspace-paths.js";
 import { checkWorkspace as checkSdlcWorkspace } from "./check.js";
+import { readHistory } from "./history.js";
 import { loadSdlcPolicy } from "./policy.js";
+import { buildSdlcStaleWorkPayload } from "./views.js";
 
 /**
  * @typedef {Object} SdlcGateOptions
@@ -315,6 +317,17 @@ export async function runSdlcGate(inputPath = ".", options = {}) {
       warnings.push(message);
     }
   }
+  const staleWork = resolved.ok
+    ? buildSdlcStaleWorkPayload(resolved.graph, readHistory(topogramRoot), policy)
+    : { ok: true, breaches: [] };
+  if ((staleWork.breaches || []).length > 0) {
+    const message = `SDLC stale/WIP policy has ${staleWork.breaches.length} breach(es).`;
+    if (protectedChanges.length > 0 && policy?.mode === "enforced" && !hasAllowedExemption) {
+      errors.push(message);
+    } else {
+      warnings.push(message);
+    }
+  }
 
   return {
     type: "sdlc_gate",
@@ -338,6 +351,7 @@ export async function runSdlcGate(inputPath = ".", options = {}) {
     invalidSdlcIds: idValidation.invalid,
     sdlcRecordChanges,
     exemption: exemption || null,
+    staleWork,
     checks: [
       { command: "topogram check", ok: checkPayload.ok, errors: checkPayload.errors || [] },
       { command: "topogram sdlc check --strict", ok: Boolean(sdlcCheck.ok && sdlcCheck.warnings.length === 0), errors: sdlcCheck.errors || [], warnings: sdlcCheck.warnings || [] }

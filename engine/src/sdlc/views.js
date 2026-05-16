@@ -120,6 +120,264 @@ function taskRecord(task) {
 }
 
 /**
+ * @param {unknown} value
+ * @returns {Date|null}
+ */
+function dateOrNull(value) {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * @param {Date|null} date
+ * @returns {string|null}
+ */
+function isoOrNull(date) {
+  return date ? date.toISOString() : null;
+}
+
+/**
+ * @param {Date|null} start
+ * @param {Date} end
+ * @returns {number|null}
+ */
+function ageDays(start, end) {
+  if (!start) return null;
+  const days = (end.getTime() - start.getTime()) / 86400000;
+  return Number.isFinite(days) ? Number(days.toFixed(2)) : null;
+}
+
+/**
+ * @param {Record<string, any>} history
+ * @param {string} id
+ * @returns {AnyRecord[]}
+ */
+function historyEntries(history, id) {
+  const entries = history && Array.isArray(history[id]) ? history[id] : [];
+  return entries
+    .filter((entry) => entry && typeof entry === "object")
+    .slice()
+    .sort((left, right) => {
+      const leftDate = dateOrNull(left.at)?.getTime() ?? 0;
+      const rightDate = dateOrNull(right.at)?.getTime() ?? 0;
+      return leftDate - rightDate;
+    });
+}
+
+/**
+ * @param {AnyRecord} statement
+ * @param {Record<string, any>} history
+ * @returns {Date|null}
+ */
+function currentStatusSince(statement, history) {
+  const entries = historyEntries(history, statement.id);
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    if (entries[index].to === statement.status) {
+      return dateOrNull(entries[index].at);
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {AnyRecord} task
+ * @param {Record<string, any>} history
+ * @param {Date} now
+ * @returns {AnyRecord}
+ */
+function timedTaskRecord(task, history, now) {
+  const since = currentStatusSince(task, history);
+  return {
+    ...taskRecord(task),
+    status_since: isoOrNull(since),
+    age_days: ageDays(since, now)
+  };
+}
+
+/**
+ * @param {number[]} values
+ * @returns {{ count: number, average_days: number|null, median_days: number|null, min_days: number|null, max_days: number|null }}
+ */
+function durationStats(values) {
+  const sorted = values.filter((value) => Number.isFinite(value)).sort((left, right) => left - right);
+  if (sorted.length === 0) {
+    return { count: 0, average_days: null, median_days: null, min_days: null, max_days: null };
+  }
+  const sum = sorted.reduce((total, value) => total + value, 0);
+  const middle = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+  return {
+    count: sorted.length,
+    average_days: Number((sum / sorted.length).toFixed(2)),
+    median_days: Number(median.toFixed(2)),
+    min_days: Number(sorted[0].toFixed(2)),
+    max_days: Number(sorted[sorted.length - 1].toFixed(2))
+  };
+}
+
+/**
+ * @param {AnyRecord[]} taskList
+ * @param {Record<string, any>} history
+ * @returns {AnyRecord}
+ */
+function transitionDurationStats(taskList, history) {
+  const claimedToInProgress = [];
+  const inProgressToDone = [];
+  for (const task of taskList) {
+    const entries = historyEntries(history, task.id);
+    for (let index = 0; index < entries.length; index += 1) {
+      const entry = entries[index];
+      const fromDate = dateOrNull(entry.at);
+      if (!fromDate) continue;
+      if (entry.to === "claimed") {
+        const next = entries.slice(index + 1).find((candidate) => candidate.to === "in-progress");
+        const nextDate = dateOrNull(next?.at);
+        if (nextDate) claimedToInProgress.push((nextDate.getTime() - fromDate.getTime()) / 86400000);
+      }
+      if (entry.to === "in-progress") {
+        const next = entries.slice(index + 1).find((candidate) => candidate.to === "done");
+        const nextDate = dateOrNull(next?.at);
+        if (nextDate) inProgressToDone.push((nextDate.getTime() - fromDate.getTime()) / 86400000);
+      }
+    }
+  }
+  return {
+    claimed_to_in_progress: durationStats(claimedToInProgress),
+    in_progress_to_done: durationStats(inProgressToDone)
+  };
+}
+
+/**
+ * @param {AnyRecord[]} items
+ * @returns {Record<string, Record<string, number>>}
+ */
+function countByKindAndStatus(items) {
+  /** @type {Record<string, Record<string, number>>} */
+  const counts = {};
+  for (const item of items) {
+    if (!item || item.archived) continue;
+    const kind = item.kind || "unknown";
+    const status = item.status || "unknown";
+    counts[kind] ||= {};
+    counts[kind][status] = (counts[kind][status] || 0) + 1;
+  }
+  return counts;
+}
+
+/**
+ * @param {AnyRecord|null|undefined} policy
+ * @returns {{ maxInProgressTasks: number|null, maxClaimedTasksPerActor: number|null, claimedDays: number|null, inProgressDays: number|null }}
+ */
+function pressureThresholds(policy) {
+  const wipLimits = policy?.wipLimits || {};
+  const staleWork = policy?.staleWork || {};
+  return {
+    maxInProgressTasks: Number.isFinite(wipLimits.maxInProgressTasks) ? Number(wipLimits.maxInProgressTasks) : null,
+    maxClaimedTasksPerActor: Number.isFinite(wipLimits.maxClaimedTasksPerActor) ? Number(wipLimits.maxClaimedTasksPerActor) : null,
+    claimedDays: Number.isFinite(staleWork.claimedDays) ? Number(staleWork.claimedDays) : null,
+    inProgressDays: Number.isFinite(staleWork.inProgressDays) ? Number(staleWork.inProgressDays) : null
+  };
+}
+
+/**
+ * @param {AnyRecord} graph
+ * @param {Record<string, any>} [history]
+ * @param {AnyRecord|null} [policy]
+ * @param {{ now?: Date|string }} [options]
+ * @returns {AnyRecord}
+ */
+export function buildSdlcStaleWorkPayload(graph, history = {}, policy = null, options = {}) {
+  const now = typeof options.now === "string" ? (dateOrNull(options.now) || new Date()) : (options.now || new Date());
+  const thresholds = pressureThresholds(policy);
+  const allTasks = tasks(graph);
+  const inProgress = allTasks.filter((task) => task.status === "in-progress").map((task) => timedTaskRecord(task, history, now));
+  const claimed = allTasks.filter((task) => task.status === "claimed").map((task) => timedTaskRecord(task, history, now));
+  const byActorMap = new Map();
+  for (const task of [...claimed, ...inProgress]) {
+    for (const actor of task.claimed_by.length > 0 ? task.claimed_by : ["unassigned"]) {
+      if (!byActorMap.has(actor)) byActorMap.set(actor, { actor, claimed: 0, in_progress: 0, tasks: [] });
+      const row = byActorMap.get(actor);
+      if (task.status === "claimed") row.claimed += 1;
+      if (task.status === "in-progress") row.in_progress += 1;
+      row.tasks.push(task.id);
+    }
+  }
+  const claimedDays = thresholds.claimedDays;
+  const inProgressDays = thresholds.inProgressDays;
+  const claimedStale = claimedDays == null
+    ? []
+    : claimed.filter((task) => task.age_days != null && task.age_days > claimedDays);
+  const inProgressStale = inProgressDays == null
+    ? []
+    : inProgress.filter((task) => task.age_days != null && task.age_days > inProgressDays);
+  const breaches = [];
+  if (thresholds.maxInProgressTasks != null && inProgress.length > thresholds.maxInProgressTasks) {
+    breaches.push({
+      kind: "max_in_progress_tasks",
+      count: inProgress.length,
+      limit: thresholds.maxInProgressTasks,
+      task_ids: inProgress.map((task) => task.id)
+    });
+  }
+  const byActor = [...byActorMap.values()].sort((left, right) => left.actor.localeCompare(right.actor));
+  if (thresholds.maxClaimedTasksPerActor != null) {
+    for (const actor of byActor) {
+      if (actor.claimed > thresholds.maxClaimedTasksPerActor) {
+        breaches.push({
+          kind: "max_claimed_tasks_per_actor",
+          actor: actor.actor,
+          count: actor.claimed,
+          limit: thresholds.maxClaimedTasksPerActor,
+          task_ids: actor.tasks
+        });
+      }
+    }
+  }
+  for (const task of claimedStale) {
+    breaches.push({ kind: "stale_claimed_task", task: task.id, age_days: task.age_days, limit_days: thresholds.claimedDays });
+  }
+  for (const task of inProgressStale) {
+    breaches.push({ kind: "stale_in_progress_task", task: task.id, age_days: task.age_days, limit_days: thresholds.inProgressDays });
+  }
+  return {
+    type: "sdlc_stale_work_query",
+    version: 1,
+    ok: breaches.length === 0,
+    now: now.toISOString(),
+    policy: {
+      configured: Object.values(thresholds).some((value) => value != null),
+      wipLimits: {
+        maxInProgressTasks: thresholds.maxInProgressTasks,
+        maxClaimedTasksPerActor: thresholds.maxClaimedTasksPerActor
+      },
+      staleWork: {
+        claimedDays: thresholds.claimedDays,
+        inProgressDays: thresholds.inProgressDays
+      }
+    },
+    wip: {
+      claimed_count: claimed.length,
+      in_progress_count: inProgress.length,
+      by_actor: byActor
+    },
+    stale: {
+      claimed: claimedStale,
+      in_progress: inProgressStale,
+      missing_history: [...claimed, ...inProgress].filter((task) => task.status_since == null).map((task) => task.id)
+    },
+    breaches,
+    nextCommands: [
+      "topogram query sdlc-claimed ./topo --json",
+      "topogram query sdlc-proof-gaps ./topo --json",
+      "topogram sdlc prep commit . --json"
+    ]
+  };
+}
+
+/**
  * @param {AnyRecord} graph
  * @returns {AnyRecord}
  */
@@ -176,6 +434,66 @@ export function buildSdlcCloseoutCandidatesPayload(graph) {
     type: "sdlc_closeout_candidates_query",
     version: 1,
     candidates: candidates.sort((/** @type {AnyRecord} */ a, /** @type {AnyRecord} */ b) => a.requirement.id.localeCompare(b.requirement.id))
+  };
+}
+
+/**
+ * @param {AnyRecord} graph
+ * @param {Record<string, any>} [history]
+ * @param {AnyRecord|null} [policy]
+ * @param {{ now?: Date|string }} [options]
+ * @returns {AnyRecord}
+ */
+export function buildSdlcMetricsPayload(graph, history = {}, policy = null, options = {}) {
+  const now = typeof options.now === "string" ? (dateOrNull(options.now) || new Date()) : (options.now || new Date());
+  const allTasks = tasks(graph);
+  const allRequirements = (graph.byKind?.requirement || []).filter((/** @type {AnyRecord} */ requirement) => !requirement.archived);
+  const closeouts = buildSdlcCloseoutCandidatesPayload(graph);
+  const proofGaps = buildSdlcProofGapsPayload(graph);
+  const staleWork = buildSdlcStaleWorkPayload(graph, history, policy, { now });
+  const doneTasks = allTasks.filter((task) => task.status === "done");
+  const claimedTasks = allTasks.filter((task) => task.status === "claimed");
+  const inProgressTasks = allTasks.filter((task) => task.status === "in-progress");
+  const historyIds = Object.entries(history || {})
+    .filter(([id, entries]) => id !== "__error" && Array.isArray(entries) && entries.length > 0)
+    .map(([id]) => id);
+  return {
+    type: "sdlc_metrics_query",
+    version: 1,
+    now: now.toISOString(),
+    counts: {
+      by_kind_status: countByKindAndStatus(graph.statements || []),
+      tasks: {
+        total: allTasks.length,
+        claimed: claimedTasks.length,
+        in_progress: inProgressTasks.length,
+        done: doneTasks.length,
+        open_wip: claimedTasks.length + inProgressTasks.length
+      },
+      requirements: {
+        total: allRequirements.length,
+        approved: allRequirements.filter(/** @param {AnyRecord} requirement */ (requirement) => requirement.status === "approved").length,
+        ongoing: allRequirements.filter(/** @param {AnyRecord} requirement */ (requirement) => requirement.status === "ongoing").length,
+        satisfied: allRequirements.filter(/** @param {AnyRecord} requirement */ (requirement) => requirement.status === "satisfied").length,
+        closeout_candidates: closeouts.candidates.length
+      },
+      proof_gaps: proofGaps.gaps.filter(/** @param {AnyRecord} gap */ (gap) => !gap.ready_for_done).length,
+      stale_work_breaches: staleWork.breaches.length
+    },
+    wip: staleWork.wip,
+    stale_work: {
+      ok: staleWork.ok,
+      breaches: staleWork.breaches,
+      stale: staleWork.stale
+    },
+    ongoing_requirements: sortById(allRequirements.filter(/** @param {AnyRecord} requirement */ (requirement) => requirement.status === "ongoing").map(summary)),
+    closeout_candidates: closeouts.candidates.map(/** @param {AnyRecord} candidate */ (candidate) => candidate.requirement),
+    transition_durations: transitionDurationStats(allTasks, history),
+    history: {
+      statements_with_history: historyIds.length,
+      entries: historyIds.reduce((total, id) => total + (Array.isArray(history[id]) ? history[id].length : 0), 0),
+      missing_history_for_wip: staleWork.stale.missing_history
+    }
   };
 }
 

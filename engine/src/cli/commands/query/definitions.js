@@ -188,6 +188,24 @@ export function queryDefinitions() {
       example: "topogram query sdlc-proof-gaps ./topo --task task_implement_audit_writer --json"
     },
     {
+      name: "sdlc-metrics",
+      purpose: "Show lightweight SDLC flow metrics from current records and transition history.",
+      description: "Return counts, WIP, stale work, closeout candidates, proof gaps, ongoing requirements, and transition-duration stats.",
+      selectors: [],
+      args: ["[path]", "[--json]"],
+      output: "sdlc_metrics_query",
+      example: "topogram query sdlc-metrics ./topo --json"
+    },
+    {
+      name: "sdlc-stale-work",
+      purpose: "Show stale claimed/in-progress tasks and WIP policy breaches.",
+      description: "Return stale work and WIP pressure based on optional topogram.sdlc-policy.json thresholds.",
+      selectors: [],
+      args: ["[path]", "[--json]"],
+      output: "sdlc_stale_work_query",
+      example: "topogram query sdlc-stale-work ./topo --json"
+    },
+    {
       name: "risk-summary",
       purpose: "Surface behavioral, ownership, and verification risks for a selected change.",
       description: "Return the risk summary for a selected change, mode, or diff.",

@@ -33,6 +33,8 @@ topogram query sdlc-available ./topo --json
 topogram sdlc start <task-id> . --actor actor_coding_agent --json
 topogram sdlc start <task-id> . --actor actor_coding_agent --write --json
 topogram query sdlc-proof-gaps ./topo --task <task-id> --json
+topogram query sdlc-metrics ./topo --json
+topogram query sdlc-stale-work ./topo --json
 topogram sdlc prep commit . --base origin/main --head HEAD --json
 topogram sdlc gate . --base origin/main --head HEAD --require-adopted --json
 ```
@@ -60,6 +62,11 @@ Use the smallest SDLC record that tells the truth:
 Done tasks require valid `satisfies` refs to requirements, approved
 `acceptance_refs`, and valid `verification_refs`.
 
+Finite requirements stay `approved` until done tasks prove them, then they can
+transition to `satisfied`. Durable operating commitments can transition to
+`ongoing`; ongoing requirements must link to at least one rule or verification
+and are intentionally omitted from available-work and closeout queues.
+
 Before completing work:
 
 ```bash
@@ -70,6 +77,14 @@ topogram sdlc complete <task-id> . --verification <verification-id> --actor acto
 Use `topogram query sdlc-claimed ./topo --actor <actor-id> --json` to see work
 already claimed by an actor. Use `topogram query sdlc-blockers ./topo --task
 <task-id> --json` when a task cannot start or complete.
+
+Use `topogram query sdlc-metrics ./topo --json` for counts, WIP, stale work,
+closeout candidates, proof gaps, ongoing requirements, and transition-duration
+statistics derived from `.topogram-sdlc-history.json`. Use
+`topogram query sdlc-stale-work ./topo --json` for the focused stale/WIP policy
+view. Projects can optionally add `wipLimits` and `staleWork` thresholds to
+`topogram.sdlc-policy.json`; advisory policies warn, enforced policies can fail
+protected-change gates unless an allowed exemption is supplied.
 
 ## Command-owned state
 

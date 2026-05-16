@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_stale_wip_policy_gates {
+  name "SDLC Stale WIP Policy Gates"
+  description "Given an adopted project configures stale work or WIP thresholds, when prep commit or the SDLC gate runs, then Topogram surfaces threshold breaches and enforced gates fail protected changes unless an allowed exemption is supplied."
+  requirement req_sdlc_stale_wip_policy_gates
+  status approved
+}

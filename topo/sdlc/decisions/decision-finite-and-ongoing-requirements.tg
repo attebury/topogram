@@ -1,0 +1,9 @@
+decision decision_finite_and_ongoing_requirements_have_distinct_lifecycles {
+  name "Finite And Ongoing Requirements Have Distinct Lifecycles"
+  description "Topogram separates finite requirements that can be satisfied from ongoing requirements that represent durable operating commitments."
+  context ["Some requirements are implementation goals that should close once done tasks prove them." "Other requirements are lasting commitments that should stay visible without creating available-work noise."]
+  consequences ["approved requirements remain finite and may transition to satisfied" "ongoing requirements are durable commitments and do not appear in available-work or closeout candidate queues" "ongoing requirements must link to a rule or verification so the commitment is enforceable"]
+  pitch pitch_dogfood_engine_topo
+  domain dom_sdlc_query_agent_context
+  status accepted
+}

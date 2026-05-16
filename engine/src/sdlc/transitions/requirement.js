@@ -1,7 +1,9 @@
 // Requirement state machine.
 //
 // draft → in-review → approved → satisfied
+//                         ├────→ ongoing
 //                         └────→ superseded
+// ongoing → approved | superseded
 //
 // Requirements are always-live: even `satisfied` and `superseded`
 // requirements stay in the active workspace because tasks may still reference
@@ -12,8 +14,9 @@
 export const LEGAL_TRANSITIONS = {
   draft: ["in-review"],
   "in-review": ["approved", "draft"],
-  approved: ["satisfied", "superseded", "in-review"],
+  approved: ["satisfied", "ongoing", "superseded", "in-review"],
   satisfied: ["approved", "superseded"],
+  ongoing: ["approved", "superseded"],
   superseded: []
 };
 

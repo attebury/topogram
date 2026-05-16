@@ -59,6 +59,8 @@ topogram query sdlc-available ./topo --json
 topogram query sdlc-claimed ./topo --actor actor_coding_agent --json
 topogram query sdlc-blockers ./topo --task <task-id> --json
 topogram query sdlc-proof-gaps ./topo --task <task-id> --json
+topogram query sdlc-metrics ./topo --json
+topogram query sdlc-stale-work ./topo --json
 ```
 
 ## SDLC

@@ -10,6 +10,7 @@ import { completeTask } from "../../src/sdlc/complete.js";
 import { linkSdlcRecord } from "../../src/sdlc/link.js";
 import { defaultSdlcPolicy, loadSdlcPolicy, validateSdlcPolicy, writeDefaultSdlcPolicy } from "../../src/sdlc/policy.js";
 import { runSdlcGate } from "../../src/sdlc/gate.js";
+import { runSdlcCommitPrep } from "../../src/sdlc/prep.js";
 
 const engineRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const repoRoot = path.resolve(engineRoot, "..");
@@ -41,6 +42,15 @@ function writePolicy(root, overrides = {}) {
   }, null, 2)}\n`, "utf8");
 }
 
+function writeStaleHistory(root) {
+  fs.mkdirSync(path.join(root, "topo", "sdlc"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topo", "sdlc", ".topogram-sdlc-history.json"), JSON.stringify({
+    task_implement_audit_writer: [
+      { from: "claimed", to: "in-progress", at: "2026-01-01T00:00:00.000Z", by: "actor_dev", note: null }
+    ]
+  }, null, 2), "utf8");
+}
+
 test("SDLC policy validates schema and default init writes an adopted policy", () => {
   const tempRoot = copyFixtureToTemp();
   try {
@@ -67,6 +77,38 @@ test("SDLC policy validation rejects unsafe protected paths and invalid modes", 
   assert.equal(result.ok, false);
   assert.ok(result.diagnostics.some((diagnostic) => diagnostic.message.includes("mode")));
   assert.ok(result.diagnostics.some((diagnostic) => diagnostic.message.includes("Invalid protected path")));
+});
+
+test("SDLC policy validates optional WIP and stale-work thresholds", () => {
+  const valid = validateSdlcPolicy({
+    ...defaultSdlcPolicy(),
+    wipLimits: {
+      maxInProgressTasks: 3,
+      maxClaimedTasksPerActor: 2
+    },
+    staleWork: {
+      claimedDays: 7,
+      inProgressDays: 7
+    }
+  });
+  assert.equal(valid.ok, true, JSON.stringify(valid.diagnostics, null, 2));
+  assert.equal(valid.policy?.wipLimits?.maxInProgressTasks, 3);
+  assert.equal(valid.policy?.staleWork?.claimedDays, 7);
+
+  const invalid = validateSdlcPolicy({
+    ...defaultSdlcPolicy(),
+    wipLimits: {
+      maxInProgressTasks: 0,
+      extra: 1
+    },
+    staleWork: {
+      claimedDays: -1
+    }
+  });
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.diagnostics.some((diagnostic) => diagnostic.message.includes("maxInProgressTasks")));
+  assert.ok(invalid.diagnostics.some((diagnostic) => diagnostic.message.includes("wipLimits.extra")));
+  assert.ok(invalid.diagnostics.some((diagnostic) => diagnostic.message.includes("claimedDays")));
 });
 
 test("SDLC gate reports not adopted unless require-adopted is requested", async () => {
@@ -127,6 +169,45 @@ test("SDLC gate enforces protected changes unless linked, record-backed, or exem
       requireAdopted: true
     });
     assert.equal(exempted.ok, true, JSON.stringify(exempted, null, 2));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("SDLC gate and prep surface stale work and WIP policy breaches", async () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writePolicy(tempRoot, {
+      wipLimits: {
+        maxInProgressTasks: 1
+      },
+      staleWork: {
+        inProgressDays: 1
+      }
+    });
+    writeStaleHistory(tempRoot);
+
+    const prep = runSdlcCommitPrep(tempRoot, {
+      changedFiles: ["engine/src/sdlc/views.js"]
+    });
+    assert.equal(prep.ok, true, JSON.stringify(prep, null, 2));
+    assert.ok(prep.warnings.some((warning) => warning.includes("stale/WIP")));
+
+    const enforced = await runSdlcGate(tempRoot, {
+      changedFiles: ["engine/src/sdlc/views.js"],
+      sdlcIds: ["task_implement_audit_writer"],
+      requireAdopted: true
+    });
+    assert.equal(enforced.ok, false, JSON.stringify(enforced, null, 2));
+    assert.ok(enforced.errors.some((message) => message.includes("stale/WIP")));
+
+    const exempted = await runSdlcGate(tempRoot, {
+      changedFiles: ["engine/src/sdlc/views.js"],
+      exemption: "Review stale work separately",
+      requireAdopted: true
+    });
+    assert.equal(exempted.ok, true, JSON.stringify(exempted, null, 2));
+    assert.ok(exempted.warnings.some((message) => message.includes("stale/WIP")));
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

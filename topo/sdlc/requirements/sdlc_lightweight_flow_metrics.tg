@@ -1,0 +1,9 @@
+requirement req_sdlc_lightweight_flow_metrics {
+  name "SDLC Lightweight Flow Metrics"
+  description "Topogram should expose lightweight SDLC flow metrics from existing transition history without adding timestamp fields to every statement."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status satisfied
+}

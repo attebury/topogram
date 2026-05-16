@@ -32,6 +32,8 @@ import {
   buildSdlcBlockersPayload,
   buildSdlcClaimedPayload,
   buildSdlcCloseoutCandidatesPayload,
+  buildSdlcMetricsPayload,
+  buildSdlcStaleWorkPayload,
   buildSdlcProofGapsPayload
 } from "../../src/sdlc/views.js";
 import { auditWorkspace } from "../../src/sdlc/audit.js";
@@ -117,6 +119,50 @@ function writeAvailableRequirementFixtures(root) {
   status approved
 }
 `, "utf8");
+}
+
+function writeStaleWorkFixtures(root) {
+  fs.writeFileSync(path.join(root, "topo", "tasks", "stale-claimed.tg"), `task task_stale_claimed {
+  name "Stale claimed"
+  description "Claimed work old enough to be stale"
+  satisfies [req_audit_persistence]
+  acceptance_refs [ac_audit_survives_restart]
+  verification_refs [verification_audit_persists]
+  affects [cap_record_audit]
+  claimed_by [actor_dev]
+  priority medium
+  work_type implementation
+  status claimed
+}
+`, "utf8");
+  fs.writeFileSync(path.join(root, "topo", "tasks", "stale-in-progress.tg"), `task task_stale_in_progress {
+  name "Stale in progress"
+  description "In-progress work old enough to exceed stale policy"
+  satisfies [req_audit_persistence]
+  acceptance_refs [ac_audit_survives_restart]
+  verification_refs [verification_audit_persists]
+  affects [cap_record_audit]
+  claimed_by [actor_dev]
+  priority medium
+  work_type implementation
+  status in-progress
+}
+`, "utf8");
+  fs.mkdirSync(path.join(root, "topo", "sdlc"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topo", "sdlc", ".topogram-sdlc-history.json"), JSON.stringify({
+    task_stale_claimed: [
+      { from: "unclaimed", to: "claimed", at: "2026-01-01T00:00:00.000Z", by: "actor_dev", note: null }
+    ],
+    task_stale_in_progress: [
+      { from: "claimed", to: "in-progress", at: "2026-01-02T00:00:00.000Z", by: "actor_dev", note: null }
+    ],
+    task_implement_audit_writer: [
+      { from: "claimed", to: "in-progress", at: "2026-01-02T00:00:00.000Z", by: "actor_dev", note: null }
+    ],
+    task_completed_requirement: [
+      { from: "in-progress", to: "done", at: "2026-01-04T00:00:00.000Z", by: "actor_dev", note: null }
+    ]
+  }, null, 2), "utf8");
 }
 
 test("SDLC fixture parses and validates with no errors", () => {
@@ -532,8 +578,33 @@ test("legal transitions: task can move unclaimed → claimed → in-progress →
   assert.equal(validateTransition("task", "claimed", "done").ok, false);
   assert.equal(validateTransition("pitch", "draft", "approved").ok, false);
   assert.equal(validateTransition("requirement", "approved", "satisfied").ok, true);
+  assert.equal(validateTransition("requirement", "approved", "ongoing").ok, true);
+  assert.equal(validateTransition("requirement", "ongoing", "approved").ok, true);
+  assert.equal(validateTransition("requirement", "ongoing", "superseded").ok, true);
+  assert.equal(validateTransition("requirement", "ongoing", "satisfied").ok, false);
   assert.deepEqual(legalTransitionsFor("requirement", "satisfied"), ["approved", "superseded"]);
   assert.deepEqual(legalTransitionsFor("plan", "active"), ["complete", "superseded", "draft"]);
+});
+
+test("DoD: ongoing requirement requires linked rule or verification", () => {
+  const ast = parsePath(fixtureRoot);
+  const resolved = resolveWorkspace(ast);
+  const byId = new Map(resolved.graph.statements.map((s) => [s.id, s]));
+  const valid = checkDoD("requirement", {
+    kind: "requirement",
+    id: "req_ongoing_audit",
+    status: "approved",
+    rules: ["rule_audit_required"]
+  }, "ongoing", { byId });
+  assert.equal(valid.satisfied, true, JSON.stringify(valid, null, 2));
+
+  const invalid = checkDoD("requirement", {
+    kind: "requirement",
+    id: "req_ongoing_without_proof",
+    status: "approved"
+  }, "ongoing", { byId });
+  assert.equal(invalid.satisfied, false);
+  assert.match(invalid.errors.join("\n"), /rule or verification/);
 });
 
 test("DoD: task in-progress fails when blocked_by has a non-done blocker", () => {
@@ -798,10 +869,22 @@ test("SDLC query views report available, claimed, blockers, and proof gaps", () 
       !available.approved_requirements_without_active_tasks.some((requirement) => requirement.id === "req_completed_requirement"),
       "covered requirements should not be reported as available work"
     );
+    const ongoing = transitionStatement(path.join(tempRoot, "topo"), "req_audit_persistence", "ongoing", {
+      actor: "actor_dev",
+      note: "Durable audit requirement."
+    });
+    assert.equal(ongoing.ok, true, JSON.stringify(ongoing, null, 2));
+    resolved = resolveWorkspace(parsePath(tempRoot));
+    const availableWithOngoing = buildSdlcAvailablePayload(resolved.graph);
+    assert.ok(
+      !availableWithOngoing.approved_requirements_without_active_tasks.some((requirement) => requirement.id === "req_audit_persistence"),
+      "ongoing requirements should not be reported as available work"
+    );
 
     const closeoutCandidates = buildSdlcCloseoutCandidatesPayload(resolved.graph);
     assert.equal(closeoutCandidates.type, "sdlc_closeout_candidates_query");
     assert.ok(closeoutCandidates.candidates.some((candidate) => candidate.requirement.id === "req_completed_requirement"));
+    assert.ok(!closeoutCandidates.candidates.some((candidate) => candidate.requirement.id === "req_audit_persistence"));
     assert.match(closeoutCandidates.candidates[0].recommended_command, /topogram sdlc transition .* satisfied/);
 
     const closeout = transitionStatement(path.join(tempRoot, "topo"), "req_completed_requirement", "satisfied", {
@@ -822,6 +905,43 @@ test("SDLC query views report available, claimed, blockers, and proof gaps", () 
     const gaps = buildSdlcProofGapsPayload(resolved.graph, "task_start_followup");
     assert.equal(gaps.gaps[0].ready_for_done, false);
     assert.match(gaps.gaps[0].errors.join("\n"), /claimed_by/);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("SDLC metrics and stale-work queries derive timing from transition history", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writeAvailableRequirementFixtures(tempRoot);
+    writeStaleWorkFixtures(tempRoot);
+    const resolved = resolveWorkspace(parsePath(tempRoot));
+    assert.equal(resolved.ok, true, JSON.stringify(resolved.validation, null, 2));
+    const history = JSON.parse(fs.readFileSync(path.join(tempRoot, "topo", "sdlc", ".topogram-sdlc-history.json"), "utf8"));
+    const policy = {
+      wipLimits: {
+        maxInProgressTasks: 1,
+        maxClaimedTasksPerActor: 1
+      },
+      staleWork: {
+        claimedDays: 1,
+        inProgressDays: 1
+      }
+    };
+    const stale = buildSdlcStaleWorkPayload(resolved.graph, history, policy, { now: "2026-01-10T00:00:00.000Z" });
+    assert.equal(stale.type, "sdlc_stale_work_query");
+    assert.equal(stale.ok, false);
+    assert.ok(stale.breaches.some((breach) => breach.kind === "stale_claimed_task" && breach.task === "task_stale_claimed"));
+    assert.ok(stale.breaches.some((breach) => breach.kind === "stale_in_progress_task" && breach.task === "task_implement_audit_writer"));
+    assert.ok(stale.breaches.some((breach) => breach.kind === "max_in_progress_tasks"));
+
+    const metrics = buildSdlcMetricsPayload(resolved.graph, history, policy, { now: "2026-01-10T00:00:00.000Z" });
+    assert.equal(metrics.type, "sdlc_metrics_query");
+    assert.equal(metrics.counts.tasks.open_wip, 3);
+    assert.equal(metrics.counts.requirements.closeout_candidates, 1);
+    assert.ok(metrics.counts.stale_work_breaches >= 3);
+    assert.equal(metrics.transition_durations.claimed_to_in_progress.count, 0);
+    assert.equal(metrics.history.statements_with_history, 4);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -875,6 +995,44 @@ test("SDLC query views work through the CLI", () => {
     ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
     assert.equal(proof.status, 0, proof.stderr || proof.stdout);
     assert.equal(JSON.parse(proof.stdout).gaps[0].ready_for_done, false);
+
+    writeStaleWorkFixtures(tempRoot);
+    fs.writeFileSync(path.join(tempRoot, "topogram.sdlc-policy.json"), JSON.stringify({
+      version: "1",
+      status: "adopted",
+      mode: "advisory",
+      protectedPaths: ["topo/**"],
+      requiredItemKinds: ["task"],
+      allowExemptions: true,
+      releaseNotes: true,
+      wipLimits: {
+        maxInProgressTasks: 1,
+        maxClaimedTasksPerActor: 1
+      },
+      staleWork: {
+        claimedDays: 1,
+        inProgressDays: 1
+      }
+    }, null, 2), "utf8");
+    const metrics = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-metrics",
+      tempRoot,
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(metrics.status, 0, metrics.stderr || metrics.stdout);
+    assert.equal(JSON.parse(metrics.stdout).type, "sdlc_metrics_query");
+
+    const stale = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-stale-work",
+      tempRoot,
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(stale.status, 0, stale.stderr || stale.stdout);
+    assert.ok(JSON.parse(stale.stdout).breaches.length > 0);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }

@@ -3576,5 +3576,32 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "req_sdlc_ongoing_requirement_lifecycle": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T06:57:07.017Z",
+      "by": "actor_coding_agent",
+      "note": "Implemented ongoing requirement lifecycle semantics with focused tests."
+    }
+  ],
+  "req_sdlc_lightweight_flow_metrics": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T06:57:44.198Z",
+      "by": "actor_coding_agent",
+      "note": "Implemented history-backed SDLC metrics query with focused tests."
+    }
+  ],
+  "req_sdlc_stale_wip_policy_gates": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T06:57:52.137Z",
+      "by": "actor_coding_agent",
+      "note": "Implemented optional stale work and WIP policy gates with prep and gate coverage."
+    }
   ]
 }

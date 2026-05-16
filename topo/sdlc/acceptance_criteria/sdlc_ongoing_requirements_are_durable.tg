@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_ongoing_requirements_are_durable {
+  name "SDLC Ongoing Requirements Are Durable"
+  description "Given a requirement represents a durable operating commitment, when it transitions to ongoing, then it must be backed by a linked rule or verification and must not appear as available finite work."
+  requirement req_sdlc_ongoing_requirement_lifecycle
+  status approved
+}

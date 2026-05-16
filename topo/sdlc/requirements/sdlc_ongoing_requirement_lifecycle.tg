@@ -1,0 +1,10 @@
+requirement req_sdlc_ongoing_requirement_lifecycle {
+  name "SDLC Ongoing Requirement Lifecycle"
+  description "Topogram should support ongoing requirements as durable operating commitments distinct from finite requirements that can be satisfied."
+  pitch pitch_dogfood_engine_topo
+  affects [cap_manage_sdlc_records cap_query_context]
+  respects_rules [rule_stateful_workflow_mutations_use_cli]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status satisfied
+}

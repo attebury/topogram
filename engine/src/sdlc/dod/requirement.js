@@ -46,5 +46,17 @@ export function checkDoD(requirement, targetStatus, graph) {
     }
   }
 
+  if (targetStatus === "ongoing") {
+    const rules = [
+      ...(requirement.rules || []),
+      ...(requirement.introducesRules || []),
+      ...(requirement.respectsRules || [])
+    ];
+    const verifications = requirement.verifications || [];
+    if (rules.length === 0 && verifications.length === 0) {
+      errors.push("ongoing requirement must link to at least one rule or verification");
+    }
+  }
+
   return { satisfied: errors.length === 0, errors, warnings };
 }

@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_metrics_use_history {
+  name "SDLC Metrics Use History"
+  description "Given SDLC transition history exists, when an agent queries SDLC metrics, then Topogram reports counts, WIP, stale work, closeout candidates, proof gaps, ongoing requirements, and transition-duration fields without requiring statement timestamps."
+  requirement req_sdlc_lightweight_flow_metrics
+  status approved
+}

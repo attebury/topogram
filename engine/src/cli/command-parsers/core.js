@@ -39,7 +39,9 @@ const QUERY_NAMES = new Set([
   "sdlc-claimed",
   "sdlc-closeout-candidates",
   "sdlc-blockers",
-  "sdlc-proof-gaps"
+  "sdlc-proof-gaps",
+  "sdlc-metrics",
+  "sdlc-stale-work"
 ]);
 
 /**

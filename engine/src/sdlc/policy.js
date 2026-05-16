@@ -35,6 +35,8 @@ export const DEFAULT_REQUIRED_ITEM_KINDS = ["task", "bug", "requirement", "pitch
  * @property {string[]} requiredItemKinds
  * @property {boolean} allowExemptions
  * @property {boolean} releaseNotes
+ * @property {{ maxInProgressTasks?: number, maxClaimedTasksPerActor?: number }|undefined} [wipLimits]
+ * @property {{ claimedDays?: number, inProgressDays?: number }|undefined} [staleWork]
  */
 
 /**
@@ -94,6 +96,43 @@ function stringArray(value) {
 
 /**
  * @param {unknown} value
+ * @returns {boolean}
+ */
+function isPositiveNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/**
+ * @param {unknown} value
+ * @param {string} fieldName
+ * @param {string[]} allowed
+ * @param {SdlcPolicyInfo["diagnostics"]} diagnostics
+ * @returns {Record<string, number>|undefined}
+ */
+function validateOptionalNumberObject(value, fieldName, allowed, diagnostics) {
+  if (value == null) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    diagnostics.push({ severity: "error", message: `SDLC policy ${fieldName} must be an object when present.` });
+    return undefined;
+  }
+  /** @type {Record<string, number>} */
+  const output = {};
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (!allowed.includes(key)) {
+      diagnostics.push({ severity: "error", message: `Invalid SDLC policy ${fieldName}.${key}.` });
+      continue;
+    }
+    if (!isPositiveNumber(entryValue)) {
+      diagnostics.push({ severity: "error", message: `SDLC policy ${fieldName}.${key} must be a positive number.` });
+      continue;
+    }
+    output[key] = entryValue;
+  }
+  return output;
+}
+
+/**
+ * @param {unknown} value
  * @returns {{ ok: boolean, policy: SdlcPolicy|null, diagnostics: SdlcPolicyInfo["diagnostics"] }}
  */
 export function validateSdlcPolicy(value) {
@@ -144,6 +183,18 @@ export function validateSdlcPolicy(value) {
   if (typeof record.releaseNotes !== "boolean") {
     diagnostics.push({ severity: "error", message: "SDLC policy releaseNotes must be a boolean." });
   }
+  const wipLimits = validateOptionalNumberObject(
+    record.wipLimits,
+    "wipLimits",
+    ["maxInProgressTasks", "maxClaimedTasksPerActor"],
+    diagnostics
+  );
+  const staleWork = validateOptionalNumberObject(
+    record.staleWork,
+    "staleWork",
+    ["claimedDays", "inProgressDays"],
+    diagnostics
+  );
 
   const ok = diagnostics.every((diagnostic) => diagnostic.severity !== "error");
   if (!ok) {
@@ -159,7 +210,9 @@ export function validateSdlcPolicy(value) {
       protectedPaths: stringArray(record.protectedPaths),
       requiredItemKinds: stringArray(record.requiredItemKinds),
       allowExemptions: Boolean(record.allowExemptions),
-      releaseNotes: Boolean(record.releaseNotes)
+      releaseNotes: Boolean(record.releaseNotes),
+      ...(wipLimits ? { wipLimits } : {}),
+      ...(staleWork ? { staleWork } : {})
     },
     diagnostics
   };
@@ -236,7 +289,9 @@ export function explainSdlcPolicy(projectRoot) {
       protectedPaths: info.policy?.protectedPaths || [],
       requiredItemKinds: info.policy?.requiredItemKinds || [],
       allowExemptions: info.policy?.allowExemptions ?? false,
-      releaseNotes: info.policy?.releaseNotes ?? false
+      releaseNotes: info.policy?.releaseNotes ?? false,
+      wipLimits: info.policy?.wipLimits || null,
+      staleWork: info.policy?.staleWork || null
     },
     diagnostics: info.diagnostics,
     enforcement: info.status === "adopted"

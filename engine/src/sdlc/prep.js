@@ -5,6 +5,9 @@ import path from "node:path";
 
 import { parsePath } from "../parser.js";
 import { resolveWorkspace } from "../resolver.js";
+import { readHistory } from "./history.js";
+import { loadSdlcPolicy } from "./policy.js";
+import { buildSdlcStaleWorkPayload } from "./views.js";
 import { resolveTopoRoot, resolveWorkspaceContext } from "../workspace-paths.js";
 
 /**
@@ -152,6 +155,8 @@ export function runSdlcCommitPrep(inputPath = ".", options = {}) {
   const openTasks = changedTasks.filter((task) => task.status !== "done");
   const errors = [];
   const warnings = [];
+  const policy = loadSdlcPolicy(projectRoot).policy;
+  const staleWork = buildSdlcStaleWorkPayload(resolved.graph, readHistory(topogramRoot), policy);
 
   for (const task of openTasks) {
     if (task.requiresDisposition) {
@@ -164,6 +169,9 @@ export function runSdlcCommitPrep(inputPath = ".", options = {}) {
       warnings.push(`High priority task ${task.id} remains open as ${task.disposition}.`);
     }
   }
+  for (const breach of staleWork.breaches || []) {
+    warnings.push(`SDLC ${breach.kind} breach: ${breach.task || breach.actor || "workspace"} exceeds configured stale/WIP policy.`);
+  }
 
   return {
     type: "sdlc_commit_prep",
@@ -175,6 +183,7 @@ export function runSdlcCommitPrep(inputPath = ".", options = {}) {
     taskFiles: changedTaskFiles,
     changedTasks,
     openTasks,
+    staleWork,
     warnings,
     errors,
     nextCommands: [
