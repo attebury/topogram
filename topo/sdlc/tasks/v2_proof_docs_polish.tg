@@ -1,0 +1,14 @@
+task task_v2_proof_docs_polish {
+  name "V2 Proof Docs Polish"
+  description "Make the main docs and proof walkthrough lead readers through the hardened v2 proof repositories, branch/tag checkpoints, verification command, and agent-facing artifacts."
+  satisfies [req_proof_demo_program req_docs_are_current_and_audience_oriented]
+  acceptance_refs [ac_proof_walkthrough_guides_readers ac_docs_reset_current_workflows]
+  verification_refs [verification_docs_current_workflow_review verification_dogfood_topo_workspace]
+  affects [cap_create_project cap_import_brownfield_app cap_adopt_import_candidates cap_query_context cap_verify_release_status]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

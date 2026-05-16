@@ -25,11 +25,17 @@ These docs are organized by audience. Historical docs were archived to
 ## Proof Repositories
 
 Use the public proof repos when you want to inspect complete, runnable workflow
-stories instead of isolated command examples:
+stories instead of isolated command examples. They are the fastest way to see
+how `init`, `copy`, `extract`, `adopt`, `generate`, `emit`, SDLC, agent packets,
+and maintained ownership fit together.
 
 - [Proof Walkthrough](./proof-walkthrough.md)
 - [Generated To Maintained Proof](https://github.com/attebury/topogram-proof-content-approval-v2)
 - [Brownfield Extract/Adopt Proof](https://github.com/attebury/topogram-proof-content-approval-brownfield-v2)
+
+Each v2 proof repo uses branch and tag checkpoints named `step/NN-*` and
+`proof-NN-*`. Run `npm run verify` at any checkpoint to execute the hardened
+proof audit for that step.
 
 ## Reference
 

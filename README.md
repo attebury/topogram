@@ -6,6 +6,15 @@ maintained code aligned.
 You edit a `topo/` workspace, Topogram validates and resolves it into contracts,
 and generators or agents use those contracts to produce or maintain software.
 
+The public lifecycle verbs are deliberately narrow:
+
+- `init` starts an empty maintained Topogram workspace.
+- `copy` copies a template or reusable Topogram package into a project.
+- `extract` reads brownfield source and writes reviewable candidates.
+- `adopt` promotes reviewed extraction candidates into canonical `topo/`.
+- `generate` writes app/runtime output.
+- `emit` prints or writes contracts, reports, snapshots, and plans.
+
 ## Install
 
 Use Node 20+.
@@ -115,10 +124,18 @@ High-value starting points:
 ## Proof Repositories
 
 Start with the [Proof Walkthrough](./docs/proof-walkthrough.md) to understand
-the story, branch/tag convention, and agent-facing artifacts.
+the story, branch/tag convention, verification surface, and agent-facing
+artifacts.
 
-- [topogram-proof-content-approval](https://github.com/attebury/topogram-proof-content-approval): generated app to maintained app, including generated and maintained DB migration checkpoints.
-- [topogram-proof-content-approval-brownfield](https://github.com/attebury/topogram-proof-content-approval-brownfield): brownfield extract/adopt, maintained feature work, drift refresh, and cross-stack recreation.
+- [topogram-proof-content-approval-v2](https://github.com/attebury/topogram-proof-content-approval-v2):
+  generated app to maintained app, including generated and maintained DB
+  migration checkpoints.
+- [topogram-proof-content-approval-brownfield-v2](https://github.com/attebury/topogram-proof-content-approval-brownfield-v2):
+  brownfield extract/adopt, maintained feature work, drift refresh, and
+  cross-stack recreation.
+
+The v2 proof repos pin `@topogram/cli@0.3.92` and use `npm run verify` as the
+single local/CI proof command.
 
 ## Development
 

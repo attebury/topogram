@@ -3443,5 +3443,28 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_v2_proof_docs_polish": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T01:04:19.852Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T01:04:19.893Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T01:05:53.049Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }
