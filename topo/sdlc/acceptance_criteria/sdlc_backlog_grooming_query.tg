@@ -1,0 +1,6 @@
+acceptance_criterion ac_sdlc_backlog_grooming_query {
+  name "SDLC Backlog Grooming Query"
+  description "Given draft or shaped SDLC records exist, when an agent queries the SDLC backlog, then Topogram returns grooming candidates separately from available implementation work and omits covered, satisfied, ongoing, and completed records."
+  requirement req_sdlc_backlog_grooming_query
+  status approved
+}

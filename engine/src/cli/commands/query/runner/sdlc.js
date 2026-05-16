@@ -6,6 +6,7 @@ import { readHistory } from "../../../../sdlc/history.js";
 import { loadSdlcPolicy, policyProjectRoot } from "../../../../sdlc/policy.js";
 import {
   buildSdlcAvailablePayload,
+  buildSdlcBacklogPayload,
   buildSdlcBlockersPayload,
   buildSdlcClaimedPayload,
   buildSdlcCloseoutCandidatesPayload,
@@ -39,13 +40,16 @@ function resolveGraph(inputPath) {
  */
 export function runSdlcQuery(context) {
   const queryName = context.commandArgs?.queryName;
-  if (!["sdlc-available", "sdlc-claimed", "sdlc-blockers", "sdlc-proof-gaps", "sdlc-closeout-candidates", "sdlc-metrics", "sdlc-stale-work"].includes(queryName)) {
+  if (!["sdlc-backlog", "sdlc-available", "sdlc-claimed", "sdlc-blockers", "sdlc-proof-gaps", "sdlc-closeout-candidates", "sdlc-metrics", "sdlc-stale-work"].includes(queryName)) {
     return null;
   }
   const graph = resolveGraph(context.inputPath);
   if (!graph) return 1;
   const history = readHistory(context.inputPath);
   const policy = loadSdlcPolicy(policyProjectRoot(context.inputPath)).policy;
+  if (queryName === "sdlc-backlog") {
+    return printJson(buildSdlcBacklogPayload(graph));
+  }
   if (queryName === "sdlc-available") {
     return printJson(buildSdlcAvailablePayload(graph));
   }

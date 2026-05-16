@@ -1,0 +1,9 @@
+requirement req_sdlc_backlog_grooming_query {
+  name "SDLC Backlog Grooming Query"
+  description "Topogram should expose a focused backlog grooming query for draft and shaped SDLC records without mixing them into available implementation work."
+  pitch pitch_sdlc_adoption_profiles
+  affects [cap_manage_sdlc_records cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  status satisfied
+}

@@ -19,5 +19,16 @@ export function checkDoD(pitch, targetStatus, graph) {
     }
   }
 
+  if (targetStatus === "covered") {
+    const requirements = Array.isArray(pitch.requirements) ? pitch.requirements : [];
+    const decisions = [
+      ...(Array.isArray(pitch.decisions) ? pitch.decisions : []),
+      ...(Array.isArray(pitch.decisionsFromPitch) ? pitch.decisionsFromPitch : [])
+    ];
+    if (requirements.length === 0 && decisions.length === 0) {
+      errors.push("covered pitch must link to at least one requirement or decision");
+    }
+  }
+
   return { satisfied: errors.length === 0, errors, warnings };
 }

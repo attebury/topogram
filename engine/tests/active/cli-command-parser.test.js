@@ -102,6 +102,10 @@ test("split command parser handles extracted command families", () => {
     queryName: "sdlc-available",
     inputPath: "./custom-topogram"
   });
+  assert.deepEqual(parseSplitCommandArgs(["query", "sdlc-backlog", "./custom-topogram"]), {
+    queryName: "sdlc-backlog",
+    inputPath: "./custom-topogram"
+  });
   assert.deepEqual(parseSplitCommandArgs(["query", "sdlc-closeout-candidates", "./custom-topogram"]), {
     queryName: "sdlc-closeout-candidates",
     inputPath: "./custom-topogram"

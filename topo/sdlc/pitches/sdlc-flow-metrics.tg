@@ -9,5 +9,5 @@ pitch pitch_sdlc_flow_metrics {
   affects [cap_manage_sdlc_records cap_query_context cap_emit_artifacts]
   domain dom_sdlc_query_agent_context
   priority medium
-  status draft
+  status covered
 }

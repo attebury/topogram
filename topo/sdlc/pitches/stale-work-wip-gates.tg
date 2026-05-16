@@ -9,5 +9,5 @@ pitch pitch_stale_work_wip_gates {
   affects [cap_manage_sdlc_records cap_query_context cap_run_engine_gates]
   domain dom_sdlc_query_agent_context
   priority medium
-  status draft
+  status covered
 }

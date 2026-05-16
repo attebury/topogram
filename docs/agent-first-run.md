@@ -43,6 +43,7 @@ topogram check --json
 If the project has adopted SDLC and the work is tied to a task or bug, add:
 
 ```bash
+topogram query sdlc-backlog ./topo --json
 topogram query sdlc-available ./topo --json
 topogram sdlc explain <task-id> --json
 topogram sdlc start <task-id> . --actor <actor-id> --json

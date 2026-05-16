@@ -11,6 +11,7 @@ import {
 
 const ALWAYS_VISIBLE_TERMINAL_STATUSES = new Set([
   "approved",
+  "covered",
   "superseded",
   "verified",
   "wont-fix",

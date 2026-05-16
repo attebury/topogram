@@ -143,6 +143,15 @@ export function queryDefinitions() {
       example: "topogram query handoff-status ./extracted-topogram --mode extract-adopt --json"
     },
     {
+      name: "sdlc-backlog",
+      purpose: "Show draft and shaped SDLC backlog records that need grooming.",
+      description: "Return draft/shaped/submitted pitches, draft or in-review requirements, draft journeys, and draft plans. Covered, satisfied, ongoing, and completed work is omitted.",
+      selectors: [],
+      args: ["[path]", "[--json]"],
+      output: "sdlc_backlog_query",
+      example: "topogram query sdlc-backlog ./topo --json"
+    },
+    {
       name: "sdlc-available",
       purpose: "Show SDLC work that is ready to be claimed or shaped.",
       description: "Return unclaimed active tasks, unresolved bugs, and approved requirements with no active or completed satisfying task. Satisfied requirements are closed out and omitted.",

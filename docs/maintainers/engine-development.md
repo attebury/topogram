@@ -22,6 +22,7 @@ Before implementation, inspect available work and start the task through the
 CLI:
 
 ```bash
+node ./engine/src/cli.js query sdlc-backlog ./topo --json
 node ./engine/src/cli.js query sdlc-available ./topo --json
 node ./engine/src/cli.js sdlc start <task-id> . --actor actor_coding_agent --json
 node ./engine/src/cli.js sdlc start <task-id> . --actor actor_coding_agent --write --json

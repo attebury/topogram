@@ -1,0 +1,12 @@
+task task_add_sdlc_backlog_grooming_query {
+  name "Add SDLC Backlog Grooming Query"
+  description "Add a focused SDLC backlog query and pitch closeout statuses so grooming work can be separated from implementation-ready work."
+  satisfies [req_sdlc_backlog_grooming_query]
+  acceptance_refs [ac_sdlc_backlog_grooming_query]
+  verification_refs [verification_sdlc_enforcement verification_engine_gate]
+  affects [cap_manage_sdlc_records cap_query_context]
+  claimed_by actor_coding_agent
+  priority medium
+  work_type implementation
+  status done
+}

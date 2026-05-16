@@ -29,6 +29,7 @@ definitions.
 
 ```bash
 topogram sdlc policy explain --json
+topogram query sdlc-backlog ./topo --json
 topogram query sdlc-available ./topo --json
 topogram sdlc start <task-id> . --actor actor_coding_agent --json
 topogram sdlc start <task-id> . --actor actor_coding_agent --write --json
@@ -66,6 +67,12 @@ Finite requirements stay `approved` until done tasks prove them, then they can
 transition to `satisfied`. Durable operating commitments can transition to
 `ongoing`; ongoing requirements must link to at least one rule or verification
 and are intentionally omitted from available-work and closeout queues.
+
+Use `topogram query sdlc-backlog ./topo --json` for backlog grooming. It shows
+draft/shaped/submitted pitches, draft or in-review requirements, draft journeys,
+and draft plans. Covered pitches, satisfied requirements, ongoing requirements,
+and completed work are intentionally omitted. A pitch can transition to
+`covered` when linked requirements or decisions already handled the problem.
 
 Before completing work:
 

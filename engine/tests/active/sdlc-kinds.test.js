@@ -29,6 +29,7 @@ import { scaffoldNew } from "../../src/sdlc/scaffold.js";
 import { startTask } from "../../src/sdlc/start.js";
 import {
   buildSdlcAvailablePayload,
+  buildSdlcBacklogPayload,
   buildSdlcBlockersPayload,
   buildSdlcClaimedPayload,
   buildSdlcCloseoutCandidatesPayload,
@@ -163,6 +164,54 @@ function writeStaleWorkFixtures(root) {
       { from: "in-progress", to: "done", at: "2026-01-04T00:00:00.000Z", by: "actor_dev", note: null }
     ]
   }, null, 2), "utf8");
+}
+
+function writeBacklogFixtures(root) {
+  fs.writeFileSync(path.join(root, "topo", "pitches", "backlog-grooming.tg"), `pitch pitch_backlog_grooming {
+  name "Backlog Grooming"
+  description "A pitch that needs grooming"
+  appetite "small"
+  problem "Backlog records need a focused view."
+  rabbit_holes "Do not turn available implementation work into backlog grooming."
+  no_go_areas "Do not list completed or covered records as grooming work."
+  affects [cap_record_audit]
+  domain dom_app
+  priority medium
+  status shaped
+}
+`, "utf8");
+  fs.writeFileSync(path.join(root, "topo", "requirements", "draft-backlog-requirement.tg"), `requirement req_draft_backlog_requirement {
+  name "Draft backlog requirement"
+  description "Draft requirement that should appear in backlog grooming"
+  priority medium
+  status draft
+}
+`, "utf8");
+  fs.mkdirSync(path.join(root, "topo", "journeys"), { recursive: true });
+  fs.writeFileSync(path.join(root, "topo", "journeys", "draft-backlog-journey.tg"), `journey journey_draft_backlog {
+  name "Draft backlog journey"
+  description "Draft journey that should appear in backlog grooming"
+  status draft
+  actors [actor_dev]
+  goal "Understand a draft user flow."
+
+  step {
+    id inspect
+    intent "Inspect the draft journey."
+    expects ["The journey can be reviewed."]
+  }
+}
+`, "utf8");
+  fs.writeFileSync(path.join(root, "topo", "plans", "draft-backlog-plan.tg"), `plan plan_draft_backlog {
+  name "Draft backlog plan"
+  description "Draft plan that should appear in backlog grooming"
+  task task_implement_audit_writer
+  steps {
+    step inspect status pending description "Inspect the implementation path."
+  }
+  status draft
+}
+`, "utf8");
 }
 
 test("SDLC fixture parses and validates with no errors", () => {
@@ -577,6 +626,10 @@ test("legal transitions: task can move unclaimed → claimed → in-progress →
   assert.equal(validateTransition("task", "claimed", "in-progress").ok, true);
   assert.equal(validateTransition("task", "claimed", "done").ok, false);
   assert.equal(validateTransition("pitch", "draft", "approved").ok, false);
+  assert.equal(validateTransition("pitch", "draft", "covered").ok, true);
+  assert.equal(validateTransition("pitch", "approved", "covered").ok, true);
+  assert.equal(validateTransition("pitch", "covered", "approved").ok, false);
+  assert.deepEqual(legalTransitionsFor("pitch", "covered"), ["draft"]);
   assert.equal(validateTransition("requirement", "approved", "satisfied").ok, true);
   assert.equal(validateTransition("requirement", "approved", "ongoing").ok, true);
   assert.equal(validateTransition("requirement", "ongoing", "approved").ok, true);
@@ -584,6 +637,31 @@ test("legal transitions: task can move unclaimed → claimed → in-progress →
   assert.equal(validateTransition("requirement", "ongoing", "satisfied").ok, false);
   assert.deepEqual(legalTransitionsFor("requirement", "satisfied"), ["approved", "superseded"]);
   assert.deepEqual(legalTransitionsFor("plan", "active"), ["complete", "superseded", "draft"]);
+});
+
+test("DoD: covered pitch requires linked requirement or decision", () => {
+  const ast = parsePath(fixtureRoot);
+  const resolved = resolveWorkspace(ast);
+  const byId = new Map(resolved.graph.statements.map((s) => [s.id, s]));
+  const invalid = checkDoD("pitch", {
+    kind: "pitch",
+    id: "pitch_without_coverage",
+    status: "draft",
+    appetite: "small",
+    problem: "A backlog theme exists without follow-through"
+  }, "covered", { byId });
+  assert.equal(invalid.satisfied, false);
+  assert.match(invalid.errors.join("\n"), /covered pitch/);
+
+  const valid = checkDoD("pitch", {
+    kind: "pitch",
+    id: "pitch_with_coverage",
+    status: "draft",
+    appetite: "small",
+    problem: "A backlog theme has been translated to a requirement",
+    requirements: ["req_audit_persistence"]
+  }, "covered", { byId });
+  assert.equal(valid.satisfied, true, JSON.stringify(valid, null, 2));
 });
 
 test("DoD: ongoing requirement requires linked rule or verification", () => {
@@ -910,6 +988,29 @@ test("SDLC query views report available, claimed, blockers, and proof gaps", () 
   }
 });
 
+test("SDLC backlog query view separates grooming backlog from available work", () => {
+  const tempRoot = copyFixtureToTemp();
+  try {
+    writeAvailableRequirementFixtures(tempRoot);
+    writeBacklogFixtures(tempRoot);
+    const resolved = resolveWorkspace(parsePath(tempRoot));
+    assert.equal(resolved.ok, true, JSON.stringify(resolved.validation, null, 2));
+    const backlog = buildSdlcBacklogPayload(resolved.graph);
+    assert.equal(backlog.type, "sdlc_backlog_query");
+    assert.ok(backlog.counts.total >= 4);
+    assert.ok(backlog.pitches.some((pitch) => pitch.id === "pitch_backlog_grooming"));
+    assert.ok(backlog.requirements.some((requirement) => requirement.id === "req_draft_backlog_requirement"));
+    assert.ok(backlog.journeys.some((journey) => journey.id === "journey_draft_backlog"));
+    assert.ok(backlog.plans.some((plan) => plan.id === "plan_draft_backlog"));
+    assert.ok(!backlog.requirements.some((requirement) => requirement.id === "req_completed_requirement"));
+
+    const available = buildSdlcAvailablePayload(resolved.graph);
+    assert.ok(!available.approved_requirements_without_active_tasks.some((requirement) => requirement.id === "req_draft_backlog_requirement"));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("SDLC metrics and stale-work queries derive timing from transition history", () => {
   const tempRoot = copyFixtureToTemp();
   try {
@@ -952,6 +1053,7 @@ test("SDLC query views work through the CLI", () => {
   try {
     writeStartableTask(tempRoot);
     writeAvailableRequirementFixtures(tempRoot);
+    writeBacklogFixtures(tempRoot);
     const available = childProcess.spawnSync(process.execPath, [
       cliPath,
       "query",
@@ -961,6 +1063,16 @@ test("SDLC query views work through the CLI", () => {
     ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
     assert.equal(available.status, 0, available.stderr || available.stdout);
     assert.ok(JSON.parse(available.stdout).unclaimed_tasks.some((task) => task.id === "task_start_followup"));
+
+    const backlog = childProcess.spawnSync(process.execPath, [
+      cliPath,
+      "query",
+      "sdlc-backlog",
+      tempRoot,
+      "--json"
+    ], { encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0" } });
+    assert.equal(backlog.status, 0, backlog.stderr || backlog.stdout);
+    assert.ok(JSON.parse(backlog.stdout).pitches.some((pitch) => pitch.id === "pitch_backlog_grooming"));
 
     const closeouts = childProcess.spawnSync(process.execPath, [
       cliPath,

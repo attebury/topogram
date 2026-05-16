@@ -22,7 +22,7 @@ journey journey_sdlc_standard_adoption {
     id start_work
     intent "Begin implementation from a linked task or bug."
     after [initialize_policy]
-    commands ["topogram query sdlc-available ./topo --json" "topogram sdlc start <task-id> . --actor <actor> --json"]
+    commands ["topogram query sdlc-backlog ./topo --json" "topogram query sdlc-available ./topo --json" "topogram sdlc start <task-id> . --actor <actor> --json"]
     expects ["The maintainer or agent sees blockers, proof gaps, related rules, and verification targets before editing."]
   }
 

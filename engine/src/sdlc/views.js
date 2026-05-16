@@ -120,6 +120,70 @@ function taskRecord(task) {
 }
 
 /**
+ * @param {AnyRecord} pitch
+ * @returns {AnyRecord}
+ */
+function pitchRecord(pitch) {
+  return {
+    ...summary(pitch),
+    priority: pitch.priority || null,
+    appetite: pitch.appetite || null,
+    domain: pitch.resolvedDomain?.id || null,
+    requirements: Array.isArray(pitch.requirements) ? pitch.requirements.slice().sort() : [],
+    decisions: [
+      ...(Array.isArray(pitch.decisions) ? pitch.decisions.map(refId).filter(Boolean) : []),
+      ...(Array.isArray(pitch.decisionsFromPitch) ? pitch.decisionsFromPitch : [])
+    ].sort()
+  };
+}
+
+/**
+ * @param {AnyRecord} requirement
+ * @returns {AnyRecord}
+ */
+function requirementRecord(requirement) {
+  return {
+    ...summary(requirement),
+    priority: requirement.priority || null,
+    domain: requirement.resolvedDomain?.id || null,
+    pitch: refId(requirement.pitch),
+    acceptance_refs: refIds(requirement.acceptanceCriteria),
+    task_refs: refIds(requirement.tasks),
+    affects: refIds(requirement.affects)
+  };
+}
+
+/**
+ * @param {AnyRecord} journey
+ * @returns {AnyRecord}
+ */
+function journeyRecord(journey) {
+  return {
+    ...summary(journey),
+    domain: journey.resolvedDomain?.id || null,
+    actors: refIds(journey.actors),
+    related_capabilities: refIds(journey.relatedCapabilities),
+    steps: Array.isArray(journey.steps) ? journey.steps.length : 0,
+    alternates: Array.isArray(journey.alternates) ? journey.alternates.length : 0
+  };
+}
+
+/**
+ * @param {AnyRecord} plan
+ * @returns {AnyRecord}
+ */
+function planRecord(plan) {
+  return {
+    ...summary(plan),
+    task: refId(plan.task),
+    steps: Array.isArray(plan.steps) ? plan.steps.length : 0,
+    next_step: Array.isArray(plan.steps)
+      ? (plan.steps.find((/** @type {AnyRecord} */ step) => step.status !== "done" && step.status !== "skipped")?.id || null)
+      : null
+  };
+}
+
+/**
  * @param {unknown} value
  * @returns {Date|null}
  */
@@ -404,6 +468,61 @@ export function buildSdlcAvailablePayload(graph) {
       .filter((bug) => !["verified", "wont-fix"].includes(String(bug.status)))
       .map(summary)),
     approved_requirements_without_active_tasks: approvedRequirementsWithoutActiveTasks
+  };
+}
+
+/**
+ * @param {AnyRecord} graph
+ * @returns {AnyRecord}
+ */
+export function buildSdlcBacklogPayload(graph) {
+  const pitchBacklogStatuses = new Set(["draft", "shaped", "submitted"]);
+  const requirementBacklogStatuses = new Set(["draft", "in-review"]);
+  const journeyBacklogStatuses = new Set(["draft"]);
+  const planBacklogStatuses = new Set(["draft"]);
+  const pitches = sortById((graph.byKind?.pitch || [])
+    .filter((/** @type {AnyRecord} */ pitch) => !pitch.archived && pitchBacklogStatuses.has(String(pitch.status)))
+    .map(pitchRecord));
+  const requirements = sortById((graph.byKind?.requirement || [])
+    .filter((/** @type {AnyRecord} */ requirement) => !requirement.archived && requirementBacklogStatuses.has(String(requirement.status)))
+    .map(requirementRecord));
+  const journeys = sortById((graph.byKind?.journey || [])
+    .filter((/** @type {AnyRecord} */ journey) => !journey.archived && journeyBacklogStatuses.has(String(journey.status)))
+    .map(journeyRecord));
+  const plans = sortById((graph.byKind?.plan || [])
+    .filter((/** @type {AnyRecord} */ plan) => !plan.archived && planBacklogStatuses.has(String(plan.status)))
+    .map(planRecord));
+  return {
+    type: "sdlc_backlog_query",
+    version: 1,
+    counts: {
+      total: pitches.length + requirements.length + journeys.length + plans.length,
+      pitches: {
+        draft: pitches.filter((pitch) => pitch.status === "draft").length,
+        shaped: pitches.filter((pitch) => pitch.status === "shaped").length,
+        submitted: pitches.filter((pitch) => pitch.status === "submitted").length
+      },
+      requirements: {
+        draft: requirements.filter((requirement) => requirement.status === "draft").length,
+        in_review: requirements.filter((requirement) => requirement.status === "in-review").length
+      },
+      journeys: {
+        draft: journeys.length
+      },
+      plans: {
+        draft: plans.length
+      }
+    },
+    pitches,
+    requirements,
+    journeys,
+    plans,
+    nextCommands: [
+      "topogram query slice ./topo --pitch <pitch-id> --format markdown",
+      "topogram query slice ./topo --requirement <req-id> --format markdown",
+      "topogram sdlc transition <pitch-id> covered . --actor <actor> --note \"<why>\"",
+      "topogram sdlc new task <slug> ."
+    ]
   };
 }
 

@@ -35,6 +35,7 @@ const QUERY_NAMES = new Set([
   "handoff-status",
   "auth-hints",
   "auth-review-packet",
+  "sdlc-backlog",
   "sdlc-available",
   "sdlc-claimed",
   "sdlc-closeout-candidates",

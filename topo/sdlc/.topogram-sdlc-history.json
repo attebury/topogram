@@ -3862,5 +3862,41 @@
       "by": "actor_coding_agent",
       "note": "Closed finite completed requirement during SDLC backlog hygiene."
     }
+  ],
+  "pitch_sdlc_flow_metrics": [
+    {
+      "from": "draft",
+      "to": "covered",
+      "at": "2026-05-16T17:08:28.969Z",
+      "by": "actor_coding_agent",
+      "note": "Covered by req_sdlc_lightweight_flow_metrics and the implemented sdlc-metrics query."
+    }
+  ],
+  "pitch_stale_work_wip_gates": [
+    {
+      "from": "draft",
+      "to": "covered",
+      "at": "2026-05-16T17:08:33.763Z",
+      "by": "actor_coding_agent",
+      "note": "Covered by req_sdlc_stale_wip_policy_gates and the implemented stale/WIP policy gates."
+    }
+  ],
+  "task_add_sdlc_backlog_grooming_query": [
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T17:27:29.775Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "req_sdlc_backlog_grooming_query": [
+    {
+      "from": "approved",
+      "to": "satisfied",
+      "at": "2026-05-16T17:27:40.976Z",
+      "by": "actor_coding_agent",
+      "note": "Satisfied by task_add_sdlc_backlog_grooming_query and verified by focused SDLC/query tests plus engine and CLI package gates."
+    }
   ]
 }

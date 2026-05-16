@@ -41,7 +41,7 @@ export const DECISION_STATUSES = new Set(["draft", "proposed", "accepted", "reje
 export const RULE_SEVERITIES = new Set(["error", "warning", "info"]);
 
 // Phase 2 SDLC status sets (per-kind state machines).
-export const PITCH_STATUSES = new Set(["draft", "shaped", "submitted", "approved", "rejected"]);
+export const PITCH_STATUSES = new Set(["draft", "shaped", "submitted", "approved", "covered", "superseded", "rejected"]);
 export const REQUIREMENT_STATUSES = new Set(["draft", "in-review", "approved", "satisfied", "ongoing", "superseded"]);
 export const ACCEPTANCE_CRITERION_STATUSES = new Set(["draft", "approved", "superseded"]);
 export const TASK_STATUSES = new Set(["unclaimed", "claimed", "in-progress", "done", "blocked"]);

@@ -55,6 +55,7 @@ topogram query list --json
 topogram query show <name> --json
 topogram query slice ./topo --task <task-id> --json
 topogram query slice ./topo --journey journey_greenfield_start_from_template --json
+topogram query sdlc-backlog ./topo --json
 topogram query sdlc-available ./topo --json
 topogram query sdlc-claimed ./topo --actor actor_coding_agent --json
 topogram query sdlc-blockers ./topo --task <task-id> --json
