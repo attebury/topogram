@@ -3985,5 +3985,37 @@
       "by": "actor_coding_agent",
       "note": "Verified by init command regression tests and engine gate."
     }
+  ],
+  "ac_init_adopt_sdlc_seeds_engineering_laws": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T22:07:00.941Z",
+      "by": "actor_coding_agent",
+      "note": "Approve observable init law seed criterion."
+    }
+  ],
+  "task_seed_engineering_laws_on_init_sdlc": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T22:07:04.708Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T22:07:04.764Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T22:10:08.706Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
   ]
 }

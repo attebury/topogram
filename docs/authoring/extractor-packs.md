@@ -39,10 +39,18 @@ evidence before publishing.
 package.json
 topogram-extractor.json
 index.cjs
+AGENTS.md
 README.md
 scripts/check-extractor.mjs
 fixtures/basic-source/
 ```
+
+The generated `AGENTS.md` is part of the contract for humans and coding agents:
+extractors are read-only, do not write canonical `topo/**`, do not install
+packages or use the network, and return only review candidates. Shared or
+published extractor packs should adopt SDLC in their package repo so those rules,
+tasks, and verification proof are queryable. Private one-off extractors may stay
+lighter, but they should still follow the generated rules and checks.
 
 `topogram-extractor.json` declares the pack:
 
@@ -241,6 +249,12 @@ topogram extract ./fixture-app --out /private/tmp/extracted --extractor ./my-ext
 topogram extract plan /private/tmp/extracted --json
 topogram adopt --list /private/tmp/extracted --json
 topogram query extract-plan /private/tmp/extracted/topo --json
+```
+
+Use `TOPOGRAM_CLI` when developing an extractor against a local Topogram checkout:
+
+```bash
+TOPOGRAM_CLI=/path/to/topogram/engine/src/cli.js npm --prefix ./my-extractor-pack run check
 ```
 
 Passing `topogram extractor check` proves the manifest, adapter export, and

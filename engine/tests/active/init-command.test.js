@@ -44,6 +44,10 @@ test("topogram init creates an empty maintained workspace without overwriting ap
     assert.equal(fs.readFileSync(path.join(appRoot, "src", "index.js"), "utf8"), "console.log('app source');\n");
     assert.equal(fs.readFileSync(path.join(appRoot, "README.md"), "utf8"), "# Existing App\n");
     assert.equal(fs.existsSync(path.join(appRoot, "AGENTS.md")), true);
+    assert.match(
+      fs.readFileSync(path.join(appRoot, "AGENTS.md"), "utf8"),
+      /Maintain code like this project will live for 10 years/
+    );
 
     const config = readJson(path.join(appRoot, "topogram.project.json"));
     assert.deepEqual(config, {
@@ -92,6 +96,9 @@ test("topogram init --adopt-sdlc adopts enforced SDLC and scaffolds folders duri
     assert.equal(payload.created.includes("topo/sdlc/tasks"), true);
     assert.equal(payload.created.includes("topo/sdlc/plans"), true);
     assert.equal(payload.created.includes("topo/sdlc/_archive"), true);
+    assert.equal(payload.created.includes("topo/capabilities/engineering-workflow.tg"), true);
+    assert.equal(payload.created.includes("topo/rules/engineering-laws.tg"), true);
+    assert.equal(payload.created.includes("topo/sdlc/decisions/repo-local-laws-are-enforceable.tg"), true);
     assert.deepEqual(payload.sdlc.folders.sort(), [
       "_archive",
       "acceptance_criteria",
@@ -110,6 +117,14 @@ test("topogram init --adopt-sdlc adopts enforced SDLC and scaffolds folders duri
     for (const folder of payload.sdlc.folders) {
       assert.equal(fs.existsSync(path.join(appRoot, "topo", "sdlc", folder)), true);
     }
+    assert.match(
+      fs.readFileSync(path.join(appRoot, "AGENTS.md"), "utf8"),
+      /Maintain code like this project will live for 10 years/
+    );
+    assert.match(
+      fs.readFileSync(path.join(appRoot, "topo", "rules", "engineering-laws.tg"), "utf8"),
+      /rule_maintainable_security_focused_code/
+    );
 
     const explain = runCli(["sdlc", "policy", "explain", appRoot, "--json"]);
     assert.equal(explain.status, 0, explain.stderr || explain.stdout);
@@ -120,6 +135,12 @@ test("topogram init --adopt-sdlc adopts enforced SDLC and scaffolds folders duri
 
     const sdlcCheck = runCli(["sdlc", "check", appRoot, "--strict"]);
     assert.equal(sdlcCheck.status, 0, sdlcCheck.stderr || sdlcCheck.stdout);
+
+    const check = runCli(["check", appRoot, "--json"]);
+    assert.equal(check.status, 0, check.stderr || check.stdout);
+    const checkPayload = JSON.parse(check.stdout);
+    assert.equal(checkPayload.topogram.valid, true);
+    assert.ok(checkPayload.topogram.statements >= 9);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

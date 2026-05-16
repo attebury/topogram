@@ -22,9 +22,19 @@ This writes:
 - `README.md`, if missing
 - `AGENTS.md`, if missing
 - `topogram.sdlc-policy.json` and `topo/sdlc/**`, when `--adopt-sdlc` is used
+- starter engineering-law records, when `--adopt-sdlc` is used:
+  `topo/capabilities/engineering-workflow.tg`,
+  `topo/rules/engineering-laws.tg`, and
+  `topo/sdlc/decisions/repo-local-laws-are-enforceable.tg`
 
 The generated project config marks `.` as maintained ownership. That means
 Topogram will not overwrite source files in the repo.
+
+The generated `AGENTS.md` always includes the basic engineering laws: maintain
+for long-lived intermittent ownership, keep code testable and security-focused,
+prove consumer-visible behavior, start agents from focused context, and use
+commands for workflow state. With `--adopt-sdlc`, those laws are also seeded as
+queryable `.tg` records.
 
 ## 2. Inspect
 

@@ -129,6 +129,14 @@ Edit \`topo/**\` and \`topogram.project.json\` for Topogram source. The project
 output is maintained, so app/source files under \`./\` are human-owned and may be
 edited directly after reading focused packets.
 
+## Engineering Laws
+
+- Maintain code like this project will live for 10 years and be touched only from time to time.
+- Keep code organized, maintainable, security-focused, tested, and testable.
+- Make tests prove consumer-visible value; do not rely on string-only or file-existence checks when behavior can compile, run, or validate.
+- Start agent work with \`topogram agent brief --json\` and focused \`topogram query ...\` packets before broad edits.
+- Use Topogram commands for stateful workflow mutations such as SDLC transitions, trust, provenance, generated sentinels, archives, release state, and rollout state.
+
 Use \`topogram emit <target>\` for contracts, reports, snapshots, migration
 plans, and agent context. Do not expect \`topogram generate\` to overwrite this
 maintained app unless output ownership is deliberately changed.
@@ -141,6 +149,82 @@ topogram sdlc policy explain --json
 topogram sdlc prep commit . --json
 \`\`\`
 `;
+}
+
+/**
+ * @returns {Record<string, string>}
+ */
+function sdlcLawSeedFiles() {
+  return {
+    "topo/capabilities/engineering-workflow.tg": `capability cap_maintain_project {
+  name "Maintain Project"
+  description "Maintain this project over time with organized, testable, security-focused changes."
+  status active
+}
+
+capability cap_validate_workspace {
+  name "Validate Workspace"
+  description "Run the project validation gates before committing or releasing changes."
+  status active
+}
+
+capability cap_query_context {
+  name "Query Focused Context"
+  description "Use focused Topogram query packets before broad source edits."
+  status active
+}
+
+capability cap_manage_sdlc_records {
+  name "Manage SDLC Records"
+  description "Use Topogram commands to manage SDLC status, history, and proof links."
+  status active
+}
+`,
+    "topo/sdlc/decisions/repo-local-laws-are-enforceable.tg": `decision decision_repo_local_laws_are_enforceable {
+  name "Repo Local Laws Are Enforceable"
+  description "Repo-local engineering laws are part of the maintained Topogram source and should guide humans and agents."
+  context ["AGENTS.md carries first-run laws", "graph-native rules make those laws queryable after SDLC adoption"]
+  consequences ["agents can load laws through focused slices", "new laws should be added as rule records when they become durable"]
+  status accepted
+}
+`,
+    "topo/rules/engineering-laws.tg": `rule rule_maintainable_security_focused_code {
+  name "Maintainable Security Focused Code"
+  description "Code must be organized, maintainable, security-focused, tested, and testable for long-lived intermittent maintenance."
+  applies_to [cap_maintain_project]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  status enforced
+}
+
+rule rule_tests_prove_consumer_value {
+  name "Tests Prove Consumer Value"
+  description "Tests should prove behavior that consumers, maintainers, or agents rely on; compile, run, validate, or inspect real outputs where practical."
+  applies_to [cap_validate_workspace]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  status enforced
+}
+
+rule rule_agents_start_with_focused_context {
+  name "Agents Start With Focused Context"
+  description "Agents should start with agent brief and focused query packets before editing broad source surfaces."
+  applies_to [cap_query_context]
+  severity warning
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  status enforced
+}
+
+rule rule_stateful_workflow_mutations_use_cli {
+  name "Stateful Workflow Mutations Use CLI"
+  description "Status, history, trust, provenance, generated sentinels, archives, release state, and rollout state should be changed through canonical commands."
+  applies_to [cap_manage_sdlc_records]
+  severity error
+  source_of_truth [decision_repo_local_laws_are_enforceable]
+  status enforced
+}
+`
+  };
 }
 
 /**
@@ -214,6 +298,9 @@ export function initTopogramProject(options = {}) {
     }
     for (const folder of adoption.folders_created) {
       created.push(`topo/sdlc/${folder}`);
+    }
+    for (const [relativePath, contents] of Object.entries(sdlcLawSeedFiles())) {
+      writeIfMissing(projectRoot, path.join(projectRoot, relativePath), contents, created, skipped);
     }
   }
 

@@ -604,8 +604,10 @@ test("extractor scaffold creates a checkable package-backed extractor", () => {
   assert.equal(payload.manifestId, "@scope/extractor-scaffold");
   assert.equal(payload.track, "cli");
   assert.ok(payload.files.includes("topogram-extractor.json"));
+  assert.ok(payload.files.includes("AGENTS.md"));
   assert.ok(payload.files.includes("scripts/check-extractor.mjs"));
   assert.equal(fs.existsSync(path.join(packageRoot, "fixtures", "basic-source", "package.json")), true);
+  assert.match(fs.readFileSync(path.join(packageRoot, "AGENTS.md"), "utf8"), /Extractors are read-only/);
 
   const check = runCli(["extractor", "check", packageRoot, "--json"]);
   assert.equal(check.status, 0, check.stderr || check.stdout);

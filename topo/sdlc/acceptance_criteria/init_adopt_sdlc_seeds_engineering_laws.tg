@@ -1,0 +1,6 @@
+acceptance_criterion ac_init_adopt_sdlc_seeds_engineering_laws {
+  name "Init Adopt Sdlc Seeds Engineering Laws"
+  description "Given a directory without Topogram config, when `topogram init --adopt-sdlc` runs, then the initialized workspace includes graph-native starter capabilities, decisions, and enforced engineering rules for maintainability, test value, focused agent context, and command-owned workflow state."
+  requirement req_init_maintained_workspace
+  status approved
+}

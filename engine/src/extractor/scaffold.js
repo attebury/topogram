@@ -286,7 +286,7 @@ import path from "node:path";
 const packageJson = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const packageName = packageJson.name || ${JSON.stringify(packageName)};
 const track = ${JSON.stringify(track)};
-const topogramBin = process.env.TOPOGRAM_BIN || "topogram";
+const topogramBin = process.env.TOPOGRAM_CLI || process.env.TOPOGRAM_BIN || "topogram";
 const root = process.cwd();
 
 function run(args, options = {}) {
@@ -420,6 +420,7 @@ export function scaffoldExtractorPack(target, options = {}) {
     files: [
       "index.cjs",
       "topogram-extractor.json",
+      "AGENTS.md",
       "README.md",
       "scripts",
       "fixtures"
@@ -436,6 +437,28 @@ export function scaffoldExtractorPack(target, options = {}) {
     [path.join(absoluteTarget, "topogram-extractor.json")]: `${stableStringify(manifest)}\n`,
     [path.join(absoluteTarget, "index.cjs")]: adapterSource(track, extractor),
     [path.join(absoluteTarget, "scripts", "check-extractor.mjs")]: checkScriptSource(packageName, track),
+    [path.join(absoluteTarget, "AGENTS.md")]: `# Extractor Pack Agent Guide
+
+This repository is a Topogram extractor pack for the \`${track}\` track.
+
+## Rules
+
+- Extractors are read-only. Do not mutate source app files.
+- Do not write canonical \`topo/**\`, \`topogram.project.json\`, patches, adoption plans, or generated app output.
+- Do not install packages or perform network access during detection or extraction.
+- Return review-only \`findings\`, \`candidates\`, and \`diagnostics\`; Topogram core owns persistence, reconcile, adoption, and canonical writes.
+- Keep candidate evidence project-relative and portable.
+- Use scalar \`stacks: ["framework"]\` and \`frameworks: ["tool"]\` metadata buckets.
+- Run \`npm run check\` before committing. It must prove extractor check, real fixture extraction, extract plan, query extract-plan, adopt list, and unchanged fixture source.
+
+## Local Engine Testing
+
+\`\`\`bash
+TOPOGRAM_CLI=/absolute/path/to/topogram/engine/src/cli.js npm run check
+\`\`\`
+
+SDLC is recommended for shared or published extractor packs. If adopted, keep extractor rules and tasks in the package repo's \`topo/\` workspace so agents can query them.
+`,
     [path.join(absoluteTarget, "README.md")]: `# ${packageName}
 
 This is a Topogram extractor pack scaffold for the \`${track}\` track.
@@ -446,6 +469,10 @@ This is a Topogram extractor pack scaffold for the \`${track}\` track.
 npm install
 npm run check
 \`\`\`
+
+\`npm run check\` uses \`TOPOGRAM_CLI\`, then \`TOPOGRAM_BIN\`, then \`topogram\`.
+Use \`TOPOGRAM_CLI=/path/to/topogram/engine/src/cli.js npm run check\` while
+developing against a local Topogram checkout.
 
 \`npm run check\` runs:
 
@@ -458,6 +485,10 @@ npm run check
 Replace the scaffold adapter in \`index.cjs\` with precise, read-only source evidence.
 Extractor packages must not mutate source files, write canonical \`topo/**\`, install
 packages, perform network access, or define adoption semantics.
+
+Shared or published extractor packs should adopt SDLC so rules, tasks, and proof
+history are queryable by agents. Private one-off extractors may stay lightweight,
+but they should still follow the generated \`AGENTS.md\` rules.
 
 Candidate output is validated by track. Return only review candidate buckets for
 the declared track, give each candidate a stable identity, keep file evidence

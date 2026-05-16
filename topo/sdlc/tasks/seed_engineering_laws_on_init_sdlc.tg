@@ -1,0 +1,14 @@
+task task_seed_engineering_laws_on_init_sdlc {
+  name "Seed Engineering Laws On Init Sdlc"
+  description "Make initialized projects include basic engineering-law prose in AGENTS.md and make `topogram init --adopt-sdlc` seed minimal graph-native law records that validate and appear in agent context."
+  satisfies [req_init_maintained_workspace]
+  acceptance_refs [ac_init_adopt_sdlc_seeds_engineering_laws]
+  verification_refs [verification_engine_gate]
+  affects [cap_create_project cap_brief_agent cap_query_context cap_manage_sdlc_records]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}
