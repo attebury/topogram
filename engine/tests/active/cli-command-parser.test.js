@@ -28,6 +28,10 @@ test("split command parser handles extracted command families", () => {
     initProject: true,
     inputPath: "./existing-app"
   });
+  assert.deepEqual(parseSplitCommandArgs(["init", "--adopt-sdlc"]), {
+    initProject: true,
+    inputPath: "."
+  });
   assert.deepEqual(parseSplitCommandArgs(["init", "--with-sdlc"]), {
     initProject: true,
     inputPath: "."

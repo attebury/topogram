@@ -1,0 +1,14 @@
+task task_scaffold_sdlc_on_init_adoption {
+  name "Scaffold Sdlc On Init Adoption"
+  description "Make `topogram init --adopt-sdlc` create the same SDLC folder scaffold that `topogram sdlc adopt` creates, while keeping `--with-sdlc` accepted for existing docs/tests during the transition."
+  satisfies [req_init_maintained_workspace]
+  acceptance_refs [ac_init_adopt_sdlc_scaffolds_folder]
+  verification_refs [verification_engine_gate]
+  affects [cap_create_project cap_manage_sdlc_records cap_validate_workspace]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status done
+}

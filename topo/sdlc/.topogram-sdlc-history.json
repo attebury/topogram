@@ -3930,5 +3930,60 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "ac_init_adopt_sdlc_scaffolds_folder": [
+    {
+      "from": "draft",
+      "to": "approved",
+      "at": "2026-05-16T21:43:35.224Z",
+      "by": "actor_coding_agent",
+      "note": "Approve observable init SDLC scaffold criterion."
+    }
+  ],
+  "task_scaffold_sdlc_on_init_adoption": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T21:43:38.909Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T21:43:38.966Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "in-progress",
+      "to": "done",
+      "at": "2026-05-16T21:49:39.698Z",
+      "by": "actor_coding_agent",
+      "note": null
+    }
+  ],
+  "bug_init_sdlc_adoption_missing_scaffold": [
+    {
+      "from": "open",
+      "to": "in-progress",
+      "at": "2026-05-16T21:49:57.324Z",
+      "by": "actor_coding_agent",
+      "note": "Fix in progress with init SDLC scaffold task."
+    },
+    {
+      "from": "in-progress",
+      "to": "fixed",
+      "at": "2026-05-16T21:50:09.747Z",
+      "by": "actor_coding_agent",
+      "note": "Implemented init SDLC scaffold behavior."
+    },
+    {
+      "from": "fixed",
+      "to": "verified",
+      "at": "2026-05-16T21:50:16.181Z",
+      "by": "actor_coding_agent",
+      "note": "Verified by init command regression tests and engine gate."
+    }
   ]
 }

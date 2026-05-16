@@ -53,7 +53,7 @@ journey journey_greenfield_start_from_template {
     id initialize_empty_workspace
     from create_project
     condition "The user already owns a repo and wants an empty maintained Topogram workspace instead of starter content."
-    commands ["topogram init . --with-sdlc"]
+    commands ["topogram init . --adopt-sdlc"]
     expects ["Project contains topo/, topogram.project.json with maintained output ownership, and optional enforced SDLC policy for the existing repo."]
   }
 }

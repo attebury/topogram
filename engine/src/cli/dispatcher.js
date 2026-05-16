@@ -291,10 +291,11 @@ export async function runCliDispatch(context) {
   }
 
   if (commandArgs?.initProject) {
+    const withSdlc = args.includes("--adopt-sdlc") || args.includes("--with-sdlc");
     return runInitProjectCommand(effectiveInputPath || ".", {
       json: emitJson,
       cwd: process.cwd(),
-      withSdlc: args.includes("--with-sdlc")
+      withSdlc
     });
   }
 

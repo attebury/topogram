@@ -78,7 +78,7 @@ export function printUsage(options = {}) {
   console.log("   or: topogram extractor policy check [path] [--json]");
   console.log("   or: topogram extractor policy explain [path] [--json]");
   console.log("   or: topogram extractor policy pin [package@version] [path] [--json]");
-  console.log("   or: topogram init [path] [--with-sdlc] [--json]");
+  console.log("   or: topogram init [path] [--adopt-sdlc] [--json]");
   console.log("");
   console.log("Common commands:");
   console.log("  topogram version");
@@ -256,17 +256,18 @@ export function printCopyHelp() {
  * @returns {void}
  */
 export function printInitHelp() {
-  console.log("Usage: topogram init [path] [--with-sdlc] [--json]");
+  console.log("Usage: topogram init [path] [--adopt-sdlc] [--json]");
   console.log("");
   console.log("Initializes an empty Topogram workspace in an existing or new repository without copying a template.");
   console.log("");
   console.log("Defaults: path is the current directory. Init creates topo/, topogram.project.json, and starter guidance files only when they are missing.");
   console.log("The default output is maintained ownership for '.', so Topogram will not overwrite app source.");
-  console.log("--with-sdlc also writes topogram.sdlc-policy.json with adopted/enforced defaults.");
+  console.log("--adopt-sdlc writes topogram.sdlc-policy.json with adopted/enforced defaults and scaffolds topo/sdlc/.");
+  console.log("--with-sdlc remains accepted as a compatibility spelling.");
   console.log("");
   console.log("Examples:");
   console.log("  topogram init");
-  console.log("  topogram init . --with-sdlc");
+  console.log("  topogram init . --adopt-sdlc");
   console.log("  topogram init . --json");
   console.log("  topogram init ./existing-app");
 }

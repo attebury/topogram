@@ -7,7 +7,7 @@ For an existing or maintained repo:
 
 ```bash
 npm install --save-dev @topogram/cli
-npx topogram init . --with-sdlc
+npx topogram init . --adopt-sdlc
 topogram check --json
 ```
 
@@ -27,5 +27,5 @@ npm --prefix app run compile
 
 Use `topogram init .` instead of `topogram copy` when the repository already
 exists and you want Topogram to track it as maintained source without copying a
-template or generating app code. Add `--with-sdlc` when the repo should enforce
+template or generating app code. Add `--adopt-sdlc` when the repo should enforce
 SDLC linkage from the first commit.

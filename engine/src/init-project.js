@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { sdlcAdopt } from "./sdlc/adopt.js";
 import { defaultSdlcPolicy, SDLC_POLICY_FILE } from "./sdlc/policy.js";
 import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH, PROJECT_CONFIG_FILE } from "./workspace-paths.js";
 
@@ -21,7 +22,7 @@ import { DEFAULT_TOPO_FOLDER_NAME, DEFAULT_WORKSPACE_PATH, PROJECT_CONFIG_FILE }
  * @property {string[]} created
  * @property {string[]} skipped
  * @property {Record<string, any>} projectConfig
- * @property {{ enabled: boolean, path: string|null }} sdlc
+ * @property {{ enabled: boolean, path: string|null, folders: string[] }} sdlc
  */
 
 /**
@@ -92,10 +93,12 @@ topogram check --json
 topogram query list --json
 \`\`\`
 
-To adopt enforced SDLC after initialization, run:
+To adopt enforced SDLC during initialization, use \`topogram init . --adopt-sdlc\`.
+If this project was initialized without SDLC and you want to adopt it later, run:
 
 \`\`\`bash
 topogram sdlc policy init .
+topogram sdlc adopt .
 \`\`\`
 
 ## Source
@@ -189,6 +192,8 @@ export function initTopogramProject(options = {}) {
   writeIfMissing(projectRoot, path.join(projectRoot, "README.md"), initializedReadme(), created, skipped);
   writeIfMissing(projectRoot, path.join(projectRoot, "AGENTS.md"), initializedAgentsGuide(), created, skipped);
   const sdlcPolicyPath = path.join(projectRoot, SDLC_POLICY_FILE);
+  /** @type {string[]} */
+  let sdlcFolders = [];
   if (options.withSdlc) {
     writeIfMissing(
       projectRoot,
@@ -197,6 +202,19 @@ export function initTopogramProject(options = {}) {
       created,
       skipped
     );
+    const sdlcRoot = path.join(workspaceRoot, "sdlc");
+    const hadSdlcRoot = fs.existsSync(sdlcRoot);
+    const adoption = sdlcAdopt(projectRoot);
+    if (!adoption.ok) {
+      throw new Error(adoption.error || "Failed to adopt SDLC during initialization.");
+    }
+    sdlcFolders = [...adoption.folders_created, ...adoption.folders_existing];
+    if (!hadSdlcRoot && fs.existsSync(sdlcRoot)) {
+      created.push("topo/sdlc");
+    }
+    for (const folder of adoption.folders_created) {
+      created.push(`topo/sdlc/${folder}`);
+    }
   }
 
   return {
@@ -209,7 +227,8 @@ export function initTopogramProject(options = {}) {
     projectConfig,
     sdlc: {
       enabled: options.withSdlc ? fs.existsSync(sdlcPolicyPath) : false,
-      path: options.withSdlc ? sdlcPolicyPath : null
+      path: options.withSdlc ? sdlcPolicyPath : null,
+      folders: sdlcFolders
     }
   };
 }

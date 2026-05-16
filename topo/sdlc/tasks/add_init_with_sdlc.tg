@@ -1,6 +1,6 @@
 task task_add_init_with_sdlc {
   name "Add Init With Sdlc"
-  description "Add an opt-in `topogram init --with-sdlc` flag that initializes the maintained workspace and writes the default enforced SDLC policy in one command."
+  description "Add an opt-in `topogram init --adopt-sdlc` flag that initializes the maintained workspace, writes the default enforced SDLC policy, and scaffolds topo/sdlc folders in one command."
   satisfies [req_init_maintained_workspace]
   acceptance_refs [ac_init_can_enable_sdlc]
   verification_refs [verification_engine_gate]

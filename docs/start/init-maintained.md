@@ -12,7 +12,7 @@ write generated app code.
 
 ```bash
 npm install --save-dev @topogram/cli
-npx topogram init . --with-sdlc
+npx topogram init . --adopt-sdlc
 ```
 
 This writes:
@@ -21,7 +21,7 @@ This writes:
 - `topogram.project.json`
 - `README.md`, if missing
 - `AGENTS.md`, if missing
-- `topogram.sdlc-policy.json`, when `--with-sdlc` is used
+- `topogram.sdlc-policy.json` and `topo/sdlc/**`, when `--adopt-sdlc` is used
 
 The generated project config marks `.` as maintained ownership. That means
 Topogram will not overwrite source files in the repo.

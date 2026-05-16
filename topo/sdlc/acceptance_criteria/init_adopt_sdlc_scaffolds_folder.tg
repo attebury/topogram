@@ -1,0 +1,6 @@
+acceptance_criterion ac_init_adopt_sdlc_scaffolds_folder {
+  name "Init Adopt Sdlc Scaffolds Folder"
+  description "Given a directory without Topogram config, when `topogram init --adopt-sdlc` runs, then it creates the maintained workspace, writes adopted/enforced SDLC policy, and scaffolds topo/sdlc folders for pitches, requirements, acceptance criteria, tasks, plans, bugs, decisions, and archive records."
+  requirement req_init_maintained_workspace
+  status approved
+}

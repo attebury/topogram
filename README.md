@@ -29,7 +29,7 @@ npx topogram doctor
 ### Initialize a maintained repo
 
 ```bash
-npx topogram init . --with-sdlc
+npx topogram init . --adopt-sdlc
 topogram agent brief --json
 topogram check --json
 topogram query list --json
@@ -37,7 +37,7 @@ topogram query list --json
 
 Start here when you already have a repo, want to add a `topo/` workspace, or
 want to model a maintained app before generating anything. `init` does not copy
-a template, install generators, or generate app code. `--with-sdlc` opts the
+a template, install generators, or generate app code. `--adopt-sdlc` opts the
 repo into enforced SDLC immediately. See
 [Initialize Maintained Repo](./docs/start/init-maintained.md).
 

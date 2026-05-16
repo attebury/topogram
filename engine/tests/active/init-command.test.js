@@ -77,22 +77,39 @@ test("topogram init creates an empty maintained workspace without overwriting ap
   }
 });
 
-test("topogram init --with-sdlc adopts enforced SDLC during initialization", () => {
+test("topogram init --adopt-sdlc adopts enforced SDLC and scaffolds folders during initialization", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "topogram-init-sdlc-"));
   const appRoot = path.join(root, "existing-app");
   fs.mkdirSync(appRoot, { recursive: true });
 
   try {
-    const init = runCli(["init", appRoot, "--with-sdlc", "--json"]);
+    const init = runCli(["init", appRoot, "--adopt-sdlc", "--json"]);
     assert.equal(init.status, 0, init.stderr || init.stdout);
     const payload = JSON.parse(init.stdout);
     assert.equal(payload.sdlc.enabled, true);
     assert.equal(payload.created.includes("topogram.sdlc-policy.json"), true);
+    assert.equal(payload.created.includes("topo/sdlc"), true);
+    assert.equal(payload.created.includes("topo/sdlc/tasks"), true);
+    assert.equal(payload.created.includes("topo/sdlc/plans"), true);
+    assert.equal(payload.created.includes("topo/sdlc/_archive"), true);
+    assert.deepEqual(payload.sdlc.folders.sort(), [
+      "_archive",
+      "acceptance_criteria",
+      "bugs",
+      "decisions",
+      "pitches",
+      "plans",
+      "requirements",
+      "tasks"
+    ]);
 
     const policy = readJson(path.join(appRoot, "topogram.sdlc-policy.json"));
     assert.equal(policy.status, "adopted");
     assert.equal(policy.mode, "enforced");
     assert.equal(policy.protectedPaths.includes("topo/**"), true);
+    for (const folder of payload.sdlc.folders) {
+      assert.equal(fs.existsSync(path.join(appRoot, "topo", "sdlc", folder)), true);
+    }
 
     const explain = runCli(["sdlc", "policy", "explain", appRoot, "--json"]);
     assert.equal(explain.status, 0, explain.stderr || explain.stdout);
@@ -100,6 +117,9 @@ test("topogram init --with-sdlc adopts enforced SDLC during initialization", () 
     assert.equal(explainPayload.policy.exists, true);
     assert.equal(explainPayload.policy.status, "adopted");
     assert.equal(explainPayload.policy.mode, "enforced");
+
+    const sdlcCheck = runCli(["sdlc", "check", appRoot, "--strict"]);
+    assert.equal(sdlcCheck.status, 0, sdlcCheck.stderr || sdlcCheck.stdout);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

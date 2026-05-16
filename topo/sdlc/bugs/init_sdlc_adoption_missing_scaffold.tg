@@ -1,0 +1,13 @@
+bug bug_init_sdlc_adoption_missing_scaffold {
+  name "Init Sdlc Adoption Missing Scaffold"
+  description "`topogram init --adopt-sdlc` can leave a new project without the expected topo/sdlc folder scaffold, making the adopted SDLC first-run path feel incomplete for humans and agents."
+  reproduction "Run `topogram init --adopt-sdlc` in an empty directory and inspect the resulting topo workspace; the command should create topo/sdlc subfolders, not only topo/ and topogram.sdlc-policy.json."
+  affects [cap_create_project cap_manage_sdlc_records]
+  violates []
+  fixed_in [task_scaffold_sdlc_on_init_adoption]
+  fixed_in_verification [verification_engine_gate]
+  domain dom_sdlc_query_agent_context
+  priority medium
+  severity medium
+  status verified
+}
