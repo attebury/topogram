@@ -1,0 +1,14 @@
+task task_release_cli_0_3_93 {
+  name "Release Cli 0 3 93"
+  description "Prepare, publish, smoke-test, roll first-party consumers, refresh release evidence, and tag @topogram/cli 0.3.93 for the docs and v2 proof walkthrough polish."
+  satisfies [req_docs_are_current_and_audience_oriented req_proof_demo_program]
+  acceptance_refs [ac_cli_0_3_93_release_published]
+  verification_refs [verification_release_status_strict verification_cli_package_smoke verification_engine_gate verification_dogfood_topo_workspace]
+  affects [cap_verify_release_status cap_roll_consumer_packages]
+  blocked_by []
+  disposition active
+  priority medium
+  work_type implementation
+  claimed_by [actor_coding_agent]
+  status in-progress
+}

@@ -3466,5 +3466,21 @@
       "by": "actor_coding_agent",
       "note": null
     }
+  ],
+  "task_release_cli_0_3_93": [
+    {
+      "from": "unclaimed",
+      "to": "claimed",
+      "at": "2026-05-16T03:23:57.659Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    },
+    {
+      "from": "claimed",
+      "to": "in-progress",
+      "at": "2026-05-16T03:23:57.714Z",
+      "by": "actor_coding_agent",
+      "note": "task started"
+    }
   ]
 }

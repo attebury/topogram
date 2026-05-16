@@ -1,0 +1,6 @@
+acceptance_criterion ac_cli_0_3_93_release_published {
+  name "Cli 0 3 93 Release Published"
+  description "Given docs and proof repository guidance changes are merged on main after @topogram/cli 0.3.92, when @topogram/cli 0.3.93 is prepared, published, smoke-tested, rolled to first-party consumers, and release evidence is refreshed, then strict release status is green for the CLI and first-party packages."
+  requirement req_docs_are_current_and_audience_oriented
+  status approved
+}
