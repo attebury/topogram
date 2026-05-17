@@ -1,0 +1,9 @@
+requirement req_design_token_contract_v1 {
+  name "Design Token Contract V1"
+  description "Topogram must keep design intent semantic and contract-owned by exposing density, tone, color roles, typography roles, radius scale, action roles, and accessibility tokens in UI contracts and generator coverage."
+  pitch pitch_ui_contract_maturity
+  affects [cap_generate_app_outputs, cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status approved
+}

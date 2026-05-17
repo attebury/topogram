@@ -7,8 +7,24 @@ How a Topogram-aligned SvelteKit realization separates **semantic** `widget` / `
 ## Principles (short)
 
 - Intent in `topo/`; Svelte in `apps/web` (or `app/`) implements **normalized** widget contracts.
-- Preserve **`data-topogram-widget="<widget_id>"`** and **`data-topogram-region="<region>"`** on wrappers so coverage and agents can correlate DOM to the graph.
+- Preserve **`data-topogram-widget="<widget_id>"`**, **`data-topogram-region="<region>"`**, **`data-topogram-screen="<screen_id>"`**, and **`data-topogram-display-field`** on generated/adapted wrappers so coverage and agents can correlate DOM to the graph.
 - CI: `topogram check`, `topogram widget check`, `svelte-check` / build as appropriate.
+
+## Beta UI proof surface
+
+For web beta, Topogram proves semantic parity rather than screenshot parity:
+
+- `ui-surface-contract` includes screen and widget `displayFields` derived from
+  screen shapes, capability output shapes, and widget data bindings.
+- `topogram emit ui-realization-report ./topo --projection <web_surface> --json`
+  reports each screen, route, region, widget usage, behavior realization,
+  display field set, design-token mapping, and generator support status.
+- React and SvelteKit bundled generators render supported widget patterns from
+  those contract display fields and record marker coverage in
+  `src/lib/topogram/generation-coverage.json`.
+- Visual screenshot comparison and automated a11y audits are later proof layers;
+  the current beta bar is compile plus deterministic DOM-template/coverage
+  assertions.
 
 ### Multiple instances of the same widget on one page
 

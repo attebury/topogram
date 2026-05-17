@@ -1,0 +1,6 @@
+acceptance_criterion ac_web_ui_beta_proof_compiles_and_covers_markers {
+  name "Web UI Beta Proof Compiles And Covers Markers"
+  description "Given React and SvelteKit web surfaces are generated from one ui_contract, when engine generation tests run, then generated apps compile and coverage proves required screen, region, widget, display-field, behavior, and design-token markers are rendered or diagnosed."
+  requirement req_web_ui_beta_proof
+  status approved
+}

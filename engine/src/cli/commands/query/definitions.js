@@ -32,7 +32,7 @@
  * @returns {QueryDefinition[]}
  */
 export function queryDefinitions() {
-  const contextSelectors = ["mode", "capability", "workflow", "projection", "widget", "entity", "journey", "surface", "domain", "pitch", "requirement", "acceptance", "task", "plan", "bug", "document", "from-topogram"];
+  const contextSelectors = ["mode", "capability", "workflow", "projection", "screen", "widget", "entity", "journey", "surface", "domain", "pitch", "requirement", "acceptance", "task", "plan", "bug", "document", "from-topogram"];
   return [
     {
       name: "slice",

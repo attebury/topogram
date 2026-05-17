@@ -1,0 +1,6 @@
+acceptance_criterion ac_design_token_contract_stays_semantic {
+  name "Design Token Contract Stays Semantic"
+  description "Given a ui_contract defines design_tokens, when Topogram emits contracts or generates web output, then the contract and coverage expose semantic token categories without adding CSS, Tailwind, SwiftUI modifier, or pixel-level DSL syntax."
+  requirement req_design_token_contract_v1
+  status approved
+}

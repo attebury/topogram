@@ -1,0 +1,14 @@
+task task_ui_widget_design_beta_maturity {
+  name "UI Widget Design Beta Maturity"
+  description "Add deterministic widget display fields, UI realization reporting, screen-focused UI slices, semantic design-token proof, and React/SvelteKit generation coverage for web UI beta readiness."
+  satisfies [req_widget_display_contract_v1, req_ui_realization_report, req_agent_ui_slice_context, req_design_token_contract_v1, req_web_ui_beta_proof]
+  acceptance_refs [ac_widget_display_fields_derived, ac_ui_realization_report_covers_web_surface, ac_agent_screen_slice_is_cold_start_safe, ac_design_token_contract_stays_semantic, ac_web_ui_beta_proof_compiles_and_covers_markers]
+  verification_refs [verification_web_ui_beta_contracts, verification_engine_gate, verification_cli_package_smoke]
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  blocked_by []
+  claimed_by actor_coding_agent
+  disposition active
+  priority high
+  work_type implementation
+  status done
+}

@@ -1,0 +1,9 @@
+requirement req_web_ui_beta_proof {
+  name "Web UI Beta Proof"
+  description "Topogram must prove web UI semantic parity from one ui_contract across React and SvelteKit through compile checks plus deterministic DOM-template and generation coverage assertions."
+  pitch pitch_ui_contract_maturity
+  affects [cap_generate_app_outputs, cap_check_widget_contracts, cap_query_context]
+  domain dom_generator_runtime
+  priority high
+  status approved
+}

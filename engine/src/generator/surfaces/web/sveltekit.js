@@ -59,7 +59,9 @@ function sampleItemsForScreen(screen) {
       status: "active",
       priority: "medium",
       created_at: "2026-01-01",
-      due_at: "2026-01-15"
+      due_at: "2026-01-15",
+      dueAt: "2026-01-15",
+      ownerId: "sample-owner"
     },
     {
       id: "sample-completed",
@@ -70,7 +72,9 @@ function sampleItemsForScreen(screen) {
       status: "completed",
       priority: "low",
       created_at: "2026-01-02",
-      due_at: "2026-01-22"
+      due_at: "2026-01-22",
+      dueAt: "2026-01-22",
+      ownerId: "sample-owner"
     }
   ];
 }
@@ -85,6 +89,11 @@ function screenRoutePagePath(screen) {
 
 function screenWidgetUsages(screen) {
   return Array.isArray(screen?.widgets) ? screen.widgets : [];
+}
+
+function widgetDisplayFields(usage) {
+  const fields = Array.isArray(usage?.displayFields) ? usage.displayFields : usage?.display?.fields || [];
+  return fields.filter((field) => field?.name);
 }
 
 function buildGenericSvelteKitScreenFiles(screen, contract, useTypescript) {
@@ -193,8 +202,21 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
       const widgetUsages = screenWidgetUsages(screen).map((usage) => {
         const widgetId = usage.widget?.id || null;
         const marker = widgetId ? `data-topogram-widget="${widgetId}"` : null;
+        const regionMarker = usage.region ? `data-topogram-region="${usage.region}"` : null;
+        const screenMarker = `data-topogram-screen="${screen.id}"`;
+        const fields = widgetDisplayFields(usage);
         const support = svelteKitWidgetUsageSupport(usage, contract.widgets);
         const usageRendered = Boolean(marker && contents.includes(marker));
+        const regionRendered = Boolean(regionMarker && contents.includes(regionMarker));
+        const screenRendered = contents.includes(screenMarker);
+        const displayFieldMarkers = fields.map((field) => ({
+          name: field.name,
+          label: field.label || field.name,
+          role: field.role || null,
+          expected_marker: `"name":"${field.name}"`,
+          rendered: contents.includes(`"name":"${field.name}"`) && contents.includes("data-topogram-display-field")
+        }));
+        const displayFieldsRendered = fields.length > 0 && displayFieldMarkers.every((field) => field.rendered);
         const status = !support.supported
           ? "unsupported"
           : usageRendered
@@ -227,6 +249,30 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
             suggested_fix: "Render the widget region with renderSvelteKitWidgetRegion or add a supported widget pattern."
           });
         }
+        if (widgetId && rendered && renderer !== "implementation" && support.supported && fields.length === 0) {
+          diagnostics.push({
+            code: "widget_display_fields_unresolved",
+            severity: "error",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            widget: widgetId,
+            message: `Screen '${screen.id}' uses widget '${widgetId}' but no display fields were derived for generated SvelteKit rendering.`,
+            suggested_fix: "Bind the widget data prop to a capability with an output shape or add screen item/view/input shape metadata."
+          });
+        }
+        if (widgetId && rendered && renderer !== "implementation" && support.supported && fields.length > 0 && !displayFieldsRendered) {
+          diagnostics.push({
+            code: "widget_display_fields_not_rendered",
+            severity: "error",
+            screen: screen.id,
+            route: screen.route,
+            region: usage.region || null,
+            widget: widgetId,
+            message: `Screen '${screen.id}' uses widget '${widgetId}' but the generated SvelteKit page does not render the contract display fields.`,
+            suggested_fix: "Render widgets from usage.displayFields rather than runtime object keys."
+          });
+        }
         return {
           widget: widgetId,
           region: usage.region || null,
@@ -234,7 +280,20 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
           supported: support.supported,
           status,
           rendered: usageRendered,
-          marker
+          marker,
+          expected_markers: {
+            widget: marker,
+            region: regionMarker,
+            screen: screenMarker
+          },
+          actual_markers: {
+            widget: usageRendered,
+            region: regionRendered,
+            screen: screenRendered
+          },
+          display_fields: displayFieldMarkers,
+          display_fields_rendered: displayFieldsRendered,
+          behavior_realizations: usage.behaviorRealizations || []
         };
       });
       return {
@@ -264,6 +323,10 @@ function buildSvelteKitGenerationCoverage(contract, files, implementationScreenI
       widget_usages: screens.reduce((total, screen) => total + screen.widget_usages.length, 0),
       rendered_widget_usages: screens.reduce(
         (total, screen) => total + screen.widget_usages.filter((usage) => usage.rendered).length,
+        0
+      ),
+      display_field_widget_usages: screens.reduce(
+        (total, screen) => total + screen.widget_usages.filter((usage) => usage.display_fields_rendered).length,
         0
       ),
       diagnostics: diagnostics.length,

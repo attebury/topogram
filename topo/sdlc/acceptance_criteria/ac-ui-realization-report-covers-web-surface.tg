@@ -1,0 +1,6 @@
+acceptance_criterion ac_ui_realization_report_covers_web_surface {
+  name "UI Realization Report Covers Web Surface"
+  description "Given a web_surface realizes a ui_contract with widget bindings and design tokens, when an agent runs topogram emit ui-realization-report, then the report lists screens, routes, regions, widget usages, behavior realizations, display fields, design-token mapping, generator support status, and diagnostics."
+  requirement req_ui_realization_report
+  status approved
+}

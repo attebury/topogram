@@ -4,10 +4,11 @@ import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../../ui/taxonomy.j
 
 /**
  * @typedef {{ id?: string, name?: string }} WidgetReference
- * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string }} WidgetUsage
+ * @typedef {{ name: string, label?: string, role?: string }} DisplayField
+ * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string, display?: { fields?: DisplayField[] }, displayFields?: DisplayField[] }} WidgetUsage
  * @typedef {{ patterns?: string[] }} WidgetContract
  * @typedef {Record<string, WidgetContract>} WidgetContractMap
- * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean }} RenderOptions
+ * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean, screenId?: string|null, region?: string|null }} RenderOptions
  * @typedef {{ widgets?: WidgetUsage[] }} ScreenContract
  */
 
@@ -50,6 +51,51 @@ function widgetId(usage) {
 
 /**
  * @param {WidgetUsage} usage
+ * @returns {DisplayField[]}
+ */
+function displayFields(usage) {
+  const fields = Array.isArray(usage.displayFields) ? usage.displayFields : usage.display?.fields || [];
+  return fields.filter((field) => field?.name);
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @param {RenderOptions} options
+ * @returns {string}
+ */
+function widgetAttrs(usage, options) {
+  return [
+    `data-topogram-widget="${escapeAttribute(widgetId(usage))}"`,
+    `data-topogram-region="${escapeAttribute(options.region || usage.region || "")}"`,
+    `data-topogram-screen="${escapeAttribute(options.screenId || "")}"`
+  ].join(" ");
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @returns {string}
+ */
+function displayFieldsLiteral(usage) {
+  return JSON.stringify(displayFields(usage).map((field) => ({
+    name: field.name,
+    label: field.label || field.name,
+    role: field.role || "metadata"
+  })));
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @param {string[]} roles
+ * @param {string} fallback
+ * @returns {string}
+ */
+function fieldNameByRole(usage, roles, fallback) {
+  const fields = displayFields(usage);
+  return fields.find((field) => roles.includes(field.role || ""))?.name || fields[0]?.name || fallback;
+}
+
+/**
+ * @param {WidgetUsage} usage
  * @param {WidgetContractMap | undefined} widgetContracts
  * @returns {string[]}
  */
@@ -84,7 +130,8 @@ export function reactWidgetUsageSupport(usage, widgetContracts) {
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "items";
-  return `<section className="widget-card widget-summary" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+  const fields = displayFields(usage);
+  return `<section className="widget-card widget-summary" ${widgetAttrs(usage, options)}>
           <div>
             <p className="widget-eyebrow">Widget</p>
             <h2>${escapeText(widgetName(usage))}</h2>
@@ -95,7 +142,7 @@ function renderSummaryStats(usage, options) {
               <span>Total</span>
             </div>
             <div>
-              <strong>{Object.keys(${items}[0] ?? {}).length}</strong>
+              <strong>{${fields.length}}</strong>
               <span>Fields</span>
             </div>
             <div>
@@ -114,7 +161,8 @@ function renderSummaryStats(usage, options) {
 function renderCollectionTable(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="widget-card widget-table" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  return `<div className="widget-card widget-table" ${widgetAttrs(usage, options)}>
           <div className="widget-header">
             <div>
               <p className="widget-eyebrow">Widget</p>
@@ -126,16 +174,16 @@ function renderCollectionTable(usage, options) {
             <table className="resource-table data-grid">
               <thead>
                 <tr>
-                  {Object.keys(${items}[0] ?? {}).slice(0, 4).map((field) => (
-                    <th key={field}>{field}</th>
+                  {${fields}.map((field) => (
+                    <th key={field.name} data-topogram-display-field={field.name}>{field.label}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {${items}.map(${itemParam} => (
                   <tr key={String(item.id ?? item.title ?? item.name ?? item.message)}>
-                    {Object.keys(${items}[0] ?? {}).slice(0, 4).map((field) => (
-                      <td key={field}>{String(item?.[field] ?? "")}</td>
+                    {${fields}.map((field) => (
+                      <td key={field.name} data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</td>
                     ))}
                   </tr>
                 ))}
@@ -153,7 +201,12 @@ function renderCollectionTable(usage, options) {
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="widget-card widget-board" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  const groupFieldName = fieldNameByRole(usage, ["status", "priority", "metadata"], "status");
+  const titleFieldName = fieldNameByRole(usage, ["primary", "identifier"], "title");
+  const groupField = JSON.stringify(groupFieldName);
+  const titleField = JSON.stringify(titleFieldName);
+  return `<div className="widget-card widget-board" ${widgetAttrs(usage, options)}>
           <div className="widget-header">
             <div>
               <p className="widget-eyebrow">Widget</p>
@@ -161,14 +214,22 @@ function renderBoard(usage, options) {
             </div>
           </div>
           <div className="board-grid">
-            {Array.from(new Set(${items}.map((item: any) => item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items"))).map((group) => (
+            {Array.from(new Set(${items}.map((item: any) => item?.[${groupField}] ?? "items"))).map((group) => (
               <section className="board-column" key={String(group)}>
                 <h3>{String(group)}</h3>
-                {${items}.filter(${itemParam} => (item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items") === group).map(${itemParam} => (
-                  <div className="board-card" key={String(item.id ?? item.title ?? item.name)}>
-                    {item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}
-                  </div>
-                ))}
+	                {${items}.filter(${itemParam} => (item?.[${groupField}] ?? "items") === group).map(${itemParam} => (
+	                  <div className="board-card" key={String(item.id ?? item.title ?? item.name)}>
+	                    <strong data-topogram-display-field="${escapeAttribute(titleFieldName)}">{item?.[${titleField}] ?? item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
+	                    <dl className="widget-field-list">
+	                      {${fields}.map((field) => (
+	                        <div key={field.name}>
+	                          <dt>{field.label}</dt>
+	                          <dd data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</dd>
+	                        </div>
+	                      ))}
+	                    </dl>
+	                  </div>
+	                ))}
               </section>
             ))}
           </div>
@@ -183,7 +244,12 @@ function renderBoard(usage, options) {
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "items";
   const itemParam = options.useTypescript ? "(item: any)" : "(item)";
-  return `<div className="widget-card widget-calendar" data-topogram-widget="${escapeAttribute(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  const dateFieldName = fieldNameByRole(usage, ["date"], "date");
+  const titleFieldName = fieldNameByRole(usage, ["primary", "identifier"], "title");
+  const dateField = JSON.stringify(dateFieldName);
+  const titleField = JSON.stringify(titleFieldName);
+  return `<div className="widget-card widget-calendar" ${widgetAttrs(usage, options)}>
           <div className="widget-header">
             <div>
               <p className="widget-eyebrow">Widget</p>
@@ -191,12 +257,20 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div className="calendar-list">
-            {${items}.filter(${itemParam} => item.date || item.due_at || item.dueAt || item.created_at || item.createdAt || item.updated_at || item.updatedAt).map(${itemParam} => (
-              <div className="calendar-card" key={String(item.id ?? item.title ?? item.name)}>
-                <span>{item.date ?? item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt ?? item.updated_at ?? item.updatedAt}</span>
-                <strong>{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
-              </div>
-            ))}
+	            {${items}.filter(${itemParam} => item?.[${dateField}]).map(${itemParam} => (
+	              <div className="calendar-card" key={String(item.id ?? item.title ?? item.name)}>
+	                <span data-topogram-display-field="${escapeAttribute(dateFieldName)}">{item?.[${dateField}]}</span>
+	                <strong data-topogram-display-field="${escapeAttribute(titleFieldName)}">{item?.[${titleField}] ?? item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
+	                <dl className="widget-field-list">
+	                  {${fields}.map((field) => (
+	                    <div key={field.name}>
+	                      <dt>{field.label}</dt>
+	                      <dd data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</dd>
+	                    </div>
+	                  ))}
+	                </dl>
+	              </div>
+	            ))}
           </div>
         </div>`;
 }
@@ -250,7 +324,7 @@ export function hasReactWidgetRegion(screen, region) {
  */
 export function renderReactWidgetRegion(screen, region, options = {}) {
   const rendered = reactWidgetUsagesForRegion(screen, region)
-    .map((usage) => renderUsage(usage, options))
+    .map((usage) => renderUsage(usage, { ...options, region, screenId: options.screenId || screen?.id || null }))
     .filter(Boolean);
   if (rendered.length === 0) {
     return "";

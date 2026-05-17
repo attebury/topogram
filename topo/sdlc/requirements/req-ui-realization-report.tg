@@ -1,0 +1,9 @@
+requirement req_ui_realization_report {
+  name "UI Realization Report"
+  description "Topogram must emit a UI realization report that shows every screen, route, region, widget usage, behavior realization, display field set, design-token mapping, generator support status, and actionable diagnostics."
+  pitch pitch_ui_contract_maturity
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status approved
+}

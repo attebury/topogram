@@ -1,0 +1,6 @@
+acceptance_criterion ac_agent_screen_slice_is_cold_start_safe {
+  name "Agent Screen Slice Is Cold Start Safe"
+  description "Given an agent needs to work on one UI screen, when it runs topogram query slice with --screen and --projection, then the slice includes UI ownership, route, regions, widgets, display fields, behavior realizations, design tokens, related capabilities/shapes, write scope, and proof commands."
+  requirement req_agent_ui_slice_context
+  status approved
+}

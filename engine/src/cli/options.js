@@ -94,6 +94,7 @@ export function parseCliOptions(args, commandArgs) {
       capabilityId: optionValue(args, "--capability"),
       workflowId: generateTarget ? workflowFlagValue : null,
       projectionId: optionValue(args, "--projection"),
+      screenId: optionValue(args, "--screen"),
       widgetId: optionValue(args, "--widget"),
       componentId: optionValue(args, "--widget"),
       entityId: optionValue(args, "--entity"),

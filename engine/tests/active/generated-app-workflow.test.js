@@ -825,6 +825,10 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(generate.status, 0, generate.stderr || generate.stdout);
   const generatedItemListPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "+page.svelte"));
   assert.match(generatedItemListPage, /data-topogram-widget="widget_data_grid"/);
+  assert.match(generatedItemListPage, /data-topogram-region="results"/);
+  assert.match(generatedItemListPage, /data-topogram-screen="item_list"/);
+  assert.match(generatedItemListPage, /data-topogram-display-field=\{field\.name\}/);
+  assert.match(generatedItemListPage, /"name":"dueAt"/);
   assert.match(generatedItemListPage, /class="widget-card widget-table"/);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte")), true);
   assert.equal(fs.existsSync(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "calendar", "+page.svelte")), true);
@@ -845,7 +849,14 @@ test("public authoring-to-app commands check and generate app bundles", () => {
   assert.equal(coverage.summary.implementation_screens, 13);
   assert.equal(coverage.summary.generator_screens, 2);
   assert.equal(coverage.summary.rendered_widget_usages, 1);
-  assert.equal(coverage.screens.find((screen) => screen.id === "item_list").widget_usages[0].status, "rendered");
+  assert.equal(coverage.summary.display_field_widget_usages, 1);
+  const itemListCoverage = coverage.screens.find((screen) => screen.id === "item_list").widget_usages[0];
+  assert.equal(itemListCoverage.status, "rendered");
+  assert.equal(itemListCoverage.actual_markers.widget, true);
+  assert.equal(itemListCoverage.actual_markers.region, true);
+  assert.equal(itemListCoverage.actual_markers.screen, true);
+  assert.equal(itemListCoverage.display_fields_rendered, true);
+  assert.deepEqual(itemListCoverage.display_fields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
   assert.deepEqual(coverage.diagnostics, []);
 
   for (const relativePath of [
@@ -916,6 +927,8 @@ test("sveltekit generator routes render projection widget_bindings for provider-
 
   const boardPage = readText(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "routes", "items", "board", "+page.svelte"));
   assert.match(boardPage, /data-topogram-widget="widget_data_grid"/);
+  assert.match(boardPage, /data-topogram-region="results"/);
+  assert.match(boardPage, /data-topogram-screen="item_board"/);
   assert.match(boardPage, /class="widget-card widget-board"/);
   assert.doesNotMatch(boardPage, /Sample rows/);
   const coverage = readJson(path.join(outputRoot, "apps", "web", "app_sveltekit", "src", "lib", "topogram", "generation-coverage.json"));
@@ -924,6 +937,7 @@ test("sveltekit generator routes render projection widget_bindings for provider-
   assert.equal(boardCoverage.widget_usages[0].widget, "widget_data_grid");
   assert.equal(boardCoverage.widget_usages[0].status, "rendered");
   assert.equal(boardCoverage.widget_usages[0].rendered, true);
+  assert.equal(boardCoverage.widget_usages[0].display_fields_rendered, true);
   assert.deepEqual(coverage.diagnostics, []);
 });
 
@@ -981,6 +995,24 @@ test("topogram emit honors explicit artifact targets", () => {
   assert.equal(conformanceReport.projection_usages[0].source_projection.id, "proj_ui_contract");
   assert.equal(fs.existsSync(path.join(cwd, "app")), false, "widget conformance generation must not write the app shortcut output");
 
+  const realization = runCli([
+    "emit",
+    "ui-realization-report",
+    fixtureRoot,
+    "--projection",
+    "proj_web_surface",
+    "--json"
+  ], { cwd });
+  assert.equal(realization.status, 0, realization.stderr || realization.stdout);
+  const realizationReport = JSON.parse(realization.stdout);
+  assert.equal(realizationReport.type, "ui_realization_report");
+  assert.equal(realizationReport.summary.widget_usages, 1);
+  assert.equal(realizationReport.summary.rendered, 1);
+  assert.equal(realizationReport.summary.errors, 0);
+  assert.deepEqual(realizationReport.widgetUsages[0].displayFields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
+  assert.equal(realizationReport.designTokenMapping.status, "mapped");
+  assert.equal(fs.existsSync(path.join(cwd, "app")), false, "UI realization report must not write the app shortcut output");
+
   const outDir = path.join(cwd, "contracts");
   const written = runCli([
     "emit",
@@ -1009,6 +1041,21 @@ test("topogram emit honors explicit artifact targets", () => {
   assert.equal(writtenReport.status, 0, writtenReport.stderr || writtenReport.stdout);
   assert.equal(readJson(path.join(reportOutDir, ".topogram-generated.json")).target, "widget-conformance-report");
   assert.equal(readJson(path.join(reportOutDir, "proj_web_surface.widget-conformance-report.json")).summary.total_usages, 1);
+
+  const realizationOutDir = path.join(cwd, "realization");
+  const writtenRealization = runCli([
+    "emit",
+    "ui-realization-report",
+    fixtureRoot,
+    "--projection",
+    "proj_web_surface",
+    "--write",
+    "--out-dir",
+    realizationOutDir
+  ], { cwd });
+  assert.equal(writtenRealization.status, 0, writtenRealization.stderr || writtenRealization.stdout);
+  assert.equal(readJson(path.join(realizationOutDir, ".topogram-generated.json")).target, "ui-realization-report");
+  assert.equal(readJson(path.join(realizationOutDir, "proj_web_surface.ui-realization-report.json")).summary.rendered, 1);
 });
 
 test("topogram emit rejects hostile from-snapshot JSON before migration planning", () => {
@@ -3594,6 +3641,9 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.doesNotMatch(indexTs, /capability: "undefined"/);
       const listPage = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "pages", "GreetingListPage.tsx"));
       assert.match(listPage, /data-topogram-widget="widget_greeting_table"/);
+      assert.match(listPage, /data-topogram-region="results"/);
+      assert.match(listPage, /data-topogram-screen="greeting_list"/);
+      assert.match(listPage, /data-topogram-display-field=\{field\.name\}/);
       assert.match(listPage, /className="widget-card widget-table"/);
       const coverage = readJson(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "lib", "topogram", "generation-coverage.json"));
       assert.equal(coverage.type, "generation_coverage");
@@ -3602,7 +3652,9 @@ test("fixture starter templates generate the expected surface layout", () => {
       assert.equal(coverage.summary.rendered_screens, 3);
       assert.equal(coverage.summary.generator_screens, 3);
       assert.equal(coverage.summary.rendered_widget_usages, 1);
+      assert.equal(coverage.summary.display_field_widget_usages, 1);
       assert.equal(coverage.screens.find((screen) => screen.id === "greeting_list").widget_usages[0].status, "rendered");
+      assert.equal(coverage.screens.find((screen) => screen.id === "greeting_list").widget_usages[0].display_fields_rendered, true);
       assert.equal(coverage.design_intent.status, "mapped");
       assert.equal(coverage.design_intent.tokens.density, "compact");
       const styles = readText(path.join(projectRoot, "app", "apps", "web", "app_react", "src", "app.css"));

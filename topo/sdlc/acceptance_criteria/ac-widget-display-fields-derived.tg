@@ -1,0 +1,6 @@
+acceptance_criterion ac_widget_display_fields_derived {
+  name "Widget Display Fields Derived"
+  description "Given a ui_contract screen has item, view, or input shape metadata and a widget binding has a data source, when Topogram emits ui-surface-contract, then the screen and widget usage include deterministic display fields with names, labels, roles, types, requiredness, source shape, and source data prop."
+  requirement req_widget_display_contract_v1
+  status approved
+}

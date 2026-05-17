@@ -4,10 +4,11 @@ import { UI_GENERATOR_RENDERED_COMPONENT_PATTERNS } from "../../../ui/taxonomy.j
 
 /**
  * @typedef {{ id?: string, name?: string }} WidgetReference
- * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string }} WidgetUsage
+ * @typedef {{ name: string, label?: string, role?: string }} DisplayField
+ * @typedef {{ widget?: WidgetReference, region?: string, pattern?: string, display?: { fields?: DisplayField[] }, displayFields?: DisplayField[] }} WidgetUsage
  * @typedef {{ patterns?: string[] }} WidgetContract
  * @typedef {Record<string, WidgetContract>} WidgetContractMap
- * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean }} RenderOptions
+ * @typedef {{ itemsExpression?: string, widgetContracts?: WidgetContractMap, useTypescript?: boolean, screenId?: string|null, region?: string|null }} RenderOptions
  * @typedef {{ widgets?: WidgetUsage[] }} ScreenContract
  */
 
@@ -37,6 +38,51 @@ function widgetName(usage) {
  */
 function widgetId(usage) {
   return usage?.widget?.id || "widget";
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @returns {DisplayField[]}
+ */
+function displayFields(usage) {
+  const fields = Array.isArray(usage.displayFields) ? usage.displayFields : usage.display?.fields || [];
+  return fields.filter((field) => field?.name);
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @param {RenderOptions} options
+ * @returns {string}
+ */
+function widgetAttrs(usage, options) {
+  return [
+    `data-topogram-widget="${escapeHtml(widgetId(usage))}"`,
+    `data-topogram-region="${escapeHtml(options.region || usage.region || "")}"`,
+    `data-topogram-screen="${escapeHtml(options.screenId || "")}"`
+  ].join(" ");
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @returns {string}
+ */
+function displayFieldsLiteral(usage) {
+  return JSON.stringify(displayFields(usage).map((field) => ({
+    name: field.name,
+    label: field.label || field.name,
+    role: field.role || "metadata"
+  })));
+}
+
+/**
+ * @param {WidgetUsage} usage
+ * @param {string[]} roles
+ * @param {string} fallback
+ * @returns {string}
+ */
+function fieldNameByRole(usage, roles, fallback) {
+  const fields = displayFields(usage);
+  return fields.find((field) => roles.includes(field.role || ""))?.name || fields[0]?.name || fallback;
 }
 
 /**
@@ -75,7 +121,8 @@ export function svelteKitWidgetUsageSupport(usage, widgetContracts) {
  */
 function renderSummaryStats(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<section class="widget-card widget-summary" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+  const fields = displayFields(usage);
+  return `<section class="widget-card widget-summary" ${widgetAttrs(usage, options)}>
           <div>
             <p class="widget-eyebrow">Widget</p>
             <h2>${escapeHtml(widgetName(usage))}</h2>
@@ -86,7 +133,7 @@ function renderSummaryStats(usage, options) {
               <span>Total</span>
             </div>
             <div>
-              <strong>{Object.keys(${items}[0] ?? {}).length}</strong>
+              <strong>${fields.length}</strong>
               <span>Fields</span>
             </div>
             <div>
@@ -104,7 +151,8 @@ function renderSummaryStats(usage, options) {
  */
 function renderCollectionTable(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="widget-card widget-table" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  return `<div class="widget-card widget-table" ${widgetAttrs(usage, options)}>
           <div class="widget-header">
             <div>
               <p class="widget-eyebrow">Widget</p>
@@ -116,16 +164,16 @@ function renderCollectionTable(usage, options) {
             <table class="resource-table data-grid">
               <thead>
                 <tr>
-                  {#each Object.keys(${items}[0] ?? {}).slice(0, 4) as field}
-                    <th>{field}</th>
+                  {#each ${fields} as field}
+                    <th data-topogram-display-field={field.name}>{field.label}</th>
                   {/each}
                 </tr>
               </thead>
               <tbody>
                 {#each ${items} as item}
                   <tr>
-                    {#each Object.keys(${items}[0] ?? {}).slice(0, 4) as field}
-                      <td>{String(item?.[field] ?? "")}</td>
+                    {#each ${fields} as field}
+                      <td data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</td>
                     {/each}
                   </tr>
                 {/each}
@@ -142,7 +190,12 @@ function renderCollectionTable(usage, options) {
  */
 function renderBoard(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="widget-card widget-board" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  const groupFieldName = fieldNameByRole(usage, ["status", "priority", "metadata"], "status");
+  const titleFieldName = fieldNameByRole(usage, ["primary", "identifier"], "title");
+  const groupField = JSON.stringify(groupFieldName);
+  const titleField = JSON.stringify(titleFieldName);
+  return `<div class="widget-card widget-board" ${widgetAttrs(usage, options)}>
           <div class="widget-header">
             <div>
               <p class="widget-eyebrow">Widget</p>
@@ -150,14 +203,24 @@ function renderBoard(usage, options) {
             </div>
           </div>
           <div class="board-grid">
-            {#each Array.from(new Set(${items}.map((item) => item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items"))) as group}
+            {#each Array.from(new Set(${items}.map((item) => item?.[${groupField}] ?? "items"))) as group}
               <section class="board-column">
                 <h3>{group}</h3>
-                {#each ${items}.filter((item) => (item?.status ?? item?.state ?? item?.stage ?? item?.category ?? "items") === group) as item}
-                  <div class="board-card">{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</div>
-                {/each}
-              </section>
-            {/each}
+	                {#each ${items}.filter((item) => (item?.[${groupField}] ?? "items") === group) as item}
+	                  <div class="board-card">
+	                    <strong data-topogram-display-field="${escapeHtml(titleFieldName)}">{item?.[${titleField}] ?? item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
+	                    <dl class="widget-field-list">
+	                      {#each ${fields} as field}
+	                        <div>
+	                          <dt>{field.label}</dt>
+	                          <dd data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</dd>
+	                        </div>
+	                      {/each}
+	                    </dl>
+	                  </div>
+	                {/each}
+	              </section>
+	            {/each}
           </div>
         </div>`;
 }
@@ -169,7 +232,12 @@ function renderBoard(usage, options) {
  */
 function renderCalendar(usage, options) {
   const items = options.itemsExpression || "data.result.items";
-  return `<div class="widget-card widget-calendar" data-topogram-widget="${escapeHtml(widgetId(usage))}">
+  const fields = displayFieldsLiteral(usage);
+  const dateFieldName = fieldNameByRole(usage, ["date"], "date");
+  const titleFieldName = fieldNameByRole(usage, ["primary", "identifier"], "title");
+  const dateField = JSON.stringify(dateFieldName);
+  const titleField = JSON.stringify(titleFieldName);
+  return `<div class="widget-card widget-calendar" ${widgetAttrs(usage, options)}>
           <div class="widget-header">
             <div>
               <p class="widget-eyebrow">Widget</p>
@@ -177,13 +245,21 @@ function renderCalendar(usage, options) {
             </div>
           </div>
           <div class="calendar-list">
-            {#each ${items}.filter((item) => item?.date || item?.due_at || item?.dueAt || item?.created_at || item?.createdAt || item?.updated_at || item?.updatedAt) as item}
-              <div class="calendar-card">
-                <span>{item.date ?? item.due_at ?? item.dueAt ?? item.created_at ?? item.createdAt ?? item.updated_at ?? item.updatedAt}</span>
-                <strong>{item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
-              </div>
-            {/each}
-          </div>
+	            {#each ${items}.filter((item) => item?.[${dateField}]) as item}
+	              <div class="calendar-card">
+	                <span data-topogram-display-field="${escapeHtml(dateFieldName)}">{item?.[${dateField}]}</span>
+	                <strong data-topogram-display-field="${escapeHtml(titleFieldName)}">{item?.[${titleField}] ?? item.title ?? item.name ?? item.label ?? item.message ?? item.id ?? JSON.stringify(item)}</strong>
+	                <dl class="widget-field-list">
+	                  {#each ${fields} as field}
+	                    <div>
+	                      <dt>{field.label}</dt>
+	                      <dd data-topogram-display-field={field.name}>{String(item?.[field.name] ?? "")}</dd>
+	                    </div>
+	                  {/each}
+	                </dl>
+	              </div>
+	            {/each}
+	          </div>
         </div>`;
 }
 
@@ -236,7 +312,7 @@ export function hasSvelteKitWidgetRegion(screen, region) {
  */
 export function renderSvelteKitWidgetRegion(screen, region, options = {}) {
   const rendered = svelteKitWidgetUsagesForRegion(screen, region)
-    .map((usage) => renderUsage(usage, options))
+    .map((usage) => renderUsage(usage, { ...options, region, screenId: options.screenId || screen?.id || null }))
     .filter(Boolean);
   if (rendered.length === 0) {
     return "";

@@ -107,6 +107,7 @@ export function generateWorkspace(workspaceAst, options = {}) {
     target === "ui-contract-debug" ||
     target === "ui-surface-contract" ||
     target === "ui-surface-debug" ||
+    target === "ui-realization-report" ||
     target === "sveltekit-app" ||
     target === "server-contract" ||
     target === "persistence-scaffold" ||

@@ -1,0 +1,9 @@
+requirement req_widget_display_contract_v1 {
+  name "Widget Display Contract V1"
+  description "Topogram must derive deterministic display fields for UI screens and widget usages from screen shapes, capability output shapes, and widget data bindings before web generators render reusable widgets."
+  pitch pitch_ui_contract_maturity
+  affects [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status approved
+}

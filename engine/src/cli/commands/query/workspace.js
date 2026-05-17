@@ -70,6 +70,7 @@ export function importAdoptOnlyRequested(options = {}) {
     options.capabilityId ||
     options.workflowId ||
     options.projectionId ||
+    options.screenId ||
     options.componentId ||
     options.entityId ||
     options.journeyId ||
@@ -209,6 +210,7 @@ export function hasSelectors(options) {
     options.capabilityId ||
     options.workflowId ||
     options.projectionId ||
+    options.screenId ||
     options.componentId ||
     options.entityId ||
     options.journeyId ||
@@ -242,6 +244,7 @@ export function selectorOptions(options) {
     capabilityId: options.capabilityId,
     workflowId: options.workflowId,
     projectionId: options.projectionId,
+    screenId: options.screenId,
     componentId: options.componentId,
     entityId: options.entityId,
     journeyId: options.journeyId,

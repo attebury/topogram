@@ -16,7 +16,7 @@ export function buildOutputFiles(result, options = {}) {
 
   if (result.target === "context-slice") {
     const sliceId =
-      options.capabilityId || options.projectionId || options.entityId || options.journeyId || options.workflowId || "context";
+      options.screenId || options.capabilityId || options.projectionId || options.entityId || options.journeyId || options.workflowId || "context";
     return [{ path: `${sliceId}.context-slice.json`, contents: result.artifact }];
   }
 
@@ -132,6 +132,16 @@ export function buildOutputFiles(result, options = {}) {
     }
     return Object.keys(result.artifact).sort().map((projectionId) => ({
       path: `${projectionId}.ui-surface-contract.json`,
+      contents: result.artifact[projectionId]
+    }));
+  }
+
+  if (result.target === "ui-realization-report") {
+    if (options.projectionId) {
+      return [{ path: `${options.projectionId}.ui-realization-report.json`, contents: result.artifact }];
+    }
+    return Object.keys(result.artifact).sort().map((projectionId) => ({
+      path: `${projectionId}.ui-realization-report.json`,
       contents: result.artifact[projectionId]
     }));
   }

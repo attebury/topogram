@@ -1,6 +1,7 @@
 import { getProjection, uiProjectionCandidates } from "../../generator/surfaces/shared.js";
 import { buildWidgetBehaviorRealizations } from "../../widget-behavior.js";
 import { defaultPatternForScreen } from "../../ui/taxonomy.js";
+import { deriveScreenDisplayFields, deriveWidgetUsageDisplay } from "./display-fields.js";
 
 function toBooleanFlag(value, fallback = false) {
   if (value === "true") return true;
@@ -122,8 +123,10 @@ export function buildWidgetUsageContract(graph, entry, options = {}) {
   const widgetId = entry.widget?.id || null;
   const contract = widgetId ? widgetContractFor(graph, widgetId) : null;
   const region = options.region || null;
+  const display = deriveWidgetUsageDisplay(graph, entry, options.screen || null);
   return {
     type: "ui_widget_usage",
+    screenId: entry.screenId || options.screen?.id || null,
     region: entry.region || null,
     pattern: region?.pattern || null,
     placement: region?.placement || null,
@@ -137,7 +140,10 @@ export function buildWidgetUsageContract(graph, entry, options = {}) {
       action: binding.action || null,
       target: binding.target || null
     })),
-    behaviorRealizations: buildWidgetBehaviorRealizations(contract, entry)
+    behaviorRealizations: buildWidgetBehaviorRealizations(contract, entry),
+    display,
+    displayFields: display.fields,
+    diagnostics: display.diagnostics
   };
 }
 
@@ -218,6 +224,7 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
   if (derivedDefaultPattern) {
     patterns.add(derivedDefaultPattern);
   }
+  const display = deriveScreenDisplayFields(graph, screen);
 
   return {
     type: "ui_screen_contract",
@@ -230,6 +237,11 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
     inputShape: screen.inputShape,
     viewShape: screen.viewShape,
     itemShape: screen.itemShape,
+    displayFields: display.fields,
+    display: {
+      source: display.source,
+      fields: display.fields
+    },
     emptyState:
       screen.emptyTitle || screen.emptyBody
         ? {
@@ -293,7 +305,8 @@ function buildUiScreenContract(graph, projection, screen, ownershipFields) {
       variant: entry.variant || null
     })),
     widgets: widgetEntries.map((entry) => buildWidgetUsageContract(graph, entry, {
-      region: regionContractFor(regionEntries, entry.region)
+      region: regionContractFor(regionEntries, entry.region),
+      screen
     })),
     patterns: [...patterns]
   };

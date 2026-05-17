@@ -45,6 +45,19 @@ projection proj_ui_contract {
 Concrete `web_surface`, `ios_surface`, and `android_surface` projections realize
 the shared UI contract. They own routes and surface hints, not widget placement.
 
+## Display Fields
+
+Topogram beta UI proof uses derived display fields instead of a new display DSL.
+`ui-surface-contract` derives fields from screen shapes, capability output
+shapes, and widget data bindings. A widget usage includes the data prop, source
+capability/shape, source shape, field names, human labels, roles, type, and
+requiredness.
+
+Generators must render supported collection widgets from those fields. A table
+or board should not guess columns at runtime with `Object.keys(...)`. If
+Topogram cannot derive display intent, reports emit diagnostics instead of
+silently inventing UI.
+
 ## Behavior
 
 Widgets can declare only the canonical behavior vocabulary: `selection`,
@@ -60,10 +73,12 @@ These command shapes are covered by regression tests:
 ```bash
 topogram emit ui-widget-contract ./topo --widget widget_data_grid
 topogram emit widget-conformance-report ./topo --projection proj_web_surface --json
+topogram emit ui-realization-report ./topo --projection proj_web_surface --json
 topogram widget check ./topo --projection proj_web_surface
 topogram widget behavior ./topo --projection proj_web_surface --widget widget_data_grid --json
 topogram query widget-behavior ./topo --projection proj_web_surface --widget widget_data_grid --json
 topogram query slice ./topo --widget widget_data_grid
+topogram query slice ./topo --projection proj_web_surface --screen item_list --json
 ```
 
 Use `--json` for agent packets and `--write --out-dir <dir>` when a report or
@@ -86,5 +101,8 @@ maintained UI code.
 ## Generator rule
 
 If a generator accepts a widget pattern, tests should prove it appears in the
-normalized contract, generated coverage, or generated app output. Unsupported
-widget usage should produce a clear diagnostic; it should not silently disappear.
+normalized contract, `ui-realization-report`, generated coverage, or generated
+app output. Generated web wrappers preserve `data-topogram-widget`,
+`data-topogram-region`, `data-topogram-screen`, and `data-topogram-display-field`
+markers. Unsupported widget usage should produce a clear diagnostic; it should
+not silently disappear.

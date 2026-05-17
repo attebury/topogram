@@ -1,0 +1,9 @@
+requirement req_agent_ui_slice_context {
+  name "Agent UI Slice Context"
+  description "Topogram query slices must give agents cold-start-safe UI context for a selected screen/projection without requiring them to read the entire workspace or agent brief."
+  pitch pitch_ui_contract_maturity
+  affects [cap_query_context, cap_check_widget_contracts]
+  domain dom_sdlc_query_agent_context
+  priority high
+  status approved
+}

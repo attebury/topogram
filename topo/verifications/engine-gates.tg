@@ -77,3 +77,13 @@ verification verification_docs_current_workflow_review {
   domain dom_engine_quality
   status active
 }
+
+verification verification_web_ui_beta_contracts {
+  name "Web UI Beta Contracts"
+  description "Validates widget display contracts, UI realization reports, screen-focused UI slices, design-token mapping, and React/SvelteKit web generation coverage."
+  validates [cap_check_widget_contracts, cap_generate_app_outputs, cap_query_context]
+  method contract
+  scenarios [engine_tests_active_widget_kind, engine_tests_active_generated_app_workflow]
+  domain dom_sdlc_query_agent_context
+  status active
+}

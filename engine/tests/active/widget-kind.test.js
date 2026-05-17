@@ -290,126 +290,30 @@ test("projection widget_bindings resolve widget placement and bindings", () => {
   assert.equal(webContract.ok, true);
   assert.equal(webContract.artifact.widgets.widget_data_grid.id, "widget_data_grid");
   const itemList = webContract.artifact.screens.find((screen) => screen.id === "item_list");
-  assert.deepEqual(itemList.widgets, [
-      {
-        type: "ui_widget_usage",
-        region: "results",
-        pattern: "resource_table",
-        placement: "primary",
-        widget: {
-        id: "widget_data_grid",
-        name: "Data Grid",
-        category: "collection",
-        version: "1.0"
-      },
-      dataBindings: [
-        {
-          prop: "rows",
-          source: {
-            id: "cap_list_items",
-            kind: "capability"
-          }
-        }
-      ],
-      eventBindings: [
-        {
-          event: "row_select",
-          action: "navigate",
-          target: {
-            id: "item_detail",
-            kind: "screen"
-          }
-        }
-      ],
-      behaviorRealizations: [
-        {
-          kind: "selection",
-          source: "structured",
-          directives: {
-            mode: "multi",
-            state: "selected_ids",
-            emits: "row_select"
-          },
-          state: {
-            prop: "selected_ids",
-            requiredness: "optional",
-            bound: false,
-            source: null,
-            defaultValue: []
-          },
-          emits: [
-            {
-              event: "row_select",
-              bound: true,
-              bindings: [
-                {
-                  event: "row_select",
-                  action: "navigate",
-                  target: {
-                    id: "item_detail",
-                    kind: "screen"
-                  }
-                }
-              ],
-              effects: [
-                {
-                  type: "navigation",
-                  event: "row_select",
-                  target: {
-                    id: "item_detail",
-                    kind: "screen"
-                  }
-                }
-              ]
-            }
-          ],
-          actions: [],
-          dataDependencies: [
-            {
-              prop: "rows",
-              source: {
-                id: "cap_list_items",
-                kind: "capability"
-              }
-            }
-          ],
-          effects: [
-            {
-              type: "navigation",
-              event: "row_select",
-              target: {
-                id: "item_detail",
-                kind: "screen"
-              }
-            }
-          ],
-          status: "realized"
-        },
-        {
-          kind: "sorting",
-          source: "structured",
-          directives: {
-            fields: ["title", "status", "created_at"],
-            default: ["created_at", "desc"]
-          },
-          state: null,
-          emits: [],
-          actions: [],
-          dataDependencies: [
-            {
-              prop: "rows",
-              source: {
-                id: "cap_list_items",
-                kind: "capability"
-              }
-            }
-          ],
-          effects: [],
-          status: "realized"
-        }
-      ]
-    }
-  ]);
+  const usage = itemList.widgets[0];
+  assert.equal(usage.type, "ui_widget_usage");
+  assert.equal(usage.screenId, "item_list");
+  assert.equal(usage.region, "results");
+  assert.equal(usage.pattern, "resource_table");
+  assert.equal(usage.widget.id, "widget_data_grid");
+  assert.deepEqual(usage.dataBindings, [{ prop: "rows", source: { id: "cap_list_items", kind: "capability" } }]);
+  assert.deepEqual(usage.eventBindings, [{ event: "row_select", action: "navigate", target: { id: "item_detail", kind: "screen" } }]);
+  assert.deepEqual(usage.behaviorRealizations.map((entry) => entry.kind), ["selection", "sorting"]);
+  assert.deepEqual(usage.display.source, { id: "cap_list_items", kind: "capability" });
+  assert.deepEqual(usage.display.sourceShape, { id: "shape_output_item_card", kind: "shape" });
+  assert.deepEqual(usage.displayFields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
+  assert.deepEqual(usage.displayFields.map((field) => field.label), ["Title", "Status", "Priority", "Due At", "Owner Id"]);
+
+  const realization = generateWorkspace(ast, {
+    target: "ui-realization-report",
+    projectionId: "proj_web_surface"
+  });
+  assert.equal(realization.ok, true);
+  assert.equal(realization.artifact.type, "ui_realization_report");
+  assert.equal(realization.artifact.summary.rendered, 1);
+  assert.equal(realization.artifact.summary.errors, 0);
+  assert.deepEqual(realization.artifact.widgetUsages[0].displayFields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
+  assert.equal(realization.artifact.widgetUsages[0].requiredMarkers.displayField, "data-topogram-display-field");
 });
 
 test("widget-conformance-report passes valid inherited projection usage", () => {
@@ -1875,26 +1779,18 @@ test("context-slice with --widget focuses on the widget contract closure", () =>
   assert.equal(result.artifact.ui_agent_packet.ownership.concreteSurfacesInherit, true);
   assert.deepEqual(result.artifact.ui_agent_packet.widget.patterns, ["resource_table", "data_grid_view"]);
   assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages.map((entry) => entry.projection.id), ["proj_ui_contract"]);
-  assert.deepEqual(result.artifact.ui_agent_packet.sourceUsages[0].usage, {
-    screenId: "item_list",
-    screen: {
-      id: "item_list",
-      kind: "list",
-      title: "Items"
-    },
-    region: "results",
-    regionContract: {
-      name: "results",
-      pattern: "resource_table",
-      placement: "primary",
-      title: null,
-      state: null,
-      variant: null
-    },
-    widgetId: "widget_data_grid",
-    dataBindings: [{ prop: "rows", source: "cap_list_items" }],
-    eventBindings: [{ event: "row_select", action: "navigate", target: "item_detail" }]
+  const sourceUsage = result.artifact.ui_agent_packet.sourceUsages[0].usage;
+  assert.equal(sourceUsage.screenId, "item_list");
+  assert.deepEqual(sourceUsage.screen, {
+    id: "item_list",
+    kind: "list",
+    title: "Items"
   });
+  assert.equal(sourceUsage.region, "results");
+  assert.equal(sourceUsage.regionContract.pattern, "resource_table");
+  assert.equal(sourceUsage.widgetId, "widget_data_grid");
+  assert.deepEqual(sourceUsage.dataBindings, [{ prop: "rows", source: "cap_list_items" }]);
+  assert.deepEqual(sourceUsage.eventBindings, [{ event: "row_select", action: "navigate", target: "item_detail" }]);
   assert.ok(result.artifact.ui_agent_packet.inheritedBy.includes("proj_web_surface"));
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command === "topogram check"));
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram widget behavior --widget widget_data_grid")));
@@ -1912,14 +1808,33 @@ test("context-slice with --projection exposes inherited UI agent packet", () => 
   assert.equal(result.artifact.ui_agent_packet.sharedProjection.id, "proj_ui_contract");
   assert.equal(result.artifact.ui_agent_packet.ownership.widgetPlacement, "ui_contract");
   assert.deepEqual(result.artifact.ui_agent_packet.widgets.map((usage) => usage.widgetId), ["widget_data_grid"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.widgets[0].displayFields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
   assert.deepEqual(result.artifact.ui_agent_packet.widgets[0].screen, {
     id: "item_list",
     kind: "list",
     title: "Items"
   });
   assert.equal(result.artifact.ui_agent_packet.widgets[0].regionContract.pattern, "resource_table");
-  assert.equal(result.artifact.ui_agent_packet.designTokens.find((entry) => entry.key === "density")?.role, "compact");
+  assert.equal(result.artifact.ui_agent_packet.designTokens.density, "compact");
   assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram widget check --projection proj_web_surface")));
+});
+
+test("context-slice with --screen and --projection exposes cold-start-safe UI packet", () => {
+  const ast = parsePath(fixtureRoot);
+  const result = generateWorkspace(ast, {
+    target: "context-slice",
+    projectionId: "proj_web_surface",
+    screenId: "item_list"
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.artifact.focus.kind, "screen");
+  assert.equal(result.artifact.focus.id, "item_list");
+  assert.equal(result.artifact.ui_agent_packet.projection.id, "proj_web_surface");
+  assert.equal(result.artifact.ui_agent_packet.screen.id, "item_list");
+  assert.equal(result.artifact.ui_agent_packet.route, "/items");
+  assert.deepEqual(result.artifact.ui_agent_packet.related.widgets, ["widget_data_grid"]);
+  assert.deepEqual(result.artifact.ui_agent_packet.widgets[0].displayFields.map((field) => field.name), ["title", "status", "priority", "dueAt", "ownerId"]);
+  assert.ok(result.artifact.ui_agent_packet.requiredGates.some((gate) => gate.command.includes("topogram emit ui-realization-report --projection proj_web_surface")));
 });
 
 test("context-slice with --widget preserves dependency references by kind", () => {

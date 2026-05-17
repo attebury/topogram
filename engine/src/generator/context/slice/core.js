@@ -33,7 +33,7 @@ import {
   reviewBoundaryForEntity,
   reviewBoundaryForWorkflowDoc
 } from "../../../policy/review-boundaries.js";
-import { uiAgentPacketForProjection, uiAgentPacketForWidget } from "./ui-packets.js";
+import { uiAgentPacketForProjection, uiAgentPacketForScreen, uiAgentPacketForWidget } from "./ui-packets.js";
 import {
   acceptanceCriterionSlice,
   bugSlice,
@@ -205,6 +205,60 @@ function projectionSlice(graph, projectionId) {
     review_boundary: projection.reviewBoundary || {
       automation_class: "review_required",
       reasons: ["projection_surface"]
+    },
+    ownership_boundary: defaultOwnershipBoundary()
+  };
+}
+
+/**
+ * @param {import("../shared/types.d.ts").ContextGraph} graph
+ * @param {string} screenId
+ * @param {string|null|undefined} projectionId
+ * @returns {any}
+ */
+function screenSlice(graph, screenId, projectionId = null) {
+  const packet = uiAgentPacketForScreen(graph, screenId, projectionId);
+  const capabilityIds = packet.related?.capabilities || [];
+  const shapeIds = packet.related?.shapes || [];
+  const widgetIds = packet.related?.widgets || [];
+  const projectionIds = [packet.projection?.id].filter(Boolean);
+  const verifications = verificationIdsForTarget(graph, [screenId, ...projectionIds, ...capabilityIds, ...shapeIds, ...widgetIds]);
+  return {
+    type: "context_slice",
+    version: 1,
+    focus: {
+      kind: "screen",
+      id: screenId,
+      projectionId: packet.projection?.id || projectionId || null
+    },
+    summary: {
+      id: screenId,
+      kind: packet.screen?.kind || "screen",
+      name: packet.screen?.title || screenId,
+      description: `UI screen '${screenId}' in projection '${packet.projection?.id || "(unknown)"}'.`
+    },
+    depends_on: {
+      projections: projectionIds,
+      capabilities: capabilityIds,
+      shapes: shapeIds,
+      widgets: widgetIds,
+      verifications
+    },
+    related: {
+      projections: summarizeStatementsByIds(graph, projectionIds),
+      capabilities: summarizeStatementsByIds(graph, capabilityIds),
+      shapes: summarizeStatementsByIds(graph, shapeIds),
+      widgets: summarizeStatementsByIds(graph, widgetIds)
+    },
+    verification: summarizeStatementsByIds(graph, verifications),
+    verification_targets: recommendedVerificationTargets(graph, [screenId, ...projectionIds, ...capabilityIds, ...shapeIds, ...widgetIds], {
+      rationale: "Screen slices should prove UI contract, realization coverage, widget behavior, and generated/maintained app checks for the selected surface."
+    }),
+    ui_agent_packet: packet,
+    write_scope: buildDefaultWriteScope(),
+    review_boundary: {
+      automation_class: "review_required",
+      reasons: ["ui_screen_surface"]
     },
     ownership_boundary: defaultOwnershipBoundary()
   };
@@ -458,11 +512,15 @@ function normalizedMode(modeId) {
  * @returns {string}
  */
 function selectorForFocus(focus) {
+  if (focus?.kind === "screen") {
+    return `${focus.projectionId ? `--projection ${focus.projectionId} ` : ""}--screen ${focus.id || "<id>"}`;
+  }
   /** @type {Record<string, string>} */
   const flagByKind = {
     capability: "--capability",
     workflow: "--workflow",
     projection: "--projection",
+    screen: "--screen",
     widget: "--widget",
     entity: "--entity",
     journey: "--journey",
@@ -559,6 +617,10 @@ function decorateSlice(graph, slice, options) {
  * @returns {any}
  */
 export function generateContextSlice(graph, options = {}) {
+  if (options.screenId) {
+    return decorateSlice(graph, screenSlice(graph, options.screenId, options.projectionId), options);
+  }
+
   const selection = ensureContextSelection({
     capabilityId: options.capabilityId,
     workflowId: options.workflowId,

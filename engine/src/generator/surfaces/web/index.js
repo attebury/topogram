@@ -12,6 +12,7 @@ import {
   generateUiSurfaceContract,
   generateUiSurfaceDebug
 } from "./ui-surface-contract.js";
+import { generateUiRealizationReport } from "./ui-realization-report.js";
 
 export function generateWebApp(graph, options = {}) {
   const projection = getProjection(graph, options.projectionId);
@@ -46,6 +47,9 @@ export function generateWebTarget(target, graph, options = {}) {
   }
   if (target === "ui-surface-debug") {
     return generateUiSurfaceDebug(graph, options);
+  }
+  if (target === "ui-realization-report") {
+    return generateUiRealizationReport(graph, options);
   }
   if (target === "sveltekit-app") {
     return generateWebApp(graph, options);

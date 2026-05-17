@@ -194,7 +194,7 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js query maintained-drift <path> --from-topogram <path>");
   console.log("   or: node ./src/cli.js query seam-check <path> [--seam <id>] [--from-topogram <path>]");
   console.log("   or: node ./src/cli.js query diff <path> --from-topogram <path>");
-  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>] [--task <id>] [--plan <id>] [--bug <id>] [--format markdown]");
+  console.log("   or: node ./src/cli.js query slice <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--screen <id>] [--widget <id>] [--entity <id>] [--journey <id>] [--domain <id>] [--task <id>] [--plan <id>] [--bug <id>] [--format markdown]");
   console.log("   or: node ./src/cli.js query domain-list <path>");
   console.log("   or: node ./src/cli.js query domain-coverage <path> --domain <id>");
   console.log("   or: node ./src/cli.js query review-boundary <path> [--capability <id>] [--workflow <id>] [--projection <id>] [--widget <id>] [--entity <id>] [--journey <id>]");
@@ -222,7 +222,7 @@ export function printUsage(options = {}) {
   console.log("   or: node ./src/cli.js reconcile <path> [--write]");
   console.log("   or: node ./src/cli.js reconcile adopt <selector> <path> [--refresh-adopted] [--write]");
   console.log("   or: node ./src/cli.js adoption status <path> [--write]");
-  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-widget-contract, widget-conformance-report, widget-behavior-report, ui-surface-contract, ui-surface-debug, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
+  console.log("Targets: json-schema, docs, docs-index, verification-plan, verification-checklist, shape-transform-graph, shape-transform-debug, api-contract-graph, api-contract-debug, ui-contract-graph, ui-contract-debug, ui-widget-contract, widget-conformance-report, widget-behavior-report, ui-surface-contract, ui-surface-debug, ui-realization-report, sveltekit-app, swiftui-app, db-contract-graph, db-contract-debug, db-schema-snapshot, db-migration-plan, db-lifecycle-plan, db-lifecycle-bundle, environment-plan, environment-bundle, deployment-plan, deployment-bundle, runtime-smoke-plan, runtime-smoke-bundle, runtime-check-plan, runtime-check-bundle, compile-check-plan, compile-check-bundle, app-bundle-plan, app-bundle, native-parity-plan, native-parity-bundle, sql-migration, sql-schema, prisma-schema, drizzle-schema, persistence-scaffold, server-contract, hono-server, openapi, context-digest, context-diff, context-slice, context-bundle, context-report, context-task-mode");
   console.log("Workflows: scan-docs, reconcile, adoption-status, generate-docs, generate-journeys, refresh-docs, report-gaps");
   console.log("Extract tracks: db, api, ui, cli, workflows, verification");
   console.log("Reconcile adopt selectors: from-plan, actors, roles, enums, shapes, entities, capabilities, widgets, docs, journeys, workflows, ui, bundle:<slug>, projection-review:<id>, ui-review:<id>, workflow-review:<id>, bundle-review:<slug>");
@@ -306,6 +306,7 @@ export function printEmitHelp() {
   console.log("  ui-widget-contract");
   console.log("  widget-conformance-report");
   console.log("  widget-behavior-report");
+  console.log("  ui-realization-report");
   console.log("  context-slice");
   console.log("  context-diff");
   console.log("  glossary");
@@ -315,6 +316,7 @@ export function printEmitHelp() {
   console.log("  --widget <id>");
   console.log("  --capability <id>");
   console.log("  --projection <id>");
+  console.log("  --screen <id>");
   console.log("  --entity <id>");
   console.log("  --journey <id>");
   console.log("");
@@ -322,6 +324,7 @@ export function printEmitHelp() {
   console.log("  topogram emit ui-widget-contract --widget widget_data_grid --json");
   console.log("  topogram emit widget-conformance-report ./topo --projection proj_web_surface --json");
   console.log("  topogram emit widget-behavior-report ./topo --projection proj_web_surface --json");
+  console.log("  topogram emit ui-realization-report ./topo --projection proj_web_surface --json");
   console.log("  topogram emit db-schema-snapshot ./topo --projection proj_db_postgres --json");
   console.log("  topogram emit sql-migration ./topo --projection proj_db_postgres --from-snapshot ./state/current.json");
   console.log("  topogram emit glossary ./topo --write --out-dir docs/concepts");
